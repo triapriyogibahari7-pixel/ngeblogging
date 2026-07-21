@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, BarChart3, Bold, BookOpen, Check, ChevronDown, FilePlus2,
   FileText, Globe2, Heading1, Heading2, Image, Italic, LayoutDashboard,
-  Link, List, LogOut, Menu, MoreHorizontal, Palette, PanelLeftClose,
+  Link, List, LogOut, MoreHorizontal, Palette, PanelLeftClose,
   PenLine, Plus, Redo2, Search, Send, Settings, Sparkles, Table2, Trash2,
-  Underline, Undo2, Users, X,
+  Underline, Undo2, Users, Upload, MessageSquare, ShieldCheck, Activity,
 } from "lucide-react";
 
 const STORE = "ngeblogging-studio-v1";
@@ -36,6 +36,7 @@ export default function Studio({ onExit }) {
   const [sidebar, setSidebar] = useState(true);
   const [theme, setTheme] = useState("Editorial");
   const [toast, setToast] = useState("");
+  const [naraOpen, setNaraOpen] = useState(false);
   const editor = useRef(null);
   const active = docs.find((d) => d.id === activeId);
 
@@ -70,19 +71,34 @@ export default function Studio({ onExit }) {
           <button className={view === "content" && kind === "article" ? "active" : ""} onClick={() => {setKind("article");setView("content")}}><FileText/><span>Artikel</span></button>
           <button className={view === "content" && kind === "page" ? "active" : ""} onClick={() => {setKind("page");setView("content")}}><BookOpen/><span>Halaman</span></button>
           <button onClick={() => setView("themes")} className={view === "themes" ? "active" : ""}><Palette/><span>Tampilan</span></button>
-          <button><BarChart3/><span>Analitik</span></button><button><Users/><span>Anggota</span></button><button><Globe2/><span>Domain</span></button>
+          <button onClick={() => setView("media")} className={view === "media" ? "active" : ""}><Image/><span>Media</span></button>
+          <button onClick={() => setView("analytics")} className={view === "analytics" ? "active" : ""}><BarChart3/><span>Analitik</span></button><button onClick={() => setView("members")} className={view === "members" ? "active" : ""}><Users/><span>Anggota</span></button><button onClick={() => setView("domain")} className={view === "domain" ? "active" : ""}><Globe2/><span>Domain</span></button>
         </nav>
-        <div className="side-bottom"><button><Settings/><span>Pengaturan</span></button><button onClick={onExit}><LogOut/><span>Keluar studio</span></button></div>
+        <div className="side-bottom"><button onClick={() => setView("settings")} className={view === "settings" ? "active" : ""}><Settings/><span>Pengaturan</span></button><button onClick={onExit}><LogOut/><span>Keluar studio</span></button></div>
       </aside>
       <main className="studio-main">
-        <header className="studio-top"><button className="icon-button" onClick={() => setSidebar(!sidebar)}><PanelLeftClose/></button><div className="workspace-switch"><span>SB</span><b>Studio Borneo</b><ChevronDown/></div><div className="top-actions"><button><Search/></button><button className="nara-mini"><Sparkles/> Tanya Nara</button><span className="avatar-lg">JH</span></div></header>
+        <header className="studio-top"><button className="icon-button" onClick={() => setSidebar(!sidebar)}><PanelLeftClose/></button><div className="workspace-switch"><span>NB</span><b>Ngeblogging Utama</b><ChevronDown/></div><div className="top-actions"><button><Search/></button><button className="nara-mini" onClick={() => setNaraOpen(true)}><Sparkles/> Tanya Nara</button><span className="avatar-lg">JH</span></div></header>
         {view === "home" && <Home docs={docs} createDoc={createDoc} openDoc={openDoc}/>} 
         {view === "content" && <Content docs={shown} kind={kind} query={query} setQuery={setQuery} createDoc={createDoc} openDoc={openDoc} removeDoc={removeDoc}/>} 
         {view === "themes" && <Themes active={theme} setActive={(x) => {setTheme(x);setToast(`Tema ${x} diaktifkan`)}}/>}
+        {view === "media" && <Media setToast={setToast}/>} 
+        {view === "analytics" && <Analytics/>}
+        {view === "members" && <Members setToast={setToast}/>} 
+        {view === "domain" && <Domain setToast={setToast}/>} 
+        {view === "settings" && <SettingsView setToast={setToast}/>} 
       </main>
+      {naraOpen && <NaraPanel onClose={() => setNaraOpen(false)} docs={docs}/>} 
     </div>
   );
 }
+
+function PageTitle({title, children, action}) { return <div className="content-title"><div><h1>{title}</h1><p>{children}</p></div>{action}</div> }
+function Media({setToast}) { return <div className="studio-content"><PageTitle title="Pustaka media" action={<button className="blue-button" onClick={()=>setToast("Pemilih berkas siap—penyimpanan cloud aktif setelah Supabase Storage dipasang")}><Upload/> Unggah media</button>}>Kelola gambar, video, audio, dan dokumen situs Anda.</PageTitle><div className="upload-zone"><Upload/><h3>Tarik media ke sini</h3><p>Gambar akan dioptimalkan otomatis dan alt text dapat dibuat oleh Nara.</p><button onClick={()=>setToast("Hubungkan Supabase Storage untuk mengunggah media nyata")}>Pilih berkas</button></div><div className="info-grid"><article><Image/><b>Optimasi otomatis</b><p>WebP/AVIF, ukuran responsif, dan lazy loading.</p></article><article><Sparkles/><b>Alt text cerdas</b><p>Nara membantu aksesibilitas dan SEO gambar.</p></article><article><ShieldCheck/><b>Media aman</b><p>Hak akses dan pemindaian tipe berkas.</p></article></div></div> }
+function Analytics() { return <div className="studio-content"><PageTitle title="Analitik">Pahami pertumbuhan tanpa mengorbankan privasi pembaca.</PageTitle><div className="metric-grid"><article><span>Pengunjung unik</span><b>12.840</b><em>+18,4%</em></article><article><span>Tampilan halaman</span><b>31.290</b><em>+12,1%</em></article><article><span>Rata-rata membaca</span><b>4m 18d</b><em>+32 detik</em></article><article><span>Konversi pelanggan</span><b>4,8%</b><em>Baik</em></article></div><section className="chart-card"><div className="panel-title"><h2>Performa 7 hari</h2><button>7 hari <ChevronDown/></button></div><div className="bars">{[38,52,45,72,62,88,79].map((x,i)=><span key={i} style={{height:`${x}%`}}><i>{x*42}</i></span>)}</div></section></div> }
+function Members({setToast}) { const people=[['JH','John Harris','Pemilik'],['NA','Nara Assistant','AI editor']]; return <div className="studio-content"><PageTitle title="Anggota & tim" action={<button className="blue-button" onClick={()=>setToast("Undangan tim dibuat; pengiriman email aktif setelah penyedia email dipasang")}><Plus/> Undang anggota</button>}>Kelola peran, akses, dan alur persetujuan editorial.</PageTitle><div className="content-card member-list">{people.map(p=><div className="member" key={p[1]}><span>{p[0]}</span><div><b>{p[1]}</b><small>{p[1]==='Nara Assistant'?'Asisten ruang kerja':'john@ngeblogging.com'}</small></div><i>{p[2]}</i><button><MoreHorizontal/></button></div>)}</div><div className="info-grid"><article><ShieldCheck/><b>Peran terkontrol</b><p>Pemilik, admin, editor, penulis, dan kontributor.</p></article><article><Activity/><b>Jejak aktivitas</b><p>Setiap perubahan penting dapat diaudit.</p></article><article><MessageSquare/><b>Alur persetujuan</b><p>Review dan komentar sebelum publikasi.</p></article></div></div> }
+function Domain({setToast}) { return <div className="studio-content"><PageTitle title="Domain & publikasi">Hubungkan identitas utama situs dan periksa kesiapan produksi.</PageTitle><div className="domain-card"><span className="domain-icon"><Globe2/></span><div><small>DOMAIN UTAMA</small><h2>ngeblogging.com</h2><p>Siap diarahkan ke Netlify setelah deployment preview lolos pengujian.</p></div><i>Menunggu DNS</i></div><div className="launch-list"><h2>Daftar kesiapan peluncuran</h2>{[['Build produksi','Siap'],['HTTPS otomatis','Saat deploy'],['Database Supabase','Perlu konfigurasi'],['OAuth Google & LinkedIn','Perlu kredensial'],['Nara Qwen','Perlu server inference']].map((x,i)=><div key={x[0]}><span className={i<2?'done':''}>{i<2?<Check/>:i+1}</span><b>{x[0]}</b><em>{x[1]}</em></div>)}<button className="blue-button" onClick={()=>setToast("Gunakan preview Netlify terlebih dahulu sebelum mengubah DNS domain")}>Panduan hubungkan Netlify</button></div></div> }
+function SettingsView({setToast}) { return <div className="studio-content"><PageTitle title="Pengaturan situs">Atur identitas, bahasa, publikasi, dan keamanan.</PageTitle><div className="settings-card"><label>Nama situs<input defaultValue="Ngeblogging"/></label><label>Deskripsi<textarea defaultValue="Platform membangun, menulis, dan mengembangkan situs bersama Nara AI."/></label><div className="field-row"><label>Bahasa<select defaultValue="id"><option value="id">Bahasa Indonesia</option><option value="en">English</option></select></label><label>Zona waktu<select><option>Asia/Jakarta (WIB)</option></select></label></div><label className="toggle-row"><span><b>Konfirmasi publikasi AI</b><small>Nara tidak boleh menerbitkan atau menghapus tanpa izin.</small></span><input type="checkbox" defaultChecked/></label><button className="blue-button" onClick={()=>setToast("Pengaturan berhasil disimpan")}><Check/> Simpan perubahan</button></div></div> }
+function NaraPanel({onClose,docs}) { const [q,setQ]=useState(''); const [messages,setMessages]=useState([{role:'ai',text:`Saya memahami ${docs.length} dokumen di ruang kerja ini. Apa yang ingin Anda kerjakan?`}]); const send=()=>{if(!q.trim())return;setMessages(m=>[...m,{role:'user',text:q},{role:'ai',text:'Saya bisa membantu membuat kerangka, memperbaiki tulisan, SEO, dan mengelola konten. Gateway Qwen akan menjawab secara penuh setelah server inference dikonfigurasi.'}]);setQ('')}; return <aside className="nara-drawer"><header><span><Sparkles/><b>Nara AI</b><small>Asisten Ngeblogging</small></span><button onClick={onClose}>×</button></header><div className="nara-messages">{messages.map((m,i)=><p key={i} className={m.role}>{m.text}</p>)}</div><div className="nara-prompts"><button onClick={()=>setQ('Buat ide artikel hari ini')}>Ide artikel</button><button onClick={()=>setQ('Audit SEO situs saya')}>Audit SEO</button></div><footer><textarea value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Tanyakan atau perintahkan Nara…"/><button onClick={send}><Send/></button></footer></aside> }
 
 function Home({ docs, createDoc, openDoc }) {
   const published = docs.filter((d) => d.status === "published").length;
