@@ -30,8 +30,8 @@ npm run build
 
 ## Mengaktifkan backend
 
-1. Buat proyek Supabase dan jalankan migrasi `supabase/migrations/202607210001_initial_platform.sql`.
-2. Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di Netlify.
+1. Proyek Supabase Ngeblogging sudah memakai migrasi berurutan dalam folder `supabase/migrations`.
+2. Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY` di Netlify. `VITE_SUPABASE_ANON_KEY` hanya disediakan sebagai fallback lama.
 3. Aktifkan provider Google dan LinkedIn (OIDC) di Supabase, lalu masukkan client ID/secret dari masing-masing developer console.
 4. Tambahkan URL produksi dan preview ke daftar redirect Supabase.
 5. Hubungkan endpoint inference OpenAI-compatible untuk Qwen melalui `QWEN_API_BASE_URL`, `QWEN_API_KEY`, dan `QWEN_MODEL`.
