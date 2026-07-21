@@ -28,6 +28,7 @@ import {
   Send,
 } from "lucide-react";
 import "./styles.css";
+import Studio from "./Studio";
 const cards = [
   [
     "Blog Pribadi",
@@ -187,7 +188,9 @@ function EditorPreview() {
 function App() {
   const [menu, setMenu] = useState(false),
     [demo, setDemo] = useState(false),
-    [answer, setAnswer] = useState("");
+    [answer, setAnswer] = useState(""),
+    [studio, setStudio] = useState(false);
+  if (studio) return <Studio onExit={() => setStudio(false)} />;
   const ask = () => {
     setAnswer(
       "Saya sudah menyiapkan kerangka artikel: masalah utama UMKM Kalimantan, peluang digital, 5 langkah praktis, studi kasus, dan ajakan bertindak. Draf akan disimpan—tidak diterbitkan tanpa persetujuan Anda.",
@@ -378,8 +381,8 @@ function App() {
               sudah menyiapkan pengalaman produk dan arsitektur aman untuk Nara
               AI.
             </p>
-            <button className="primary" onClick={() => setDemo(false)}>
-              Lihat demo dashboard <ArrowRight />
+            <button className="primary" onClick={() => { setDemo(false); setStudio(true); }}>
+              Buka studio sekarang <ArrowRight />
             </button>
           </div>
         </div>
