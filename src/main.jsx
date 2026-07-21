@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import Studio from "./Studio";
+import AuthModal from "./AuthModal";
 const cards = [
   [
     "Blog Pribadi",
@@ -363,30 +364,7 @@ function App() {
         <p>Bangun, kelola, dan kembangkan kehadiran digital Anda.</p>
         <small>© 2026 Ngeblogging. Dibangun di Indonesia.</small>
       </footer>
-      {demo && (
-        <div
-          className="modal"
-          onMouseDown={(e) => e.target === e.currentTarget && setDemo(false)}
-        >
-          <div>
-            <button className="close" onClick={() => setDemo(false)}>
-              <X />
-            </button>
-            <div className="modal-icon">
-              <Sparkles />
-            </div>
-            <h2>Fondasi Ngeblogging siap.</h2>
-            <p>
-              Registrasi akan aktif setelah Supabase dihubungkan. Versi ini
-              sudah menyiapkan pengalaman produk dan arsitektur aman untuk Nara
-              AI.
-            </p>
-            <button className="primary" onClick={() => { setDemo(false); setStudio(true); }}>
-              Buka studio sekarang <ArrowRight />
-            </button>
-          </div>
-        </div>
-      )}
+      {demo && <AuthModal onClose={() => setDemo(false)} onDemo={() => { setDemo(false); setStudio(true); }} />}
     </>
   );
 }
