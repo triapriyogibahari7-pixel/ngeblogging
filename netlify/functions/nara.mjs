@@ -289,7 +289,7 @@ function buildUserContent(message, attachments, context, visionEnabled) {
   ];
 }
 
-export async function handler(event) {
+export async function handleRequest(event) {
   if (event.httpMethod === "OPTIONS") return json(event, 204, {});
   if (!allowedOrigin(event).valid) return json(event, 403, { error: "Origin tidak diizinkan." });
   if (event.httpMethod === "GET") return json(event, 200, naraStatus());
@@ -394,12 +394,12 @@ export async function handler(event) {
 }
 
 // Netlify's modern Functions API uses a Web Request and Response. Keep the
-// exported `handler` above as a small, framework-independent core so it can be
-// unit tested without a Netlify runtime.
+// request-processing core separate so it can be unit tested without a Netlify
+// runtime while avoiding the deprecated Lambda `handler` export.
 export default async function nara(request) {
   const headers = Object.fromEntries(request.headers.entries());
   const body = ["GET", "HEAD"].includes(request.method) ? "" : await request.text();
-  const result = await handler({
+  const result = await handleRequest({
     httpMethod: request.method,
     headers,
     body,
