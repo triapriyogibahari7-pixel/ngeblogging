@@ -182,6 +182,7 @@ function naraStatus() {
   if (!qwen.baseUrl) missing.push(qwen.region === "virginia" ? "QWEN_API_BASE_URL" : "QWEN_WORKSPACE_ID atau QWEN_API_BASE_URL");
   return {
     ready: missing.length === 0,
+    runtime: "netlify-modern-v1",
     provider: "Qwen · Alibaba Cloud Model Studio",
     region: qwen.region,
     missing,
