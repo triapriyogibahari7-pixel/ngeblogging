@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowRight,
@@ -30,6 +30,7 @@ import {
 import "./styles.css";
 import Studio from "./Studio";
 import AuthModal from "./AuthModal";
+import { signOut, supabase, supabaseConfigured } from "./lib/supabase";
 const cards = [
   [
     "Blog Pribadi",
@@ -189,9 +190,68 @@ function EditorPreview() {
 function App() {
   const [menu, setMenu] = useState(false),
     [demo, setDemo] = useState(false),
+    [authMode, setAuthMode] = useState("signin"),
     [answer, setAnswer] = useState(""),
-    [studio, setStudio] = useState(false);
-  if (studio) return <Studio onExit={() => setStudio(false)} />;
+    [studio, setStudio] = useState(false),
+    [session, setSession] = useState(null);
+
+  useEffect(() => {
+    if (!supabaseConfigured || !supabase) return undefined;
+    let active = true;
+    const params = new URLSearchParams(window.location.search);
+    const isRecovery = params.get("auth") === "recovery";
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!active) return;
+      setSession(nextSession);
+      if (event === "PASSWORD_RECOVERY" || isRecovery) {
+        setStudio(false);
+        setAuthMode("recovery");
+        setDemo(true);
+      } else if (event === "SIGNED_IN") {
+        setDemo(false);
+        setStudio(true);
+      } else if (event === "SIGNED_OUT") {
+        setStudio(false);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active || !data.session) return;
+      setSession(data.session);
+      if (isRecovery) {
+        setAuthMode("recovery");
+        setDemo(true);
+      } else {
+        setStudio(true);
+      }
+    });
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const openAuth = () => {
+    setAuthMode("signin");
+    setDemo(true);
+  };
+  const finishAuth = () => {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setAuthMode("signin");
+    setDemo(false);
+    setStudio(true);
+  };
+  const leaveStudio = async () => {
+    if (session) {
+      try { await signOut(); } catch (error) { console.error("Gagal keluar:", error); }
+    }
+    setSession(null);
+    setStudio(false);
+  };
+
+  if (studio) return <Studio onExit={leaveStudio} user={session?.user} />;
   const ask = () => {
     setAnswer(
       "Saya sudah menyiapkan kerangka artikel: masalah utama UMKM Kalimantan, peluang digital, 5 langkah praktis, studi kasus, dan ajakan bertindak. Draf akan disimpan—tidak diterbitkan tanpa persetujuan Anda.",
@@ -208,7 +268,7 @@ function App() {
           <a href="#kegunaan">Kegunaan</a>
           <a href="#nara">Nara AI</a>
           <a href="#masa-depan">Masa depan</a>
-          <button className="nav-cta" onClick={() => setDemo(true)}>
+          <button className="nav-cta" onClick={openAuth}>
             Mulai gratis <ArrowRight size={17} />
           </button>
         </nav>
@@ -235,7 +295,7 @@ function App() {
             kerja yang tenang—diperkuat oleh Nara AI.
           </p>
           <div className="actions">
-            <button className="primary" onClick={() => setDemo(true)}>
+            <button className="primary" onClick={openAuth}>
               Bangun situs Anda <ArrowRight />
             </button>
             <a href="#fitur">Jelajahi platform</a>
@@ -352,7 +412,7 @@ function App() {
             Fondasi untuk publikasi, tim, komunitas, newsletter, analitik,
             domain sendiri, dan ekosistem kreator Indonesia.
           </p>
-          <button className="primary" onClick={() => setDemo(true)}>
+          <button className="primary" onClick={openAuth}>
             Mulai membangun <ArrowRight />
           </button>
         </section>
@@ -364,7 +424,14 @@ function App() {
         <p>Bangun, kelola, dan kembangkan kehadiran digital Anda.</p>
         <small>© 2026 Ngeblogging. Dibangun di Indonesia.</small>
       </footer>
-      {demo && <AuthModal onClose={() => setDemo(false)} onDemo={() => { setDemo(false); setStudio(true); }} />}
+      {demo && (
+        <AuthModal
+          initialMode={authMode}
+          onClose={() => setDemo(false)}
+          onAuthenticated={finishAuth}
+          onDemo={() => { setDemo(false); setStudio(true); }}
+        />
+      )}
     </>
   );
 }
