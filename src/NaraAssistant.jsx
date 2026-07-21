@@ -319,7 +319,7 @@ export default function NaraAssistant({
               <button onClick={() => setShowUpgrade(true)}>{plan === "pro" ? <><Crown /> Pro aktif</> : <><Zap /> Upgrade Pro</>}</button>
             </div>
 
-            <div className="nara-assistant-messages" ref={scrollArea}>
+            <div className="nara-assistant-messages" ref={scrollArea} aria-live="polite">
               {messages.map((message) => (
                 <div className={`nara-message ${message.role}`} key={message.id}>
                   {message.role !== "user" && <span className="nara-message-avatar">{message.role === "error" ? "!" : <Sparkles />}</span>}
@@ -387,7 +387,7 @@ export default function NaraAssistant({
                     {modelOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}
                   </select>
                 </label>
-                <button className="nara-send" disabled={busy || (!input.trim() && !attachments.length)} onClick={send}>{busy ? <LoaderCircle className="spin" /> : <Send />}</button>
+                <button className="nara-send" aria-label="Kirim pesan" disabled={busy || (!input.trim() && !attachments.length)} onClick={send}>{busy ? <LoaderCircle className="spin" /> : <Send />}</button>
               </div>
               <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
               <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
@@ -397,7 +397,7 @@ export default function NaraAssistant({
 
           {showUpgrade && (
             <div className="nara-upgrade-card">
-              <button className="nara-upgrade-close" onClick={() => setShowUpgrade(false)}><X /></button>
+              <button className="nara-upgrade-close" aria-label="Tutup pilihan Pro" onClick={() => setShowUpgrade(false)}><X /></button>
               <span className="nara-upgrade-icon"><Crown /></span>
               <small>NARA PRO</small>
               <h2>Lebih dalam. Lebih panjang. Lebih bertenaga.</h2>
