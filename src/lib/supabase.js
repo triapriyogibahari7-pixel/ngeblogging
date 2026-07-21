@@ -17,7 +17,8 @@ export const supabase = supabaseConfigured
     })
   : null;
 
-const appUrl = (path = "/") => new URL(path, window.location.origin).toString();
+const configuredSiteUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
+const appUrl = (path = "/") => new URL(path, configuredSiteUrl || window.location.origin).toString();
 
 function requireSupabase() {
   if (!supabase) throw new Error("Supabase belum dikonfigurasi.");
