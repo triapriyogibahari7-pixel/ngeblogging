@@ -51,7 +51,7 @@ function friendlyError(error, status) {
   const message = String(error || "");
   if (status === 429) return message || "Batas penggunaan hari ini sudah tercapai.";
   if (status === 403) return message || "Pilihan ini memerlukan paket Nara Pro.";
-  if (status === 503) return "Mesin Nara belum diaktifkan pada server. Hubungkan penyedia model AI di Netlify untuk mulai menggunakannya.";
+  if (status === 503) return message || "Mesin Nara belum diaktifkan pada server. Hubungkan penyedia model AI di Netlify untuk mulai menggunakannya.";
   if (status === 504) return "Nara memerlukan waktu terlalu lama. Coba pertanyaan yang lebih singkat.";
   return message || "Nara belum dapat menjawab. Periksa koneksi lalu coba lagi.";
 }
@@ -270,7 +270,7 @@ export default function NaraAssistant({
           intelligence,
           context,
           attachments: outgoing.attachments.map(({ name, type, size, kind, dataUrl, text: fileText }) => ({ name, type, size, kind, dataUrl, text: fileText })),
-          history: messages.slice(-8).map(({ role, text: messageText }) => ({ role, content: messageText })),
+          history: messages.slice(-16).map(({ role, text: messageText }) => ({ role, content: messageText })),
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -283,6 +283,7 @@ export default function NaraAssistant({
         role: "assistant",
         text: data.answer || "Nara belum menghasilkan jawaban.",
         model: data.modelLabel,
+        mode: data.intelligenceLabel,
         remaining: data.remaining,
       }]);
     } catch (error) {
@@ -328,7 +329,12 @@ export default function NaraAssistant({
                     {message.attachments?.length > 0 && (
                       <div className="nara-message-files">{message.attachments.map((item) => <small key={item.id}><Paperclip />{item.name}</small>)}</div>
                     )}
-                    {(message.model || Number.isFinite(message.remaining)) && <small className="nara-message-meta">{message.model}{Number.isFinite(message.remaining) ? ` · ${message.remaining} respons tersisa hari ini` : ""}</small>}
+                    {(message.model || message.mode || Number.isFinite(message.remaining)) && (
+                      <small className="nara-message-meta">
+                        {[message.model, message.mode].filter(Boolean).join(" · ")}
+                        {Number.isFinite(message.remaining) ? ` · ${message.remaining} respons tersisa hari ini` : ""}
+                      </small>
+                    )}
                   </div>
                 </div>
               ))}
