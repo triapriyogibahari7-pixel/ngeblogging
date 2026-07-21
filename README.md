@@ -34,8 +34,10 @@ npm run build
 2. Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY` di Netlify. `VITE_SUPABASE_ANON_KEY` hanya disediakan sebagai fallback lama.
 3. Aktifkan provider Google dan LinkedIn (OIDC) di Supabase, lalu masukkan client ID/secret dari masing-masing developer console.
 4. Tambahkan URL produksi dan preview ke daftar redirect Supabase.
-5. Hubungkan endpoint inference OpenAI-compatible untuk Qwen melalui `QWEN_API_BASE_URL`, `QWEN_API_KEY`, dan model Nara pada `.env.example`.
+5. Hubungkan Qwen dari region Singapore melalui `QWEN_API_KEY`, `QWEN_WORKSPACE_ID`, dan `QWEN_REGION=singapore`. `QWEN_API_BASE_URL` dibuat otomatis dan hanya diperlukan untuk penyedia lain.
 6. Setelah DNS aktif, isi `VITE_PUBLIC_SITE_URL` dan `PUBLIC_SITE_URL` dengan `https://ngeblogging.com`. Callback login akan kembali ke domain Ngeblogging, bukan alamat preview.
+
+Panduan dari pembuatan API key sampai pengujian live tersedia di [`docs/QWEN_SETUP.md`](docs/QWEN_SETUP.md). Status konfigurasi tanpa membuka secret dapat diperiksa melalui `GET /api/nara`.
 
 Endpoint browser untuk Nara adalah `POST /api/nara`. Secret hanya dibaca oleh Netlify Function dan tidak masuk ke bundle browser. Endpoint memverifikasi access token Supabase, menegakkan paket Free/Pro dan kuota harian di database, memvalidasi lampiran, membatasi origin, serta memakai rate limit Netlify.
 
@@ -49,8 +51,10 @@ Endpoint browser untuk Nara adalah `POST /api/nara`. Secret hanya dibaca oleh Ne
 - Permintaan akses awal Pro disimpan di `plan_upgrade_requests`. Penagihan baru boleh diaktifkan setelah penyedia pembayaran dan harga final dikonfigurasi.
 - Gambar dan file teks dapat diteruskan ke model. File biner seperti PDF/DOCX memerlukan pipeline ekstraksi dokumen sebelum isinya dapat dianalisis penuh.
 
-## Prinsip Nara AI
+## Model Nara AI
 
-Qwen3.5-4B adalah model utama yang dijalankan melalui layanan inference terpisah. Netlify menjadi aplikasi dan gateway aman. AI menggunakan RAG, memori bertingkat, tool-use, batas penggunaan wajar, serta konfirmasi eksplisit sebelum tindakan berisiko seperti menerbitkan atau menghapus konten.
+Model bawaan server benar-benar berbeda: Nara Mini memakai `qwen3.6-flash`, Writer memakai `qwen3.7-plus`, Vision memakai `qwen3-vl-plus`, dan Max memakai `qwen3.7-max`. Tingkat Tinggi dan Ekstra tinggi mengaktifkan deep thinking Qwen, sedangkan Ringan dan Sedang memprioritaskan kecepatan. Netlify menjadi gateway aman; API key tidak pernah dikirim ke browser.
+
+AI menggunakan RAG, memori bertingkat, tool-use, batas penggunaan wajar, serta konfirmasi eksplisit sebelum tindakan berisiko seperti menerbitkan atau menghapus konten.
 
 Lihat [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) untuk rancangan teknis dan tahapan implementasi.
