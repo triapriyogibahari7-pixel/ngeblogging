@@ -441,6 +441,82 @@ export type Database = {
           },
         ]
       }
+      nara_usage_daily: {
+        Row: {
+          last_intelligence: string | null
+          last_model: string | null
+          request_count: number
+          total_tokens: number
+          updated_at: string
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          last_intelligence?: string | null
+          last_model?: string | null
+          request_count?: number
+          total_tokens?: number
+          updated_at?: string
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          last_intelligence?: string | null
+          last_model?: string | null
+          request_count?: number
+          total_tokens?: number
+          updated_at?: string
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nara_usage_daily_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_upgrade_requests: {
+        Row: {
+          created_at: string
+          id: string
+          requested_plan: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requested_plan?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requested_plan?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_upgrade_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -450,6 +526,8 @@ export type Database = {
           id: string
           locale: string
           onboarding_completed: boolean
+          plan: string
+          plan_expires_at: string | null
           timezone: string
           updated_at: string
         }
@@ -461,6 +539,8 @@ export type Database = {
           id: string
           locale?: string
           onboarding_completed?: boolean
+          plan?: string
+          plan_expires_at?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -472,6 +552,8 @@ export type Database = {
           id?: string
           locale?: string
           onboarding_completed?: boolean
+          plan?: string
+          plan_expires_at?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -729,7 +811,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_nara_quota: {
+        Args: { requested_intelligence: string; requested_model: string }
+        Returns: {
+          account_plan: string
+          allowed: boolean
+          daily_limit: number
+          reason: string
+          remaining: number
+        }[]
+      }
     }
     Enums: {
       content_kind: "article" | "page"
@@ -898,4 +989,3 @@ export const Constants = {
     },
   },
 } as const
-
