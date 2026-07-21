@@ -9,7 +9,7 @@ Ngeblogging adalah platform multi-situs untuk menulis, menerbitkan, membangun au
 - **Web:** React + Vite, di-deploy ke Netlify.
 - **Backend:** Netlify Functions sebagai API gateway dan tempat validasi izin.
 - **Data/Auth/Storage:** Supabase PostgreSQL, Auth, Storage, dan row-level security.
-- **AI:** Qwen3.5-4B pada penyedia inference GPU terpisah; tidak dijalankan di browser.
+- **AI:** keluarga model Qwen/OpenAI-compatible pada penyedia inference GPU terpisah; tidak dijalankan di browser.
 - **Knowledge:** pgvector untuk RAG per situs dan per pengguna.
 - **Observability:** log terstruktur, error monitoring, metrik latensi dan biaya.
 
@@ -37,6 +37,19 @@ Target jangka panjang adalah ratusan juta akun, tetapi kapasitas hanya dinyataka
 4. Memori dipisahkan antar pengguna dan situs menggunakan RLS.
 5. Pengguna dapat melihat, mengubah, mengekspor, dan menghapus memori.
 6. Jawaban faktual terbaru harus menggunakan pencarian/RAG dan menyertakan sumber.
+7. Model premium dan tingkat kecerdasan diperiksa di Netlify Function dan RPC kuota Supabase, bukan hanya di antarmuka.
+8. Pengunjung mendapat batas percobaan; akun Gratis/Pro mendapat kuota database per hari. Netlify juga membatasi lonjakan per IP dan domain.
+
+## Paket dan model Nara
+
+| Paket | Kecerdasan | Model | Kuota awal |
+|---|---|---|---:|
+| Pengunjung | Ringan, Sedang | Nara Mini | 5 percobaan/hari per instance + rate limit edge |
+| Gratis | Ringan, Sedang | Nara Mini | 25/hari |
+| Pro | Semua tingkat | Mini, Writer, Vision, Max | 250/hari |
+| Business | Semua tingkat | Semua model | 1.000/hari |
+
+Nama model publik dipisahkan dari ID model penyedia. Pemetaan sebenarnya disimpan sebagai environment variable server agar model dapat diganti tanpa mengubah produk atau membuka nama internal penyedia.
 
 ## Memori bertingkat
 
