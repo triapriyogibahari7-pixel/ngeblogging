@@ -30,6 +30,7 @@ import {
 import "./styles.css";
 import Studio from "./Studio";
 import AuthModal from "./AuthModal";
+import NaraAssistant from "./NaraAssistant";
 import { signOut, supabase, supabaseConfigured } from "./lib/supabase";
 const cards = [
   [
@@ -432,6 +433,7 @@ function App() {
           onDemo={() => { setDemo(false); setStudio(true); }}
         />
       )}
+      <NaraAssistant user={session?.user} onRequestLogin={openAuth} />
     </>
   );
 }
