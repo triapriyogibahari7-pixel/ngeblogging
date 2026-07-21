@@ -4,7 +4,7 @@ Platform kehadiran digital berbasis AI untuk kreator, bisnis, media, dan komunit
 
 ## Status
 
-MVP interaktif mencakup landing page responsif, studio dashboard, CRUD artikel dan halaman, editor ribbon dengan autosave, status publikasi, pencarian, 12 tema, demo Nara AI, serta konfigurasi Netlify. Data studio saat ini disimpan aman di browser sebagai mode lokal; Supabase menjadi tahap aktivasi backend multi-pengguna.
+MVP interaktif mencakup landing page responsif, studio dashboard, CRUD artikel dan halaman, editor ribbon dengan autosave, status publikasi, pencarian, 12 tema, autentikasi Google/LinkedIn/email yang siap dikonfigurasi, gateway Nara AI, skema database multi-situs dengan RLS, serta konfigurasi Netlify. Tanpa environment variables, Studio tetap tersedia dalam mode demo lokal.
 
 ## Menjalankan lokal
 
@@ -27,6 +27,16 @@ npm run build
 3. Publish directory: `dist`.
 4. Tambahkan environment variables dari `.env.example` melalui Netlify UI.
 5. Jangan pernah menyimpan API key atau secret ke GitHub.
+
+## Mengaktifkan backend
+
+1. Buat proyek Supabase dan jalankan migrasi `supabase/migrations/202607210001_initial_platform.sql`.
+2. Isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` di Netlify.
+3. Aktifkan provider Google dan LinkedIn (OIDC) di Supabase, lalu masukkan client ID/secret dari masing-masing developer console.
+4. Tambahkan URL produksi dan preview ke daftar redirect Supabase.
+5. Hubungkan endpoint inference OpenAI-compatible untuk Qwen melalui `QWEN_API_BASE_URL`, `QWEN_API_KEY`, dan `QWEN_MODEL`.
+
+Endpoint browser untuk Nara adalah `POST /api/nara`. Secret hanya dibaca oleh Netlify Function dan tidak masuk ke bundle browser.
 
 ## Prinsip Nara AI
 
