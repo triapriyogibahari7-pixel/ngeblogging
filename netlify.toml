@@ -5,6 +5,15 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/nara"
+  to = "/.netlify/functions/nara"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
