@@ -51,6 +51,17 @@ Target jangka panjang adalah ratusan juta akun, tetapi kapasitas hanya dinyataka
 
 Nama model publik dipisahkan dari ID model penyedia. Pemetaan sebenarnya disimpan sebagai environment variable server agar model dapat diganti tanpa mengubah produk atau membuka nama internal penyedia.
 
+Pemetaan produksi awal menggunakan model Alibaba Cloud Model Studio region Singapore:
+
+| Nama publik | Model server bawaan | Spesialisasi |
+|---|---|---|
+| Nara Mini | `qwen3.6-flash` | Kecepatan dan biaya rendah |
+| Nara Writer | `qwen3.7-plus` | Tulisan profesional dan SEO |
+| Nara Vision | `qwen3-vl-plus` | Pemahaman gambar dan dokumen visual |
+| Nara Max | `qwen3.7-max` | Kualitas tertinggi dan tugas kompleks |
+
+Ringan/Sedang mengirim `enable_thinking: false`; Tinggi/Ekstra tinggi mengirim `enable_thinking: true`. Masing-masing tingkat juga memiliki batas keluaran, panjang riwayat, timeout, temperatur, dan instruksi yang berbeda. Lihat [`QWEN_SETUP.md`](QWEN_SETUP.md) untuk aktivasi dan diagnosis koneksi.
+
 ## Memori bertingkat
 
 - Context window untuk percakapan aktif.
