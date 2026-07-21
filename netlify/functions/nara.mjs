@@ -392,3 +392,21 @@ export async function handler(event) {
     clearTimeout(timer);
   }
 }
+
+// Netlify's modern Functions API uses a Web Request and Response. Keep the
+// exported `handler` above as a small, framework-independent core so it can be
+// unit tested without a Netlify runtime.
+export default async function nara(request) {
+  const headers = Object.fromEntries(request.headers.entries());
+  const body = ["GET", "HEAD"].includes(request.method) ? "" : await request.text();
+  const result = await handler({
+    httpMethod: request.method,
+    headers,
+    body,
+  });
+
+  return new Response(result.body || null, {
+    status: result.statusCode,
+    headers: result.headers,
+  });
+}
