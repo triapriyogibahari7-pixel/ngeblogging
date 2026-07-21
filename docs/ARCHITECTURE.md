@@ -49,13 +49,13 @@ Target jangka panjang adalah ratusan juta akun, tetapi kapasitas hanya dinyataka
 
 ## Roadmap
 
-### Fase 1 — Fondasi (saat ini)
+### Fase 1 — Fondasi (selesai)
 
 Brand, landing page, demo dashboard, konfigurasi Netlify, dokumentasi dan batas keamanan.
 
-### Fase 2 — MVP operasional
+### Fase 2 — MVP operasional (sedang berjalan)
 
-Supabase Auth, onboarding, CRUD situs/artikel/halaman, editor Tiptap, kategori/tag, media, publikasi, profil, dan Nara untuk drafting.
+Skema Supabase/RLS, OAuth UI, dan gateway Nara sudah tersedia. Berikutnya: sinkronisasi CRUD ke Supabase, onboarding, editor Tiptap, kategori/tag, media, publikasi publik, profil, dan Nara untuk drafting dengan konteks dokumen.
 
 ### Fase 3 — Pertumbuhan
 
