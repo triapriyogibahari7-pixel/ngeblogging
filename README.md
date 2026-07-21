@@ -4,7 +4,7 @@ Platform kehadiran digital berbasis AI untuk kreator, bisnis, media, dan komunit
 
 ## Status
 
-Fondasi MVP mencakup landing page responsif, visual dashboard, demo Nara AI, konfigurasi Netlify, dan arsitektur siap dikembangkan menuju autentikasi serta publikasi nyata.
+MVP interaktif mencakup landing page responsif, studio dashboard, CRUD artikel dan halaman, editor ribbon dengan autosave, status publikasi, pencarian, 12 tema, demo Nara AI, serta konfigurasi Netlify. Data studio saat ini disimpan aman di browser sebagai mode lokal; Supabase menjadi tahap aktivasi backend multi-pengguna.
 
 ## Menjalankan lokal
 
