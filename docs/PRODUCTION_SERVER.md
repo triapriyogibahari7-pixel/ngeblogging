@@ -1,6 +1,6 @@
 # Menjalankan Ngeblogging di server produksi
 
-Paket ini memindahkan frontend dan API Nara dari kredit deployment Netlify ke satu VPS. Supabase tetap menjadi database dan penyedia autentikasi; Alibaba Cloud tetap menjadi penyedia model Nara. Netlify dapat dipertahankan sebagai alamat cadangan selama migrasi.
+Paket ini memindahkan frontend dan API Nara dari kredit deployment Netlify ke VPS. Supabase tetap menjadi database dan penyedia autentikasi; Alibaba Cloud tetap menjadi penyedia model Nara. Netlify dapat dipertahankan sebagai alamat cadangan selama migrasi. Untuk DigitalOcean primary + Oracle ARM64 standby, lanjutkan ke [`DUAL_SERVER.md`](DUAL_SERVER.md).
 
 ## Arsitektur
 
@@ -98,6 +98,7 @@ Buka repository → **Settings → Secrets and variables → Actions**.
 | `VITE_SUPABASE_URL` | URL proyek Supabase | sama |
 | `VITE_PUBLIC_SITE_URL` | `https://ngeblogging.com` | sama |
 | `PRODUCTION_DEPLOY_ENABLED` | `false` | `true` setelah server siap |
+| `DUAL_SERVER_DEPLOY_ENABLED` | `false` | `true` hanya setelah standby siap |
 | `VPS_PORT` | `22` | sesuai port SSH |
 | `SITE_HOSTS` | `staging.ngeblogging.com` | `ngeblogging.com, www.ngeblogging.com` |
 | `PRIMARY_SITE_DOMAIN` | `staging.ngeblogging.com` | `ngeblogging.com` |
@@ -108,10 +109,10 @@ Buka repository → **Settings → Secrets and variables → Actions**.
 | Nama | Isi |
 |---|---|
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | publishable key Supabase; aman untuk browser, tetapi disimpan sebagai secret agar tidak tercetak di workflow |
-| `VPS_HOST` | IPv4 atau hostname VPS |
-| `VPS_USER` | `deploy` |
-| `VPS_SSH_PRIVATE_KEY` | private key khusus deployment tanpa passphrase interaktif |
-| `VPS_SSH_KNOWN_HOSTS` | baris host key VPS yang sudah diverifikasi |
+| `PRIMARY_VPS_HOST` | IPv4 atau hostname VPS utama; nama lama `VPS_HOST` tetap didukung |
+| `PRIMARY_VPS_USER` | `deploy`; nama lama `VPS_USER` tetap didukung |
+| `PRIMARY_VPS_SSH_PRIVATE_KEY` | private key khusus deployment tanpa passphrase interaktif |
+| `PRIMARY_VPS_SSH_KNOWN_HOSTS` | baris host key VPS yang sudah diverifikasi |
 
 Buat key deployment terpisah:
 
