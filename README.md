@@ -20,7 +20,22 @@ npm run check
 npm run build
 ```
 
-## Deployment Netlify
+## Deployment produksi
+
+Repository mendukung dua target tanpa menggandakan logika aplikasi:
+
+- **Netlify** tetap dapat dipakai sebagai deployment cadangan.
+- **VPS produksi** memakai Docker Compose, Caddy HTTPS, image GHCR, API Nara portable, health check, dan rollback otomatis.
+
+Panduan lengkap dari VPS kosong sampai perpindahan DNS tersedia di [`docs/PRODUCTION_SERVER.md`](docs/PRODUCTION_SERVER.md). Operasional, diagnosis, rollback, dan pemulihan tersedia di [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md).
+
+Validasi paket produksi:
+
+```bash
+npm run test:production
+```
+
+### Deployment Netlify
 
 1. Hubungkan repository ini ke Netlify.
 2. Build command: `npm run build`.
@@ -40,6 +55,8 @@ npm run build
 Panduan dari pembuatan API key sampai pengujian live tersedia di [`docs/QWEN_SETUP.md`](docs/QWEN_SETUP.md). Status konfigurasi tanpa membuka secret dapat diperiksa melalui `GET /api/nara`.
 
 Endpoint browser untuk Nara adalah `POST /api/nara`. Secret hanya dibaca oleh Netlify Function dan tidak masuk ke bundle browser. Endpoint memverifikasi access token Supabase, menegakkan paket Free/Pro dan kuota harian di database, memvalidasi lampiran, membatasi origin, serta memakai rate limit Netlify.
+
+Pada VPS, endpoint yang sama dijalankan oleh `api/server.mjs`; browser dan UI tidak perlu diubah. API container tidak membuka port publik dan hanya dapat dicapai melalui Caddy. Status server portable tersedia di `GET /api/health`.
 
 ## Nara Assistant
 

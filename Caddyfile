@@ -1,0 +1,50 @@
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+{$SITE_HOSTS} {
+	encode zstd gzip
+
+	@api path /api/*
+	handle @api {
+		request_body {
+			max_size {$MAX_REQUEST_BODY:20MB}
+		}
+		reverse_proxy api:3000 {
+			health_uri /api/health
+			health_interval 30s
+			health_timeout 5s
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 65s
+			}
+		}
+	}
+
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	@index path / /index.html
+	header @index Cache-Control "no-cache, no-store, must-revalidate"
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=()"
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

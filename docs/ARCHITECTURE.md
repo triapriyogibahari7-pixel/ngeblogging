@@ -6,12 +6,13 @@ Ngeblogging adalah platform multi-situs untuk menulis, menerbitkan, membangun au
 
 ## Komponen produksi
 
-- **Web:** React + Vite, di-deploy ke Netlify.
-- **Backend:** Netlify Functions sebagai API gateway dan tempat validasi izin.
+- **Web:** React + Vite, dibangun menjadi image GHCR dan disajikan Caddy pada VPS; Netlify dipertahankan sebagai deployment cadangan selama migrasi.
+- **Backend:** runtime Node portable pada container privat sebagai API gateway dan tempat validasi izin. Modul pemrosesan yang sama tetap kompatibel dengan Netlify Functions.
 - **Data/Auth/Storage:** Supabase PostgreSQL, Auth, Storage, dan row-level security.
 - **AI:** keluarga model Qwen/OpenAI-compatible pada penyedia inference GPU terpisah; tidak dijalankan di browser.
 - **Knowledge:** pgvector untuk RAG per situs dan per pengguna.
-- **Observability:** log terstruktur, error monitoring, metrik latensi dan biaya.
+- **Delivery:** GitHub Actions menjalankan tes, build multi-stage, SBOM/provenance, push image bertag commit, deployment melalui SSH, health check, dan rollback.
+- **Observability:** log JSON terstruktur, health endpoint, rotasi log, pemeriksaan server, error monitoring, serta metrik latensi dan biaya.
 
 ## Editor dokumen profesional
 
@@ -37,8 +38,8 @@ Target jangka panjang adalah ratusan juta akun, tetapi kapasitas hanya dinyataka
 4. Memori dipisahkan antar pengguna dan situs menggunakan RLS.
 5. Pengguna dapat melihat, mengubah, mengekspor, dan menghapus memori.
 6. Jawaban faktual terbaru harus menggunakan pencarian/RAG dan menyertakan sumber.
-7. Model premium dan tingkat kecerdasan diperiksa di Netlify Function dan RPC kuota Supabase, bukan hanya di antarmuka.
-8. Pengunjung mendapat batas percobaan; akun Gratis/Pro mendapat kuota database per hari. Netlify juga membatasi lonjakan per IP dan domain.
+7. Model premium dan tingkat kecerdasan diperiksa di API server dan RPC kuota Supabase, bukan hanya di antarmuka.
+8. Pengunjung mendapat batas percobaan; akun Gratis/Pro mendapat kuota database per hari. Gateway juga membatasi ukuran request dan origin; rate limiting persisten menjadi tahap skala berikutnya.
 
 ## Paket dan model Nara
 

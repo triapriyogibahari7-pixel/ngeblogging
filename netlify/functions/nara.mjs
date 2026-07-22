@@ -115,7 +115,11 @@ export const config = {
 function allowedOrigin(event) {
   const origin = event.headers?.origin || event.headers?.Origin || "";
   const configured = (process.env.PUBLIC_SITE_URL || "https://ngeblogging.com").replace(/\/$/, "");
-  const allowed = new Set([configured, "https://ngeblogging.com", "https://www.ngeblogging.com", "http://localhost:5173"]);
+  const additional = String(process.env.PUBLIC_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((value) => value.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+  const allowed = new Set([configured, ...additional, "https://ngeblogging.com", "https://www.ngeblogging.com", "http://localhost:5173"]);
   if (/^https:\/\/[a-z0-9-]+\.netlify\.app$/i.test(origin)) allowed.add(origin);
   return { origin: allowed.has(origin) ? origin : configured, valid: !origin || allowed.has(origin) };
 }
@@ -198,7 +202,7 @@ function naraStatus() {
   if (!qwen.baseUrl) missing.push(qwen.region === "virginia" ? "QWEN_API_BASE_URL" : "QWEN_WORKSPACE_ID atau QWEN_API_BASE_URL");
   return {
     ready: missing.length === 0,
-    runtime: "netlify-modern-v3-vision-stable",
+    runtime: process.env.NARA_RUNTIME || "netlify-modern-v3-vision-stable",
     provider: "Qwen · Alibaba Cloud Model Studio",
     region: qwen.region,
     missing,
@@ -408,7 +412,7 @@ export async function handleRequest(event) {
   if (!qwen.endpoint || !qwen.key) {
     return json(event, 503, {
       code: "QWEN_NOT_CONFIGURED",
-      error: "Nara belum aktif. Isi QWEN_API_KEY serta QWEN_WORKSPACE_ID (region Singapura) di Netlify.",
+      error: "Nara belum aktif. Isi QWEN_API_KEY serta QWEN_WORKSPACE_ID (region Singapura) pada environment server.",
     });
   }
 
