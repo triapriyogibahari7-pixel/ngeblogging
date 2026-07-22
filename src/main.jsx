@@ -32,6 +32,12 @@ import Studio from "./Studio";
 import AuthModal from "./AuthModal";
 import NaraAssistant from "./NaraAssistant";
 import { signOut, supabase, supabaseConfigured } from "./lib/supabase";
+
+function clearAuthQuery() {
+  const url = new URL(window.location.href);
+  ["auth", "code", "error", "error_code", "error_description"].forEach((key) => url.searchParams.delete(key));
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+}
 const cards = [
   [
     "Blog Pribadi",
@@ -194,13 +200,22 @@ function App() {
     [authMode, setAuthMode] = useState("signin"),
     [answer, setAnswer] = useState(""),
     [studio, setStudio] = useState(false),
-    [session, setSession] = useState(null);
+    [session, setSession] = useState(null),
+    [authMessage, setAuthMessage] = useState("");
 
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return undefined;
     let active = true;
     const params = new URLSearchParams(window.location.search);
     const isRecovery = params.get("auth") === "recovery";
+    const oauthError = params.get("error_description") || params.get("error");
+
+    if (oauthError) {
+      setAuthMode("signin");
+      setAuthMessage(oauthError);
+      setDemo(true);
+      clearAuthQuery();
+    }
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!active) return;
@@ -210,6 +225,8 @@ function App() {
         setAuthMode("recovery");
         setDemo(true);
       } else if (event === "SIGNED_IN") {
+        clearAuthQuery();
+        setAuthMessage("");
         setDemo(false);
         setStudio(true);
       } else if (event === "SIGNED_OUT") {
@@ -224,6 +241,8 @@ function App() {
         setAuthMode("recovery");
         setDemo(true);
       } else {
+        clearAuthQuery();
+        setAuthMessage("");
         setStudio(true);
       }
     });
@@ -236,11 +255,13 @@ function App() {
 
   const openAuth = () => {
     setAuthMode("signin");
+    setAuthMessage("");
     setDemo(true);
   };
   const finishAuth = () => {
-    window.history.replaceState({}, document.title, window.location.pathname);
+    clearAuthQuery();
     setAuthMode("signin");
+    setAuthMessage("");
     setDemo(false);
     setStudio(true);
   };
@@ -428,7 +449,8 @@ function App() {
       {demo && (
         <AuthModal
           initialMode={authMode}
-          onClose={() => setDemo(false)}
+          initialMessage={authMessage}
+          onClose={() => { setDemo(false); setAuthMessage(""); }}
           onAuthenticated={finishAuth}
           onDemo={() => { setDemo(false); setStudio(true); }}
         />

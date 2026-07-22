@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createAppUrl } from "./site-url";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key =
@@ -18,7 +19,8 @@ export const supabase = supabaseConfigured
   : null;
 
 const configuredSiteUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
-const appUrl = (path = "/") => new URL(path, configuredSiteUrl || window.location.origin).toString();
+const currentOrigin = typeof window === "undefined" ? "" : window.location.origin;
+const appUrl = (path = "/") => createAppUrl(path, configuredSiteUrl, currentOrigin);
 
 function requireSupabase() {
   if (!supabase) throw new Error("Supabase belum dikonfigurasi.");

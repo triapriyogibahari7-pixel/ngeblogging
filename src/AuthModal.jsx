@@ -6,7 +6,9 @@ import {
   Eye,
   EyeOff,
   KeyRound,
+  LoaderCircle,
   Mail,
+  ShieldCheck,
   Sparkles,
   UserRound,
   X,
@@ -28,6 +30,14 @@ const titles = {
   recovery: "Buat password baru",
 };
 
+function GitHubMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.24c-3.22.7-3.9-1.37-3.9-1.37-.52-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.28-1.29-5.28-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.16 1.18a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.06.79 2.14v3.26c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z" />
+    </svg>
+  );
+}
+
 function friendlyError(error) {
   const value = String(error?.message || "").toLowerCase();
   if (value.includes("provider is not enabled")) {
@@ -48,14 +58,30 @@ function friendlyError(error) {
   if (value.includes("rate limit")) {
     return "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.";
   }
+  if (value.includes("redirect_uri_mismatch") || value.includes("redirect uri")) {
+    return "Alamat kembali login belum cocok. Periksa Redirect URL provider dan Supabase.";
+  }
+  if (value.includes("access_denied")) {
+    return "Login dibatalkan sebelum izin diberikan. Silakan coba lagi saat siap.";
+  }
+  if (value.includes("expired") || value.includes("invalid token")) {
+    return "Tautan login sudah kedaluwarsa atau tidak valid. Minta tautan baru lalu coba lagi.";
+  }
   return error?.message || "Proses belum berhasil. Silakan coba lagi.";
 }
+
+const oauthProviders = [
+  { id: "google", label: "Google" },
+  { id: "github", label: "GitHub", icon: GitHubMark },
+  { id: "linkedin_oidc", label: "LinkedIn", icon: BriefcaseBusiness },
+];
 
 export default function AuthModal({
   onClose,
   onDemo,
   onAuthenticated,
   initialMode = "signin",
+  initialMessage = "",
 }) {
   const [mode, setMode] = useState(initialMode);
   const [fullName, setFullName] = useState("");
@@ -66,8 +92,14 @@ export default function AuthModal({
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState("");
 
   useEffect(() => setMode(initialMode), [initialMode]);
+  useEffect(() => {
+    if (!initialMessage) return;
+    setSuccess(false);
+    setMessage(friendlyError({ message: initialMessage }));
+  }, [initialMessage]);
 
   const changeMode = (next) => {
     setMode(next);
@@ -77,8 +109,9 @@ export default function AuthModal({
     setConfirmPassword("");
   };
 
-  const run = async (action) => {
+  const run = async (action, actionName = "form") => {
     setBusy(true);
+    setBusyAction(actionName);
     setMessage("");
     setSuccess(false);
     try {
@@ -87,6 +120,7 @@ export default function AuthModal({
       setMessage(friendlyError(error));
     } finally {
       setBusy(false);
+      setBusyAction("");
     }
   };
 
@@ -149,14 +183,22 @@ export default function AuthModal({
 
         {(mode === "signin" || mode === "signup") && (
           <>
-            <div className="oauth-grid">
-              <button disabled={busy || !supabaseConfigured} onClick={() => run(() => signInWithProvider("google"))}>
-                <b>G</b> Lanjutkan dengan Google
-              </button>
-              <button disabled={busy || !supabaseConfigured} onClick={() => run(() => signInWithProvider("linkedin_oidc"))}>
-                <BriefcaseBusiness /> Lanjutkan dengan LinkedIn
-              </button>
+            <div className="oauth-grid" aria-label="Pilihan login sosial">
+              {oauthProviders.map(({ id, label, icon: Icon }) => (
+                <button
+                  type="button"
+                  className={`oauth-provider oauth-${id}`}
+                  disabled={busy || !supabaseConfigured}
+                  aria-busy={busyAction === id}
+                  onClick={() => run(() => signInWithProvider(id), id)}
+                  key={id}
+                >
+                  {busyAction === id ? <LoaderCircle className="spin" /> : Icon ? <Icon /> : <b>G</b>}
+                  <span>{busyAction === id ? `Menghubungkan ${label}…` : `Lanjutkan dengan ${label}`}</span>
+                </button>
+              ))}
             </div>
+            <p className="auth-security"><ShieldCheck /> Login aman melalui Supabase. Ngeblogging tidak pernah melihat password akun sosial Anda.</p>
             <div className="auth-divider"><span>atau gunakan email</span></div>
           </>
         )}
@@ -204,8 +246,8 @@ export default function AuthModal({
             <button className="forgot-link" type="button" onClick={() => changeMode("forgot")}>Lupa password?</button>
           )}
           <button className="auth-submit" disabled={busy || !supabaseConfigured}>
-            {busy ? "Memproses…" : mode === "signin" ? "Masuk dengan email" : mode === "signup" ? "Buat akun" : mode === "forgot" ? "Kirim tautan pemulihan" : "Simpan password baru"}
-            {!busy && <ArrowRight />}
+            {busyAction === "form" ? "Memproses…" : mode === "signin" ? "Masuk dengan email" : mode === "signup" ? "Buat akun" : mode === "forgot" ? "Kirim tautan pemulihan" : "Simpan password baru"}
+            {busyAction !== "form" && <ArrowRight />}
           </button>
         </form>
 
@@ -219,13 +261,13 @@ export default function AuthModal({
               await signInWithMagicLink(email);
               setSuccess(true);
               setMessage("Tautan masuk sudah dikirim. Periksa email Anda.");
-            });
+            }, "magic-link");
           }}>
             Masuk tanpa password melalui email
           </button>
         )}
 
-        {message && <p className={`auth-message ${success ? "success" : ""}`} role="status">{message}</p>}
+        {message && <p className={`auth-message ${success ? "success" : ""}`} role="status" aria-live="polite">{message}</p>}
 
         {!supabaseConfigured && (
           <div className="demo-notice">
