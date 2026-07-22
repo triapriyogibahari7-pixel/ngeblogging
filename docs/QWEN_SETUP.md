@@ -66,6 +66,10 @@ Setelah `ready` bernilai `true`, buka Nara dan kirim pertanyaan singkat dengan *
 
 Nama internal tersebut hanya berada di Netlify Function. Tampilan pengguna tetap memakai nama produk Nara. Jika suatu model berubah di kemudian hari, ganti variabel `NARA_MODEL_MINI`, `NARA_MODEL_WRITER`, `NARA_MODEL_VISION`, atau `NARA_MODEL_MAX` di Netlify tanpa mengubah antarmuka.
 
+Gateway lebih dahulu memakai model utama di tabel. Jika Alibaba mengembalikan HTTP 400/404 karena model terbaru atau parameter opsional belum aktif pada workspace, gateway otomatis mencoba payload kompatibilitas dan alias Singapore yang stabil (`qwen-flash`, `qwen-plus`, `qwen-vl-plus`, atau `qwen-max`). Pengguna tidak perlu mengubah environment variable untuk pemulihan ini.
+
+Jika domain workspace baru ditolak dengan `Workspace endpoint is invalid`, gateway otomatis beralih ke domain Singapore lama `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`. Alibaba menyatakan domain lama tersebut tetap berfungsi penuh. API key tidak pernah dikirim ke browser; kedua endpoint dipanggil langsung oleh Netlify Function.
+
 ## 5. Perbedaan tingkat kecerdasan
 
 | Tingkat | Deep thinking Qwen | Riwayat | Batas jawaban | Paket |
@@ -86,7 +90,7 @@ Server mengirim parameter `enable_thinking` ke Qwen. Jadi Tinggi dan Ekstra ting
 | `QWEN_ACCESS_DENIED` | Model Studio belum aktif, izin workspace kurang, atau akun tidak dapat menagih | Aktifkan Model Studio dan periksa akses/billing akun Alibaba Cloud |
 | `QWEN_NOT_FOUND` | Workspace ID, region, endpoint, atau model tidak cocok | Salin ulang Workspace ID; hapus `QWEN_API_BASE_URL` agar URL dibuat otomatis |
 | `QWEN_RATE_LIMIT` | Batas request/token penyedia tercapai | Tunggu, kurangi tingkat kecerdasan, atau ajukan kenaikan limit di Model Studio |
-| `QWEN_BAD_REQUEST` | Model tidak tersedia pada region atau lampiran tidak kompatibel | Kembalikan nama model ke nilai default pada tabel di atas |
+| `QWEN_BAD_REQUEST` | Model utama dan mode kompatibilitas sama-sama ditolak | Catat `providerCode` yang tampil pada respons dan periksa akses model di workspace Singapore |
 | HTTP `504` | Jawaban melewati batas waktu fungsi sinkron Netlify | Pendekkan permintaan atau gunakan Tinggi; untuk pekerjaan sangat panjang, pindahkan proses ke antrean/background worker dan tampilkan hasilnya setelah selesai |
 
 Jangan menambahkan awalan `VITE_` pada `QWEN_API_KEY`. Variabel berawalan `VITE_` ikut masuk ke bundle browser dan dapat membocorkan key. Cara yang benar adalah menyimpan `QWEN_API_KEY` hanya sebagai environment variable server di Netlify.

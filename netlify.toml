@@ -10,6 +10,11 @@
   node_bundler = "esbuild"
 
 [[redirects]]
+  from = "/api/nara"
+  to = "/.netlify/functions/nara"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
