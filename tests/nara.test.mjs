@@ -62,6 +62,7 @@ test("GET /api/nara menjelaskan konfigurasi yang masih kurang tanpa membuka secr
   assert.equal(result.statusCode, 200);
   assert.equal(body.ready, false);
   assert.equal(body.region, "singapore");
+  assert.equal(body.runtime, "netlify-modern-v3-vision-stable");
   assert.ok(body.missing.includes("QWEN_API_KEY"));
   assert.equal(JSON.stringify(body).includes("sk-"), false);
 });
@@ -199,6 +200,7 @@ test("HTTP 400 mencoba payload minimal lalu alias Singapore yang stabil", { conc
     assert.equal(requests[1].model, "qwen3.6-flash");
     assert.equal(requests[1].enable_thinking, undefined);
     assert.equal(requests[1].temperature, undefined);
+    assert.equal(requests[1].max_completion_tokens, undefined);
     assert.equal(requests[2].model, "qwen-flash");
     assert.equal(body.providerModel, "qwen-flash");
     assert.equal(body.compatibility, true);
@@ -275,4 +277,74 @@ test("Endpoint workspace invalid otomatis memakai endpoint resmi lama Singapore"
   } finally {
     console.error = originalError;
   }
+});
+
+test("Lampiran gambar langsung memakai model vision stabil tanpa mencoba model teks", { concurrency: false }, async () => {
+  process.env.QWEN_API_KEY = "test-secret";
+  process.env.QWEN_WORKSPACE_ID = "ws-vision-route";
+  process.env.QWEN_REGION = "singapore";
+  const requests = [];
+  const originalError = console.error;
+  console.error = () => {};
+  globalThis.fetch = async (url, options) => {
+    const payload = JSON.parse(options.body);
+    requests.push({ url: String(url), payload });
+    return new Response(JSON.stringify({
+      model: "qwen-vl-plus",
+      choices: [{ message: { content: "Gambar berhasil dibaca." } }],
+      usage: { prompt_tokens: 40, completion_tokens: 6 },
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  try {
+    const result = await handler(event("POST", {
+      message: "Jelaskan gambar ini",
+      model: "nara-mini",
+      intelligence: "standard",
+      attachments: [{
+        name: "contoh.png",
+        type: "image/png",
+        size: 68,
+        kind: "image",
+        dataUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      }],
+    }));
+    const body = parse(result);
+
+    assert.equal(result.statusCode, 200);
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].payload.model, "qwen-vl-plus");
+    assert.equal(requests[0].url, "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions");
+    assert.equal(requests.some((request) => request.payload.model === "qwen3.6-flash"), false);
+    assert.equal(requests[0].payload.max_completion_tokens, undefined);
+    assert.equal(requests[0].payload.messages.at(-1).content[1].type, "image_url");
+    assert.equal(body.answer, "Gambar berhasil dibaca.");
+    assert.equal(body.providerModel, "qwen-vl-plus");
+  } finally {
+    console.error = originalError;
+  }
+});
+
+test("Format dokumen yang belum didukung ditolak sebelum memakai kuota atau provider", { concurrency: false }, async () => {
+  process.env.QWEN_API_KEY = "test-secret";
+  process.env.QWEN_WORKSPACE_ID = "ws-test123";
+  process.env.QWEN_REGION = "singapore";
+  let fetchCalled = false;
+  globalThis.fetch = async () => {
+    fetchCalled = true;
+    throw new Error("fetch seharusnya tidak dipanggil");
+  };
+
+  const result = await handler(event("POST", {
+    message: "Baca dokumen ini",
+    model: "nara-mini",
+    intelligence: "standard",
+    attachments: [{ name: "proposal.pdf", type: "application/pdf", size: 2000, kind: "file" }],
+  }));
+  const body = parse(result);
+
+  assert.equal(result.statusCode, 400);
+  assert.equal(body.code, "ATTACHMENT_UNSUPPORTED");
+  assert.match(body.error, /file teks/);
+  assert.equal(fetchCalled, false);
 });
