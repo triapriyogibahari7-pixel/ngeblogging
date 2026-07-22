@@ -376,11 +376,12 @@ export default function NaraAssistant({
   };
 
   const send = async (retryOutgoing = null, errorId = "") => {
-    const text = retryOutgoing?.text || input.trim();
-    const requestAttachments = retryOutgoing?.attachments || attachments;
+    const retryRequest = retryOutgoing?.role === "user" ? retryOutgoing : null;
+    const text = retryRequest?.text || input.trim();
+    const requestAttachments = retryRequest?.attachments || attachments;
     if ((!text && !requestAttachments.length) || busy) return;
-    const requestModel = retryOutgoing?.requestModel || model;
-    const requestIntelligence = retryOutgoing?.requestIntelligence || intelligence;
+    const requestModel = retryRequest?.requestModel || model;
+    const requestIntelligence = retryRequest?.requestIntelligence || intelligence;
     const modelOption = modelOptions.find((item) => item.id === requestModel);
     const intelligenceOption = intelligenceOptions.find((item) => item.id === requestIntelligence);
     if ((modelOption?.pro || intelligenceOption?.pro) && plan !== "pro") {
@@ -388,7 +389,7 @@ export default function NaraAssistant({
       return;
     }
 
-    const outgoing = retryOutgoing || {
+    const outgoing = retryRequest || {
       id: uid(),
       role: "user",
       text: text || "Tolong analisis lampiran ini.",
@@ -396,7 +397,7 @@ export default function NaraAssistant({
       requestModel,
       requestIntelligence,
     };
-    if (retryOutgoing) setMessages((current) => current.filter((message) => message.id !== errorId));
+    if (retryRequest) setMessages((current) => current.filter((message) => message.id !== errorId));
     else {
       setMessages((current) => [...current, outgoing]);
       setInput("");
@@ -584,7 +585,7 @@ export default function NaraAssistant({
                     {modelOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}
                   </select>
                 </label>
-                <button className="nara-send" aria-label="Kirim pesan" disabled={busy || (!input.trim() && !attachments.length)} onClick={send}>{busy ? <LoaderCircle className="spin" /> : <Send />}</button>
+                <button className="nara-send" aria-label="Kirim pesan" disabled={busy || (!input.trim() && !attachments.length)} onClick={() => send()}>{busy ? <LoaderCircle className="spin" /> : <Send />}</button>
               </div>
               <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
               <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
