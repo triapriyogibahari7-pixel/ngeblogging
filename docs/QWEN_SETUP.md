@@ -68,6 +68,8 @@ Nama internal tersebut hanya berada di Netlify Function. Tampilan pengguna tetap
 
 Gateway lebih dahulu memakai model utama di tabel. Jika Alibaba mengembalikan HTTP 400/404 karena model terbaru atau parameter opsional belum aktif pada workspace, gateway otomatis mencoba payload kompatibilitas dan alias Singapore yang stabil (`qwen-flash`, `qwen-plus`, `qwen-vl-plus`, atau `qwen-max`). Pengguna tidak perlu mengubah environment variable untuk pemulihan ini.
 
+Jika domain workspace baru ditolak dengan `Workspace endpoint is invalid`, gateway otomatis beralih ke domain Singapore lama `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`. Alibaba menyatakan domain lama tersebut tetap berfungsi penuh. API key tidak pernah dikirim ke browser; kedua endpoint dipanggil langsung oleh Netlify Function.
+
 ## 5. Perbedaan tingkat kecerdasan
 
 | Tingkat | Deep thinking Qwen | Riwayat | Batas jawaban | Paket |
