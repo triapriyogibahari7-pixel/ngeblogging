@@ -112,20 +112,21 @@ export const config = {
   },
 };
 
-function allowedOrigin(event) {
+function allowedOrigin(event, env = process.env) {
   const origin = event.headers?.origin || event.headers?.Origin || "";
-  const configured = (process.env.PUBLIC_SITE_URL || "https://ngeblogging.com").replace(/\/$/, "");
-  const additional = String(process.env.PUBLIC_ALLOWED_ORIGINS || "")
+  const configured = (env.PUBLIC_SITE_URL || "https://ngeblogging.com").replace(/\/$/, "");
+  const additional = String(env.PUBLIC_ALLOWED_ORIGINS || "")
     .split(",")
     .map((value) => value.trim().replace(/\/$/, ""))
     .filter(Boolean);
   const allowed = new Set([configured, ...additional, "https://ngeblogging.com", "https://www.ngeblogging.com", "http://localhost:5173"]);
   if (/^https:\/\/[a-z0-9-]+\.netlify\.app$/i.test(origin)) allowed.add(origin);
+  if (/^https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)?\.(?:pages|workers)\.dev$/i.test(origin)) allowed.add(origin);
   return { origin: allowed.has(origin) ? origin : configured, valid: !origin || allowed.has(origin) };
 }
 
-function json(event, statusCode, body) {
-  const cors = allowedOrigin(event);
+function json(event, statusCode, body, env) {
+  const cors = allowedOrigin(event, env);
   return {
     statusCode,
     headers: {
@@ -145,18 +146,18 @@ function bearerToken(event) {
   return header.startsWith("Bearer ") ? header.slice(7).trim() : "";
 }
 
-function supabaseConfig() {
+function supabaseConfig(env = process.env) {
   return {
-    url: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").replace(/\/$/, ""),
-    key: process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || "",
+    url: (env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").replace(/\/$/, ""),
+    key: env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "",
   };
 }
 
-function qwenConfig() {
-  const key = process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY || "";
-  const region = String(process.env.QWEN_REGION || "singapore").trim().toLowerCase();
-  const workspaceId = String(process.env.QWEN_WORKSPACE_ID || "").trim();
-  let baseUrl = String(process.env.QWEN_API_BASE_URL || "").trim().replace(/\/$/, "");
+function qwenConfig(env = process.env) {
+  const key = env.QWEN_API_KEY || env.DASHSCOPE_API_KEY || "";
+  const region = String(env.QWEN_REGION || "singapore").trim().toLowerCase();
+  const workspaceId = String(env.QWEN_WORKSPACE_ID || "").trim();
+  let baseUrl = String(env.QWEN_API_BASE_URL || "").trim().replace(/\/$/, "");
 
   if (!baseUrl && !QWEN_REGIONS[region]) {
     throw Object.assign(new Error("QWEN_REGION tidak dikenal. Gunakan singapore, tokyo, frankfurt, hongkong, atau virginia."), { code: "QWEN_CONFIG_INVALID" });
@@ -186,15 +187,15 @@ function qwenConfig() {
   return { key, region, workspaceId, baseUrl, endpoint, legacyEndpoint };
 }
 
-function modelId(model) {
-  return process.env[model.env]
-    || (model.fallback ? process.env[model.fallback] : "")
+function modelId(model, env = process.env) {
+  return env[model.env]
+    || (model.fallback ? env[model.fallback] : "")
     || model.defaultModel;
 }
 
-function naraStatus() {
+function naraStatus(env = process.env) {
   let qwen;
-  try { qwen = qwenConfig(); } catch (error) {
+  try { qwen = qwenConfig(env); } catch (error) {
     return { ready: false, code: error.code || "QWEN_CONFIG_INVALID", error: error.message };
   }
   const missing = [];
@@ -202,17 +203,17 @@ function naraStatus() {
   if (!qwen.baseUrl) missing.push(qwen.region === "virginia" ? "QWEN_API_BASE_URL" : "QWEN_WORKSPACE_ID atau QWEN_API_BASE_URL");
   return {
     ready: missing.length === 0,
-    runtime: process.env.NARA_RUNTIME || "netlify-modern-v3-vision-stable",
+    runtime: env.NARA_RUNTIME || "netlify-modern-v3-vision-stable",
     provider: "Qwen · Alibaba Cloud Model Studio",
     region: qwen.region,
     missing,
-    models: Object.entries(MODELS).map(([id, model]) => ({ id, label: model.label, configured: Boolean(modelId(model)) })),
+    models: Object.entries(MODELS).map(([id, model]) => ({ id, label: model.label, configured: Boolean(modelId(model, env)) })),
   };
 }
 
-async function verifyUser(token) {
+async function verifyUser(token, env) {
   if (!token) return null;
-  const { url, key } = supabaseConfig();
+  const { url, key } = supabaseConfig(env);
   if (!url || !key) throw Object.assign(new Error("Konfigurasi autentikasi Nara belum lengkap."), { status: 503 });
   const response = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: key, authorization: `Bearer ${token}` },
@@ -221,8 +222,8 @@ async function verifyUser(token) {
   return response.json();
 }
 
-async function consumeMemberQuota(token, model, intelligence) {
-  const { url, key } = supabaseConfig();
+async function consumeMemberQuota(token, model, intelligence, env) {
+  const { url, key } = supabaseConfig(env);
   const response = await fetch(`${url}/rest/v1/rpc/consume_nara_quota`, {
     method: "POST",
     headers: {
@@ -399,35 +400,35 @@ function buildUserContent(message, attachments, context, visionEnabled) {
   ];
 }
 
-export async function handleRequest(event) {
-  if (event.httpMethod === "OPTIONS") return json(event, 204, {});
-  if (!allowedOrigin(event).valid) return json(event, 403, { error: "Origin tidak diizinkan." });
-  if (event.httpMethod === "GET") return json(event, 200, naraStatus());
-  if (event.httpMethod !== "POST") return json(event, 405, { error: "Metode tidak didukung." });
+export async function handleRequest(event, env = process.env) {
+  if (event.httpMethod === "OPTIONS") return json(event, 204, {}, env);
+  if (!allowedOrigin(event, env).valid) return json(event, 403, { error: "Origin tidak diizinkan." }, env);
+  if (event.httpMethod === "GET") return json(event, 200, naraStatus(env), env);
+  if (event.httpMethod !== "POST") return json(event, 405, { error: "Metode tidak didukung." }, env);
 
   let qwen;
-  try { qwen = qwenConfig(); } catch (error) {
-    return json(event, 503, { code: error.code || "QWEN_CONFIG_INVALID", error: error.message });
+  try { qwen = qwenConfig(env); } catch (error) {
+    return json(event, 503, { code: error.code || "QWEN_CONFIG_INVALID", error: error.message }, env);
   }
   if (!qwen.endpoint || !qwen.key) {
     return json(event, 503, {
       code: "QWEN_NOT_CONFIGURED",
       error: "Nara belum aktif. Isi QWEN_API_KEY serta QWEN_WORKSPACE_ID (region Singapura) pada environment server.",
-    });
+    }, env);
   }
 
   let input;
-  try { input = JSON.parse(event.body || "{}"); } catch { return json(event, 400, { error: "Payload JSON tidak valid." }); }
+  try { input = JSON.parse(event.body || "{}"); } catch { return json(event, 400, { error: "Payload JSON tidak valid." }, env); }
   const message = String(input.message || "").trim();
-  if (!message || message.length > 8000) return json(event, 400, { error: "Pesan wajib diisi dan maksimal 8.000 karakter." });
+  if (!message || message.length > 8000) return json(event, 400, { error: "Pesan wajib diisi dan maksimal 8.000 karakter." }, env);
 
   const intelligenceKey = INTELLIGENCE[input.intelligence] ? input.intelligence : "standard";
   const modelKey = MODELS[input.model] ? input.model : "nara-mini";
   const intelligence = INTELLIGENCE[intelligenceKey];
   const model = MODELS[modelKey];
   const token = bearerToken(event);
-  const actualModel = modelId(model);
-  if (!actualModel) return json(event, 503, { error: `${model.label} belum dikonfigurasi pada server.` });
+  const actualModel = modelId(model, env);
+  if (!actualModel) return json(event, 503, { error: `${model.label} belum dikonfigurasi pada server.` }, env);
 
   const requestedAttachments = Array.isArray(input.attachments) ? input.attachments.slice(0, 4) : [];
   const attachments = sanitizeAttachments(requestedAttachments);
@@ -435,35 +436,35 @@ export async function handleRequest(event) {
     return json(event, 400, {
       code: "ATTACHMENT_INVALID",
       error: "Salah satu lampiran rusak atau terlalu besar. Gunakan gambar JPG, PNG, atau WebP hingga 2,5 MB setelah diproses.",
-    });
+    }, env);
   }
   if (attachments.some((item) => item.kind === "unsupported")) {
     return json(event, 400, {
       code: "ATTACHMENT_UNSUPPORTED",
       error: "Nara saat ini membaca gambar dan file teks (.txt, .md, .csv, .json). Format dokumen lain belum didukung.",
-    });
+    }, env);
   }
   const hasImages = attachments.some((item) => item.kind === "image");
   if (hasImages && !model.vision) {
-    return json(event, 400, { code: "VISION_MODEL_REQUIRED", error: "Model ini khusus tulisan. Gunakan Nara Vision atau Nara Max untuk menganalisis gambar." });
+    return json(event, 400, { code: "VISION_MODEL_REQUIRED", error: "Model ini khusus tulisan. Gunakan Nara Vision atau Nara Max untuk menganalisis gambar." }, env);
   }
 
   let user = null;
   let quota;
   try {
-    user = await verifyUser(token);
-    if (user) quota = await consumeMemberQuota(token, modelKey, intelligenceKey);
+    user = await verifyUser(token, env);
+    if (user) quota = await consumeMemberQuota(token, modelKey, intelligenceKey, env);
     else {
-      if (model.pro || intelligence.pro) return json(event, 403, { code: "PLAN_REQUIRED", error: "Pilihan ini tersedia untuk Nara Pro." });
+      if (model.pro || intelligence.pro) return json(event, 403, { code: "PLAN_REQUIRED", error: "Pilihan ini tersedia untuk Nara Pro." }, env);
       quota = consumeGuestQuota(event);
     }
   } catch (error) {
-    return json(event, error.status || 500, { error: error.message || "Sesi belum dapat diverifikasi." });
+    return json(event, error.status || 500, { error: error.message || "Sesi belum dapat diverifikasi." }, env);
   }
 
   if (!quota?.allowed) {
-    if (quota?.reason === "PLAN_REQUIRED") return json(event, 403, { code: "PLAN_REQUIRED", error: "Model atau tingkat kecerdasan ini memerlukan Nara Pro." });
-    return json(event, 429, { code: "DAILY_LIMIT", error: "Batas penggunaan Nara hari ini sudah tercapai. Silakan kembali besok atau gunakan paket Pro.", remaining: 0 });
+    if (quota?.reason === "PLAN_REQUIRED") return json(event, 403, { code: "PLAN_REQUIRED", error: "Model atau tingkat kecerdasan ini memerlukan Nara Pro." }, env);
+    return json(event, 429, { code: "DAILY_LIMIT", error: "Batas penggunaan Nara hari ini sudah tercapai. Silakan kembali besok atau gunakan paket Pro.", remaining: 0 }, env);
   }
 
   const controller = new AbortController();
@@ -507,7 +508,7 @@ export async function handleRequest(event) {
         inputTokens: Number(data.usage?.prompt_tokens || 0),
         outputTokens: Number(data.usage?.completion_tokens || 0),
       },
-    });
+    }, env);
   } catch (error) {
     if (error.qwenFailure) {
       const failure = qwenError(error.qwenFailure);
@@ -517,7 +518,7 @@ export async function handleRequest(event) {
         retryable: Boolean(failure.retryable),
         providerCode: failure.providerCode,
         providerMessage: failure.providerMessage,
-      });
+      }, env);
     }
     return json(event, error.name === "AbortError" ? 504 : 500, {
       code: error.name === "AbortError" ? "NARA_TIMEOUT" : "NARA_INTERNAL_ERROR",
@@ -525,7 +526,7 @@ export async function handleRequest(event) {
       error: error.name === "AbortError"
         ? (hasImages ? "Pembacaan gambar belum selesai dalam batas waktu. Nara dapat mencoba kembali dengan model visual." : "Jawaban belum selesai dalam batas waktu. Coba kembali.")
         : "Terjadi gangguan sementara pada Nara.",
-    });
+    }, env);
   } finally {
     clearTimeout(timer);
   }

@@ -6,7 +6,10 @@ const requiredFiles = [
   "compose.production.yml",
   "Dockerfile.api",
   "Dockerfile.web",
+  "cloudflare/worker.mjs",
+  "wrangler.jsonc",
   ".github/workflows/ci.yml",
+  ".github/workflows/cloudflare.yml",
   ".github/workflows/production.yml",
   "scripts/bootstrap-ubuntu.sh",
   "scripts/deploy.sh",
@@ -15,6 +18,7 @@ const requiredFiles = [
   "scripts/verify-production.sh",
   "docs/PRODUCTION_SERVER.md",
   "docs/PRODUCTION_RUNBOOK.md",
+  "docs/CLOUDFLARE_FREE.md",
 ];
 
 for (const file of requiredFiles) await access(new URL(`../${file}`, import.meta.url));
@@ -43,6 +47,16 @@ for (const target of ["deploy-primary", "deploy-standby"]) {
 const productionEnv = await readFile(new URL("../.env.production.example", import.meta.url), "utf8");
 if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY)=\s*(?!REPLACE_ME|sb_publishable_REPLACE_ME)/m.test(productionEnv)) {
   throw new Error("Contoh environment memuat credential nyata.");
+}
+
+const wrangler = await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8");
+for (const required of ["nodejs_compat", "single-page-application", "/api/*", "cloudflare-worker-v1"]) {
+  if (!wrangler.includes(required)) throw new Error(`Konfigurasi Cloudflare belum memuat ${required}.`);
+}
+
+const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudflare.yml", import.meta.url), "utf8");
+if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) {
+  throw new Error("Deployment Cloudflare belum memiliki activation gate.");
 }
 
 console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, dependency terpin, dan container di-hardening.`);

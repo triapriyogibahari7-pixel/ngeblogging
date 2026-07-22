@@ -25,15 +25,23 @@ npm run build
 Repository mendukung dua target tanpa menggandakan logika aplikasi:
 
 - **Netlify** tetap dapat dipakai sebagai deployment cadangan.
+- **Cloudflare Free** adalah target biaya minimum: aset statis global dan API Nara Worker tanpa server yang harus menyala sendiri.
 - **VPS produksi** memakai Docker Compose, Caddy HTTPS, image GHCR multi-arsitektur, API Nara portable, health check, dan rollback otomatis.
 - **Dua server opsional** memakai DigitalOcean AMD64 sebagai primary dan Oracle ARM64 sebagai standby; workflow memperbarui standby sebelum primary.
 
-Panduan lengkap dari VPS kosong sampai perpindahan DNS tersedia di [`docs/PRODUCTION_SERVER.md`](docs/PRODUCTION_SERVER.md). Skema primary/standby dan failover tersedia di [`docs/DUAL_SERVER.md`](docs/DUAL_SERVER.md). Operasional, diagnosis, rollback, dan pemulihan tersedia di [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md).
+Panduan Cloudflare paling hemat tersedia di [`docs/CLOUDFLARE_FREE.md`](docs/CLOUDFLARE_FREE.md). Panduan lengkap dari VPS kosong sampai perpindahan DNS tersedia di [`docs/PRODUCTION_SERVER.md`](docs/PRODUCTION_SERVER.md). Skema primary/standby dan failover tersedia di [`docs/DUAL_SERVER.md`](docs/DUAL_SERVER.md). Operasional, diagnosis, rollback, dan pemulihan tersedia di [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md).
 
 Validasi paket produksi:
 
 ```bash
 npm run test:production
+```
+
+Validasi target Cloudflare tanpa menerbitkan:
+
+```bash
+npm run build
+npm run cloudflare:dry-run
 ```
 
 ### Deployment Netlify
