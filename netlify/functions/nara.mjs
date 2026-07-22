@@ -251,24 +251,40 @@ function sanitizeHistory(history, limit) {
 
 async function readQwenFailure(response) {
   let providerCode = "";
+  let providerMessage = "";
   try {
     const payload = await response.json();
     providerCode = String(payload?.error?.code || payload?.code || "").slice(0, 120);
+    providerMessage = String(payload?.error?.message || payload?.message || "")
+      .replace(/sk-[a-z0-9_-]+/gi, "[secret]")
+      .replace(/[\r\n]+/g, " ")
+      .slice(0, 280);
   } catch {
     // The public response remains useful even when the provider returns non-JSON.
   }
   const requestId = response.headers?.get?.("x-request-id") || response.headers?.get?.("request-id") || "";
-  return { status: response.status, providerCode, requestId };
+  return { status: response.status, providerCode, providerMessage, requestId };
 }
 
 function qwenError(failure) {
-  const diagnostic = failure.providerCode ? { providerCode: failure.providerCode } : {};
+  const diagnostic = {
+    ...(failure.providerCode ? { providerCode: failure.providerCode } : {}),
+    ...(failure.providerMessage ? { providerMessage: failure.providerMessage } : {}),
+  };
 
   if (failure.status === 401) return { status: 503, code: "QWEN_AUTH_FAILED", error: "API key Qwen ditolak. Buat atau salin ulang key dari workspace dan region yang sama.", ...diagnostic };
   if (failure.status === 403) return { status: 503, code: "QWEN_ACCESS_DENIED", error: "Akses Qwen ditolak. Periksa aktivasi Model Studio, izin workspace, dan kuota akun.", ...diagnostic };
   if (failure.status === 404) return { status: 503, code: "QWEN_NOT_FOUND", error: "Endpoint atau model Qwen tidak ditemukan. Periksa Workspace ID, region, dan akses model.", ...diagnostic };
   if (failure.status === 429) return { status: 429, code: "QWEN_RATE_LIMIT", error: "Kapasitas atau kuota Qwen sedang penuh. Tunggu sebentar lalu coba lagi.", ...diagnostic };
-  if (failure.status === 400) return { status: 502, code: "QWEN_BAD_REQUEST", error: "Qwen masih menolak permintaan setelah mode kompatibilitas dicoba.", ...diagnostic };
+  if (failure.status === 400) {
+    const providerDetail = [failure.providerCode, failure.providerMessage].filter(Boolean).join(": ");
+    return {
+      status: 502,
+      code: "QWEN_BAD_REQUEST",
+      error: `Qwen masih menolak permintaan setelah mode kompatibilitas dicoba.${providerDetail ? ` (${providerDetail})` : ""}`,
+      ...diagnostic,
+    };
+  }
   return { status: 502, code: "QWEN_UNAVAILABLE", error: "Server Qwen sedang bermasalah. Coba lagi beberapa saat.", ...diagnostic };
 }
 
@@ -300,6 +316,7 @@ async function requestQwen(qwen, candidates, messages, intelligence, signal) {
     console.error("Qwen request failed", {
       status: lastFailure.status,
       providerCode: lastFailure.providerCode,
+      providerMessage: lastFailure.providerMessage,
       requestId: lastFailure.requestId,
       model: candidate.model,
       compatibility: candidate.compatibility,
@@ -432,7 +449,12 @@ export async function handleRequest(event) {
   } catch (error) {
     if (error.qwenFailure) {
       const failure = qwenError(error.qwenFailure);
-      return json(event, failure.status, { code: failure.code, error: failure.error, providerCode: failure.providerCode });
+      return json(event, failure.status, {
+        code: failure.code,
+        error: failure.error,
+        providerCode: failure.providerCode,
+        providerMessage: failure.providerMessage,
+      });
     }
     return json(event, error.name === "AbortError" ? 504 : 500, {
       error: error.name === "AbortError" ? "Nara melewati batas waktu. Coba lagi." : "Terjadi gangguan pada Nara.",
