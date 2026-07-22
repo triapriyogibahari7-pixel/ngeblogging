@@ -3,6 +3,7 @@ import {
   Camera,
   Check,
   ChevronDown,
+  Copy,
   Crown,
   File,
   Image as ImageIcon,
@@ -12,6 +13,7 @@ import {
   MicOff,
   Paperclip,
   Plus,
+  RefreshCw,
   RotateCcw,
   Send,
   ShieldCheck,
@@ -23,6 +25,9 @@ import { supabase, supabaseConfigured } from "./lib/supabase";
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_BYTES = 2_500_000;
+const MAX_SOURCE_IMAGE_BYTES = 12_000_000;
+const MAX_IMAGE_EDGE = 1600;
+const TEXT_FILE_PATTERN = /\.(txt|md|csv|json)$/i;
 
 const intelligenceOptions = [
   { id: "light", label: "Ringan", description: "Cepat untuk pertanyaan singkat", pro: false },
@@ -52,36 +57,150 @@ function friendlyError(error, status) {
   if (status === 429) return message || "Batas penggunaan hari ini sudah tercapai.";
   if (status === 403) return message || "Pilihan ini memerlukan paket Nara Pro.";
   if (status === 503) return message || "Mesin Nara belum diaktifkan pada server. Hubungkan penyedia model AI di Netlify untuk mulai menggunakannya.";
-  if (status === 504) return "Nara memerlukan waktu terlalu lama. Coba pertanyaan yang lebih singkat.";
+  if (status === 504) return message || "Jawaban belum selesai dalam batas waktu. Tekan Coba lagi.";
   return message || "Nara belum dapat menjawab. Periksa koneksi lalu coba lagi.";
 }
 
-async function prepareFile(file) {
-  if (file.size > MAX_ATTACHMENT_BYTES) {
-    throw new Error(`${file.name} lebih besar dari 2,5 MB.`);
+function readAsDataUrl(blob, name) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(`Gagal membaca ${name}.`));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function canvasBlob(canvas, type, quality) {
+  return new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+}
+
+async function optimizeImage(file) {
+  if (file.size > MAX_SOURCE_IMAGE_BYTES) {
+    throw new Error(`${file.name} terlalu besar. Maksimal foto asli 12 MB.`);
   }
+
+  let source;
+  let release = () => {};
+  try {
+    if (globalThis.createImageBitmap) {
+      source = await createImageBitmap(file);
+      release = () => source.close?.();
+    } else {
+      const objectUrl = URL.createObjectURL(file);
+      source = await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`${file.name} bukan gambar yang didukung.`));
+        image.src = objectUrl;
+      });
+      release = () => URL.revokeObjectURL(objectUrl);
+    }
+
+    const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(source.width, source.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(source.width * scale));
+    canvas.height = Math.max(1, Math.round(source.height * scale));
+    const context = canvas.getContext("2d", { alpha: true });
+    if (!context) throw new Error("Browser belum dapat memproses gambar ini.");
+    context.drawImage(source, 0, 0, canvas.width, canvas.height);
+
+    let optimized;
+    for (const quality of [0.88, 0.76, 0.64]) {
+      optimized = await canvasBlob(canvas, "image/webp", quality);
+      if (optimized && optimized.size <= MAX_ATTACHMENT_BYTES) break;
+    }
+    if (!optimized) throw new Error(`Gagal mengoptimalkan ${file.name}.`);
+    if (optimized.size > MAX_ATTACHMENT_BYTES) {
+      throw new Error(`${file.name} masih lebih besar dari 2,5 MB setelah dioptimalkan.`);
+    }
+
+    const dataUrl = await readAsDataUrl(optimized, file.name);
+    return {
+      id: uid(),
+      name: file.name,
+      type: optimized.type || "image/webp",
+      size: optimized.size,
+      originalSize: file.size,
+      kind: "image",
+      dataUrl,
+      preview: dataUrl,
+    };
+  } catch (error) {
+    if (error?.message?.includes(file.name)) throw error;
+    throw new Error(`${file.name} belum dapat dibaca. Gunakan JPG, PNG, atau WebP.`);
+  } finally {
+    release();
+  }
+}
+
+async function prepareFile(file) {
+  if (file.type.startsWith("image/")) return optimizeImage(file);
+  if (!file.type.startsWith("text/") && !TEXT_FILE_PATTERN.test(file.name)) {
+    throw new Error(`${file.name} belum didukung. Pilih gambar atau file .txt, .md, .csv, atau .json.`);
+  }
+  if (file.size > MAX_ATTACHMENT_BYTES) throw new Error(`${file.name} lebih besar dari 2,5 MB.`);
 
   const attachment = {
     id: uid(),
     name: file.name,
     type: file.type || "application/octet-stream",
     size: file.size,
-    kind: file.type.startsWith("image/") ? "image" : file.type.startsWith("text/") || /\.(md|csv|json)$/i.test(file.name) ? "text" : "file",
+    kind: "text",
   };
 
-  if (attachment.kind === "image") {
-    attachment.dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error(`Gagal membaca ${file.name}.`));
-      reader.readAsDataURL(file);
-    });
-    attachment.preview = attachment.dataUrl;
-  } else if (attachment.kind === "text") {
-    attachment.text = (await file.text()).slice(0, 50_000);
-  }
+  attachment.text = (await file.text()).slice(0, 50_000);
 
   return attachment;
+}
+
+function inlineText(text, prefix) {
+  return String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g).filter(Boolean).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) return <strong key={`${prefix}-${index}`}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("`") && part.endsWith("`")) return <code key={`${prefix}-${index}`}>{part.slice(1, -1)}</code>;
+    return <React.Fragment key={`${prefix}-${index}`}>{part}</React.Fragment>;
+  });
+}
+
+function RichMessage({ text }) {
+  const lines = String(text || "").split("\n");
+  const blocks = [];
+  let index = 0;
+  while (index < lines.length) {
+    const line = lines[index];
+    if (!line.trim()) { index += 1; continue; }
+    if (line.startsWith("```")) {
+      const code = [];
+      index += 1;
+      while (index < lines.length && !lines[index].startsWith("```")) code.push(lines[index++]);
+      index += 1;
+      blocks.push(<pre key={`code-${index}`}><code>{code.join("\n")}</code></pre>);
+      continue;
+    }
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      const Tag = `h${Math.min(heading[1].length + 2, 5)}`;
+      blocks.push(<Tag key={`heading-${index}`}>{inlineText(heading[2], `heading-${index}`)}</Tag>);
+      index += 1;
+      continue;
+    }
+    if (/^[-*]\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^[-*]\s+/.test(lines[index])) items.push(lines[index++].replace(/^[-*]\s+/, ""));
+      blocks.push(<ul key={`list-${index}`}>{items.map((item, itemIndex) => <li key={itemIndex}>{inlineText(item, `list-${index}-${itemIndex}`)}</li>)}</ul>);
+      continue;
+    }
+    if (/^\d+[.)]\s+/.test(line)) {
+      const items = [];
+      while (index < lines.length && /^\d+[.)]\s+/.test(lines[index])) items.push(lines[index++].replace(/^\d+[.)]\s+/, ""));
+      blocks.push(<ol key={`ordered-${index}`}>{items.map((item, itemIndex) => <li key={itemIndex}>{inlineText(item, `ordered-${index}-${itemIndex}`)}</li>)}</ol>);
+      continue;
+    }
+    const paragraph = [line];
+    index += 1;
+    while (index < lines.length && lines[index].trim() && !/^(#{1,3})\s+|^[-*]\s+|^\d+[.)]\s+|^```/.test(lines[index])) paragraph.push(lines[index++]);
+    blocks.push(<p key={`paragraph-${index}`}>{inlineText(paragraph.join("\n"), `paragraph-${index}`)}</p>);
+  }
+  return <div className="nara-rich-text">{blocks}</div>;
 }
 
 export default function NaraAssistant({
@@ -108,10 +227,13 @@ export default function NaraAssistant({
   const [plan, setPlan] = useState(user ? "free" : "guest");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [notice, setNotice] = useState("");
+  const [processingLabel, setProcessingLabel] = useState("Nara sedang berpikir");
+  const [copiedId, setCopiedId] = useState("");
   const cameraInput = useRef(null);
   const imageInput = useRef(null);
   const fileInput = useRef(null);
   const recognition = useRef(null);
+  const activeRequest = useRef(null);
   const scrollArea = useRef(null);
 
   useEffect(() => {
@@ -120,7 +242,7 @@ export default function NaraAssistant({
       role: "assistant",
       text: user
         ? `Halo ${user.user_metadata?.full_name?.split(" ")[0] || ""}. Saya Nara, asisten Ngeblogging Anda. Saya bisa membantu menulis, meriset ide, memperbaiki SEO, dan memahami lampiran.`.replace("Halo .", "Halo." )
-        : "Halo, saya Nara. Anda dapat bertanya, berbicara melalui mikrofon, atau menambahkan gambar dan file. Masuk untuk menyimpan riwayat dan membuka fitur akun.",
+        : "Halo, saya Nara—Asisten AI Resmi Ngeblogging. Anda dapat bertanya, berbicara melalui mikrofon, atau menambahkan gambar dan file teks.",
     }]);
   }, [user]);
 
@@ -148,7 +270,10 @@ export default function NaraAssistant({
     scrollArea.current.scrollTop = scrollArea.current.scrollHeight;
   }, [messages, busy, open]);
 
-  useEffect(() => () => recognition.current?.stop?.(), []);
+  useEffect(() => () => {
+    recognition.current?.stop?.();
+    activeRequest.current?.abort?.();
+  }, []);
 
   const selectedModel = useMemo(() => modelOptions.find((item) => item.id === model), [model]);
   const selectedIntelligence = useMemo(() => intelligenceOptions.find((item) => item.id === intelligence), [intelligence]);
@@ -176,6 +301,8 @@ export default function NaraAssistant({
     try {
       const prepared = await Promise.all(files.map(prepareFile));
       setAttachments((current) => [...current, ...prepared]);
+      const optimizedCount = prepared.filter((item) => item.kind === "image" && item.originalSize > item.size).length;
+      if (optimizedCount) setNotice(`${optimizedCount} gambar dioptimalkan agar Nara lebih cepat membacanya.`);
     } catch (error) {
       setNotice(error.message);
     }
@@ -207,9 +334,21 @@ export default function NaraAssistant({
   };
 
   const resetChat = () => {
+    activeRequest.current?.abort?.();
+    activeRequest.current = null;
     setMessages([{ id: uid(), role: "assistant", text: "Percakapan baru dimulai. Apa yang ingin Anda kerjakan?" }]);
     setInput("");
     setAttachments([]);
+  };
+
+  const copyAnswer = async (message) => {
+    try {
+      await navigator.clipboard.writeText(message.text);
+      setCopiedId(message.id);
+      setTimeout(() => setCopiedId((current) => current === message.id ? "" : current), 1800);
+    } catch {
+      setNotice("Jawaban belum dapat disalin otomatis. Tekan lama pada teks untuk menyalin.");
+    }
   };
 
   const requestPro = async () => {
@@ -236,22 +375,40 @@ export default function NaraAssistant({
     setNotice("Permintaan akses awal Nara Pro sudah tersimpan.");
   };
 
-  const send = async () => {
-    const text = input.trim();
-    if ((!text && !attachments.length) || busy) return;
-    if ((selectedModel?.pro || selectedIntelligence?.pro) && plan !== "pro") {
+  const send = async (retryOutgoing = null, errorId = "") => {
+    const text = retryOutgoing?.text || input.trim();
+    const requestAttachments = retryOutgoing?.attachments || attachments;
+    if ((!text && !requestAttachments.length) || busy) return;
+    const requestModel = retryOutgoing?.requestModel || model;
+    const requestIntelligence = retryOutgoing?.requestIntelligence || intelligence;
+    const modelOption = modelOptions.find((item) => item.id === requestModel);
+    const intelligenceOption = intelligenceOptions.find((item) => item.id === requestIntelligence);
+    if ((modelOption?.pro || intelligenceOption?.pro) && plan !== "pro") {
       setShowUpgrade(true);
       return;
     }
 
-    const outgoing = { id: uid(), role: "user", text: text || "Tolong analisis lampiran ini.", attachments };
-    const history = [...messages, outgoing];
-    setMessages(history);
-    setInput("");
-    setAttachments([]);
+    const outgoing = retryOutgoing || {
+      id: uid(),
+      role: "user",
+      text: text || "Tolong analisis lampiran ini.",
+      attachments: requestAttachments,
+      requestModel,
+      requestIntelligence,
+    };
+    if (retryOutgoing) setMessages((current) => current.filter((message) => message.id !== errorId));
+    else {
+      setMessages((current) => [...current, outgoing]);
+      setInput("");
+      setAttachments([]);
+    }
     setNotice("");
+    setProcessingLabel(outgoing.attachments.some((item) => item.kind === "image") ? "Nara sedang membaca gambar" : "Nara sedang menyusun jawaban");
     setBusy(true);
 
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const clientTimer = setTimeout(() => controller.abort(), 58_000);
     try {
       let accessToken = "";
       if (supabaseConfigured && supabase) {
@@ -260,23 +417,31 @@ export default function NaraAssistant({
       }
       const response = await fetch("/api/nara", {
         method: "POST",
+        signal: controller.signal,
         headers: {
           "content-type": "application/json",
           ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
           message: outgoing.text,
-          model,
-          intelligence,
+          model: requestModel,
+          intelligence: requestIntelligence,
           context,
           attachments: outgoing.attachments.map(({ name, type, size, kind, dataUrl, text: fileText }) => ({ name, type, size, kind, dataUrl, text: fileText })),
-          history: messages.slice(-16).map(({ role, text: messageText }) => ({ role, content: messageText })),
+          history: messages
+            .filter((message) => message.role !== "error" && message.id !== outgoing.id)
+            .slice(-16)
+            .map(({ role, text: messageText }) => ({ role, content: messageText })),
         }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (response.status === 403 && data.code === "PLAN_REQUIRED") setShowUpgrade(true);
-        throw Object.assign(new Error(friendlyError(data.error, response.status)), { status: response.status });
+        throw Object.assign(new Error(friendlyError(data.error, response.status)), {
+          status: response.status,
+          code: data.code,
+          retryable: data.retryable ?? (response.status >= 500 || response.status === 429),
+        });
       }
       setMessages((current) => [...current, {
         id: uid(),
@@ -287,8 +452,17 @@ export default function NaraAssistant({
         remaining: data.remaining,
       }]);
     } catch (error) {
-      setMessages((current) => [...current, { id: uid(), role: "error", text: friendlyError(error.message, error.status) }]);
+      if (activeRequest.current !== controller) return;
+      const cancelled = error.name === "AbortError";
+      setMessages((current) => [...current, {
+        id: uid(),
+        role: "error",
+        text: cancelled ? "Permintaan dihentikan. Anda dapat mencoba lagi saat siap." : friendlyError(error.message, error.status),
+        retry: cancelled || error.retryable ? outgoing : null,
+      }]);
     } finally {
+      clearTimeout(clientTimer);
+      if (activeRequest.current === controller) activeRequest.current = null;
       setBusy(false);
     }
   };
@@ -304,7 +478,7 @@ export default function NaraAssistant({
       {open && (
         <div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">
           <button className="nara-assistant-backdrop" onClick={() => setOpen(false)} aria-label="Tutup Nara" />
-          <aside className="nara-assistant-shell">
+          <aside className="nara-assistant-shell" aria-busy={busy}>
             <div className="nara-assistant-header">
               <div className="nara-brand-orb"><Sparkles /></div>
               <div>
@@ -325,7 +499,14 @@ export default function NaraAssistant({
                 <div className={`nara-message ${message.role}`} key={message.id}>
                   {message.role !== "user" && <span className="nara-message-avatar">{message.role === "error" ? "!" : <Sparkles />}</span>}
                   <div>
-                    <p>{message.text}</p>
+                    {message.role === "assistant"
+                      ? <div className="nara-message-content"><RichMessage text={message.text} /></div>
+                      : <p>{message.text}</p>}
+                    {message.attachments?.some((item) => item.preview) && (
+                      <div className="nara-message-image-grid">
+                        {message.attachments.filter((item) => item.preview).map((item) => <img key={item.id} src={item.preview} alt={`Lampiran ${item.name}`} />)}
+                      </div>
+                    )}
                     {message.attachments?.length > 0 && (
                       <div className="nara-message-files">{message.attachments.map((item) => <small key={item.id}><Paperclip />{item.name}</small>)}</div>
                     )}
@@ -335,14 +516,24 @@ export default function NaraAssistant({
                         {Number.isFinite(message.remaining) ? ` · ${message.remaining} respons tersisa hari ini` : ""}
                       </small>
                     )}
+                    {message.role === "assistant" && message.text && (
+                      <button className="nara-message-action" onClick={() => copyAnswer(message)}>
+                        {copiedId === message.id ? <Check /> : <Copy />}{copiedId === message.id ? "Tersalin" : "Salin"}
+                      </button>
+                    )}
+                    {message.role === "error" && message.retry && (
+                      <button className="nara-message-action retry" onClick={() => send(message.retry, message.id)}>
+                        <RefreshCw /> Coba lagi
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
-              {busy && <div className="nara-message assistant"><span className="nara-message-avatar"><Sparkles /></span><div className="nara-thinking"><i/><i/><i/><span>Nara sedang berpikir</span></div></div>}
+              {busy && <div className="nara-message assistant"><span className="nara-message-avatar"><Sparkles /></span><div className="nara-thinking"><i/><i/><i/><span>{processingLabel}</span><button onClick={() => activeRequest.current?.abort?.()}>Batalkan</button></div></div>}
             </div>
 
             <div className="nara-quick-prompts">
-              {["Buat ide artikel", "Perbaiki tulisan", "Audit SEO"].map((prompt) => (
+              {["Buat ide artikel", "Perbaiki tulisan", "Audit SEO", "Jelaskan gambar"].map((prompt) => (
                 <button key={prompt} onClick={() => setInput(prompt)}>{prompt}</button>
               ))}
             </div>
@@ -371,25 +562,25 @@ export default function NaraAssistant({
               />
               <div className="nara-composer-tools">
                 <div className="nara-attachment-menu-wrap">
-                  <button className={attachmentMenu ? "active" : ""} onClick={() => setAttachmentMenu(!attachmentMenu)} title="Tambahkan lampiran"><Plus /></button>
+                  <button disabled={busy} className={attachmentMenu ? "active" : ""} onClick={() => setAttachmentMenu(!attachmentMenu)} title="Tambahkan lampiran"><Plus /></button>
                   {attachmentMenu && (
                     <div className="nara-attachment-menu">
                       <button onClick={() => cameraInput.current?.click()}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button>
                       <button onClick={() => imageInput.current?.click()}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button>
-                      <button onClick={() => fileInput.current?.click()}><File /><span><b>File</b><small>Teks, PDF, atau dokumen</small></span></button>
+                      <button onClick={() => fileInput.current?.click()}><File /><span><b>File teks</b><small>TXT, Markdown, CSV, atau JSON</small></span></button>
                     </div>
                   )}
                 </div>
-                <button className={listening ? "listening" : ""} onClick={startVoice} title="Pertanyaan suara">{listening ? <MicOff /> : <Mic />}</button>
+                <button disabled={busy} className={listening ? "listening" : ""} onClick={startVoice} title="Pertanyaan suara">{listening ? <MicOff /> : <Mic />}</button>
                 <label className="nara-select intelligence">
                   <span>{selectedIntelligence?.label}</span><ChevronDown />
-                  <select value={intelligence} onChange={(event) => selectPremiumAware("intelligence", event.target.value)} aria-label="Tingkat kecerdasan">
+                  <select disabled={busy} value={intelligence} onChange={(event) => selectPremiumAware("intelligence", event.target.value)} aria-label="Tingkat kecerdasan">
                     {intelligenceOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}
                   </select>
                 </label>
                 <label className="nara-select model">
                   <span>{selectedModel?.label}{selectedModel?.pro && <LockKeyhole />}</span><ChevronDown />
-                  <select value={model} onChange={(event) => selectPremiumAware("model", event.target.value)} aria-label="Model Nara">
+                  <select disabled={busy} value={model} onChange={(event) => selectPremiumAware("model", event.target.value)} aria-label="Model Nara">
                     {modelOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}
                   </select>
                 </label>
@@ -397,7 +588,7 @@ export default function NaraAssistant({
               </div>
               <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
               <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
-              <input ref={fileInput} type="file" accept=".txt,.md,.csv,.json,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
+              <input ref={fileInput} type="file" accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
             </div>
           </aside>
 
