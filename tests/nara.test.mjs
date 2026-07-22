@@ -208,14 +208,14 @@ test("HTTP 400 mencoba payload minimal lalu alias Singapore yang stabil", { conc
   }
 });
 
-test("HTTP 400 terakhir menampilkan kode provider tanpa membuka pesan internal", { concurrency: false }, async () => {
+test("HTTP 400 terakhir menampilkan diagnosis provider dan menyamarkan secret", { concurrency: false }, async () => {
   process.env.QWEN_API_KEY = "test-secret";
   process.env.QWEN_WORKSPACE_ID = "ws-test123";
   process.env.QWEN_REGION = "singapore";
   const originalError = console.error;
   console.error = () => {};
   globalThis.fetch = async () => new Response(JSON.stringify({
-    error: { code: "InvalidParameter", message: "internal provider detail" },
+    error: { code: "InvalidParameter", message: "invalid value from sk-provider-secret" },
   }), { status: 400 });
 
   try {
@@ -229,7 +229,9 @@ test("HTTP 400 terakhir menampilkan kode provider tanpa membuka pesan internal",
     assert.equal(result.statusCode, 502);
     assert.equal(body.code, "QWEN_BAD_REQUEST");
     assert.equal(body.providerCode, "InvalidParameter");
-    assert.equal(JSON.stringify(body).includes("internal provider detail"), false);
+    assert.equal(body.providerMessage, "invalid value from [secret]");
+    assert.match(body.error, /InvalidParameter/);
+    assert.equal(JSON.stringify(body).includes("sk-provider-secret"), false);
   } finally {
     console.error = originalError;
   }
