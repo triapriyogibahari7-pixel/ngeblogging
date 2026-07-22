@@ -236,3 +236,43 @@ test("HTTP 400 terakhir menampilkan diagnosis provider dan menyamarkan secret", 
     console.error = originalError;
   }
 });
+
+test("Endpoint workspace invalid otomatis memakai endpoint resmi lama Singapore", { concurrency: false }, async () => {
+  process.env.QWEN_API_KEY = "test-secret";
+  process.env.QWEN_WORKSPACE_ID = "ws-wrong-endpoint";
+  process.env.QWEN_REGION = "singapore";
+  const requests = [];
+  const originalError = console.error;
+  console.error = () => {};
+  globalThis.fetch = async (url, options) => {
+    requests.push({ url: String(url), payload: JSON.parse(options.body) });
+    if (requests.length === 1) {
+      return new Response(JSON.stringify({
+        error: { code: "invalid_parameter_error", message: "Workspace endpoint is invalid." },
+      }), { status: 400 });
+    }
+    return new Response(JSON.stringify({
+      model: "qwen3.6-flash",
+      choices: [{ message: { content: "OK" } }],
+      usage: { prompt_tokens: 8, completion_tokens: 1 },
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  try {
+    const result = await handler(event("POST", {
+      message: "Balas OK",
+      model: "nara-mini",
+      intelligence: "standard",
+    }));
+    const body = parse(result);
+
+    assert.equal(result.statusCode, 200);
+    assert.equal(requests.length, 2);
+    assert.equal(requests[0].url, "https://ws-wrong-endpoint.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions");
+    assert.equal(requests[1].url, "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions");
+    assert.equal(body.answer, "OK");
+    assert.equal(body.endpointMode, "singapore-legacy");
+  } finally {
+    console.error = originalError;
+  }
+});
