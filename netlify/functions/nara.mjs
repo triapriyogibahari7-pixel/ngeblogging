@@ -94,6 +94,10 @@ const QWEN_REGIONS = {
   virginia: () => "https://dashscope-us.aliyuncs.com/compatible-mode/v1",
 };
 
+const QWEN_LEGACY_ENDPOINTS = {
+  singapore: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+};
+
 const guestUsage = globalThis.__ngebloggingGuestUsage || new Map();
 globalThis.__ngebloggingGuestUsage = guestUsage;
 
@@ -172,7 +176,8 @@ function qwenConfig() {
   const endpoint = baseUrl
     ? (/\/chat\/completions$/i.test(baseUrl) ? baseUrl : `${baseUrl}/chat/completions`)
     : "";
-  return { key, region, workspaceId, baseUrl, endpoint };
+  const legacyEndpoint = QWEN_LEGACY_ENDPOINTS[region] || "";
+  return { key, region, workspaceId, baseUrl, endpoint, legacyEndpoint };
 }
 
 function modelId(model) {
@@ -303,25 +308,51 @@ function qwenPayload(providerModel, messages, intelligence, compatibility = fals
 
 async function requestQwen(qwen, candidates, messages, intelligence, signal) {
   let lastFailure;
-  for (const candidate of candidates) {
-    const response = await fetch(qwen.endpoint, {
-      method: "POST",
-      signal,
-      headers: { "content-type": "application/json", authorization: `Bearer ${qwen.key}` },
-      body: JSON.stringify(qwenPayload(candidate.model, messages, intelligence, candidate.compatibility)),
-    });
-    if (response.ok) return { response, providerModel: candidate.model, compatibility: candidate.compatibility };
+  const endpoints = [
+    { url: qwen.endpoint, mode: "workspace" },
+    ...(qwen.legacyEndpoint && qwen.legacyEndpoint !== qwen.endpoint
+      ? [{ url: qwen.legacyEndpoint, mode: "singapore-legacy" }]
+      : []),
+  ];
 
-    lastFailure = await readQwenFailure(response);
-    console.error("Qwen request failed", {
-      status: lastFailure.status,
-      providerCode: lastFailure.providerCode,
-      providerMessage: lastFailure.providerMessage,
-      requestId: lastFailure.requestId,
-      model: candidate.model,
-      compatibility: candidate.compatibility,
-    });
-    if (![400, 404].includes(lastFailure.status)) break;
+  for (const [endpointIndex, endpoint] of endpoints.entries()) {
+    let switchEndpoint = false;
+    for (const candidate of candidates) {
+      const response = await fetch(endpoint.url, {
+        method: "POST",
+        signal,
+        headers: { "content-type": "application/json", authorization: `Bearer ${qwen.key}` },
+        body: JSON.stringify(qwenPayload(candidate.model, messages, intelligence, candidate.compatibility)),
+      });
+      if (response.ok) {
+        return {
+          response,
+          providerModel: candidate.model,
+          compatibility: candidate.compatibility,
+          endpointMode: endpoint.mode,
+        };
+      }
+
+      lastFailure = await readQwenFailure(response);
+      console.error("Qwen request failed", {
+        status: lastFailure.status,
+        providerCode: lastFailure.providerCode,
+        providerMessage: lastFailure.providerMessage,
+        requestId: lastFailure.requestId,
+        model: candidate.model,
+        compatibility: candidate.compatibility,
+        endpointMode: endpoint.mode,
+      });
+      const invalidWorkspaceEndpoint = lastFailure.status === 400
+        && /invalid_parameter_error/i.test(lastFailure.providerCode)
+        && /workspace endpoint is invalid/i.test(lastFailure.providerMessage);
+      if (invalidWorkspaceEndpoint && endpointIndex < endpoints.length - 1) {
+        switchEndpoint = true;
+        break;
+      }
+      if (![400, 404].includes(lastFailure.status)) break;
+    }
+    if (!switchEndpoint) break;
   }
   throw Object.assign(new Error("Qwen request failed"), { qwenFailure: lastFailure });
 }
@@ -428,7 +459,7 @@ export async function handleRequest(event) {
       { model: actualModel, compatibility: true },
       ...(fallbackModel !== actualModel ? [{ model: fallbackModel, compatibility: true }] : []),
     ];
-    const { response, providerModel, compatibility } = await requestQwen(qwen, candidates, messages, intelligence, controller.signal);
+    const { response, providerModel, compatibility, endpointMode } = await requestQwen(qwen, candidates, messages, intelligence, controller.signal);
     const data = await response.json();
     const answer = data.choices?.[0]?.message?.content;
     return json(event, 200, {
@@ -439,6 +470,7 @@ export async function handleRequest(event) {
       thinking: intelligence.thinking,
       providerModel,
       compatibility,
+      endpointMode,
       plan: quota.account_plan,
       remaining: quota.remaining,
       usage: {
