@@ -165,6 +165,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production-standby
+    permissions:
+      contents: read
+      packages: read
     env:
       DEPLOY_ROLE: standby
       VPS_HOST: ${{ secrets.STANDBY_VPS_HOST }}
@@ -196,6 +199,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production-primary
+    permissions:
+      contents: read
+      packages: read
     env:
       DEPLOY_ROLE: primary
       VPS_HOST: ${{ secrets.PRIMARY_VPS_HOST || secrets.VPS_HOST }}
@@ -203,8 +209,8 @@ jobs:
       VPS_USER: ${{ secrets.PRIMARY_VPS_USER || secrets.VPS_USER }}
       SSH_PRIVATE_KEY: ${{ secrets.PRIMARY_VPS_SSH_PRIVATE_KEY || secrets.VPS_SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.PRIMARY_VPS_SSH_KNOWN_HOSTS || secrets.VPS_SSH_KNOWN_HOSTS }}
-      SITE_HOSTS: ${{ vars.PRIMARY_SITE_HOSTS || vars.SITE_HOSTS || 'primary.ngeblogging.com' }}
-      PRIMARY_SITE_DOMAIN: ${{ vars.PRIMARY_SITE_DOMAIN || 'primary.ngeblogging.com' }}
+      SITE_HOSTS: ${{ vars.PRIMARY_SITE_HOSTS || vars.SITE_HOSTS || 'ngeblogging.com, www.ngeblogging.com' }}
+      PRIMARY_SITE_DOMAIN: ${{ vars.PRIMARY_SITE_DOMAIN || 'ngeblogging.com' }}
       ACME_EMAIL: ${{ vars.ACME_EMAIL || 'admin@ngeblogging.com' }}
     steps:
       - name: Checkout repository
