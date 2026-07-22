@@ -39,6 +39,7 @@ usermod -aG docker "${DEPLOY_USER}"
 install -d -m 0750 -o "${DEPLOY_USER}" -g "${DEPLOY_USER}" /opt/ngeblogging
 install -d -m 0750 -o "${DEPLOY_USER}" -g "${DEPLOY_USER}" /opt/ngeblogging/app
 install -d -m 0700 -o "${DEPLOY_USER}" -g "${DEPLOY_USER}" /opt/ngeblogging/shared
+install -d -m 0700 -o "${DEPLOY_USER}" -g "${DEPLOY_USER}" /opt/ngeblogging/shared/tls
 
 if [[ ! -e /opt/ngeblogging/shared/.env ]]; then
   install -m 0600 -o "${DEPLOY_USER}" -g "${DEPLOY_USER}" /dev/null /opt/ngeblogging/shared/.env
