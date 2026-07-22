@@ -10,6 +10,7 @@ const requiredFiles = [
   ".github/workflows/production.yml",
   "scripts/bootstrap-ubuntu.sh",
   "scripts/deploy.sh",
+  "scripts/deploy-via-ssh.sh",
   "scripts/server-doctor.sh",
   "scripts/verify-production.sh",
   "docs/PRODUCTION_SERVER.md",
@@ -30,6 +31,14 @@ if (!compose.includes("no-new-privileges:true")) throw new Error("Hardening cont
 
 const apiDockerfile = await readFile(new URL("../Dockerfile.api", import.meta.url), "utf8");
 if (!/^USER node$/m.test(apiDockerfile)) throw new Error("API harus berjalan sebagai user non-root.");
+
+const productionWorkflow = await readFile(new URL("../.github/workflows/production.yml", import.meta.url), "utf8");
+for (const platform of ["linux/amd64", "linux/arm64"]) {
+  if (!productionWorkflow.includes(platform)) throw new Error(`Image produksi belum mendukung ${platform}.`);
+}
+for (const target of ["deploy-primary", "deploy-standby"]) {
+  if (!productionWorkflow.includes(`${target}:`)) throw new Error(`Target ${target} belum tersedia.`);
+}
 
 const productionEnv = await readFile(new URL("../.env.production.example", import.meta.url), "utf8");
 if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY)=\s*(?!REPLACE_ME|sb_publishable_REPLACE_ME)/m.test(productionEnv)) {
