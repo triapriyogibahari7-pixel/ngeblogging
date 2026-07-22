@@ -53,6 +53,9 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Setup QEMU for ARM64
+        uses: docker/setup-qemu-action@v3
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -67,6 +70,7 @@ jobs:
           context: .
           file: Dockerfile.api
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.API_IMAGE }}:sha-${{ github.sha }}
             ${{ env.API_IMAGE }}:latest
@@ -112,6 +116,9 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Setup QEMU for ARM64
+        uses: docker/setup-qemu-action@v3
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -126,6 +133,7 @@ jobs:
           context: .
           file: Dockerfile.web
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.WEB_IMAGE }}:sha-${{ github.sha }}
             ${{ env.WEB_IMAGE }}:latest
@@ -148,73 +156,61 @@ jobs:
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
-  deploy:
+  deploy-standby:
     needs: [build-api, build-web]
-    if: github.ref == 'refs/heads/main' && vars.PRODUCTION_DEPLOY_ENABLED == 'true'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      vars.DUAL_SERVER_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: production
+    environment: production-standby
     env:
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_PORT: ${{ vars.VPS_PORT || '22' }}
-      VPS_USER: ${{ secrets.VPS_USER }}
-      SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-      SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
-      SITE_HOSTS: ${{ vars.SITE_HOSTS || 'ngeblogging.com, www.ngeblogging.com' }}
-      PRIMARY_SITE_DOMAIN: ${{ vars.PRIMARY_SITE_DOMAIN || 'ngeblogging.com' }}
+      DEPLOY_ROLE: standby
+      VPS_HOST: ${{ secrets.STANDBY_VPS_HOST }}
+      VPS_PORT: ${{ vars.STANDBY_VPS_PORT || '22' }}
+      VPS_USER: ${{ secrets.STANDBY_VPS_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.STANDBY_VPS_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.STANDBY_VPS_SSH_KNOWN_HOSTS }}
+      SITE_HOSTS: ${{ vars.STANDBY_SITE_HOSTS || 'standby.ngeblogging.com' }}
+      PRIMARY_SITE_DOMAIN: ${{ vars.STANDBY_SITE_DOMAIN || 'standby.ngeblogging.com' }}
       ACME_EMAIL: ${{ vars.ACME_EMAIL || 'admin@ngeblogging.com' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Validate deployment configuration
-        run: |
-          test -n "${VPS_HOST}" || { echo "VPS_HOST belum diisi"; exit 1; }
-          test -n "${VPS_USER}" || { echo "VPS_USER belum diisi"; exit 1; }
-          test -n "${SSH_PRIVATE_KEY}" || { echo "VPS_SSH_PRIVATE_KEY belum diisi"; exit 1; }
-          test -n "${SSH_KNOWN_HOSTS}" || { echo "VPS_SSH_KNOWN_HOSTS belum diisi"; exit 1; }
-          [[ "${VPS_PORT}" =~ ^[0-9]{1,5}$ ]] || { echo "VPS_PORT tidak valid"; exit 1; }
-          [[ "${SITE_HOSTS}" =~ ^[a-z0-9.-]+(,[[:space:]]*[a-z0-9.-]+)*$ ]] || { echo "SITE_HOSTS tidak valid"; exit 1; }
-          [[ "${PRIMARY_SITE_DOMAIN}" =~ ^[a-z0-9.-]+$ ]] || { echo "PRIMARY_SITE_DOMAIN tidak valid"; exit 1; }
-          [[ "${ACME_EMAIL}" =~ ^[^[:space:]@]+@[^[:space:]@]+$ ]] || { echo "ACME_EMAIL tidak valid"; exit 1; }
-
-      - name: Configure SSH
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/id_ed25519
-          printf '%s\n' "${SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
-
-      - name: Prepare non-secret deployment config
-        run: |
-          {
-            printf 'GHCR_REPOSITORY_OWNER=%s\n' "${GITHUB_REPOSITORY_OWNER}"
-            printf 'IMAGE_TAG=sha-%s\n' "${GITHUB_SHA}"
-            printf 'SITE_HOSTS="%s"\n' "${SITE_HOSTS}"
-            printf 'PRIMARY_SITE_DOMAIN=%s\n' "${PRIMARY_SITE_DOMAIN}"
-            printf 'ACME_EMAIL=%s\n' "${ACME_EMAIL}"
-            printf 'NGEBLOGGING_ENV_FILE=/opt/ngeblogging/shared/.env\n'
-          } > .deploy.env
-
-      - name: Upload deployment manifests
-        run: |
-          SSH=(ssh -i ~/.ssh/id_ed25519 -p "${VPS_PORT}" -o BatchMode=yes "${VPS_USER}@${VPS_HOST}")
-          SCP=(scp -i ~/.ssh/id_ed25519 -P "${VPS_PORT}" -o BatchMode=yes)
-          "${SSH[@]}" 'install -d -m 0750 /opt/ngeblogging/app/scripts'
-          "${SCP[@]}" compose.production.yml Caddyfile .deploy.env "${VPS_USER}@${VPS_HOST}:/opt/ngeblogging/app/"
-          "${SCP[@]}" scripts/deploy.sh scripts/server-doctor.sh scripts/verify-production.sh "${VPS_USER}@${VPS_HOST}:/opt/ngeblogging/app/scripts/"
-
-      - name: Pull images and deploy with rollback
+      - name: Deploy standby and verify health
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          printf '%s' "${GHCR_TOKEN}" | ssh -i ~/.ssh/id_ed25519 -p "${VPS_PORT}" -o BatchMode=yes "${VPS_USER}@${VPS_HOST}" \
-            "docker login ghcr.io -u '${GITHUB_ACTOR}' --password-stdin"
-          ssh -i ~/.ssh/id_ed25519 -p "${VPS_PORT}" -o BatchMode=yes "${VPS_USER}@${VPS_HOST}" \
-            'chmod 750 /opt/ngeblogging/app/scripts/*.sh && /opt/ngeblogging/app/scripts/deploy.sh'
+        run: bash scripts/deploy-via-ssh.sh
 
-      - name: Remove temporary registry login
-        if: always()
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -p "${VPS_PORT}" -o BatchMode=yes "${VPS_USER}@${VPS_HOST}" \
-            'docker logout ghcr.io >/dev/null 2>&1 || true' || true
+  deploy-primary:
+    needs: [build-api, build-web, deploy-standby]
+    if: >-
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      needs.build-api.result == 'success' &&
+      needs.build-web.result == 'success' &&
+      (vars.DUAL_SERVER_DEPLOY_ENABLED != 'true' || needs.deploy-standby.result == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production-primary
+    env:
+      DEPLOY_ROLE: primary
+      VPS_HOST: ${{ secrets.PRIMARY_VPS_HOST || secrets.VPS_HOST }}
+      VPS_PORT: ${{ vars.PRIMARY_VPS_PORT || vars.VPS_PORT || '22' }}
+      VPS_USER: ${{ secrets.PRIMARY_VPS_USER || secrets.VPS_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.PRIMARY_VPS_SSH_PRIVATE_KEY || secrets.VPS_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.PRIMARY_VPS_SSH_KNOWN_HOSTS || secrets.VPS_SSH_KNOWN_HOSTS }}
+      SITE_HOSTS: ${{ vars.PRIMARY_SITE_HOSTS || vars.SITE_HOSTS || 'primary.ngeblogging.com' }}
+      PRIMARY_SITE_DOMAIN: ${{ vars.PRIMARY_SITE_DOMAIN || 'primary.ngeblogging.com' }}
+      ACME_EMAIL: ${{ vars.ACME_EMAIL || 'admin@ngeblogging.com' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Deploy primary and verify health
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/deploy-via-ssh.sh
