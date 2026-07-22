@@ -77,6 +77,15 @@ const MODELS = {
   },
 };
 
+// Stable Singapore aliases used only when a newly released model or one of its
+// optional parameters is not yet enabled for the caller's workspace.
+const COMPATIBILITY_MODELS = {
+  "nara-mini": { text: "qwen-flash", vision: "qwen-vl-plus" },
+  "nara-writer": { text: "qwen-plus", vision: "qwen-vl-plus" },
+  "nara-vision": { text: "qwen-vl-plus", vision: "qwen-vl-plus" },
+  "nara-max": { text: "qwen-max", vision: "qwen-vl-max" },
+};
+
 const QWEN_REGIONS = {
   singapore: (workspaceId) => `https://${workspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1`,
   tokyo: (workspaceId) => `https://${workspaceId}.ap-northeast-1.maas.aliyuncs.com/compatible-mode/v1`,
@@ -240,7 +249,7 @@ function sanitizeHistory(history, limit) {
   });
 }
 
-async function qwenError(response) {
+async function readQwenFailure(response) {
   let providerCode = "";
   try {
     const payload = await response.json();
@@ -249,14 +258,55 @@ async function qwenError(response) {
     // The public response remains useful even when the provider returns non-JSON.
   }
   const requestId = response.headers?.get?.("x-request-id") || response.headers?.get?.("request-id") || "";
-  console.error("Qwen request failed", { status: response.status, providerCode, requestId });
+  return { status: response.status, providerCode, requestId };
+}
 
-  if (response.status === 401) return { status: 503, code: "QWEN_AUTH_FAILED", error: "API key Qwen ditolak. Buat atau salin ulang key dari workspace dan region yang sama." };
-  if (response.status === 403) return { status: 503, code: "QWEN_ACCESS_DENIED", error: "Akses Qwen ditolak. Periksa aktivasi Model Studio, izin workspace, dan saldo akun." };
-  if (response.status === 404) return { status: 503, code: "QWEN_NOT_FOUND", error: "Endpoint atau model Qwen tidak ditemukan. Periksa Workspace ID, region, dan nama model." };
-  if (response.status === 429) return { status: 429, code: "QWEN_RATE_LIMIT", error: "Kapasitas atau kuota Qwen sedang penuh. Tunggu sebentar lalu coba lagi." };
-  if (response.status === 400) return { status: 502, code: "QWEN_BAD_REQUEST", error: "Qwen menolak konfigurasi permintaan. Periksa kecocokan model dengan region dan format lampiran." };
-  return { status: 502, code: "QWEN_UNAVAILABLE", error: "Server Qwen sedang bermasalah. Coba lagi beberapa saat." };
+function qwenError(failure) {
+  const diagnostic = failure.providerCode ? { providerCode: failure.providerCode } : {};
+
+  if (failure.status === 401) return { status: 503, code: "QWEN_AUTH_FAILED", error: "API key Qwen ditolak. Buat atau salin ulang key dari workspace dan region yang sama.", ...diagnostic };
+  if (failure.status === 403) return { status: 503, code: "QWEN_ACCESS_DENIED", error: "Akses Qwen ditolak. Periksa aktivasi Model Studio, izin workspace, dan kuota akun.", ...diagnostic };
+  if (failure.status === 404) return { status: 503, code: "QWEN_NOT_FOUND", error: "Endpoint atau model Qwen tidak ditemukan. Periksa Workspace ID, region, dan akses model.", ...diagnostic };
+  if (failure.status === 429) return { status: 429, code: "QWEN_RATE_LIMIT", error: "Kapasitas atau kuota Qwen sedang penuh. Tunggu sebentar lalu coba lagi.", ...diagnostic };
+  if (failure.status === 400) return { status: 502, code: "QWEN_BAD_REQUEST", error: "Qwen masih menolak permintaan setelah mode kompatibilitas dicoba.", ...diagnostic };
+  return { status: 502, code: "QWEN_UNAVAILABLE", error: "Server Qwen sedang bermasalah. Coba lagi beberapa saat.", ...diagnostic };
+}
+
+function qwenPayload(providerModel, messages, intelligence, compatibility = false) {
+  const payload = {
+    model: providerModel,
+    messages,
+    max_completion_tokens: intelligence.maxTokens,
+  };
+  if (!compatibility) {
+    payload.temperature = intelligence.temperature;
+    payload.enable_thinking = intelligence.thinking;
+  }
+  return payload;
+}
+
+async function requestQwen(qwen, candidates, messages, intelligence, signal) {
+  let lastFailure;
+  for (const candidate of candidates) {
+    const response = await fetch(qwen.endpoint, {
+      method: "POST",
+      signal,
+      headers: { "content-type": "application/json", authorization: `Bearer ${qwen.key}` },
+      body: JSON.stringify(qwenPayload(candidate.model, messages, intelligence, candidate.compatibility)),
+    });
+    if (response.ok) return { response, providerModel: candidate.model, compatibility: candidate.compatibility };
+
+    lastFailure = await readQwenFailure(response);
+    console.error("Qwen request failed", {
+      status: lastFailure.status,
+      providerCode: lastFailure.providerCode,
+      requestId: lastFailure.requestId,
+      model: candidate.model,
+      compatibility: candidate.compatibility,
+    });
+    if (![400, 404].includes(lastFailure.status)) break;
+  }
+  throw Object.assign(new Error("Qwen request failed"), { qwenFailure: lastFailure });
 }
 
 function sanitizeAttachments(attachments) {
@@ -347,29 +397,21 @@ export async function handleRequest(event) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), intelligence.timeoutMs);
   try {
-    const response = await fetch(qwen.endpoint, {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "content-type": "application/json", authorization: `Bearer ${qwen.key}` },
-      body: JSON.stringify({
-        model: actualModel,
-        temperature: intelligence.temperature,
-        max_tokens: intelligence.maxTokens,
-        enable_thinking: intelligence.thinking,
-        messages: [
-          {
-            role: "system",
-            content: `Anda adalah Nara, asisten resmi Ngeblogging berbahasa Indonesia. Bantu penulisan, riset, SEO, strategi konten, dan penggunaan platform dengan hasil akurat, jelas, orisinal, serta berguna. Jangan mengarang fakta atau sumber. Nyatakan ketidakpastian dan minta konteks bila data tidak cukup. Jangan pernah menerbitkan, menghapus, mengubah domain, atau melakukan tindakan berisiko tanpa konfirmasi eksplisit pengguna. ${model.instruction} ${intelligence.instruction}`,
-          },
-          ...sanitizeHistory(input.history, intelligence.historyItems),
-          { role: "user", content: buildUserContent(message, attachments, input.context, model.vision) },
-        ],
-      }),
-    });
-    if (!response.ok) {
-      const failure = await qwenError(response);
-      return json(event, failure.status, { code: failure.code, error: failure.error });
-    }
+    const messages = [
+      {
+        role: "system",
+        content: `Anda adalah Nara, asisten resmi Ngeblogging berbahasa Indonesia. Bantu penulisan, riset, SEO, strategi konten, dan penggunaan platform dengan hasil akurat, jelas, orisinal, serta berguna. Jangan mengarang fakta atau sumber. Nyatakan ketidakpastian dan minta konteks bila data tidak cukup. Jangan pernah menerbitkan, menghapus, mengubah domain, atau melakukan tindakan berisiko tanpa konfirmasi eksplisit pengguna. ${model.instruction} ${intelligence.instruction}`,
+      },
+      ...sanitizeHistory(input.history, intelligence.historyItems),
+      { role: "user", content: buildUserContent(message, attachments, input.context, model.vision) },
+    ];
+    const fallbackModel = hasImages ? COMPATIBILITY_MODELS[modelKey].vision : COMPATIBILITY_MODELS[modelKey].text;
+    const candidates = [
+      { model: actualModel, compatibility: false },
+      { model: actualModel, compatibility: true },
+      ...(fallbackModel !== actualModel ? [{ model: fallbackModel, compatibility: true }] : []),
+    ];
+    const { response, providerModel, compatibility } = await requestQwen(qwen, candidates, messages, intelligence, controller.signal);
     const data = await response.json();
     const answer = data.choices?.[0]?.message?.content;
     return json(event, 200, {
@@ -378,6 +420,8 @@ export async function handleRequest(event) {
       intelligence: intelligenceKey,
       intelligenceLabel: intelligence.label,
       thinking: intelligence.thinking,
+      providerModel,
+      compatibility,
       plan: quota.account_plan,
       remaining: quota.remaining,
       usage: {
@@ -386,6 +430,10 @@ export async function handleRequest(event) {
       },
     });
   } catch (error) {
+    if (error.qwenFailure) {
+      const failure = qwenError(error.qwenFailure);
+      return json(event, failure.status, { code: failure.code, error: failure.error, providerCode: failure.providerCode });
+    }
     return json(event, error.name === "AbortError" ? 504 : 500, {
       error: error.name === "AbortError" ? "Nara melewati batas waktu. Coba lagi." : "Terjadi gangguan pada Nara.",
     });
