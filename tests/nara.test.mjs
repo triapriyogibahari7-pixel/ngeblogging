@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { handler } from "../netlify/functions/nara.mjs";
+import { handleRequest as handler } from "../netlify/functions/nara.mjs";
 
 const ENV_KEYS = [
   "QWEN_API_KEY",
@@ -92,7 +92,8 @@ test("Nara Mini memakai model Flash dan mode Sedang tanpa deep thinking", { conc
   assert.equal(request.options.headers.authorization, "Bearer test-secret");
   assert.equal(request.payload.model, "qwen3.6-flash");
   assert.equal(request.payload.enable_thinking, false);
-  assert.equal(request.payload.max_tokens, 1800);
+  assert.equal(request.payload.max_completion_tokens, 1800);
+  assert.equal(request.payload.max_tokens, undefined);
   assert.equal(body.modelLabel, "Nara Mini");
   assert.equal(body.intelligenceLabel, "Sedang");
   assert.deepEqual(body.usage, { inputTokens: 20, outputTokens: 7 });
@@ -132,7 +133,7 @@ test("Nara Max + Ekstra tinggi memakai model Max, deep thinking, dan riwayat leb
   assert.equal(result.statusCode, 200);
   assert.equal(qwenPayload.model, "qwen3.7-max");
   assert.equal(qwenPayload.enable_thinking, true);
-  assert.equal(qwenPayload.max_tokens, 5000);
+  assert.equal(qwenPayload.max_completion_tokens, 5000);
   assert.equal(qwenPayload.messages.length, 18); // system + 16 history + current user
   assert.equal(body.modelLabel, "Nara Max");
   assert.equal(body.intelligenceLabel, "Ekstra tinggi");
@@ -163,3 +164,73 @@ test("Key yang ditolak Qwen menghasilkan petunjuk diagnosis yang jelas", { concu
   }
 });
 
+test("HTTP 400 mencoba payload minimal lalu alias Singapore yang stabil", { concurrency: false }, async () => {
+  process.env.QWEN_API_KEY = "test-secret";
+  process.env.QWEN_WORKSPACE_ID = "ws-test123";
+  process.env.QWEN_REGION = "singapore";
+  const requests = [];
+  const originalError = console.error;
+  console.error = () => {};
+  globalThis.fetch = async (url, options) => {
+    const payload = JSON.parse(options.body);
+    requests.push(payload);
+    if (requests.length < 3) {
+      return new Response(JSON.stringify({ error: { code: "InvalidParameter", message: "Unsupported request" } }), { status: 400 });
+    }
+    return new Response(JSON.stringify({
+      model: "qwen-flash",
+      choices: [{ message: { content: "Mode kompatibilitas berhasil." } }],
+      usage: { prompt_tokens: 10, completion_tokens: 4 },
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  try {
+    const result = await handler(event("POST", {
+      message: "Balas OK",
+      model: "nara-mini",
+      intelligence: "light",
+    }));
+    const body = parse(result);
+
+    assert.equal(result.statusCode, 200);
+    assert.equal(requests.length, 3);
+    assert.equal(requests[0].model, "qwen3.6-flash");
+    assert.equal(requests[0].enable_thinking, false);
+    assert.equal(requests[1].model, "qwen3.6-flash");
+    assert.equal(requests[1].enable_thinking, undefined);
+    assert.equal(requests[1].temperature, undefined);
+    assert.equal(requests[2].model, "qwen-flash");
+    assert.equal(body.providerModel, "qwen-flash");
+    assert.equal(body.compatibility, true);
+    assert.equal(body.answer, "Mode kompatibilitas berhasil.");
+  } finally {
+    console.error = originalError;
+  }
+});
+
+test("HTTP 400 terakhir menampilkan kode provider tanpa membuka pesan internal", { concurrency: false }, async () => {
+  process.env.QWEN_API_KEY = "test-secret";
+  process.env.QWEN_WORKSPACE_ID = "ws-test123";
+  process.env.QWEN_REGION = "singapore";
+  const originalError = console.error;
+  console.error = () => {};
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    error: { code: "InvalidParameter", message: "internal provider detail" },
+  }), { status: 400 });
+
+  try {
+    const result = await handler(event("POST", {
+      message: "Balas OK",
+      model: "nara-mini",
+      intelligence: "light",
+    }));
+    const body = parse(result);
+
+    assert.equal(result.statusCode, 502);
+    assert.equal(body.code, "QWEN_BAD_REQUEST");
+    assert.equal(body.providerCode, "InvalidParameter");
+    assert.equal(JSON.stringify(body).includes("internal provider detail"), false);
+  } finally {
+    console.error = originalError;
+  }
+});
