@@ -706,8 +706,111 @@ export type Database = {
           },
         ]
       }
+      site_theme_settings: {
+        Row: {
+          active_theme_id: string
+          code: Json
+          created_at: string
+          draft_config: Json
+          preview_theme_id: string
+          published_config: Json
+          site_id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          active_theme_id?: string
+          code?: Json
+          created_at?: string
+          draft_config?: Json
+          preview_theme_id?: string
+          published_config?: Json
+          site_id: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          active_theme_id?: string
+          code?: Json
+          created_at?: string
+          draft_config?: Json
+          preview_theme_id?: string
+          published_config?: Json
+          site_id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_theme_settings_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: true
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_theme_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_theme_versions: {
+        Row: {
+          active_theme_id: string
+          client_version_id: string
+          code: Json
+          created_at: string
+          created_by: string
+          id: number
+          note: string
+          published_config: Json
+          site_id: string
+        }
+        Insert: {
+          active_theme_id: string
+          client_version_id: string
+          code: Json
+          created_at?: string
+          created_by: string
+          id?: never
+          note?: string
+          published_config: Json
+          site_id: string
+        }
+        Update: {
+          active_theme_id?: string
+          client_version_id?: string
+          code?: Json
+          created_at?: string
+          created_by?: string
+          id?: never
+          note?: string
+          published_config?: Json
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_theme_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_theme_versions_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sites: {
         Row: {
+          blueprint: string
           created_at: string
           description: string
           id: string
@@ -724,6 +827,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          blueprint?: string
           created_at?: string
           description?: string
           id?: string
@@ -740,6 +844,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          blueprint?: string
           created_at?: string
           description?: string
           id?: string
