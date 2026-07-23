@@ -84,7 +84,7 @@ function render(root, state) {
     </div>
     ${state.message ? `<div class="sdm-message ${state.error ? "error" : ""}">${escapeHtml(state.message)}</div>` : ""}
     ${state.enabled ? `<div class="sdm-custom">
-      <header><div><h3>Custom domain</h3><p>Masukkan domain milik Anda. Ngeblogging membuat custom hostname Cloudflare, lalu menampilkan DNS ownership dan validasi SSL yang benar.</p></div><span class="sdm-state ready">Cloudflare for SaaS</span></header>
+      <header><div><h3>Custom domain</h3><p>Masukkan domain milik Anda. Ngeblogging membuat custom hostname Cloudflare, lalu menampilkan DNS ownership dan validasi SSL yang benar. Maksimal ${escapeHtml(state.customLimit)} domain per situs.</p></div><span class="sdm-state ready">Cloudflare for SaaS</span></header>
       <form class="sdm-form"><label>Domain<input name="hostname" inputmode="url" autocomplete="off" placeholder="contoh.com atau blog.contoh.com" required></label><button class="primary" type="submit" ${state.busy ? "disabled" : ""}>${state.busy ? "Memproses…" : "Hubungkan domain"}</button></form>
       <div class="sdm-list">${state.loading ? `<div class="sdm-empty">Memuat domain…</div>` : state.domains.length ? state.domains.map(domainHtml).join("") : `<div class="sdm-empty">Belum ada custom domain untuk situs ini.</div>`}</div>
     </div>` : ""}`;
@@ -124,12 +124,25 @@ function applySiteManagerQuota() {
     note.textContent = quota.loaded ? `${quota.count}/${quota.limit} situs akun digunakan. Setiap situs mendapat subdomain gratis *.ngeblogging.com.` : "Memeriksa kuota situs akun…";
     const createButton = createArea.querySelector(":scope > button");
     if (createButton && quota.loaded) {
+      createButton.dataset.defaultLabel ||= createButton.textContent.trim();
       const blocked = quota.count >= quota.limit;
       createButton.disabled = blocked;
       createButton.dataset.quotaBlocked = String(blocked);
-      if (blocked) createButton.textContent = `Batas ${quota.limit} situs tercapai`;
+      createButton.textContent = blocked ? `Batas ${quota.limit} situs tercapai` : createButton.dataset.defaultLabel;
     }
   });
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
+  const input = document.createElement("textarea");
+  input.value = value;
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.append(input);
+  input.select();
+  document.execCommand("copy");
+  input.remove();
 }
 
 async function mountDomainManager(card) {
@@ -145,6 +158,7 @@ async function mountDomainManager(card) {
     siteId:activeSiteId(),
     subdomain:subdomainFromCard(card),
     enabled:false,
+    customLimit:5,
     domains:[],
     loading:true,
     busy:false,
@@ -156,6 +170,8 @@ async function mountDomainManager(card) {
     state.siteId = activeSiteId();
     state.subdomain = subdomainFromCard(card);
     state.loading = true;
+    state.message = "";
+    state.error = false;
     render(root,state);
     await loadQuota();
     if (!state.siteId) {
@@ -166,11 +182,17 @@ async function mountDomainManager(card) {
       return;
     }
     try {
+      const config = await api("/api/domains/config");
+      state.enabled = Boolean(config.enabled);
+      state.customLimit = Number(config.limit) || 5;
+      if (!state.enabled) {
+        state.domains = [];
+        state.loading = false;
+        render(root,state);
+        return;
+      }
       const payload = await api(`/api/domains?siteId=${encodeURIComponent(state.siteId)}`);
-      state.enabled = Boolean(payload.enabled);
       state.domains = payload.domains || [];
-      state.message = "";
-      state.error = false;
     } catch (error) {
       state.enabled = false;
       state.domains = [];
@@ -189,8 +211,9 @@ async function mountDomainManager(card) {
     state.busy = true; state.message = ""; state.error = false; render(root,state);
     try {
       await api("/api/domains/register", { method:"POST", body:JSON.stringify({ siteId:state.siteId, hostname }) });
-      state.message = "Domain didaftarkan. Terapkan record DNS yang ditampilkan lalu periksa ulang sampai status Aktif.";
       await reload();
+      state.message = "Domain didaftarkan. Terapkan record DNS yang ditampilkan lalu periksa ulang sampai status Aktif.";
+      render(root,state);
     } catch (error) {
       state.message = error.message; state.error = true;
     } finally {
@@ -202,8 +225,13 @@ async function mountDomainManager(card) {
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     if (action === "copy-subdomain") {
-      if (state.subdomain) await navigator.clipboard.writeText(`https://${state.subdomain}`);
-      state.message = "URL subdomain disalin."; state.error = false; render(root,state); return;
+      try {
+        if (state.subdomain) await copyText(`https://${state.subdomain}`);
+        state.message = "URL subdomain disalin."; state.error = false;
+      } catch {
+        state.message = "URL belum dapat disalin otomatis."; state.error = true;
+      }
+      render(root,state); return;
     }
     const article = event.target.closest("[data-domain-id]");
     const id = article?.dataset.domainId;
