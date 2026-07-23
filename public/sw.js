@@ -1,4 +1,4 @@
-const VERSION = "ngeblogging-app-v4-20260724";
+const VERSION = "ngeblogging-app-v5-20260724";
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];

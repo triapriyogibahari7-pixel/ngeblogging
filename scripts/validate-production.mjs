@@ -123,7 +123,10 @@ for (const marker of ["idempotencyKey", "invoice_number", "validateCapturedAmoun
 for (const marker of ["verify-webhook-signature", "PAYMENT.CAPTURE.COMPLETED", "PAYMENT.CAPTURE.REFUNDED", "AMOUNT_MISMATCH", "findOrder"]) if (!webhook.includes(marker)) throw new Error(`Webhook PayPal belum memuat kontrol ${marker}.`);
 
 const themeCatalog = await readFile(new URL("../src/theme-catalog.js", import.meta.url), "utf8");
-if (!themeCatalog.includes("FAMILY_SEEDS") || !themeCatalog.includes("VARIANTS")) throw new Error("Generator 100 tema belum tersedia.");
+for (const marker of ["const FAMILIES", "const COMPOSITIONS", "familySection", "shellCss", "buildThemeCode", "THEME_COUNT"]) {
+  if (!themeCatalog.includes(marker)) throw new Error(`Generator tema struktural belum memuat ${marker}.`);
+}
+if (!themeCatalog.includes("FAMILIES.flatMap") || !themeCatalog.includes("COMPOSITIONS.map")) throw new Error("Generator belum membentuk 20 keluarga × 5 komposisi.");
 const widgets = await readFile(new URL("../src/widget-system.js", import.meta.url), "utf8");
 if (!widgets.includes("BUILT_IN_WIDGETS")) throw new Error("Widget bawaan belum tersedia.");
 
@@ -134,4 +137,4 @@ const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudfla
 if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare belum memiliki activation gate.");
 if (!cloudflareWorkflow.includes("/api/health")) throw new Error("Deployment Cloudflare belum memiliki smoke test health endpoint.");
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, cadangan portabel, invoice, webhook terverifikasi, 100 tema, 25 widget, Posts/Pages, SEO tenant, Nara image, runtime Cloudflare v3, dan pemulihan server di-hardening.`);
+console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, cadangan portabel, invoice, webhook terverifikasi, 100 tema struktural, 25 widget, Posts/Pages, SEO tenant, Nara image, runtime Cloudflare v3, dan pemulihan server di-hardening.`);

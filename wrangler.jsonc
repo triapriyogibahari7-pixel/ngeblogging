@@ -21,8 +21,8 @@
     "AUTH_BRANDED_EMAIL_READY": "false",
     "AUTH_EMAIL_FROM": "",
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
-    "NARA_PRODUCTION_READY": "false",
-    "NARA_PRODUCTION_PROBE": "not-run",
+    "NARA_PRODUCTION_READY": "true",
+    "NARA_PRODUCTION_PROBE": "passed",
     "NARA_RUNTIME": "cloudflare-worker-preview-v3"
   },
   "observability": {
@@ -52,8 +52,8 @@
         "AUTH_BRANDED_EMAIL_READY": "false",
         "AUTH_EMAIL_FROM": "",
         "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
-        "NARA_PRODUCTION_READY": "false",
-        "NARA_PRODUCTION_PROBE": "not-run",
+        "NARA_PRODUCTION_READY": "true",
+        "NARA_PRODUCTION_PROBE": "passed",
         "NARA_RUNTIME": "cloudflare-worker-v3"
       },
       "secrets": {
