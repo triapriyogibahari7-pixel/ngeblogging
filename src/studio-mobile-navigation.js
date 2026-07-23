@@ -6,7 +6,6 @@ const observers = new WeakMap();
 function elements(shell) {
   return {
     side: shell.querySelector(":scope > .sn-side"),
-    main: shell.querySelector(":scope > .sn-main"),
     toggle: shell.querySelector(":scope > .sn-main .sn-icon"),
   };
 }
@@ -90,10 +89,13 @@ function attach(shell) {
 }
 
 function scan() {
-  document.querySelectorAll(".sn-shell").forEach(attach);
-  if (!document.querySelector(".sn-shell")) {
+  const shells = [...document.querySelectorAll(".sn-shell")];
+  shells.forEach(attach);
+  if (!shells.length) {
     setDocumentLock(false);
-    document.body?.classList.add("sn-mobile-nav-ready");
+    // Keep the drawer visually suppressed on narrow screens until React mounts
+    // and the controller has synchronized the real sidebar state.
+    document.body?.classList.toggle("sn-mobile-nav-ready", !media.matches);
   }
 }
 
@@ -107,7 +109,9 @@ document.addEventListener("keydown", (event) => {
 });
 
 function handleViewportChange() {
-  document.querySelectorAll(".sn-shell").forEach((shell) => {
+  const shells = [...document.querySelectorAll(".sn-shell")];
+  if (!shells.length) document.body?.classList.toggle("sn-mobile-nav-ready", !media.matches);
+  shells.forEach((shell) => {
     if (media.matches) closeDrawer(shell);
     else updateShell(shell);
   });
