@@ -1,30 +1,36 @@
-/* Final responsive cleanup for Ngeblogging Studio.
-   The left navigation stays available at every size: expanded with labels,
-   collapsed as a compact icon rail. */
+/* Responsive Studio shell.
+   Desktop keeps the classic 220/70 px sidebar. Tablet and mobile keep a compact
+   icon rail; expanding the same sidebar overlays content instead of crushing it. */
 html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 .sn-shell{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 .sn-main{width:auto;min-width:0;max-width:none}
 .sn-main>*{min-width:0;max-width:100%}
 .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{width:100%;min-width:0;max-width:none;margin-left:0;margin-right:0}
 .sn-shell aside:empty,.sn-shell div:empty[data-sidebar]{display:none!important}
-.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-sidebar-backdrop{display:none!important}
+.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-sidebar-backdrop,.sn-side-close{display:none!important}
+
+/* One control only: the React header button. */
+.sn-icon{position:relative;z-index:1450}
+.sn-side.collapsed+.sn-main .sn-icon svg{transform:rotate(180deg)}
+.sn-icon svg{transition:transform .18s ease}
 
 @media(max-width:1100px){
+  :root{--sn-rail:70px;--sn-panel:248px}
   .sn-shell{padding-bottom:0!important}
   .sn-side{
     display:flex!important;
-    width:220px!important;
-    max-width:220px!important;
+    width:var(--sn-panel)!important;
+    max-width:min(var(--sn-panel),82vw)!important;
     transform:none!important;
     transition:width .2s ease,box-shadow .2s ease!important;
-    box-shadow:12px 0 34px #17253c14;
+    box-shadow:18px 0 48px #17253c2b;
     z-index:1300!important;
   }
   .sn-side.collapsed{
-    width:70px!important;
-    max-width:70px!important;
+    width:var(--sn-rail)!important;
+    max-width:var(--sn-rail)!important;
     transform:none!important;
-    box-shadow:4px 0 18px #17253c0d;
+    box-shadow:4px 0 18px #17253c12;
   }
   .sn-side:not(.collapsed) .sn-logo>b,
   .sn-side:not(.collapsed) nav span,
@@ -34,34 +40,32 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .sn-side.collapsed .sn-new,
   .sn-side.collapsed>nav button,
   .sn-side.collapsed .sn-side-bottom button{justify-content:center!important;padding-inline:0!important}
-  .sn-main{width:auto!important;max-width:none!important;margin-left:220px!important}
-  .sn-side.collapsed+.sn-main{width:auto!important;max-width:none!important;margin-left:70px!important}
+  .sn-side.collapsed>nav button,.sn-side.collapsed .sn-side-bottom button{min-width:44px}
+
+  /* Content always reserves only the icon rail. Expanded navigation floats above it. */
+  .sn-main,.sn-side.collapsed+.sn-main{
+    width:calc(100% - var(--sn-rail))!important;
+    max-width:calc(100% - var(--sn-rail))!important;
+    margin-left:var(--sn-rail)!important;
+  }
   .sn-top{left:auto!important;width:auto!important;max-width:none!important;padding-left:12px!important}
   .sn-icon{
     display:grid!important;
-    position:static!important;
-    z-index:auto!important;
-    flex:0 0 auto;
-    transition:background .2s ease,color .2s ease,transform .2s ease!important;
+    position:fixed!important;
+    top:14px!important;
+    left:calc(var(--sn-rail) + 10px)!important;
+    width:40px!important;
+    height:40px!important;
+    z-index:1450!important;
+    box-shadow:0 8px 22px #17253c1c;
+    transition:left .2s ease,background .2s ease,color .2s ease!important;
   }
-  .sn-side.collapsed+.sn-main .sn-icon svg{transform:rotate(180deg)}
-  .sn-side-close{
-    position:absolute;
-    top:14px;
-    right:12px;
-    z-index:2;
-    width:36px;
-    height:36px;
-    display:grid;
-    place-items:center;
-    border:1px solid #dbe3ed;
-    border-radius:9px;
-    background:#fff;
-    color:#5c6d84;
-    box-shadow:0 7px 20px #17253c18;
+  .sn-side:not(.collapsed)+.sn-main .sn-icon{
+    left:calc(min(var(--sn-panel),82vw) - 50px)!important;
+    background:#fff!important;
+    color:#2d6edf!important;
   }
-  .sn-side-close svg{width:18px;height:18px}
-  .sn-side.collapsed .sn-side-close{display:none!important}
+  .sn-top{padding-left:58px!important}
   .sn-view-pad{padding-left:20px!important;padding-right:20px!important}
   .sn-settings-grid,.sn-home-grid,.sn-info-grid{grid-template-columns:1fr!important}
   .sn-settings-grid>section,.sn-home-grid>section,.sn-home-grid>aside{width:100%;max-width:none}
@@ -70,28 +74,25 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 }
 
 @media(max-width:760px){
-  .sn-side{width:210px!important;max-width:210px!important}
-  .sn-side.collapsed{width:62px!important;max-width:62px!important}
-  .sn-main{margin-left:210px!important}
-  .sn-side.collapsed+.sn-main{margin-left:62px!important}
-  .sn-top{min-height:60px;height:auto!important;padding:8px 10px!important;gap:7px!important;flex-wrap:nowrap}
+  :root{--sn-rail:62px;--sn-panel:238px}
+  .sn-top{min-height:62px;height:auto!important;padding-top:8px!important;padding-right:10px!important;padding-bottom:8px!important;gap:6px!important;flex-wrap:nowrap}
   .sn-workspace{min-width:0;padding:3px!important}
   .sn-workspace>span{width:34px!important;height:34px!important;flex:0 0 auto}
   .sn-workspace>div{min-width:0}
   .sn-workspace small{display:none!important}
-  .sn-workspace b{max-width:110px!important;font-size:9px!important}
+  .sn-workspace b{max-width:92px!important;font-size:11px!important}
   .sn-workspace>svg{display:none!important}
   .sn-cloud{padding:6px!important}
   .sn-cloud span{display:none!important}
-  .sn-top-actions{gap:5px!important}
+  .sn-top-actions{gap:4px!important}
   .sn-top-actions>button:first-child{display:none!important}
-  .sn-top-actions>button{height:34px!important;padding:0 8px!important}
+  .sn-top-actions>button{height:34px!important;padding:0 7px!important}
   .sn-top-actions .sn-nara-button{font-size:0!important;width:36px!important;padding:0!important}
   .sn-top-actions .sn-nara-button svg{width:17px!important}
   .sn-avatar{width:34px!important;height:34px!important}
   .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{padding:18px 12px 34px!important}
   .sn-page-title,.sn-welcome,.bv-page>header,.bc-center>header{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}
-  .sn-page-title h1,.sn-welcome h1,.bv-page>header h1{font-size:28px!important;line-height:1.1!important}
+  .sn-page-title h1,.sn-welcome h1,.bv-page>header h1{font-size:27px!important;line-height:1.12!important;overflow-wrap:anywhere}
   .sn-page-title>*,.sn-welcome>*,.bv-page>header>*,.bc-center>header>*{min-width:0;max-width:100%}
   .sn-page-title .sn-primary,.sn-page-title .sn-secondary-link{width:100%}
   .sn-welcome>div:last-child{width:100%;display:grid!important;grid-template-columns:1fr 1fr!important}
@@ -128,19 +129,18 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .bv-plans article,.bv-methods article,.bv-security article{width:100%;min-width:0}
   .bv-methods article{grid-template-columns:40px minmax(0,1fr)!important}
   .bv-methods article>i,.bv-methods article>button{grid-column:2!important}
-  .nara-drawer{width:100vw!important;max-width:100vw!important}
+  .nara-drawer{width:calc(100vw - var(--sn-rail))!important;max-width:calc(100vw - var(--sn-rail))!important}
 }
 
 @media(max-width:430px){
-  .sn-side{width:204px!important;max-width:204px!important}
-  .sn-side.collapsed{width:58px!important;max-width:58px!important}
-  .sn-main{margin-left:204px!important}
-  .sn-side.collapsed+.sn-main{margin-left:58px!important}
+  :root{--sn-rail:58px;--sn-panel:224px}
   .sn-side.collapsed>nav{padding-inline:5px!important}
   .sn-side.collapsed .sn-new{margin-inline:7px!important}
-  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{padding-left:10px!important;padding-right:10px!important}
+  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{padding-left:9px!important;padding-right:9px!important}
   .sn-welcome>div:last-child{grid-template-columns:1fr!important}
   .sn-metrics{grid-template-columns:1fr 1fr!important}
-  .sn-page-title h1,.sn-welcome h1,.bv-page>header h1{font-size:25px!important}
+  .sn-page-title h1,.sn-welcome h1,.bv-page>header h1{font-size:24px!important}
   .sn-top-actions .sn-nara-button{display:none!important}
 }
+
+@media(prefers-reduced-motion:reduce){.sn-side,.sn-icon,.sn-icon svg{transition:none!important}}
