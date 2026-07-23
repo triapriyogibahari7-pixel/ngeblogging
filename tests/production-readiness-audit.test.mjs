@@ -22,7 +22,7 @@ test("account site limits are enforced in Postgres and shown in Studio", () => {
   assert.match(quotaMigration, /SITE_LIMIT_REACHED/);
   assert.match(quotaMigration, /get_site_creation_quota/);
   assert.match(quotaBridge, /get_site_creation_quota/);
-  assert.match(quotaBridge, /5 situs pada paket gratis/);
+  assert.match(quotaBridge, /\$\{free\} situs pada paket gratis/);
   assert.match(quotaBridge, /maksimum \$\{maximum\} situs per akun/);
   assert.match(quotaBridge, /createButton\.disabled = remaining <= 0/);
   assert.match(index, /site-quota-bridge\.js/);
@@ -42,7 +42,7 @@ test("custom domains use authenticated server-side Cloudflare for SaaS operation
   assert.match(domainHandler, /providerStatus === "active" && sslStatus === "active"/);
   assert.match(domainHandler, /ssl: \{ method: "txt", type: "dv"/);
   assert.match(domainHandler, /sites\?id=eq\./);
-  assert.match(domainBridge, /Custom domain belum dibuka/);
+  assert.match(domainBridge, /Belum dibuka untuk produksi/);
   assert.match(domainBridge, /data-action="refresh"/);
   assert.match(domainBridge, /data-action="remove"/);
   assert.match(domainBridge, /Target CNAME Ngeblogging/);
@@ -80,8 +80,8 @@ test("the installable app shell avoids caching API and auth responses", () => {
   assert.match(serviceWorker, /networkFirstNavigation/);
   assert.match(serviceWorker, /staleWhileRevalidate/);
   assert.match(appShell, /beforeinstallprompt/);
-  assert.match(appShell, /data\.deviceMode/);
-  assert.match(appShell, /data\.network/);
+  assert.match(appShell, /dataset\.deviceMode/);
+  assert.match(appShell, /dataset\.network/);
   assert.match(appShell, /serviceWorker\.register\("\/sw\.js"/);
   assert.match(index, /app-shell-bridge\.js/);
 });
