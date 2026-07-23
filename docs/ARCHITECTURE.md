@@ -16,7 +16,7 @@ Ngeblogging adalah platform multi-situs untuk menulis, menerbitkan, membangun au
 
 ## Editor dokumen profesional
 
-Studio artikel dan pages memakai Tiptap/ProseMirror dengan ribbon toolbar, gaya dokumen, tabel dan formula dasar, komentar, track changes, version history, autosave, kolaborasi real-time, impor DOCX, serta ekspor HTML/PDF.
+Studio saat ini menyediakan ribbon responsif, heading, tipografi, format teks, alignment, daftar, kutipan, tautan, gambar, tabel, autosave cloud, metadata SEO, dan pratinjau desktop/mobile. Migrasi berikutnya ke Tiptap/ProseMirror akan menambahkan formula, komentar, track changes, kolaborasi real-time, impor DOCX, serta ekspor HTML/PDF tanpa mengubah kontrak data konten.
 
 ## Autentikasi
 
@@ -28,7 +28,9 @@ Editorial, Personal, Business, Newsroom, Portfolio, Magazine, Minimal, Creator, 
 
 ## Strategi skala
 
-Target jangka panjang adalah ratusan juta akun, tetapi kapasitas hanya dinyatakan setelah load test. Arsitektur memakai CDN/edge cache, pemisahan tenant, read replica, partitioning, queue, object storage, rate limiting, multi-region disaster recovery, autoscaling inference pool, model routing, semantic cache, circuit breaker, dan graceful degradation. Netlify adalah lapisan web/edge awal, bukan satu-satunya server untuk seluruh skala.
+Target jangka panjang adalah ratusan juta akun, tetapi kapasitas hanya dinyatakan setelah load test. Arsitektur memakai CDN/edge cache, pemisahan tenant, read replica, partitioning, queue, object storage, rate limiting, multi-region disaster recovery, autoscaling inference pool, model routing, semantic cache, circuit breaker, dan graceful degradation. Cloudflare Worker adalah lapisan web/edge awal, bukan satu-satunya server untuk seluruh skala.
+
+Implementasi sekarang tidak pernah memuat seluruh artikel situs: daftar memakai cursor keyset (updated_at, id) dengan halaman 25 item; halaman publik memakai (published_at, id) dengan halaman 12 item; body artikel diambil hanya saat dibuka. PostgreSQL memiliki indeks cursor per tenant/status, indeks parsial konten publik, GIN pencarian penuh, dan BRIN untuk log/revisi append-heavy. Angka miliaran/triliunan tetap memerlukan sharding, partisi fisik, cache edge, antrean, read replica, pengujian beban, dan anggaran infrastruktur sebelum dapat dijanjikan.
 
 ## Batas keamanan AI
 
@@ -80,7 +82,7 @@ Brand, landing page, demo dashboard, konfigurasi Netlify, dokumentasi dan batas 
 
 ### Fase 2 — MVP operasional (sedang berjalan)
 
-Skema Supabase/RLS, OAuth UI, dan gateway Nara sudah tersedia. Berikutnya: sinkronisasi CRUD ke Supabase, onboarding, editor Tiptap, kategori/tag, media, publikasi publik, profil, dan Nara untuk drafting dengan konteks dokumen.
+Skema Supabase/RLS, OAuth UI, gateway Nara, sinkronisasi CRUD, Theme Studio, cursor pagination, dan publikasi subdomain sudah tersedia. Berikutnya: onboarding multi-situs, editor Tiptap, kategori/tag, pipeline media, komentar/forum, profil publik, dan Nara untuk drafting dengan konteks dokumen.
 
 ### Fase 3 — Pertumbuhan
 
