@@ -19,26 +19,43 @@ function readLocalDocuments() {
   }
 }
 
-function localRestoreDocuments(contents) {
-  return contents.map((item) => ({
-    id: crypto.randomUUID(),
-    type: item.kind === "page" ? "page" : "article",
-    title: item.title,
-    slug: item.slug,
-    status: "draft",
-    visibility: item.visibility || "public",
-    content: item.body_html || "",
-    excerpt: item.excerpt || "",
-    featuredImagePath: item.featured_image_path || "",
-    metadata: item.metadata || {},
-    seo: item.seo || {},
-    scheduledAt: "",
-    publishedAt: "",
-    createdAt: item.created_at || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    updated: Date.now(),
-    hydrated: true,
-  }));
+function safeSlug(value) {
+  return String(value || "konten").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 90) || "konten";
+}
+
+function uniqueSlug(value, used) {
+  const base = safeSlug(value);
+  let candidate = base;
+  let counter = 1;
+  while (used.has(candidate)) candidate = `${base.slice(0, 78)}-restore-${counter++}`;
+  used.add(candidate);
+  return candidate;
+}
+
+function localRestoreDocuments(contents, existing, preserveStatuses) {
+  const used = new Set(existing.map((item) => item.slug));
+  return contents.map((item) => {
+    const status = preserveStatuses && ["draft","review","scheduled","published","archived"].includes(item.status) ? item.status : "draft";
+    return {
+      id: crypto.randomUUID(),
+      type: item.kind === "page" ? "page" : "article",
+      title: item.title,
+      slug: uniqueSlug(item.slug || item.title, used),
+      status,
+      visibility: item.visibility || "public",
+      content: item.body_html || "",
+      excerpt: item.excerpt || "",
+      featuredImagePath: item.featured_image_path || "",
+      metadata: item.metadata || {},
+      seo: item.seo || {},
+      scheduledAt: status === "scheduled" ? item.scheduled_at || "" : "",
+      publishedAt: status === "published" ? item.published_at || new Date().toISOString() : "",
+      createdAt: item.created_at || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      updated: Date.now(),
+      hydrated: true,
+    };
+  });
 }
 
 export default function BackupCenter({ user }) {
@@ -89,8 +106,10 @@ export default function BackupCenter({ user }) {
         const result = await restoreCloudBackup({ backup,siteId:site.id,userId:user.id,preserveStatuses });
         setMessage(`${result.restored.toLocaleString("id-ID")} Posts/Pages berhasil dipulihkan. ${result.mediaReferences.toLocaleString("id-ID")} referensi media ikut tercatat dalam file cadangan.`);
       } else {
-        localStorage.setItem(LOCAL_STORE,JSON.stringify(localRestoreDocuments(backup.contents)));
-        setMessage(`${backup.contents.length.toLocaleString("id-ID")} Posts/Pages dipulihkan ke perangkat. Muat ulang Studio untuk melihatnya.`);
+        const existing = readLocalDocuments();
+        const restored = localRestoreDocuments(backup.contents,existing,preserveStatuses);
+        localStorage.setItem(LOCAL_STORE,JSON.stringify([...restored,...existing]));
+        setMessage(`${restored.length.toLocaleString("id-ID")} Posts/Pages ditambahkan sebagai salinan baru. Muat ulang Studio untuk melihatnya.`);
       }
     } catch(error){ setMessage(error.message || "Pemulihan cadangan gagal."); }
     finally { setBusy(""); if(inputRef.current)inputRef.current.value=""; }
