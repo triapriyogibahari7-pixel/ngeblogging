@@ -70,6 +70,9 @@ for (const target of ["deploy-primary", "deploy-standby"]) if (!productionWorkfl
 
 const productionEnv = await readFile(new URL("../.env.production.example", import.meta.url), "utf8");
 if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY|PAYPAL_CLIENT_SECRET|SUPABASE_SERVICE_ROLE_KEY)=\s*(?!REPLACE_ME|sb_publishable_REPLACE_ME)/m.test(productionEnv)) throw new Error("Contoh environment memuat credential nyata.");
+for (const key of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
+  if (!new RegExp(`^${key}=REPLACE_ME$`, "m").test(productionEnv)) throw new Error(`Credential opsional ${key} belum didokumentasikan secara aman.`);
+}
 
 const wrangler = JSON.parse(await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
 const cloudflareProduction = wrangler.env?.production || {};
@@ -88,8 +91,7 @@ for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPA
   if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
 for (const secret of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
-  if (!cloudflareProduction.secrets?.optional?.includes(secret)) throw new Error(`Secret opsional belum dideklarasikan: ${secret}`);
-  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
+  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret opsional ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
