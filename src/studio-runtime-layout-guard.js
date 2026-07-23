@@ -1,3 +1,4 @@
+const MOBILE_LAYOUT_RELEASE = "studio-mobile-v4-20260724";
 const MOBILE_BREAKPOINT = 760;
 const MOBILE_UA = /Android.+Mobile|iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i;
 
@@ -33,6 +34,7 @@ function enforceMobile(shell) {
   const toggle = top?.querySelector(".sn-icon");
 
   shell.dataset.runtimeDevice = "mobile";
+  shell.dataset.mobileLayoutRelease = MOBILE_LAYOUT_RELEASE;
   important(shell, "padding-bottom", "calc(82px + env(safe-area-inset-bottom))");
   important(shell, "width", "100%");
   important(shell, "max-width", "100%");
@@ -74,6 +76,7 @@ function enforceMobile(shell) {
 
 function releaseDesktop(shell) {
   delete shell.dataset.runtimeDevice;
+  delete shell.dataset.mobileLayoutRelease;
   clear(shell, ["padding-bottom", "width", "max-width", "overflow-x"]);
   const main = shell.querySelector(":scope > .sn-main");
   const top = main?.querySelector(":scope > .sn-top");
@@ -86,6 +89,7 @@ function releaseDesktop(shell) {
 function apply() {
   const mode = responsiveDeviceMode();
   document.documentElement.dataset.deviceMode = mode;
+  document.documentElement.dataset.mobileLayoutRelease = MOBILE_LAYOUT_RELEASE;
   document.querySelectorAll(".sn-shell").forEach((shell) => mode === "mobile" ? enforceMobile(shell) : releaseDesktop(shell));
 }
 
