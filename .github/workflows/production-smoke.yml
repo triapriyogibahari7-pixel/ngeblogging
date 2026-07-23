@@ -91,6 +91,7 @@ jobs:
           const errors = [];
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
+          if (health.release !== '2026.07.24-mobile-theme-v4') errors.push('health.release');
           for (const key of requiredBooleans) {
             if (typeof health[key] !== 'boolean') errors.push(`health.${key}`);
           }
@@ -114,6 +115,7 @@ jobs:
 
           console.log(JSON.stringify({
             status: health.status,
+            release: health.release,
             runtime: health.runtime,
             billing: health.billing,
             customDomains: health.customDomains,
@@ -121,7 +123,6 @@ jobs:
             nara: health.nara,
             managedSubdomains: health.managedSubdomains,
             siteLimits: health.siteLimits,
-            release: 'ngeblogging-app-v4-20260724',
             assetsChecked: fs.readFileSync('/tmp/assets.txt', 'utf8').trim().split(/\n+/).filter(Boolean).length,
           }, null, 2));
           NODE
