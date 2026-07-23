@@ -20,28 +20,15 @@ function safeObject(value) {
 }
 
 function cleanFilename(value) {
-  return String(value || "ngeblogging")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9_-]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 80) || "ngeblogging";
+  return String(value || "ngeblogging").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 80) || "ngeblogging";
 }
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
 function archiveSafeHtml(value) {
-  return String(value || "")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/\son[a-z]+\s*=\s*(["']).*?\1/gi, "")
-    .replace(/javascript\s*:/gi, "blocked:");
+  return String(value || "").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/\son[a-z]+\s*=\s*(["']).*?\1/gi, "").replace(/javascript\s*:/gi, "blocked:");
 }
 
 async function sha256(text) {
@@ -90,7 +77,19 @@ export function normalizeBackup(raw) {
       created_at: item?.created_at || item?.createdAt || null,
       updated_at: item?.updated_at || item?.updatedAt || null,
     })),
-    media: safeArray(source.media, 100_000),
+    media: safeArray(source.media, 100_000).map((item) => ({
+      id: item?.id || null,
+      filename: String(item?.filename || item?.name || "media").slice(0, 300),
+      object_path: String(item?.object_path || item?.path || "").slice(0, 2000),
+      bucket_id: String(item?.bucket_id || item?.bucket || "site-public-media").slice(0, 120),
+      mime_type: String(item?.mime_type || "application/octet-stream").slice(0, 200),
+      bytes: Math.max(0, Number(item?.bytes ?? item?.size_bytes) || 0),
+      width: Number(item?.width) || null,
+      height: Number(item?.height) || null,
+      alt_text: String(item?.alt_text || "").slice(0, 500),
+      metadata: safeObject(item?.metadata),
+      created_at: item?.created_at || null,
+    })),
     theme: source.theme ? safeObject(source.theme) : null,
     domains: safeArray(source.domains, 1000),
     integrity: safeObject(source.integrity),
@@ -104,14 +103,13 @@ export async function exportCloudBackup({ siteId, userId }) {
     client.from("sites").select("id,name,slug,description,blueprint,status,is_public,locale,timezone,theme_key,settings,created_at,updated_at").eq("id", siteId).single(),
     client.from("profiles").select("display_name,bio,website,avatar_url,locale,timezone").eq("id", userId).maybeSingle(),
     collectRows(() => client.from("contents").select("kind,title,slug,status,visibility,body_html,excerpt,featured_image_path,metadata,seo,scheduled_at,published_at,created_at,updated_at").eq("site_id", siteId).order("created_at", { ascending: true }).order("id", { ascending: true })),
-    collectRows(() => client.from("media_assets").select("id,name,path,bucket,mime_type,size_bytes,width,height,duration_seconds,alt_text,metadata,created_at").eq("site_id", siteId).order("created_at", { ascending: true })),
+    collectRows(() => client.from("media_assets").select("id,filename,object_path,bucket_id,mime_type,bytes,width,height,alt_text,metadata,created_at").eq("site_id", siteId).order("created_at", { ascending: true }).order("id", { ascending: true })),
     collectRows(() => client.from("site_domains").select("hostname,status,is_primary,verified_at,created_at").eq("site_id", siteId).order("created_at", { ascending: true })),
     client.from("site_theme_settings").select("*").eq("site_id", siteId).maybeSingle(),
   ]);
   if (siteError) throw siteError;
   if (profileError) throw profileError;
   if (themeResult.error && themeResult.error.code !== "PGRST116") throw themeResult.error;
-
   const payload = {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
@@ -124,8 +122,7 @@ export async function exportCloudBackup({ siteId, userId }) {
     theme: themeResult.data || null,
     domains,
   };
-  const canonical = JSON.stringify(payload);
-  return { ...payload, integrity: { algorithm: "SHA-256", checksum: await sha256(canonical) } };
+  return { ...payload, integrity: { algorithm: "SHA-256", checksum: await sha256(JSON.stringify(payload)) } };
 }
 
 export async function verifyBackupIntegrity(raw) {
@@ -176,8 +173,7 @@ export async function finalizeLocalBackup(payload) {
 
 export function downloadJsonBackup(backup) {
   const filename = `${cleanFilename(backup.site?.slug || backup.site?.name)}-${new Date().toISOString().slice(0, 10)}.ngeblogging-backup.json`;
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json;charset=utf-8" });
-  downloadBlob(blob, filename);
+  downloadBlob(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json;charset=utf-8" }), filename);
 }
 
 export function downloadReadableArchive(backup) {
@@ -193,13 +189,11 @@ export function downloadReadableArchive(backup) {
 
 export async function parseBackupFile(file) {
   if (!file || file.size > 250 * 1024 * 1024) throw new Error("File cadangan terlalu besar untuk diproses aman di browser.");
-  const raw = JSON.parse(await file.text());
-  return (await verifyBackupIntegrity(raw)).backup;
+  return (await verifyBackupIntegrity(JSON.parse(await file.text()))).backup;
 }
 
 function uniqueRestoreSlug(base, used) {
-  let candidate = slugify(base);
-  let counter = 1;
+  let candidate = slugify(base), counter = 1;
   while (used.has(candidate)) candidate = `${slugify(base).slice(0, 88)}-restore-${counter++}`;
   used.add(candidate);
   return candidate;
@@ -209,9 +203,8 @@ export async function restoreCloudBackup({ backup, siteId, userId, preserveStatu
   const normalized = normalizeBackup(backup);
   if (!normalized.contents.length) return { restored: 0, mediaReferences: normalized.media.length };
   const client = db();
-  const { data: existingRows, error: existingError } = await client.from("contents").select("slug").eq("site_id", siteId).limit(100_000);
-  if (existingError) throw existingError;
-  const used = new Set((existingRows || []).map((item) => item.slug));
+  const existingRows = await collectRows(() => client.from("contents").select("slug").eq("site_id", siteId).order("slug", { ascending: true }));
+  const used = new Set(existingRows.map((item) => item.slug));
   const rows = normalized.contents.map((item) => {
     const status = preserveStatuses ? item.status : "draft";
     return {
@@ -232,8 +225,8 @@ export async function restoreCloudBackup({ backup, siteId, userId, preserveStatu
       published_at: status === "published" ? (item.published_at || new Date().toISOString()) : null,
     };
   });
-  for (let index = 0; index < rows.length; index += 100) {
-    const { error } = await client.from("contents").insert(rows.slice(index, index + 100));
+  for (let index = 0; index < rows.length; index += 20) {
+    const { error } = await client.from("contents").insert(rows.slice(index, index + 20));
     if (error) throw error;
   }
   await recordBackupEvent({ siteId, userId, action: "restore", documentCount: rows.length, metadata: { preserveStatuses, sourceSite: normalized.site?.slug || "" } });
@@ -247,8 +240,7 @@ export async function recordBackupEvent({ siteId, userId, action, documentCount,
 }
 
 export function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
+  const url = URL.createObjectURL(blob), anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
   anchor.rel = "noopener";
