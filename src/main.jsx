@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowRight,
@@ -28,10 +28,12 @@ import {
   Send,
 } from "lucide-react";
 import "./styles.css";
-import Studio from "./Studio";
 import AuthModal from "./AuthModal";
 import NaraAssistant from "./NaraAssistant";
 import { signOut, supabase, supabaseConfigured } from "./lib/supabase";
+
+const Studio = lazy(() => import("./Studio"));
+const PublicSite = lazy(() => import("./PublicSite"));
 
 function clearAuthQuery() {
   const url = new URL(window.location.href);
@@ -273,7 +275,7 @@ function App() {
     setStudio(false);
   };
 
-  if (studio) return <Studio onExit={leaveStudio} user={session?.user} />;
+  if (studio) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan Studio…</b></div>}><Studio onExit={leaveStudio} user={session?.user} /></Suspense>;
   const ask = () => {
     setAnswer(
       "Saya sudah menyiapkan kerangka artikel: masalah utama UMKM Kalimantan, peluang digital, 5 langkah praktis, studi kasus, dan ajakan bertindak. Draf akan disimpan—tidak diterbitkan tanpa persetujuan Anda.",
@@ -531,4 +533,21 @@ function Dashboard() {
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+function detectPublishedSiteTarget() {
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname === "localhost" || hostname === "127.0.0.1") return null;
+  if (hostname === "ngeblogging.com" || hostname === "www.ngeblogging.com") return null;
+  if (hostname.endsWith(".workers.dev") || hostname.endsWith(".pages.dev") || hostname.endsWith(".netlify.app")) return null;
+  if (hostname.endsWith(".ngeblogging.com")) {
+    const slug = hostname.slice(0, -".ngeblogging.com".length);
+    return slug && !slug.includes(".") ? { slug, hostname: "" } : null;
+  }
+  return { slug: "", hostname };
+}
+
+const publishedSiteTarget = detectPublishedSiteTarget();
+createRoot(document.getElementById("root")).render(
+  publishedSiteTarget && supabaseConfigured
+    ? <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></div>}><PublicSite target={publishedSiteTarget}/></Suspense>
+    : <App/>
+);
