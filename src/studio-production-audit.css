@@ -1,29 +1,44 @@
-/* Production-readiness layout layer.
-   This file is loaded last and deliberately owns the final sidebar geometry. */
-:root{--sn-rail:70px;--sn-panel:220px}
-html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
-.sn-shell,.sn-main,.sn-main>*{min-width:0;max-width:100%}
-.sn-side-close,.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-sidebar-backdrop{display:none!important}
-
-/* Desktop and wide displays: the original 220px / 70px sidebar behavior. */
-@media(min-width:901px){
-  .sn-side{width:var(--sn-panel)!important;max-width:var(--sn-panel)!important;transform:none!important}
-  .sn-side.collapsed{width:var(--sn-rail)!important;max-width:var(--sn-rail)!important;transform:none!important}
-  .sn-main{margin-left:var(--sn-panel)!important;width:auto!important}
-  .sn-side.collapsed+.sn-main{margin-left:var(--sn-rail)!important}
-  .sn-icon{position:static!important;display:grid!important}
+/* Final production layout authority for Ngeblogging Studio.
+   Loaded last so legacy compact styles cannot shrink or overlap the workspace. */
+:root{
+  --sn-rail:72px;
+  --sn-panel:240px;
+  --sn-tablet-panel:min(300px,calc(100vw - 76px));
+  --sn-phone-panel:min(88vw,320px);
 }
 
-/* Tablet and phone: collapsed state remains a useful icon rail. Expanded state
-   overlays the content instead of crushing it into a narrow column. */
-@media(max-width:900px){
-  :root{--sn-rail:60px;--sn-panel:min(278px,calc(100vw - 58px))}
+html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
+body{margin:0}
+.sn-shell,.sn-main,.sn-main>*{min-width:0;max-width:100%}
+.sn-shell{width:100%;overflow-x:clip}
+.sn-side-close,.sn-sidebar-backdrop{display:none!important}
+.sn-icon,.sn-side,.sn-mobile-nav{-webkit-tap-highlight-color:transparent}
+.sn-icon:focus-visible,.sn-side button:focus-visible,.sn-mobile-nav button:focus-visible{outline:3px solid #92b8ff!important;outline-offset:2px!important}
+
+/* Desktop and computer displays. */
+@media(min-width:1025px){
+  .sn-mobile-nav,.sn-mobile-sheet-layer{display:none!important}
+  .sn-side{width:var(--sn-panel)!important;max-width:var(--sn-panel)!important;transform:none!important;visibility:visible!important;pointer-events:auto!important}
+  .sn-side.collapsed{width:var(--sn-rail)!important;max-width:var(--sn-rail)!important;transform:none!important}
+  .sn-main{margin-left:var(--sn-panel)!important;width:auto!important;max-width:none!important}
+  .sn-side.collapsed+.sn-main{margin-left:var(--sn-rail)!important}
+  .sn-icon{position:static!important;display:grid!important;flex:0 0 40px!important;width:40px!important;height:40px!important}
+  .sn-side.collapsed+.sn-main .sn-icon svg{transform:rotate(180deg)}
+}
+
+/* Tablet and compact-laptop displays keep a useful icon rail. The expanded
+   panel overlays content instead of crushing the page into a narrow strip. */
+@media(min-width:701px) and (max-width:1024px){
+  :root{--sn-rail:64px}
   .sn-shell{padding-bottom:0!important}
+  .sn-mobile-nav,.sn-mobile-sheet-layer{display:none!important}
   .sn-side{
     display:flex!important;
-    width:var(--sn-panel)!important;
-    max-width:var(--sn-panel)!important;
+    width:var(--sn-tablet-panel)!important;
+    max-width:var(--sn-tablet-panel)!important;
     transform:none!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
     z-index:1300!important;
     border-right:1px solid #dbe4ef!important;
     background:#fff!important;
@@ -33,7 +48,6 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .sn-side.collapsed{
     width:var(--sn-rail)!important;
     max-width:var(--sn-rail)!important;
-    transform:none!important;
     box-shadow:4px 0 18px #10233e12!important;
   }
   .sn-side.collapsed .sn-logo>b,
@@ -48,26 +62,18 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .sn-side.collapsed .sn-new{margin-inline:7px!important}
   .sn-side.collapsed>nav{padding-inline:5px!important}
   .sn-side.collapsed svg{width:20px!important;height:20px!important}
-
-  .sn-main,.sn-side.collapsed+.sn-main{
+  .sn-main,.sn-side.collapsed+.sn-main,.sn-side:not(.collapsed)+.sn-main{
     width:auto!important;
     max-width:none!important;
     min-width:0!important;
     margin-left:var(--sn-rail)!important;
   }
   .sn-top{left:auto!important;width:auto!important;max-width:none!important;min-width:0!important}
-  .sn-icon{
-    display:grid!important;
-    position:static!important;
-    flex:0 0 40px!important;
-    width:40px!important;
-    height:40px!important;
-    z-index:1400!important;
-  }
+  .sn-icon{display:grid!important;position:static!important;flex:0 0 40px!important;width:40px!important;height:40px!important;z-index:1400!important}
   .sn-side:not(.collapsed)+.sn-main .sn-icon{
     position:fixed!important;
     top:12px!important;
-    left:calc(var(--sn-panel) - 48px)!important;
+    left:calc(var(--sn-tablet-panel) - 49px)!important;
     border-color:#cdd9e8!important;
     background:#fff!important;
     color:#245fc9!important;
@@ -78,24 +84,89 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
     content:"";
     position:fixed;
     z-index:1200;
-    inset:0 0 0 var(--sn-panel);
-    background:#10233e28;
-    pointer-events:none;
+    inset:0;
+    background:#10233e35;
+    pointer-events:auto;
   }
-
-  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding-left:18px!important;padding-right:18px!important}
-  .sn-page-title,.sn-welcome,.bv-page>header,.bc-center>header{min-width:0!important}
+  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding-left:20px!important;padding-right:20px!important}
   .sn-settings-grid,.sn-home-grid,.sn-info-grid,.bv-plans,.bv-security,.bv-methods>div{min-width:0!important}
 }
 
+/* Phones: no permanent sidebar rail. The workspace gets the full viewport;
+   the same single header button opens an accessible off-canvas menu. */
 @media(max-width:700px){
-  :root{--sn-rail:56px;--sn-panel:min(270px,calc(100vw - 52px))}
-  .sn-top{min-height:60px!important;height:auto!important;padding:8px 10px!important;gap:7px!important}
+  .sn-shell{padding-bottom:calc(72px + env(safe-area-inset-bottom))!important}
+  .sn-side{
+    display:flex!important;
+    width:var(--sn-phone-panel)!important;
+    max-width:var(--sn-phone-panel)!important;
+    transform:translateX(0)!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    z-index:1300!important;
+    padding-top:env(safe-area-inset-top)!important;
+    padding-bottom:env(safe-area-inset-bottom)!important;
+    border-right:1px solid #dbe4ef!important;
+    background:#fff!important;
+    box-shadow:20px 0 60px #10233e45!important;
+    transition:transform .2s ease,visibility .2s ease,box-shadow .2s ease!important;
+  }
+  .sn-side.collapsed{
+    width:var(--sn-phone-panel)!important;
+    max-width:var(--sn-phone-panel)!important;
+    transform:translateX(calc(-100% - 10px))!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    box-shadow:none!important;
+  }
+  .sn-side .sn-logo>b,
+  .sn-side .sn-new span,
+  .sn-side>nav span,
+  .sn-side .sn-side-bottom span{display:inline!important}
+  .sn-side .sn-logo,.sn-side .sn-new,.sn-side>nav button,.sn-side .sn-side-bottom button{justify-content:flex-start!important}
+  .sn-side>nav{overscroll-behavior:contain}
+  .sn-main,.sn-side.collapsed+.sn-main,.sn-side:not(.collapsed)+.sn-main{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-left:0!important;
+  }
+  .sn-top{
+    min-height:60px!important;
+    height:auto!important;
+    padding:8px 10px!important;
+    gap:7px!important;
+    left:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    z-index:1100!important;
+  }
+  .sn-icon{display:grid!important;position:static!important;flex:0 0 40px!important;width:40px!important;height:40px!important;z-index:1400!important}
+  .sn-side:not(.collapsed)+.sn-main .sn-icon{
+    position:fixed!important;
+    top:calc(env(safe-area-inset-top) + 10px)!important;
+    left:calc(var(--sn-phone-panel) - 50px)!important;
+    border-color:#cdd9e8!important;
+    background:#fff!important;
+    color:#245fc9!important;
+    box-shadow:0 8px 24px #10233e2e!important;
+  }
+  .sn-side.collapsed+.sn-main .sn-icon svg{transform:rotate(180deg)}
+  .sn-side:not(.collapsed)+.sn-main:before{
+    content:"";
+    position:fixed;
+    z-index:1200;
+    inset:0;
+    background:#10233e45;
+    pointer-events:auto;
+  }
+
   .sn-workspace{min-width:0!important;padding:3px!important}
   .sn-workspace>span{width:34px!important;height:34px!important;flex:0 0 34px!important}
   .sn-workspace>div{min-width:0!important}
   .sn-workspace small{display:none!important}
-  .sn-workspace b{display:block!important;max-width:84px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:12px!important}
+  .sn-workspace b{display:block!important;max-width:92px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:12px!important}
   .sn-workspace>svg{display:none!important}
   .sn-cloud{padding:6px!important}
   .sn-cloud span{display:none!important}
@@ -104,8 +175,27 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .sn-top-actions .sn-nara-button{width:36px!important;padding:0!important;font-size:0!important}
   .sn-avatar{width:34px!important;height:34px!important;flex:0 0 34px!important}
 
-  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{padding:18px 12px 34px!important}
-  .sn-page-title,.sn-welcome,.bv-page>header,.bc-center>header{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+  .sn-mobile-nav{
+    position:fixed!important;
+    z-index:1250!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    min-height:calc(64px + env(safe-area-inset-bottom))!important;
+    padding:6px 6px env(safe-area-inset-bottom)!important;
+    border-top:1px solid #dbe4ef!important;
+    background:#fffffff5!important;
+    backdrop-filter:blur(18px)!important;
+    box-shadow:0 -10px 30px #10233e12!important;
+  }
+  .sn-mobile-nav button{min-width:0!important;min-height:52px!important}
+  .sn-mobile-nav .create{width:46px!important;height:46px!important;min-height:46px!important;align-self:center!important;justify-self:center!important}
+  .sn-mobile-sheet-layer{display:block!important;z-index:1600!important}
+
+  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding:18px 12px 34px!important}
+  .sn-page-title,.sn-welcome,.bv-page>header,.bc-center>header{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;min-width:0!important}
   .sn-page-title h1,.sn-welcome h1,.bv-page>header h1{font-size:clamp(27px,8vw,36px)!important;line-height:1.08!important;overflow-wrap:anywhere!important}
   .sn-page-title p,.sn-welcome p,.bv-page>header p{font-size:13px!important;line-height:1.55!important}
   .sn-welcome>div:last-child{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
@@ -122,7 +212,7 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .sn-doc-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto 36px!important;gap:8px!important;min-height:62px!important;padding:10px 2px!important}
   .sn-doc-row time{display:none!important}
   .sn-doc-row>button:first-child{min-width:0!important}
-  .sn-doc-row b{white-space:normal!important;overflow-wrap:anywhere!important}
+  .sn-doc-row b,.sn-doc-row small{white-space:normal!important;overflow-wrap:anywhere!important}
 
   .sn-domain-card{grid-template-columns:42px minmax(0,1fr)!important;padding:15px!important}
   .sn-domain-card>i{grid-column:2!important;width:max-content!important}
@@ -131,7 +221,6 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
   .sn-launch>div{grid-template-columns:22px minmax(0,1fr)!important}
   .sn-launch>div span{grid-column:2!important}
 
-  /* Billing must never overlap or form a narrow multi-column strip. */
   .bv-page{overflow:visible!important}
   .bv-page>header,.bv-account{flex-direction:column!important;align-items:stretch!important}
   .bv-account-stats{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important}
@@ -150,14 +239,16 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 }
 
 @media(max-width:390px){
-  :root{--sn-rail:54px;--sn-panel:calc(100vw - 44px)}
+  :root{--sn-phone-panel:calc(100vw - 42px)}
   .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{padding-left:9px!important;padding-right:9px!important}
-  .sn-metrics{grid-template-columns:1fr!important}
   .sn-top-actions .sn-nara-button{display:none!important}
+  .sn-workspace b{max-width:74px!important}
 }
 
 @media(min-width:1500px){
-  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{max-width:1500px!important;margin-left:auto!important;margin-right:auto!important}
+  .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{max-width:1560px!important;margin-left:auto!important;margin-right:auto!important}
 }
 
-@media(prefers-reduced-motion:reduce){.sn-side,.sn-icon{transition:none!important}}
+@media(prefers-reduced-motion:reduce){
+  .sn-side,.sn-icon,.sn-mobile-sheet-layer{transition:none!important}
+}
