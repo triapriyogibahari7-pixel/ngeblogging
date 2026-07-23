@@ -22,25 +22,37 @@ test("Studio loads the final production responsive layer last", () => {
 });
 
 
-test("phone and tablet use an icon rail without crushing the content", () => {
-  assert.match(production, /@media\(max-width:900px\)/);
-  assert.match(production, /--sn-rail:60px;--sn-panel:min\(278px,calc\(100vw - 58px\)\)/);
-  assert.match(production, /\.sn-side\.collapsed\{[\s\S]*width:var\(--sn-rail\)!important/);
-  assert.match(production, /\.sn-main,.sn-side\.collapsed\+\.sn-main\{[\s\S]*margin-left:var\(--sn-rail\)!important/);
-  assert.match(production, /\.sn-side:not\(\.collapsed\)\+\.sn-main:before/);
+test("phones use a full-width workspace and off-canvas sidebar", () => {
+  assert.match(production, /@media\(max-width:700px\)/);
+  assert.match(production, /--sn-phone-panel:min\(88vw,320px\)/);
+  assert.match(production, /\.sn-side\.collapsed\{[\s\S]*transform:translateX\(calc\(-100% - 10px\)\)!important/);
+  assert.match(production, /\.sn-main,\.sn-side\.collapsed\+\.sn-main,\.sn-side:not\(\.collapsed\)\+\.sn-main\{[\s\S]*margin-left:0!important/);
+  assert.match(production, /\.sn-mobile-nav\{[\s\S]*display:grid!important/);
+  assert.match(production, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)!important/);
   assert.match(production, /\.sn-content-tools\{display:grid!important;grid-template-columns:1fr!important/);
   assert.match(production, /\.sn-doc-row\{display:grid!important;grid-template-columns:minmax\(0,1fr\) auto 36px!important/);
-  assert.match(production, /\.bv-plans,.bv-methods>div,.bv-security\{grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(production, /\.bv-plans,\.bv-methods>div,\.bv-security\{grid-template-columns:minmax\(0,1fr\)!important/);
+});
+
+
+test("tablets keep an icon rail and overlay the expanded panel", () => {
+  assert.match(production, /@media\(min-width:701px\) and \(max-width:1024px\)/);
+  assert.match(production, /:root\{--sn-rail:64px\}/);
+  assert.match(production, /\.sn-side\.collapsed\{[\s\S]*width:var\(--sn-rail\)!important/);
+  assert.match(production, /\.sn-main,\.sn-side\.collapsed\+\.sn-main,\.sn-side:not\(\.collapsed\)\+\.sn-main\{[\s\S]*margin-left:var\(--sn-rail\)!important/);
+  assert.match(production, /\.sn-side:not\(\.collapsed\)\+\.sn-main:before/);
+  assert.match(production, /background:#10233e35/);
 });
 
 
 test("desktop and large displays retain precise panel and rail geometry", () => {
-  assert.match(production, /@media\(min-width:901px\)/);
-  assert.match(production, /--sn-rail:70px;--sn-panel:220px/);
+  assert.match(production, /--sn-rail:72px;/);
+  assert.match(production, /--sn-panel:240px;/);
+  assert.match(production, /@media\(min-width:1025px\)/);
   assert.match(production, /\.sn-main\{margin-left:var\(--sn-panel\)!important/);
   assert.match(production, /\.sn-side\.collapsed\+\.sn-main\{margin-left:var\(--sn-rail\)!important/);
   assert.match(production, /@media\(min-width:1500px\)/);
-  assert.match(production, /max-width:1500px!important/);
+  assert.match(production, /max-width:1560px!important/);
 });
 
 
@@ -51,17 +63,21 @@ test("only the React header button controls sidebar state", () => {
   assert.match(controller, /querySelectorAll\(":scope > \.sn-side-close"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
   assert.doesNotMatch(controller, /side\.append\(close\)/);
   assert.doesNotMatch(controller, /createElement\("button"\)/);
-  assert.match(controller, /aria-label", expanded \? "Tutup sidebar Studio" : "Buka sidebar Studio"/);
-  assert.match(controller, /if \(compactMedia\.matches && !side\.classList\.contains\("collapsed"\)\)/);
+  assert.match(controller, /aria-label", expanded \? "Tutup menu Studio" : "Buka menu Studio"/);
+  assert.match(controller, /const COMPACT_QUERY = "\(max-width: 1024px\)"/);
+  assert.match(controller, /event\.key !== "Escape"/);
+  assert.match(controller, /document\.addEventListener\("pointerdown"/);
 });
 
 
-test("bottom navigation is visually removed and every menu remains in the sidebar", () => {
-  assert.match(production, /\.sn-side-close,.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-sidebar-backdrop\{display:none!important\}/);
-  assert.match(polish, /\.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-sidebar-backdrop\{display:none!important\}/);
+test("phone navigation and complete sidebar menus coexist without duplicate sidebar toggles", () => {
+  assert.match(production, /@media\(min-width:1025px\)\{[\s\S]*\.sn-mobile-nav,\.sn-mobile-sheet-layer\{display:none!important\}/);
+  assert.match(production, /@media\(max-width:700px\)[\s\S]*\.sn-mobile-nav\{[\s\S]*display:grid!important/);
+  assert.match(polish, /\.sn-mobile-nav,\.sn-mobile-sheet-layer,\.sn-sidebar-backdrop\{display:none!important\}/);
   assert.match(studio, /<LayoutDashboard\/><span>Ringkasan<\/span>/);
   assert.match(studio, /<Palette\/><span>Tema<\/span>/);
   assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
+  assert.match(studio, /className="sn-mobile-nav"/);
 });
 
 
