@@ -27,12 +27,25 @@ function paypalReady(env) {
 }
 
 function localBillingReady(env) {
-  return Boolean(env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET && env.LOCAL_PLAN_PRICES_JSON);
+  if (!env.LOCAL_PAYMENT_GATEWAY_URL || !env.LOCAL_PAYMENT_GATEWAY_SECRET) return false;
+  try {
+    const prices = JSON.parse(env.LOCAL_PLAN_PRICES_JSON || "{}");
+    return Object.values(prices).some((value) => {
+      const amount = Number(value?.amount);
+      const currency = String(value?.currency || "").toUpperCase();
+      return Number.isFinite(amount) && amount > 0 && /^[A-Z]{3}$/.test(currency);
+    });
+  } catch {
+    return false;
+  }
 }
 
 function brandedEmailReady(env) {
   const sender = String(env.AUTH_EMAIL_FROM || "").trim().toLowerCase();
-  return enabled(env.AUTH_BRANDED_EMAIL_READY) && sender.endsWith("@ngeblogging.com");
+  const deliveryProbe = String(env.AUTH_EMAIL_DELIVERY_PROBE || "").trim().toLowerCase();
+  return enabled(env.AUTH_BRANDED_EMAIL_READY)
+    && sender.endsWith("@ngeblogging.com")
+    && deliveryProbe === "passed";
 }
 
 function configuredOrigins(env) {
