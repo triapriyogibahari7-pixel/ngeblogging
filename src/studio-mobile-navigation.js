@@ -49,6 +49,13 @@ function collapse(shell) {
   clickToggle(shell);
 }
 
+function markReady(shell) {
+  window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+    updateShell(shell);
+    document.documentElement.classList.add("sn-nav-ready");
+  }));
+}
+
 function attach(shell) {
   if (attachedShells.has(shell)) return;
   const { side, toggle } = elements(shell);
@@ -62,12 +69,9 @@ function attach(shell) {
 
   // Layar sempit dimulai sebagai rel ikon. Sidebar tetap terlihat dan tidak
   // mengurangi lebar konten saat dibuka karena panel melebar sebagai overlay.
-  if (media.matches && !side.classList.contains("collapsed")) {
-    collapse(shell);
-    window.requestAnimationFrame(() => updateShell(shell));
-  } else {
-    updateShell(shell);
-  }
+  if (media.matches && !side.classList.contains("collapsed")) collapse(shell);
+  else updateShell(shell);
+  markReady(shell);
 }
 
 function scan() {
