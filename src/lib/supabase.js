@@ -40,10 +40,10 @@ export async function signInWithProvider(provider) {
 export async function signInWithMagicLink(email) {
   const client = requireSupabase();
   const { error } = await client.auth.signInWithOtp({
-    email,
+    email: String(email || "").trim().toLowerCase(),
     options: {
       emailRedirectTo: appUrl("/?auth=callback"),
-      shouldCreateUser: true,
+      shouldCreateUser: false,
     },
   });
   if (error) throw error;
@@ -51,20 +51,37 @@ export async function signInWithMagicLink(email) {
 
 export async function signInWithPassword(email, password) {
   const client = requireSupabase();
-  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  const { data, error } = await client.auth.signInWithPassword({
+    email: String(email || "").trim().toLowerCase(),
+    password,
+  });
   if (error) throw error;
   return data;
 }
 
 export async function signUpWithPassword(email, password, fullName) {
   const client = requireSupabase();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
   const { data, error } = await client.auth.signUp({
-    email,
+    email: normalizedEmail,
     password,
     options: {
       emailRedirectTo: appUrl("/?auth=callback"),
-      data: { full_name: fullName.trim() },
+      data: { full_name: String(fullName || "").trim() },
     },
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function resendSignUpConfirmation(email) {
+  const client = requireSupabase();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) throw new Error("Masukkan email yang digunakan saat mendaftar.");
+  const { data, error } = await client.auth.resend({
+    type: "signup",
+    email: normalizedEmail,
+    options: { emailRedirectTo: appUrl("/?auth=callback") },
   });
   if (error) throw error;
   return data;
@@ -72,9 +89,10 @@ export async function signUpWithPassword(email, password, fullName) {
 
 export async function requestPasswordReset(email) {
   const client = requireSupabase();
-  const { error } = await client.auth.resetPasswordForEmail(email, {
-    redirectTo: appUrl("/?auth=recovery"),
-  });
+  const { error } = await client.auth.resetPasswordForEmail(
+    String(email || "").trim().toLowerCase(),
+    { redirectTo: appUrl("/?auth=recovery") },
+  );
   if (error) throw error;
 }
 
