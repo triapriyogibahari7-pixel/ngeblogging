@@ -1,7 +1,7 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { pathToFileURL } from "node:url";
-import { handleRequest } from "../netlify/functions/nara.mjs";
+import { handleRequest } from "../server/nara-runtime.mjs";
 
 const DEFAULT_MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 
@@ -142,10 +142,11 @@ export function createApiServer(options = {}) {
         ? ""
         : await readBody(request, maxRequestBytes);
       const headers = { ...request.headers };
-      headers["x-nf-client-connection-ip"] = requestIp;
+      headers["x-client-ip"] = requestIp;
+      headers["x-forwarded-for"] = requestIp;
       headers["x-request-id"] = requestId;
 
-      const result = await handleRequest({ httpMethod: method, headers, body });
+      const result = await handleRequest({ httpMethod: method, headers, body }, env);
       statusCode = result.statusCode;
       const responseHeaders = {
         ...result.headers,
