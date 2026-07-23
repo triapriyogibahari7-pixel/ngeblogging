@@ -39,33 +39,74 @@ jobs:
               && curl --fail --silent --show-error --location \
               --connect-timeout 10 --max-time 25 \
               -H 'cache-control: no-cache' \
-              "${SITE_URL}/sw.js?smoke=${stamp}" > /tmp/sw.js \
-              && curl --fail --silent --show-error --location \
-              --connect-timeout 10 --max-time 25 \
-              -H 'cache-control: no-cache' \
-              "${SITE_URL}/src/studio-device-mode.css?smoke=${stamp}" > /tmp/device.css; then
+              "${SITE_URL}/sw.js?smoke=${stamp}" > /tmp/sw.js; then
 
-              if node <<'NODE'
+              python <<'PY' > /tmp/assets.txt
+          from html.parser import HTMLParser
+          from urllib.parse import urljoin
+
+          base = "https://ngeblogging.com"
+          html = open('/tmp/index.html', encoding='utf-8').read()
+
+          class Assets(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.urls = []
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  candidate = values.get('src') if tag == 'script' else values.get('href') if tag == 'link' else None
+                  if candidate and candidate.split('?', 1)[0].lower().endswith(('.js', '.css')):
+                      absolute = urljoin(base, candidate)
+                      if absolute not in self.urls:
+                          self.urls.append(absolute)
+
+          parser = Assets()
+          parser.feed(html)
+          print('\n'.join(parser.urls))
+          PY
+
+              : > /tmp/assets.bundle
+              asset_ok=true
+              while IFS= read -r asset; do
+                [ -n "$asset" ] || continue
+                echo "Fetching built asset: $asset"
+                if ! curl --fail --silent --show-error --location \
+                  --connect-timeout 10 --max-time 40 \
+                  -H 'cache-control: no-cache' \
+                  "${asset}?smoke=${stamp}" >> /tmp/assets.bundle; then
+                  asset_ok=false
+                  break
+                fi
+                printf '\n' >> /tmp/assets.bundle
+              done < /tmp/assets.txt
+
+              if [ "$asset_ok" = true ] && node <<'NODE'
           const fs = require('node:fs');
           const health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8'));
           const index = fs.readFileSync('/tmp/index.html', 'utf8');
           const sw = fs.readFileSync('/tmp/sw.js', 'utf8');
-          const device = fs.readFileSync('/tmp/device.css', 'utf8');
+          const assets = fs.readFileSync('/tmp/assets.bundle', 'utf8');
 
           const requiredBooleans = ['billing', 'customDomains', 'emailRegistration', 'nara', 'imageGeneration', 'managedSubdomains'];
           const errors = [];
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
+          if (health.release !== '2026.07.24-mobile-theme-v4') errors.push('health.release');
           for (const key of requiredBooleans) {
             if (typeof health[key] !== 'boolean') errors.push(`health.${key}`);
           }
           if (health.managedSubdomains !== true) errors.push('managed subdomains');
           if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('site limits');
-          for (const asset of ['studio-device-mode.css', 'auth-readiness-bridge.js', 'nara-availability-bridge.js', 'billing-availability-bridge.js']) {
-            if (!index.includes(asset)) errors.push(`index:${asset}`);
+          if (!index.includes('<div id="root"></div>')) errors.push('application shell');
+          if (!sw.includes('ngeblogging-app-v4-20260724') || !sw.includes('networkFirst')) errors.push('service worker');
+          if (!assets.includes('studio-mobile-v4-20260724')) errors.push('mobile runtime release');
+          if (!assets.includes('.sn-mobile-nav') || !assets.includes('bottom:0!important') || !assets.includes('top:auto!important')) errors.push('mobile bottom navigation');
+          for (const label of ['Mobile', 'Tablet', 'Laptop', 'Komputer']) {
+            if (!assets.includes(label)) errors.push(`theme device:${label}`);
           }
-          if (!sw.includes('ngeblogging-app-v3-20260723') || !sw.includes('networkFirst')) errors.push('service worker');
-          if (!device.includes('html[data-device-mode="mobile"]') || !device.includes('margin-left:0!important')) errors.push('mobile authority');
+          if (!assets.includes('.tn-frame-shell.laptop') || !assets.includes('.tn-frame-shell.desktop')) errors.push('theme preview frame sizes');
+          if (!assets.includes('.ng-widget-recent-posts ol') || !assets.includes('.ng-widget-popular-posts ol')) errors.push('tenant widget data');
+          if (!assets.includes('.ng-header nav.open')) errors.push('public mobile menu');
 
           if (errors.length) {
             console.error(`Deployment not ready: ${errors.join(', ')}`);
@@ -74,6 +115,7 @@ jobs:
 
           console.log(JSON.stringify({
             status: health.status,
+            release: health.release,
             runtime: health.runtime,
             billing: health.billing,
             customDomains: health.customDomains,
@@ -81,6 +123,7 @@ jobs:
             nara: health.nara,
             managedSubdomains: health.managedSubdomains,
             siteLimits: health.siteLimits,
+            assetsChecked: fs.readFileSync('/tmp/assets.txt', 'utf8').trim().split(/\n+/).filter(Boolean).length,
           }, null, 2));
           NODE
               then
@@ -93,6 +136,8 @@ jobs:
               echo "Production did not expose the expected release within 12 minutes."
               echo "Last health response:"
               cat /tmp/health.json 2>/dev/null || true
+              echo "Last asset list:"
+              cat /tmp/assets.txt 2>/dev/null || true
               exit 1
             fi
             sleep 20

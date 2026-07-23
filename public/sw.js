@@ -1,4 +1,4 @@
-const VERSION = "ngeblogging-app-v3-20260723";
+const VERSION = "ngeblogging-app-v4-20260724";
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
@@ -54,8 +54,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Vite fingerprinted assets are immutable. Source-named CSS/JS and manifests
-  // must be network-first so production fixes never remain one deployment old.
   if (url.pathname.startsWith("/assets/") && /-[a-zA-Z0-9_-]{6,}\.(?:js|css|woff2?|png|jpg|jpeg|webp|avif|svg)$/i.test(url.pathname)) {
     event.respondWith(cacheFirstImmutable(request));
     return;

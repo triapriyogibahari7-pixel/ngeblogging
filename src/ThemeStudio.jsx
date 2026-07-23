@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Check, ChevronDown, Cloud, CloudOff, Code2, Copy, Download, Eye, FileArchive,
-  Gauge, Globe2, History, Monitor, Palette, Rocket, RotateCcw, Save, Search,
+  Gauge, Globe2, History, Laptop, Monitor, Palette, Rocket, RotateCcw, Save, Search,
   ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Tablet, Upload, X, Zap,
   Blocks, ExternalLink, FileCode2,
 } from "lucide-react";
@@ -16,12 +16,23 @@ import { loadSiteThemeState, saveSiteBlueprint, saveSiteThemeState } from "./lib
 import "./theme-next.css";
 
 const DEVICES = [
-  { id: "desktop", label: "Desktop", icon: Monitor },
-  { id: "tablet", label: "Tablet", icon: Tablet },
   { id: "mobile", label: "Mobile", icon: Smartphone },
+  { id: "tablet", label: "Tablet", icon: Tablet },
+  { id: "laptop", label: "Laptop", icon: Laptop },
+  { id: "desktop", label: "Komputer", icon: Monitor },
 ];
 
 const CATEGORIES = ["Semua", ...new Set(BUILT_IN_THEMES.map((theme) => theme.category))];
+
+function initialPreviewDevice() {
+  if (typeof window === "undefined") return "desktop";
+  if (document.documentElement.dataset.deviceMode === "mobile") return "mobile";
+  if (navigator.userAgentData?.mobile === true || /Android.+Mobile|iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent || "")) return "mobile";
+  if (window.innerWidth <= 760) return "mobile";
+  if (window.innerWidth <= 1024) return "tablet";
+  if (window.innerWidth <= 1440) return "laptop";
+  return "desktop";
+}
 
 function formatDate(value) {
   try { return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
@@ -41,7 +52,7 @@ function downloadFile(filename, content, type = "text/plain") {
 }
 
 function DeviceSwitch({ value, onChange }) {
-  return <div className="tn-device-switch" aria-label="Mode perangkat">{DEVICES.map(({ id, label, icon: Icon }) => <button key={id} className={value === id ? "active" : ""} onClick={() => onChange(id)} title={label}><Icon/><span>{label}</span></button>)}</div>;
+  return <div className="tn-device-switch" aria-label="Mode perangkat">{DEVICES.map(({ id, label, icon: Icon }) => <button key={id} type="button" aria-pressed={value === id} className={value === id ? "active" : ""} onClick={() => onChange(id)} title={`Pratinjau ${label}`}><Icon/><span>{label}</span></button>)}</div>;
 }
 
 function Modal({ title, eyebrow, onClose, size = "medium", children, footer }) {
@@ -56,7 +67,7 @@ function Modal({ title, eyebrow, onClose, size = "medium", children, footer }) {
 }
 
 function ThemeFrame({ theme, code, config, widgets, device, title }) {
-  return <div className={`tn-frame-shell ${device}`}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(code || theme.code, config, widgets)}/></div>;
+  return <div className={`tn-frame-shell ${device}`} data-preview-device={device}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(code || theme.code, config, widgets)}/></div>;
 }
 
 function ThemeCardPreview({ theme }) {
@@ -121,7 +132,7 @@ function WidgetStudio({ value, onChange }) {
 
 export default function ThemeStudio({ setToast, site, user }) {
   const [themeState, setThemeState] = useState(loadThemeState);
-  const [device, setDevice] = useState("desktop");
+  const [device, setDevice] = useState(initialPreviewDevice);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Semua");
   const [blueprint, setBlueprint] = useState(site?.blueprint || "all");
@@ -194,7 +205,7 @@ export default function ThemeStudio({ setToast, site, user }) {
   return <div className="tn-studio">
     <input ref={fileInput} type="file" accept=".ngeblog-theme,.json,.html,.htm,.css,.js" hidden onChange={importFile}/>
     <section className="tn-hero">
-      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBlOGGING</span><h1>100 tema aktif. Setiap tema benar-benar berbeda.</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, dan perilaku responsif sendiri untuk desktop, tablet, dan mobile.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> 25 Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> Responsif</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
+      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><h1>100 tema aktif. Setiap tema benar-benar berbeda.</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk komputer, laptop, tablet, dan mobile.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> 25 Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> Responsif</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
       <div className="tn-active-stage"><div className="tn-stage-toolbar"><DeviceSwitch value={device} onChange={setDevice}/><b>{previewTheme.name}</b></div><ThemeFrame theme={previewTheme} code={previewTheme.id === activeTheme.id ? themeState.code : previewTheme.code} config={previewTheme.id === activeTheme.id ? themeState.publishedConfig : undefined} widgets={previewTheme.id === activeTheme.id ? themeState.widgets : createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/>{previewTheme.id !== activeTheme.id && <div className="tn-apply-bar"><span>Pratinjau <b>{previewTheme.name}</b></span><button onClick={() => apply(previewTheme.id)}><Check/> Gunakan tema</button></div>}</div>
     </section>
 
@@ -202,16 +213,16 @@ export default function ThemeStudio({ setToast, site, user }) {
 
     <section className="tn-blueprints"><div><small>JENIS SITUS</small><h2>Blog, portofolio, forum, berita, website, landing page, dan profil.</h2></div><div className="tn-blueprint-list"><button className={blueprint === "all" ? "active" : ""} onClick={() => chooseBlueprint("all")}><Globe2/> Semua</button>{SITE_BLUEPRINTS.map((item) => <button key={item.id} className={blueprint === item.id ? "active" : ""} onClick={() => chooseBlueprint(item.id)}><b>{item.label}</b><small>{item.description}</small></button>)}</div></section>
 
-    <section className="tn-library"><header><div><small>KOLEKSI ORIGINAL</small><h2>{THEME_COUNT} tema responsif.</h2><p>Setiap kartu memiliki fingerprint HTML dan CSS yang unik serta aturan mobile dan tablet.</p></div><label><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label></header><div className="tn-category-tabs">{CATEGORIES.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div><div className="tn-theme-grid">{filteredThemes.map((theme) => {
+    <section className="tn-library"><header><div><small>KOLEKSI ORIGINAL</small><h2>{THEME_COUNT} tema responsif.</h2><p>Setiap kartu memiliki fingerprint HTML dan CSS unik serta aturan komputer, laptop, tablet, dan mobile.</p></div><label><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label></header><div className="tn-category-tabs">{CATEGORIES.map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div><div className="tn-theme-grid">{filteredThemes.map((theme) => {
       const isActive = theme.id === themeState.activeThemeId;
       return <article key={theme.id} className={isActive ? "active" : ""}><button className="tn-theme-preview" onClick={() => choosePreview(theme.id)}><ThemeCardPreview theme={theme}/><span>{theme.badge}</span>{isActive && <i><Check/> Aktif</i>}</button><div><small>{theme.category} · {theme.layout}</small><h3>{theme.name}</h3><p>{theme.description}</p><nav>{theme.features.map((feature) => <span key={feature}>{feature}</span>)}</nav><footer><button onClick={() => { choosePreview(theme.id); setModal("preview"); }}><Eye/> Preview</button><button disabled={isActive} className="primary" onClick={() => apply(theme.id)}>{isActive ? "Sedang digunakan" : "Gunakan tema"}</button></footer></div></article>;
     })}</div>{!filteredThemes.length && <div className="tn-empty"><Search/><h3>Tema tidak ditemukan</h3><button onClick={() => { setQuery(""); setCategory("Semua"); setBlueprint("all"); }}>Reset filter</button></div>}</section>
 
-    <section className="tn-audit-strip"><article><b>{THEME_COUNT}</b><span>Tema aktif dan unik</span></article><article><b>{WIDGET_COUNT}</b><span>Widget bawaan</span></article><article><b>3</b><span>Mode perangkat</span></article><article><b>HTML/CSS/JS</b><span>Editor kode sandbox</span></article></section>
+    <section className="tn-audit-strip"><article><b>{THEME_COUNT}</b><span>Tema aktif dan unik</span></article><article><b>{WIDGET_COUNT}</b><span>Widget bawaan</span></article><article><b>4</b><span>Mode perangkat</span></article><article><b>HTML/CSS/JS</b><span>Editor kode sandbox</span></article></section>
 
     {modal === "customize" && <Modal title={`Sesuaikan ${activeTheme.name}`} eyebrow="VISUAL CUSTOMIZER" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button onClick={() => { commit({ ...themeState, draftConfig: customDraft, updatedAt:new Date().toISOString() },"Draf tema tersimpan"); setModal(null); }}><Save/> Simpan draf</button><button className="primary" onClick={() => { commit(publishThemeDraft(themeState,customDraft,themeState.widgets),"Kustomisasi tema diterbitkan"); setModal(null); }}><Rocket/> Terbitkan</button></>}><Customizer value={customDraft} onChange={setCustomDraft} theme={activeTheme}/></Modal>}
     {modal === "code" && <Modal title="Editor HTML, CSS, dan JavaScript" eyebrow="ADVANCED THEME EDITOR" size="fullscreen" onClose={() => setModal(null)} footer={<><span><ShieldCheck/> JavaScript berjalan dalam iframe sandbox.</span><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeCode(themeState,codeDraft),"Kode tema tersimpan dan aktif"); setModal(null); }}><Save/> Simpan kode</button></>}><CodeEditor value={codeDraft} onChange={setCodeDraft} config={themeState.publishedConfig} widgets={themeState.widgets} theme={activeTheme}/></Modal>}
-    {modal === "widgets" && <Modal title={`Widget bawaan (${WIDGET_COUNT})`} eyebrow="NGEBlOGGING WIDGET STUDIO" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeWidgets(themeState,widgetDraft),"Susunan widget disimpan"); setModal(null); }}><Save/> Simpan widget</button></>}><WidgetStudio value={widgetDraft} onChange={setWidgetDraft}/></Modal>}
+    {modal === "widgets" && <Modal title={`Widget bawaan (${WIDGET_COUNT})`} eyebrow="NGEBLOGGING WIDGET STUDIO" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeWidgets(themeState,widgetDraft),"Susunan widget disimpan"); setModal(null); }}><Save/> Simpan widget</button></>}><WidgetStudio value={widgetDraft} onChange={setWidgetDraft}/></Modal>}
     {modal === "history" && <Modal title="Cadangan dan pemulihan tema" eyebrow="VERSION CONTROL" onClose={() => setModal(null)} footer={<><button onClick={backup}><Download/> Unduh cadangan</button><button onClick={() => fileInput.current?.click()}><Upload/> Impor cadangan</button></>}><div className="tn-history">{themeState.history.map((entry,index) => <article key={entry.id}><span>{index===0?<Check/>:index+1}</span><div><b>{entry.note}</b><small>{getTheme(entry.activeThemeId).name} · {formatDate(entry.createdAt)}</small></div><button disabled={index===0} onClick={() => { try { commit(restoreThemeVersion(themeState,entry.id),"Versi tema dipulihkan"); setModal(null); } catch(error){ setToast(error.message); } }}>{index===0?"Saat ini":"Pulihkan"}</button></article>)}</div></Modal>}
     {modal === "preview" && <Modal title={previewTheme.name} eyebrow="PREVIEW SITUS RESPONSIF" size="preview" onClose={() => setModal(null)} footer={<><DeviceSwitch value={device} onChange={setDevice}/><button onClick={openSite}><ExternalLink/> Buka situs publik</button><button className="primary" disabled={previewTheme.id===activeTheme.id} onClick={() => { apply(previewTheme.id); setModal(null); }}>{previewTheme.id===activeTheme.id?"Tema aktif":"Terapkan tema"}</button></>}><ThemeFrame theme={previewTheme} code={previewTheme.id===activeTheme.id?themeState.code:previewTheme.code} config={previewTheme.id===activeTheme.id?themeState.publishedConfig:undefined} widgets={previewTheme.id===activeTheme.id?themeState.widgets:createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/></Modal>}
   </div>;

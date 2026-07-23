@@ -27,10 +27,113 @@ function sanitizePublishedHtml(html) {
 
 function homeCode(site,theme,posts,pages) {
   const custom=site.theme?.code?.enabled;
-  if(custom)return site.theme.code;
-  const base=theme.code || createDefaultThemeState().code;
-  const payload=JSON.stringify({site:{name:site.name,description:site.description||"Gagasan, karya, dan cerita dalam satu ruang digital."},posts:posts.slice(0,6).map((post)=>({title:post.title,excerpt:post.excerpt||"Baca selengkapnya.",slug:post.slug,category:post.metadata?.categories?.[0]||"Post"})),pages:pages.slice(0,6).map((page)=>({title:page.title,slug:page.slug}))}).replace(/</g,"\\u003c");
-  const injection=`\n(()=>{const data=${payload};const brand=document.querySelector('.ng-brand');if(brand){brand.textContent=data.site.name;const dot=document.createElement('i');dot.textContent='.';brand.append(dot)}const hero=document.querySelector('.ng-hero');const title=hero?.querySelector('h1');const description=hero?.querySelector('p');if(title)title.textContent=data.site.name;if(description)description.textContent=data.site.description;const nav=document.querySelector('.ng-header nav');if(nav){nav.replaceChildren();const home=document.createElement('a');home.href='/';home.target='_top';home.textContent='Beranda';nav.append(home);data.pages.slice(0,4).forEach((page)=>{const link=document.createElement('a');link.href='/'+page.slug;link.target='_top';link.textContent=page.title;nav.append(link)})}const cards=[...document.querySelectorAll('.ng-cards article')];cards.forEach((card,index)=>{const post=data.posts[index];if(!post){card.hidden=true;return}card.hidden=false;card.tabIndex=0;card.style.cursor='pointer';const small=card.querySelector('small');const heading=card.querySelector('h3');const copy=card.querySelector('p');if(small)small.textContent=post.category.toUpperCase();if(heading)heading.textContent=post.title;if(copy)copy.textContent=post.excerpt;const open=()=>{window.top.location.href='/'+post.slug};card.addEventListener('click',open);card.addEventListener('keydown',(event)=>{if(event.key==='Enter')open()})})})();`;
+  const base=custom?site.theme.code:(theme.code||createDefaultThemeState().code);
+  const normalizedPosts=posts.slice(0,12).map((post)=>({
+    title:post.title,
+    excerpt:post.excerpt||"Baca selengkapnya.",
+    slug:post.slug,
+    category:post.metadata?.categories?.[0]||"Post",
+    categories:post.metadata?.categories||[],
+    tags:post.metadata?.tags||[],
+  }));
+  const categories=[...new Set(normalizedPosts.flatMap((post)=>post.categories).filter(Boolean))].slice(0,12);
+  const tags=[...new Set(normalizedPosts.flatMap((post)=>post.tags).filter(Boolean))].slice(0,20);
+  const payload=JSON.stringify({
+    site:{name:site.name,description:site.description||"Gagasan, karya, dan cerita dalam satu ruang digital."},
+    posts:normalizedPosts,
+    pages:pages.slice(0,6).map((page)=>({title:page.title,slug:page.slug})),
+    categories,
+    tags,
+  }).replace(/</g,"\\u003c");
+  const injection=`
+(()=>{
+  const data=${payload};
+  const escapeText=(value)=>String(value||'');
+  const linkTo=(slug)=>'/'+encodeURIComponent(slug);
+  document.title=data.site.name;
+  const brand=document.querySelector('.ng-brand');
+  if(brand){brand.textContent=data.site.name;const dot=document.createElement('i');dot.textContent='.';brand.append(dot)}
+  const hero=document.querySelector('.ng-hero');
+  const title=hero?.querySelector('h1');
+  const description=hero?.querySelector('p');
+  if(title)title.textContent=data.site.name;
+  if(description)description.textContent=data.site.description;
+  const footerBrand=document.querySelector('.ng-theme>footer>b');
+  if(footerBrand)footerBrand.textContent=data.site.name;
+  const nav=document.querySelector('.ng-header nav');
+  if(nav){
+    nav.replaceChildren();
+    const home=document.createElement('a');home.href='/';home.target='_top';home.textContent='Beranda';nav.append(home);
+    data.pages.slice(0,4).forEach((page)=>{const link=document.createElement('a');link.href=linkTo(page.slug);link.target='_top';link.textContent=page.title;nav.append(link)});
+  }
+  const cards=[...document.querySelectorAll('.ng-cards article')];
+  const renderCards=(query='',category='')=>{
+    const normalizedQuery=String(query||'').trim().toLowerCase();
+    cards.forEach((card,index)=>{
+      const post=data.posts[index];
+      if(!post){card.hidden=true;return}
+      const haystack=(post.title+' '+post.excerpt+' '+post.categories.join(' ')+' '+post.tags.join(' ')).toLowerCase();
+      const matchesQuery=!normalizedQuery||haystack.includes(normalizedQuery);
+      const matchesCategory=!category||post.categories.includes(category);
+      card.hidden=!(matchesQuery&&matchesCategory);
+      card.dataset.search=haystack;
+      card.dataset.category=post.category;
+      card.tabIndex=0;
+      card.style.cursor='pointer';
+      const small=card.querySelector('small');
+      const heading=card.querySelector('h3');
+      const copy=card.querySelector('p');
+      if(small)small.textContent=escapeText(post.category).toUpperCase();
+      if(heading)heading.textContent=post.title;
+      if(copy)copy.textContent=post.excerpt;
+      if(!card.dataset.bound){
+        const open=()=>{window.top.location.href=linkTo(post.slug)};
+        card.addEventListener('click',open);
+        card.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open()}});
+        card.dataset.bound='true';
+      }
+    });
+  };
+  renderCards();
+  const populatePostList=(selector,items)=>{
+    const list=document.querySelector(selector);
+    if(!list)return;
+    list.replaceChildren();
+    items.slice(0,6).forEach((post,index)=>{
+      const item=document.createElement('li');
+      const link=document.createElement('a');
+      link.href=linkTo(post.slug);link.target='_top';link.textContent=(selector.includes('popular')?String(index+1).padStart(2,'0')+' · ':'')+post.title;
+      item.append(link);list.append(item);
+    });
+    list.closest('.ng-widget').hidden=!items.length;
+  };
+  populatePostList('.ng-widget-recent-posts ol',data.posts);
+  populatePostList('.ng-widget-popular-posts ol',data.posts.slice().reverse());
+  const categoryNav=document.querySelector('.ng-widget-categories nav');
+  if(categoryNav){
+    categoryNav.replaceChildren();
+    data.categories.forEach((category)=>{
+      const link=document.createElement('a');link.href='#posts';link.textContent=category;
+      link.addEventListener('click',(event)=>{event.preventDefault();renderCards('',category);document.querySelector('.ng-cards')?.scrollIntoView({behavior:'smooth',block:'start'})});
+      categoryNav.append(link);
+    });
+    categoryNav.closest('.ng-widget').hidden=!data.categories.length;
+  }
+  const tagBox=document.querySelector('.ng-widget-tags>div');
+  if(tagBox){tagBox.replaceChildren();data.tags.forEach((tag)=>{const span=document.createElement('span');span.textContent='#'+tag;tagBox.append(span)});tagBox.closest('.ng-widget').hidden=!data.tags.length}
+  const searchForm=document.querySelector('.ng-widget-search form');
+  if(searchForm){
+    const input=searchForm.querySelector('input');
+    searchForm.addEventListener('submit',(event)=>{event.preventDefault();renderCards(input?.value||'');document.querySelector('.ng-cards')?.scrollIntoView({behavior:'smooth',block:'start'})});
+    input?.addEventListener('input',()=>renderCards(input.value||''));
+  }
+  const supported=new Set(['search','recent-posts','popular-posts','categories','tags']);
+  document.querySelectorAll('.ng-widget').forEach((widget)=>{
+    const match=[...widget.classList].find((name)=>name.startsWith('ng-widget-')&&name!=='ng-widget-area');
+    const id=match?.slice('ng-widget-'.length);
+    if(id&&!supported.has(id))widget.hidden=true;
+  });
+})();`;
   return {...base,javascript:`${base.javascript||""}${injection}`};
 }
 
@@ -53,7 +156,7 @@ export default function PublicSiteNext({target}) {
 
   const theme=getTheme(site.theme?.active_theme_id),config={...DEFAULT_THEME_CONFIG,...site.theme?.published_config},widgets=site.theme?.widgets?.length?site.theme.widgets:createDefaultWidgetState(theme.defaultWidgetIds),style={"--ps-primary":config.primary,"--ps-accent":config.accent,"--ps-surface":config.surface,"--ps-ink":config.ink,"--ps-radius":`${config.radius||12}px`,"--ps-font":config.font==="Playfair Display"?'"Playfair Display",serif':'"DM Sans",sans-serif'};
 
-  if(!content){const code=homeCode(site,theme,posts,pages);return <main className="ps-theme-home"><h1 className="ps-visually-hidden">{site.name}</h1><iframe title={site.name} sandbox="allow-scripts allow-forms allow-popups allow-top-navigation-by-user-activation" srcDoc={buildThemeSrcDoc(code,config,widgets)}/><div className="ps-theme-tools"><a href="/feed.xml">RSS</a><a href="/sitemap.xml">Sitemap</a><a href="https://ngeblogging.com">Dibuat dengan Ngeblogging</a></div></main>;}
+  if(!content){const code=homeCode(site,theme,posts,pages);return <main className="ps-theme-home"><h1 className="ps-visually-hidden">{site.name}</h1><iframe title={site.name} sandbox="allow-scripts allow-forms allow-popups allow-top-navigation-by-user-activation" srcDoc={buildThemeSrcDoc(code,config,widgets)}/></main>;}
 
   const metadata=content.metadata||{},safeHtml=sanitizePublishedHtml(content.body_html),isPage=content.kind==="page",related=posts.filter((post)=>post.id!==content.id&&(!metadata.categories?.length||post.metadata?.categories?.some((category)=>metadata.categories.includes(category)))).slice(0,3);
   const filteredPosts=posts.filter((post)=>`${post.title} ${post.excerpt} ${(post.metadata?.tags||[]).join(" ")}`.toLowerCase().includes(search.toLowerCase()));
