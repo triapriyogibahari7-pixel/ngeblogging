@@ -10,25 +10,14 @@ function elements(shell) {
   };
 }
 
-function setDocumentLock(open) {
-  document.body?.classList.toggle("sn-mobile-sidebar-lock", Boolean(open));
-}
-
-function updateShell(shell) {
-  const { side, toggle } = elements(shell);
-  if (!side || !toggle) return;
-  const open = media.matches && !side.classList.contains("collapsed");
-  shell.classList.toggle("sn-mobile-sidebar-open", open);
-  toggle.setAttribute("aria-expanded", String(open));
-  toggle.setAttribute("aria-controls", side.id || "ngeblogging-studio-sidebar");
-  toggle.setAttribute("aria-label", open ? "Tutup menu Studio" : "Buka menu Studio");
-  side.id ||= "ngeblogging-studio-sidebar";
-  const backdrop = shell.querySelector(":scope > .sn-sidebar-backdrop");
-  if (backdrop) {
-    backdrop.hidden = !open;
-    backdrop.setAttribute("aria-hidden", String(!open));
-  }
-  setDocumentLock(open);
+function labelSidebarButtons(side) {
+  side.querySelectorAll("button").forEach((button) => {
+    if (button.classList.contains("sn-side-close")) return;
+    const label = button.querySelector("span")?.textContent?.trim();
+    if (!label) return;
+    button.setAttribute("title", label);
+    button.setAttribute("aria-label", label);
+  });
 }
 
 function clickToggle(shell) {
@@ -36,24 +25,41 @@ function clickToggle(shell) {
   if (toggle) toggle.click();
 }
 
-function closeDrawer(shell) {
+function collapseRail(shell) {
   const { side } = elements(shell);
-  if (!media.matches || !side || side.classList.contains("collapsed")) return;
+  if (!side || side.classList.contains("collapsed")) return;
   clickToggle(shell);
 }
 
-function ensureBackdrop(shell) {
-  let backdrop = shell.querySelector(":scope > .sn-sidebar-backdrop");
-  if (backdrop) return backdrop;
-  backdrop = document.createElement("button");
-  backdrop.type = "button";
-  backdrop.className = "sn-sidebar-backdrop";
-  backdrop.hidden = true;
-  backdrop.tabIndex = -1;
-  backdrop.setAttribute("aria-label", "Tutup menu Studio");
-  backdrop.addEventListener("click", () => closeDrawer(shell));
-  shell.append(backdrop);
-  return backdrop;
+function ensureCloseButton(shell) {
+  const { side } = elements(shell);
+  if (!side) return null;
+  let close = side.querySelector(":scope > .sn-side-close");
+  if (close) return close;
+  close = document.createElement("button");
+  close.type = "button";
+  close.className = "sn-side-close";
+  close.setAttribute("aria-label", "Tutup sidebar Studio");
+  close.setAttribute("title", "Tutup sidebar");
+  close.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>`;
+  close.addEventListener("click", () => clickToggle(shell));
+  side.append(close);
+  return close;
+}
+
+function updateShell(shell) {
+  const { side, toggle } = elements(shell);
+  if (!side || !toggle) return;
+  const expanded = !side.classList.contains("collapsed");
+  const close = ensureCloseButton(shell);
+  side.id ||= "ngeblogging-studio-sidebar";
+  shell.classList.toggle("sn-sidebar-expanded", expanded);
+  toggle.setAttribute("aria-expanded", String(expanded));
+  toggle.setAttribute("aria-controls", side.id);
+  toggle.setAttribute("aria-label", expanded ? "Tutup sidebar Studio" : "Buka sidebar Studio");
+  toggle.setAttribute("title", expanded ? "Tutup sidebar" : "Buka sidebar");
+  if (close) close.hidden = !expanded;
+  labelSidebarButtons(side);
 }
 
 function attach(shell) {
@@ -61,42 +67,24 @@ function attach(shell) {
   const { side, toggle } = elements(shell);
   if (!side || !toggle) return;
   attachedShells.add(shell);
-  ensureBackdrop(shell);
+  ensureCloseButton(shell);
 
   const sideObserver = new MutationObserver(() => updateShell(shell));
   sideObserver.observe(side, { attributes: true, attributeFilter: ["class"] });
   observers.set(shell, sideObserver);
 
-  shell.addEventListener("click", (event) => {
-    if (!media.matches) return;
-    const menuAction = event.target.closest(".sn-side nav button,.sn-side-bottom button,.sn-new");
-    if (!menuAction) return;
-    window.setTimeout(() => closeDrawer(shell), 0);
-  });
-
-  // Studio historically starts with the desktop sidebar open. On a narrow screen,
-  // close it immediately so content never remains trapped behind the drawer.
+  // Pada layar sempit Studio dimulai dalam bentuk rel ikon, bukan disembunyikan.
+  // Semua ikon menu tetap terlihat dan tombol header dapat membukanya kembali.
   if (media.matches && !side.classList.contains("collapsed")) {
-    clickToggle(shell);
-    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-      updateShell(shell);
-      document.body?.classList.add("sn-mobile-nav-ready");
-    }));
+    collapseRail(shell);
+    window.requestAnimationFrame(() => updateShell(shell));
   } else {
     updateShell(shell);
-    document.body?.classList.add("sn-mobile-nav-ready");
   }
 }
 
 function scan() {
-  const shells = [...document.querySelectorAll(".sn-shell")];
-  shells.forEach(attach);
-  if (!shells.length) {
-    setDocumentLock(false);
-    // Keep the drawer visually suppressed on narrow screens until React mounts
-    // and the controller has synchronized the real sidebar state.
-    document.body?.classList.toggle("sn-mobile-nav-ready", !media.matches);
-  }
+  document.querySelectorAll(".sn-shell").forEach(attach);
 }
 
 const rootObserver = new MutationObserver(scan);
@@ -104,16 +92,17 @@ rootObserver.observe(document.documentElement, { childList: true, subtree: true 
 scan();
 
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || !media.matches) return;
-  document.querySelectorAll(".sn-shell.sn-mobile-sidebar-open").forEach(closeDrawer);
+  if (event.key !== "Escape") return;
+  document.querySelectorAll(".sn-shell").forEach((shell) => {
+    const { side } = elements(shell);
+    if (side && !side.classList.contains("collapsed")) collapseRail(shell);
+  });
 });
 
 function handleViewportChange() {
-  const shells = [...document.querySelectorAll(".sn-shell")];
-  if (!shells.length) document.body?.classList.toggle("sn-mobile-nav-ready", !media.matches);
-  shells.forEach((shell) => {
-    if (media.matches) closeDrawer(shell);
-    else updateShell(shell);
+  document.querySelectorAll(".sn-shell").forEach((shell) => {
+    if (media.matches) collapseRail(shell);
+    updateShell(shell);
   });
 }
 
