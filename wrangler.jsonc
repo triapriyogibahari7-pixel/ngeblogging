@@ -20,6 +20,7 @@
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
     "AUTH_BRANDED_EMAIL_READY": "false",
     "AUTH_EMAIL_FROM": "",
+    "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_RUNTIME": "cloudflare-worker-preview-v3"
   },
   "observability": {
@@ -48,6 +49,7 @@
         "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
         "AUTH_BRANDED_EMAIL_READY": "false",
         "AUTH_EMAIL_FROM": "",
+        "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
         "NARA_RUNTIME": "cloudflare-worker-v3"
       },
       "secrets": {
