@@ -71,7 +71,8 @@ export async function handleRequest(event, env = process.env) {
 
   const method = String(event?.httpMethod || "GET").toUpperCase();
   const authorization = headers.authorization || headers.Authorization || "";
-  if (method === "POST" && !String(authorization).startsWith("Bearer ")) {
+  const explicitGuestPreview = String(env.NARA_ALLOW_GUEST || "").toLowerCase() === "true";
+  if (method === "POST" && !String(authorization).startsWith("Bearer ") && !explicitGuestPreview) {
     return json(401, {
       code: "AUTH_REQUIRED",
       error: "Masuk ke akun Ngeblogging untuk memakai Nara. Kuota produksi dicatat secara akurat pada akun Anda.",
