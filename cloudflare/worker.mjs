@@ -1,5 +1,6 @@
 import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
+import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
 import { handleNaraImage } from "../server/nara-image-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
 
@@ -123,6 +124,7 @@ export default {
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v3",
           hostname: url.hostname,
           billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
+          billingWebhook: Boolean(env.PAYPAL_WEBHOOK_ID),
           imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
           seo: "tenant-edge",
           timestamp: new Date().toISOString(),
@@ -131,6 +133,7 @@ export default {
 
       if (url.pathname === "/api/nara") return await naraResponse(request, env, requestId);
       if (url.pathname === "/api/nara/image") return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
+      if (url.pathname === "/api/billing/paypal/webhook") return protectedJsonEndpoint(request, env, requestId, handlePayPalWebhook);
       if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
       if (url.pathname.startsWith("/api/")) return jsonResponse(404, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
 
