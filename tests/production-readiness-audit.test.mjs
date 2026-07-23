@@ -63,7 +63,7 @@ test("custom domains use authenticated server-side Cloudflare for SaaS operation
 });
 
 
-test("inactive payment methods and the payment menu are removed", () => {
+test("inactive payment methods and the payment menu are hidden", () => {
   assert.match(billing, /paypalReady=Boolean\(config\?\.paypal&&config\?\.paypalWebhook&&String\(config\?\.paypalEnvironment\)\.toLowerCase\(\)==="live"\)/);
   assert.match(billing, /const checkoutReady=paypalReady\|\|localReady/);
   assert.match(billing, /\{checkoutReady&&\(config\?\.plans\|\|\[\]\)\.map/);
@@ -72,7 +72,10 @@ test("inactive payment methods and the payment menu are removed", () => {
   assert.match(billingBridge, /cache: "no-store"/);
   assert.match(billingBridge, /config\.plans\.some/);
   assert.match(billingBridge, /if \(billingOpen\) homeButton\(\)\?\.click\(\)/);
-  assert.match(billingBridge, /button\.remove\(\)/);
+  assert.match(billingBridge, /function conceal\(button\)/);
+  assert.match(billingBridge, /button\.hidden = true/);
+  assert.match(billingBridge, /button\.disabled = true/);
+  assert.doesNotMatch(billingBridge, /button\.remove\(\)/);
   assert.match(index, /billing-availability-bridge\.js/);
 });
 
