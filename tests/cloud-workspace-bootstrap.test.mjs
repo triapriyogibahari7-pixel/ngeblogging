@@ -24,13 +24,16 @@ test("workspace creation is atomic, authenticated, and uses the authoritative 5/
 });
 
 
-test("the Studio create-site action is routed through the server RPC", () => {
+test("the Studio create-site action is routed through one server RPC", () => {
   assert.match(index, /workspace-rpc-bridge\.js/);
   assert.match(workspaceBridge, /\.sn-create-site > button\.sn-primary/);
   assert.match(workspaceBridge, /supabase\.rpc\("create_site_workspace"/);
   assert.match(workspaceBridge, /event\.stopImmediatePropagation/);
   assert.match(workspaceBridge, /ACTIVE_SITE_STORAGE_KEY/);
   assert.match(workspaceBridge, /window\.location\.reload/);
+  const eventStop = workspaceBridge.indexOf("event.preventDefault()");
+  const sessionRead = workspaceBridge.indexOf("supabase.auth.getSession()");
+  assert.ok(eventStop > -1 && sessionRead > -1 && eventStop < sessionRead, "legacy React handler must be stopped before awaiting the session");
 });
 
 
