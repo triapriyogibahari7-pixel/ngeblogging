@@ -1,5 +1,6 @@
 import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
+import { handleNaraImage } from "../server/nara-image-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
 
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
@@ -90,6 +91,15 @@ async function naraResponse(request, env, requestId) {
   return new Response(request.method === "HEAD" ? null : result.body || null, { status: result.statusCode, headers: responseHeaders });
 }
 
+async function protectedJsonEndpoint(request, env, requestId, handler) {
+  const origin = request.headers.get("origin") || "";
+  if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
+  const result = await handler(request, env, requestId);
+  const headers = new Headers(result.headers);
+  for (const [name, value] of securityHeaders(requestId, origin).entries()) headers.set(name, value);
+  return new Response(result.body, { status: result.status, headers });
+}
+
 function withSecurity(response, requestId) {
   const headers = new Headers(response.headers);
   for (const [name, value] of securityHeaders(requestId).entries()) {
@@ -113,22 +123,15 @@ export default {
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v3",
           hostname: url.hostname,
           billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
+          imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
           seo: "tenant-edge",
           timestamp: new Date().toISOString(),
         }, requestId, request.method, origin);
       }
 
       if (url.pathname === "/api/nara") return await naraResponse(request, env, requestId);
-
-      if (url.pathname.startsWith("/api/billing/")) {
-        const origin = request.headers.get("origin") || "";
-        if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
-        const result = await handleBillingRequest(request, env, requestId);
-        const headers = new Headers(result.headers);
-        for (const [name, value] of securityHeaders(requestId, origin).entries()) headers.set(name, value);
-        return new Response(result.body, { status: result.status, headers });
-      }
-
+      if (url.pathname === "/api/nara/image") return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
+      if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
       if (url.pathname.startsWith("/api/")) return jsonResponse(404, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
 
       const discovery = await seoEndpoint(request, env);
