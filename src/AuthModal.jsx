@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import {
   requestPasswordReset,
+  resendSignUpConfirmation,
   signInWithMagicLink,
   signInWithPassword,
   signInWithProvider,
@@ -40,33 +41,15 @@ function GitHubMark() {
 
 function friendlyError(error) {
   const value = String(error?.message || "").toLowerCase();
-  if (value.includes("provider is not enabled")) {
-    return "Provider ini belum diaktifkan di Supabase. Selesaikan pengaturan provider lalu coba lagi.";
-  }
-  if (value.includes("invalid login credentials")) {
-    return "Email atau password tidak cocok. Periksa kembali atau gunakan Lupa password.";
-  }
-  if (value.includes("email not confirmed")) {
-    return "Email belum dikonfirmasi. Periksa kotak masuk dan folder spam Anda.";
-  }
-  if (value.includes("user already registered")) {
-    return "Email ini sudah terdaftar. Silakan masuk atau pulihkan password.";
-  }
-  if (value.includes("password should be")) {
-    return "Password belum memenuhi persyaratan keamanan.";
-  }
-  if (value.includes("rate limit")) {
-    return "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.";
-  }
-  if (value.includes("redirect_uri_mismatch") || value.includes("redirect uri")) {
-    return "Alamat kembali login belum cocok. Periksa Redirect URL provider dan Supabase.";
-  }
-  if (value.includes("access_denied")) {
-    return "Login dibatalkan sebelum izin diberikan. Silakan coba lagi saat siap.";
-  }
-  if (value.includes("expired") || value.includes("invalid token")) {
-    return "Tautan login sudah kedaluwarsa atau tidak valid. Minta tautan baru lalu coba lagi.";
-  }
+  if (value.includes("provider is not enabled")) return "Provider ini belum diaktifkan. Gunakan metode login lain yang tersedia.";
+  if (value.includes("invalid login credentials")) return "Email atau password tidak cocok. Periksa kembali atau gunakan Lupa password.";
+  if (value.includes("email not confirmed")) return "Email belum dikonfirmasi. Kirim ulang verifikasi lalu periksa kotak masuk, Promosi, dan Spam.";
+  if (value.includes("user already registered")) return "Email ini sudah terdaftar. Silakan masuk atau pulihkan password.";
+  if (value.includes("password should be")) return "Password belum memenuhi persyaratan keamanan.";
+  if (value.includes("rate limit") || value.includes("security purposes")) return "Permintaan terlalu sering. Tunggu sebentar sebelum mengirim ulang.";
+  if (value.includes("redirect_uri_mismatch") || value.includes("redirect uri")) return "Alamat kembali login belum cocok dengan konfigurasi produksi.";
+  if (value.includes("access_denied")) return "Login dibatalkan sebelum izin diberikan.";
+  if (value.includes("expired") || value.includes("invalid token")) return "Tautan sudah kedaluwarsa atau tidak valid. Minta tautan baru.";
   return error?.message || "Proses belum berhasil. Silakan coba lagi.";
 }
 
@@ -93,10 +76,13 @@ export default function AuthModal({
   const [success, setSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
   const [busyAction, setBusyAction] = useState("");
+  const [verificationPending, setVerificationPending] = useState(false);
 
   useEffect(() => setMode(initialMode), [initialMode]);
   useEffect(() => {
     if (!initialMessage) return;
+    const pending = String(initialMessage).toLowerCase().includes("email not confirmed");
+    setVerificationPending(pending);
     setSuccess(false);
     setMessage(friendlyError({ message: initialMessage }));
   }, [initialMessage]);
@@ -105,6 +91,7 @@ export default function AuthModal({
     setMode(next);
     setMessage("");
     setSuccess(false);
+    setVerificationPending(false);
     setPassword("");
     setConfirmPassword("");
   };
@@ -117,6 +104,7 @@ export default function AuthModal({
     try {
       await action();
     } catch (error) {
+      if (String(error?.message || "").toLowerCase().includes("email not confirmed")) setVerificationPending(true);
       setMessage(friendlyError(error));
     } finally {
       setBusy(false);
@@ -134,21 +122,30 @@ export default function AuthModal({
       }
 
       if (mode === "signup") {
+        if (fullName.trim().length < 2) throw new Error("Nama lengkap minimal 2 karakter.");
         if (password.length < 8) throw new Error("Password minimal 8 karakter.");
         if (password !== confirmPassword) throw new Error("Konfirmasi password belum sama.");
         const data = await signUpWithPassword(email, password, fullName);
-        if (data.session) onAuthenticated();
-        else {
-          setSuccess(true);
-          setMessage("Akun dibuat. Periksa email Anda untuk mengonfirmasi pendaftaran.");
+        if (data.session) {
+          onAuthenticated();
+          return;
         }
+        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          setVerificationPending(false);
+          setSuccess(false);
+          setMessage("Email ini sudah terdaftar. Masuk dengan password yang benar atau gunakan Lupa password.");
+          return;
+        }
+        setVerificationPending(true);
+        setSuccess(true);
+        setMessage("Pendaftaran diterima. Konfirmasi email diperlukan sebelum login. Gunakan tombol kirim ulang bila pesan belum tiba.");
         return;
       }
 
       if (mode === "forgot") {
         await requestPasswordReset(email);
         setSuccess(true);
-        setMessage("Tautan pemulihan sudah dikirim. Periksa kotak masuk dan folder spam Anda.");
+        setMessage("Tautan pemulihan diminta. Periksa kotak masuk, Promosi, dan Spam.");
         return;
       }
 
@@ -161,17 +158,26 @@ export default function AuthModal({
     });
   };
 
+  const resendVerification = () => {
+    if (!email.trim()) {
+      setSuccess(false);
+      setMessage("Masukkan email pendaftaran terlebih dahulu.");
+      return;
+    }
+    run(async () => {
+      await resendSignUpConfirmation(email);
+      setVerificationPending(true);
+      setSuccess(true);
+      setMessage("Email verifikasi diminta ulang. Tunggu beberapa menit lalu periksa kotak masuk, Promosi, dan Spam.");
+    }, "resend-verification");
+  };
+
   const isPasswordMode = mode === "signin" || mode === "signup" || mode === "recovery";
 
   return (
-    <div
-      className="modal auth-modal"
-      onMouseDown={(event) => event.target === event.currentTarget && mode !== "recovery" && onClose()}
-    >
+    <div className="modal auth-modal" onMouseDown={(event) => event.target === event.currentTarget && mode !== "recovery" && onClose()}>
       <div>
-        {mode !== "recovery" && (
-          <button className="close" onClick={onClose} aria-label="Tutup"><X /></button>
-        )}
+        {mode !== "recovery" && <button className="close" onClick={onClose} aria-label="Tutup"><X /></button>}
         <div className="modal-icon">{mode === "recovery" ? <KeyRound /> : <Sparkles />}</div>
         <h2>{titles[mode]}</h2>
         <p className="auth-intro">
@@ -185,14 +191,7 @@ export default function AuthModal({
           <>
             <div className="oauth-grid" aria-label="Pilihan login sosial">
               {oauthProviders.map(({ id, label, icon: Icon }) => (
-                <button
-                  type="button"
-                  className={`oauth-provider oauth-${id}`}
-                  disabled={busy || !supabaseConfigured}
-                  aria-busy={busyAction === id}
-                  onClick={() => run(() => signInWithProvider(id), id)}
-                  key={id}
-                >
+                <button type="button" className={`oauth-provider oauth-${id}`} disabled={busy || !supabaseConfigured} aria-busy={busyAction === id} onClick={() => run(() => signInWithProvider(id), id)} key={id}>
                   {busyAction === id ? <LoaderCircle className="spin" /> : Icon ? <Icon /> : <b>G</b>}
                   <span>{busyAction === id ? `Menghubungkan ${label}…` : `Lanjutkan dengan ${label}`}</span>
                 </button>
@@ -204,78 +203,36 @@ export default function AuthModal({
         )}
 
         <form className="password-form" onSubmit={submit}>
-          {mode === "signup" && (
-            <label>
-              <span>Nama lengkap</span>
-              <div><UserRound /><input required value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" placeholder="Nama Anda" /></div>
-            </label>
-          )}
-          {mode !== "recovery" && (
-            <label>
-              <span>Email</span>
-              <div><Mail /><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="nama@email.com" /></div>
-            </label>
-          )}
+          {mode === "signup" && <label><span>Nama lengkap</span><div><UserRound /><input required value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" placeholder="Nama Anda" /></div></label>}
+          {mode !== "recovery" && <label><span>Email</span><div><Mail /><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" spellCheck="false" placeholder="nama@email.com" /></div></label>}
           {isPasswordMode && (
             <label>
               <span>{mode === "recovery" ? "Password baru" : "Password"}</span>
               <div>
                 <KeyRound />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={mode === "signin" ? undefined : 8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                  placeholder={mode === "signin" ? "Masukkan password" : "Minimal 8 karakter"}
-                />
-                <button type="button" className="show-password" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}>
-                  {showPassword ? <EyeOff /> : <Eye />}
-                </button>
+                <input type={showPassword ? "text" : "password"} required minLength={mode === "signin" ? undefined : 8} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder={mode === "signin" ? "Masukkan password" : "Minimal 8 karakter"} />
+                <button type="button" className="show-password" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}>{showPassword ? <EyeOff /> : <Eye />}</button>
               </div>
             </label>
           )}
-          {(mode === "signup" || mode === "recovery") && (
-            <label>
-              <span>Ulangi password</span>
-              <div><KeyRound /><input type={showPassword ? "text" : "password"} required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" placeholder="Ketik ulang password" /></div>
-            </label>
-          )}
-          {mode === "signin" && (
-            <button className="forgot-link" type="button" onClick={() => changeMode("forgot")}>Lupa password?</button>
-          )}
+          {(mode === "signup" || mode === "recovery") && <label><span>Ulangi password</span><div><KeyRound /><input type={showPassword ? "text" : "password"} required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" placeholder="Ketik ulang password" /></div></label>}
+          {mode === "signin" && <button className="forgot-link" type="button" onClick={() => changeMode("forgot")}>Lupa password?</button>}
           <button className="auth-submit" disabled={busy || !supabaseConfigured}>
             {busyAction === "form" ? "Memproses…" : mode === "signin" ? "Masuk dengan email" : mode === "signup" ? "Buat akun" : mode === "forgot" ? "Kirim tautan pemulihan" : "Simpan password baru"}
             {busyAction !== "form" && <ArrowRight />}
           </button>
         </form>
 
-        {mode === "signin" && (
-          <button className="magic-link-button" disabled={busy || !supabaseConfigured} onClick={() => {
-            if (!email) {
-              setMessage("Masukkan email terlebih dahulu.");
-              return;
-            }
-            run(async () => {
-              await signInWithMagicLink(email);
-              setSuccess(true);
-              setMessage("Tautan masuk sudah dikirim. Periksa email Anda.");
-            }, "magic-link");
-          }}>
-            Masuk tanpa password melalui email
-          </button>
-        )}
+        {mode === "signin" && <button className="magic-link-button" disabled={busy || !supabaseConfigured} onClick={() => {
+          if (!email) { setMessage("Masukkan email terlebih dahulu."); return; }
+          run(async () => { await signInWithMagicLink(email); setSuccess(true); setMessage("Tautan masuk diminta. Periksa email Anda."); }, "magic-link");
+        }}>Masuk tanpa password melalui email</button>}
+
+        {verificationPending && <button className="magic-link-button" type="button" disabled={busy || !supabaseConfigured} onClick={resendVerification}>{busyAction === "resend-verification" ? "Mengirim ulang…" : "Kirim ulang email verifikasi"}</button>}
 
         {message && <p className={`auth-message ${success ? "success" : ""}`} role="status" aria-live="polite">{message}</p>}
 
-        {!supabaseConfigured && (
-          <div className="demo-notice">
-            <b>Mode pratinjau aktif</b>
-            <span>Environment variables Supabase belum tersedia pada deployment ini.</span>
-            <button onClick={onDemo}>Masuk Studio demo</button>
-          </div>
-        )}
+        {!supabaseConfigured && <div className="demo-notice"><b>Mode pratinjau aktif</b><span>Environment variables Supabase belum tersedia pada deployment ini.</span><button onClick={onDemo}>Masuk Studio demo</button></div>}
 
         {mode === "signin" && <p className="auth-switch">Belum punya akun? <button onClick={() => changeMode("signup")}>Daftar gratis</button></p>}
         {mode === "signup" && <p className="auth-switch">Sudah punya akun? <button onClick={() => changeMode("signin")}>Masuk</button></p>}
