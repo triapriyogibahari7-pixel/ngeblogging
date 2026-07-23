@@ -1,1 +1,1 @@
-export { default } from "./StudioNext.jsx";
+export { default } from "./StudioSecure.jsx";
