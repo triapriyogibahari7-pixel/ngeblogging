@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Blocks, Check, Database, FolderKanban, Github, Image, LoaderCircle, Plus, Save, Server, ShieldCheck, Sparkles, Trash2, X, Zap } from "lucide-react";
+import { Blocks, Check, Database, FolderKanban, GitBranch, Image, LoaderCircle, Plus, Save, Server, ShieldCheck, Sparkles, Trash2, X, Zap } from "lucide-react";
 import {
   createNaraMemory, createNaraProject, deleteNaraMemory, deleteNaraProject,
   disableIntegration, INTEGRATION_CATALOG, listNaraMemories, listNaraProjects,
@@ -10,7 +10,7 @@ import { supabase } from "./lib/supabase";
 import "./nara-workspace.css";
 
 function providerIcon(id) {
-  if (id === "github") return Github;
+  if (id === "github") return GitBranch;
   if (id === "supabase") return Database;
   if (id === "cloudflare") return Server;
   return Blocks;
