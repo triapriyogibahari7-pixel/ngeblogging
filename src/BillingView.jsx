@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Building2, Check, Clock3, CreditCard, Download, ExternalLink, LoaderCircle,
+  Building2, Check, Clock3, CreditCard, Download, LoaderCircle,
   LockKeyhole, QrCode, ReceiptText, RefreshCw, ShieldCheck, WalletCards, XCircle,
 } from "lucide-react";
 import { supabase } from "./lib/supabase";
@@ -42,9 +42,9 @@ function downloadBlob(blob,filename) {
   anchor.href=url;anchor.download=filename;document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
 
-export default function BillingView({ user, setToast }) {
+export default function BillingView({ setToast }) {
   const [config,setConfig]=useState(null);
-  const [account,setAccount]=useState({profile:{},orders:[]});
+  const [account,setAccount]=useState({profile:{plan:"free"},orders:[]});
   const [busy,setBusy]=useState("");
   const [result,setResult]=useState(null);
   const [localResult,setLocalResult]=useState(null);
@@ -52,8 +52,15 @@ export default function BillingView({ user, setToast }) {
 
   const load=async()=>{
     setLoading(true);
-    try { const [configuration,accountData]=await Promise.all([request("/api/billing/config"),request("/api/billing/account")]);setConfig(configuration);setAccount(accountData); }
-    catch(error){setToast(error.message);}finally{setLoading(false);}
+    try {
+      const configuration=await request("/api/billing/config");
+      setConfig(configuration);
+      try { setAccount(await request("/api/billing/account")); }
+      catch(error) { console.warn("Billing account unavailable",error); setAccount((current)=>current?.profile?current:{profile:{plan:"free"},orders:[]}); }
+    } catch(error) {
+      setConfig({paypal:false,paypalWebhook:false,paypalEnvironment:"disabled",localGateway:false,plans:[]});
+      setToast("Pembayaran belum dibuka. Paket gratis tetap aktif.");
+    } finally { setLoading(false); }
   };
 
   useEffect(()=>{load();},[]);
@@ -66,13 +73,19 @@ export default function BillingView({ user, setToast }) {
     request("/api/billing/paypal/capture",{orderId}).then(async(data)=>{setResult(data);setToast(data.completed?"Pembayaran selesai dan paket aktif":`Status pembayaran: ${data.status}`);await load();}).catch((error)=>setToast(error.message)).finally(()=>{["billing","token","PayerID"].forEach((key)=>url.searchParams.delete(key));window.history.replaceState({},document.title,`${url.pathname}${url.search}${url.hash}`);setBusy("");});
   },[]);
 
+  const paypalReady=Boolean(config?.paypal&&config?.paypalWebhook&&String(config?.paypalEnvironment).toLowerCase()==="live");
+  const localReady=Boolean(config?.localGateway);
+  const checkoutReady=paypalReady||localReady;
+
   const startPayPal=async(planId)=>{
+    if(!paypalReady)return;
     setBusy(`paypal:${planId}`);setLocalResult(null);
     try { const data=await request("/api/billing/paypal/create",{planId,idempotencyKey:crypto.randomUUID()});if(!data.approveUrl)throw new Error("Tautan persetujuan PayPal tidak ditemukan.");window.location.assign(data.approveUrl); }
     catch(error){setToast(error.message);setBusy("");}
   };
 
   const startLocal=async(method,planId)=>{
+    if(!localReady)return;
     setBusy(`${method}:${planId}`);setLocalResult(null);
     try { const data=await request("/api/billing/local/create",{method,planId,idempotencyKey:crypto.randomUUID()});setLocalResult({...data,method,planId});if(data.checkoutUrl)window.location.assign(data.checkoutUrl);else setToast("Instruksi pembayaran berhasil dibuat."); }
     catch(error){setToast(error.message);}finally{setBusy("");}
@@ -89,15 +102,22 @@ export default function BillingView({ user, setToast }) {
   const orders=account.orders||[];
   const completedCount=useMemo(()=>orders.filter((order)=>order.status==="completed").length,[orders]);
 
-  return <div className="bv-page"><header><div><small>PEMBAYARAN & PAKET</small><h1>Checkout modern, terverifikasi server, dan dapat diaudit.</h1><p>Posts dan Pages tetap bebas dibuat. Paket berbayar membiayai model AI premium, generasi gambar, prioritas pemrosesan, dan infrastruktur tambahan.</p></div><span><ShieldCheck/> Server verified</span></header>
-    <section className="bv-account"><div><small>PAKET AKTIF</small><h2>{currentPlan.toUpperCase()}</h2><p>{expiresAt?`Aktif sampai ${new Intl.DateTimeFormat("id-ID",{dateStyle:"long"}).format(new Date(expiresAt))}`:"Paket gratis tidak memiliki tanggal kedaluwarsa."}</p></div><div className="bv-account-stats"><article><b>{orders.length}</b><span>Transaksi</span></article><article><b>{completedCount}</b><span>Selesai</span></article><button disabled={loading} onClick={load}>{loading?<LoaderCircle className="spin"/>:<RefreshCw/>} Perbarui</button></div></section>
-    {busy==="capture"&&<div className="bv-processing"><LoaderCircle className="spin"/><div><b>Memverifikasi capture PayPal</b><p>Server memeriksa order, pemilik, currency, nominal, capture ID, dan status final.</p></div></div>}
-    {result?.completed&&<div className="bv-success"><Check/><div><b>Pembayaran selesai</b><p>Paket aktif sampai {new Intl.DateTimeFormat("id-ID",{dateStyle:"long"}).format(new Date(result.expiresAt))}. Invoice tersedia pada riwayat transaksi.</p></div></div>}
+  if(loading)return <div className="bv-page"><div className="bv-loading"><LoaderCircle className="spin"/>Memeriksa kesiapan pembayaran produksi…</div></div>;
+
+  return <div className="bv-page"><header><div><small>PAKET AKUN</small><h1>Paket yang benar-benar aktif saja.</h1><p>Ngeblogging tidak menampilkan checkout, QR, rekening, atau tombol bayar sebelum merchant, webhook, nominal, dan aktivasi paket lolos konfigurasi produksi.</p></div><span><ShieldCheck/> {checkoutReady?"Checkout produksi siap":"Paket gratis aktif"}</span></header>
+    <section className="bv-account"><div><small>PAKET AKTIF</small><h2>{currentPlan.toUpperCase()}</h2><p>{expiresAt?`Aktif sampai ${new Intl.DateTimeFormat("id-ID",{dateStyle:"long"}).format(new Date(expiresAt))}`:"Paket gratis tidak memiliki tanggal kedaluwarsa."}</p></div><div className="bv-account-stats"><article><b>{orders.length}</b><span>Transaksi</span></article><article><b>{completedCount}</b><span>Selesai</span></article><button onClick={load}><RefreshCw/> Perbarui</button></div></section>
+    {busy==="capture"&&<div className="bv-processing"><LoaderCircle className="spin"/><div><b>Memverifikasi capture PayPal</b><p>Server memeriksa pemilik, currency, nominal, capture ID, webhook, dan status final.</p></div></div>}
+    {result?.completed&&<div className="bv-success"><Check/><div><b>Pembayaran selesai</b><p>Paket aktif sampai {new Intl.DateTimeFormat("id-ID",{dateStyle:"long"}).format(new Date(result.expiresAt))}.</p></div></div>}
     {localResult&&!localResult.checkoutUrl&&<section className="bv-local-result"><header><div><small>INSTRUKSI PEMBAYARAN</small><h2>{localResult.invoiceNumber}</h2></div><i>{statusLabel(localResult.status)}</i></header>{localResult.qrImageUrl&&<img src={localResult.qrImageUrl} alt="QR pembayaran"/>}{localResult.qrString&&<label>Data QRIS<textarea readOnly value={localResult.qrString}/></label>}{localResult.virtualAccount&&<label>Nomor virtual account<div><code>{localResult.virtualAccount}</code><button onClick={()=>navigator.clipboard.writeText(localResult.virtualAccount)}>Salin</button></div></label>}{localResult.expiresAt&&<p><Clock3/> Berlaku sampai {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short"}).format(new Date(localResult.expiresAt))}</p>}</section>}
-    <section className="bv-plans"><article><small>FREE</small><h2>Rp0</h2><p>Fondasi publikasi untuk semua pengguna.</p><ul><li>Posts dan Pages</li><li>Subdomain *.ngeblogging.com</li><li>100 tema dan 25 widget</li><li>Cadangan serta pemulihan konten</li><li>SEO tenant dan Nara Mini</li></ul><button disabled><Check/> Paket dasar</button></article>{(config?.plans||[]).map((plan)=><article key={plan.id} className={plan.id.includes("yearly")?"featured":""}><small>{plan.id.replaceAll("_"," ").toUpperCase()}</small><h2>{money(plan.currency,plan.amount)}</h2><p>{plan.label} · {plan.durationDays} hari</p><ul><li>Model Nara premium</li><li>Generator gambar kualitas lebih tinggi</li><li>Prioritas pemrosesan</li><li>Riwayat dan proyek lebih panjang</li><li>Invoice dan histori transaksi</li></ul><button className="bv-primary" disabled={!config?.paypal||Boolean(busy)} onClick={()=>startPayPal(plan.id)}>{busy===`paypal:${plan.id}`?<><LoaderCircle className="spin"/>Menyiapkan…</>:<><WalletCards/>PayPal Checkout</>}</button>{plan.local&&<div className="bv-local-buttons"><button disabled={!config?.localGateway||Boolean(busy)} onClick={()=>startLocal("qris",plan.id)}><QrCode/> QRIS {money(plan.local.currency,plan.local.amount)}</button><button disabled={!config?.localGateway||Boolean(busy)} onClick={()=>startLocal("bank_transfer",plan.id)}><Building2/> Bank/VA</button></div>}</article>)}</section>
-    <section className="bv-methods"><header><div><h2>Metode pembayaran</h2><p>Setiap jalur memakai idempotency key, signature, webhook deduplication, rekonsiliasi nominal, dan aktivasi paket yang dapat dipulihkan.</p></div></header><div><article><span><WalletCards/></span><div><b>PayPal Orders v2</b><p>{config?.paypal?`Merchant ${config.paypalMerchantEmail||"terkonfigurasi"} · ${config.paypalEnvironment}`:"PAYPAL_CLIENT_ID dan PAYPAL_CLIENT_SECRET belum dipasang."}</p></div><i className={config?.paypal&&config?.paypalWebhook?"ready":"pending"}>{config?.paypal&&config?.paypalWebhook?"Checkout + webhook siap":"Perlu secret/webhook"}</i></article><article><span><QrCode/></span><div><b>QRIS</b><p>Aktif melalui adapter gateway Indonesia ketika URL, HMAC secret, dan harga IDR telah dikonfigurasi.</p></div><i className={config?.localGateway?"ready":"pending"}>{config?.localGateway?"Adapter siap":"Belum dikonfigurasi"}</i></article><article><span><Building2/></span><div><b>Transfer bank & virtual account</b><p>Instruksi, kedaluwarsa, callback, dan status akhir berasal dari gateway lokal terverifikasi.</p></div><i className={config?.localGateway?"ready":"pending"}>{config?.localGateway?"Adapter siap":"Belum dikonfigurasi"}</i></article><article><span><CreditCard/></span><div><b>Kartu & e-wallet</b><p>Dapat diproses PayPal atau adapter lokal tanpa menyimpan nomor kartu pada server Ngeblogging.</p></div><i className="pending">Bergantung merchant</i></article></div></section>
-    <section className="bv-history"><header><div><h2>Riwayat transaksi & invoice</h2><p>Data berasal dari catatan server, bukan state browser.</p></div><span>{orders.length} transaksi</span></header>{loading?<div className="bv-loading"><LoaderCircle className="spin"/>Memuat transaksi…</div>:orders.length?<div className="bv-order-list">{orders.map((order)=><article key={order.id}><span className={`status ${order.status}`}>{["failed","cancelled","refunded"].includes(order.status)?<XCircle/>:order.status==="completed"?<Check/>:<Clock3/>}</span><div><b>{order.invoice_number||order.provider_order_id}</b><small>{order.plan.replaceAll("_"," ")} · {order.payment_method||order.provider} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short"}).format(new Date(order.created_at))}</small></div><strong>{money(order.currency,order.amount)}</strong><i className={order.status}>{statusLabel(order.status)}</i><button disabled={busy===`invoice:${order.id}`} onClick={()=>downloadInvoice(order)}>{busy===`invoice:${order.id}`?<LoaderCircle className="spin"/>:<Download/>} Invoice</button></article>)}</div>:<div className="bv-empty"><ReceiptText/><h3>Belum ada transaksi</h3><p>Invoice akan muncul setelah checkout dibuat.</p></div>}</section>
-    <section className="bv-security"><article><LockKeyhole/><b>Secret hanya di server</b><p>Client secret, service role, webhook ID, dan HMAC gateway tidak pernah masuk bundle browser.</p></article><article><ShieldCheck/><b>Nominal dikunci server</b><p>Capture dibandingkan dengan plan, amount, currency, pemilik order, dan invoice yang tersimpan.</p></article><article><ReceiptText/><b>Audit dan invoice</b><p>Order, capture, event webhook, kegagalan, refund, masa aktif, dan invoice dicatat untuk rekonsiliasi.</p></article></section>
-    <footer>Tujuan merchant yang diminta: <b>{config?.paypalMerchantEmail||"triapriyogibahari9@gmail.com"}</b>. Penerima dana sebenarnya mengikuti kredensial merchant PayPal atau gateway lokal yang aktif.</footer>
+
+    <section className="bv-plans"><article><small>FREE</small><h2>Rp0</h2><p>Fondasi publikasi yang aktif untuk setiap akun.</p><ul><li>5 situs gratis per akun</li><li>Subdomain *.ngeblogging.com</li><li>Posts, Pages, media, tema, dan cadangan</li><li>SEO tenant di Cloudflare edge</li><li>Maksimum 12 situs setelah peningkatan paket</li></ul><button disabled><Check/> Paket aktif</button></article>{checkoutReady&&(config?.plans||[]).map((plan)=><article key={plan.id} className={plan.id.includes("yearly")?"featured":""}><small>{plan.id.replaceAll("_"," ").toUpperCase()}</small><h2>{money(plan.currency,plan.amount)}</h2><p>{plan.label} · {plan.durationDays} hari</p><ul><li>Model Nara premium</li><li>Generator gambar kualitas lebih tinggi</li><li>Prioritas pemrosesan</li><li>Riwayat dan proyek lebih panjang</li><li>Invoice dan histori transaksi</li></ul>{paypalReady&&<button className="bv-primary" disabled={Boolean(busy)} onClick={()=>startPayPal(plan.id)}>{busy===`paypal:${plan.id}`?<><LoaderCircle className="spin"/>Menyiapkan…</>:<><WalletCards/>PayPal Checkout</>}</button>}{localReady&&plan.local&&<div className="bv-local-buttons"><button disabled={Boolean(busy)} onClick={()=>startLocal("qris",plan.id)}><QrCode/> QRIS {money(plan.local.currency,plan.local.amount)}</button><button disabled={Boolean(busy)} onClick={()=>startLocal("bank_transfer",plan.id)}><Building2/> Bank/VA</button></div>}</article>)}</section>
+
+    {!checkoutReady&&<section className="bv-methods"><header><div><h2>Pembayaran belum dibuka</h2><p>Tidak ada tombol checkout palsu atau metode setengah jadi. Fitur berbayar baru akan muncul setelah merchant live, webhook terverifikasi, penyimpanan transaksi, dan aktivasi paket siap.</p></div></header><div><article><span><LockKeyhole/></span><div><b>Tidak menerima dana</b><p>Saat ini pengguna tetap memakai paket gratis. Tidak ada permintaan pembayaran yang dibuat dari halaman ini.</p></div><i className="ready">Aman</i></article><article><span><ShieldCheck/></span><div><b>Peluncuran terkendali</b><p>PayPal, QRIS, bank, kartu, dan e-wallet hanya ditampilkan ketika jalur terkait benar-benar aktif.</p></div><i className="pending">Belum dibuka</i></article></div></section>}
+
+    {checkoutReady&&<section className="bv-methods"><header><div><h2>Metode pembayaran aktif</h2><p>Hanya jalur produksi yang lolos pemeriksaan konfigurasi yang ditampilkan.</p></div></header><div>{paypalReady&&<article><span><WalletCards/></span><div><b>PayPal Orders v2</b><p>Merchant live dan webhook tersedia.</p></div><i className="ready">Aktif</i></article>}{localReady&&<article><span><QrCode/></span><div><b>Gateway Indonesia</b><p>QRIS, transfer bank, atau virtual account aktif melalui adapter terverifikasi.</p></div><i className="ready">Aktif</i></article>}<article><span><CreditCard/></span><div><b>Nominal dikunci server</b><p>Browser tidak menentukan harga final dan tidak menyimpan nomor kartu.</p></div><i className="ready">Terverifikasi</i></article></div></section>}
+
+    {orders.length>0&&<section className="bv-history"><header><div><h2>Riwayat transaksi & invoice</h2><p>Data berasal dari catatan server.</p></div><span>{orders.length} transaksi</span></header><div className="bv-order-list">{orders.map((order)=><article key={order.id}><span className={`status ${order.status}`}>{["failed","cancelled","refunded"].includes(order.status)?<XCircle/>:order.status==="completed"?<Check/>:<Clock3/>}</span><div><b>{order.invoice_number||order.provider_order_id}</b><small>{order.plan.replaceAll("_"," ")} · {order.payment_method||order.provider} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short"}).format(new Date(order.created_at))}</small></div><strong>{money(order.currency,order.amount)}</strong><i className={order.status}>{statusLabel(order.status)}</i><button disabled={busy===`invoice:${order.id}`} onClick={()=>downloadInvoice(order)}>{busy===`invoice:${order.id}`?<LoaderCircle className="spin"/>:<Download/>} Invoice</button></article>)}</div></section>}
+
+    <section className="bv-security"><article><LockKeyhole/><b>Secret hanya di server</b><p>Client secret, service role, webhook ID, dan HMAC gateway tidak masuk bundle browser.</p></article><article><ShieldCheck/><b>Nominal dikunci server</b><p>Capture dibandingkan dengan plan, amount, currency, pemilik order, dan invoice.</p></article><article><ReceiptText/><b>Aktivasi dapat diaudit</b><p>Order, capture, webhook, kegagalan, refund, masa aktif, dan invoice dicatat.</p></article></section>
   </div>;
 }
