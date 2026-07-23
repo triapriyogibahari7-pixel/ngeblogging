@@ -11,6 +11,12 @@ const requiredFiles = [
   "server/nara-handler.mjs",
   "wrangler.jsonc",
   "public/_headers",
+  "src/cloudflare-media-bridge.js",
+  "src/editor-toolbar-bridge.js",
+  "src/workspace-profile-bridge.js",
+  "src/workspace-activation-bridge.js",
+  "supabase/migrations/202607230200_cloudflare_public_media.sql",
+  "supabase/migrations/202607230210_profile_website.sql",
   ".github/workflows/ci.yml",
   ".github/workflows/cloudflare.yml",
   ".github/workflows/production.yml",
@@ -32,6 +38,12 @@ if (existsSync(new URL("../netlify.toml", import.meta.url))) {
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 for (const [name, version] of Object.entries({ ...packageJson.dependencies, ...packageJson.devDependencies })) {
   if (/^(latest|next)$|^[~^*]/.test(version)) throw new Error(`Dependency ${name} belum dipin: ${version}`);
+}
+if (!packageJson.scripts["deploy:cloudflare"]?.includes("--env production")) {
+  throw new Error("Deployment Cloudflare wajib memakai environment production.");
+}
+if (!packageJson.scripts["cloudflare:preview-dry-run"]?.includes("wrangler versions upload")) {
+  throw new Error("Preview Cloudflare wajib divalidasi dengan versions upload.");
 }
 
 const compose = await readFile(new URL("../compose.production.yml", import.meta.url), "utf8");
@@ -56,17 +68,20 @@ if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY)=\s*(?!REPLACE_ME|sb_publishable_RE
 }
 
 const wrangler = JSON.parse(await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
-const routes = new Set((wrangler.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
+const cloudflareProduction = wrangler.env?.production || {};
+const routes = new Set((cloudflareProduction.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
 for (const route of ["ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route Cloudflare wajib belum tersedia: ${route}`);
 }
+if (wrangler.routes || wrangler.secrets) throw new Error("Preview Cloudflare tidak boleh mengklaim route atau secret produksi.");
 if (!wrangler.compatibility_flags?.includes("nodejs_compat")) throw new Error("nodejs_compat belum aktif.");
 if (wrangler.assets?.not_found_handling !== "single-page-application") throw new Error("SPA fallback Cloudflare belum aktif.");
 if (!wrangler.assets?.run_worker_first?.includes("/api/*")) throw new Error("API belum diprioritaskan ke Worker.");
-if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-v2") throw new Error("Runtime Cloudflare belum memakai versi terbaru.");
+if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v2") throw new Error("Runtime preview Cloudflare belum terisolasi.");
+if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v2") throw new Error("Runtime produksi Cloudflare belum memakai versi terbaru.");
 for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
-  if (!wrangler.secrets?.required?.includes(secret)) throw new Error(`Secret wajib belum dideklarasikan: ${secret}`);
-  if (Object.hasOwn(wrangler.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
+  if (!cloudflareProduction.secrets?.required?.includes(secret)) throw new Error(`Secret wajib belum dideklarasikan: ${secret}`);
+  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
@@ -82,5 +97,8 @@ const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudfla
 if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) {
   throw new Error("Deployment Cloudflare belum memiliki activation gate.");
 }
+if (!cloudflareWorkflow.includes("/api/health")) {
+  throw new Error("Deployment Cloudflare belum memiliki smoke test health endpoint.");
+}
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, Cloudflare wildcard aktif, secret tervalidasi, dan jalur pemulihan di-hardening.`);
+console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, preview terisolasi, wildcard produksi aktif, secret tervalidasi, dan jalur pemulihan di-hardening.`);
