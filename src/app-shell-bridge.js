@@ -2,17 +2,40 @@ let installPrompt = null;
 let installButton = null;
 let registration = null;
 
+function mobileUserAgent() {
+  if (navigator.userAgentData?.mobile === true) return true;
+  return /Android.+Mobile|iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent || "");
+}
+
+function coarsePointer() {
+  return window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(any-pointer: coarse)").matches;
+}
+
+function physicalShortSide() {
+  const values = [window.screen?.width, window.screen?.height]
+    .map(Number)
+    .filter((value) => Number.isFinite(value) && value > 0);
+  return values.length ? Math.min(...values) : window.innerWidth;
+}
+
 function deviceMode() {
   const width = window.innerWidth;
-  if (width <= 600) return "mobile";
+  const phoneLike = mobileUserAgent() || width <= 760 || (coarsePointer() && physicalShortSide() <= 760);
+  if (phoneLike) return "mobile";
   if (width <= 1024) return "tablet";
   if (width <= 1440) return "laptop";
   return "desktop";
 }
 
 function syncDeviceMode() {
-  document.documentElement.dataset.deviceMode = deviceMode();
+  const mode = deviceMode();
+  const previous = document.documentElement.dataset.deviceMode;
+  document.documentElement.dataset.deviceMode = mode;
   document.documentElement.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
+  document.documentElement.dataset.pointer = coarsePointer() ? "coarse" : "fine";
+  if (previous && previous !== mode) {
+    window.dispatchEvent(new CustomEvent("ngeblogging:device-mode", { detail: { mode, previous } }));
+  }
 }
 
 function isStandalone() {
@@ -65,8 +88,16 @@ async function registerServiceWorker() {
       const worker = registration.installing;
       if (!worker) return;
       worker.addEventListener("statechange", () => {
-        if (worker.state === "installed" && navigator.serviceWorker.controller) document.documentElement.dataset.appUpdate = "ready";
+        if (worker.state === "installed" && navigator.serviceWorker.controller) {
+          document.documentElement.dataset.appUpdate = "ready";
+          worker.postMessage({ type: "SKIP_WAITING" });
+        }
       });
+    });
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (sessionStorage.getItem("ngeblogging-sw-reloaded") === "1") return;
+      sessionStorage.setItem("ngeblogging-sw-reloaded", "1");
+      window.location.reload();
     });
   } catch (error) {
     console.warn("PWA registration failed", error);
@@ -89,7 +120,9 @@ window.addEventListener("appinstalled", () => {
 window.addEventListener("online", setNetworkState);
 window.addEventListener("offline", setNetworkState);
 window.addEventListener("resize", syncDeviceMode, { passive: true });
+window.addEventListener("orientationchange", syncDeviceMode, { passive: true });
 window.matchMedia("(orientation: portrait)").addEventListener?.("change", syncDeviceMode);
+window.matchMedia("(pointer: coarse)").addEventListener?.("change", syncDeviceMode);
 
 const observer = new MutationObserver(() => ensureInstallButton());
 observer.observe(document.documentElement, { childList: true, subtree: true });
