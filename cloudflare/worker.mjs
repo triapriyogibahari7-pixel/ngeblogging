@@ -1,4 +1,4 @@
-import { handleRequest } from "../server/nara-handler.mjs";
+import { handleRequest } from "../server/nara-runtime.mjs";
 
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "OPTIONS"]);
@@ -96,9 +96,8 @@ async function naraResponse(request, env, requestId) {
 
   const headers = Object.fromEntries(request.headers.entries());
   const address = clientAddress(request).slice(0, 80);
+  headers["x-client-ip"] = address;
   headers["x-forwarded-for"] = address;
-  // Compatibility header for the portable handler; Cloudflare remains the active runtime.
-  headers["x-nf-client-connection-ip"] = address;
   headers["x-request-id"] = requestId;
   if (origin) headers.origin = String(env.PUBLIC_SITE_URL || DEFAULT_SITE_ORIGIN).replace(/\/$/, "");
 
