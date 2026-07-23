@@ -10,7 +10,8 @@ const appShell = readFileSync(new URL("../src/app-shell-bridge.js", import.meta.
 const bridge = readFileSync(new URL("../src/site-favicon-bridge.js", import.meta.url), "utf8");
 const mobile = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
 const production = readFileSync(new URL("../src/studio-production-audit.css", import.meta.url), "utf8");
-const deviceMode = readFileSync(new URL("../src/studio-device-mode.css", import.meta.url), "utf8");
+const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
+const guard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
 const seo = readFileSync(new URL("../server/seo-handler.mjs", import.meta.url), "utf8");
 
 
@@ -24,6 +25,7 @@ test("main Ngeblogging favicon and PWA shell are installable and update safely",
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
+  assert.match(serviceWorker, /ngeblogging-app-v5-20260724/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
@@ -65,10 +67,11 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 });
 
 
-test("Studio uses one accessible sidebar toggle and real phones never keep a rail", () => {
+test("Studio uses one accessible edge toggle and no bottom navigation", () => {
   assert.match(index, /studio-production-audit\.css/);
-  assert.match(index, /studio-device-mode\.css/);
+  assert.match(index, /studio-mobile-critical\.css/);
   assert.match(index, /studio-mobile-navigation\.js/);
+  assert.match(index, /studio-runtime-layout-guard\.js/);
   assert.ok(index.indexOf("app-shell-bridge.js") < index.indexOf("studio-mobile-navigation.js"));
   assert.match(mobile, /const COMPACT_QUERY = "\(max-width: 1024px\)"/);
   assert.match(mobile, /const PHONE_QUERY = "\(max-width: 760px\)"/);
@@ -82,7 +85,9 @@ test("Studio uses one accessible sidebar toggle and real phones never keep a rai
   assert.doesNotMatch(mobile, /createElement\("button"\)[\s\S]*sn-side-close/);
   assert.match(production, /--sn-rail:72px;/);
   assert.match(production, /--sn-panel:240px;/);
-  assert.match(deviceMode, /html\[data-device-mode="mobile"\] \.sn-side\.collapsed/);
-  assert.match(deviceMode, /margin-left:0!important/);
-  assert.match(deviceMode, /\.sn-mobile-nav\{[\s\S]*display:grid!important/);
+  assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
+  assert.match(critical, /\.sn-side\.collapsed\+\.sn-main \.sn-icon\{left:12px!important\}/);
+  assert.match(critical, /\.sn-side:not\(\.collapsed\)\+\.sn-main \.sn-icon\{left:calc\(var\(--sn-phone-panel\) - 22px\)!important\}/);
+  assert.match(guard, /removeLegacyControls\(shell\)/);
+  assert.match(guard, /dataset\.sidebarAuthority = "single"/);
 });
