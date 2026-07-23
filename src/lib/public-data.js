@@ -34,7 +34,7 @@ export async function listPublishedContent({siteId,kind=null,cursor=null,pageSiz
 }
 
 export async function listPublishedPages(siteId) {
-  const { data,error } = await client().from("contents").select("id,title,slug,excerpt,metadata,published_at,updated_at").eq("site_id",siteId).eq("kind","page").eq("status","published").eq("visibility","public").order("metadata->menuOrder",{ascending:true}).order("title").limit(100);
+  const { data,error } = await client().from("contents").select("id,title,slug,excerpt,metadata,published_at,updated_at").eq("site_id",siteId).eq("kind","page").eq("status","published").eq("visibility","public").order("title").limit(100);
   if(error)throw error;
   return data || [];
 }
