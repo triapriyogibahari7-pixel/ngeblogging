@@ -8,6 +8,7 @@ const manifest = JSON.parse(readFileSync(new URL("../public/site.webmanifest", i
 const bridge = readFileSync(new URL("../src/site-favicon-bridge.js", import.meta.url), "utf8");
 const mobile = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
 const polish = readFileSync(new URL("../src/studio-mobile-polish.css", import.meta.url), "utf8");
+const responsive = readFileSync(new URL("../src/studio-responsive-fix.css", import.meta.url), "utf8");
 const seo = readFileSync(new URL("../server/seo-handler.mjs", import.meta.url), "utf8");
 
 
@@ -48,17 +49,19 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 });
 
 
-test("mobile Studio opens full width and uses an accessible drawer", () => {
+test("mobile Studio keeps an accessible collapsible icon rail", () => {
   assert.match(index, /studio-mobile-polish\.css/);
   assert.match(index, /studio-mobile-navigation\.js/);
   assert.match(mobile, /if \(media\.matches && !side\.classList\.contains\("collapsed"\)\)/);
-  assert.match(mobile, /clickToggle\(shell\)/);
-  assert.match(mobile, /sn-sidebar-backdrop/);
+  assert.match(mobile, /collapseRail\(shell\)/);
+  assert.match(mobile, /sn-side-close/);
   assert.match(mobile, /aria-expanded/);
   assert.match(mobile, /event\.key !== "Escape"/);
-  assert.match(mobile, /\.sn-side nav button,\.sn-side-bottom button,\.sn-new/);
-  assert.match(polish, /body:not\(\.sn-mobile-nav-ready\) \.sn-side/);
-  assert.match(polish, /\.sn-mobile-sidebar-open>\.sn-sidebar-backdrop/);
+  assert.match(mobile, /labelSidebarButtons\(side\)/);
+  assert.doesNotMatch(mobile, /sn-sidebar-backdrop/);
+  assert.doesNotMatch(mobile, /sn-mobile-sidebar-lock/);
+  assert.match(responsive, /\.sn-side\.collapsed\{[\s\S]*width:70px!important/);
+  assert.match(responsive, /\.sn-mobile-nav,\.sn-mobile-sheet-layer,\.sn-sidebar-backdrop\{display:none!important\}/);
   assert.match(polish, /font-size:13px!important/);
   assert.match(polish, /@media\(max-width:430px\)/);
 });
