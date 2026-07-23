@@ -2,6 +2,9 @@ import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import { handleRequest } from "../server/nara-runtime.mjs";
+import { handleNaraImage } from "../server/nara-image-handler.mjs";
+import { handleBillingRequest } from "../server/billing-handler.mjs";
+import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
 
 const DEFAULT_MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 
@@ -17,6 +20,7 @@ function jsonResponse(response, statusCode, body, requestId, method = "GET") {
     "content-length": Buffer.byteLength(payload),
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
     "x-request-id": requestId,
   });
   response.end(method === "HEAD" ? undefined : payload);
@@ -36,7 +40,6 @@ function readBody(request, limit) {
     const chunks = [];
     let size = 0;
     let settled = false;
-
     request.on("data", (chunk) => {
       if (settled) return;
       size += chunk.length;
@@ -48,27 +51,55 @@ function readBody(request, limit) {
       }
       chunks.push(chunk);
     });
-    request.on("end", () => {
-      if (!settled) resolve(Buffer.concat(chunks).toString("utf8"));
-    });
-    request.on("error", (error) => {
-      if (!settled) reject(error);
-    });
-    request.on("aborted", () => {
-      if (!settled) reject(Object.assign(new Error("Permintaan dibatalkan."), { statusCode: 400 }));
-    });
+    request.on("end", () => { if (!settled) resolve(Buffer.concat(chunks).toString("utf8")); });
+    request.on("error", (error) => { if (!settled) reject(error); });
+    request.on("aborted", () => { if (!settled) reject(Object.assign(new Error("Permintaan dibatalkan."), { statusCode: 400 })); });
   });
 }
 
-function healthPayload() {
+function healthPayload(env) {
   return {
     status: "ok",
     service: "ngeblogging-api",
-    runtime: process.env.NARA_RUNTIME || "portable-api-v1",
-    version: process.env.APP_VERSION || "development",
+    runtime: env.NARA_RUNTIME || "portable-api-v3",
+    version: env.APP_VERSION || "development",
+    billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
+    billingWebhook: Boolean(env.PAYPAL_WEBHOOK_ID),
+    localPayments: Boolean(env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET),
+    imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
   };
+}
+
+function webRequestFromNode(request, body = "") {
+  const forwardedProto = String(request.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+  const protocol = forwardedProto || (request.socket.encrypted ? "https" : "http");
+  const host = String(request.headers.host || "internal.ngeblogging").slice(0, 255);
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(request.headers)) {
+    if (Array.isArray(value)) for (const item of value) headers.append(name, item);
+    else if (value !== undefined) headers.set(name, String(value));
+  }
+  const method = request.method || "GET";
+  return new Request(`${protocol}://${host}${request.url || "/"}`, {
+    method,
+    headers,
+    ...(["GET", "HEAD"].includes(method) ? {} : { body }),
+  });
+}
+
+async function sendWebResponse(nodeResponse, webResponse, method = "GET") {
+  const headers = {};
+  webResponse.headers.forEach((value, name) => { headers[name] = value; });
+  headers["x-content-type-options"] ||= "nosniff";
+  nodeResponse.writeHead(webResponse.status, headers);
+  if (method === "HEAD") {
+    nodeResponse.end();
+    return;
+  }
+  const bytes = Buffer.from(await webResponse.arrayBuffer());
+  nodeResponse.end(bytes);
 }
 
 export function createApiServer(options = {}) {
@@ -76,23 +107,20 @@ export function createApiServer(options = {}) {
   const trustProxy = env.TRUST_PROXY === "1" || env.TRUST_PROXY === "true";
   const maxRequestBytes = numberFromEnv(env.MAX_REQUEST_BYTES, DEFAULT_MAX_REQUEST_BYTES);
   const rateLimit = numberFromEnv(env.RATE_LIMIT_PER_MINUTE, 20);
+  const webhookRateLimit = numberFromEnv(env.WEBHOOK_RATE_LIMIT_PER_MINUTE, 300);
   const rateWindowMs = 60_000;
   const rateBuckets = new Map();
 
-  function consumeRateLimit(key) {
+  function consumeRateLimit(key, limit) {
     const now = Date.now();
     const bucket = rateBuckets.get(key);
     if (!bucket || bucket.resetAt <= now) {
       rateBuckets.set(key, { count: 1, resetAt: now + rateWindowMs });
       return { allowed: true, retryAfter: 0 };
     }
-    if (bucket.count >= rateLimit) {
-      return { allowed: false, retryAfter: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)) };
-    }
+    if (bucket.count >= limit) return { allowed: false, retryAfter: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)) };
     bucket.count += 1;
-    if (rateBuckets.size > 10_000) {
-      for (const [storedKey, stored] of rateBuckets) if (stored.resetAt <= now) rateBuckets.delete(storedKey);
-    }
+    if (rateBuckets.size > 10_000) for (const [storedKey, stored] of rateBuckets) if (stored.resetAt <= now) rateBuckets.delete(storedKey);
     return { allowed: true, retryAfter: 0 };
   }
 
@@ -101,79 +129,87 @@ export function createApiServer(options = {}) {
     const requestId = randomUUID();
     let statusCode = 500;
     let pathname = "/";
-
     try {
       const url = new URL(request.url || "/", "http://internal.ngeblogging");
       pathname = url.pathname;
+      const method = request.method || "GET";
 
       if (pathname === "/api/health") {
-        if (!["GET", "HEAD"].includes(request.method || "")) {
+        if (!["GET", "HEAD"].includes(method)) {
           statusCode = 405;
-          jsonResponse(response, statusCode, { error: "Metode tidak didukung." }, requestId, request.method);
+          jsonResponse(response, statusCode, { error: "Metode tidak didukung." }, requestId, method);
           return;
         }
         statusCode = 200;
-        jsonResponse(response, statusCode, healthPayload(), requestId, request.method);
+        jsonResponse(response, statusCode, healthPayload(env), requestId, method);
         return;
       }
 
-      if (pathname !== "/api/nara") {
+      if (method === "OPTIONS" && pathname.startsWith("/api/")) {
+        statusCode = 204;
+        response.writeHead(204, {
+          "access-control-allow-methods": "GET, HEAD, POST, OPTIONS",
+          "access-control-allow-headers": "content-type, authorization",
+          "access-control-max-age": "86400",
+          "x-request-id": requestId,
+        });
+        response.end();
+        return;
+      }
+
+      const supported = pathname === "/api/nara"
+        || pathname === "/api/nara/image"
+        || pathname === "/api/billing/paypal/webhook"
+        || pathname.startsWith("/api/billing/");
+      if (!supported) {
         statusCode = 404;
-        jsonResponse(response, statusCode, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
+        jsonResponse(response, statusCode, { error: "Endpoint tidak ditemukan." }, requestId, method);
         return;
       }
 
-      const method = request.method || "GET";
       const requestIp = clientIp(request, trustProxy);
       if (method === "POST") {
+        const isWebhook = pathname.endsWith("/webhook");
         const host = String(request.headers.host || "unknown").toLowerCase().slice(0, 255);
-        const rate = consumeRateLimit(`${requestIp}:${host}`);
+        const rate = consumeRateLimit(`${isWebhook ? "webhook" : "api"}:${requestIp}:${host}`, isWebhook ? webhookRateLimit : rateLimit);
         if (!rate.allowed) {
           statusCode = 429;
           response.setHeader("retry-after", String(rate.retryAfter));
-          jsonResponse(response, statusCode, {
-            code: "RATE_LIMIT",
-            error: "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.",
-          }, requestId, method);
+          jsonResponse(response, statusCode, { code: "RATE_LIMIT", error: "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi." }, requestId, method);
           return;
         }
       }
-      const body = ["GET", "HEAD", "OPTIONS"].includes(method)
-        ? ""
-        : await readBody(request, maxRequestBytes);
-      const headers = { ...request.headers };
-      headers["x-client-ip"] = requestIp;
-      headers["x-forwarded-for"] = requestIp;
-      headers["x-request-id"] = requestId;
 
-      const result = await handleRequest({ httpMethod: method, headers, body }, env);
-      statusCode = result.statusCode;
-      const responseHeaders = {
-        ...result.headers,
-        "x-content-type-options": "nosniff",
-        "x-request-id": requestId,
-      };
-      response.writeHead(statusCode, responseHeaders);
-      response.end(method === "HEAD" ? undefined : result.body || undefined);
+      const body = ["GET", "HEAD"].includes(method) ? "" : await readBody(request, maxRequestBytes);
+      if (pathname === "/api/nara") {
+        const headers = { ...request.headers };
+        headers["x-client-ip"] = requestIp;
+        headers["x-forwarded-for"] = requestIp;
+        headers["x-request-id"] = requestId;
+        const result = await handleRequest({ httpMethod: method, headers, body }, env);
+        statusCode = result.statusCode;
+        response.writeHead(statusCode, { ...result.headers, "x-content-type-options": "nosniff", "x-request-id": requestId });
+        response.end(method === "HEAD" ? undefined : result.body || undefined);
+        return;
+      }
+
+      const webRequest = webRequestFromNode(request, body);
+      let webResponse;
+      if (pathname === "/api/nara/image") webResponse = await handleNaraImage(webRequest, env, requestId);
+      else if (pathname === "/api/billing/paypal/webhook") webResponse = await handlePayPalWebhook(webRequest, env, requestId);
+      else webResponse = await handleBillingRequest(webRequest, env, requestId);
+      statusCode = webResponse.status;
+      await sendWebResponse(response, webResponse, method);
     } catch (error) {
-      statusCode = error.statusCode || 500;
+      statusCode = error.statusCode || error.status || 500;
       if (!response.headersSent) {
         jsonResponse(response, statusCode, {
-          code: statusCode === 413 ? "PAYLOAD_TOO_LARGE" : "API_INTERNAL_ERROR",
+          code: statusCode === 413 ? "PAYLOAD_TOO_LARGE" : error.code || "API_INTERNAL_ERROR",
           error: statusCode === 413 ? "Lampiran atau payload terlalu besar." : "Terjadi gangguan sementara pada API.",
         }, requestId, request.method);
-      } else {
-        response.end();
-      }
+      } else response.end();
     } finally {
-      console.log(JSON.stringify({
-        level: "info",
-        requestId,
-        method: request.method,
-        path: pathname,
-        statusCode,
-        durationMs: Math.round(performance.now() - startedAt),
-      }));
+      console.log(JSON.stringify({ level: "info", requestId, method: request.method, path: pathname, statusCode, durationMs: Math.round(performance.now() - startedAt) }));
     }
   });
 
@@ -189,11 +225,7 @@ export function startApiServer(options = {}) {
   const host = env.HOST || "0.0.0.0";
   const port = numberFromEnv(env.PORT, 3000);
   const server = createApiServer({ env });
-
-  server.listen(port, host, () => {
-    console.log(JSON.stringify({ level: "info", message: "Ngeblogging API aktif", host, port }));
-  });
-
+  server.listen(port, host, () => console.log(JSON.stringify({ level: "info", message: "Ngeblogging API aktif", host, port })));
   const shutdown = (signal) => {
     console.log(JSON.stringify({ level: "info", message: "Menghentikan API", signal }));
     server.close((error) => process.exit(error ? 1 : 0));
@@ -204,6 +236,4 @@ export function startApiServer(options = {}) {
   return server;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  startApiServer();
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) startApiServer();
