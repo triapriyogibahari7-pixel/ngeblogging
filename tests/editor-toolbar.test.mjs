@@ -13,7 +13,9 @@ test("advanced typography is integrated directly in the React editor", () => {
 });
 
 test("editor exposes font sizes font families and text colors", () => {
-  for (const size of ["12", "14", "16", "20", "28", "38", "52"]) assert.match(editor, new RegExp(`>${size}<|\\[${size},`));
+  for (const size of ["12", "14", "16", "20", "28", "38", "52"]) {
+    assert.match(editor, new RegExp(`>${size}\\{?[^<]*px|["']${size}["']`));
+  }
   assert.match(editor, /fontName/);
   assert.match(editor, /fontSize/);
   assert.match(editor, /foreColor/);
