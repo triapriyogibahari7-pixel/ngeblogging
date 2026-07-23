@@ -95,16 +95,19 @@ jobs:
           for (const key of requiredBooleans) {
             if (typeof health[key] !== 'boolean') errors.push(`health.${key}`);
           }
+          if (health.nara !== true || health.imageGeneration !== true) errors.push('Nara production');
           if (health.managedSubdomains !== true) errors.push('managed subdomains');
           if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('site limits');
           if (!index.includes('<div id="root"></div>')) errors.push('application shell');
-          if (!sw.includes('ngeblogging-app-v4-20260724') || !sw.includes('networkFirst')) errors.push('service worker');
-          if (!assets.includes('studio-mobile-v4-20260724')) errors.push('mobile runtime release');
-          if (!assets.includes('.sn-mobile-nav') || !assets.includes('bottom:0!important') || !assets.includes('top:auto!important')) errors.push('mobile bottom navigation');
+          if (!sw.includes('ngeblogging-app-v5-20260724') || !sw.includes('networkFirst')) errors.push('service worker');
+          if (!assets.includes('studio-sidebar-only-v5-20260724')) errors.push('sidebar-only runtime release');
+          if (!assets.includes('.sn-shell>.sn-mobile-nav') || !assets.includes('display:none!important')) errors.push('bottom navigation removal');
+          if (!assets.includes('dataset.sidebarAuthority="single"') && !assets.includes('sidebarAuthority')) errors.push('single sidebar toggle');
           for (const label of ['Mobile', 'Tablet', 'Laptop', 'Komputer']) {
             if (!assets.includes(label)) errors.push(`theme device:${label}`);
           }
           if (!assets.includes('.tn-frame-shell.laptop') || !assets.includes('.tn-frame-shell.desktop')) errors.push('theme preview frame sizes');
+          if (!assets.includes('ng-shell-poster') || !assets.includes('ng-shell-rail') || !assets.includes('ng-shell-cards')) errors.push('distinct theme compositions');
           if (!assets.includes('.ng-widget-recent-posts ol') || !assets.includes('.ng-widget-popular-posts ol')) errors.push('tenant widget data');
           if (!assets.includes('.ng-header nav.open')) errors.push('public mobile menu');
 
@@ -123,6 +126,8 @@ jobs:
             nara: health.nara,
             managedSubdomains: health.managedSubdomains,
             siteLimits: health.siteLimits,
+            uiRelease: 'studio-sidebar-only-v5-20260724',
+            pwaRelease: 'ngeblogging-app-v5-20260724',
             assetsChecked: fs.readFileSync('/tmp/assets.txt', 'utf8').trim().split(/\n+/).filter(Boolean).length,
           }, null, 2));
           NODE
