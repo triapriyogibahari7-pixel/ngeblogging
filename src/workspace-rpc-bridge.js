@@ -63,14 +63,17 @@ document.addEventListener("click", async (event) => {
   if (!supabaseConfigured || !supabase) return;
   const button = event.target.closest(".sn-create-site > button.sn-primary");
   if (!button || button.disabled || button.dataset.rpcBusy === "true") return;
-  const { data } = await supabase.auth.getSession();
-  if (!data.session?.user?.id) return;
 
+  // Stop React's legacy direct-insert handler synchronously. Waiting for an
+  // async session read first would allow both handlers to create a site.
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation?.();
   button.dataset.rpcBusy = "true";
+
   try {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session?.user?.id) throw new Error("Sesi login tidak ditemukan. Masuk kembali lalu coba lagi.");
     await createWorkspace(button, button.closest(".sn-create-site"));
   } catch (error) {
     toast(error.message || "Situs dan subdomain belum dapat dibuat.");
