@@ -10,6 +10,13 @@ function isMobileDevice() {
   return window.innerWidth <= MOBILE_BREAKPOINT || (coarse && shortSide <= MOBILE_BREAKPOINT);
 }
 
+function responsiveDeviceMode() {
+  if (isMobileDevice()) return "mobile";
+  if (window.innerWidth <= 1024) return "tablet";
+  if (window.innerWidth <= 1440) return "laptop";
+  return "desktop";
+}
+
 function important(node, property, value) {
   node?.style?.setProperty(property, value, "important");
 }
@@ -31,13 +38,11 @@ function enforceMobile(shell) {
   important(shell, "max-width", "100%");
   important(shell, "overflow-x", "hidden");
 
-  [main].forEach((node) => {
-    important(node, "margin-left", "0");
-    important(node, "width", "100%");
-    important(node, "max-width", "100%");
-    important(node, "min-width", "0");
-    important(node, "overflow-x", "hidden");
-  });
+  important(main, "margin-left", "0");
+  important(main, "width", "100%");
+  important(main, "max-width", "100%");
+  important(main, "min-width", "0");
+  important(main, "overflow-x", "hidden");
 
   if (top) {
     important(top, "position", "sticky");
@@ -79,9 +84,9 @@ function releaseDesktop(shell) {
 }
 
 function apply() {
-  const mobile = isMobileDevice();
-  document.documentElement.dataset.deviceMode = mobile ? "mobile" : document.documentElement.dataset.deviceMode || "desktop";
-  document.querySelectorAll(".sn-shell").forEach((shell) => mobile ? enforceMobile(shell) : releaseDesktop(shell));
+  const mode = responsiveDeviceMode();
+  document.documentElement.dataset.deviceMode = mode;
+  document.querySelectorAll(".sn-shell").forEach((shell) => mode === "mobile" ? enforceMobile(shell) : releaseDesktop(shell));
 }
 
 let frame = 0;
