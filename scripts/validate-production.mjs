@@ -9,6 +9,7 @@ const requiredFiles = [
   "Dockerfile.web",
   "cloudflare/worker.mjs",
   "server/nara-handler.mjs",
+  "server/nara-runtime.mjs",
   "wrangler.jsonc",
   "public/_headers",
   "src/cloudflare-media-bridge.js",
@@ -31,8 +32,8 @@ const requiredFiles = [
 ];
 
 for (const file of requiredFiles) await access(new URL(`../${file}`, import.meta.url));
-if (existsSync(new URL("../netlify.toml", import.meta.url))) {
-  throw new Error("netlify.toml tidak boleh kembali setelah migrasi Cloudflare Workers.");
+if (existsSync(new URL("../netlify.toml", import.meta.url)) || existsSync(new URL("../netlify/", import.meta.url))) {
+  throw new Error("Konfigurasi atau runtime deployment lama tidak boleh kembali setelah migrasi Cloudflare Workers.");
 }
 
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
@@ -85,8 +86,13 @@ for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPA
 }
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
-if (!worker.includes("../server/nara-handler.mjs")) throw new Error("Worker belum memakai modul Nara netral.");
+const portableApi = await readFile(new URL("../api/server.mjs", import.meta.url), "utf8");
+if (!worker.includes("../server/nara-runtime.mjs")) throw new Error("Worker belum memakai runtime Nara portable.");
+if (!portableApi.includes("../server/nara-runtime.mjs")) throw new Error("API pemulihan belum memakai runtime Nara portable.");
 if (!worker.includes(".ngeblogging.com")) throw new Error("Worker belum menerima origin tenant wildcard.");
+for (const source of [worker, portableApi]) {
+  if (/netlify\/functions|x-nf-client-connection-ip/.test(source)) throw new Error("Entrypoint produksi masih memiliki dependensi runtime lama.");
+}
 
 const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
 for (const value of ["Content-Security-Policy", "X-Content-Type-Options", "max-age=31536000, immutable"]) {
@@ -101,4 +107,4 @@ if (!cloudflareWorkflow.includes("/api/health")) {
   throw new Error("Deployment Cloudflare belum memiliki smoke test health endpoint.");
 }
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, preview terisolasi, wildcard produksi aktif, secret tervalidasi, dan jalur pemulihan di-hardening.`);
+console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, runtime portable aktif, preview terisolasi, wildcard produksi aktif, secret tervalidasi, dan jalur pemulihan di-hardening.`);
