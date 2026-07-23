@@ -1,4 +1,5 @@
 import { readFile, access } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 const requiredFiles = [
   "api/server.mjs",
@@ -7,7 +8,9 @@ const requiredFiles = [
   "Dockerfile.api",
   "Dockerfile.web",
   "cloudflare/worker.mjs",
+  "server/nara-handler.mjs",
   "wrangler.jsonc",
+  "public/_headers",
   ".github/workflows/ci.yml",
   ".github/workflows/cloudflare.yml",
   ".github/workflows/production.yml",
@@ -18,10 +21,13 @@ const requiredFiles = [
   "scripts/verify-production.sh",
   "docs/PRODUCTION_SERVER.md",
   "docs/PRODUCTION_RUNBOOK.md",
-  "docs/CLOUDFLARE_FREE.md",
+  "docs/CLOUDFLARE_PRODUCTION.md",
 ];
 
 for (const file of requiredFiles) await access(new URL(`../${file}`, import.meta.url));
+if (existsSync(new URL("../netlify.toml", import.meta.url))) {
+  throw new Error("netlify.toml tidak boleh kembali setelah migrasi Cloudflare Workers.");
+}
 
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 for (const [name, version] of Object.entries({ ...packageJson.dependencies, ...packageJson.devDependencies })) {
@@ -38,10 +44,10 @@ if (!/^USER node$/m.test(apiDockerfile)) throw new Error("API harus berjalan seb
 
 const productionWorkflow = await readFile(new URL("../.github/workflows/production.yml", import.meta.url), "utf8");
 for (const platform of ["linux/amd64", "linux/arm64"]) {
-  if (!productionWorkflow.includes(platform)) throw new Error(`Image produksi belum mendukung ${platform}.`);
+  if (!productionWorkflow.includes(platform)) throw new Error(`Image pemulihan belum mendukung ${platform}.`);
 }
 for (const target of ["deploy-primary", "deploy-standby"]) {
-  if (!productionWorkflow.includes(`${target}:`)) throw new Error(`Target ${target} belum tersedia.`);
+  if (!productionWorkflow.includes(`${target}:`)) throw new Error(`Target pemulihan ${target} belum tersedia.`);
 }
 
 const productionEnv = await readFile(new URL("../.env.production.example", import.meta.url), "utf8");
@@ -49,9 +55,27 @@ if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY)=\s*(?!REPLACE_ME|sb_publishable_RE
   throw new Error("Contoh environment memuat credential nyata.");
 }
 
-const wrangler = await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8");
-for (const required of ["nodejs_compat", "single-page-application", "/api/*", "cloudflare-worker-v1"]) {
-  if (!wrangler.includes(required)) throw new Error(`Konfigurasi Cloudflare belum memuat ${required}.`);
+const wrangler = JSON.parse(await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
+const routes = new Set((wrangler.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
+for (const route of ["ngeblogging.com/*", "*.ngeblogging.com/*"]) {
+  if (!routes.has(route)) throw new Error(`Route Cloudflare wajib belum tersedia: ${route}`);
+}
+if (!wrangler.compatibility_flags?.includes("nodejs_compat")) throw new Error("nodejs_compat belum aktif.");
+if (wrangler.assets?.not_found_handling !== "single-page-application") throw new Error("SPA fallback Cloudflare belum aktif.");
+if (!wrangler.assets?.run_worker_first?.includes("/api/*")) throw new Error("API belum diprioritaskan ke Worker.");
+if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-v2") throw new Error("Runtime Cloudflare belum memakai versi terbaru.");
+for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
+  if (!wrangler.secrets?.required?.includes(secret)) throw new Error(`Secret wajib belum dideklarasikan: ${secret}`);
+  if (Object.hasOwn(wrangler.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
+}
+
+const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
+if (!worker.includes("../server/nara-handler.mjs")) throw new Error("Worker belum memakai modul Nara netral.");
+if (!worker.includes(".ngeblogging.com")) throw new Error("Worker belum menerima origin tenant wildcard.");
+
+const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
+for (const value of ["Content-Security-Policy", "X-Content-Type-Options", "max-age=31536000, immutable"]) {
+  if (!headers.includes(value)) throw new Error(`Header Cloudflare belum memuat ${value}.`);
 }
 
 const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudflare.yml", import.meta.url), "utf8");
@@ -59,4 +83,4 @@ if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) {
   throw new Error("Deployment Cloudflare belum memiliki activation gate.");
 }
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, dependency terpin, dan container di-hardening.`);
+console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, Cloudflare wildcard aktif, secret tervalidasi, dan jalur pemulihan di-hardening.`);
