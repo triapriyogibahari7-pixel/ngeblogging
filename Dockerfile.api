@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1.7
+FROM node:22-alpine
+
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=3000 \
+    NARA_RUNTIME=portable-api-v1
+
+WORKDIR /app
+COPY --chown=node:node api ./api
+COPY --chown=node:node netlify/functions/nara.mjs ./netlify/functions/nara.mjs
+
+USER node
+EXPOSE 3000
+
+HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=5 \
+  CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+
+CMD ["node", "api/server.mjs"]

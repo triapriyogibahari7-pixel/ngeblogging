@@ -1,0 +1,15 @@
+.git
+.github
+.agents
+.codex
+.env
+.env.*
+!.env.example
+!.env.production.example
+dist
+node_modules
+ngeblogging
+upload
+*.log
+docs
+supabase

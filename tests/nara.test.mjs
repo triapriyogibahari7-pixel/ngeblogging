@@ -17,6 +17,7 @@ const ENV_KEYS = [
   "SUPABASE_PUBLISHABLE_KEY",
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
+  "PUBLIC_ALLOWED_ORIGINS",
 ];
 
 const originalEnv = Object.fromEntries(ENV_KEYS.map((key) => [key, process.env[key]]));
@@ -65,6 +66,18 @@ test("GET /api/nara menjelaskan konfigurasi yang masih kurang tanpa membuka secr
   assert.equal(body.runtime, "netlify-modern-v3-vision-stable");
   assert.ok(body.missing.includes("QWEN_API_KEY"));
   assert.equal(JSON.stringify(body).includes("sk-"), false);
+});
+
+test("origin staging harus diizinkan secara eksplisit tanpa membuka wildcard CORS", { concurrency: false }, async () => {
+  process.env.PUBLIC_ALLOWED_ORIGINS = "https://staging.ngeblogging.com";
+
+  const allowed = await handler(event("GET", undefined, { origin: "https://staging.ngeblogging.com" }));
+  const denied = await handler(event("GET", undefined, { origin: "https://evil.example" }));
+
+  assert.equal(allowed.statusCode, 200);
+  assert.equal(allowed.headers["access-control-allow-origin"], "https://staging.ngeblogging.com");
+  assert.equal(denied.statusCode, 403);
+  assert.notEqual(denied.headers["access-control-allow-origin"], "*");
 });
 
 test("Nara Mini memakai model Flash dan mode Sedang tanpa deep thinking", { concurrency: false }, async () => {

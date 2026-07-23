@@ -1,0 +1,84 @@
+name: ngeblogging
+
+services:
+  api:
+    image: ghcr.io/${GHCR_REPOSITORY_OWNER:-triapriyogibahari7-pixel}/ngeblogging-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - ${NGEBLOGGING_ENV_FILE:-/opt/ngeblogging/shared/.env}
+    environment:
+      APP_VERSION: ${IMAGE_TAG:-latest}
+      NARA_RUNTIME: portable-api-v1
+      TRUST_PROXY: "1"
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 384m
+    cpus: 1.0
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "5"
+    networks:
+      - app
+
+  web:
+    image: ghcr.io/${GHCR_REPOSITORY_OWNER:-triapriyogibahari7-pixel}/ngeblogging-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      SITE_HOSTS: ${SITE_HOSTS:-ngeblogging.com, www.ngeblogging.com}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@ngeblogging.com}
+      MAX_REQUEST_BODY: 20MB
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 192m
+    cpus: 0.75
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "5"
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

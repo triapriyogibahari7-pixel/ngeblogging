@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ngeblogging",
+  "main": "./cloudflare/worker.mjs",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist/",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "PUBLIC_SITE_URL": "https://ngeblogging.com",
+    "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
+    "QWEN_REGION": "singapore",
+    "NARA_RUNTIME": "cloudflare-worker-preview-v2"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  },
+  "env": {
+    "production": {
+      "name": "ngeblogging",
+      "workers_dev": true,
+      "routes": [
+        {
+          "pattern": "ngeblogging.com/*",
+          "zone_name": "ngeblogging.com"
+        },
+        {
+          "pattern": "*.ngeblogging.com/*",
+          "zone_name": "ngeblogging.com"
+        }
+      ],
+      "vars": {
+        "PUBLIC_SITE_URL": "https://ngeblogging.com",
+        "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
+        "QWEN_REGION": "singapore",
+        "NARA_RUNTIME": "cloudflare-worker-v2"
+      },
+      "secrets": {
+        "required": [
+          "QWEN_API_KEY",
+          "QWEN_WORKSPACE_ID",
+          "SUPABASE_URL",
+          "SUPABASE_PUBLISHABLE_KEY"
+        ]
+      }
+    }
+  }
+}
