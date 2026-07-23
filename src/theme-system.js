@@ -230,14 +230,26 @@ export function parseThemeFile(text) {
   return imported;
 }
 
+function injectBeforeClosingTag(html, tagName, markup) {
+  if (!markup) return html;
+  const expression = new RegExp(`</${tagName}>`, "i");
+  return expression.test(html) ? html.replace(expression, `${markup}</${tagName}>`) : `${html}${markup}`;
+}
+
 export function buildThemeSrcDoc(code, config = DEFAULT_THEME_CONFIG, widgets = []) {
   const safeScript = validString(code?.javascript, "", 120000).replace(/<\/script/gi, "<\\/script");
-  const html = validString(code?.html, "", 350000);
+  const sourceHtml = validString(code?.html, "", 350000);
   const beforeFooter = widgetsMarkup(widgets, "after-content");
   const footerWidgets = widgetsMarkup(widgets, "footer");
   const sidebarWidgets = widgetsMarkup(widgets, "sidebar");
-  const composed = `${sidebarWidgets ? `<aside class="ng-widget-area sidebar">${sidebarWidgets}</aside>` : ""}${html}${beforeFooter ? `<section class="ng-widget-area after-content">${beforeFooter}</section>` : ""}${footerWidgets ? `<section class="ng-widget-area footer">${footerWidgets}</section>` : ""}`;
-  const css = `${validString(code?.css, "", 350000)}${validString(config.customCss, "", 80000)}.ng-widget-area{display:grid;gap:16px;padding:24px clamp(18px,5vw,70px)}.ng-widget{padding:20px;border:1px solid color-mix(in srgb,currentColor,transparent 82%);border-radius:14px}.ng-widget form{display:flex;gap:8px;flex-wrap:wrap}.ng-widget input,.ng-widget textarea,.ng-widget select{max-width:100%;padding:10px;border:1px solid #9996;border-radius:8px}.widget-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.widget-gallery i{aspect-ratio:1;background:currentColor;opacity:.12;border-radius:8px}`;
+  const contentWidgets = [
+    sidebarWidgets ? `<section class="ng-widget-area sidebar" aria-label="Widget situs">${sidebarWidgets}</section>` : "",
+    beforeFooter ? `<section class="ng-widget-area after-content" aria-label="Konten tambahan">${beforeFooter}</section>` : "",
+  ].join("");
+  let composed = injectBeforeClosingTag(sourceHtml, "main", contentWidgets);
+  composed = injectBeforeClosingTag(composed, "footer", footerWidgets ? `<section class="ng-widget-area footer" aria-label="Widget footer">${footerWidgets}</section>` : "");
+  const widgetCss = `.ng-widget-area{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;padding:28px clamp(18px,5vw,70px);width:100%;min-width:0}.ng-widget-area.footer{padding-top:18px;padding-bottom:18px}.ng-widget{min-width:0;padding:20px;border:1px solid color-mix(in srgb,currentColor,transparent 82%);border-radius:14px;background:color-mix(in srgb,var(--surface,#fff),white 10%);overflow:hidden}.ng-widget h3{margin:0 0 12px;font-size:1rem;line-height:1.2}.ng-widget p{margin:.5rem 0;opacity:.78}.ng-widget ol,.ng-widget ul{margin:0;padding-left:1.25rem}.ng-widget li+li{margin-top:.45rem}.ng-widget nav{display:flex;flex-wrap:wrap;gap:8px}.ng-widget a{display:inline-flex;max-width:100%;color:inherit;text-decoration:none;overflow-wrap:anywhere}.ng-widget form{display:flex;gap:8px;flex-wrap:wrap}.ng-widget input,.ng-widget textarea,.ng-widget select{min-width:0;max-width:100%;flex:1 1 150px;padding:10px;border:1px solid #9996;border-radius:8px;background:transparent;color:inherit}.ng-widget button{min-height:40px;border:0;border-radius:8px;padding:0 13px;background:var(--primary,#2d6edf);color:#fff;font-weight:700}.widget-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.widget-gallery i{aspect-ratio:1;background:currentColor;opacity:.12;border-radius:8px}@media(max-width:720px){.ng-widget-area{grid-template-columns:minmax(0,1fr);padding:20px 18px}.ng-widget{padding:16px}.ng-widget form{display:grid;grid-template-columns:minmax(0,1fr)}.ng-widget input,.ng-widget textarea,.ng-widget select,.ng-widget button{width:100%;max-width:100%}}`;
+  const css = `${validString(code?.css, "", 350000)}${validString(config.customCss, "", 80000)}${widgetCss}`;
   const csp = "default-src 'none'; img-src https: data: blob:; media-src https: blob:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src https: data:; connect-src https:; form-action https:; base-uri 'none'; frame-ancestors 'none'";
-  return `<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="${csp}"><style>html,body{margin:0;min-height:100%;font-family:${JSON.stringify(config.font || "DM Sans")},sans-serif}${css}</style></head><body>${composed}<script>${safeScript}<\/script></body></html>`;
+  return `<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="${csp}"><style>html,body{margin:0;min-width:0;max-width:100%;min-height:100%;overflow-x:hidden;font-family:${JSON.stringify(config.font || "DM Sans")},sans-serif}${css}</style></head><body>${composed}<script>${safeScript}<\/script></body></html>`;
 }
