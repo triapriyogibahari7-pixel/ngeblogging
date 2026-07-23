@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { createAppUrl } from "./site-url";
+import { createAppUrl } from "./site-url.js";
 
-const url = import.meta.env.VITE_SUPABASE_URL;
+const browserEnv = import.meta.env || {};
+const url = browserEnv.VITE_SUPABASE_URL;
 const key =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_SUPABASE_ANON_KEY;
+  browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  browserEnv.VITE_SUPABASE_ANON_KEY;
 
 export const supabaseConfigured = Boolean(url && key);
 export const supabase = supabaseConfigured
@@ -18,7 +19,7 @@ export const supabase = supabaseConfigured
     })
   : null;
 
-const configuredSiteUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
+const configuredSiteUrl = browserEnv.VITE_PUBLIC_SITE_URL;
 const currentOrigin = typeof window === "undefined" ? "" : window.location.origin;
 const appUrl = (path = "/") => createAppUrl(path, configuredSiteUrl, currentOrigin);
 
