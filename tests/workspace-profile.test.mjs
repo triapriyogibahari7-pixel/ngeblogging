@@ -32,7 +32,7 @@ test("workspace UI exposes site viewing creation selection and profile editing",
   assert.match(studio, /Situs saya/);
   assert.match(studio, /Buat situs baru/);
   assert.match(studio, /\.ngeblogging\.com/);
-  assert.match(studio, />Lihat</);
+  assert.match(studio, /<Eye\/>\s*Lihat/);
   assert.match(studio, /Profil & pengaturan/);
   assert.match(studio, /Simpan perubahan/);
 });
