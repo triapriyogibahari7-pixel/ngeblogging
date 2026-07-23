@@ -3,11 +3,13 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 const wrangler = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
+const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
 const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
+const production = wrangler.env?.production || {};
 
 function routePatterns() {
-  return new Set((wrangler.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
+  return new Set((production.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
 }
 
 test("Cloudflare is the production runtime with SPA assets", () => {
@@ -17,18 +19,28 @@ test("Cloudflare is the production runtime with SPA assets", () => {
   assert.deepEqual(wrangler.assets?.run_worker_first, ["/api/*"]);
 });
 
-test("apex and every Ngeblogging tenant subdomain are routed to the Worker", () => {
+test("preview builds do not claim production routes or require production secrets", () => {
+  assert.equal(wrangler.routes, undefined);
+  assert.equal(wrangler.secrets, undefined);
+  assert.equal(wrangler.vars?.NARA_RUNTIME, "cloudflare-worker-preview-v2");
+  assert.match(packageJson.scripts["cloudflare:preview-dry-run"], /wrangler versions upload/);
+});
+
+test("apex and every Ngeblogging tenant subdomain are routed in production", () => {
   const routes = routePatterns();
   assert.ok(routes.has("ngeblogging.com/*"));
   assert.ok(routes.has("*.ngeblogging.com/*"));
+  assert.equal(production.name, "ngeblogging");
 });
 
-test("required Worker secrets are declared and never stored as plaintext vars", () => {
-  const required = new Set(wrangler.secrets?.required || []);
+test("required production secrets are declared and never stored as plaintext vars", () => {
+  const required = new Set(production.secrets?.required || []);
   for (const name of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
     assert.ok(required.has(name), `${name} must be required`);
-    assert.equal(Object.hasOwn(wrangler.vars || {}, name), false, `${name} must not be a plaintext var`);
+    assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
   }
+  assert.match(packageJson.scripts["deploy:cloudflare"], /--env production/);
+  assert.match(packageJson.scripts["cloudflare:dry-run"], /--env production/);
 });
 
 test("Worker uses the neutral Nara module and accepts wildcard tenant origins", () => {
