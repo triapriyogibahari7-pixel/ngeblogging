@@ -1,6 +1,7 @@
 import { supabase, supabaseConfigured } from "./supabase.js";
 
 export const CONTENT_PAGE_SIZE = 25;
+export const ACTIVE_SITE_STORAGE_KEY = "ngeblogging-active-site-id";
 
 function requireCloud() {
   if (!supabaseConfigured || !supabase) throw new Error("Penyimpanan cloud belum dikonfigurasi.");
@@ -23,6 +24,30 @@ function shortId() {
     || Math.random().toString(36).slice(2, 10);
 }
 
+function readActiveSiteId() {
+  try {
+    return typeof localStorage === "undefined" ? "" : localStorage.getItem(ACTIVE_SITE_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+export function setActiveSiteId(siteId) {
+  try {
+    if (typeof localStorage !== "undefined") {
+      if (siteId) localStorage.setItem(ACTIVE_SITE_STORAGE_KEY, siteId);
+      else localStorage.removeItem(ACTIVE_SITE_STORAGE_KEY);
+    }
+  } catch {
+    // Storage may be unavailable in hardened or private browsing contexts.
+  }
+}
+
+function membershipSite(record) {
+  if (!record?.sites) return null;
+  return { ...record.sites, role: record.role };
+}
+
 export function recordToDocument(record, hydrated = true) {
   return {
     id: record.id,
@@ -39,32 +64,107 @@ export function recordToDocument(record, hydrated = true) {
   };
 }
 
+export async function listUserSites(userId) {
+  if (!userId) throw new Error("Akun pengguna tidak ditemukan.");
+  const client = requireCloud();
+  const { data, error } = await client
+    .from("site_members")
+    .select("site_id,role,joined_at,sites(id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at)")
+    .eq("user_id", userId)
+    .order("joined_at", { ascending: true })
+    .limit(100);
+  if (error) throw error;
+  return (data || []).map(membershipSite).filter(Boolean);
+}
+
+export async function getUserProfile(userId) {
+  if (!userId) throw new Error("Akun pengguna tidak ditemukan.");
+  const client = requireCloud();
+  const { data, error } = await client
+    .from("profiles")
+    .select("id,display_name,avatar_url,bio,website,locale,timezone,plan,updated_at")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateUserProfile(userId, values) {
+  if (!userId) throw new Error("Akun pengguna tidak ditemukan.");
+  const client = requireCloud();
+  const payload = {
+    id: userId,
+    display_name: String(values.displayName || values.display_name || "").trim().slice(0, 120),
+    bio: String(values.bio || "").trim().slice(0, 2000),
+    website: String(values.website || "").trim().slice(0, 500) || null,
+    avatar_url: String(values.avatarUrl || values.avatar_url || "").trim().slice(0, 2000) || null,
+    locale: String(values.locale || "id-ID").slice(0, 20),
+    timezone: String(values.timezone || "Asia/Jakarta").slice(0, 80),
+    updated_at: new Date().toISOString(),
+  };
+  const { data, error } = await client
+    .from("profiles")
+    .upsert(payload, { onConflict: "id" })
+    .select("id,display_name,avatar_url,bio,website,locale,timezone,plan,updated_at")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function createUserSite({ userId, name, slug, description = "", blueprint = "blog" }) {
+  if (!userId) throw new Error("Akun pengguna tidak ditemukan.");
+  const client = requireCloud();
+  const cleanName = String(name || "").trim().slice(0, 100);
+  if (cleanName.length < 2) throw new Error("Nama situs minimal 2 karakter.");
+  const cleanSiteSlug = cleanSlug(slug || cleanName, "situs");
+  if (cleanSiteSlug.length < 3) throw new Error("Subdomain minimal 3 karakter.");
+
+  const { data: available, error: availabilityError } = await client.rpc("is_site_slug_available", {
+    candidate: cleanSiteSlug,
+    excluding_site: null,
+  });
+  if (availabilityError) throw availabilityError;
+  if (!available) throw new Error("Subdomain sudah digunakan atau termasuk nama sistem.");
+
+  const { data, error } = await client
+    .from("sites")
+    .insert({
+      owner_id: userId,
+      name: cleanName,
+      slug: cleanSiteSlug,
+      description: String(description || "").trim().slice(0, 1000),
+      status: "draft",
+      is_public: false,
+      blueprint: String(blueprint || "blog").slice(0, 40),
+      settings: { onboarding: "theme-studio", cloudflare: "wildcard-subdomain" },
+    })
+    .select("id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at")
+    .single();
+  if (error) throw error;
+  setActiveSiteId(data.id);
+  return { ...data, role: "owner" };
+}
+
 export async function getOrCreatePrimarySite(user) {
   if (!user?.id) throw new Error("Akun pengguna tidak ditemukan.");
-  const client = requireCloud();
-  const { data: memberships, error: membershipError } = await client
-    .from("site_members")
-    .select("site_id, role, sites(id, name, slug, description, status, blueprint, theme_key, settings)")
-    .eq("user_id", user.id)
-    .order("joined_at", { ascending: true })
-    .limit(1);
-  if (membershipError) throw membershipError;
-  if (memberships?.[0]?.sites) return memberships[0].sites;
+  const sites = await listUserSites(user.id);
+  if (sites.length) {
+    const preferredId = readActiveSiteId();
+    const selected = sites.find((site) => site.id === preferredId) || sites[0];
+    setActiveSiteId(selected.id);
+    return selected;
+  }
 
   const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Kreator";
   const baseSlug = cleanSlug(displayName, "situs");
-  const payload = {
-    owner_id: user.id,
-    name: `${displayName} Studio`.slice(0, 100),
+  const created = await createUserSite({
+    userId: user.id,
+    name: `${displayName} Studio`,
     slug: `${baseSlug}-${shortId()}`,
     description: "Situs dibuat dengan Ngeblogging.",
-    status: "draft",
     blueprint: "blog",
-    settings: { onboarding: "theme-studio" },
-  };
-  const { data, error } = await client.from("sites").insert(payload).select("id, name, slug, description, status, blueprint, theme_key, settings").single();
-  if (error) throw error;
-  return data;
+  });
+  return created;
 }
 
 export async function listContentPage({ siteId, kind = null, search = "", cursor = null, pageSize = CONTENT_PAGE_SIZE }) {
