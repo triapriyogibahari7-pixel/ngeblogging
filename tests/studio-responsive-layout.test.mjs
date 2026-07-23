@@ -38,8 +38,8 @@ test("phones use a full-width workspace and off-canvas sidebar", () => {
   assert.match(critical, /--sn-phone-panel:min\(86vw,320px\)/);
   assert.match(critical, /\.sn-side\.collapsed\{transform:translateX\(calc\(-100% - 16px\)\)!important/);
   assert.match(critical, /\.sn-main,[\s\S]*margin-left:0!important/);
-  assert.match(critical, /\.sn-content-tools\{display:grid!important/);
-  assert.match(critical, /\.sn-doc-row/);
+  assert.match(critical, /html\[data-device-mode="mobile"\] \.sn-media-tools\{display:grid!important/);
+  assert.match(critical, /\.sn-home-grid>section>button/);
   assert.match(appShell, /mobileUserAgent\(\)/);
   assert.match(appShell, /physicalShortSide\(\)/);
   assert.match(appShell, /width <= 760/);
