@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
 const guard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
-const deviceBridge = readFileSync(new URL("../src/theme-device-mode-bridge.js", import.meta.url), "utf8");
+const themeStudio = readFileSync(new URL("../src/ThemeStudio.jsx", import.meta.url), "utf8");
 const deviceCss = readFileSync(new URL("../src/theme-device-modes.css", import.meta.url), "utf8");
 const themeSystem = readFileSync(new URL("../src/theme-system.js", import.meta.url), "utf8");
 const publicSite = readFileSync(new URL("../src/PublicSiteNext.jsx", import.meta.url), "utf8");
@@ -37,14 +37,15 @@ test("media, domain, and theme views have dedicated real-phone layouts", () => {
   assert.match(critical, /\.tn-frame-shell\.desktop iframe\{width:1440px!important/);
 });
 
-test("theme preview exposes Mobile Tablet Laptop and Komputer modes", () => {
+test("theme preview exposes native Mobile Tablet Laptop and Komputer modes", () => {
   assert.match(index, /theme-device-modes\.css/);
-  assert.match(index, /theme-device-mode-bridge\.js/);
-  assert.match(deviceBridge, /mobile: "Mobile"/);
-  assert.match(deviceBridge, /tablet: "Tablet"/);
-  assert.match(deviceBridge, /laptop: "Laptop"/);
-  assert.match(deviceBridge, /desktop: "Komputer"/);
-  assert.match(deviceBridge, /realPhone\(\) \? "mobile"/);
+  assert.doesNotMatch(index, /theme-device-mode-bridge\.js/);
+  assert.match(themeStudio, /\{ id: "mobile", label: "Mobile", icon: Smartphone \}/);
+  assert.match(themeStudio, /\{ id: "tablet", label: "Tablet", icon: Tablet \}/);
+  assert.match(themeStudio, /\{ id: "laptop", label: "Laptop", icon: Laptop \}/);
+  assert.match(themeStudio, /\{ id: "desktop", label: "Komputer", icon: Monitor \}/);
+  assert.match(themeStudio, /useState\(initialPreviewDevice\)/);
+  assert.match(themeStudio, /<b>4<\/b><span>Mode perangkat<\/span>/);
   assert.match(deviceCss, /\.tn-frame-shell\.laptop iframe/);
   assert.match(deviceCss, /\.tn-frame-shell\.desktop iframe/);
 });
