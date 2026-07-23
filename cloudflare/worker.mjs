@@ -90,16 +90,19 @@ function clientAddress(request) {
 }
 
 function capabilityPayload(env) {
+  const databasePublic = Boolean(env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY);
+  const databaseAdmin = Boolean(databasePublic && env.SUPABASE_SERVICE_ROLE_KEY);
   const paypalLive = Boolean(
-    env.PAYPAL_CLIENT_ID
+    databaseAdmin
+    && env.PAYPAL_CLIENT_ID
     && env.PAYPAL_CLIENT_SECRET
     && env.PAYPAL_WEBHOOK_ID
     && String(env.PAYPAL_ENV || "sandbox").toLowerCase() === "live"
   );
-  const localPayments = Boolean(env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET && env.LOCAL_PLAN_PRICES_JSON);
+  const localPayments = Boolean(databaseAdmin && env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET && env.LOCAL_PLAN_PRICES_JSON);
   const nara = Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID);
-  const imageGeneration = nara;
-  const customDomains = Boolean(env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN && env.CUSTOM_DOMAIN_CNAME_TARGET);
+  const imageGeneration = Boolean(nara && databasePublic);
+  const customDomains = Boolean(databaseAdmin && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN && env.CUSTOM_DOMAIN_CNAME_TARGET);
   return {
     billing: paypalLive || localPayments,
     paypalLive,
