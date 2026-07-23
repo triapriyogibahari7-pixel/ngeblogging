@@ -32,10 +32,21 @@ function cloudflareConfig(env) {
 }
 
 function domainFeature(env) {
-  const config = cloudflareConfig(env);
+  const cloudflare = cloudflareConfig(env);
+  const database = supabaseConfig(env);
+  const configuredLimit = Number(env.CUSTOM_DOMAIN_LIMIT_PER_SITE || 5);
+  const limit = Number.isInteger(configuredLimit) && configuredLimit > 0 ? Math.min(configuredLimit, 20) : 5;
   return {
-    ...config,
-    enabled: Boolean(config.zoneId && config.apiToken && config.cnameTarget),
+    ...cloudflare,
+    limit,
+    enabled: Boolean(
+      cloudflare.zoneId
+      && cloudflare.apiToken
+      && cloudflare.cnameTarget
+      && database.url
+      && database.publishableKey
+      && database.serviceKey
+    ),
   };
 }
 
@@ -87,18 +98,19 @@ async function requireSiteAdmin(env, userId, siteId) {
 
 function normalizeHostname(input) {
   const raw = String(input || "").trim().toLowerCase().replace(/^https?:\/\//, "").split("/")[0].replace(/\.$/, "");
-  if (!raw || raw.length > 253 || raw.includes("*") || raw.includes(":")) throw Object.assign(new Error("Nama domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" });
+  if (!raw || raw.length > 253 || raw.includes("*") || raw.includes(":") || raw.includes("..")) throw Object.assign(new Error("Nama domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" });
   let hostname;
   try { hostname = new URL(`https://${raw}`).hostname.toLowerCase().replace(/\.$/, ""); }
   catch { throw Object.assign(new Error("Nama domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" }); }
-  if (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com")) throw Object.assign(new Error("Gunakan menu subdomain gratis untuk domain ngeblogging.com."), { status: 400, code: "PLATFORM_HOSTNAME" });
+  if (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com")) throw Object.assign(new Error("Gunakan subdomain gratis Ngeblogging untuk alamat *.ngeblogging.com."), { status: 400, code: "PLATFORM_HOSTNAME" });
   if (hostname === "localhost" || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname) || !hostname.includes(".")) throw Object.assign(new Error("Masukkan domain publik yang valid."), { status: 400, code: "INVALID_HOSTNAME" });
+  if (hostname.split(".").some((label) => !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label))) throw Object.assign(new Error("Label domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" });
   return hostname;
 }
 
 async function cloudflareRequest(env, path, options = {}) {
   const config = domainFeature(env);
-  if (!config.enabled) throw Object.assign(new Error("Cloudflare for SaaS belum dikonfigurasi pada server."), { status: 503, code: "CUSTOM_DOMAIN_CONFIG_REQUIRED" });
+  if (!config.enabled) throw Object.assign(new Error("Cloudflare for SaaS belum dikonfigurasi lengkap pada server."), { status: 503, code: "CUSTOM_DOMAIN_CONFIG_REQUIRED" });
   const response = await fetch(`https://api.cloudflare.com/client/v4/zones/${config.zoneId}${path}`, {
     ...options,
     headers: {
@@ -160,8 +172,26 @@ function publicDomain(row, cnameTarget) {
 }
 
 async function domainRow(env, id) {
+  if (!validUuid(id)) return null;
   const rows = await adminJson(env, `site_domains?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);
   return rows?.[0] || null;
+}
+
+async function syncPrimaryDomain(env, siteId) {
+  const rows = await adminJson(env, `site_domains?site_id=eq.${encodeURIComponent(siteId)}&status=eq.active&order=is_primary.desc,verified_at.asc&select=id,hostname,is_primary&limit=1`);
+  const primary = rows?.[0] || null;
+  if (primary && !primary.is_primary) {
+    await adminJson(env, `site_domains?id=eq.${encodeURIComponent(primary.id)}`, {
+      method:"PATCH",
+      prefer:"return=minimal",
+      body:JSON.stringify({ is_primary:true, updated_at:new Date().toISOString() }),
+    });
+  }
+  await adminJson(env, `sites?id=eq.${encodeURIComponent(siteId)}`, {
+    method:"PATCH",
+    prefer:"return=minimal",
+    body:JSON.stringify({ custom_domain:primary?.hostname || null, updated_at:new Date().toISOString() }),
+  });
 }
 
 async function persistProviderResult(env, row, result) {
@@ -185,7 +215,9 @@ async function persistProviderResult(env, row, result) {
       updated_at: now,
     }),
   });
-  return rows?.[0] || row;
+  const updated = rows?.[0] || row;
+  if (state.status === "active") await syncPrimaryDomain(env, row.site_id);
+  return updated;
 }
 
 export async function handleDomainRequest(request, env, requestId = crypto.randomUUID()) {
@@ -194,7 +226,12 @@ export async function handleDomainRequest(request, env, requestId = crypto.rando
     const feature = domainFeature(env);
 
     if (request.method === "GET" && url.pathname === "/api/domains/config") {
-      return json(200, { enabled: feature.enabled, cnameTarget: feature.enabled ? feature.cnameTarget : "", provider: feature.enabled ? "cloudflare-for-saas" : "unconfigured" }, requestId);
+      return json(200, {
+        enabled: feature.enabled,
+        cnameTarget: feature.enabled ? feature.cnameTarget : "",
+        provider: feature.enabled ? "cloudflare-for-saas" : "unconfigured",
+        limit: feature.limit,
+      }, requestId);
     }
 
     const user = await verifyUser(request, env);
@@ -203,7 +240,12 @@ export async function handleDomainRequest(request, env, requestId = crypto.rando
       const siteId = url.searchParams.get("siteId") || "";
       await requireSiteAdmin(env, user.id, siteId);
       const rows = await adminJson(env, `site_domains?site_id=eq.${encodeURIComponent(siteId)}&select=*&order=created_at.desc`);
-      return json(200, { enabled: feature.enabled, cnameTarget: feature.enabled ? feature.cnameTarget : "", domains: (rows || []).map((row) => publicDomain(row, feature.cnameTarget)) }, requestId);
+      return json(200, {
+        enabled: feature.enabled,
+        cnameTarget: feature.enabled ? feature.cnameTarget : "",
+        limit: feature.limit,
+        domains: (rows || []).map((row) => publicDomain(row, feature.cnameTarget)),
+      }, requestId);
     }
 
     const body = await request.json().catch(() => ({}));
@@ -216,6 +258,10 @@ export async function handleDomainRequest(request, env, requestId = crypto.rando
       const existing = await adminJson(env, `site_domains?hostname=eq.${encodeURIComponent(hostname)}&select=*&limit=1`);
       if (existing?.[0] && existing[0].site_id !== siteId) return json(409, { code: "DOMAIN_ALREADY_USED", error: "Domain tersebut sudah digunakan situs lain." }, requestId);
       if (existing?.[0]?.provider_hostname_id) return json(200, { domain: publicDomain(existing[0], feature.cnameTarget), reused: true }, requestId);
+
+      const currentRows = await adminJson(env, `site_domains?site_id=eq.${encodeURIComponent(siteId)}&select=id,is_primary`);
+      if ((currentRows || []).length >= feature.limit) return json(409, { code:"CUSTOM_DOMAIN_LIMIT", error:`Maksimal ${feature.limit} custom domain per situs.` }, requestId);
+      const makePrimary = !(currentRows || []).some((row) => row.is_primary);
 
       const provider = await cloudflareRequest(env, "/custom_hostnames", {
         method: "POST",
@@ -236,10 +282,13 @@ export async function handleDomainRequest(request, env, requestId = crypto.rando
           ssl_status: state.sslStatus,
           ownership_verification: validation.ownership,
           ssl_validation: validation.sslRecords,
+          is_primary:makePrimary,
           last_checked_at: new Date().toISOString(),
         }),
       });
-      return json(201, { domain: publicDomain(rows?.[0], feature.cnameTarget) }, requestId);
+      const created = rows?.[0];
+      if (state.status === "active") await syncPrimaryDomain(env, siteId);
+      return json(201, { domain: publicDomain(created, feature.cnameTarget) }, requestId);
     }
 
     if (request.method === "POST" && url.pathname === "/api/domains/refresh") {
@@ -247,6 +296,7 @@ export async function handleDomainRequest(request, env, requestId = crypto.rando
       const row = await domainRow(env, id);
       if (!row) return json(404, { error: "Domain tidak ditemukan." }, requestId);
       await requireSiteAdmin(env, user.id, row.site_id);
+      if (!feature.enabled) return json(503, { error:"Integrasi Cloudflare custom domain tidak aktif." }, requestId);
       if (!row.provider_hostname_id) return json(409, { error: "ID domain Cloudflare belum tersedia." }, requestId);
       const provider = await cloudflareRequest(env, `/custom_hostnames/${encodeURIComponent(row.provider_hostname_id)}`, { method: "GET" });
       const updated = await persistProviderResult(env, row, provider);
@@ -258,15 +308,20 @@ export async function handleDomainRequest(request, env, requestId = crypto.rando
       const row = await domainRow(env, id);
       if (!row) return json(404, { error: "Domain tidak ditemukan." }, requestId);
       await requireSiteAdmin(env, user.id, row.site_id);
-      if (row.provider_hostname_id && feature.enabled) {
+      if (row.provider_hostname_id) {
+        if (!feature.enabled) return json(503, { error:"Integrasi Cloudflare custom domain tidak aktif; domain tidak dihapus agar tidak meninggalkan konfigurasi yatim." }, requestId);
         await cloudflareRequest(env, `/custom_hostnames/${encodeURIComponent(row.provider_hostname_id)}`, { method: "DELETE" });
       }
       await adminJson(env, `site_domains?id=eq.${encodeURIComponent(id)}`, { method: "DELETE", prefer: "return=minimal" });
+      await syncPrimaryDomain(env, row.site_id);
       return json(200, { deleted: true }, requestId);
     }
 
     return json(404, { error: "Endpoint domain tidak ditemukan." }, requestId);
   } catch (error) {
-    return json(error.status || 500, { code: error.code || "DOMAIN_INTERNAL_ERROR", error: error.status && error.status < 500 ? error.message : "Terjadi gangguan sementara saat mengelola domain." }, requestId);
+    return json(error.status || 500, {
+      code: error.code || "DOMAIN_INTERNAL_ERROR",
+      error: error.status && error.status < 500 ? error.message : "Terjadi gangguan sementara saat mengelola domain.",
+    }, requestId);
   }
 }
