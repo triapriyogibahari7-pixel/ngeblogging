@@ -29,13 +29,13 @@ async function rest(env, path) {
 export async function resolveSeoSite(hostname, env) {
   const slug = tenantSlug(hostname);
   if (slug) {
-    const rows = await rest(env, `sites?select=id,name,slug,description,locale,timezone,blueprint,published_at,updated_at&slug=eq.${encodeURIComponent(slug)}&status=eq.active&is_public=eq.true&limit=1`);
+    const rows = await rest(env, `sites?select=id,name,slug,description,locale,timezone,blueprint,settings,published_at,updated_at&slug=eq.${encodeURIComponent(slug)}&status=eq.active&is_public=eq.true&limit=1`);
     return rows?.[0] || null;
   }
   if (SYSTEM_HOSTS.has(String(hostname).toLowerCase())) return null;
   const domains = await rest(env, `site_domains?select=site_id&hostname=eq.${encodeURIComponent(String(hostname).toLowerCase())}&status=eq.active&limit=1`);
   if (!domains?.[0]?.site_id) return null;
-  const sites = await rest(env, `sites?select=id,name,slug,description,locale,timezone,blueprint,published_at,updated_at&id=eq.${domains[0].site_id}&status=eq.active&is_public=eq.true&limit=1`);
+  const sites = await rest(env, `sites?select=id,name,slug,description,locale,timezone,blueprint,settings,published_at,updated_at&id=eq.${domains[0].site_id}&status=eq.active&is_public=eq.true&limit=1`);
   return sites?.[0] || null;
 }
 
@@ -61,6 +61,28 @@ function absolute(base, value) {
   try { return new URL(value, base).href; } catch { return ""; }
 }
 
+function objectValue(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function branding(site) {
+  return objectValue(objectValue(site?.settings).branding);
+}
+
+function faviconSet(site, base) {
+  const favicon = objectValue(branding(site).favicon);
+  const fallback = `${base}/favicon.svg`;
+  const icon192 = absolute(base, favicon.icon192Url || favicon.url) || fallback;
+  const icon512 = absolute(base, favicon.icon512Url || favicon.icon192Url || favicon.url) || icon192;
+  const custom = Boolean(favicon.icon192Url || favicon.icon512Url || favicon.url);
+  return { icon192, icon512, custom, type: custom ? "image/png" : "image/svg+xml" };
+}
+
+function themeColor(site) {
+  const value = String(branding(site).themeColor || "").trim();
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : "#2d6edf";
+}
+
 function response(body, contentType, status = 200, cache = "public, max-age=300, s-maxage=900") {
   return new Response(body, { status, headers: { "content-type": contentType, "cache-control": cache, "x-content-type-options":"nosniff" } });
 }
@@ -70,6 +92,7 @@ export async function seoEndpoint(request, env) {
   const site = await resolveSeoSite(url.hostname, env);
   if (!site) return null;
   const base = `${url.protocol}//${url.host}`;
+  const icons = faviconSet(site, base);
 
   if (url.pathname === "/robots.txt") {
     return response(`User-agent: *\nAllow: /\nDisallow: /studio\nDisallow: /api/\nSitemap: ${base}/sitemap.xml\nSitemap: ${base}/sitemap-posts.xml\n`, "text/plain; charset=utf-8");
@@ -96,7 +119,25 @@ export async function seoEndpoint(request, env) {
   }
 
   if (url.pathname === "/manifest.webmanifest") {
-    return response(JSON.stringify({ name:site.name, short_name:site.name.slice(0,30), description:site.description, start_url:"/", display:"standalone", background_color:"#ffffff", theme_color:"#2869df", lang:site.locale || "id-ID", icons:[] }), "application/manifest+json; charset=utf-8");
+    return response(JSON.stringify({
+      name:site.name,
+      short_name:site.name.slice(0,30),
+      description:site.description || site.name,
+      id:"/",
+      start_url:"/",
+      scope:"/",
+      display:"standalone",
+      orientation:"any",
+      background_color:"#ffffff",
+      theme_color:themeColor(site),
+      lang:site.locale || "id-ID",
+      icons: icons.custom ? [
+        { src:icons.icon192, sizes:"192x192", type:"image/png", purpose:"any maskable" },
+        { src:icons.icon512, sizes:"512x512", type:"image/png", purpose:"any maskable" },
+      ] : [
+        { src:icons.icon192, sizes:"any", type:"image/svg+xml", purpose:"any maskable" },
+      ],
+    }), "application/manifest+json; charset=utf-8");
   }
 
   return null;
@@ -104,6 +145,10 @@ export async function seoEndpoint(request, env) {
 
 function replaceMeta(html, selectorPattern, replacement) {
   return selectorPattern.test(html) ? html.replace(selectorPattern, replacement) : html.replace("</head>", `${replacement}</head>`);
+}
+
+function removeStaticBrandingLinks(html) {
+  return html.replace(/<link\b[^>]*\brel=(['"])[^'"]*(?:icon|apple-touch-icon|mask-icon|manifest)[^'"]*\1[^>]*>\s*/gi, "");
 }
 
 export async function injectTenantSeo(request, assetResponse, env) {
@@ -119,9 +164,11 @@ export async function injectTenantSeo(request, assetResponse, env) {
   const title = content ? `${content.title} — ${site.name}` : site.name;
   const description = content?.excerpt || site.description || `Situs ${site.name} diterbitkan dengan Ngeblogging.`;
   const canonical = metadata.canonicalUrl || `${url.protocol}//${url.host}${content ? `/${content.slug}` : "/"}`;
+  const base = `${url.protocol}//${url.host}`;
   const image = absolute(canonical, metadata.socialImage || content?.featured_image_path || "");
+  const icons = faviconSet(site, base);
   const robots = `${seo.index === false ? "noindex" : "index"},${seo.follow === false ? "nofollow" : "follow"},max-image-preview:${seo.maxImagePreview || "large"},max-snippet:${Number.isFinite(seo.maxSnippet) ? seo.maxSnippet : -1},max-video-preview:${Number.isFinite(seo.maxVideoPreview) ? seo.maxVideoPreview : -1}${seo.noarchive ? ",noarchive" : ""}${seo.nosnippet ? ",nosnippet" : ""}`;
-  const schemaType = metadata.schemaType || (content?.kind === "page" ? "WebPage" : "BlogPosting");
+  const schemaType = content ? (metadata.schemaType || (content.kind === "page" ? "WebPage" : "BlogPosting")) : "WebSite";
   const structured = {
     "@context":"https://schema.org",
     "@type":schemaType,
@@ -134,19 +181,34 @@ export async function injectTenantSeo(request, assetResponse, env) {
     ...(content?.published_at ? { datePublished:content.published_at } : {}),
     ...(content?.updated_at ? { dateModified:content.updated_at } : {}),
     ...(metadata.authorName ? { author:{ "@type":"Person", name:metadata.authorName, ...(metadata.authorUrl ? { url:metadata.authorUrl } : {}) } } : {}),
-    isPartOf:{ "@type":"WebSite", name:site.name, url:`${url.protocol}//${url.host}/` },
+    isPartOf:{ "@type":"WebSite", name:site.name, url:`${base}/` },
   };
   let html = await assetResponse.text();
   html = html.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = replaceMeta(html, /<meta name="description"[^>]*>/i, `<meta name="description" content="${escapeHtml(description)}">`);
   html = replaceMeta(html, /<meta name="robots"[^>]*>/i, `<meta name="robots" content="${escapeHtml(robots)}">`);
+  html = replaceMeta(html, /<meta name="theme-color"[^>]*>/i, `<meta name="theme-color" content="${escapeHtml(themeColor(site))}">`);
+  html = replaceMeta(html, /<meta name="application-name"[^>]*>/i, `<meta name="application-name" content="${escapeHtml(site.name)}">`);
+  html = replaceMeta(html, /<meta name="apple-mobile-web-app-title"[^>]*>/i, `<meta name="apple-mobile-web-app-title" content="${escapeHtml(site.name)}">`);
+  html = replaceMeta(html, /<meta property="og:site_name"[^>]*>/i, `<meta property="og:site_name" content="${escapeHtml(site.name)}">`);
   html = replaceMeta(html, /<meta property="og:title"[^>]*>/i, `<meta property="og:title" content="${escapeHtml(metadata.socialTitle || title)}">`);
   html = replaceMeta(html, /<meta property="og:description"[^>]*>/i, `<meta property="og:description" content="${escapeHtml(metadata.socialDescription || description)}">`);
   html = replaceMeta(html, /<meta property="og:url"[^>]*>/i, `<meta property="og:url" content="${escapeHtml(canonical)}">`);
   html = replaceMeta(html, /<meta property="og:type"[^>]*>/i, `<meta property="og:type" content="${content && content.kind !== "page" ? "article" : "website"}">`);
-  if (image) html = replaceMeta(html, /<meta property="og:image"[^>]*>/i, `<meta property="og:image" content="${escapeHtml(image)}">`);
+  html = replaceMeta(html, /<meta name="twitter:card"[^>]*>/i, `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}">`);
+  html = replaceMeta(html, /<meta name="twitter:title"[^>]*>/i, `<meta name="twitter:title" content="${escapeHtml(metadata.socialTitle || title)}">`);
+  html = replaceMeta(html, /<meta name="twitter:description"[^>]*>/i, `<meta name="twitter:description" content="${escapeHtml(metadata.socialDescription || description)}">`);
+  if (image) {
+    html = replaceMeta(html, /<meta property="og:image"[^>]*>/i, `<meta property="og:image" content="${escapeHtml(image)}">`);
+    html = replaceMeta(html, /<meta name="twitter:image"[^>]*>/i, `<meta name="twitter:image" content="${escapeHtml(image)}">`);
+  }
   html = replaceMeta(html, /<link rel="canonical"[^>]*>/i, `<link rel="canonical" href="${escapeHtml(canonical)}">`);
-  html = html.replace("</head>", `<link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.name)} Feed" href="/feed.xml"><link rel="manifest" href="/manifest.webmanifest"><script type="application/ld+json">${JSON.stringify(structured).replace(/</g,"\\u003c")}</script></head>`);
+  html = removeStaticBrandingLinks(html);
+  html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\s*/gi, "");
+  const iconLinks = icons.custom
+    ? `<link rel="icon" type="image/png" sizes="192x192" href="${escapeHtml(icons.icon192)}"><link rel="apple-touch-icon" href="${escapeHtml(icons.icon192)}">`
+    : `<link rel="icon" type="image/svg+xml" sizes="any" href="${escapeHtml(icons.icon192)}"><link rel="apple-touch-icon" href="${escapeHtml(icons.icon192)}">`;
+  html = html.replace("</head>", `${iconLinks}<link rel="manifest" href="/manifest.webmanifest"><link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.name)} Feed" href="/feed.xml"><link rel="alternate" hreflang="${escapeHtml(site.locale || "id-ID")}" href="${escapeHtml(canonical)}"><script type="application/ld+json">${JSON.stringify(structured).replace(/</g,"\\u003c")}</script></head>`);
   const headers = new Headers(assetResponse.headers);
   headers.set("cache-control", content ? "public, max-age=60, s-maxage=300" : "public, max-age=120, s-maxage=600");
   headers.set("vary", "Accept-Encoding");
