@@ -64,17 +64,22 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 test("Studio uses one accessible sidebar toggle at every viewport", () => {
   assert.match(index, /studio-production-audit\.css/);
   assert.match(index, /studio-mobile-navigation\.js/);
-  assert.match(mobile, /const COMPACT_QUERY = "\(max-width: 900px\)"/);
+  assert.match(mobile, /const COMPACT_QUERY = "\(max-width: 1024px\)"/);
+  assert.match(mobile, /const PHONE_QUERY = "\(max-width: 700px\)"/);
   assert.match(mobile, /collapseSidebar\(shell\)/);
   assert.match(mobile, /aria-expanded/);
   assert.match(mobile, /event\.key !== "Escape"/);
+  assert.match(mobile, /document\.addEventListener\("pointerdown"/);
   assert.match(mobile, /labelSidebarButtons\(side\)/);
   assert.match(mobile, /querySelectorAll\(":scope > \.sn-side-close"\)/);
   assert.doesNotMatch(mobile, /createElement\("button"\)[\s\S]*sn-side-close/);
   assert.doesNotMatch(mobile, /sn-sidebar-backdrop/);
   assert.doesNotMatch(mobile, /sn-mobile-sidebar-lock/);
-  assert.match(production, /--sn-rail:70px;--sn-panel:220px/);
-  assert.match(production, /@media\(max-width:900px\)/);
+  assert.match(production, /--sn-rail:72px;/);
+  assert.match(production, /--sn-panel:240px;/);
+  assert.match(production, /@media\(min-width:701px\) and \(max-width:1024px\)/);
+  assert.match(production, /@media\(max-width:700px\)/);
   assert.match(production, /margin-left:var\(--sn-rail\)!important/);
-  assert.match(production, /\.sn-side-close,.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-sidebar-backdrop\{display:none!important\}/);
+  assert.match(production, /transform:translateX\(calc\(-100% - 10px\)\)!important/);
+  assert.match(production, /\.sn-mobile-nav\{[\s\S]*display:grid!important/);
 });
