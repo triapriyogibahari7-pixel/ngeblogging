@@ -12,10 +12,13 @@ const requiredFiles = [
   "server/nara-runtime.mjs",
   "server/nara-image-handler.mjs",
   "server/billing-handler.mjs",
+  "server/paypal-webhook-handler.mjs",
   "server/seo-handler.mjs",
   "wrangler.jsonc",
   "public/_headers",
   "src/StudioNext.jsx",
+  "src/StudioSecure.jsx",
+  "src/BackupCenter.jsx",
   "src/ContentEditor.jsx",
   "src/MediaLibrary.jsx",
   "src/NaraWorkspace.jsx",
@@ -25,12 +28,15 @@ const requiredFiles = [
   "src/theme-system.js",
   "src/widget-system.js",
   "src/PublicSiteNext.jsx",
+  "src/lib/backup-data.js",
   "src/lib/content-data.js",
   "src/lib/media-data.js",
   "src/lib/nara-data.js",
   "src/lib/public-data.js",
   "src/lib/theme-data.js",
   "supabase/migrations/20260723150000_expand_studio_theme_media_nara_billing.sql",
+  "supabase/migrations/20260723170000_backup_and_professional_billing.sql",
+  "supabase/migrations/20260723171000_allow_supporter_plan.sql",
   ".github/workflows/ci.yml",
   ".github/workflows/cloudflare.yml",
   ".github/workflows/production.yml",
@@ -69,10 +75,11 @@ for (const platform of ["linux/amd64", "linux/arm64"]) if (!productionWorkflow.i
 for (const target of ["deploy-primary", "deploy-standby"]) if (!productionWorkflow.includes(`${target}:`)) throw new Error(`Target pemulihan ${target} belum tersedia.`);
 
 const productionEnv = await readFile(new URL("../.env.production.example", import.meta.url), "utf8");
-if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY|PAYPAL_CLIENT_SECRET|SUPABASE_SERVICE_ROLE_KEY)=\s*(?!REPLACE_ME|sb_publishable_REPLACE_ME)/m.test(productionEnv)) throw new Error("Contoh environment memuat credential nyata.");
-for (const key of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
-  if (!new RegExp(`^${key}=REPLACE_ME$`, "m").test(productionEnv)) throw new Error(`Credential opsional ${key} belum didokumentasikan secara aman.`);
+if (/^(QWEN_API_KEY|SUPABASE_PUBLISHABLE_KEY|PAYPAL_CLIENT_SECRET|SUPABASE_SERVICE_ROLE_KEY|LOCAL_PAYMENT_GATEWAY_SECRET)=\s*(?!REPLACE_ME|sb_publishable_REPLACE_ME)/m.test(productionEnv)) throw new Error("Contoh environment memuat credential nyata.");
+for (const key of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
+  if (!new RegExp(`^${key}=REPLACE_ME$`, "m").test(productionEnv)) throw new Error(`Credential pembayaran ${key} belum didokumentasikan secara aman.`);
 }
+if (!/^LOCAL_PLAN_PRICES_JSON=\{.+\}$/m.test(productionEnv)) throw new Error("Harga gateway lokal belum didokumentasikan sebagai JSON server-only.");
 
 const wrangler = JSON.parse(await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
 const cloudflareProduction = wrangler.env?.production || {};
@@ -84,14 +91,14 @@ if (wrangler.assets?.not_found_handling !== "single-page-application") throw new
 if (wrangler.assets?.run_worker_first !== true) throw new Error("Worker harus berjalan sebelum aset agar SEO tenant dan endpoint discovery aktif.");
 if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v3") throw new Error("Runtime preview Cloudflare belum terisolasi pada versi terbaru.");
 if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v3") throw new Error("Runtime produksi Cloudflare belum memakai versi terbaru.");
-if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live diverifikasi.");
+if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live dan webhook diverifikasi.");
 if (cloudflareProduction.vars?.PAYPAL_MERCHANT_EMAIL !== "triapriyogibahari9@gmail.com") throw new Error("Email merchant PayPal belum sesuai permintaan pemilik.");
 for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
   if (!cloudflareProduction.secrets?.required?.includes(secret)) throw new Error(`Secret wajib belum dideklarasikan: ${secret}`);
   if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
-for (const secret of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
-  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret opsional ${secret} tidak boleh disimpan sebagai plaintext vars.`);
+for (const secret of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
+  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret pembayaran ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
@@ -99,11 +106,21 @@ const portableApi = await readFile(new URL("../api/server.mjs", import.meta.url)
 if (!worker.includes("../server/nara-runtime.mjs")) throw new Error("Worker belum memakai runtime Nara portable.");
 if (!portableApi.includes("../server/nara-runtime.mjs")) throw new Error("API pemulihan belum memakai runtime Nara portable.");
 if (!worker.includes(".ngeblogging.com")) throw new Error("Worker belum menerima origin tenant wildcard.");
-for (const marker of ["handleNaraImage", "handleBillingRequest", "seoEndpoint", "injectTenantSeo", "/api/nara/image", "/api/billing/"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
+for (const marker of ["handleNaraImage", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
 for (const source of [worker, portableApi]) if (/netlify\/functions|x-nf-client-connection-ip/.test(source)) throw new Error("Entrypoint produksi masih memiliki dependensi runtime lama.");
 
 const index = await readFile(new URL("../index.html", import.meta.url), "utf8");
 for (const bridge of ["cloudflare-media-bridge", "editor-toolbar-bridge", "workspace-profile-bridge", "workspace-activation-bridge"]) if (index.includes(bridge)) throw new Error(`Bridge DOM lama masih aktif: ${bridge}`);
+
+const studio = await readFile(new URL("../src/Studio.jsx", import.meta.url), "utf8");
+if (!studio.includes("StudioSecure.jsx")) throw new Error("Studio belum mengaktifkan pusat cadangan di Pengaturan.");
+const backup = await readFile(new URL("../src/lib/backup-data.js", import.meta.url), "utf8");
+for (const marker of ["SHA-256", "restoreCloudBackup", "downloadReadableArchive", "site_backup_events"]) if (!backup.includes(marker)) throw new Error(`Sistem cadangan belum memuat ${marker}.`);
+
+const billing = await readFile(new URL("../server/billing-handler.mjs", import.meta.url), "utf8");
+const webhook = await readFile(new URL("../server/paypal-webhook-handler.mjs", import.meta.url), "utf8");
+for (const marker of ["idempotencyKey", "invoice_number", "validateCapturedAmount", "billing_webhook_events", "LOCAL_PLAN_PRICES_JSON"]) if (!billing.includes(marker)) throw new Error(`Billing belum memuat kontrol ${marker}.`);
+for (const marker of ["verify-webhook-signature", "PAYMENT.CAPTURE.COMPLETED", "PAYMENT.CAPTURE.REFUNDED", "AMOUNT_MISMATCH", "findOrder"]) if (!webhook.includes(marker)) throw new Error(`Webhook PayPal belum memuat kontrol ${marker}.`);
 
 const themeCatalog = await readFile(new URL("../src/theme-catalog.js", import.meta.url), "utf8");
 if (!themeCatalog.includes("FAMILY_SEEDS") || !themeCatalog.includes("VARIANTS")) throw new Error("Generator 100 tema belum tersedia.");
@@ -117,4 +134,4 @@ const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudfla
 if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare belum memiliki activation gate.");
 if (!cloudflareWorkflow.includes("/api/health")) throw new Error("Deployment Cloudflare belum memiliki smoke test health endpoint.");
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, 100 tema, 25 widget, Posts/Pages, SEO tenant, Nara image, billing aman, runtime Cloudflare v3, dan jalur pemulihan di-hardening.`);
+console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, cadangan portabel, invoice, webhook terverifikasi, 100 tema, 25 widget, Posts/Pages, SEO tenant, Nara image, runtime Cloudflare v3, dan pemulihan server di-hardening.`);
