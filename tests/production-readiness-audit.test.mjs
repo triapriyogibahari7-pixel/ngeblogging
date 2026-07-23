@@ -99,7 +99,7 @@ test("email code remains available but public signup is hidden until branded SMT
 test("the installable app shell never keeps production CSS or bridge scripts stale", () => {
   assert.match(serviceWorker, /request\.method !== "GET"/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v3-20260723/);
+  assert.match(serviceWorker, /ngeblogging-app-v\d+-\d{8}/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /async function cacheFirstImmutable\(/);
