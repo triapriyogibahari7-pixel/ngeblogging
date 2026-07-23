@@ -5,6 +5,7 @@ import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleNaraImage } from "../server/nara-image-handler.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
 import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
+import { handleDomainRequest } from "../server/domain-handler.mjs";
 
 const DEFAULT_MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 
@@ -57,16 +58,34 @@ function readBody(request, limit) {
   });
 }
 
+function capabilityPayload(env) {
+  const paypalLive = Boolean(
+    env.PAYPAL_CLIENT_ID
+    && env.PAYPAL_CLIENT_SECRET
+    && env.PAYPAL_WEBHOOK_ID
+    && String(env.PAYPAL_ENV || "sandbox").toLowerCase() === "live"
+  );
+  const localPayments = Boolean(env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET && env.LOCAL_PLAN_PRICES_JSON);
+  const nara = Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID);
+  return {
+    billing: paypalLive || localPayments,
+    paypalLive,
+    localPayments,
+    nara,
+    imageGeneration:nara,
+    customDomains:Boolean(env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN && env.CUSTOM_DOMAIN_CNAME_TARGET),
+    analytics:String(env.ANALYTICS_ENABLED || "").toLowerCase() === "true",
+    integrations:String(env.NARA_CONNECTORS_ENABLED || "").toLowerCase() === "true",
+  };
+}
+
 function healthPayload(env) {
   return {
     status: "ok",
     service: "ngeblogging-api",
-    runtime: env.NARA_RUNTIME || "portable-api-v3",
+    runtime: env.NARA_RUNTIME || "portable-api-v4",
     version: env.APP_VERSION || "development",
-    billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
-    billingWebhook: Boolean(env.PAYPAL_WEBHOOK_ID),
-    localPayments: Boolean(env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET),
-    imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
+    ...capabilityPayload(env),
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
   };
@@ -148,7 +167,7 @@ export function createApiServer(options = {}) {
       if (method === "OPTIONS" && pathname.startsWith("/api/")) {
         statusCode = 204;
         response.writeHead(204, {
-          "access-control-allow-methods": "GET, HEAD, POST, OPTIONS",
+          "access-control-allow-methods": "GET, HEAD, POST, DELETE, OPTIONS",
           "access-control-allow-headers": "content-type, authorization",
           "access-control-max-age": "86400",
           "x-request-id": requestId,
@@ -160,7 +179,9 @@ export function createApiServer(options = {}) {
       const supported = pathname === "/api/nara"
         || pathname === "/api/nara/image"
         || pathname === "/api/billing/paypal/webhook"
-        || pathname.startsWith("/api/billing/");
+        || pathname.startsWith("/api/billing/")
+        || pathname === "/api/domains"
+        || pathname.startsWith("/api/domains/");
       if (!supported) {
         statusCode = 404;
         jsonResponse(response, statusCode, { error: "Endpoint tidak ditemukan." }, requestId, method);
@@ -168,7 +189,7 @@ export function createApiServer(options = {}) {
       }
 
       const requestIp = clientIp(request, trustProxy);
-      if (method === "POST") {
+      if (["POST", "DELETE"].includes(method)) {
         const isWebhook = pathname.endsWith("/webhook");
         const host = String(request.headers.host || "unknown").toLowerCase().slice(0, 255);
         const rate = consumeRateLimit(`${isWebhook ? "webhook" : "api"}:${requestIp}:${host}`, isWebhook ? webhookRateLimit : rateLimit);
@@ -197,6 +218,7 @@ export function createApiServer(options = {}) {
       let webResponse;
       if (pathname === "/api/nara/image") webResponse = await handleNaraImage(webRequest, env, requestId);
       else if (pathname === "/api/billing/paypal/webhook") webResponse = await handlePayPalWebhook(webRequest, env, requestId);
+      else if (pathname === "/api/domains" || pathname.startsWith("/api/domains/")) webResponse = await handleDomainRequest(webRequest, env, requestId);
       else webResponse = await handleBillingRequest(webRequest, env, requestId);
       statusCode = webResponse.status;
       await sendWebResponse(response, webResponse, method);
