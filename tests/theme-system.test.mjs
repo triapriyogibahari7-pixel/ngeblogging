@@ -9,26 +9,30 @@ import {
   publishThemeDraft,
   restoreThemeVersion,
   saveThemeCode,
+  saveThemeWidgets,
   serializeThemeBackup,
 } from "../src/theme-system.js";
 
-test("theme state normalizes unsafe or malformed values", () => {
+ test("theme state normalizes unsafe or malformed values", () => {
   const state = normalizeThemeState({
     activeThemeId: "missing-theme",
     draftConfig: { primary: "red", radius: 999, brandName: 42 },
     code: { html: 44 },
   });
-  assert.equal(state.activeThemeId, "editorial-noir");
-  assert.equal(state.draftConfig.primary, "#171717");
-  assert.equal(state.draftConfig.radius, 32);
+  assert.equal(state.activeThemeId, "editorial-prime");
+  assert.match(state.draftConfig.primary, /^hsl\(/);
+  assert.equal(state.draftConfig.radius, 40);
   assert.equal(typeof state.code.html, "string");
+  assert.ok(Array.isArray(state.widgets));
 });
 
-test("theme backup round-trips and records an import version", () => {
-  const state = activateTheme(createDefaultThemeState(), "collective-hub");
-  const restored = parseThemeFile(serializeThemeBackup(state));
-  assert.equal(restored.activeThemeId, "collective-hub");
+test("theme backup round-trips widgets and records an import version", () => {
+  const state = activateTheme(createDefaultThemeState(), "collective-prime");
+  const withWidgets = saveThemeWidgets(state, [...state.widgets, { id:"faq",enabled:true,area:"footer",order:99,title:"FAQ",settings:{} }]);
+  const restored = parseThemeFile(serializeThemeBackup(withWidgets));
+  assert.equal(restored.activeThemeId, "collective-prime");
   assert.equal(restored.history[0].note, "Tema diimpor");
+  assert.ok(restored.widgets.some((widget) => widget.id === "faq"));
 });
 
 test("publishing and restoring a version preserves configuration", () => {
@@ -39,10 +43,12 @@ test("publishing and restoring a version preserves configuration", () => {
   assert.equal(restored.publishedConfig.accent, initial.publishedConfig.accent);
 });
 
-test("custom preview escapes closing script tags", () => {
+test("custom preview escapes closing script tags and adds sandbox CSP", () => {
   const doc = buildThemeSrcDoc({ html: "<main>OK</main>", css: "", javascript: "console.log('</script>')" });
   assert.match(doc, /<\\\/script>/);
   assert.doesNotMatch(doc, /console\.log\('<\/script>'\)/);
+  assert.match(doc, /Content-Security-Policy/);
+  assert.match(doc, /frame-ancestors 'none'/);
 });
 
 test("saving custom code explicitly enables the sandboxed public renderer", () => {
