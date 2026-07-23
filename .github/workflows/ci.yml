@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, agent/production-vps-platform]
   push:
     branches-ignore: [main]
 
@@ -32,6 +32,9 @@ jobs:
 
       - name: Test, build, and validate production files
         run: npm run test:production && npm run build
+
+      - name: Validate Cloudflare Worker bundle
+        run: npm run cloudflare:dry-run
 
   containers:
     needs: quality
