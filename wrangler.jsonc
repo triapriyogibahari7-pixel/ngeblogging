@@ -18,7 +18,7 @@
     "QWEN_REGION": "singapore",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
-    "NARA_RUNTIME": "cloudflare-worker-preview-v3"
+    "NARA_RUNTIME": "cloudflare-worker-preview-v4"
   },
   "observability": {
     "enabled": true,
@@ -29,6 +29,10 @@
       "name": "ngeblogging",
       "workers_dev": true,
       "routes": [
+        {
+          "pattern": "*/*",
+          "zone_name": "ngeblogging.com"
+        },
         {
           "pattern": "ngeblogging.com/*",
           "zone_name": "ngeblogging.com"
@@ -44,7 +48,7 @@
         "QWEN_REGION": "singapore",
         "PAYPAL_ENV": "sandbox",
         "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
-        "NARA_RUNTIME": "cloudflare-worker-v3"
+        "NARA_RUNTIME": "cloudflare-worker-v4"
       },
       "secrets": {
         "required": [
