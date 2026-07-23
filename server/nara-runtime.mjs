@@ -49,7 +49,7 @@ function runtimeEnvironment(env, origin) {
   const fallbackBaseUrl = !env.QWEN_WORKSPACE_ID && region === "singapore" ? legacySingaporeBase : "";
   return {
     ...env,
-    NARA_RUNTIME: env.NARA_RUNTIME || "portable-nara-v5",
+    NARA_RUNTIME: env.NARA_RUNTIME || "portable-nara-v4",
     QWEN_API_BASE_URL: String(env.QWEN_API_BASE_URL || fallbackBaseUrl).replace(/\/$/, ""),
     PUBLIC_ALLOWED_ORIGINS: allowed.join(","),
   };
