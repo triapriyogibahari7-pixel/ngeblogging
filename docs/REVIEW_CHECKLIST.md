@@ -1,0 +1,4 @@
+- Confirm GitHub Actions check passes.
+- Confirm wildcard DNS and TLS are configured.
+- Confirm Supabase migration is present.
+- Confirm editor, media upload, profile, site switcher, and public subdomain rendering.
