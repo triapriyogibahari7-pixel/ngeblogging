@@ -10,10 +10,11 @@ const appShell = readFileSync(new URL("../src/app-shell-bridge.js", import.meta.
 const bridge = readFileSync(new URL("../src/site-favicon-bridge.js", import.meta.url), "utf8");
 const mobile = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
 const production = readFileSync(new URL("../src/studio-production-audit.css", import.meta.url), "utf8");
+const deviceMode = readFileSync(new URL("../src/studio-device-mode.css", import.meta.url), "utf8");
 const seo = readFileSync(new URL("../server/seo-handler.mjs", import.meta.url), "utf8");
 
 
-test("main Ngeblogging favicon and PWA shell are installable", () => {
+test("main Ngeblogging favicon and PWA shell are installable and update safely", () => {
   assert.match(index, /rel="icon" href="\/favicon\.svg"/);
   assert.match(index, /rel="manifest" href="\/site\.webmanifest"/);
   assert.match(index, /app-shell-bridge\.js/);
@@ -23,10 +24,13 @@ test("main Ngeblogging favicon and PWA shell are installable", () => {
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /networkFirstNavigation/);
+  assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
+  assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
   assert.match(appShell, /beforeinstallprompt/);
   assert.match(appShell, /navigator\.serviceWorker\.register\("\/sw\.js"/);
+  assert.match(appShell, /mobileUserAgent\(\)/);
+  assert.match(appShell, /width <= 760/);
   assert.match(appShell, /return "mobile"/);
   assert.match(appShell, /return "tablet"/);
   assert.match(appShell, /return "laptop"/);
@@ -61,11 +65,14 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 });
 
 
-test("Studio uses one accessible sidebar toggle at every viewport", () => {
+test("Studio uses one accessible sidebar toggle and real phones never keep a rail", () => {
   assert.match(index, /studio-production-audit\.css/);
+  assert.match(index, /studio-device-mode\.css/);
   assert.match(index, /studio-mobile-navigation\.js/);
+  assert.ok(index.indexOf("app-shell-bridge.js") < index.indexOf("studio-mobile-navigation.js"));
   assert.match(mobile, /const COMPACT_QUERY = "\(max-width: 1024px\)"/);
-  assert.match(mobile, /const PHONE_QUERY = "\(max-width: 700px\)"/);
+  assert.match(mobile, /const PHONE_QUERY = "\(max-width: 760px\)"/);
+  assert.match(mobile, /dataset\.deviceMode === "mobile"/);
   assert.match(mobile, /collapseSidebar\(shell\)/);
   assert.match(mobile, /aria-expanded/);
   assert.match(mobile, /event\.key !== "Escape"/);
@@ -73,13 +80,9 @@ test("Studio uses one accessible sidebar toggle at every viewport", () => {
   assert.match(mobile, /labelSidebarButtons\(side\)/);
   assert.match(mobile, /querySelectorAll\(":scope > \.sn-side-close"\)/);
   assert.doesNotMatch(mobile, /createElement\("button"\)[\s\S]*sn-side-close/);
-  assert.doesNotMatch(mobile, /sn-sidebar-backdrop/);
-  assert.doesNotMatch(mobile, /sn-mobile-sidebar-lock/);
   assert.match(production, /--sn-rail:72px;/);
   assert.match(production, /--sn-panel:240px;/);
-  assert.match(production, /@media\(min-width:701px\) and \(max-width:1024px\)/);
-  assert.match(production, /@media\(max-width:700px\)/);
-  assert.match(production, /margin-left:var\(--sn-rail\)!important/);
-  assert.match(production, /transform:translateX\(calc\(-100% - 10px\)\)!important/);
-  assert.match(production, /\.sn-mobile-nav\{[\s\S]*display:grid!important/);
+  assert.match(deviceMode, /html\[data-device-mode="mobile"\] \.sn-side\.collapsed/);
+  assert.match(deviceMode, /margin-left:0!important/);
+  assert.match(deviceMode, /\.sn-mobile-nav\{[\s\S]*display:grid!important/);
 });

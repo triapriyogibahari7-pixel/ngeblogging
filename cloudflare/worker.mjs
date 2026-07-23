@@ -9,6 +9,45 @@ const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "OPTIONS"]);
 const DEFAULT_SITE_ORIGIN = "https://ngeblogging.com";
 
+function enabled(value) {
+  return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
+}
+
+function naraReady(env) {
+  return Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID);
+}
+
+function paypalReady(env) {
+  return Boolean(
+    env.PAYPAL_CLIENT_ID
+    && env.PAYPAL_CLIENT_SECRET
+    && env.PAYPAL_WEBHOOK_ID
+    && String(env.PAYPAL_ENV || "").toLowerCase() === "live",
+  );
+}
+
+function localBillingReady(env) {
+  if (!env.LOCAL_PAYMENT_GATEWAY_URL || !env.LOCAL_PAYMENT_GATEWAY_SECRET) return false;
+  try {
+    const prices = JSON.parse(env.LOCAL_PLAN_PRICES_JSON || "{}");
+    return Object.values(prices).some((value) => {
+      const amount = Number(value?.amount);
+      const currency = String(value?.currency || "").toUpperCase();
+      return Number.isFinite(amount) && amount > 0 && /^[A-Z]{3}$/.test(currency);
+    });
+  } catch {
+    return false;
+  }
+}
+
+function brandedEmailReady(env) {
+  const sender = String(env.AUTH_EMAIL_FROM || "").trim().toLowerCase();
+  const deliveryProbe = String(env.AUTH_EMAIL_DELIVERY_PROBE || "").trim().toLowerCase();
+  return enabled(env.AUTH_BRANDED_EMAIL_READY)
+    && sender.endsWith("@ngeblogging.com")
+    && deliveryProbe === "passed";
+}
+
 function configuredOrigins(env) {
   return new Set([
     DEFAULT_SITE_ORIGIN,
@@ -119,14 +158,21 @@ export default {
         const origin = request.headers.get("origin") || "";
         if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
         if (!["GET", "HEAD"].includes(request.method)) return jsonResponse(405, { error: "Metode tidak didukung." }, requestId, request.method, origin);
+        const paypal = paypalReady(env);
+        const localBilling = localBillingReady(env);
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v3",
           hostname: url.hostname,
-          billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET && env.PAYPAL_WEBHOOK_ID && String(env.PAYPAL_ENV || "").toLowerCase() === "live"),
-          imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
+          billing: paypal || localBilling,
+          billingProviders: { paypal, local: localBilling },
+          nara: naraReady(env),
+          imageGeneration: naraReady(env),
           customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
+          emailRegistration: brandedEmailReady(env),
+          managedSubdomains: true,
+          siteLimits: { free: 5, maximum: 12 },
           seo: "tenant-edge",
           timestamp: new Date().toISOString(),
         }, requestId, request.method, origin);

@@ -1,4 +1,4 @@
-const VERSION = "ngeblogging-app-v1";
+const VERSION = "ngeblogging-app-v3-20260723";
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
@@ -19,27 +19,27 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
-async function networkFirstNavigation(request) {
+async function networkFirst(request, fallback = null) {
   try {
-    const response = await fetch(request);
-    if (response.ok && new URL(request.url).pathname === "/") {
-      const cache = await caches.open(SHELL_CACHE);
-      cache.put("/", response.clone());
+    const response = await fetch(request, { cache: "no-store" });
+    if (response.ok && response.type === "basic") {
+      const cacheName = request.mode === "navigate" ? SHELL_CACHE : ASSET_CACHE;
+      const cache = await caches.open(cacheName);
+      cache.put(request.mode === "navigate" ? "/" : request, response.clone());
     }
     return response;
   } catch {
-    return (await caches.match(request)) || (await caches.match("/")) || new Response("Ngeblogging sedang offline.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
+    return (await caches.match(request)) || (fallback ? await caches.match(fallback) : null) || new Response("Ngeblogging sedang offline.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
   }
 }
 
-async function staleWhileRevalidate(request) {
+async function cacheFirstImmutable(request) {
   const cache = await caches.open(ASSET_CACHE);
   const cached = await cache.match(request);
-  const network = fetch(request).then((response) => {
-    if (response.ok && response.type === "basic") cache.put(request, response.clone());
-    return response;
-  }).catch(() => null);
-  return cached || (await network) || new Response("Asset tidak tersedia saat offline.", { status: 503 });
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok && response.type === "basic") cache.put(request, response.clone());
+  return response;
 }
 
 self.addEventListener("fetch", (event) => {
@@ -50,11 +50,23 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(networkFirstNavigation(request));
+    event.respondWith(networkFirst(request, "/"));
     return;
   }
 
-  if (/\.(?:js|css|svg|png|jpg|jpeg|webp|avif|woff2?)$/i.test(url.pathname) || url.pathname.startsWith("/assets/")) {
-    event.respondWith(staleWhileRevalidate(request));
+  // Vite fingerprinted assets are immutable. Source-named CSS/JS and manifests
+  // must be network-first so production fixes never remain one deployment old.
+  if (url.pathname.startsWith("/assets/") && /-[a-zA-Z0-9_-]{6,}\.(?:js|css|woff2?|png|jpg|jpeg|webp|avif|svg)$/i.test(url.pathname)) {
+    event.respondWith(cacheFirstImmutable(request));
+    return;
+  }
+
+  if (/\.(?:js|css|json|webmanifest)$/i.test(url.pathname) || url.pathname.startsWith("/src/")) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  if (/\.(?:svg|png|jpg|jpeg|webp|avif|woff2?)$/i.test(url.pathname)) {
+    event.respondWith(cacheFirstImmutable(request));
   }
 });
