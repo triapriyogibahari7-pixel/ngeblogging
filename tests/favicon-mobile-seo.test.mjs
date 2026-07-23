@@ -11,6 +11,7 @@ const bridge = readFileSync(new URL("../src/site-favicon-bridge.js", import.meta
 const mobile = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
 const production = readFileSync(new URL("../src/studio-production-audit.css", import.meta.url), "utf8");
 const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
+const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
 const guard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
 const seo = readFileSync(new URL("../server/seo-handler.mjs", import.meta.url), "utf8");
 
@@ -25,7 +26,7 @@ test("main Ngeblogging favicon and PWA shell are installable and update safely",
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v5-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v6-20260724/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
@@ -70,9 +71,10 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 test("Studio uses one accessible edge toggle and no bottom navigation", () => {
   assert.match(index, /studio-production-audit\.css/);
   assert.match(index, /studio-mobile-critical\.css/);
+  assert.match(index, /studio-final-mobile\.css/);
   assert.match(index, /studio-mobile-navigation\.js/);
   assert.match(index, /studio-runtime-layout-guard\.js/);
-  assert.ok(index.indexOf("app-shell-bridge.js") < index.indexOf("studio-mobile-navigation.js"));
+  assert.ok(index.indexOf("studio-runtime-layout-guard.js") < index.indexOf("/src/main.jsx"));
   assert.match(mobile, /const COMPACT_QUERY = "\(max-width: 1024px\)"/);
   assert.match(mobile, /const PHONE_QUERY = "\(max-width: 760px\)"/);
   assert.match(mobile, /dataset\.deviceMode === "mobile"/);
@@ -86,8 +88,9 @@ test("Studio uses one accessible edge toggle and no bottom navigation", () => {
   assert.match(production, /--sn-rail:72px;/);
   assert.match(production, /--sn-panel:240px;/);
   assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
-  assert.match(critical, /\.sn-side\.collapsed\+\.sn-main \.sn-icon\{left:12px!important\}/);
-  assert.match(critical, /\.sn-side:not\(\.collapsed\)\+\.sn-main \.sn-icon\{left:calc\(var\(--sn-phone-panel\) - 22px\)!important\}/);
+  assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
+  assert.match(finalMobile, /\.sn-side\.collapsed \+ \.sn-main \.sn-icon[\s\S]*left: 12px !important/);
+  assert.match(finalMobile, /\.sn-side:not\(\.collapsed\) \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-panel\) - 2px\) !important/);
   assert.match(guard, /removeLegacyControls\(shell\)/);
   assert.match(guard, /dataset\.sidebarAuthority = "single"/);
 });
