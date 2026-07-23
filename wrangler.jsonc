@@ -18,6 +18,8 @@
     "QWEN_REGION": "singapore",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
+    "AUTH_BRANDED_EMAIL_READY": "false",
+    "AUTH_EMAIL_FROM": "",
     "NARA_RUNTIME": "cloudflare-worker-preview-v3"
   },
   "observability": {
@@ -44,6 +46,8 @@
         "QWEN_REGION": "singapore",
         "PAYPAL_ENV": "sandbox",
         "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
+        "AUTH_BRANDED_EMAIL_READY": "false",
+        "AUTH_EMAIL_FROM": "",
         "NARA_RUNTIME": "cloudflare-worker-v3"
       },
       "secrets": {
