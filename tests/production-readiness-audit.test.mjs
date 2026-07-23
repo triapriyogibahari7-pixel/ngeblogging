@@ -8,6 +8,7 @@ const domainHandler = readFileSync(new URL("../server/domain-handler.mjs", impor
 const domainBridge = readFileSync(new URL("../src/domain-management-bridge.js", import.meta.url), "utf8");
 const quotaBridge = readFileSync(new URL("../src/site-quota-bridge.js", import.meta.url), "utf8");
 const quotaMigration = readFileSync(new URL("../supabase/migrations/202607231845_site_account_limits.sql", import.meta.url), "utf8");
+const quotaHardeningMigration = readFileSync(new URL("../supabase/migrations/20260723133500_harden_quota_rpc_and_domain_indexes.sql", import.meta.url), "utf8");
 const billing = readFileSync(new URL("../src/BillingView.jsx", import.meta.url), "utf8");
 const auth = readFileSync(new URL("../src/AuthModal.jsx", import.meta.url), "utf8");
 const supabase = readFileSync(new URL("../src/lib/supabase.js", import.meta.url), "utf8");
@@ -26,6 +27,16 @@ test("account site limits are enforced in Postgres and shown in Studio", () => {
   assert.match(quotaBridge, /maksimum \$\{maximum\} situs per akun/);
   assert.match(quotaBridge, /createButton\.disabled = remaining <= 0/);
   assert.match(index, /site-quota-bridge\.js/);
+});
+
+
+test("quota reads keep RLS active and duplicate primary-domain indexes are removed", () => {
+  assert.match(quotaHardeningMigration, /security invoker/);
+  assert.match(quotaHardeningMigration, /revoke all on function public\.get_site_creation_quota\(\) from anon/);
+  assert.match(quotaHardeningMigration, /grant execute on function public\.get_site_creation_quota\(\) to authenticated/);
+  assert.match(quotaHardeningMigration, /when lower\(coalesce\(state\.plan, 'free'\)\) = 'free' then 5 else 12/);
+  assert.match(quotaHardeningMigration, /drop index if exists public\.site_domains_one_primary_idx/);
+  assert.doesNotMatch(quotaHardeningMigration, /security definer/);
 });
 
 
@@ -51,7 +62,7 @@ test("custom domains use authenticated server-side Cloudflare for SaaS operation
 
 
 test("inactive payment methods are not presented as usable checkout", () => {
-  assert.match(billing, /paypalReady=Boolean\(config\?\.paypal&&config\?\.paypalWebhook&&String\(config\?\.paypalEnvironment\)\.toLowerCase\(\)===\"live\"\)/);
+  assert.match(billing, /paypalReady=Boolean\(config\?\.paypal&&config\?\.paypalWebhook&&String\(config\?\.paypalEnvironment\)\.toLowerCase\(\)==="live"\)/);
   assert.match(billing, /const checkoutReady=paypalReady\|\|localReady/);
   assert.match(billing, /\{checkoutReady&&\(config\?\.plans\|\|\[\]\)\.map/);
   assert.match(billing, /Pembayaran belum dibuka/);
