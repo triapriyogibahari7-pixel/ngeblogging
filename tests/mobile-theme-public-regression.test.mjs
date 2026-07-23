@@ -10,6 +10,8 @@ const deviceCss = readFileSync(new URL("../src/theme-device-modes.css", import.m
 const themeSystem = readFileSync(new URL("../src/theme-system.js", import.meta.url), "utf8");
 const publicSite = readFileSync(new URL("../src/PublicSiteNext.jsx", import.meta.url), "utf8");
 const serviceWorker = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
+const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
+const wrangler = readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8");
 
 test("mobile Studio navigation is forced to the physical bottom with one sidebar toggle", () => {
   const deviceAuthority = index.indexOf("studio-device-mode.css");
@@ -25,6 +27,7 @@ test("mobile Studio navigation is forced to the physical bottom with one sidebar
   assert.match(guard, /important\(nav, "top", "auto"\)/);
   assert.match(guard, /important\(nav, "bottom", "0"\)/);
   assert.match(guard, /function responsiveDeviceMode\(\)/);
+  assert.match(guard, /studio-mobile-v4-20260724/);
   assert.match(guard, /querySelectorAll\(":scope > \.sn-side-close"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
 });
 
@@ -60,6 +63,16 @@ test("public theme widgets are inserted inside the theme and populated from tena
   assert.match(publicSite, /renderCards\(input\?\.value\|\|''\)/);
   assert.match(publicSite, /const supported=new Set\(\['search','recent-posts','popular-posts','categories','tags'\]\)/);
   assert.doesNotMatch(publicSite, /className="ps-theme-tools"/);
+});
+
+test("Nara remains invisible and unavailable until a production probe passes", () => {
+  assert.match(worker, /NARA_PRODUCTION_READY/);
+  assert.match(worker, /NARA_PRODUCTION_PROBE/);
+  assert.match(worker, /deliveryProbe === "passed"/);
+  assert.match(worker, /code: "NARA_NOT_READY"/);
+  assert.match(worker, /release: "2026\.07\.24-mobile-theme-v4"/);
+  assert.match(wrangler, /"NARA_PRODUCTION_READY": "false"/);
+  assert.match(wrangler, /"NARA_PRODUCTION_PROBE": "not-run"/);
 });
 
 test("the release invalidates stale CSS and JavaScript caches", () => {
