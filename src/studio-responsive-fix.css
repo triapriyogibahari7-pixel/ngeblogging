@@ -5,9 +5,15 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 .sn-main{width:auto;min-width:0;max-width:none}
 .sn-main>*{min-width:0;max-width:100%}
 .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{width:100%;min-width:0;max-width:none;margin-left:0;margin-right:0}
-.sn-shell aside:empty,.sn-shell section:empty,.sn-shell div:empty[data-sidebar]{display:none!important}
+.sn-shell aside:empty,.sn-shell div:empty[data-sidebar]{display:none!important}
+
+/* Pengaturan is a focused full-width workspace: no desktop side rail or unused side gutter. */
+body:has(.sn-settings-grid) .sn-side{display:none!important}
+body:has(.sn-settings-grid) .sn-main,
+body:has(.sn-settings-grid) .sn-side.collapsed+.sn-main{width:100%!important;max-width:100%!important;margin-left:0!important}
 
 @media(max-width:1100px){
+  .sn-shell{padding-bottom:74px}
   .sn-side{display:none!important}
   .sn-main,.sn-side.collapsed+.sn-main{width:100%!important;max-width:100%!important;margin-left:0!important}
   .sn-top{left:0!important;width:100%!important;max-width:100%!important}
@@ -21,7 +27,6 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 }
 
 @media(max-width:760px){
-  .sn-shell{padding-bottom:74px}
   .sn-top{min-height:60px;height:auto!important;padding:8px 12px!important;gap:7px!important;flex-wrap:nowrap}
   .sn-workspace{min-width:0;padding:3px!important}
   .sn-workspace>span{width:34px!important;height:34px!important;flex:0 0 auto}
