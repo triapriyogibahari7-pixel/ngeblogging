@@ -9,7 +9,7 @@ services:
       - ${NGEBLOGGING_ENV_FILE:-/opt/ngeblogging/shared/.env}
     environment:
       APP_VERSION: ${IMAGE_TAG:-latest}
-      NARA_RUNTIME: portable-api-v1
+      NARA_RUNTIME: portable-api-v3
       TRUST_PROXY: "1"
     expose:
       - "3000"

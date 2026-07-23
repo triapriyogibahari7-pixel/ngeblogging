@@ -31,7 +31,45 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Test, build, and validate production files
-        run: npm run test:production && npm run build
+        id: quality
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          npm run test:production > /tmp/ngeblogging-quality.log 2>&1
+          test_status=$?
+          if [ "$test_status" -ne 0 ]; then
+            echo "failed_stage=test" >> "$GITHUB_OUTPUT"
+            exit "$test_status"
+          fi
+
+          npm run build > /tmp/ngeblogging-build.log 2>&1
+          build_status=$?
+          if [ "$build_status" -ne 0 ]; then
+            echo "failed_stage=build" >> "$GITHUB_OUTPUT"
+            exit "$build_status"
+          fi
+
+          echo "failed_stage=none" >> "$GITHUB_OUTPUT"
+          tail -n 25 /tmp/ngeblogging-quality.log
+          tail -n 25 /tmp/ngeblogging-build.log
+
+      - name: Upload quality failure logs
+        if: steps.quality.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-failure-${{ github.run_id }}
+          path: |
+            /tmp/ngeblogging-quality.log
+            /tmp/ngeblogging-build.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail quality gate after artifact upload
+        if: steps.quality.outcome == 'failure'
+        run: |
+          echo "Quality stage failed: ${{ steps.quality.outputs.failed_stage }}"
+          exit 1
 
       - name: Validate Cloudflare preview bundle without production secrets
         run: npm run cloudflare:preview-dry-run

@@ -4,12 +4,15 @@ FROM node:22-alpine
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=3000 \
-    NARA_RUNTIME=portable-api-v1
+    NARA_RUNTIME=portable-api-v3
 
 WORKDIR /app
 COPY --chown=node:node api ./api
 COPY --chown=node:node server/nara-handler.mjs ./server/nara-handler.mjs
 COPY --chown=node:node server/nara-runtime.mjs ./server/nara-runtime.mjs
+COPY --chown=node:node server/nara-image-handler.mjs ./server/nara-image-handler.mjs
+COPY --chown=node:node server/billing-handler.mjs ./server/billing-handler.mjs
+COPY --chown=node:node server/paypal-webhook-handler.mjs ./server/paypal-webhook-handler.mjs
 
 USER node
 EXPOSE 3000
