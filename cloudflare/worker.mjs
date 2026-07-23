@@ -2,6 +2,7 @@ import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
 import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
 import { handleNaraImage } from "../server/nara-image-handler.mjs";
+import { handleDomainRequest } from "../server/domain-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
 
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
@@ -123,9 +124,9 @@ export default {
           service: "ngeblogging-cloudflare",
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v3",
           hostname: url.hostname,
-          billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
-          billingWebhook: Boolean(env.PAYPAL_WEBHOOK_ID),
+          billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET && env.PAYPAL_WEBHOOK_ID && String(env.PAYPAL_ENV || "").toLowerCase() === "live"),
           imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
+          customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
           seo: "tenant-edge",
           timestamp: new Date().toISOString(),
         }, requestId, request.method, origin);
@@ -133,6 +134,7 @@ export default {
 
       if (url.pathname === "/api/nara") return await naraResponse(request, env, requestId);
       if (url.pathname === "/api/nara/image") return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
+      if (url.pathname.startsWith("/api/domains/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRequest);
       if (url.pathname === "/api/billing/paypal/webhook") return protectedJsonEndpoint(request, env, requestId, handlePayPalWebhook);
       if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
       if (url.pathname.startsWith("/api/")) return jsonResponse(404, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
