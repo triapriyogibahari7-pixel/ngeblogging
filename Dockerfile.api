@@ -8,7 +8,8 @@ ENV NODE_ENV=production \
 
 WORKDIR /app
 COPY --chown=node:node api ./api
-COPY --chown=node:node netlify/functions/nara.mjs ./netlify/functions/nara.mjs
+COPY --chown=node:node server/nara-handler.mjs ./server/nara-handler.mjs
+COPY --chown=node:node server/nara-runtime.mjs ./server/nara-runtime.mjs
 
 USER node
 EXPOSE 3000

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { handleRequest as handler } from "../netlify/functions/nara.mjs";
+import { handleRequest as handler } from "../server/nara-runtime.mjs";
 
 const ENV_KEYS = [
   "QWEN_API_KEY",
@@ -18,6 +18,7 @@ const ENV_KEYS = [
   "VITE_SUPABASE_URL",
   "VITE_SUPABASE_PUBLISHABLE_KEY",
   "PUBLIC_ALLOWED_ORIGINS",
+  "NARA_RUNTIME",
 ];
 
 const originalEnv = Object.fromEntries(ENV_KEYS.map((key) => [key, process.env[key]]));
@@ -37,7 +38,7 @@ function event(method, body, extraHeaders = {}) {
     httpMethod: method,
     headers: {
       origin: "https://ngeblogging.com",
-      "x-nf-client-connection-ip": `test-${Math.random()}`,
+      "x-client-ip": `test-${Math.random()}`,
       ...extraHeaders,
     },
     body: body === undefined ? "" : JSON.stringify(body),
@@ -55,6 +56,7 @@ test("GET /api/nara menjelaskan konfigurasi yang masih kurang tanpa membuka secr
   delete process.env.DASHSCOPE_API_KEY;
   delete process.env.QWEN_WORKSPACE_ID;
   delete process.env.QWEN_API_BASE_URL;
+  delete process.env.NARA_RUNTIME;
   process.env.QWEN_REGION = "singapore";
 
   const result = await handler(event("GET"));
@@ -63,7 +65,7 @@ test("GET /api/nara menjelaskan konfigurasi yang masih kurang tanpa membuka secr
   assert.equal(result.statusCode, 200);
   assert.equal(body.ready, false);
   assert.equal(body.region, "singapore");
-  assert.equal(body.runtime, "netlify-modern-v3-vision-stable");
+  assert.equal(body.runtime, "portable-nara-v4");
   assert.ok(body.missing.includes("QWEN_API_KEY"));
   assert.equal(JSON.stringify(body).includes("sk-"), false);
 });
@@ -78,6 +80,14 @@ test("origin staging harus diizinkan secara eksplisit tanpa membuka wildcard COR
   assert.equal(allowed.headers["access-control-allow-origin"], "https://staging.ngeblogging.com");
   assert.equal(denied.statusCode, 403);
   assert.notEqual(denied.headers["access-control-allow-origin"], "*");
+});
+
+test("origin deployment lama ditolak oleh runtime Cloudflare-first", { concurrency: false }, async () => {
+  const denied = await handler(event("GET", undefined, { origin: "https://legacy-example.netlify.app" }));
+  const body = parse(denied);
+
+  assert.equal(denied.statusCode, 403);
+  assert.equal(body.code, "ORIGIN_NOT_ALLOWED");
 });
 
 test("Nara Mini memakai model Flash dan mode Sedang tanpa deep thinking", { concurrency: false }, async () => {

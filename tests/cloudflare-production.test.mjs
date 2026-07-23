@@ -43,8 +43,8 @@ test("required production secrets are declared and never stored as plaintext var
   assert.match(packageJson.scripts["cloudflare:dry-run"], /--env production/);
 });
 
-test("Worker uses the neutral Nara module and accepts wildcard tenant origins", () => {
-  assert.match(worker, /server\/nara-handler\.mjs/);
+test("Worker uses the portable Nara runtime and accepts wildcard tenant origins", () => {
+  assert.match(worker, /server\/nara-runtime\.mjs/);
   assert.match(worker, /endsWith\("\.ngeblogging\.com"\)/);
   assert.match(worker, /ORIGIN_NOT_ALLOWED/);
   assert.match(worker, /PAYLOAD_TOO_LARGE/);
@@ -57,6 +57,7 @@ test("Cloudflare static assets receive security and immutable asset headers", ()
   assert.match(headers, /max-age=31536000, immutable/);
 });
 
-test("obsolete Netlify deployment configuration is removed", () => {
+test("obsolete deployment configuration and runtime directory are removed", () => {
   assert.equal(existsSync(new URL("../netlify.toml", import.meta.url)), false);
+  assert.equal(existsSync(new URL("../netlify/", import.meta.url)), false);
 });

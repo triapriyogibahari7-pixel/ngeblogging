@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import worker from "../cloudflare/worker.mjs";
-import { handleRequest } from "../netlify/functions/nara.mjs";
+import { handleRequest } from "../server/nara-runtime.mjs";
 
 const baseEnv = {
   PUBLIC_SITE_URL: "https://ngeblogging.com",
