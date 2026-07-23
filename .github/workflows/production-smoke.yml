@@ -43,14 +43,24 @@ jobs:
               && curl --fail --silent --show-error --location \
               --connect-timeout 10 --max-time 25 \
               -H 'cache-control: no-cache' \
-              "${SITE_URL}/src/studio-device-mode.css?smoke=${stamp}" > /tmp/device.css; then
+              "${SITE_URL}/src/studio-mobile-critical.css?smoke=${stamp}" > /tmp/mobile.css \
+              && curl --fail --silent --show-error --location \
+              --connect-timeout 10 --max-time 25 \
+              -H 'cache-control: no-cache' \
+              "${SITE_URL}/src/studio-runtime-layout-guard.js?smoke=${stamp}" > /tmp/mobile.js \
+              && curl --fail --silent --show-error --location \
+              --connect-timeout 10 --max-time 25 \
+              -H 'cache-control: no-cache' \
+              "${SITE_URL}/src/theme-device-mode-bridge.js?smoke=${stamp}" > /tmp/theme-device.js; then
 
               if node <<'NODE'
           const fs = require('node:fs');
           const health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8'));
           const index = fs.readFileSync('/tmp/index.html', 'utf8');
           const sw = fs.readFileSync('/tmp/sw.js', 'utf8');
-          const device = fs.readFileSync('/tmp/device.css', 'utf8');
+          const mobileCss = fs.readFileSync('/tmp/mobile.css', 'utf8');
+          const mobileJs = fs.readFileSync('/tmp/mobile.js', 'utf8');
+          const themeDevice = fs.readFileSync('/tmp/theme-device.js', 'utf8');
 
           const requiredBooleans = ['billing', 'customDomains', 'emailRegistration', 'nara', 'imageGeneration', 'managedSubdomains'];
           const errors = [];
@@ -61,11 +71,23 @@ jobs:
           }
           if (health.managedSubdomains !== true) errors.push('managed subdomains');
           if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('site limits');
-          for (const asset of ['studio-device-mode.css', 'auth-readiness-bridge.js', 'nara-availability-bridge.js', 'billing-availability-bridge.js']) {
+          for (const asset of [
+            'studio-mobile-critical.css',
+            'studio-runtime-layout-guard.js',
+            'theme-device-modes.css',
+            'theme-device-mode-bridge.js',
+            'auth-readiness-bridge.js',
+            'nara-availability-bridge.js',
+            'billing-availability-bridge.js',
+          ]) {
             if (!index.includes(asset)) errors.push(`index:${asset}`);
           }
-          if (!sw.includes('ngeblogging-app-v3-20260723') || !sw.includes('networkFirst')) errors.push('service worker');
-          if (!device.includes('html[data-device-mode="mobile"]') || !device.includes('margin-left:0!important')) errors.push('mobile authority');
+          if (!sw.includes('ngeblogging-app-v4-20260724') || !sw.includes('networkFirst')) errors.push('service worker');
+          if (!mobileCss.includes('.sn-mobile-nav') || !mobileCss.includes('bottom:0!important') || !mobileCss.includes('top:auto!important')) errors.push('mobile bottom navigation');
+          if (!mobileJs.includes('important(nav, "bottom", "0")') || !mobileJs.includes('responsiveDeviceMode')) errors.push('mobile runtime guard');
+          for (const label of ['Mobile', 'Tablet', 'Laptop', 'Komputer']) {
+            if (!themeDevice.includes(label)) errors.push(`theme device:${label}`);
+          }
 
           if (errors.length) {
             console.error(`Deployment not ready: ${errors.join(', ')}`);
@@ -81,6 +103,7 @@ jobs:
             nara: health.nara,
             managedSubdomains: health.managedSubdomains,
             siteLimits: health.siteLimits,
+            release: 'ngeblogging-app-v4-20260724',
           }, null, 2));
           NODE
               then
