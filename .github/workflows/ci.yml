@@ -31,7 +31,29 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Test, build, and validate production files
-        run: npm run test:production && npm run build
+        shell: bash
+        run: |
+          set +e
+          npm run test:production > /tmp/ngeblogging-quality.log 2>&1
+          test_status=$?
+          if [ "$test_status" -ne 0 ]; then
+            echo "::group::Test and production validation failure"
+            tail -n 180 /tmp/ngeblogging-quality.log
+            echo "::endgroup::"
+            exit "$test_status"
+          fi
+
+          npm run build > /tmp/ngeblogging-build.log 2>&1
+          build_status=$?
+          if [ "$build_status" -ne 0 ]; then
+            echo "::group::Vite build failure"
+            tail -n 180 /tmp/ngeblogging-build.log
+            echo "::endgroup::"
+            exit "$build_status"
+          fi
+
+          tail -n 25 /tmp/ngeblogging-quality.log
+          tail -n 25 /tmp/ngeblogging-build.log
 
       - name: Validate Cloudflare preview bundle without production secrets
         run: npm run cloudflare:preview-dry-run
