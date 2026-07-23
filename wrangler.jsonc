@@ -23,7 +23,7 @@
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_PRODUCTION_READY": "true",
     "NARA_PRODUCTION_PROBE": "passed",
-    "NARA_RUNTIME": "cloudflare-worker-preview-v4"
+    "NARA_RUNTIME": "cloudflare-worker-preview-v3"
   },
   "observability": {
     "enabled": true,
@@ -54,7 +54,7 @@
         "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
         "NARA_PRODUCTION_READY": "true",
         "NARA_PRODUCTION_PROBE": "passed",
-        "NARA_RUNTIME": "cloudflare-worker-v4"
+        "NARA_RUNTIME": "cloudflare-worker-v3"
       },
       "secrets": {
         "required": [
