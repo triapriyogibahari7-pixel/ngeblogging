@@ -1,0 +1,46 @@
+import { supabase, supabaseConfigured } from "./supabase.js";
+
+function client() {
+  if (!supabaseConfigured || !supabase) throw new Error("Penyimpanan publik belum dikonfigurasi.");
+  return supabase;
+}
+
+export async function resolvePublishedSite({ slug = "", hostname = "" }) {
+  const db = client();
+  let siteId = null;
+  if (hostname && !hostname.endsWith(".ngeblogging.com")) {
+    const { data:domain,error:domainError } = await db.from("site_domains").select("site_id").eq("hostname",hostname.toLowerCase()).eq("status","active").maybeSingle();
+    if (domainError) throw domainError;
+    siteId = domain?.site_id || null;
+  }
+  let request = db.from("sites").select("id,name,slug,description,status,blueprint,theme_key,settings,locale,timezone,published_at,updated_at").eq("status","active").eq("is_public",true);
+  request = siteId ? request.eq("id",siteId) : request.eq("slug",slug);
+  const { data:site,error:siteError } = await request.maybeSingle();
+  if (siteError) throw siteError;
+  if (!site) return null;
+  const { data:theme,error:themeError } = await db.from("site_theme_settings").select("active_theme_id,published_config,code,widgets,updated_at").eq("site_id",site.id).maybeSingle();
+  if (themeError) throw themeError;
+  return { ...site, theme };
+}
+
+export async function listPublishedContent({siteId,kind=null,cursor=null,pageSize=18}) {
+  const limit=Math.min(50,Math.max(1,Number(pageSize)||18));
+  let request=client().from("contents").select("id,kind,title,slug,excerpt,featured_image_path,metadata,seo,published_at,updated_at").eq("site_id",siteId).eq("status","published").eq("visibility","public").order("published_at",{ascending:false,nullsFirst:false}).order("id",{ascending:false}).limit(limit+1);
+  if(kind)request=request.eq("kind",kind);
+  if(cursor?.publishedAt&&cursor?.id)request=request.or(`published_at.lt.${cursor.publishedAt},and(published_at.eq.${cursor.publishedAt},id.lt.${cursor.id})`);
+  const {data,error}=await request;if(error)throw error;
+  const hasMore=data.length>limit,rows=data.slice(0,limit),last=rows.at(-1);
+  return {contents:rows,hasMore,cursor:hasMore&&last?{publishedAt:last.published_at,id:last.id}:null};
+}
+
+export async function listPublishedPages(siteId) {
+  const { data,error } = await client().from("contents").select("id,title,slug,excerpt,metadata,published_at,updated_at").eq("site_id",siteId).eq("kind","page").eq("status","published").eq("visibility","public").order("metadata->menuOrder",{ascending:true}).order("title").limit(100);
+  if(error)throw error;
+  return data || [];
+}
+
+export async function getPublishedContent(siteId,slug) {
+  const {data,error}=await client().from("contents").select("id,kind,title,slug,body_html,excerpt,featured_image_path,metadata,seo,published_at,updated_at,created_at").eq("site_id",siteId).eq("slug",slug).eq("status","published").eq("visibility","public").maybeSingle();
+  if(error)throw error;
+  return data;
+}
