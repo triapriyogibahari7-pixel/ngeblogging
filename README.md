@@ -4,7 +4,7 @@ Platform kehadiran digital berbasis AI untuk kreator, bisnis, media, dan komunit
 
 ## Status
 
-MVP interaktif mencakup landing page responsif, studio dashboard, CRUD artikel dan halaman, editor ribbon dengan autosave, status publikasi, pencarian, 12 tema, autentikasi Google/LinkedIn/email yang siap dikonfigurasi, Nara Assistant universal, skema database multi-situs dengan RLS, serta konfigurasi Netlify. Tanpa environment variables, Studio tetap tersedia dalam mode demo lokal.
+MVP operasional mencakup landing page responsif, dashboard dengan navigasi mobile, CRUD artikel/halaman tersinkron Supabase, cursor pagination, editor ribbon dengan autosave dan pratinjau perangkat, status publikasi, pencarian server, Theme Studio Pro dengan 12 tema, backup/impor/pemulihan/Edit HTML sandbox, peluncuran situs publik melalui subdomain, autentikasi sosial/email, Nara Assistant universal, serta skema multi-situs dengan RLS. Tanpa environment variables, Studio tetap tersedia dalam mode demo lokal.
 
 ## Menjalankan lokal
 
@@ -24,8 +24,8 @@ npm run build
 
 Repository mendukung dua target tanpa menggandakan logika aplikasi:
 
+- **Cloudflare Free** adalah target produksi utama: aset statis global, wildcard subdomain situs pengguna, dan API Nara Worker tanpa server yang harus menyala sendiri.
 - **Netlify** tetap dapat dipakai sebagai deployment cadangan.
-- **Cloudflare Free** adalah target biaya minimum: aset statis global dan API Nara Worker tanpa server yang harus menyala sendiri.
 - **VPS produksi** memakai Docker Compose, Caddy HTTPS, image GHCR multi-arsitektur, API Nara portable, health check, dan rollback otomatis.
 - **Dua server opsional** memakai DigitalOcean AMD64 sebagai primary dan Oracle ARM64 sebagai standby; workflow memperbarui standby sebelum primary.
 
@@ -66,6 +66,14 @@ Panduan dari pembuatan API key sampai pengujian live tersedia di [`docs/QWEN_SET
 Endpoint browser untuk Nara adalah `POST /api/nara`. Secret hanya dibaca oleh Netlify Function dan tidak masuk ke bundle browser. Endpoint memverifikasi access token Supabase, menegakkan paket Free/Pro dan kuota harian di database, memvalidasi lampiran, membatasi origin, serta memakai rate limit Netlify.
 
 Pada VPS, endpoint yang sama dijalankan oleh `api/server.mjs`; browser dan UI tidak perlu diubah. API container tidak membuka port publik dan hanya dapat dicapai melalui Caddy. Status server portable tersedia di `GET /api/health`.
+
+## Theme Studio dan peluncuran situs
+
+- Pengaturan aktif/draf tema disimpan per situs di site_theme_settings; 30 versi terbaru disimpan terpisah di site_theme_versions.
+- Tema dapat disesuaikan, dipratinjau pada desktop/tablet/mobile, dicadangkan, diimpor, dipulihkan, dan diedit sebagai HTML/CSS/JavaScript terisolasi.
+- Menu **Domain → Launch situs sekarang** mengaktifkan situs publik pada subdomain slug.ngeblogging.com.
+- Halaman publik membaca hanya situs aktif, konfigurasi tema terbit, dan konten berstatus published + public. Draf tema, token verifikasi domain, dan konten privat tidak diberi akses anonim.
+- Daftar konten memakai cursor (timestamp, id) dan ukuran halaman terbatas; isi artikel baru diambil ketika artikel dibuka.
 
 ## Nara Assistant
 
