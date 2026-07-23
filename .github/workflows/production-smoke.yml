@@ -51,7 +51,7 @@ jobs:
               && curl --fail --silent --show-error --location \
               --connect-timeout 10 --max-time 25 \
               -H 'cache-control: no-cache' \
-              "${SITE_URL}/src/theme-device-mode-bridge.js?smoke=${stamp}" > /tmp/theme-device.js; then
+              "${SITE_URL}/src/ThemeStudio.jsx?smoke=${stamp}" > /tmp/theme-studio.jsx; then
 
               if node <<'NODE'
           const fs = require('node:fs');
@@ -60,7 +60,7 @@ jobs:
           const sw = fs.readFileSync('/tmp/sw.js', 'utf8');
           const mobileCss = fs.readFileSync('/tmp/mobile.css', 'utf8');
           const mobileJs = fs.readFileSync('/tmp/mobile.js', 'utf8');
-          const themeDevice = fs.readFileSync('/tmp/theme-device.js', 'utf8');
+          const themeStudio = fs.readFileSync('/tmp/theme-studio.jsx', 'utf8');
 
           const requiredBooleans = ['billing', 'customDomains', 'emailRegistration', 'nara', 'imageGeneration', 'managedSubdomains'];
           const errors = [];
@@ -75,7 +75,6 @@ jobs:
             'studio-mobile-critical.css',
             'studio-runtime-layout-guard.js',
             'theme-device-modes.css',
-            'theme-device-mode-bridge.js',
             'auth-readiness-bridge.js',
             'nara-availability-bridge.js',
             'billing-availability-bridge.js',
@@ -86,8 +85,9 @@ jobs:
           if (!mobileCss.includes('.sn-mobile-nav') || !mobileCss.includes('bottom:0!important') || !mobileCss.includes('top:auto!important')) errors.push('mobile bottom navigation');
           if (!mobileJs.includes('important(nav, "bottom", "0")') || !mobileJs.includes('responsiveDeviceMode')) errors.push('mobile runtime guard');
           for (const label of ['Mobile', 'Tablet', 'Laptop', 'Komputer']) {
-            if (!themeDevice.includes(label)) errors.push(`theme device:${label}`);
+            if (!themeStudio.includes(label)) errors.push(`theme device:${label}`);
           }
+          if (!themeStudio.includes('useState(initialPreviewDevice)')) errors.push('automatic preview device');
 
           if (errors.length) {
             console.error(`Deployment not ready: ${errors.join(', ')}`);
