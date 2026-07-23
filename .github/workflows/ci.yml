@@ -33,7 +33,10 @@ jobs:
       - name: Test, build, and validate production files
         run: npm run test:production && npm run build
 
-      - name: Validate Cloudflare Worker bundle
+      - name: Validate Cloudflare preview bundle without production secrets
+        run: npm run cloudflare:preview-dry-run
+
+      - name: Validate Cloudflare production bundle and required secrets
         env:
           QWEN_API_KEY: ci-dry-run-only
           QWEN_WORKSPACE_ID: ci-dry-run
