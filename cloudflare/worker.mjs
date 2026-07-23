@@ -2,10 +2,11 @@ import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
 import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
 import { handleNaraImage } from "../server/nara-image-handler.mjs";
+import { handleDomainRequest } from "../server/domain-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
 
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
-const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "OPTIONS"]);
+const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "DELETE", "OPTIONS"]);
 const DEFAULT_SITE_ORIGIN = "https://ngeblogging.com";
 
 function configuredOrigins(env) {
@@ -20,7 +21,30 @@ function configuredOrigins(env) {
   ].filter(Boolean));
 }
 
-function isAllowedOrigin(origin, env) {
+function supabasePublicConfig(env) {
+  return {
+    url: String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").replace(/\/$/, ""),
+    key: env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "",
+  };
+}
+
+async function isVerifiedCustomHostname(hostname, env) {
+  const { url, key } = supabasePublicConfig(env);
+  if (!url || !key || !hostname) return false;
+  try {
+    const result = await fetch(`${url}/rest/v1/site_domains?select=id&hostname=eq.${encodeURIComponent(hostname)}&status=eq.active&limit=1`, {
+      headers: { apikey:key, authorization:`Bearer ${key}`, accept:"application/json" },
+      cf: { cacheTtl:60, cacheEverything:true },
+    });
+    if (!result.ok) return false;
+    const rows = await result.json();
+    return Boolean(rows?.length);
+  } catch {
+    return false;
+  }
+}
+
+async function isAllowedOrigin(origin, env) {
   if (!origin) return true;
   if (configuredOrigins(env).has(origin.replace(/\/$/, ""))) return true;
   let parsed;
@@ -28,7 +52,8 @@ function isAllowedOrigin(origin, env) {
   const hostname = parsed.hostname.toLowerCase();
   if (parsed.protocol === "https:" && (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com"))) return true;
   if (parsed.protocol === "https:" && /(?:^|\.)(?:pages|workers)\.dev$/.test(hostname)) return true;
-  return ["localhost", "127.0.0.1", "[::1]"].includes(hostname) && ["http:", "https:"].includes(parsed.protocol);
+  if (["localhost", "127.0.0.1", "[::1]"].includes(hostname) && ["http:", "https:"].includes(parsed.protocol)) return true;
+  return parsed.protocol === "https:" && await isVerifiedCustomHostname(hostname, env);
 }
 
 function securityHeaders(requestId, corsOrigin = "") {
@@ -44,7 +69,7 @@ function securityHeaders(requestId, corsOrigin = "") {
   if (corsOrigin) {
     headers.set("access-control-allow-origin", corsOrigin);
     headers.set("access-control-allow-headers", "content-type, authorization");
-    headers.set("access-control-allow-methods", "GET, HEAD, POST, OPTIONS");
+    headers.set("access-control-allow-methods", "GET, HEAD, POST, DELETE, OPTIONS");
     headers.set("access-control-max-age", "86400");
     headers.set("vary", "Origin");
   }
@@ -64,9 +89,32 @@ function clientAddress(request) {
     || "cloudflare-guest";
 }
 
+function capabilityPayload(env) {
+  const paypalLive = Boolean(
+    env.PAYPAL_CLIENT_ID
+    && env.PAYPAL_CLIENT_SECRET
+    && env.PAYPAL_WEBHOOK_ID
+    && String(env.PAYPAL_ENV || "sandbox").toLowerCase() === "live"
+  );
+  const localPayments = Boolean(env.LOCAL_PAYMENT_GATEWAY_URL && env.LOCAL_PAYMENT_GATEWAY_SECRET && env.LOCAL_PLAN_PRICES_JSON);
+  const nara = Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID);
+  const imageGeneration = nara;
+  const customDomains = Boolean(env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN && env.CUSTOM_DOMAIN_CNAME_TARGET);
+  return {
+    billing: paypalLive || localPayments,
+    paypalLive,
+    localPayments,
+    nara,
+    imageGeneration,
+    customDomains,
+    analytics: String(env.ANALYTICS_ENABLED || "").toLowerCase() === "true",
+    integrations: String(env.NARA_CONNECTORS_ENABLED || "").toLowerCase() === "true",
+  };
+}
+
 async function naraResponse(request, env, requestId) {
   const origin = request.headers.get("origin") || "";
-  if (!isAllowedOrigin(origin, env)) {
+  if (!(await isAllowedOrigin(origin, env))) {
     return jsonResponse(403, { code: "ORIGIN_NOT_ALLOWED", error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
   }
   if (!ALLOWED_METHODS.has(request.method)) {
@@ -94,7 +142,7 @@ async function naraResponse(request, env, requestId) {
 
 async function protectedJsonEndpoint(request, env, requestId, handler) {
   const origin = request.headers.get("origin") || "";
-  if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
+  if (!(await isAllowedOrigin(origin, env))) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
   const result = await handler(request, env, requestId);
   const headers = new Headers(result.headers);
   for (const [name, value] of securityHeaders(requestId, origin).entries()) headers.set(name, value);
@@ -116,16 +164,14 @@ export default {
     try {
       if (url.pathname === "/api/health") {
         const origin = request.headers.get("origin") || "";
-        if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
+        if (!(await isAllowedOrigin(origin, env))) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
         if (!["GET", "HEAD"].includes(request.method)) return jsonResponse(405, { error: "Metode tidak didukung." }, requestId, request.method, origin);
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          runtime: env.NARA_RUNTIME || "cloudflare-worker-v3",
+          runtime: env.NARA_RUNTIME || "cloudflare-worker-v4",
           hostname: url.hostname,
-          billing: Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET),
-          billingWebhook: Boolean(env.PAYPAL_WEBHOOK_ID),
-          imageGeneration: Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID),
+          ...capabilityPayload(env),
           seo: "tenant-edge",
           timestamp: new Date().toISOString(),
         }, requestId, request.method, origin);
@@ -135,6 +181,7 @@ export default {
       if (url.pathname === "/api/nara/image") return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
       if (url.pathname === "/api/billing/paypal/webhook") return protectedJsonEndpoint(request, env, requestId, handlePayPalWebhook);
       if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
+      if (url.pathname === "/api/domains" || url.pathname.startsWith("/api/domains/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRequest);
       if (url.pathname.startsWith("/api/")) return jsonResponse(404, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
 
       const discovery = await seoEndpoint(request, env);
