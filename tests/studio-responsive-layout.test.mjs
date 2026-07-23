@@ -4,29 +4,46 @@ import { readFileSync } from "node:fs";
 
 const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/studio-responsive-fix.css", import.meta.url), "utf8");
+const polish = readFileSync(new URL("../src/studio-mobile-polish.css", import.meta.url), "utf8");
+const controller = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
 const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 
-test("Studio loads the final responsive override after module styles", () => {
+test("Studio loads the final responsive layers after module styles", () => {
   assert.match(index, /studio-responsive-fix\.css/);
+  assert.match(index, /studio-mobile-polish\.css/);
   assert.match(index, /width=device-width,initial-scale=1,viewport-fit=cover/);
   assert.doesNotMatch(index, /maximum-scale=1/);
 });
 
-test("small screens keep the left sidebar as a toggleable drawer", () => {
+test("small screens preserve the left sidebar as an expanded panel or icon rail", () => {
   assert.match(css, /@media\(max-width:1100px\)/);
-  assert.match(css, /\.sn-side\{[\s\S]*display:flex!important/);
-  assert.match(css, /transform:translateX\(0\)/);
-  assert.match(css, /\.sn-side\.collapsed\{[\s\S]*translateX\(calc\(-100% - 12px\)\)/);
-  assert.match(css, /\.sn-icon\{[\s\S]*display:grid!important/);
-  assert.match(css, /\.sn-side:not\(\.collapsed\)\+\.sn-main \.sn-icon/);
-  assert.doesNotMatch(css, /\.sn-side\{display:none!important\}/);
+  assert.match(css, /\.sn-side\{[\s\S]*width:220px!important/);
+  assert.match(css, /\.sn-side\.collapsed\{[\s\S]*width:70px!important/);
+  assert.match(css, /\.sn-side\.collapsed\{[\s\S]*transform:none!important/);
+  assert.match(css, /\.sn-side\.collapsed\+\.sn-main\{[\s\S]*margin-left:70px!important/);
+  assert.match(css, /\.sn-side\.collapsed>nav button[\s\S]*justify-content:center/);
+  assert.doesNotMatch(css, /translateX\(calc\(-100%/);
 });
 
-test("the existing Studio button controls the same sidebar state", () => {
+test("bottom mobile navigation is removed and every sidebar menu remains reachable", () => {
+  assert.match(css, /\.sn-mobile-nav,\.sn-mobile-sheet-layer,\.sn-sidebar-backdrop\{display:none!important\}/);
+  assert.match(polish, /\.sn-mobile-nav,\.sn-mobile-sheet-layer,\.sn-sidebar-backdrop\{display:none!important\}/);
+  assert.match(studio, /<LayoutDashboard\/><span>Ringkasan<\/span>/);
+  assert.match(studio, /<Palette\/><span>Tema<\/span>/);
+  assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
+});
+
+test("the Studio toggle and added close control can both collapse the sidebar", () => {
   assert.match(studio, /const \[sidebar,setSidebar\] = useState\(true\)/);
   assert.match(studio, /className=\{sidebar\?"sn-side":"sn-side collapsed"\}/);
   assert.match(studio, /className="sn-icon" onClick=\{\(\)=>setSidebar\(!sidebar\)\}/);
-  assert.match(studio, /<PanelLeftClose\/>/);
+  assert.match(controller, /className = "sn-side-close"/);
+  assert.match(controller, /close\.addEventListener\("click", \(\) => clickToggle\(shell\)\)/);
+  assert.match(controller, /aria-label", expanded \? "Tutup sidebar Studio" : "Buka sidebar Studio"/);
+  assert.match(controller, /if \(media\.matches && !side\.classList\.contains\("collapsed"\)\)/);
+  assert.match(controller, /rel ikon/);
+  assert.doesNotMatch(controller, /sn-sidebar-backdrop/);
+  assert.doesNotMatch(controller, /sn-mobile-sidebar-lock/);
 });
 
 test("Settings keeps the sidebar while its content remains responsive", () => {
