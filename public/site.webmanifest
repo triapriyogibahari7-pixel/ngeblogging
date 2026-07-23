@@ -1,0 +1,22 @@
+{
+  "name": "Ngeblogging",
+  "short_name": "Ngeblogging",
+  "description": "Bangun, kelola, dan kembangkan situs, blog, portal, komunitas, serta kehadiran digital dengan Nara AI.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f8fc",
+  "theme_color": "#2d6edf",
+  "lang": "id-ID",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
