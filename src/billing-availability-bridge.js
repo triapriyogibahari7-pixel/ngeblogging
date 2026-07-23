@@ -16,30 +16,37 @@ function homeButton() {
     .find((button) => ["Ringkasan", "Home"].includes(labelOf(button)));
 }
 
+function conceal(button) {
+  button.style.display = "none";
+  button.hidden = true;
+  button.disabled = true;
+  button.setAttribute("aria-hidden", "true");
+  button.tabIndex = -1;
+}
+
+function reveal(button) {
+  button.style.removeProperty("display");
+  button.hidden = false;
+  button.disabled = false;
+  button.setAttribute("aria-hidden", "false");
+  button.tabIndex = 0;
+}
+
 function scan() {
   const buttons = billingButtons();
   if (!resolved) {
-    for (const button of buttons) {
-      button.style.display = "none";
-      button.setAttribute("aria-hidden", "true");
-      button.tabIndex = -1;
-    }
+    buttons.forEach(conceal);
     return;
   }
 
   if (checkoutReady) {
-    for (const button of buttons) {
-      button.style.removeProperty("display");
-      button.hidden = false;
-      button.setAttribute("aria-hidden", "false");
-      button.tabIndex = 0;
-    }
+    buttons.forEach(reveal);
     return;
   }
 
   const billingOpen = Boolean(document.querySelector(".bv-page")) || buttons.some((button) => button.classList.contains("active"));
   if (billingOpen) homeButton()?.click();
-  for (const button of buttons) button.remove();
+  buttons.forEach(conceal);
 }
 
 async function resolveAvailability() {
