@@ -34,7 +34,8 @@ test("widget state removes duplicates and invalid IDs", () => {
 });
 
 test("widget areas render only enabled widgets assigned to that area", () => {
-  const state = createDefaultWidgetState(["search","recent-posts","newsletter"]);
+  const defaults = createDefaultWidgetState(["search","recent-posts","newsletter"]);
+  const state = defaults.map((widget) => widget.id === "newsletter" ? { ...widget, area:"footer" } : widget);
   const sidebar = widgetsMarkup(state,"sidebar");
   const footer = widgetsMarkup(state,"footer");
   assert.match(sidebar,/ng-widget-search/);
