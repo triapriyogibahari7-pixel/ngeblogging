@@ -1,0 +1,307 @@
+/* Final mobile authority loaded after every Studio and bridge stylesheet. */
+.sn-mobile-nav,
+.sn-mobile-sheet-layer,
+.sn-shell > .sn-mobile-nav,
+.sn-shell > .sn-mobile-sheet-layer {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 760px) {
+  html[data-device-mode="mobile"] {
+    --sn-phone-panel: min(82vw, 340px);
+  }
+
+  html[data-device-mode="mobile"] .sn-shell {
+    padding-bottom: 0 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-main,
+  html[data-device-mode="mobile"] .sn-side + .sn-main,
+  html[data-device-mode="mobile"] .sn-side.collapsed + .sn-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    overflow-x: clip !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-side {
+    width: var(--sn-phone-panel) !important;
+    max-width: var(--sn-phone-panel) !important;
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 4900 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-side.collapsed {
+    transform: translateX(calc(-100% - 18px)) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-side:not(.collapsed) + .sn-main::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 4800;
+    background: rgba(16, 35, 62, 0.34);
+    pointer-events: auto;
+  }
+
+  html[data-device-mode="mobile"] .sn-top {
+    position: sticky !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 70px !important;
+    overflow: visible !important;
+    z-index: 4700 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-icon {
+    position: fixed !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    width: 46px !important;
+    height: 46px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    color: #245fc9 !important;
+    box-shadow: 0 12px 34px rgba(16, 35, 62, 0.25) !important;
+    z-index: 5100 !important;
+    transition: left 0.2s ease, transform 0.2s ease !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-side.collapsed + .sn-main .sn-icon {
+    left: 12px !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-side:not(.collapsed) + .sn-main .sn-icon {
+    left: calc(var(--sn-phone-panel) - 2px) !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-side.collapsed + .sn-main .sn-icon svg {
+    transform: rotate(180deg) !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-view-pad {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 18px 14px 36px !important;
+    overflow: visible !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-view-pad:has(.sn-settings-grid) {
+    display: block !important;
+    padding-top: 18px !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-view-pad:has(.sn-settings-grid) > .sn-page-title {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 18px !important;
+    padding: 0 !important;
+    transform: none !important;
+    clear: both !important;
+    overflow: visible !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-page-title > div,
+  html[data-device-mode="mobile"] .sn-page-title h1,
+  html[data-device-mode="mobile"] .sn-page-title p {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-page-title h1 {
+    margin: 7px 0 6px !important;
+    font-size: clamp(30px, 9vw, 40px) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -0.035em !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-page-title p {
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid {
+    position: static !important;
+    inset: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    clear: both !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid section,
+  html[data-device-mode="mobile"] #ngeblogging-site-favicon-settings,
+  html[data-device-mode="mobile"] .sn-backup-host,
+  html[data-device-mode="mobile"] .bc-center {
+    position: static !important;
+    inset: auto !important;
+    float: none !important;
+    clear: both !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    transform: none !important;
+    translate: none !important;
+    overflow: visible !important;
+    z-index: auto !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid section {
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid h2 {
+    margin: 0 0 16px !important;
+    font-size: 30px !important;
+    line-height: 1.1 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid label {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 0 16px !important;
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid input,
+  html[data-device-mode="mobile"] .sn-settings-grid textarea,
+  html[data-device-mode="mobile"] .sn-settings-grid select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 54px !important;
+    padding: 13px 14px !important;
+    border-radius: 14px !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-settings-grid textarea {
+    min-height: 150px !important;
+    resize: vertical !important;
+  }
+
+  html[data-device-mode="mobile"] #ngeblogging-site-favicon-settings,
+  html[data-device-mode="mobile"] .sn-backup-host {
+    margin: 14px 0 0 !important;
+  }
+
+  html[data-device-mode="mobile"] .sf-card,
+  html[data-device-mode="mobile"] .bc-center {
+    margin: 0 !important;
+    padding: 18px 15px !important;
+    border-radius: 18px !important;
+  }
+
+  html[data-device-mode="mobile"] .sf-header,
+  html[data-device-mode="mobile"] .bc-center > header {
+    position: static !important;
+    inset: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: start !important;
+    width: 100% !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  html[data-device-mode="mobile"] .sf-header > div,
+  html[data-device-mode="mobile"] .bc-center > header > div,
+  html[data-device-mode="mobile"] .sf-header h2,
+  html[data-device-mode="mobile"] .bc-center > header h2,
+  html[data-device-mode="mobile"] .sf-header p,
+  html[data-device-mode="mobile"] .bc-center > header p {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  html[data-device-mode="mobile"] .sf-header h2,
+  html[data-device-mode="mobile"] .bc-center > header h2 {
+    margin: 6px 0 !important;
+    font-size: 25px !important;
+    line-height: 1.1 !important;
+  }
+
+  html[data-device-mode="mobile"] .sf-header p,
+  html[data-device-mode="mobile"] .bc-center > header p {
+    margin: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+  html[data-device-mode="mobile"] .sf-state,
+  html[data-device-mode="mobile"] .bc-center > header > span {
+    position: static !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  html[data-device-mode="mobile"] .bc-summary,
+  html[data-device-mode="mobile"] .bc-actions,
+  html[data-device-mode="mobile"] .sf-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-device-mode="mobile"] .sn-save-settings {
+    width: 100% !important;
+    min-height: 50px !important;
+    margin-top: 14px !important;
+  }
+
+  html[data-device-mode="mobile"] .nara-panel,
+  html[data-device-mode="mobile"] .nara-assistant-panel {
+    width: min(100vw, 430px) !important;
+    max-width: 100vw !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html[data-device-mode="mobile"] {
+    --sn-phone-panel: calc(100vw - 58px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-device-mode="mobile"] .sn-icon {
+    transition: none !important;
+  }
+}
