@@ -1,18 +1,67 @@
-import { handleRequest } from "../netlify/functions/nara.mjs";
+import { handleRequest } from "../server/nara-handler.mjs";
 
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
+const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "OPTIONS"]);
+const DEFAULT_SITE_ORIGIN = "https://ngeblogging.com";
 
-function jsonResponse(status, body, requestId, method = "GET") {
-  const payload = JSON.stringify(body);
-  return new Response(method === "HEAD" ? null : payload, {
-    status,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store",
-      "x-content-type-options": "nosniff",
-      "x-request-id": requestId,
-    },
+function configuredOrigins(env) {
+  return new Set([
+    DEFAULT_SITE_ORIGIN,
+    "https://www.ngeblogging.com",
+    String(env.PUBLIC_SITE_URL || "").replace(/\/$/, ""),
+    ...String(env.PUBLIC_ALLOWED_ORIGINS || "")
+      .split(",")
+      .map((value) => value.trim().replace(/\/$/, ""))
+      .filter(Boolean),
+  ].filter(Boolean));
+}
+
+function isAllowedOrigin(origin, env) {
+  if (!origin) return true;
+  if (configuredOrigins(env).has(origin.replace(/\/$/, ""))) return true;
+
+  let parsed;
+  try {
+    parsed = new URL(origin);
+  } catch {
+    return false;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (parsed.protocol === "https:" && (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com"))) {
+    return true;
+  }
+  if (parsed.protocol === "https:" && /(?:^|\.)(?:pages|workers)\.dev$/.test(hostname)) {
+    return true;
+  }
+  return ["localhost", "127.0.0.1", "[::1]"].includes(hostname)
+    && ["http:", "https:"].includes(parsed.protocol);
+}
+
+function securityHeaders(requestId, corsOrigin = "") {
+  const headers = new Headers({
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "camera=(self), microphone=(self), geolocation=(), payment=()",
+    "cross-origin-resource-policy": "same-site",
+    "x-request-id": requestId,
   });
+  if (corsOrigin) {
+    headers.set("access-control-allow-origin", corsOrigin);
+    headers.set("access-control-allow-headers", "content-type, authorization");
+    headers.set("access-control-allow-methods", "GET, HEAD, POST, OPTIONS");
+    headers.set("access-control-max-age", "86400");
+    headers.set("vary", "Origin");
+  }
+  return headers;
+}
+
+function jsonResponse(status, body, requestId, method = "GET", corsOrigin = "") {
+  const payload = JSON.stringify(body);
+  const headers = securityHeaders(requestId, corsOrigin);
+  headers.set("content-type", "application/json; charset=utf-8");
+  return new Response(method === "HEAD" ? null : payload, { status, headers });
 }
 
 function clientAddress(request) {
@@ -22,17 +71,37 @@ function clientAddress(request) {
 }
 
 async function naraResponse(request, env, requestId) {
+  const origin = request.headers.get("origin") || "";
+  if (!isAllowedOrigin(origin, env)) {
+    return jsonResponse(403, {
+      code: "ORIGIN_NOT_ALLOWED",
+      error: "Origin permintaan tidak diizinkan.",
+    }, requestId, request.method);
+  }
+
+  if (!ALLOWED_METHODS.has(request.method)) {
+    return jsonResponse(405, {
+      code: "METHOD_NOT_ALLOWED",
+      error: "Metode tidak didukung.",
+    }, requestId, request.method, origin);
+  }
+
   const length = Number(request.headers.get("content-length") || 0);
   if (Number.isFinite(length) && length > MAX_REQUEST_BYTES) {
     return jsonResponse(413, {
       code: "PAYLOAD_TOO_LARGE",
       error: "Lampiran atau payload terlalu besar.",
-    }, requestId, request.method);
+    }, requestId, request.method, origin);
   }
 
   const headers = Object.fromEntries(request.headers.entries());
-  headers["x-nf-client-connection-ip"] = clientAddress(request).slice(0, 80);
+  const address = clientAddress(request).slice(0, 80);
+  headers["x-forwarded-for"] = address;
+  // Compatibility header for the portable handler; Cloudflare remains the active runtime.
+  headers["x-nf-client-connection-ip"] = address;
   headers["x-request-id"] = requestId;
+  if (origin) headers.origin = String(env.PUBLIC_SITE_URL || DEFAULT_SITE_ORIGIN).replace(/\/$/, "");
+
   const body = ["GET", "HEAD", "OPTIONS"].includes(request.method)
     ? ""
     : await request.text();
@@ -40,7 +109,7 @@ async function naraResponse(request, env, requestId) {
     return jsonResponse(413, {
       code: "PAYLOAD_TOO_LARGE",
       error: "Lampiran atau payload terlalu besar.",
-    }, requestId, request.method);
+    }, requestId, request.method, origin);
   }
 
   const result = await handleRequest({
@@ -49,8 +118,9 @@ async function naraResponse(request, env, requestId) {
     body,
   }, env);
   const responseHeaders = new Headers(result.headers || {});
-  responseHeaders.set("x-content-type-options", "nosniff");
-  responseHeaders.set("x-request-id", requestId);
+  for (const [name, value] of securityHeaders(requestId, origin).entries()) {
+    responseHeaders.set(name, value);
+  }
   return new Response(request.method === "HEAD" ? null : result.body || null, {
     status: result.statusCode,
     headers: responseHeaders,
@@ -64,15 +134,20 @@ export default {
 
     try {
       if (url.pathname === "/api/health") {
+        const origin = request.headers.get("origin") || "";
+        if (!isAllowedOrigin(origin, env)) {
+          return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
+        }
         if (!["GET", "HEAD"].includes(request.method)) {
-          return jsonResponse(405, { error: "Metode tidak didukung." }, requestId, request.method);
+          return jsonResponse(405, { error: "Metode tidak didukung." }, requestId, request.method, origin);
         }
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          runtime: env.NARA_RUNTIME || "cloudflare-worker-v1",
+          runtime: env.NARA_RUNTIME || "cloudflare-worker-v2",
+          hostname: url.hostname,
           timestamp: new Date().toISOString(),
-        }, requestId, request.method);
+        }, requestId, request.method, origin);
       }
 
       if (url.pathname === "/api/nara") {
@@ -88,6 +163,7 @@ export default {
       console.error("Cloudflare Worker request failed", {
         requestId,
         path: url.pathname,
+        ray: request.headers.get("cf-ray") || "",
         name: error?.name || "Error",
       });
       return jsonResponse(500, {
