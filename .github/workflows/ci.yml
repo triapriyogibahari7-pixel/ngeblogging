@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, agent/production-vps-platform]
   push:
     branches-ignore: [main]
 
@@ -32,6 +32,17 @@ jobs:
 
       - name: Test, build, and validate production files
         run: npm run test:production && npm run build
+
+      - name: Validate Cloudflare preview bundle without production secrets
+        run: npm run cloudflare:preview-dry-run
+
+      - name: Validate Cloudflare production bundle and required secrets
+        env:
+          QWEN_API_KEY: ci-dry-run-only
+          QWEN_WORKSPACE_ID: ci-dry-run
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
+        run: npm run cloudflare:dry-run
 
   containers:
     needs: quality

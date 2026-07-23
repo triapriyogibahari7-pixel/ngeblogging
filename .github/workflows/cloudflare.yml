@@ -1,4 +1,4 @@
-name: Cloudflare free production
+name: Cloudflare Workers production
 
 on:
   push:
@@ -24,6 +24,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
+      CLOUDFLARE_SMOKE_TEST_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -43,6 +44,7 @@ jobs:
           test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "Secret VITE_SUPABASE_PUBLISHABLE_KEY belum diisi"; exit 1; }
           [[ "${VITE_SUPABASE_URL}" == https://*.supabase.co ]] || { echo "VITE_SUPABASE_URL tidak valid"; exit 1; }
           [[ "${VITE_PUBLIC_SITE_URL}" == https://* ]] || { echo "VITE_PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
+          [[ "${CLOUDFLARE_SMOKE_TEST_URL}" == https://* ]] || { echo "CLOUDFLARE_SMOKE_TEST_URL wajib HTTPS"; exit 1; }
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
@@ -50,8 +52,22 @@ jobs:
       - name: Test and build production application
         run: npm run test:production && npm run build
 
-      - name: Validate Cloudflare bundle
+      - name: Validate Cloudflare bundle and required secrets
         run: npm run cloudflare:dry-run
 
-      - name: Deploy to Cloudflare Workers
+      - name: Deploy apex, wildcard tenants, assets, and API to Cloudflare Workers
         run: npm run deploy:cloudflare
+
+      - name: Verify production health endpoint
+        shell: bash
+        run: |
+          response="$(curl --fail --silent --show-error --retry 8 --retry-delay 4 --max-time 20 "${CLOUDFLARE_SMOKE_TEST_URL%/}/api/health")"
+          echo "${response}" | node -e '
+            let input="";
+            process.stdin.on("data", (chunk) => input += chunk);
+            process.stdin.on("end", () => {
+              const payload = JSON.parse(input);
+              if (payload.status !== "ok" || payload.service !== "ngeblogging-cloudflare") process.exit(1);
+              console.log(`Cloudflare sehat: ${payload.runtime} · ${payload.hostname || "hostname tidak dilaporkan"}`);
+            });
+          '
