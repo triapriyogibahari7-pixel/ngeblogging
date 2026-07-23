@@ -1,0 +1,26 @@
+/* Final production polish — must remain the last stylesheet in index.html. */
+.sn-side button[hidden],.sn-mobile-sheet-layer button[hidden],.nw-tabs button[hidden],.sn-nara-button[hidden],.nara-floating-button[hidden],.sn-home-grid>aside[hidden]{display:none!important}
+.sn-home-grid.nara-unavailable{grid-template-columns:1fr!important}
+.sn-site-limit-note{margin:6px 0 12px;padding:9px 11px;border-radius:9px;background:#eef5ff;color:#315f9d;font-size:11px;font-weight:700;line-height:1.45}
+.sn-create-site>button[data-quota-blocked="true"]{background:#eef2f6!important;color:#78869a!important;box-shadow:none!important}
+
+@media(max-width:1100px){
+  html.sn-js:not(.sn-nav-ready) .sn-side{width:var(--sn-rail)!important;max-width:var(--sn-rail)!important;box-shadow:4px 0 18px #17253c12!important}
+  html.sn-js:not(.sn-nav-ready) .sn-side .sn-logo>b,
+  html.sn-js:not(.sn-nav-ready) .sn-side nav span,
+  html.sn-js:not(.sn-nav-ready) .sn-side .sn-new span,
+  html.sn-js:not(.sn-nav-ready) .sn-side .sn-side-bottom span{display:none!important}
+  html.sn-js:not(.sn-nav-ready) .sn-side .sn-logo,
+  html.sn-js:not(.sn-nav-ready) .sn-side .sn-new,
+  html.sn-js:not(.sn-nav-ready) .sn-side>nav button,
+  html.sn-js:not(.sn-nav-ready) .sn-side .sn-side-bottom button{justify-content:center!important;padding-inline:0!important}
+  html.sn-js:not(.sn-nav-ready) .sn-main{margin-left:var(--sn-rail)!important;width:calc(100% - var(--sn-rail))!important}
+}
+
+@media(max-width:600px){
+  .sn-site-manager{width:calc(100vw - 18px)!important;max-width:calc(100vw - 18px)!important;max-height:calc(100dvh - 18px)!important;overflow:auto!important}
+  .sn-sites-list article{grid-template-columns:38px minmax(0,1fr)!important;gap:9px!important}
+  .sn-sites-list article>button,.sn-sites-list article>a{grid-column:2!important;width:100%!important}
+  .sn-create-site>div{grid-template-columns:1fr!important}
+  .sn-create-site .wide{grid-column:auto!important}
+}
