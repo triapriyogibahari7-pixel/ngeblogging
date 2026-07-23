@@ -112,15 +112,15 @@ async function naraResponse(request, env, requestId) {
   if (!isAllowedOrigin(origin, env)) {
     return jsonResponse(403, { code: "ORIGIN_NOT_ALLOWED", error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
   }
-  if (!naraReady(env)) {
-    return jsonResponse(503, { code: "NARA_NOT_READY", error: "Nara belum dibuka karena uji produksi belum dinyatakan lulus." }, requestId, request.method, origin);
-  }
   if (!ALLOWED_METHODS.has(request.method)) {
     return jsonResponse(405, { code: "METHOD_NOT_ALLOWED", error: "Metode tidak didukung." }, requestId, request.method, origin);
   }
   const length = Number(request.headers.get("content-length") || 0);
   if (Number.isFinite(length) && length > MAX_REQUEST_BYTES) {
     return jsonResponse(413, { code: "PAYLOAD_TOO_LARGE", error: "Lampiran atau payload terlalu besar." }, requestId, request.method, origin);
+  }
+  if (!naraReady(env)) {
+    return jsonResponse(503, { code: "NARA_NOT_READY", error: "Nara belum dibuka karena uji produksi belum dinyatakan lulus." }, requestId, request.method, origin);
   }
   const headers = Object.fromEntries(request.headers.entries());
   const address = clientAddress(request).slice(0, 80);
@@ -166,7 +166,6 @@ export default {
         if (!["GET", "HEAD"].includes(request.method)) return jsonResponse(405, { error: "Metode tidak didukung." }, requestId, request.method, origin);
         const paypal = paypalReady(env);
         const localBilling = localBillingReady(env);
-        const nara = naraReady(env);
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
@@ -175,8 +174,8 @@ export default {
           hostname: url.hostname,
           billing: paypal || localBilling,
           billingProviders: { paypal, local: localBilling },
-          nara,
-          imageGeneration: nara,
+          nara: naraReady(env),
+          imageGeneration: naraReady(env),
           customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
           emailRegistration: brandedEmailReady(env),
           managedSubdomains: true,
