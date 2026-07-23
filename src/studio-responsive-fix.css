@@ -1,5 +1,5 @@
 /* Final responsive cleanup for Ngeblogging Studio.
-   Loaded after all Studio module styles so mobile pages always use the full viewport. */
+   Loaded after all Studio module styles so mobile pages stay full-width while the left sidebar remains available. */
 html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 .sn-shell{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 .sn-main{width:auto;min-width:0;max-width:none}
@@ -7,17 +7,44 @@ html,body,#root{width:100%;min-width:0;max-width:100%;overflow-x:clip}
 .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{width:100%;min-width:0;max-width:none;margin-left:0;margin-right:0}
 .sn-shell aside:empty,.sn-shell div:empty[data-sidebar]{display:none!important}
 
-/* Pengaturan is a focused full-width workspace: no desktop side rail or unused side gutter. */
-body:has(.sn-settings-grid) .sn-side{display:none!important}
-body:has(.sn-settings-grid) .sn-main,
-body:has(.sn-settings-grid) .sn-side.collapsed+.sn-main{width:100%!important;max-width:100%!important;margin-left:0!important}
-
 @media(max-width:1100px){
   .sn-shell{padding-bottom:74px}
-  .sn-side{display:none!important}
+  .sn-side{
+    display:flex!important;
+    width:min(280px,82vw)!important;
+    max-width:82vw!important;
+    transform:translateX(0);
+    transition:transform .22s ease,box-shadow .22s ease!important;
+    box-shadow:18px 0 48px #17253c2e;
+    z-index:1300!important;
+  }
+  .sn-side.collapsed{
+    width:min(280px,82vw)!important;
+    max-width:82vw!important;
+    transform:translateX(calc(-100% - 12px));
+    box-shadow:none;
+  }
+  .sn-side:not(.collapsed) .sn-logo>b,
+  .sn-side:not(.collapsed) nav span,
+  .sn-side:not(.collapsed) .sn-new span,
+  .sn-side:not(.collapsed) .sn-side-bottom span{display:inline!important}
   .sn-main,.sn-side.collapsed+.sn-main{width:100%!important;max-width:100%!important;margin-left:0!important}
-  .sn-top{left:0!important;width:100%!important;max-width:100%!important}
-  .sn-icon{display:none!important}
+  .sn-top{left:0!important;width:100%!important;max-width:100%!important;padding-left:60px!important}
+  .sn-icon{
+    display:grid!important;
+    position:fixed!important;
+    z-index:1400!important;
+    top:12px!important;
+    left:12px!important;
+    transition:left .22s ease,background .22s ease,color .22s ease!important;
+  }
+  .sn-side:not(.collapsed)+.sn-main .sn-icon{
+    left:calc(min(280px,82vw) - 48px)!important;
+    border-color:#d2dbea!important;
+    background:#fff!important;
+    color:#2d6edf!important;
+    box-shadow:0 8px 24px #17253c26;
+  }
   .sn-view-pad{padding-left:20px!important;padding-right:20px!important}
   .sn-settings-grid,.sn-home-grid,.sn-info-grid{grid-template-columns:1fr!important}
   .sn-settings-grid>section,.sn-home-grid>section,.sn-home-grid>aside{width:100%;max-width:none}
@@ -27,7 +54,7 @@ body:has(.sn-settings-grid) .sn-side.collapsed+.sn-main{width:100%!important;max
 }
 
 @media(max-width:760px){
-  .sn-top{min-height:60px;height:auto!important;padding:8px 12px!important;gap:7px!important;flex-wrap:nowrap}
+  .sn-top{min-height:60px;height:auto!important;padding-top:8px!important;padding-right:12px!important;padding-bottom:8px!important;gap:7px!important;flex-wrap:nowrap}
   .sn-workspace{min-width:0;padding:3px!important}
   .sn-workspace>span{width:34px!important;height:34px!important;flex:0 0 auto}
   .sn-workspace>div{min-width:0}
@@ -86,6 +113,9 @@ body:has(.sn-settings-grid) .sn-side.collapsed+.sn-main{width:100%!important;max
 }
 
 @media(max-width:430px){
+  .sn-side{width:min(260px,84vw)!important;max-width:84vw!important}
+  .sn-side.collapsed{width:min(260px,84vw)!important;max-width:84vw!important}
+  .sn-side:not(.collapsed)+.sn-main .sn-icon{left:calc(min(260px,84vw) - 48px)!important}
   .sn-view-pad,.bv-page,.bc-center,.nw-page,.ts-page,.ml-page{padding-left:10px!important;padding-right:10px!important}
   .sn-welcome>div:last-child{grid-template-columns:1fr!important}
   .sn-metrics{grid-template-columns:1fr 1fr!important}
