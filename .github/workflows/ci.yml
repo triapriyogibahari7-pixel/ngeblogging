@@ -114,8 +114,9 @@ jobs:
           file: Dockerfile.api
           platforms: linux/amd64,linux/arm64
           push: false
+          provenance: false
           cache-from: type=gha,scope=ci-ngeblogging-api
-          cache-to: type=gha,mode=max,scope=ci-ngeblogging-api
+          cache-to: type=gha,mode=max,scope=ci-ngeblogging-api,ignore-error=true
 
       - name: Build web container for AMD64 and ARM64
         uses: docker/build-push-action@v6
@@ -124,9 +125,10 @@ jobs:
           file: Dockerfile.web
           platforms: linux/amd64,linux/arm64
           push: false
+          provenance: false
           build-args: |
             VITE_SUPABASE_URL=https://example.supabase.co
             VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_test
             VITE_PUBLIC_SITE_URL=https://staging.example.com
           cache-from: type=gha,scope=ci-ngeblogging-web
-          cache-to: type=gha,mode=max,scope=ci-ngeblogging-web
+          cache-to: type=gha,mode=max,scope=ci-ngeblogging-web,ignore-error=true
