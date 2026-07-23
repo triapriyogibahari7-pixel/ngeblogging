@@ -62,8 +62,8 @@ function uniqueSlug(base, used, source) {
   return attempt;
 }
 
-function normalizeDocument(document, index, siteId, userId, usedSlugs) {
-  const id = sourceId(document, index);
+function normalizeDocument(document, index, stableSourceId, siteId, userId, usedSlugs) {
+  const id = stableSourceId || sourceId(document, index);
   const kind = document.type === "page" ? "page" : "article";
   const allowedStatuses = new Set(["draft", "review", "scheduled", "published", "archived"]);
   const status = allowedStatuses.has(document.status) ? document.status : "draft";
@@ -128,7 +128,12 @@ async function inspectMigration(siteId, localDocuments) {
       .filter(Boolean)
       .map(String),
   );
-  const missing = localDocuments.filter((document, index) => !importedIds.has(sourceId(document, index)));
+  const candidates = localDocuments.map((document, index) => ({
+    document,
+    index,
+    sourceId: sourceId(document, index),
+  }));
+  const missing = candidates.filter((candidate) => !importedIds.has(candidate.sourceId));
   return { rows: data || [], missing };
 }
 
@@ -155,7 +160,9 @@ async function migrate(siteId, button, banner) {
     }
 
     const usedSlugs = new Set(inspection.rows.map((row) => row.slug).filter(Boolean));
-    const payload = inspection.missing.map((document, index) => normalizeDocument(document, index, siteId, userId, usedSlugs));
+    const payload = inspection.missing.map(({ document, index, sourceId: stableSourceId }) => (
+      normalizeDocument(document, index, stableSourceId, siteId, userId, usedSlugs)
+    ));
     const { error } = await supabase.from("contents").insert(payload);
     if (error) throw error;
 
@@ -194,8 +201,8 @@ async function attach(page) {
 
     const banner = document.createElement("section");
     banner.className = "dcm-banner";
-    const published = inspection.missing.filter((document) => document.status === "published").length;
-    const pages = inspection.missing.filter((document) => document.type === "page").length;
+    const published = inspection.missing.filter(({ document }) => document.status === "published").length;
+    const pages = inspection.missing.filter(({ document }) => document.type === "page").length;
     banner.innerHTML = `<div><small>MIGRASI DATA PERANGKAT</small><h3>${inspection.missing.length} konten perangkat belum ada di cloud</h3><p>${inspection.missing.length - pages} Posts, ${pages} Pages, dan ${published} konten terbit dapat dipindahkan sekali klik. Tidak ada data lokal yang dihapus.</p></div><button type="button">Pindahkan ke Cloud</button>`;
     banner.querySelector("button").addEventListener("click", () => migrate(siteId, banner.querySelector("button"), banner));
     page.prepend(banner);
