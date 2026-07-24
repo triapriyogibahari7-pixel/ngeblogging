@@ -5,12 +5,33 @@ Dokumen ini adalah panduan audit untuk manusia maupun AI yang memeriksa Studio N
 ## Invarian antarmuka Studio
 
 - Studio hanya memiliki satu sidebar kiri.
-- Hanya ada satu tombol buka/tutup sidebar yang menempel pada garis tepi sidebar.
+- Hanya ada satu tombol buka/tutup sidebar yang menempel tepat pada garis tepi sidebar.
+- Tombol asli di dalam header disembunyikan; `src/studio-sidebar-v15.js` menyediakan satu tombol tepi yang berada di luar stacking context header agar tidak tertutup sidebar.
 - Saat sidebar ditutup, ikon setiap menu tetap terlihat dan label teks disembunyikan.
+- Pada perangkat fisik mobile, sidebar mulai dalam keadaan tertutup sebagai icon rail lalu dapat dibuka kembali dengan tombol tepi yang sama.
 - Navigasi bawah, sheet menu kedua, tombol tutup sidebar kedua, dan route Nara di dalam menu tidak boleh tampil.
 - Nara tetap tersedia melalui tombol tindakan di header dan tombol mengambang kanan bawah.
 - Tombol pratinjau, Nara, dan avatar pada header ponsel harus memiliki ukuran, pusat ikon, dan garis dasar yang sama.
 - Konten utama memakai lebar otomatis setelah icon rail; jangan mengurangi lebar viewport dua kali.
+- Saat sidebar terbuka, hanya satu scrim menutupi konten. Scrim berada di bawah tombol Nara sehingga Nara tetap dapat dibuka.
+
+## Otoritas tampilan dan interaksi
+
+Urutan berikut wajib dipertahankan pada `index.html`:
+
+1. `src/studio-v14-authority.css`
+2. `src/studio-mobile-v15.css`
+3. `src/nara-interaction-authority.css`
+
+Runtime `src/studio-sidebar-v15.js` dimuat sesudah entry React. Runtime ini:
+
+- mendeteksi ponsel berdasarkan sisi pendek layar fisik, termasuk saat browser meminta “Situs desktop”;
+- membuat satu tombol tepi sidebar;
+- menutup sidebar pertama kali pada ponsel;
+- menutup sidebar setelah menu dipilih;
+- menghapus navigasi mobile duplikat;
+- menyembunyikan Nara dari menu tanpa mematikan route workspace internal;
+- memastikan tombol Nara header dan kanan bawah bukan tombol submit, tetap aktif, dan merespons sentuhan langsung.
 
 ## Deteksi perangkat
 
@@ -26,7 +47,7 @@ Hal ini penting ketika browser Android menggunakan “Situs desktop”: layout v
 - `--sn-physical-layout-width`
 - `--sn-physical-layout-height`
 
-`src/studio-v14-authority.css` memakai atribut tersebut untuk menjaga layout ponsel, termasuk pada viewport desktop buatan browser.
+`src/studio-mobile-v15.css` juga memakai `data-v15-mobile` dan `data-v15-narrow` untuk menjaga tombol tepi, header, icon rail, scrim, launcher Nara, dan panel Nara pada viewport desktop buatan browser mobile.
 
 ## Nara AI yang wajib dipertahankan
 
@@ -37,6 +58,7 @@ Hal ini penting ketika browser Android menggunakan “Situs desktop”: layout v
 - Katalog integrasi GitHub, Supabase, Neon, Cloudflare, PayPal, Google Drive, dan webhook.
 - Tombol file native harus tetap tersembunyi; pemilihan file hanya dibuka melalui kontrol Nara.
 - Panel Nara pada ponsel wajib memakai seluruh viewport dengan `inset: 0`, bukan lebar yang masih dikurangi sidebar.
+- Tombol mengambang harus berada di atas scrim sidebar dan memiliki `pointer-events: auto` serta `touch-action: manipulation`.
 
 ## Dukungan browser
 
@@ -64,6 +86,8 @@ Workflow `Main quality gate` harus lulus sebelum perubahan dianggap lolos pemeri
 3. build Vite;
 4. dry-run bundle Cloudflare.
 
+Pengujian wajib mencakup `tests/studio-mobile-v15.test.mjs` dan `tests/studio-v15-nara-runtime.test.mjs` agar satu tombol tepi, icon rail, urutan CSS, Nara launcher, QR, Projects, memori, gambar, dan Plugins tidak hilang pada perubahan berikutnya.
+
 Deployment Cloudflare adalah gerbang terpisah. Kegagalan karena `CLOUDFLARE_ACCOUNT_ID` atau `CLOUDFLARE_API_TOKEN` kosong berarti build belum dapat diterbitkan ke domain produksi, bukan berarti fitur boleh disebut selesai.
 
 ## Pemeriksaan visual wajib
@@ -75,6 +99,7 @@ Pada setiap ukuran periksa:
 - tidak ada ruang kosong horizontal akibat pengurangan lebar ganda;
 - tidak ada teks atau tombol saling menimpa;
 - ikon mata dan ikon Nara tepat di tengah tombol;
+- tombol sidebar tepat di garis sidebar, tidak berubah menjadi avatar atau tertutup header;
 - tombol mengambang Nara dapat diklik dan tidak tertutup overlay;
 - panel Nara mengisi seluruh viewport ponsel;
 - composer, pilihan model, pilihan kecerdasan, mikrofon, lampiran, dan tombol kirim tetap terlihat;
