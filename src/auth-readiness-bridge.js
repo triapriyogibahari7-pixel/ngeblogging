@@ -7,27 +7,22 @@ function text(node) {
   return node?.textContent?.replace(/\s+/g, " ").trim() || "";
 }
 
-function ensureNotice(modal) {
-  if (modal.querySelector(".auth-readiness-notice")) return;
-  const intro = modal.querySelector(".auth-intro");
-  if (!intro) return;
-  const notice = document.createElement("div");
-  notice.className = "auth-readiness-notice";
-  notice.setAttribute("role", "status");
-  notice.innerHTML = "<b>Email resmi sedang dikunci</b><span>Pendaftaran, magic link, verifikasi, dan pemulihan email disembunyikan sampai pengirim <code>@ngeblogging.com</code>, SPF, DKIM, DMARC, dan SMTP produksi lolos uji. Akun baru tetap dapat dibuat melalui Google, GitHub, atau LinkedIn.</span>";
-  intro.insertAdjacentElement("afterend", notice);
-}
-
-function hideEmailSendingActions(modal) {
+function hideUnavailableEmailActions(modal) {
   modal.querySelectorAll(".magic-link-button,.forgot-link").forEach((button) => {
     button.hidden = true;
+    button.disabled = true;
     button.setAttribute("aria-hidden", "true");
     button.tabIndex = -1;
   });
 
   modal.querySelectorAll(".auth-switch").forEach((row) => {
-    if (text(row).includes("Belum punya akun")) row.hidden = true;
+    if (text(row).includes("Belum punya akun")) {
+      row.hidden = true;
+      row.setAttribute("aria-hidden", "true");
+    }
   });
+
+  modal.querySelectorAll(".auth-readiness-notice").forEach((notice) => notice.remove());
 }
 
 function leaveSignupMode(modal) {
@@ -44,8 +39,7 @@ function apply(modal) {
   modal.dataset.emailRegistration = String(emailRegistrationReady);
   if (emailRegistrationReady) return;
   leaveSignupMode(modal);
-  hideEmailSendingActions(modal);
-  ensureNotice(modal);
+  hideUnavailableEmailActions(modal);
 }
 
 function scan() {
