@@ -1,0 +1,30 @@
+name: Diagnose v8 main deployment
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: List workflows for the merged v8 commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAIN_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "MAIN_SHA=${MAIN_SHA}"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${MAIN_SHA}&per_page=50" \
+            | jq -c '.workflow_runs[] | {id,name,event,status,conclusion,run_started_at,html_url}'
