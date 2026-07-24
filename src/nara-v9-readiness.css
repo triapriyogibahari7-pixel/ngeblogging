@@ -1,17 +1,38 @@
-html:not([data-nara-billing-ready="true"]) .nara-upgrade-card,
-html:not([data-nara-billing-ready="true"]) .nara-context-bar > button {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+/* Nara capability visibility authority.
+   Readiness may change the active provider, but it must never remove the
+   user's model, intelligence, camera, image, file, voice, memory, QR, or
+   plugin controls from the interface. */
+
+.nara-floating-button,
+.nara-select,
+.nara-select option,
+.nara-attachment-menu,
+.nara-attachment-menu > button,
+.nara-quick-prompts,
+.nara-quick-prompts > button,
+.nara-composer input,
+.nara-composer button {
+  visibility: visible;
 }
 
-html:not([data-nara-image-ready="true"]) .nara-attachment-menu > button:nth-child(1),
-html:not([data-nara-image-ready="true"]) .nara-attachment-menu > button:nth-child(2) {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+html[data-nara-ready="degraded"] .nara-floating-button::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #f59e0b;
 }
 
-html:not([data-nara-image-ready="true"]) .nara-composer input[accept^="image/"] {
-  display: none !important;
+.nara-attachment-menu[data-image-provider-ready="false"]::after {
+  content: "Penyedia gambar akan dipilih otomatis saat digunakan.";
+  display: block;
+  grid-column: 1 / -1;
+  padding: 8px 10px;
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.4;
 }
