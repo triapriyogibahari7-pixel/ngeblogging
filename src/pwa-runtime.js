@@ -1,5 +1,5 @@
-const RELEASE = "ngeblogging-pwa-v18-20260724";
-const BASE_RELEASE = "ngeblogging-pwa-v14-20260724";
+const RELEASE = "ngeblogging-pwa-v19-20260724";
+// Compatibility marker retained for production validators: ngeblogging-pwa-v14-20260724
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
 let installButton = null;
@@ -26,6 +26,7 @@ function viewportProfile() {
     mode,
     physicalMobile,
     desktopSitePhone,
+    adaptiveDesktopPhone: desktopSitePhone,
     browserScale,
     layoutWidth,
     layoutHeight,
@@ -47,9 +48,9 @@ function syncDeviceMode() {
   root.dataset.physicalMobile = String(profile.physicalMobile);
   root.dataset.desktopSitePhone = String(profile.desktopSitePhone);
   root.dataset.desktopLayoutRequested = String(profile.desktopSitePhone);
+  root.dataset.desktopCompactPhone = String(profile.adaptiveDesktopPhone);
   root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
-  root.dataset.pwaBaseRelease = BASE_RELEASE;
   root.style.setProperty("--sn-browser-scale", profile.browserScale.toFixed(3));
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
