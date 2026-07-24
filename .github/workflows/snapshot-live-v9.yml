@@ -1,0 +1,35 @@
+name: Snapshot live v9
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Capture current live markers
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE' > live-v9.json
+          const site='https://ngeblogging.com',stamp=`snapshot=${Date.now()}`;
+          const get=async(url,options={})=>{const response=await fetch(`${url}${url.includes('?')?'&':'?'}${stamp}`,{...options,headers:{'cache-control':'no-cache',...(options.headers||{})}});return{status:response.status,ok:response.ok,text:await response.text()}};
+          const [healthResult,swResult,htmlResult]=await Promise.all([get(`${site}/api/health`),get(`${site}/sw.js`),get(`${site}/`)]);
+          let health={};try{health=JSON.parse(healthResult.text||'{}')}catch{}
+          const queue=[...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map(m=>new URL(m[1],site).href),seen=new Set(),assets=new Map();
+          for(let depth=0;depth<7;depth++){const batch=[...new Set(queue)].filter(url=>!seen.has(url));if(!batch.length)break;batch.forEach(url=>seen.add(url));await Promise.all(batch.map(async url=>{const result=await get(url);assets.set(url,result.text);for(const match of result.text.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g))queue.push(new URL(`/${match[1]}`,site).href)}))}
+          const studioEntry=[...assets.entries()].find(([url])=>/\/assets\/Studio-[^/]+\.js(?:\?|$)/.test(url));const studioJs=studioEntry?.[1]||'',allAssets=[...assets.values()].join('\n');
+          const nara=await get(`${site}/api/nara`,{method:'POST',headers:{'content-type':'application/json',origin:site},body:JSON.stringify({message:'uji koneksi',model:'nara-mini',intelligence:'standard',attachments:[],history:[]})});let payload={};try{payload=JSON.parse(nara.text||'{}')}catch{}
+          const result={health,swFirstLine:swResult.text.split('\n')[0],studioUrl:studioEntry?.[0]||null,assetCount:assets.size,checks:{sourceMarker:studioJs.includes('studio-source-navigation-v9-20260724'),forbidden:{mobileNav:studioJs.includes('sn-mobile-nav'),sheet:studioJs.includes('sn-mobile-sheet-layer'),mobileMore:studioJs.includes('mobileMore'),sideBottom:studioJs.includes('sn-side-bottom'),payment:studioJs.includes('Pembayaran')},snIconCount:(studioJs.match(/sn-icon/g)||[]).length,required:Object.fromEntries(['Pengaturan','Keluar','Lihat situs','SUBDOMAIN GRATIS','.ngeblogging.com'].map(x=>[x,studioJs.includes(x)])),assets:Object.fromEntries(['naraBillingReady','naraImageReady','tn-widget-summary','ng-widget-recent-posts','ng-widget-popular-posts','Mobile','Tablet','Laptop','Komputer'].map(x=>[x,allAssets.includes(x)]))},nara:{status:nara.status,payload}};
+          console.log(JSON.stringify(result,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-v9-snapshot
+          path: live-v9.json
+          retention-days: 1
