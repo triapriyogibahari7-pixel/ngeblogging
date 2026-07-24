@@ -1,12 +1,15 @@
-const MOBILE_LAYOUT_RELEASE = "studio-sidebar-only-v5-20260724";
+const MOBILE_LAYOUT_RELEASE = "studio-icon-rail-v10-20260724";
 const MOBILE_BREAKPOINT = 760;
+const MOBILE_RAIL = 68;
 const MOBILE_UA = /Android.+Mobile|iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i;
 
 function isMobileDevice() {
   if (navigator.userAgentData?.mobile === true) return true;
   if (MOBILE_UA.test(navigator.userAgent || "")) return true;
   const coarse = window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(any-pointer: coarse)").matches;
-  const screenValues = [window.screen?.width, window.screen?.height].map(Number).filter((value) => Number.isFinite(value) && value > 0);
+  const screenValues = [window.screen?.width, window.screen?.height]
+    .map(Number)
+    .filter((value) => Number.isFinite(value) && value > 0);
   const shortSide = screenValues.length ? Math.min(...screenValues) : window.innerWidth;
   return window.innerWidth <= MOBILE_BREAKPOINT || (coarse && shortSide <= MOBILE_BREAKPOINT);
 }
@@ -43,30 +46,39 @@ function enforceMobile(shell) {
   important(shell, "padding-bottom", "0");
   important(shell, "width", "100%");
   important(shell, "max-width", "100%");
-  important(shell, "overflow-x", "hidden");
+  important(shell, "overflow-x", "clip");
 
-  important(main, "margin-left", "0");
-  important(main, "width", "100%");
-  important(main, "max-width", "100%");
+  important(main, "margin-left", `${MOBILE_RAIL}px`);
+  important(main, "width", `calc(100% - ${MOBILE_RAIL}px)`);
+  important(main, "max-width", `calc(100% - ${MOBILE_RAIL}px)`);
   important(main, "min-width", "0");
-  important(main, "overflow-x", "hidden");
+  important(main, "overflow-x", "clip");
 
   if (top) {
     important(top, "position", "sticky");
     important(top, "top", "0");
-    important(top, "left", "0");
-    important(top, "right", "0");
+    important(top, "left", "auto");
+    important(top, "right", "auto");
     important(top, "width", "100%");
     important(top, "max-width", "100%");
+  }
+
+  if (side) {
+    side.id ||= "ngeblogging-studio-sidebar";
+    side.dataset.mobileRail = String(MOBILE_RAIL);
   }
 
   if (toggle) {
     toggle.setAttribute("aria-controls", side?.id || "ngeblogging-studio-sidebar");
     toggle.dataset.sidebarAuthority = "single";
+    toggle.setAttribute("aria-expanded", String(Boolean(side && !side.classList.contains("collapsed"))));
   }
-  if (side) {
-    side.id ||= "ngeblogging-studio-sidebar";
-    if (!side.classList.contains("collapsed") && toggle) toggle.click();
+
+  // Start compact on phones, but keep the icon rail visible. The same React
+  // button expands and collapses the panel; no second close button exists.
+  if (side && toggle && !shell.dataset.initialMobileRail) {
+    shell.dataset.initialMobileRail = "true";
+    if (!side.classList.contains("collapsed")) toggle.click();
   }
 }
 
@@ -85,7 +97,10 @@ function apply() {
   const mode = responsiveDeviceMode();
   document.documentElement.dataset.deviceMode = mode;
   document.documentElement.dataset.mobileLayoutRelease = MOBILE_LAYOUT_RELEASE;
-  document.querySelectorAll(".sn-shell").forEach((shell) => mode === "mobile" ? enforceMobile(shell) : releaseDesktop(shell));
+  document.querySelectorAll(".sn-shell").forEach((shell) => {
+    if (mode === "mobile") enforceMobile(shell);
+    else releaseDesktop(shell);
+  });
 }
 
 let frame = 0;
