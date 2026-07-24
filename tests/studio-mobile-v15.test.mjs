@@ -8,10 +8,12 @@ test("v15 mobile authority loads after v14 and after the React entry", async () 
   const index = await read("index.html");
   const v14 = index.indexOf("studio-v14-authority.css");
   const v15 = index.indexOf("studio-mobile-v15.css");
+  const nara = index.indexOf("nara-interaction-authority.css");
   const react = index.indexOf("/src/main.jsx");
   const bridge = index.indexOf("studio-sidebar-v15.js");
   assert.ok(v14 > -1);
   assert.ok(v15 > v14);
+  assert.ok(nara > v15);
   assert.ok(react > -1);
   assert.ok(bridge > react);
 });
@@ -20,7 +22,7 @@ test("one visible edge controller owns sidebar open close on physical phones", a
   const bridge = await read("src/studio-sidebar-v15.js");
   const css = await read("src/studio-mobile-v15.css");
   assert.match(bridge, /sn-sidebar-edge-v15/);
-  assert.match(bridge, /data\.v15OriginalToggle = "true"/);
+  assert.match(bridge, /original\.dataset\.v15OriginalToggle = "true"/);
   assert.match(bridge, /dataset\.sidebarAuthority = "single-v15"/);
   assert.match(bridge, /v15InitialSidebarResolved/);
   assert.match(bridge, /original\.click\(\)/);
