@@ -1,0 +1,486 @@
+/* Studio/Nara v17 — one native sidebar control, stable mobile geometry, and a
+   responsive editor. This file is loaded last and intentionally overrides all
+   historical repair layers. */
+
+html .sn-sidebar-edge-v15 {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-icon.sn-sidebar-edge-owner-v17,
+html[data-v15-mobile="true"] .sn-icon[data-v15-original-toggle="true"] {
+  position: fixed !important;
+  left: calc(var(--sn-phone-rail, 58px) - 20px) !important;
+  top: max(11px, env(safe-area-inset-top)) !important;
+  z-index: 23050 !important;
+  box-sizing: border-box !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid #dbe3ed !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #5d6d82 !important;
+  box-shadow: 0 8px 22px rgba(17, 43, 78, .18) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .sn-shell[data-v15-sidebar-open="true"] .sn-icon.sn-sidebar-edge-owner-v17,
+html[data-v15-mobile="true"] .sn-shell[data-v15-sidebar-open="true"] .sn-icon[data-v15-original-toggle="true"] {
+  left: calc(var(--sn-phone-panel, min(82vw, 286px)) - 20px) !important;
+}
+
+html[data-v15-mobile="true"] .sn-icon.sn-sidebar-edge-owner-v17 svg,
+html[data-v15-mobile="true"] .sn-icon[data-v15-original-toggle="true"] svg {
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .sn-sidebar-scrim-v15 {
+  z-index: 22500 !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button,
+html[data-v15-mobile="true"] .nara-assistant-layer {
+  z-index: 2147483600 !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button,
+html[data-v15-mobile="true"] .nara-floating-button *,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button * {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button,
+html[data-v15-mobile="true"] .nara-floating-button > span,
+html[data-v15-mobile="true"] .nara-floating-button svg,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button svg,
+html[data-v15-mobile="true"] .sn-view-site,
+html[data-v15-mobile="true"] .sn-view-site svg {
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button {
+  right: max(12px, env(safe-area-inset-right)) !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  width: 62px !important;
+  min-width: 62px !important;
+  max-width: 62px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  display: grid !important;
+  grid-template: 1fr / 1fr !important;
+  place-items: center !important;
+  padding: 6px !important;
+  border-radius: 20px !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button > span {
+  grid-area: 1 / 1 !important;
+  width: 48px !important;
+  height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button svg {
+  width: 25px !important;
+  height: 25px !important;
+  margin: auto !important;
+}
+
+html[data-v15-mobile="true"] .sn-top {
+  grid-template-columns: minmax(0, 1fr) max-content !important;
+  padding-left: 28px !important;
+  overflow: visible !important;
+}
+
+html[data-v15-mobile="true"] .sn-top-actions {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: 42px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  gap: 6px !important;
+}
+
+html[data-v15-mobile="true"] .sn-view-site,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button,
+html[data-v15-mobile="true"] .sn-avatar {
+  box-sizing: border-box !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+}
+
+html[data-v15-mobile="true"] .sn-view-site svg,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button svg {
+  display: block !important;
+  width: 21px !important;
+  height: 21px !important;
+  margin: auto !important;
+}
+
+html[data-v15-mobile="true"] .sn-page-title {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+
+html[data-v15-mobile="true"] .sn-page-title > .sn-primary,
+html[data-v15-mobile="true"] .sn-page-title > a,
+html[data-v15-mobile="true"] .sn-page-title > button {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+}
+
+html[data-v15-mobile="true"] .sn-content-card {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-v15-mobile="true"] .sn-content-tools {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+
+html[data-v15-mobile="true"] .sn-content-tools label {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+html[data-v15-mobile="true"] .sn-content-tools input {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+html[data-v15-mobile="true"] .sn-table-head {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-doc-row {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) auto 36px !important;
+  gap: 7px !important;
+}
+
+html[data-v15-mobile="true"] .sn-doc-row time {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-doc-row > button:first-child,
+html[data-v15-mobile="true"] .sn-doc-row > button:first-child > div {
+  min-width: 0 !important;
+}
+
+html[data-v15-mobile="true"] .sn-doc-row b,
+html[data-v15-mobile="true"] .sn-doc-row small {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* The editor is rendered outside .sn-shell. Give it the same physical-phone
+   correction used by Studio when Android requests a desktop site. */
+html[data-desktop-site-phone="true"] .ce-app {
+  box-sizing: border-box !important;
+  width: var(--sn-physical-layout-width, 100vw) !important;
+  min-width: var(--sn-physical-layout-width, 100vw) !important;
+  max-width: var(--sn-physical-layout-width, 100vw) !important;
+  min-height: var(--sn-physical-layout-height, 100vh) !important;
+  zoom: var(--sn-browser-scale, 1) !important;
+}
+
+html[data-v15-mobile="true"] .ce-app {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+}
+
+html[data-v15-mobile="true"] .ce-titlebar {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 62px !important;
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) max-content !important;
+  gap: 7px !important;
+  padding: 7px 8px !important;
+}
+
+html[data-v15-mobile="true"] .ce-back {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  margin: 0 !important;
+}
+
+html[data-v15-mobile="true"] .ce-file {
+  min-width: 0 !important;
+  gap: 6px !important;
+}
+
+html[data-v15-mobile="true"] .ce-file > svg {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .ce-file label,
+html[data-v15-mobile="true"] .ce-file input {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-v15-mobile="true"] .ce-file input {
+  font-size: 12px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+html[data-v15-mobile="true"] .ce-actions {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: 40px !important;
+  gap: 5px !important;
+}
+
+html[data-v15-mobile="true"] .ce-actions button {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  font-size: 0 !important;
+}
+
+html[data-v15-mobile="true"] .ce-actions svg {
+  width: 18px !important;
+  height: 18px !important;
+  margin: auto !important;
+}
+
+html[data-v15-mobile="true"] .ce-tabs {
+  top: 62px !important;
+  height: 42px !important;
+  gap: 18px !important;
+  padding: 0 12px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+}
+
+html[data-v15-mobile="true"] .ce-tabs::-webkit-scrollbar,
+html[data-v15-mobile="true"] .ce-ribbon::-webkit-scrollbar {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .ce-ribbon {
+  top: 104px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 66px !important;
+  padding: 6px 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+}
+
+html[data-v15-mobile="true"] .ce-ribbon > section {
+  min-width: max-content !important;
+}
+
+html[data-v15-mobile="true"] .ce-nara {
+  flex: 0 0 auto !important;
+  min-width: 42px !important;
+  width: 42px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 0 !important;
+}
+
+html[data-v15-mobile="true"] .ce-nara svg {
+  width: 18px !important;
+  height: 18px !important;
+  margin: auto !important;
+}
+
+html[data-v15-mobile="true"] .ce-workspace {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+
+html[data-v15-mobile="true"] .ce-paper-shell {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 14px 10px 18px !important;
+  align-items: stretch !important;
+}
+
+html[data-v15-mobile="true"] .ce-paper {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 56vh !important;
+  padding: 34px 22px !important;
+  font-size: 15px !important;
+  line-height: 1.7 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-v15-mobile="true"] .ce-paper h1 {
+  font-size: clamp(32px, 10vw, 44px) !important;
+}
+
+html[data-v15-mobile="true"] .ce-paper h2 {
+  font-size: clamp(25px, 8vw, 31px) !important;
+}
+
+html[data-v15-mobile="true"] .ce-word-status {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 6px 12px !important;
+}
+
+html[data-v15-mobile="true"] .ce-sidebar {
+  position: static !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  border-left: 0 !important;
+  border-top: 1px solid #dbe2eb !important;
+}
+
+html[data-v15-mobile="true"] .ce-sidebar section {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 16px 14px !important;
+}
+
+html[data-v15-mobile="true"] .ce-field input,
+html[data-v15-mobile="true"] .ce-field select,
+html[data-v15-mobile="true"] .ce-field textarea {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-v15-mobile="true"] .ce-preview-layer,
+html[data-v15-mobile="true"] .ce-media-layer,
+html[data-v15-mobile="true"] .ce-source-layer {
+  box-sizing: border-box !important;
+  padding: 8px !important;
+}
+
+html[data-v15-mobile="true"] .ce-preview-layer > section,
+html[data-v15-mobile="true"] .ce-media-layer > section,
+html[data-v15-mobile="true"] .ce-source-layer > section {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: calc(100dvh - 16px) !important;
+  border-radius: 14px !important;
+}
+
+html[data-v15-mobile="true"] .ce-preview-canvas {
+  padding: 12px !important;
+}
+
+html[data-v15-mobile="true"] .ce-preview-canvas > article,
+html[data-v15-mobile="true"] .ce-preview-canvas.tablet > article,
+html[data-v15-mobile="true"] .ce-preview-canvas.mobile > article {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 380px) {
+  html[data-v15-mobile="true"] .sn-top-actions {
+    grid-auto-columns: 40px !important;
+  }
+
+  html[data-v15-mobile="true"] .sn-avatar {
+    display: none !important;
+  }
+
+  html[data-v15-mobile="true"] .ce-titlebar {
+    grid-template-columns: 38px minmax(0, 1fr) 85px !important;
+  }
+
+  html[data-v15-mobile="true"] .ce-file small {
+    display: none !important;
+  }
+
+  html[data-v15-mobile="true"] .ce-paper {
+    padding: 28px 18px !important;
+  }
+}
