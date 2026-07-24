@@ -61,7 +61,7 @@ jobs:
       - name: Deploy apex, wildcard tenants, assets, Nara, and API
         run: npm run deploy:cloudflare
 
-      - name: Verify v10 apex and tenant release
+      - name: Verify v12 apex and tenant release
         shell: bash
         run: |
           set -euo pipefail
@@ -96,7 +96,7 @@ jobs:
           for (const marker of ['studio-v10-authority.css', 'studio-production-guard.js', 'nara-availability-bridge.js']) {
             if (!index.includes(marker)) errors.push(`index:${marker}`);
           }
-          if (!sw.includes('ngeblogging-app-v10-20260724')) errors.push('service-worker-v10');
+          if (!sw.includes('ngeblogging-app-v12-20260724')) errors.push('service-worker-v12');
           if (/WHITE-R4-2026\.07\.12/.test(index)) errors.push('legacy-white-r4');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
@@ -105,10 +105,10 @@ jobs:
             console.error(`Release belum siap: ${errors.join(', ')}`);
             process.exit(1);
           }
-          console.log(JSON.stringify({ runtime: health.runtime, nara: health.nara, tenant: 'ok', release: 'v10' }, null, 2));
+          console.log(JSON.stringify({ runtime: health.runtime, nara: health.nara, tenant: 'ok', release: 'v12' }, null, 2));
           NODE
               then
-                echo "Cloudflare v10 dan tenant publik terverifikasi."
+                echo "Cloudflare v12 dan tenant publik terverifikasi."
                 exit 0
               fi
             fi
@@ -116,7 +116,7 @@ jobs:
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan rilis v10."
+          echo "Cloudflare belum menyajikan rilis v12."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
-          echo "Index marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|studio-v10-authority.css|ngeblogging-app-v10-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
+          echo "Index marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|studio-v10-authority.css|ngeblogging-app-v12-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
           exit 1
