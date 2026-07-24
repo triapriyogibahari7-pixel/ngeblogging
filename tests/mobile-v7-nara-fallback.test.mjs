@@ -27,7 +27,8 @@ test("phone navigation is sidebar-only with one edge control and a visible icon 
 test("settings site manager theme content and Nara use bounded mobile layouts", () => {
   assert.match(authority, /\.sn-welcome,[\s\S]*\.sn-settings-grid,[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(authority, /\.sn-content-tools[\s\S]*flex-direction: column/);
-  assert.match(authority, /\.nara-assistant-layer,[\s\S]*\.nara-assistant-shell[\s\S]*width: 100vw !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-assistant-layer[\s\S]*inset: 0 !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-assistant-shell[\s\S]*width: auto !important/);
   assert.match(authority, /\.nara-composer-tools[\s\S]*grid-template-columns:/);
   assert.match(authority, /\.nara-composer input\[type="file"\][\s\S]*display: none !important/);
 });
@@ -35,6 +36,7 @@ test("settings site manager theme content and Nara use bounded mobile layouts", 
 test("Nara launcher and complete capability center remain available", () => {
   assert.match(authority, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
   assert.match(authority, /\.nara-assistant-layer[\s\S]*z-index: 30000 !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-floating-button[\s\S]*place-items: center !important/);
   for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector"]) {
     assert.ok(commandCenter.includes(marker), marker);
   }
