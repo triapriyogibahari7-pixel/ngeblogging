@@ -1,0 +1,48 @@
+name: Diagnose live public auth config v8
+
+on:
+  push:
+    branches: [fix/v8-mobile-ui-nara-auth]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect public browser configuration
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const site = 'https://ngeblogging.com';
+          const text = async (url) => {
+            const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}v8=${Date.now()}`, { headers: { 'cache-control': 'no-cache' } });
+            if (!response.ok) throw new Error(`${url}: ${response.status}`);
+            return response.text();
+          };
+          const html = await text(`${site}/`);
+          const queue = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map((match) => new URL(match[1], site).href);
+          const seen = new Set();
+          const chunks = [];
+          for (let depth = 0; depth < 6; depth += 1) {
+            const batch = [...new Set(queue)].filter((url) => !seen.has(url));
+            if (!batch.length) break;
+            batch.forEach((url) => seen.add(url));
+            const values = await Promise.all(batch.map(text));
+            chunks.push(...values);
+            for (const value of values) {
+              for (const match of value.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g)) queue.push(new URL(`/${match[1]}`, site).href);
+            }
+          }
+          const bundle = chunks.join('\n');
+          const urls = [...new Set(bundle.match(/https:\/\/[a-z0-9-]+\.supabase\.co/gi) || [])];
+          const publishable = [...new Set(bundle.match(/sb_publishable_[A-Za-z0-9._-]+/g) || [])];
+          const legacy = [...new Set(bundle.match(/eyJ[a-zA-Z0-9_-]{40,}\.[a-zA-Z0-9_-]{40,}\.[a-zA-Z0-9_-]{20,}/g) || [])].filter((value) => {
+            try { return JSON.parse(Buffer.from(value.split('.')[1], 'base64url')).role === 'anon'; } catch { return false; }
+          });
+          console.log(JSON.stringify({ urls, publishable, legacyAnonKeys: legacy, assets: [...seen] }, null, 2));
+          if (urls.length !== 1 || publishable.length + legacy.length < 1) process.exit(1);
+          NODE
