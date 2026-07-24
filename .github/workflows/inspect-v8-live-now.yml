@@ -1,6 +1,8 @@
-name: Inspect current v8 live status
+name: Inspect current v9 live Studio source
 
 on:
+  push:
+    branches: [ci/verify-v8-live]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -11,22 +13,106 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
-      - name: Print current production markers
+      - name: Verify deployed Studio source, Nara, themes, and readiness
         shell: bash
         run: |
-          node --input-type=module <<'NODE'
-          const site='https://ngeblogging.com',stamp=`inspect=${Date.now()}`;
-          const get=async(url,options={})=>{const r=await fetch(`${url}${url.includes('?')?'&':'?'}${stamp}`,{...options,headers:{'cache-control':'no-cache',...(options.headers||{})}});return{status:r.status,ok:r.ok,text:await r.text()}};
-          const [healthResult,swResult,htmlResult]=await Promise.all([get(`${site}/api/health`),get(`${site}/sw.js`),get(`${site}/`)]);
-          const health=JSON.parse(healthResult.text||'{}');
-          const queue=[...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map(m=>new URL(m[1],site).href),seen=new Set(),chunks=[];
-          for(let depth=0;depth<7;depth++){const batch=[...new Set(queue)].filter(u=>!seen.has(u));if(!batch.length)break;batch.forEach(u=>seen.add(u));const texts=await Promise.all(batch.map(async u=>{const x=await get(u);return x.text}));chunks.push(...texts);for(const t of texts)for(const m of t.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g))queue.push(new URL(`/${m[1]}`,site).href)}
-          const assets=chunks.join('\n'),compact=assets.replace(/\s+/g,''),errors=[];
-          const checks={pwaV8:swResult.text.includes('ngeblogging-app-v8-20260724'),guardV8:assets.includes('studio-production-guard-v8-20260724'),mergeSidebarMenus:assets.includes('mergeSidebarMenus'),phonePanel:compact.includes('--sn-phone-panel:min(82vw,272px)'),bottomSelectors:compact.includes('.sn-mobile-nav')&&compact.includes('.sn-side-bottom')&&compact.includes('display:none!important'),settings:assets.includes('ngeblogging-settings-extras'),posts:assets.includes('sn-content-tools'),widgetModal:assets.includes('tn-widget-summary'),naraFullscreen:assets.includes('nara-assistant-shell'),devices:['Mobile','Tablet','Laptop','Komputer'].every(x=>assets.includes(x))};
-          for(const [k,v] of Object.entries(checks))if(!v)errors.push(k);
-          const nara=await get(`${site}/api/nara`,{method:'POST',headers:{'content-type':'application/json',origin:site},body:JSON.stringify({message:'uji koneksi',model:'nara-mini',intelligence:'standard',attachments:[],history:[]})});
-          let naraPayload={};try{naraPayload=JSON.parse(nara.text)}catch{}
-          console.log(JSON.stringify({health,swFirstLine:swResult.text.split('\n')[0],assets:[...seen],checks,nara:{status:nara.status,payload:naraPayload},errors},null,2));
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            echo "Live v9 inspection ${attempt}/30"
+            if node --input-type=module <<'NODE'
+          const site = 'https://ngeblogging.com';
+          const stamp = `inspect=${Date.now()}`;
+          const get = async (url, options = {}) => {
+            const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}${stamp}`, {
+              ...options,
+              headers: { 'cache-control': 'no-cache', ...(options.headers || {}) },
+            });
+            return { response, text: await response.text() };
+          };
+
+          try {
+            const [healthResult, swResult, htmlResult] = await Promise.all([
+              get(`${site}/api/health`),
+              get(`${site}/sw.js`),
+              get(`${site}/`),
+            ]);
+            if (!healthResult.response.ok || !swResult.response.ok || !htmlResult.response.ok) throw new Error('public endpoints unavailable');
+            const health = JSON.parse(healthResult.text || '{}');
+
+            const queue = [...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map((match) => new URL(match[1], site).href);
+            const seen = new Set();
+            const assets = new Map();
+            for (let depth = 0; depth < 7; depth += 1) {
+              const batch = [...new Set(queue)].filter((url) => !seen.has(url));
+              if (!batch.length) break;
+              batch.forEach((url) => seen.add(url));
+              await Promise.all(batch.map(async (url) => {
+                const result = await get(url);
+                if (!result.response.ok) throw new Error(`asset ${url} returned ${result.response.status}`);
+                assets.set(url, result.text);
+                for (const match of result.text.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g)) queue.push(new URL(`/${match[1]}`, site).href);
+              }));
+            }
+
+            const studioEntry = [...assets.entries()].find(([url]) => /\/assets\/Studio-[^/]+\.js(?:\?|$)/.test(url));
+            if (!studioEntry) throw new Error('Studio production chunk not found');
+            const [studioUrl, studioJs] = studioEntry;
+            const allAssets = [...assets.values()].join('\n');
+            const errors = [];
+
+            if (!swResult.text.includes('ngeblogging-app-v8-20260724')) errors.push('PWA v8');
+            if (!studioJs.includes('studio-source-navigation-v9-20260724')) errors.push('Studio source navigation v9 marker');
+            for (const forbidden of ['sn-mobile-nav', 'sn-mobile-sheet-layer', 'mobileMore', 'sn-side-bottom']) {
+              if (studioJs.includes(forbidden)) errors.push(`React still contains ${forbidden}`);
+            }
+            if (studioJs.includes('Pembayaran')) errors.push('inactive payment destination still bundled in Studio');
+            if ((studioJs.match(/sn-icon/g) || []).length !== 1) errors.push('Studio does not have exactly one sidebar toggle');
+            for (const required of ['Pengaturan', 'Keluar', 'Nara AI', 'Domain', 'Situs saya', '.ngeblogging.com']) {
+              if (!studioJs.includes(required)) errors.push(`Studio missing ${required}`);
+            }
+
+            if (health.nara !== true || !health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push('Nara provider');
+            if (health.managedSubdomains !== true || health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('managed subdomain/site limits');
+            if (health.billing !== false) errors.push('billing should remain hidden until live');
+            if (health.emailRegistration !== false) errors.push('email registration should remain hidden until delivery passes');
+            if (health.customDomains !== false) errors.push('custom domains should remain hidden until provisioning is configured');
+
+            const nara = await get(`${site}/api/nara`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json', origin: site },
+              body: JSON.stringify({ message: 'uji koneksi', model: 'nara-mini', intelligence: 'standard', attachments: [], history: [] }),
+            });
+            let naraPayload = {};
+            try { naraPayload = JSON.parse(nara.text || '{}'); } catch {}
+            if (nara.response.status !== 401 || naraPayload.code !== 'NARA_SESSION_REQUIRED') errors.push(`Nara auth ${nara.response.status}/${naraPayload.code || 'none'}`);
+            if (/konfigurasi autentikasi/i.test(String(naraPayload.error || ''))) errors.push('obsolete Nara authentication configuration error');
+
+            for (const marker of ['Mobile', 'Tablet', 'Laptop', 'Komputer', 'tn-widget-summary', 'ng-widget-recent-posts', 'ng-widget-popular-posts']) {
+              if (!allAssets.includes(marker)) errors.push(`theme/widget ${marker}`);
+            }
+            const families = ['Editorial', 'Journal', 'Newsroom', 'Business', 'Collective', 'Forum', 'Canvas', 'Identity', 'Diary', 'Atlas', 'Magazine', 'Market', 'Voyage', 'Academy', 'Wellness', 'Circuit', 'Lens', 'Prime', 'Dawn', 'Night', 'Coast', 'Atelier'];
+            if (!families.every((name) => allAssets.includes(name))) errors.push('100-theme family catalog');
+
+            console.log(JSON.stringify({
+              health,
+              studioUrl,
+              assetCount: assets.size,
+              nara: { status: nara.response.status, code: naraPayload.code },
+              errors,
+            }, null, 2));
+            if (errors.length) process.exit(1);
+            console.log('LIVE_STUDIO_SOURCE_V9_CONFIRMED');
+          } catch (error) {
+            console.error(error.message);
+            process.exit(1);
+          }
           NODE
+            then
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "Production did not expose the v9 Studio source within ten minutes."
+          exit 1
