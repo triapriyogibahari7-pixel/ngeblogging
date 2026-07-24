@@ -8,14 +8,9 @@ const manifest = JSON.parse(readFileSync(new URL("../public/site.webmanifest", i
 const serviceWorker = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
 const appShell = readFileSync(new URL("../src/app-shell-bridge.js", import.meta.url), "utf8");
 const bridge = readFileSync(new URL("../src/site-favicon-bridge.js", import.meta.url), "utf8");
-const mobile = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
-const production = readFileSync(new URL("../src/studio-production-audit.css", import.meta.url), "utf8");
-const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
-const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
-const hardening = readFileSync(new URL("../src/studio-v8-hardening.css", import.meta.url), "utf8");
-const authority = readFileSync(new URL("../src/studio-v10-authority.css", import.meta.url), "utf8");
-const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
-const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
+const authority = readFileSync(new URL("../src/studio-v14-authority.css", import.meta.url), "utf8");
+const naraAuthority = readFileSync(new URL("../src/nara-interaction-authority.css", import.meta.url), "utf8");
+const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
 const seo = readFileSync(new URL("../server/seo-handler.mjs", import.meta.url), "utf8");
 
 
@@ -29,7 +24,7 @@ test("main Ngeblogging favicon and PWA shell are installable and update safely",
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v13-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
@@ -72,40 +67,25 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 
 
 test("Studio uses one accessible edge toggle, icon-only collapsed rail, and no bottom navigation", () => {
-  assert.match(index, /studio-production-audit\.css/);
-  assert.match(index, /studio-mobile-critical\.css/);
-  assert.match(index, /studio-final-mobile\.css/);
-  assert.match(index, /studio-v8-hardening\.css/);
-  assert.match(index, /studio-v10-authority\.css/);
-  assert.ok(index.indexOf("studio-v8-hardening.css") > index.indexOf("studio-final-mobile.css"));
-  assert.ok(index.indexOf("studio-v10-authority.css") > index.indexOf("studio-v8-hardening.css"));
-  assert.match(index, /studio-mobile-navigation\.js/);
-  assert.match(index, /studio-runtime-layout-guard\.js/);
-  assert.match(index, /studio-production-guard\.js/);
-  assert.ok(index.indexOf("studio-runtime-layout-guard.js") < index.indexOf("/src/main.jsx"));
-  assert.ok(index.indexOf("studio-production-guard.js") > index.indexOf("/src/main.jsx"));
-  assert.match(mobile, /const COMPACT_QUERY = "\(max-width: 1024px\)"/);
-  assert.match(mobile, /const PHONE_QUERY = "\(max-width: 760px\)"/);
-  assert.match(mobile, /dataset\.deviceMode === "mobile"/);
-  assert.match(mobile, /collapseSidebar\(shell\)/);
-  assert.match(mobile, /aria-expanded/);
-  assert.match(mobile, /event\.key !== "Escape"/);
-  assert.match(mobile, /document\.addEventListener\("pointerdown"/);
-  assert.match(mobile, /labelSidebarButtons\(side\)/);
-  assert.match(mobile, /querySelectorAll\(":scope > \.sn-side-close"\)/);
-  assert.doesNotMatch(mobile, /createElement\("button"\)[\s\S]*sn-side-close/);
-  assert.match(production, /--sn-rail:72px;/);
-  assert.match(production, /--sn-panel:240px;/);
-  assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
-  assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
-  assert.match(hardening, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
-  assert.match(authority, /--sn-phone-rail: 68px/);
+  assert.match(index, /studio-v14-authority\.css/);
+  assert.match(index, /nara-interaction-authority\.css/);
+  assert.ok(index.indexOf("nara-interaction-authority.css") > index.indexOf("studio-v14-authority.css"));
+  for (const legacy of ["studio-mobile-navigation.js", "studio-runtime-layout-guard.js", "studio-production-guard.js", "studio-v10-authority.css", "studio-v11-mobile-repair.css"]) {
+    assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
+  }
+  assert.match(authority, /--sn-rail-width: 72px/);
+  assert.match(authority, /--sn-panel-width: 228px/);
+  assert.match(authority, /--sn-phone-rail: 58px/);
+  assert.match(authority, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom,[\s\S]*display: none !important/);
   assert.match(authority, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-rail-width\) !important/);
-  assert.match(authority, /\.sn-side\.collapsed > nav > button[\s\S]*justify-content: center !important/);
-  assert.match(runtimeGuard, /studio-icon-rail-v10-20260724/);
-  assert.match(productionGuard, /studio-production-guard-v10-20260724/);
-  assert.match(productionGuard, /mergeSidebarMenus\(side\)/);
-  assert.match(productionGuard, /hideNaraSidebarRoute\(side\)/);
-  assert.match(productionGuard, /ensureFloatingNara\(\)/);
-  assert.match(productionGuard, /dataset\.sidebarAuthority = "single"/);
+  assert.match(authority, /\.sn-side\.collapsed > nav > button[\s\S]*justify-content: center/);
+  assert.match(authority, /\.sn-icon[\s\S]*position: fixed !important/);
+  assert.match(secure, /studio-source-navigation-v14-20260724/);
+  assert.match(secure, /dataset\.sidebarAuthority = "single"/);
+  assert.match(secure, /aria-controls/);
+  assert.match(secure, /aria-expanded/);
+  assert.match(secure, /Buka menu Studio/);
+  assert.match(secure, /Tutup menu Studio/);
+  assert.match(secure, /\.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
+  assert.match(naraAuthority, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
 });
