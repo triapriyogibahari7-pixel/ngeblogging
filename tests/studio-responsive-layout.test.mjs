@@ -3,70 +3,57 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 
 const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const legacy = readFileSync(new URL("../src/studio-responsive-fix.css", import.meta.url), "utf8");
-const polish = readFileSync(new URL("../src/studio-mobile-polish.css", import.meta.url), "utf8");
-const production = readFileSync(new URL("../src/studio-production-audit.css", import.meta.url), "utf8");
-const deviceMode = readFileSync(new URL("../src/studio-device-mode.css", import.meta.url), "utf8");
-const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
-const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
-const controller = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
-const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
-const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
+const authority = readFileSync(new URL("../src/studio-v14-authority.css", import.meta.url), "utf8");
+const naraAuthority = readFileSync(new URL("../src/nara-interaction-authority.css", import.meta.url), "utf8");
+const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
 const appShell = readFileSync(new URL("../src/app-shell-bridge.js", import.meta.url), "utf8");
 const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 
 
-test("Studio loads every responsive layer with the final mobile authority last", () => {
-  const responsivePosition = index.indexOf("studio-responsive-fix.css");
-  const polishPosition = index.indexOf("studio-mobile-polish.css");
-  const productionPosition = index.indexOf("studio-production-audit.css");
-  const devicePosition = index.indexOf("studio-device-mode.css");
-  const criticalPosition = index.indexOf("studio-mobile-critical.css");
-  const finalPosition = index.indexOf("studio-final-mobile.css");
-  assert.ok(responsivePosition > -1);
-  assert.ok(polishPosition > responsivePosition);
-  assert.ok(productionPosition > polishPosition);
-  assert.ok(devicePosition > productionPosition);
-  assert.ok(criticalPosition > devicePosition);
-  assert.ok(finalPosition > criticalPosition);
-  assert.ok(index.indexOf("app-shell-bridge.js") < index.indexOf("studio-runtime-layout-guard.js"));
-  assert.ok(index.indexOf("studio-runtime-layout-guard.js") < index.indexOf("/src/main.jsx"));
-  assert.ok(index.indexOf("studio-production-guard.js") > index.indexOf("/src/main.jsx"));
+test("Studio loads one responsive authority with the specialized Nara authority last", () => {
+  const studioPosition = index.indexOf("studio-v14-authority.css");
+  const naraPosition = index.indexOf("nara-interaction-authority.css");
+  assert.ok(studioPosition > -1);
+  assert.ok(naraPosition > studioPosition);
+  for (const legacy of [
+    "studio-responsive-fix.css", "studio-mobile-polish.css", "studio-production-audit.css",
+    "studio-device-mode.css", "studio-mobile-critical.css", "studio-final-mobile.css",
+    "studio-v8-hardening.css", "studio-v10-authority.css", "studio-v11-mobile-repair.css",
+    "studio-mobile-navigation.js", "studio-runtime-layout-guard.js", "studio-production-guard.js",
+  ]) assert.equal(index.includes(legacy), false, legacy);
+  assert.ok(index.indexOf("app-shell-bridge.js") < index.indexOf("/src/main.jsx"));
   assert.match(index, /width=device-width,initial-scale=1,viewport-fit=cover/);
   assert.doesNotMatch(index, /maximum-scale=1/);
 });
 
 
-test("phones use a full-width workspace and a narrower off-canvas sidebar", () => {
-  assert.match(production, /@media\(max-width:700px\)/);
-  assert.match(deviceMode, /html\[data-device-mode="mobile"\] \.sn-side\.collapsed/);
-  assert.match(finalMobile, /--sn-phone-panel: min\(78vw, 300px\)/);
-  assert.match(finalMobile, /\.sn-side\.collapsed[\s\S]*translate3d\(calc\(-100% - 20px\), 0, 0\)/);
-  assert.match(finalMobile, /\.sn-main,[\s\S]*margin-left: 0 !important/);
-  assert.match(critical, /html\[data-device-mode="mobile"\] \.sn-media-tools\{display:grid!important/);
-  assert.match(critical, /\.sn-home-grid>section>button/);
+test("phones keep a compact icon rail and an overlaying expanded sidebar", () => {
+  assert.match(authority, /--sn-phone-panel: min\(78vw, 272px\)/);
+  assert.match(authority, /--sn-phone-rail: 58px/);
+  assert.match(authority, /@media \(max-width: 760px\)/);
+  assert.match(authority, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-phone-rail\) !important/);
+  assert.match(authority, /\.sn-main,[\s\S]*width: calc\(100vw - var\(--sn-phone-rail\)\) !important/);
+  assert.match(authority, /\.sn-side:not\(\.collapsed\) \+ \.sn-main::before/);
+  assert.match(authority, /left: calc\(var\(--sn-phone-panel\) - 20px\) !important/);
   assert.match(appShell, /mobileUserAgent\(\)/);
   assert.match(appShell, /physicalShortSide\(\)/);
   assert.match(appShell, /width <= 760/);
 });
 
 
-test("tablets keep an icon rail and overlay the expanded panel", () => {
-  assert.match(production, /@media\(min-width:701px\) and \(max-width:1024px\)/);
-  assert.match(production, /:root\{--sn-rail:64px\}/);
-  assert.match(production, /\.sn-side\.collapsed\{[\s\S]*width:var\(--sn-rail\)!important/);
-  assert.match(production, /\.sn-main,\.sn-side\.collapsed\+\.sn-main,\.sn-side:not\(\.collapsed\)\+\.sn-main\{[\s\S]*margin-left:var\(--sn-rail\)!important/);
-  assert.match(production, /\.sn-side:not\(\.collapsed\)\+\.sn-main:before/);
+test("tablets and laptops keep usable header controls without horizontal overflow", () => {
+  assert.match(authority, /@media \(max-width: 1024px\)/);
+  assert.match(authority, /\.sn-cloud span,[\s\S]*\.sn-view-site span[\s\S]*display: none/);
+  assert.match(authority, /\.sn-workspace b[\s\S]*max-width: 24vw/);
+  assert.match(authority, /\.sn-shell[\s\S]*overflow-x: clip/);
 });
 
 
 test("desktop and large displays retain precise panel and rail geometry", () => {
-  assert.match(production, /--sn-rail:72px;/);
-  assert.match(production, /--sn-panel:240px;/);
-  assert.match(production, /@media\(min-width:1025px\)/);
-  assert.match(production, /\.sn-main\{margin-left:var\(--sn-panel\)!important/);
-  assert.match(production, /\.sn-side\.collapsed\+\.sn-main\{margin-left:var\(--sn-rail\)!important/);
-  assert.match(production, /@media\(min-width:1500px\)/);
+  assert.match(authority, /--sn-rail-width: 72px/);
+  assert.match(authority, /--sn-panel-width: 228px/);
+  assert.match(authority, /\.sn-main,[\s\S]*margin-left: var\(--sn-panel-width\) !important/);
+  assert.match(authority, /\.sn-side\.collapsed \+ \.sn-main[\s\S]*margin-left: var\(--sn-rail-width\) !important/);
 });
 
 
@@ -74,24 +61,16 @@ test("only the React header button controls sidebar state", () => {
   assert.match(studio, /const \[sidebar,setSidebar\] = useState\(true\)/);
   assert.match(studio, /className=\{sidebar\?"sn-side":"sn-side collapsed"\}/);
   assert.match(studio, /className="sn-icon" onClick=\{\(\)=>setSidebar\(!sidebar\)\}/);
-  assert.match(controller, /querySelectorAll\(":scope > \.sn-side-close"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
-  assert.doesNotMatch(controller, /side\.append\(close\)/);
-  assert.doesNotMatch(controller, /createElement\("button"\)/);
-  assert.match(controller, /aria-label", expanded \? "Tutup menu Studio" : "Buka menu Studio"/);
-  assert.match(controller, /event\.key !== "Escape"/);
-  assert.match(controller, /document\.addEventListener\("pointerdown"/);
-  assert.match(finalMobile, /\.sn-side\.collapsed \+ \.sn-main \.sn-icon[\s\S]*left: 12px !important/);
-  assert.match(finalMobile, /\.sn-side:not\(\.collapsed\) \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-panel\) - 23px\) !important/);
-  assert.match(productionGuard, /dataset\.sidebarAuthority = "single"/);
+  assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
+  assert.match(secure, /dataset\.sidebarAuthority = "single"/);
+  assert.match(secure, /aria-label", side\.classList\.contains\("collapsed"\) \? "Buka menu Studio" : "Tutup menu Studio"/);
+  assert.match(secure, /closeAfterSelection/);
 });
 
 
 test("bottom navigation is removed and the full menu remains in the sidebar", () => {
-  assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
-  assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
-  assert.match(runtimeGuard, /querySelectorAll\(":scope > \.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
-  assert.match(productionGuard, /querySelectorAll\(":scope > \.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
-  assert.doesNotMatch(productionGuard, /important\(nav, "display", "grid"\)/);
+  assert.match(authority, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom,[\s\S]*display: none !important/);
+  assert.match(secure, /\.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
   assert.match(studio, /<LayoutDashboard\/><span>Ringkasan<\/span>/);
   assert.match(studio, /<Palette\/><span>Tema<\/span>/);
   assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
@@ -100,18 +79,10 @@ test("bottom navigation is removed and the full menu remains in the sidebar", ()
 
 
 test("settings cards and posts remain in normal flow on a real phone", () => {
-  assert.doesNotMatch(legacy, /body:has\(\.sn-settings-grid\) \.sn-side/);
-  assert.match(legacy, /\.sn-settings-grid\{grid-template-columns:1fr!important;width:100%\}/);
-  assert.match(finalMobile, /\.sn-view-pad:has\(\.sn-settings-grid\)/);
-  assert.match(finalMobile, /#ngeblogging-site-favicon-settings/);
-  assert.match(finalMobile, /\.sn-backup-host/);
-  assert.match(finalMobile, /position: static !important/);
-  assert.match(finalMobile, /\.sn-settings-grid input,[\s\S]*font-size: 16px !important/);
-  assert.match(finalMobile, /\.sn-content-tools[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
-  assert.match(finalMobile, /\.sn-doc-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto 42px !important/);
-  assert.match(productionGuard, /window\.scrollTo\(\{ top: 0, left: 0/);
-  assert.match(legacy, /aside:empty/);
-  assert.match(legacy, /div:empty\[data-sidebar\]/);
-  assert.doesNotMatch(legacy, /section:empty/);
-  assert.match(polish, /\.sn-mobile-nav,\.sn-mobile-sheet-layer,\.sn-sidebar-backdrop\{display:none!important\}/);
+  assert.match(authority, /\.sn-settings-grid,[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(authority, /\.sn-content-tools[\s\S]*flex-direction: column/);
+  assert.match(authority, /\.sn-doc-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto 34px !important/);
+  assert.match(authority, /\.sn-domain-card[\s\S]*grid-template-columns: 42px minmax\(0, 1fr\) !important/);
+  assert.match(authority, /\.nara-composer-tools[\s\S]*grid-template-columns:/);
+  assert.match(naraAuthority, /\.nara-native-file-input/);
 });
