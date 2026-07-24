@@ -81,8 +81,8 @@ test("Nara has Qwen and authenticated Cloudflare Workers AI fallback", () => {
 });
 
 
-test("inactive commerce stays hidden while PWA updates to v10", () => {
+test("inactive commerce stays hidden while PWA updates to v13", () => {
   assert.match(billing, /function upgradeButtons\(\)/);
   assert.match(billing, /upgrades\.forEach\(conceal\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v10-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v13-20260724/);
 });
