@@ -11,7 +11,6 @@ function labelOf(node) {
 function ensureSettingsExtras() {
   const saveButton = document.querySelector(".sn-save-settings");
   if (!saveButton) return null;
-
   let extras = document.getElementById("ngeblogging-settings-extras");
   if (!extras) {
     extras = document.createElement("div");
@@ -19,7 +18,6 @@ function ensureSettingsExtras() {
     extras.className = "sn-settings-extras";
     saveButton.insertAdjacentElement("afterend", extras);
   }
-
   for (const id of ["ngeblogging-site-favicon-settings", "ngeblogging-backup-settings"]) {
     const node = document.getElementById(id);
     if (node && node.parentElement !== extras) extras.append(node);
@@ -49,7 +47,6 @@ function hideNaraSidebarRoute(side) {
   route.hidden = true;
   route.tabIndex = -1;
   route.setAttribute("aria-hidden", "true");
-  route.style.setProperty("display", "none", "important");
   return route;
 }
 
@@ -62,10 +59,6 @@ function labelSidebar(side) {
   });
 }
 
-function siteShortcutIcon() {
-  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Lihat situs</span>';
-}
-
 function ensureSiteShortcut(shell, side) {
   const actions = shell.querySelector(":scope > .sn-main > .sn-top .sn-top-actions");
   if (!actions) return;
@@ -73,7 +66,7 @@ function ensureSiteShortcut(shell, side) {
   if (!shortcut) {
     shortcut = document.createElement("button");
     shortcut.className = "sn-site-shortcut";
-    shortcut.innerHTML = siteShortcutIcon();
+    shortcut.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Lihat situs</span>';
     actions.prepend(shortcut);
   }
   shortcut.type = "button";
@@ -81,8 +74,7 @@ function ensureSiteShortcut(shell, side) {
   shortcut.setAttribute("title", "Lihat situs");
   if (!shortcut.dataset.boundSiteShortcut) {
     shortcut.dataset.boundSiteShortcut = "true";
-    shortcut.addEventListener("click", (event) => {
-      event.preventDefault();
+    shortcut.addEventListener("click", () => {
       const domainButton = [...side.querySelectorAll(":scope > nav > button")]
         .find((button) => labelOf(button) === "Domain");
       domainButton?.click();
@@ -99,19 +91,17 @@ function ensureFloatingNara() {
     button.setAttribute("aria-hidden", "false");
     button.setAttribute("aria-label", "Buka Nara AI");
     button.setAttribute("title", "Buka Nara AI");
-    button.style.removeProperty("display");
-    button.style.removeProperty("visibility");
-    button.style.removeProperty("pointer-events");
-    button.style.removeProperty("opacity");
   });
-
-  // The floating launcher is the only permanent Nara entry. The top-bar
-  // duplicate is removed to prevent overlapping click targets on phones.
   document.querySelectorAll(".sn-top-actions .sn-nara-button").forEach((button) => {
     button.hidden = true;
     button.tabIndex = -1;
     button.setAttribute("aria-hidden", "true");
-    button.style.setProperty("display", "none", "important");
+  });
+  document.querySelectorAll('.nara-composer input[type="file"]').forEach((input) => {
+    input.hidden = true;
+    input.tabIndex = -1;
+    input.setAttribute("aria-hidden", "true");
+    input.classList.add("nara-native-file-input");
   });
 }
 
@@ -125,14 +115,10 @@ function setReactTextarea(textarea, value) {
 }
 
 function openNaraWorkspace(tabLabel = "Projects") {
-  const shell = document.querySelector(".sn-shell");
-  const route = shell?.querySelector('[data-nara-workspace-route="true"]');
+  const route = document.querySelector('[data-nara-workspace-route="true"]');
   if (!route) return;
-
-  const close = document.querySelector('.nara-assistant-header button[title="Tutup"]');
-  close?.click();
+  document.querySelector('.nara-assistant-header button[title="Tutup"]')?.click();
   route.click();
-
   let attempts = 0;
   const selectTab = () => {
     const button = [...document.querySelectorAll(".nw-tabs button")]
@@ -148,10 +134,11 @@ function openNaraWorkspace(tabLabel = "Projects") {
 }
 
 function requestQrScan() {
-  const textarea = document.querySelector(".nara-composer textarea");
-  setReactTextarea(textarea, "Baca kode QR pada gambar ini, salin isi persisnya, lalu jelaskan tujuan tautan atau datanya dengan aman.");
-  const camera = document.querySelector('.nara-composer input[type="file"][capture]');
-  camera?.click();
+  setReactTextarea(
+    document.querySelector(".nara-composer textarea"),
+    "Baca kode QR pada gambar ini, salin isi persisnya, lalu jelaskan tujuan tautan atau datanya dengan aman.",
+  );
+  document.querySelector('.nara-composer input[type="file"][capture]')?.click();
 }
 
 function shortcutButton(label, action, icon) {
@@ -167,7 +154,6 @@ function shortcutButton(label, action, icon) {
 function ensureNaraCapabilityShortcuts() {
   const bar = document.querySelector(".nara-context-bar");
   if (!bar || bar.querySelector(".nara-capability-shortcuts")) return;
-
   const controls = document.createElement("div");
   controls.className = "nara-capability-shortcuts";
   controls.setAttribute("aria-label", "Pusat kemampuan Nara");
@@ -190,23 +176,19 @@ async function decodeQrFromInput(input) {
     const results = await detector.detect(bitmap);
     bitmap.close?.();
     const value = results[0]?.rawValue?.trim();
-    if (!value) return;
-    const textarea = document.querySelector(".nara-composer textarea");
-    setReactTextarea(textarea, `Kode QR terbaca: ${value}\n\nPeriksa keamanan dan jelaskan isi kode QR ini.`);
+    if (value) setReactTextarea(document.querySelector(".nara-composer textarea"), `Kode QR terbaca: ${value}\n\nPeriksa keamanan dan jelaskan isi kode QR ini.`);
   } catch {
-    // Vision provider remains available when the browser has no BarcodeDetector.
+    // Nara Vision remains the fallback when BarcodeDetector is unavailable.
   }
 }
 
 function prepareShell(shell) {
   removeLegacyMobileNavigation(shell);
   shell.dataset.productionGuard = RELEASE;
-
   const side = shell.querySelector(":scope > .sn-side");
   const main = shell.querySelector(":scope > .sn-main");
   const toggle = main?.querySelector(":scope > .sn-top .sn-icon");
   if (!side || !toggle) return;
-
   mergeSidebarMenus(side);
   hideNaraSidebarRoute(side);
   ensureSiteShortcut(shell, side);
@@ -214,8 +196,6 @@ function prepareShell(shell) {
   toggle.dataset.sidebarAuthority = "single";
   toggle.setAttribute("aria-controls", side.id);
   toggle.setAttribute("aria-expanded", String(!side.classList.contains("collapsed")));
-  toggle.setAttribute("aria-label", side.classList.contains("collapsed") ? "Perluas menu Studio" : "Ringkas menu Studio");
-  toggle.setAttribute("title", side.classList.contains("collapsed") ? "Perluas menu" : "Ringkas menu");
   labelSidebar(side);
 }
 
@@ -232,14 +212,13 @@ function schedule() {
   scheduled = requestAnimationFrame(apply);
 }
 
-new MutationObserver(schedule).observe(document.documentElement, {
+// Observe mounted/unmounted React nodes only. Watching attributes created a
+// feedback loop because this guard also manages hidden/class state.
+new MutationObserver(schedule).observe(document.getElementById("root") || document.documentElement, {
   childList: true,
   subtree: true,
-  attributes: true,
-  attributeFilter: ["class", "hidden"],
 });
 window.addEventListener("pageshow", schedule);
-window.addEventListener("resize", schedule, { passive: true });
 window.addEventListener("orientationchange", schedule, { passive: true });
 
 document.addEventListener("change", (event) => {
