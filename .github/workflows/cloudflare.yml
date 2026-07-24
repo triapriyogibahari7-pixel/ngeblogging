@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: ngeblogging-cloudflare-production
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -97,10 +97,10 @@ jobs:
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
           if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
 
-          for (const marker of ['studio-v14-authority.css', 'nara-command-center-bridge.js']) {
+          for (const marker of ['studio-v14-authority.css', 'nara-command-center-bridge.js', 'pwa-runtime.js']) {
             if (!index.includes(marker)) errors.push(`index:${marker}`);
           }
-          for (const legacy of ['studio-runtime-layout-guard.js', 'studio-mobile-navigation.js', 'studio-production-guard.js', 'nara-availability-bridge.js', 'studio-v10-authority.css', 'studio-v11-mobile-repair.css']) {
+          for (const legacy of ['app-shell-bridge.js', 'studio-runtime-layout-guard.js', 'studio-mobile-navigation.js', 'studio-production-guard.js', 'nara-availability-bridge.js', 'studio-v10-authority.css', 'studio-v11-mobile-repair.css']) {
             if (index.includes(legacy)) errors.push(`legacy:${legacy}`);
           }
           if (!sw.includes('ngeblogging-app-v14-20260724')) errors.push('service-worker-v14');
