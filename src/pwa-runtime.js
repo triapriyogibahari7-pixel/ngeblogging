@@ -4,18 +4,47 @@ let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
 
+function viewportProfile() {
+  const layoutWidth = Math.max(1, Number(window.innerWidth) || 1);
+  const layoutHeight = Math.max(1, Number(window.innerHeight) || 1);
+  const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
+  const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
+  const shortSide = Math.min(screenWidth, screenHeight);
+  const physicalMobile = shortSide <= 760;
+  const browserScale = physicalMobile
+    ? Math.max(1, Math.min(3, layoutWidth / screenWidth))
+    : 1;
+
+  let mode = "desktop";
+  if (shortSide <= 760) mode = "mobile";
+  else if (shortSide <= 1024) mode = "tablet";
+  else if (layoutWidth <= 1440) mode = "laptop";
+
+  return {
+    mode,
+    physicalMobile,
+    desktopSitePhone: physicalMobile && browserScale > 1.2,
+    browserScale,
+    physicalLayoutWidth: layoutWidth / browserScale,
+    physicalLayoutHeight: layoutHeight / browserScale,
+  };
+}
+
 function deviceMode() {
-  const width = window.innerWidth;
-  if (width <= 760) return "mobile";
-  if (width <= 1024) return "tablet";
-  if (width <= 1440) return "laptop";
-  return "desktop";
+  return viewportProfile().mode;
 }
 
 function syncDeviceMode() {
-  document.documentElement.dataset.deviceMode = deviceMode();
-  document.documentElement.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
-  document.documentElement.dataset.pwaRuntime = RELEASE;
+  const profile = viewportProfile();
+  const root = document.documentElement;
+  root.dataset.deviceMode = profile.mode;
+  root.dataset.physicalMobile = String(profile.physicalMobile);
+  root.dataset.desktopSitePhone = String(profile.desktopSitePhone);
+  root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
+  root.dataset.pwaRuntime = RELEASE;
+  root.style.setProperty("--sn-browser-scale", profile.browserScale.toFixed(3));
+  root.style.setProperty("--sn-physical-layout-width", `${profile.physicalLayoutWidth.toFixed(2)}px`);
+  root.style.setProperty("--sn-physical-layout-height", `${profile.physicalLayoutHeight.toFixed(2)}px`);
 }
 
 function standalone() {
@@ -111,6 +140,8 @@ window.addEventListener("appinstalled", () => {
 
 window.addEventListener("resize", syncDeviceMode, { passive: true });
 window.addEventListener("orientationchange", syncDeviceMode, { passive: true });
+window.addEventListener("pageshow", syncDeviceMode, { passive: true });
+window.visualViewport?.addEventListener("resize", syncDeviceMode, { passive: true });
 new MutationObserver(scheduleInstallButton).observe(ROOT, { childList: true, subtree: true });
 
 syncDeviceMode();
