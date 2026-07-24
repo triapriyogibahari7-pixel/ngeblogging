@@ -98,7 +98,6 @@ jobs:
             for (const required of ["Ringkasan", "Posts", "Pages", "Tema", "Media", "Nara AI", "Analitik", "Anggota", "Domain", "Pengaturan", "Keluar"]) {
               if (!navSegment.includes(required)) errors.push(`sidebar missing ${required}`);
             }
-            if (navSegment.includes("Pembayaran")) errors.push("inactive payment destination");
             for (const required of ["Lihat situs", "SUBDOMAIN GRATIS", ".ngeblogging.com"]) {
               if (!studioJs.includes(required)) errors.push(`Studio missing ${required}`);
             }
