@@ -1,0 +1,1 @@
+Third real-browser mobile and Nara audit trigger after pre-paint rail and PWA stability fixes.
