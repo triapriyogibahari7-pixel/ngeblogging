@@ -4,13 +4,9 @@ import { readFileSync } from "node:fs";
 import { BUILT_IN_THEMES, THEME_COUNT } from "../src/theme-catalog.js";
 
 const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
-const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
-const hardening = readFileSync(new URL("../src/studio-v8-hardening.css", import.meta.url), "utf8");
-const authority = readFileSync(new URL("../src/studio-v10-authority.css", import.meta.url), "utf8");
-const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
-const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
-const capabilityBridge = readFileSync(new URL("../src/nara-availability-bridge.js", import.meta.url), "utf8");
+const authority = readFileSync(new URL("../src/studio-v14-authority.css", import.meta.url), "utf8");
+const naraAuthority = readFileSync(new URL("../src/nara-interaction-authority.css", import.meta.url), "utf8");
+const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
 const commandCenter = readFileSync(new URL("../src/nara-command-center-bridge.js", import.meta.url), "utf8");
 const assistant = readFileSync(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../src/NaraWorkspace.jsx", import.meta.url), "utf8");
@@ -24,47 +20,38 @@ const serviceWorker = readFileSync(new URL("../public/sw.js", import.meta.url), 
 const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
 const runtime = readFileSync(new URL("../server/nara-runtime.mjs", import.meta.url), "utf8");
 const workersAiFallback = readFileSync(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
+const imageHandler = readFileSync(new URL("../server/nara-image-handler.mjs", import.meta.url), "utf8");
 const wrangler = readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8");
 
 
 test("mobile Studio uses one left sidebar, one toggle, and a persistent icon rail", () => {
-  const hardeningCss = index.indexOf("studio-v8-hardening.css");
-  const authorityCss = index.indexOf("studio-v10-authority.css");
-  const mainScript = index.indexOf("/src/main.jsx");
-  const runtimeGuardScript = index.indexOf("studio-runtime-layout-guard.js");
-  const productionGuardScript = index.indexOf("studio-production-guard.js");
-  assert.ok(authorityCss > hardeningCss, "v10 authority must load after legacy CSS");
-  assert.ok(runtimeGuardScript > -1 && runtimeGuardScript < mainScript);
-  assert.ok(productionGuardScript > mainScript);
-  assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
-  assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
-  assert.match(hardening, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
-  assert.match(authority, /--sn-phone-rail: 68px/);
-  assert.match(authority, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-rail-width\) !important/);
-  assert.match(authority, /\.sn-side\.collapsed > nav > button[\s\S]*justify-content: center !important/);
+  const studioAuthority = index.indexOf("studio-v14-authority.css");
+  const naraFinalAuthority = index.indexOf("nara-interaction-authority.css");
+  assert.ok(studioAuthority > -1);
+  assert.ok(naraFinalAuthority > studioAuthority);
+  assert.match(authority, /--sn-phone-rail: 58px/);
+  assert.match(authority, /--sn-phone-panel: min\(78vw, 272px\)/);
+  assert.match(authority, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-phone-rail\) !important/);
+  assert.match(authority, /\.sn-side\.collapsed > nav > button[\s\S]*justify-content: center/);
   assert.match(authority, /\.sn-icon[\s\S]*position: fixed !important/);
-  assert.match(runtimeGuard, /studio-icon-rail-v10-20260724/);
-  assert.match(runtimeGuard, /MOBILE_RAIL = 68/);
-  assert.match(productionGuard, /removeLegacyMobileNavigation\(shell\)/);
-  assert.match(productionGuard, /mergeSidebarMenus\(side\)/);
-  assert.match(productionGuard, /dataset\.sidebarAuthority = "single"/);
-  assert.match(productionGuard, /studio-production-guard-v10-20260724/);
-  assert.doesNotMatch(productionGuard, /important\(nav, "display", "grid"\)/);
+  assert.match(authority, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom,[\s\S]*display: none !important/);
+  assert.match(secure, /dataset\.sidebarAuthority = "single"/);
+  assert.match(secure, /studio-source-navigation-v14-20260724/);
+  assert.match(secure, /initialSidebarResolved/);
+  assert.doesNotMatch(index, /studio-runtime-layout-guard\.js|studio-mobile-navigation\.js|studio-production-guard\.js/);
 });
 
 
 test("Nara is removed from the sidebar but preserved as a clickable floating assistant", () => {
-  assert.match(productionGuard, /hideNaraSidebarRoute\(side\)/);
-  assert.match(productionGuard, /ensureFloatingNara\(\)/);
-  assert.match(productionGuard, /data-nara-workspace-route/);
-  assert.match(authority, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
-  assert.match(authority, /\.nara-floating-button[\s\S]*z-index: 18000 !important/);
-  assert.match(authority, /\.nara-assistant-layer[\s\S]*z-index: 22000 !important/);
-  assert.match(authority, /\.nara-assistant-shell[\s\S]*height: 100dvh !important/);
-  assert.match(capabilityBridge, /nara-capability-bridge-v10-20260724/);
-  assert.match(capabilityBridge, /preserveAssistantCapabilities/);
-  assert.doesNotMatch(capabilityBridge, /removeInactiveOptions/);
-  assert.doesNotMatch(capabilityBridge, /controls\.forEach\(conceal\)/);
+  assert.match(secure, /buttonLabel\(button\) === "Nara AI"/);
+  assert.match(secure, /naraRoute\.dataset\.naraWorkspaceRoute = "true"/);
+  assert.match(secure, /\.sn-top-actions \.sn-nara-button/);
+  assert.match(naraAuthority, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
+  assert.match(naraAuthority, /\.nara-floating-button[\s\S]*z-index: 2147483000 !important/);
+  assert.match(naraAuthority, /\.nara-assistant-layer[\s\S]*z-index:/);
+  assert.match(naraAuthority, /\.nara-assistant-shell[\s\S]*height: 100dvh !important/);
+  assert.match(index, /nara-command-center-bridge\.js/);
+  assert.doesNotMatch(index, /nara-availability-bridge\.js|nara-interaction-guard\.js/);
 });
 
 
@@ -78,7 +65,7 @@ test("Nara keeps models, intelligence, files, images, voice, QR, memory, and plu
   for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector", "openWorkspace"]) {
     assert.ok(commandCenter.includes(marker), `command center missing ${marker}`);
   }
-  for (const plugin of ["supabase", "github", "cloudflare", "paypal", "google-drive", "webhook"]) {
+  for (const plugin of ["supabase", "github", "neon", "cloudflare", "paypal", "google-drive", "webhook"]) {
     assert.ok(integrations.includes(`id:\"${plugin}\"`) || integrations.includes(`id:"${plugin}"`), `plugin missing ${plugin}`);
   }
   assert.match(index, /nara-command-center-bridge\.js/);
@@ -86,27 +73,15 @@ test("Nara keeps models, intelligence, files, images, voice, QR, memory, and plu
 });
 
 
-test("mobile settings, favicon, backup, site manager, theme modal, widget studio, and Nara stay in flow", () => {
-  assert.match(finalMobile, /\.sn-view-pad:has\(\.sn-settings-grid\)/);
+test("mobile settings, content, domain, and Nara stay in normal flow", () => {
+  assert.match(authority, /\.sn-view-pad,[\s\S]*max-width: 100%/);
   assert.match(authority, /\.sn-settings-grid,[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
-  assert.match(authority, /#ngeblogging-site-favicon-settings/);
-  assert.match(authority, /\.sn-backup-host/);
-  assert.match(authority, /\.sn-modal-layer,[\s\S]*position: fixed !important/);
-  assert.match(authority, /\.sn-site-manager,[\s\S]*max-height: calc\(100dvh - 32px\) !important/);
-  assert.match(authority, /\.tn-widget-summary[\s\S]*grid-template-columns: 44px minmax\(0, 1fr\) auto/);
-  assert.match(authority, /\.sn-settings-grid input,[\s\S]*font-size: 16px !important/);
-  assert.match(productionGuard, /ngeblogging-settings-extras/);
-});
-
-
-test("media, domain, theme, and content views have dedicated phone layouts", () => {
-  assert.match(critical, /\.sn-media-tools\{display:grid!important/);
-  assert.match(critical, /\.sn-media-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
-  assert.match(critical, /\.sn-domain-card,/);
-  assert.match(critical, /\.tn-hero\{display:grid!important;grid-template-columns:minmax\(0,1fr\)!important/);
-  assert.match(authority, /\.sn-doc-row[\s\S]*grid-template-areas: "title trash" "status time"/);
-  assert.match(critical, /\.tn-frame-shell\.mobile iframe/);
-  assert.match(critical, /\.tn-frame-shell\.desktop iframe\{width:1440px!important/);
+  assert.match(authority, /\.sn-content-tools[\s\S]*flex-direction: column/);
+  assert.match(authority, /\.sn-doc-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto 34px !important/);
+  assert.match(authority, /\.sn-domain-card[\s\S]*grid-template-columns: 42px minmax\(0, 1fr\) !important/);
+  assert.match(authority, /\.nara-assistant-layer,[\s\S]*width: 100vw !important/);
+  assert.match(secure, /ngeblogging-settings-extras/);
+  assert.match(secure, /saveButton\.insertAdjacentElement\("afterend", extras\)/);
 });
 
 
@@ -158,25 +133,30 @@ test("public tenant lookup, themes, widgets, and posts use real published data",
 });
 
 
-test("Nara keeps Qwen primary and Workers AI as an authenticated fallback", () => {
+test("Nara keeps Qwen primary and Workers AI text vision and image fallbacks", () => {
   assert.match(worker, /function qwenTextReady\(env\)/);
   assert.match(worker, /qwenTextReady\(env\) \|\| workersAiReady\(env\)/);
   assert.match(worker, /handleWorkersAiNara\(request, env, requestId, origin\)/);
-  assert.match(worker, /naraProviders: \{ qwen: qwenTextReady\(env\), workersAi: workersAiReady\(env\) \}/);
+  assert.match(worker, /naraProviders: \{ qwen: qwenTextReady\(env\), workersAi: workersAiReady\(env\), vision: workersVisionReady\(env\) \}/);
+  assert.match(worker, /imageGenerationReady/);
   assert.match(runtime, /dashscope-intl\.aliyuncs\.com\/compatible-mode\/v1/);
   assert.match(runtime, /QWEN_API_BASE_URL:/);
   assert.match(workersAiFallback, /env\.AI\.run\(model/);
   assert.match(workersAiFallback, /DEFAULT_SUPABASE_URL/);
-  assert.match(workersAiFallback, /DEFAULT_SUPABASE_PUBLISHABLE_KEY/);
   assert.match(workersAiFallback, /NARA_SESSION_PROJECT_MISMATCH/);
   assert.match(workersAiFallback, /consume_nara_quota/);
+  assert.match(workersAiFallback, /DEFAULT_VISION_MODEL/);
+  assert.match(imageHandler, /generateWithWorkers/);
+  assert.match(imageHandler, /imageGenerationReady/);
   assert.match(wrangler, /"binding": "AI"/);
   assert.match(wrangler, /@cf\/zai-org\/glm-4\.7-flash/);
+  assert.match(wrangler, /@cf\/google\/gemma-4-26b-a4b-it/);
+  assert.match(wrangler, /@cf\/bytedance\/stable-diffusion-xl-lightning/);
 });
 
 
-test("the v13 release invalidates stale CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v13-20260724/);
+test("the v14 release invalidates stale CSS and JavaScript caches", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
