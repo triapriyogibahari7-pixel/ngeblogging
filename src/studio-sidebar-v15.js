@@ -1,5 +1,6 @@
-const RELEASE = "studio-sidebar-v15-20260724";
+const RELEASE = "studio-sidebar-v16-20260724";
 let frame = 0;
+let layoutTicket = 0;
 
 function deviceProfile() {
   const layoutWidth = Math.max(1, Number(window.innerWidth) || 1);
@@ -19,8 +20,57 @@ function panelIcon(open) {
     : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M8 12h8m-3-3 3 3-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 
+const LAYOUT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M9 9v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
 function textLabel(button) {
   return button?.querySelector("span")?.textContent?.trim() || button?.textContent?.trim() || "";
+}
+
+function findNavButton(side, label) {
+  return [...(side?.querySelectorAll(":scope > nav > button") || [])]
+    .find((button) => textLabel(button) === label) || null;
+}
+
+function clickLayoutCustomizer(ticket, attempt = 0) {
+  if (ticket !== layoutTicket) return;
+  const buttons = [...document.querySelectorAll(".tn-hero-actions button, .tn-command button")];
+  const customize = buttons.find((button) => /sesuaikan/i.test(textLabel(button)));
+  if (customize) {
+    customize.click();
+    return;
+  }
+  if (attempt < 60) window.setTimeout(() => clickLayoutCustomizer(ticket, attempt + 1), 50);
+}
+
+function ensureLayoutRoute(side) {
+  const nav = side?.querySelector(":scope > nav");
+  const theme = findNavButton(side, "Tema");
+  if (!nav || !theme) return;
+
+  let layout = nav.querySelector(':scope > button[data-layout-route-v16="true"]');
+  if (!layout) {
+    layout = document.createElement("button");
+    layout.type = "button";
+    layout.dataset.layoutRouteV16 = "true";
+    layout.className = "sn-layout-route-v16";
+    layout.innerHTML = `${LAYOUT_ICON}<span>Tata Letak</span>`;
+    layout.setAttribute("aria-label", "Buka pengaturan tata letak situs");
+    layout.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const currentSide = layout.closest(".sn-side");
+      const currentTheme = findNavButton(currentSide, "Tema");
+      if (!currentTheme) return;
+      const ticket = ++layoutTicket;
+      currentTheme.click();
+      window.requestAnimationFrame(() => clickLayoutCustomizer(ticket));
+    });
+    theme.insertAdjacentElement("afterend", layout);
+  }
+
+  const customizerOpen = Boolean(document.querySelector(".tn-modal .tn-customizer"));
+  layout.classList.toggle("active", customizerOpen);
+  layout.setAttribute("aria-current", customizerOpen ? "page" : "false");
 }
 
 function syncShell(shell) {
@@ -46,7 +96,9 @@ function syncShell(shell) {
     }
   }
 
-  let edge = shell.querySelector(":scope > .sn-sidebar-edge-v15");
+  const duplicateEdges = [...shell.querySelectorAll(":scope > .sn-sidebar-edge-v15")];
+  duplicateEdges.slice(1).forEach((node) => node.remove());
+  let edge = duplicateEdges[0] || null;
   if (!edge) {
     edge = document.createElement("button");
     edge.type = "button";
@@ -62,7 +114,9 @@ function syncShell(shell) {
     });
   }
 
-  let scrim = shell.querySelector(":scope > .sn-sidebar-scrim-v15");
+  const duplicateScrims = [...shell.querySelectorAll(":scope > .sn-sidebar-scrim-v15")];
+  duplicateScrims.slice(1).forEach((node) => node.remove());
+  let scrim = duplicateScrims[0] || null;
   if (!scrim) {
     scrim = document.createElement("button");
     scrim.type = "button";
@@ -95,6 +149,7 @@ function syncShell(shell) {
     button.setAttribute("aria-hidden", "true");
     button.dataset.naraWorkspaceRoute = "true";
   });
+  ensureLayoutRoute(side);
 
   shell.querySelectorAll(".sn-mobile-nav, .sn-mobile-sheet-layer, .sn-side-close, .sn-side-bottom")
     .forEach((node) => node.remove());
@@ -120,29 +175,6 @@ function sync() {
 
 const observer = new MutationObserver(sync);
 observer.observe(document.documentElement, { childList: true, subtree: true });
-
-document.addEventListener("pointerdown", (event) => {
-  if (!deviceProfile().mobile) return;
-  const launcher = event.target.closest(".nara-floating-button, .sn-top-actions .sn-nara-button");
-  if (!launcher || launcher.disabled) return;
-  event.preventDefault();
-  event.stopPropagation();
-  launcher.click();
-}, true);
-
-document.addEventListener("click", (event) => {
-  const navButton = event.target.closest(".sn-side nav button");
-  if (!navButton || !deviceProfile().mobile) return;
-  const shell = navButton.closest(".sn-shell");
-  const side = shell?.querySelector(":scope > .sn-side");
-  const original = shell?.querySelector(":scope > .sn-main > .sn-top .sn-icon");
-  if (side && original && !side.classList.contains("collapsed")) {
-    requestAnimationFrame(() => {
-      original.click();
-      requestAnimationFrame(() => syncShell(shell));
-    });
-  }
-}, true);
 
 window.addEventListener("resize", sync, { passive: true });
 window.addEventListener("orientationchange", sync, { passive: true });

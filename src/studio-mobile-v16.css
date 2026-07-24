@@ -1,0 +1,501 @@
+/* Ngeblogging Studio v16 — final mobile geometry and interaction repair.
+   This layer intentionally loads last. It keeps one left icon rail, one edge
+   controller, centered preview/Nara controls, and restores the physical-phone
+   scale when a mobile browser requests a desktop layout. */
+
+.sn-layout-route-v16 svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  margin: 0;
+  transform: none;
+}
+
+.sn-layout-route-v16[aria-current="page"] {
+  background: #eaf2ff !important;
+  color: #245fc9 !important;
+  font-weight: 900 !important;
+}
+
+html[data-v15-mobile="true"],
+html[data-v15-mobile="true"] body,
+html[data-v15-mobile="true"] #root {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+html[data-v15-mobile="true"]:not([data-desktop-site-phone="true"]) .sn-shell {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  zoom: 1 !important;
+}
+
+html[data-v15-mobile="true"][data-desktop-site-phone="true"] .sn-shell {
+  width: var(--sn-physical-layout-width, 100vw) !important;
+  min-width: var(--sn-physical-layout-width, 100vw) !important;
+  max-width: var(--sn-physical-layout-width, 100vw) !important;
+  min-height: var(--sn-physical-layout-height, 100vh) !important;
+  zoom: var(--sn-browser-scale, 1) !important;
+}
+
+html[data-v15-mobile="true"] .sn-shell {
+  --sn-phone-rail: 58px;
+  --sn-phone-panel: min(82vw, 286px);
+  position: relative !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  background: #f5f7fb !important;
+}
+
+html[data-v15-mobile="true"] .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  box-sizing: border-box !important;
+  width: var(--sn-phone-panel) !important;
+  min-width: var(--sn-phone-panel) !important;
+  max-width: var(--sn-phone-panel) !important;
+  height: 100vh !important;
+  height: 100svh !important;
+  height: 100dvh !important;
+  z-index: 22600 !important;
+  display: flex !important;
+  overflow: hidden !important;
+  transform: none !important;
+  background: #fff !important;
+}
+
+html[data-v15-mobile="true"] .sn-side > nav {
+  min-height: 0 !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+html[data-v15-mobile="true"] .sn-side.collapsed {
+  width: var(--sn-phone-rail) !important;
+  min-width: var(--sn-phone-rail) !important;
+  max-width: var(--sn-phone-rail) !important;
+}
+
+html[data-v15-mobile="true"] .sn-side.collapsed .sn-logo {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+html[data-v15-mobile="true"] .sn-side.collapsed .sn-logo b,
+html[data-v15-mobile="true"] .sn-side.collapsed .sn-new span,
+html[data-v15-mobile="true"] .sn-side.collapsed > nav > button span {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-side.collapsed .sn-new,
+html[data-v15-mobile="true"] .sn-side.collapsed > nav > button {
+  box-sizing: border-box !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin-inline: auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+html[data-v15-mobile="true"] .sn-side.collapsed .sn-new svg,
+html[data-v15-mobile="true"] .sn-side.collapsed > nav > button svg {
+  display: block !important;
+  width: 19px !important;
+  height: 19px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-mobile-nav,
+html[data-v15-mobile="true"] .sn-mobile-sheet-layer,
+html[data-v15-mobile="true"] .sn-side-close,
+html[data-v15-mobile="true"] .sn-side-bottom,
+html[data-v15-mobile="true"] [data-nara-workspace-route="true"] {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-main,
+html[data-v15-mobile="true"] .sn-side + .sn-main,
+html[data-v15-mobile="true"] .sn-side.collapsed + .sn-main,
+html[data-v15-mobile="true"] .sn-side:not(.collapsed) + .sn-main {
+  box-sizing: border-box !important;
+  width: calc(100% - var(--sn-phone-rail)) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - var(--sn-phone-rail)) !important;
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+  min-height: 100dvh !important;
+  margin: 0 0 0 var(--sn-phone-rail) !important;
+  overflow-x: hidden !important;
+}
+
+html[data-v15-mobile="true"] .sn-side:not(.collapsed) + .sn-main::before {
+  display: none !important;
+  content: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 150 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) max-content !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+}
+
+html[data-v15-mobile="true"] .sn-workspace {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 44px !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+}
+
+html[data-v15-mobile="true"] .sn-workspace > span {
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-workspace > div,
+html[data-v15-mobile="true"] .sn-workspace b {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-v15-mobile="true"] .sn-workspace b {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+html[data-v15-mobile="true"] .sn-cloud,
+html[data-v15-mobile="true"] .sn-install-app,
+html[data-v15-mobile="true"] .sn-top-actions > button[aria-label="Cari"] {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .sn-top-actions {
+  width: max-content !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: 42px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+html[data-v15-mobile="true"] .sn-view-site,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button,
+html[data-v15-mobile="true"] .sn-avatar {
+  box-sizing: border-box !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  justify-self: center !important;
+  line-height: 1 !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  touch-action: manipulation !important;
+  pointer-events: auto !important;
+}
+
+html[data-v15-mobile="true"] .sn-view-site span,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button {
+  font-size: 0 !important;
+}
+
+html[data-v15-mobile="true"] .sn-view-site svg,
+html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button svg,
+html[data-v15-mobile="true"] .sn-avatar svg {
+  display: block !important;
+  width: 21px !important;
+  height: 21px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .sn-view-pad,
+html[data-v15-mobile="true"] .nw-page,
+html[data-v15-mobile="true"] .tn-studio,
+html[data-v15-mobile="true"] .ml-page,
+html[data-v15-mobile="true"] .bc-center {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: calc(100dvh - 62px) !important;
+  margin: 0 !important;
+  padding: 18px 14px 104px !important;
+  overflow-x: hidden !important;
+}
+
+html[data-v15-mobile="true"] .sn-welcome,
+html[data-v15-mobile="true"] .sn-page-title,
+html[data-v15-mobile="true"] .sn-home-grid,
+html[data-v15-mobile="true"] .sn-metrics,
+html[data-v15-mobile="true"] .sn-settings-grid,
+html[data-v15-mobile="true"] .sn-info-grid {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html[data-v15-mobile="true"] .sn-welcome h1,
+html[data-v15-mobile="true"] .sn-page-title h1 {
+  max-width: 100% !important;
+  font-size: clamp(26px, 8.3vw, 34px) !important;
+  line-height: 1.08 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-v15-mobile="true"] .sn-welcome > div:last-child {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+
+html[data-v15-mobile="true"] .sn-welcome > div:last-child > a,
+html[data-v15-mobile="true"] .sn-welcome > div:last-child > button {
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+}
+
+html[data-v15-mobile="true"] .sn-sidebar-edge-v15 {
+  touch-action: manipulation !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .sn-sidebar-edge-v15 svg {
+  display: block !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button {
+  position: fixed !important;
+  right: max(12px, env(safe-area-inset-right)) !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  z-index: 2147483600 !important;
+  box-sizing: border-box !important;
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  height: 60px !important;
+  min-height: 60px !important;
+  max-height: 60px !important;
+  padding: 6px !important;
+  display: grid !important;
+  grid-template: 1fr / 1fr !important;
+  place-items: center !important;
+  border-radius: 19px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  isolation: isolate !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button > span {
+  grid-area: 1 / 1 !important;
+  box-sizing: border-box !important;
+  width: 48px !important;
+  height: 48px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button > b,
+html[data-v15-mobile="true"] .nara-floating-button > small {
+  display: none !important;
+}
+
+html[data-v15-mobile="true"] .nara-floating-button svg,
+html[data-v15-mobile="true"] .nara-brand-orb svg {
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-v15-mobile="true"] .nara-assistant-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483640 !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100vh !important;
+  height: 100svh !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+}
+
+html[data-v15-mobile="true"] .nara-assistant-shell {
+  position: absolute !important;
+  inset: 0 !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+  min-height: 100dvh !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+html[data-v15-mobile="true"] .nara-assistant-header,
+html[data-v15-mobile="true"] .nara-context-bar,
+html[data-v15-mobile="true"] .nara-composer,
+html[data-v15-mobile="true"] .nara-composer-tools,
+html[data-v15-mobile="true"] .nara-composer textarea {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-v15-mobile="true"] .nara-assistant-messages {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+html[data-v15-mobile="true"] .tn-modal-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147482000 !important;
+  box-sizing: border-box !important;
+  padding: 8px !important;
+}
+
+html[data-v15-mobile="true"] .tn-modal,
+html[data-v15-mobile="true"] .tn-modal.large,
+html[data-v15-mobile="true"] .tn-modal.fullscreen,
+html[data-v15-mobile="true"] .tn-modal.preview {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 16px) !important;
+  margin: 0 !important;
+}
+
+html[data-v15-mobile="true"] .tn-customizer,
+html[data-v15-mobile="true"] .tn-code-workspace {
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+@media (max-width: 380px) {
+  html[data-v15-mobile="true"] .sn-shell {
+    --sn-phone-rail: 54px;
+    --sn-phone-panel: min(84vw, 268px);
+  }
+
+  html[data-v15-mobile="true"] .sn-workspace > div,
+  html[data-v15-mobile="true"] .sn-workspace > svg,
+  html[data-v15-mobile="true"] .sn-avatar {
+    display: none !important;
+  }
+
+  html[data-v15-mobile="true"] .sn-top-actions {
+    grid-auto-columns: 40px !important;
+  }
+
+  html[data-v15-mobile="true"] .sn-view-site,
+  html[data-v15-mobile="true"] .sn-top-actions .sn-nara-button {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  html[data-v15-mobile="true"] .sn-shell {
+    --sn-phone-panel: min(72vw, 320px);
+  }
+
+  html[data-v15-mobile="true"] .sn-side > nav > button,
+  html[data-v15-mobile="true"] .sn-side .sn-new {
+    min-height: 40px !important;
+  }
+}
