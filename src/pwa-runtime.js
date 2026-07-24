@@ -1,4 +1,4 @@
-const RELEASE = "ngeblogging-pwa-v19-20260724";
+const RELEASE = "ngeblogging-pwa-v20-20260724";
 // Compatibility marker retained for production validators: ngeblogging-pwa-v14-20260724
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
@@ -145,7 +145,7 @@ window.addEventListener("beforeinstallprompt", (event) => {
 
 window.addEventListener("appinstalled", () => {
   installPrompt = null;
-  document.documentElement.dataset.installed = "true";
+  document.documentElement.dataset.installed = String(standalone());
   removeInstallButton();
 });
 
