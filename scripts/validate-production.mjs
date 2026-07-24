@@ -17,9 +17,14 @@ const requiredFiles = [
   "server/seo-handler.mjs",
   "wrangler.jsonc",
   "public/_headers",
+  "public/sw.js",
   "src/StudioNext.jsx",
   "src/StudioSecure.jsx",
   "src/studio-production-guard.js",
+  "src/studio-v10-authority.css",
+  "src/studio-runtime-layout-guard.js",
+  "src/nara-availability-bridge.js",
+  "src/NaraAssistant.jsx",
   "src/BackupCenter.jsx",
   "src/ContentEditor.jsx",
   "src/MediaLibrary.jsx",
@@ -93,20 +98,20 @@ if (wrangler.assets?.not_found_handling !== "single-page-application") throw new
 if (wrangler.assets?.run_worker_first !== true) throw new Error("Worker harus berjalan sebelum aset agar SEO tenant dan endpoint discovery aktif.");
 if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada preview dan produksi.");
 if (wrangler.vars?.CF_AI_MODEL !== "@cf/zai-org/glm-4.7-flash") throw new Error("Model fallback Workers AI belum dipin.");
-if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v4") throw new Error("Runtime preview Cloudflare belum terisolasi pada versi terbaru.");
-if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v4") throw new Error("Runtime produksi Cloudflare belum memakai versi terbaru.");
+if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v5") throw new Error("Runtime preview Cloudflare belum memakai v5.");
+if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v5") throw new Error("Runtime produksi Cloudflare belum memakai v5.");
 if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live dan webhook diverifikasi.");
 if (cloudflareProduction.vars?.PAYPAL_MERCHANT_EMAIL !== "triapriyogibahari9@gmail.com") throw new Error("Email merchant PayPal belum sesuai permintaan pemilik.");
-for (const secret of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
-  if (!cloudflareProduction.secrets?.required?.includes(secret)) throw new Error(`Secret wajib belum dideklarasikan: ${secret}`);
-  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
+
+for (const vars of [wrangler.vars || {}, cloudflareProduction.vars || {}]) {
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(String(vars.SUPABASE_URL || ""))) throw new Error("Public Supabase URL Worker belum valid.");
+  if (!/^(sb_publishable_|eyJ)/.test(String(vars.SUPABASE_PUBLISHABLE_KEY || ""))) throw new Error("Public Supabase publishable key Worker belum valid.");
+  for (const forbidden of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET", "QWEN_API_KEY"]) {
+    if (Object.hasOwn(vars, forbidden)) throw new Error(`Secret ${forbidden} tidak boleh disimpan sebagai plaintext vars.`);
+  }
 }
 for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID"]) {
   if (!cloudflareProduction.secrets?.optional?.includes(secret)) throw new Error(`Secret penyedia utama harus dideklarasikan opsional: ${secret}`);
-  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
-}
-for (const secret of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
-  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret pembayaran ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
@@ -123,6 +128,32 @@ for (const source of [worker, portableApi]) if (/netlify\/functions|x-nf-client-
 const index = await readFile(new URL("../index.html", import.meta.url), "utf8");
 for (const bridge of ["cloudflare-media-bridge", "editor-toolbar-bridge", "workspace-profile-bridge", "workspace-activation-bridge"]) if (index.includes(bridge)) throw new Error(`Bridge DOM lama masih aktif: ${bridge}`);
 if (!index.includes("studio-production-guard.js")) throw new Error("Guard produksi sidebar dan layout belum dimuat.");
+const hardeningPosition = index.indexOf("studio-v8-hardening.css");
+const authorityPosition = index.indexOf("studio-v10-authority.css");
+if (authorityPosition < 0 || authorityPosition <= hardeningPosition) throw new Error("CSS otoritas v10 wajib dimuat paling akhir setelah hardening lama.");
+
+const productionGuard = await readFile(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
+for (const marker of ["studio-production-guard-v10-20260724", "hideNaraSidebarRoute", "ensureFloatingNara", "ensureNaraCapabilityShortcuts", "requestQrScan", "openNaraWorkspace"]) {
+  if (!productionGuard.includes(marker)) throw new Error(`Guard Studio v10 belum memuat ${marker}.`);
+}
+const capabilityBridge = await readFile(new URL("../src/nara-availability-bridge.js", import.meta.url), "utf8");
+for (const marker of ["nara-capability-bridge-v10-20260724", "preserveAssistantCapabilities", ".nara-select option", ".nara-attachment-menu button", ".nara-composer input"]) {
+  if (!capabilityBridge.includes(marker)) throw new Error(`Jembatan kemampuan Nara belum memuat ${marker}.`);
+}
+if (/removeInactiveOptions|controls\.forEach\(conceal\)|startsWith\("Kamera"\).*conceal/s.test(capabilityBridge)) throw new Error("Kemampuan Nara masih dapat dihapus oleh readiness bridge.");
+
+const assistant = await readFile(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
+for (const marker of ["Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara", "Jelaskan gambar"]) {
+  if (!assistant.includes(marker)) throw new Error(`Nara Assistant kehilangan kemampuan: ${marker}`);
+}
+const workspace = await readFile(new URL("../src/NaraWorkspace.jsx", import.meta.url), "utf8");
+for (const marker of ["Projects", "Memory", "Images", "Plugins", "Memori jangka panjang", "Buat gambar", "INTEGRATION_CATALOG"]) {
+  if (!workspace.includes(marker)) throw new Error(`Nara Workspace kehilangan kemampuan: ${marker}`);
+}
+const integrations = await readFile(new URL("../src/lib/nara-data.js", import.meta.url), "utf8");
+for (const marker of ["supabase", "github", "cloudflare", "paypal", "google-drive", "webhook"]) {
+  if (!integrations.includes(`id:\"${marker}\"`) && !integrations.includes(`id:"${marker}"`)) throw new Error(`Katalog plugin kehilangan ${marker}.`);
+}
 
 const studio = await readFile(new URL("../src/Studio.jsx", import.meta.url), "utf8");
 if (!studio.includes("StudioSecure.jsx")) throw new Error("Studio belum mengaktifkan pusat cadangan di Pengaturan.");
@@ -142,11 +173,21 @@ if (!themeCatalog.includes("FAMILIES.flatMap") || !themeCatalog.includes("COMPOS
 const widgets = await readFile(new URL("../src/widget-system.js", import.meta.url), "utf8");
 if (!widgets.includes("BUILT_IN_WIDGETS")) throw new Error("Widget bawaan belum tersedia.");
 
+const publicData = await readFile(new URL("../src/lib/public-data.js", import.meta.url), "utf8");
+for (const marker of ["status\",\"active", "is_public", "site_theme_settings", "contents"]) {
+  if (!publicData.includes(marker)) throw new Error(`Renderer publik kehilangan marker: ${marker}`);
+}
+
+const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+if (!serviceWorker.includes("ngeblogging-app-v10-20260724")) throw new Error("Service worker belum menginvalidasi cache ke v10.");
+
 const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
 for (const value of ["Content-Security-Policy", "X-Content-Type-Options", "max-age=31536000, immutable"]) if (!headers.includes(value)) throw new Error(`Header Cloudflare belum memuat ${value}.`);
 
 const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudflare.yml", import.meta.url), "utf8");
-if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare belum memiliki activation gate.");
-if (!cloudflareWorkflow.includes("/api/health")) throw new Error("Deployment Cloudflare belum memiliki smoke test health endpoint.");
+if (cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare tidak boleh lagi dilewati oleh activation gate.");
+for (const marker of ["npm run deploy:cloudflare", "studio-v10-authority.css", "ngeblogging-app-v10-20260724", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {
+  if (!cloudflareWorkflow.includes(marker)) throw new Error(`Deployment Cloudflare v10 belum memuat ${marker}.`);
+}
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, layout mobile v7, cadangan portabel, invoice, webhook terverifikasi, 100 tema struktural, 25 widget, Posts/Pages, SEO tenant, Nara Qwen + Workers AI fallback, dan runtime Cloudflare v4.`);
+console.log(`Validasi produksi v10 lulus: ${requiredFiles.length} berkas wajib, rail ikon, satu tombol sidebar, Nara lengkap, QR, memori, plugin, 100 tema, 25 widget, renderer tenant, PWA v10, dan deploy Cloudflare wajib.`);
