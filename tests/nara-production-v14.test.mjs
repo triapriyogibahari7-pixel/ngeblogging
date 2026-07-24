@@ -33,8 +33,27 @@ test("only the left sidebar is retained and Nara is not exposed as a sidebar rou
   assert.match(guard, /\.sn-mobile-nav/);
   assert.match(guard, /\.sn-mobile-sheet-layer/);
   assert.match(guard, /\.sn-side-bottom/);
-  assert.match(guard, /labelOf\(button\) === "Nara AI"/);
-  assert.match(guard, /data\.sidebarAuthority|dataset\.sidebarAuthority/);
+  assert.match(guard, /labelOf\(button\) !== "Nara AI"/);
+  assert.match(guard, /dataset\.sidebarAuthority/);
+  assert.match(guard, /dataset\.naraWorkspaceRoute/);
+});
+
+test("Nara Control Center and QR scanner remain reachable outside the sidebar", async () => {
+  const guard = await read("src/nara-interaction-guard.js");
+  const css = await read("src/nara-interaction-authority.css");
+  assert.match(guard, /nara-control-center-button/);
+  assert.match(guard, /Projects · Memory · Images · Plugins/);
+  assert.match(guard, /nara-qr-button/);
+  assert.match(guard, /Baca kode QR pada gambar ini/);
+  assert.match(css, /\.nara-control-center-button/);
+  assert.match(css, /\.nara-qr-glyph/);
+});
+
+test("Nara plugin catalog contains GitHub, Supabase, Neon, and Cloudflare", async () => {
+  const data = await read("src/lib/nara-data.js");
+  for (const provider of ["github", "supabase", "neon", "cloudflare"]) {
+    assert.match(data, new RegExp(`id:\\"${provider}\\"`));
+  }
 });
 
 test("PWA and Cloudflare release markers are v14", async () => {
