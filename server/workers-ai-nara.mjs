@@ -2,6 +2,13 @@ const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
 const MAX_MESSAGE_LENGTH = 8_000;
 const MAX_HISTORY_ITEMS = 12;
 
+// Supabase publishable configuration is intentionally public and already ships
+// in the browser bundle. Keeping the same verified project here prevents the
+// Worker runtime from losing authentication when a deployment environment only
+// injects Vite build variables and not Worker variables.
+const DEFAULT_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
+
 function json(status, body, requestId, corsOrigin = "") {
   const headers = new Headers({
     "content-type": "application/json; charset=utf-8",
@@ -18,11 +25,35 @@ function json(status, body, requestId, corsOrigin = "") {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
+function normalizeSupabaseUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    const hostname = url.hostname.toLowerCase();
+    if (url.protocol !== "https:" || !/^[a-z0-9-]+\.supabase\.co$/.test(hostname)) return "";
+    return url.origin;
+  } catch {
+    return "";
+  }
+}
+
+function validPublishableKey(value) {
+  const key = String(value || "").trim();
+  return key.startsWith("sb_publishable_") || key.split(".").length === 3 ? key : "";
+}
+
 function supabaseConfig(env) {
-  return {
-    url: String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").replace(/\/$/, ""),
-    key: String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || ""),
-  };
+  const url = normalizeSupabaseUrl(
+    env.SUPABASE_URL
+    || env.VITE_SUPABASE_URL
+    || DEFAULT_SUPABASE_URL,
+  );
+  const key = validPublishableKey(
+    env.SUPABASE_PUBLISHABLE_KEY
+    || env.VITE_SUPABASE_PUBLISHABLE_KEY
+    || env.VITE_SUPABASE_ANON_KEY
+    || DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+  );
+  return { url, key };
 }
 
 function bearerToken(request) {
@@ -30,27 +61,44 @@ function bearerToken(request) {
   return header.startsWith("Bearer ") ? header.slice(7).trim() : "";
 }
 
+function jwtPayload(token) {
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const normalized = part.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
 async function verifyUser(request, env) {
   const token = bearerToken(request);
-  if (!token) throw Object.assign(new Error("Masuk ke akun Ngeblogging untuk memakai Nara."), { status: 401 });
+  if (!token) throw Object.assign(new Error("Masuk kembali ke akun Ngeblogging untuk memakai Nara."), { status: 401, code: "NARA_SESSION_REQUIRED" });
 
   const { url, key } = supabaseConfig(env);
-  if (!url || !key) throw Object.assign(new Error("Konfigurasi autentikasi Nara belum lengkap."), { status: 503 });
+  if (!url || !key) throw Object.assign(new Error("Layanan autentikasi Nara belum tersedia."), { status: 503, code: "NARA_AUTH_CONFIG_MISSING" });
+
+  const payload = jwtPayload(token);
+  const expectedIssuer = `${url}/auth/v1`;
+  if (!payload?.iss || String(payload.iss).replace(/\/$/, "") !== expectedIssuer) {
+    throw Object.assign(new Error("Sesi login tidak berasal dari layanan Ngeblogging."), { status: 401, code: "NARA_SESSION_PROJECT_MISMATCH" });
+  }
 
   const response = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: key, authorization: `Bearer ${token}` },
   });
-  if (!response.ok) throw Object.assign(new Error("Sesi login tidak valid. Silakan masuk kembali."), { status: 401 });
-  return { token, user: await response.json() };
+  if (!response.ok) throw Object.assign(new Error("Sesi login berakhir. Silakan masuk kembali."), { status: 401, code: "NARA_SESSION_INVALID" });
+  return { token, user: await response.json(), url, key };
 }
 
-async function consumeQuota(token, input, env) {
-  const { url, key } = supabaseConfig(env);
-  const response = await fetch(`${url}/rest/v1/rpc/consume_nara_quota`, {
+async function consumeQuota(session, input) {
+  const response = await fetch(`${session.url}/rest/v1/rpc/consume_nara_quota`, {
     method: "POST",
     headers: {
-      apikey: key,
-      authorization: `Bearer ${token}`,
+      apikey: session.key,
+      authorization: `Bearer ${session.token}`,
       "content-type": "application/json",
     },
     body: JSON.stringify({
@@ -58,7 +106,7 @@ async function consumeQuota(token, input, env) {
       requested_intelligence: String(input.intelligence || "standard"),
     }),
   });
-  if (!response.ok) throw Object.assign(new Error("Batas penggunaan Nara belum dapat diperiksa."), { status: 503 });
+  if (!response.ok) throw Object.assign(new Error("Batas penggunaan Nara belum dapat diperiksa."), { status: 503, code: "NARA_QUOTA_UNAVAILABLE" });
   const payload = await response.json();
   return Array.isArray(payload) ? payload[0] : payload;
 }
@@ -120,9 +168,9 @@ export async function handleWorkersAiNara(request, env, requestId, corsOrigin = 
   let quota;
   try {
     session = await verifyUser(request, env);
-    quota = await consumeQuota(session.token, input, env);
+    quota = await consumeQuota(session, input);
   } catch (error) {
-    return json(error.status || 500, { code: "NARA_AUTH_OR_QUOTA_FAILED", error: error.message || "Sesi Nara belum dapat diverifikasi." }, requestId, corsOrigin);
+    return json(error.status || 500, { code: error.code || "NARA_AUTH_OR_QUOTA_FAILED", error: error.message || "Sesi Nara belum dapat diverifikasi." }, requestId, corsOrigin);
   }
 
   if (!quota?.allowed) {
