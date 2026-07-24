@@ -56,5 +56,5 @@ test("Nara has an authenticated Cloudflare Workers AI fallback", () => {
 test("inactive commerce controls stay hidden and stale PWA assets are invalidated", () => {
   assert.match(billing, /function upgradeButtons\(\)/);
   assert.match(billing, /upgrades\.forEach\(conceal\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v8-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v9-20260724/);
 });
