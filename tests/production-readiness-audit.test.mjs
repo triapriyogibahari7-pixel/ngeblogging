@@ -81,10 +81,10 @@ test("email code remains available but public signup is hidden until branded SMT
   assert.match(index, /auth-readiness-bridge\.js/);
 });
 
-test("installable v14 shell never keeps production CSS or scripts stale", () => {
+test("installable v16 shell never keeps production CSS or scripts stale", () => {
   assert.match(serviceWorker, /request\.method !== "GET"/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v16-20260724/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /async function cacheFirstImmutable\(/);
@@ -94,5 +94,5 @@ test("installable v14 shell never keeps production CSS or scripts stale", () => 
   assert.match(pwa, /dataset\.deviceMode/);
   assert.doesNotMatch(pwa, /window\.location\.reload/);
   assert.match(index, /pwa-runtime\.js/);
-  assert.match(index, /studio-v14-authority\.css/);
+  assert.match(index, /studio-v16-authority\.css/);
 });
