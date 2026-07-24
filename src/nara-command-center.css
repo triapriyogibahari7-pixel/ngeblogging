@@ -1,9 +1,13 @@
 .nara-capability-shortcuts {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 7px;
-  padding: 8px 12px 4px;
-  background: var(--nara-surface, #fff);
+  padding: 7px 0 0;
+  background: transparent;
 }
 
 .nara-capability-shortcuts > button {
@@ -22,6 +26,7 @@
   cursor: pointer;
   box-shadow: 0 5px 16px rgba(22, 54, 91, .05);
   touch-action: manipulation;
+  pointer-events: auto;
 }
 
 .nara-capability-shortcuts > button:hover,
@@ -60,7 +65,9 @@
 }
 
 .nara-command-status {
-  margin: 5px 12px 3px;
+  flex: 0 0 100%;
+  width: 100%;
+  margin: 5px 0 0;
   padding: 8px 10px;
   border-radius: 10px;
   background: #eef5ff;
@@ -90,7 +97,7 @@
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scrollbar-width: none;
-    padding: 7px 8px 3px;
+    padding-top: 6px;
   }
 
   .nara-capability-shortcuts::-webkit-scrollbar {
@@ -99,9 +106,5 @@
 
   .nara-capability-shortcuts > button {
     min-height: 52px;
-  }
-
-  .nara-command-status {
-    margin-inline: 8px;
   }
 }
