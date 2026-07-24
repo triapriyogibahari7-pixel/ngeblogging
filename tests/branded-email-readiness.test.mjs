@@ -13,5 +13,8 @@ test("branded email registration stays hidden until a real inbox delivery probe 
   assert.match(wrangler, /"AUTH_BRANDED_EMAIL_READY": "false"/);
   assert.match(wrangler, /"AUTH_EMAIL_DELIVERY_PROBE": "not-run"/);
   assert.match(bridge, /emailRegistrationReady = health\.emailRegistration === true/);
-  assert.match(bridge, /Pendaftaran, magic link, verifikasi, dan pemulihan email disembunyikan/);
+  assert.match(bridge, /leaveSignupMode\(modal\)/);
+  assert.match(bridge, /\.magic-link-button,\.forgot-link/);
+  assert.match(bridge, /row\.hidden = true/);
+  assert.doesNotMatch(bridge, /Email resmi sedang dikunci/);
 });
