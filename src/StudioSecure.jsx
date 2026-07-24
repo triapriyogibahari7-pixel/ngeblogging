@@ -9,7 +9,7 @@ const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const PHONE_QUERY = "(max-width: 760px)";
 const COMPACT_QUERY = "(max-width: 1024px)";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v11-20260724";
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v9-20260724";
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
