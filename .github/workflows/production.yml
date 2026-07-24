@@ -83,6 +83,7 @@ jobs:
           sbom: true
 
       - name: Attest API image
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         uses: actions/attest@v4
         with:
           subject-name: ${{ env.API_IMAGE }}
@@ -99,15 +100,16 @@ jobs:
       attestations: write
       id-token: write
     env:
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
     steps:
       - name: Validate public build configuration
         run: |
-          test -n "${VITE_SUPABASE_URL}" || { echo "Repository variable VITE_SUPABASE_URL belum diisi"; exit 1; }
-          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "Secret VITE_SUPABASE_PUBLISHABLE_KEY belum diisi"; exit 1; }
+          test -n "${VITE_SUPABASE_URL}" || { echo "Public Supabase URL belum tersedia"; exit 1; }
+          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "Public Supabase publishable key belum tersedia"; exit 1; }
           [[ "${VITE_SUPABASE_URL}" == https://*.supabase.co ]] || { echo "VITE_SUPABASE_URL tidak valid"; exit 1; }
+          [[ "${VITE_SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${VITE_SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "Publishable key Supabase tidak valid"; exit 1; }
           [[ "${VITE_PUBLIC_SITE_URL}" == https://* ]] || { echo "VITE_PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
 
       - name: Checkout repository
@@ -150,6 +152,7 @@ jobs:
           sbom: true
 
       - name: Attest web image
+        if: vars.GHCR_ATTESTATIONS_ENABLED == 'true'
         uses: actions/attest@v4
         with:
           subject-name: ${{ env.WEB_IMAGE }}
