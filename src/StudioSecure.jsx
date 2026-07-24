@@ -8,7 +8,8 @@ import "./studio-v11-mobile-repair.css";
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const PHONE_QUERY = "(max-width: 760px)";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v9-20260724";
+const COMPACT_QUERY = "(max-width: 1024px)";
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v11-20260724";
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
@@ -26,6 +27,15 @@ function ensureExtrasContainer() {
 
 function buttonLabel(button) {
   return button?.querySelector("span")?.textContent?.trim() || button?.textContent?.trim() || "";
+}
+
+function concealControl(node, marker = "") {
+  if (!node) return;
+  if (marker) node.dataset[marker] = "true";
+  node.hidden = true;
+  node.tabIndex = -1;
+  node.setAttribute("aria-hidden", "true");
+  node.style.setProperty("display", "none", "important");
 }
 
 function enforceSourceNavigation() {
@@ -47,6 +57,14 @@ function enforceSourceNavigation() {
     bottom.remove();
   }
 
+  const naraRoute = [...(nav?.querySelectorAll(":scope > button") || [])]
+    .find((button) => buttonLabel(button) === "Nara AI");
+  if (naraRoute) {
+    naraRoute.dataset.naraWorkspaceRoute = "true";
+    concealControl(naraRoute);
+  }
+  shell.querySelectorAll(".sn-top-actions .sn-nara-button").forEach((button) => concealControl(button));
+
   const toggle = shell.querySelector(":scope > .sn-main > .sn-top .sn-icon");
   shell.querySelectorAll(".sn-side-close, [data-sidebar-authority]:not(.sn-icon)").forEach((node) => node.remove());
   if (toggle && side) {
@@ -55,15 +73,19 @@ function enforceSourceNavigation() {
     toggle.setAttribute("aria-controls", side.id);
     toggle.setAttribute("aria-expanded", String(!side.classList.contains("collapsed")));
     toggle.setAttribute("aria-label", side.classList.contains("collapsed") ? "Buka menu Studio" : "Tutup menu Studio");
+
+    if (window.matchMedia(COMPACT_QUERY).matches && shell.dataset.initialSidebarResolved !== "true") {
+      shell.dataset.initialSidebarResolved = "true";
+      if (!side.classList.contains("collapsed")) toggle.click();
+    }
   }
 
   const billingReady = document.documentElement.dataset.billingReady === "true";
   if (!billingReady) {
     shell.querySelectorAll("button").forEach((button) => {
       if (buttonLabel(button) !== "Pembayaran") return;
-      button.hidden = true;
+      concealControl(button);
       button.disabled = true;
-      button.setAttribute("aria-hidden", "true");
     });
   }
 }
@@ -78,7 +100,7 @@ export default function StudioSecure(props) {
       frame = requestAnimationFrame(enforceSourceNavigation);
     };
     const observer = new MutationObserver(sync);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, { childList: true, subtree: true });
     enforceSourceNavigation();
 
     const closeAfterSelection = (event) => {
