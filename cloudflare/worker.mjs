@@ -186,8 +186,8 @@ export default {
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          release: "2026.07.24-studio-v10",
-          runtime: env.NARA_RUNTIME || "cloudflare-worker-v5",
+          release: env.APP_RELEASE || "unknown",
+          runtime: env.NARA_RUNTIME || "cloudflare-worker",
           hostname: url.hostname,
           billing: paypal || localBilling,
           billingProviders: { paypal, local: localBilling },
