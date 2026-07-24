@@ -3,13 +3,12 @@ import { createPortal } from "react-dom";
 import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
-import "./studio-v11-mobile-repair.css";
+import "./studio-v14-authority.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const PHONE_QUERY = "(max-width: 760px)";
-const COMPACT_QUERY = "(max-width: 1024px)";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v9-20260724";
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v14-20260724";
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
@@ -26,55 +25,51 @@ function ensureExtrasContainer() {
 }
 
 function buttonLabel(button) {
-  return button?.querySelector("span")?.textContent?.trim() || button?.textContent?.trim() || "";
+  return button?.querySelector("span")?.textContent?.trim()
+    || button?.textContent?.trim()
+    || "";
 }
 
-function concealControl(node, marker = "") {
-  if (!node) return;
-  if (marker) node.dataset[marker] = "true";
-  node.hidden = true;
-  node.tabIndex = -1;
-  node.setAttribute("aria-hidden", "true");
-  node.style.setProperty("display", "none", "important");
-}
-
-function enforceSourceNavigation() {
+function syncStudioChrome() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
 
   shell.dataset.sourceNavigation = SOURCE_NAVIGATION_RELEASE;
-  shell.querySelectorAll(":scope > .sn-mobile-nav, :scope > .sn-mobile-sheet-layer").forEach((node) => node.remove());
+  shell.querySelectorAll(":scope > .sn-mobile-nav, :scope > .sn-mobile-sheet-layer, .sn-side-close, .sn-side-bottom")
+    .forEach((node) => node.remove());
 
   const side = shell.querySelector(":scope > .sn-side");
   const nav = side?.querySelector(":scope > nav");
-  const bottom = side?.querySelector(":scope > .sn-side-bottom");
-  if (nav && bottom) {
-    [...bottom.querySelectorAll(":scope > button")].forEach((button) => {
-      const label = buttonLabel(button);
-      const duplicate = [...nav.querySelectorAll(":scope > button")].some((candidate) => buttonLabel(candidate) === label);
-      if (!duplicate) nav.append(button);
-    });
-    bottom.remove();
-  }
+  const toggle = shell.querySelector(":scope > .sn-main > .sn-top .sn-icon");
 
+  // Nara is a persistent floating assistant and top action, not a sidebar route.
   const naraRoute = [...(nav?.querySelectorAll(":scope > button") || [])]
     .find((button) => buttonLabel(button) === "Nara AI");
   if (naraRoute) {
     naraRoute.dataset.naraWorkspaceRoute = "true";
-    concealControl(naraRoute);
+    naraRoute.hidden = true;
+    naraRoute.tabIndex = -1;
+    naraRoute.setAttribute("aria-hidden", "true");
   }
-  shell.querySelectorAll(".sn-top-actions .sn-nara-button").forEach((button) => concealControl(button));
 
-  const toggle = shell.querySelector(":scope > .sn-main > .sn-top .sn-icon");
-  shell.querySelectorAll(".sn-side-close, [data-sidebar-authority]:not(.sn-icon)").forEach((node) => node.remove());
-  if (toggle && side) {
+  shell.querySelectorAll(".sn-top-actions .sn-nara-button").forEach((button) => {
+    button.hidden = false;
+    button.disabled = false;
+    button.removeAttribute("aria-hidden");
+    button.style.removeProperty("display");
+    button.style.removeProperty("visibility");
+    button.style.removeProperty("opacity");
+    button.style.removeProperty("pointer-events");
+  });
+
+  if (side && toggle) {
     side.id ||= "ngeblogging-studio-sidebar";
     toggle.dataset.sidebarAuthority = "single";
     toggle.setAttribute("aria-controls", side.id);
     toggle.setAttribute("aria-expanded", String(!side.classList.contains("collapsed")));
     toggle.setAttribute("aria-label", side.classList.contains("collapsed") ? "Buka menu Studio" : "Tutup menu Studio");
 
-    if (window.matchMedia(COMPACT_QUERY).matches && shell.dataset.initialSidebarResolved !== "true") {
+    if (window.matchMedia(PHONE_QUERY).matches && shell.dataset.initialSidebarResolved !== "true") {
       shell.dataset.initialSidebarResolved = "true";
       if (!side.classList.contains("collapsed")) toggle.click();
     }
@@ -84,8 +79,9 @@ function enforceSourceNavigation() {
   if (!billingReady) {
     shell.querySelectorAll("button").forEach((button) => {
       if (buttonLabel(button) !== "Pembayaran") return;
-      concealControl(button);
+      button.hidden = true;
       button.disabled = true;
+      button.setAttribute("aria-hidden", "true");
     });
   }
 }
@@ -97,11 +93,12 @@ export default function StudioSecure(props) {
     let frame = 0;
     const sync = () => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(enforceSourceNavigation);
+      frame = requestAnimationFrame(syncStudioChrome);
     };
+
     const observer = new MutationObserver(sync);
     observer.observe(document.body, { childList: true, subtree: true });
-    enforceSourceNavigation();
+    syncStudioChrome();
 
     const closeAfterSelection = (event) => {
       const button = event.target.closest(".sn-side nav button");
@@ -112,18 +109,26 @@ export default function StudioSecure(props) {
         if (side && toggle && !side.classList.contains("collapsed")) toggle.click();
       });
     };
+
     document.addEventListener("click", closeAfterSelection, true);
+    window.addEventListener("resize", sync, { passive: true });
+    window.addEventListener("orientationchange", sync, { passive: true });
 
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
       document.removeEventListener("click", closeAfterSelection, true);
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("orientationchange", sync);
     };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/health", { headers: { accept: "application/json", "cache-control": "no-cache" } })
+    fetch("/api/health", {
+      headers: { accept: "application/json", "cache-control": "no-cache" },
+      cache: "no-store",
+    })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`Health ${response.status}`)))
       .then((health) => {
         if (cancelled) return;
@@ -131,12 +136,14 @@ export default function StudioSecure(props) {
         document.documentElement.dataset.emailRegistrationReady = String(health.emailRegistration === true);
         document.documentElement.dataset.customDomainsReady = String(health.customDomains === true);
         document.documentElement.dataset.naraReady = String(health.nara === true);
-        enforceSourceNavigation();
+        document.documentElement.dataset.naraImageReady = String(health.imageGeneration === true);
+        syncStudioChrome();
       })
       .catch(() => {
         if (cancelled) return;
         document.documentElement.dataset.billingReady = "false";
-        enforceSourceNavigation();
+        document.documentElement.dataset.naraReady = "false";
+        syncStudioChrome();
       });
     return () => { cancelled = true; };
   }, []);
