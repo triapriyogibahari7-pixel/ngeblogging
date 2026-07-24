@@ -1,0 +1,107 @@
+name: Cloudflare temporary UI audit
+
+on:
+  push:
+    branches: [audit/temporary-v11]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-temporary-ui-audit
+  cancel-in-progress: true
+
+jobs:
+  deploy-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - name: Checkout audited source
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run production tests and build
+        run: npm run test:production && npm run build
+
+      - name: Deploy credential-free temporary Worker
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler deploy --temporary --config wrangler.temporary.jsonc 2>&1 | tee /tmp/cloudflare-temporary-deploy.log
+          url="$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' /tmp/cloudflare-temporary-deploy.log | tail -n 1 || true)"
+          if [ -z "$url" ]; then
+            echo "TEMPORARY_WORKER_URL_NOT_FOUND"
+            exit 1
+          fi
+          printf '%s\n' "$url" | tee /tmp/cloudflare-temporary-url.txt
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify mobile rail Nara shell and hidden file controls
+        shell: bash
+        env:
+          AUDIT_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const base = process.env.AUDIT_URL.replace(/\/$/, "");
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+          let last = [];
+          for (let attempt = 1; attempt <= 18; attempt += 1) {
+            const errors = [];
+            try {
+              const response = await fetch(`${base}/?audit=${Date.now()}`, { redirect: "follow", headers: { "cache-control": "no-cache" } });
+              const html = await response.text();
+              if (!response.ok) errors.push(`index:${response.status}`);
+              if (/WHITE-R4-2026\.07\.12/.test(html)) errors.push("legacy-shell");
+              for (const marker of ["studio-v11-emergency.css", "studio-production-guard.js", "nara-availability-bridge.js"]) {
+                if (!html.includes(marker)) errors.push(`index:${marker}`);
+              }
+              const assetUrls = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)]
+                .map((match) => new URL(match[1], base).href);
+              const assets = (await Promise.all(assetUrls.map(async (url) => {
+                const assetResponse = await fetch(url, { headers: { "cache-control": "no-cache" } });
+                return assetResponse.ok ? await assetResponse.text() : "";
+              }))).join("\n").replace(/\s+/g, "");
+              for (const marker of ["--sn-phone-rail:56px", "nara-native-file-input", "z-index:30000", "pointerdown"]) {
+                if (!assets.includes(marker)) errors.push(`asset:${marker}`);
+              }
+              if (!assets.includes("event.target.closest") || !assets.includes("nara-floating-button")) errors.push("nara-click-through");
+              if (!assets.includes("type=file") && !assets.includes('type:"file"')) errors.push("file-capability-missing");
+              if (!errors.length) {
+                console.log(JSON.stringify({ url: base, status: response.status, assets: assetUrls.length, audit: "passed" }, null, 2));
+                process.exit(0);
+              }
+            } catch (error) {
+              errors.push(error.message);
+            }
+            last = errors;
+            console.log(`Temporary audit ${attempt}/18 belum siap: ${errors.join(", ")}`);
+            await sleep(5000);
+          }
+          console.error(`TEMPORARY_UI_AUDIT_FAILED: ${last.join(", ")}`);
+          process.exit(1);
+          NODE
+
+      - name: Upload deploy URL and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngeblogging-temporary-ui-audit-${{ github.run_id }}
+          path: |
+            /tmp/cloudflare-temporary-deploy.log
+            /tmp/cloudflare-temporary-url.txt
+          if-no-files-found: warn
+          retention-days: 1
