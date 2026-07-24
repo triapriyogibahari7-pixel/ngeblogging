@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
+const enhancements = readFileSync(new URL("../src/studio-v9-enhancements.css", import.meta.url), "utf8");
 
 test("Studio source contains no bottom navigation or mobile more sheet", () => {
   assert.doesNotMatch(studio, /sn-mobile-nav/);
@@ -18,10 +19,20 @@ test("Studio has exactly one sidebar toggle and keeps settings and sign out in t
   assert.match(studio, /<LogOut\/><span>Keluar<\/span>/);
   assert.match(secure, /studio-source-navigation-v9-20260724/);
   assert.match(secure, /dataset\.sidebarAuthority = "single"/);
+  assert.match(enhancements, /\.sn-side > nav \{[\s\S]*flex: 1 1 auto/);
 });
 
 test("inactive payment is not rendered as a Studio destination", () => {
   assert.doesNotMatch(studio, /view==="billing"/);
   assert.doesNotMatch(studio, /<BillingView/);
   assert.doesNotMatch(studio, /<span>Pembayaran<\/span>/);
+});
+
+test("site owners can find the real public site result from the header, home, manager, and domain page", () => {
+  assert.ok((studio.match(/Lihat situs/g) || []).length >= 3);
+  assert.match(studio, /className="sn-view-site"/);
+  assert.match(studio, /className="sn-secondary-link" href=\{`https:\/\/\$\{site\.slug\}\.ngeblogging\.com`\}/);
+  assert.match(studio, /<Eye\/> Lihat<\/a>/);
+  assert.match(studio, /SUBDOMAIN GRATIS/);
+  assert.match(enhancements, /\.sn-view-site/);
 });
