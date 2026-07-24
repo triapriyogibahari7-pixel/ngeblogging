@@ -43,7 +43,7 @@ test("quota reads keep RLS active and duplicate primary-domain indexes are remov
 });
 
 
-test("custom domains use authenticated server-side Cloudflare for SaaS operations", () => {
+test("custom domains use authenticated server-side Cloudflare operations and stay invisible until provisioned", () => {
   assert.match(worker, /handleDomainRequest/);
   assert.match(worker, /url\.pathname\.startsWith\("\/api\/domains\/"\)/);
   assert.match(domainHandler, /CLOUDFLARE_API_TOKEN/);
@@ -54,7 +54,10 @@ test("custom domains use authenticated server-side Cloudflare for SaaS operation
   assert.match(domainHandler, /\/custom_hostnames/);
   assert.match(domainHandler, /providerStatus === "active" && sslStatus === "active"/);
   assert.match(domainHandler, /ssl: \{ method: "txt", type: "dv"/);
-  assert.match(domainBridge, /Belum dibuka untuk produksi/);
+  assert.match(domainBridge, /if \(loading \|\| error \|\| !config\?\.enabled\)/);
+  assert.match(domainBridge, /container\.hidden = true/);
+  assert.match(domainBridge, /container\.hidden = false/);
+  assert.doesNotMatch(domainBridge, /Belum dibuka untuk produksi/);
   assert.match(domainBridge, /data-action="refresh"/);
   assert.match(domainBridge, /data-action="remove"/);
   assert.match(domainBridge, /Target CNAME Ngeblogging/);
@@ -89,9 +92,10 @@ test("email code remains available but public signup is hidden until branded SMT
   assert.match(worker, /sender\.endsWith\("@ngeblogging\.com"\)/);
   assert.match(worker, /emailRegistration: brandedEmailReady\(env\)/);
   assert.match(wrangler, /"AUTH_BRANDED_EMAIL_READY": "false"/);
-  assert.match(authReadiness, /Pendaftaran, magic link, verifikasi, dan pemulihan email disembunyikan/);
   assert.match(authReadiness, /leaveSignupMode\(modal\)/);
   assert.match(authReadiness, /\.magic-link-button,\.forgot-link/);
+  assert.match(authReadiness, /row\.hidden = true/);
+  assert.doesNotMatch(authReadiness, /Email resmi sedang dikunci/);
   assert.match(index, /auth-readiness-bridge\.js/);
 });
 
