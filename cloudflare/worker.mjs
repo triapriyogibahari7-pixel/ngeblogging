@@ -1,15 +1,15 @@
 import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
 import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
-import { handleNaraImage } from "../server/nara-image-handler.mjs";
+import { handleNaraImage, imageGenerationReady } from "../server/nara-image-handler.mjs";
 import { handleDomainRequest } from "../server/domain-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
-import { handleWorkersAiNara, workersAiReady } from "../server/workers-ai-nara.mjs";
+import { handleWorkersAiNara, workersAiReady, workersVisionReady } from "../server/workers-ai-nara.mjs";
 
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "OPTIONS"]);
 const DEFAULT_SITE_ORIGIN = "https://ngeblogging.com";
-const DEFAULT_RELEASE = "2026.07.24-studio-v13";
+const DEFAULT_RELEASE = "2026.07.24-studio-v14";
 
 function enabled(value) {
   return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
@@ -30,7 +30,7 @@ function naraTextReady(env) {
 }
 
 function naraImageReady(env) {
-  return Boolean(qwenKey(env) && String(env.QWEN_WORKSPACE_ID || "").trim());
+  return imageGenerationReady(env);
 }
 
 function paypalReady(env) {
@@ -188,13 +188,14 @@ export default {
           status: "ok",
           service: "ngeblogging-cloudflare",
           release: String(env.APP_RELEASE || DEFAULT_RELEASE),
-          runtime: env.NARA_RUNTIME || "cloudflare-worker-v7",
+          runtime: env.NARA_RUNTIME || "cloudflare-worker-v14",
           hostname: url.hostname,
           billing: paypal || localBilling,
           billingProviders: { paypal, local: localBilling },
           nara,
-          naraProviders: { qwen: qwenTextReady(env), workersAi: workersAiReady(env) },
+          naraProviders: { qwen: qwenTextReady(env), workersAi: workersAiReady(env), vision: workersVisionReady(env) },
           imageGeneration,
+          imageProviders: { qwen: Boolean(qwenKey(env) && String(env.QWEN_WORKSPACE_ID || "").trim()), workersAi: workersAiReady(env) },
           customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
           emailRegistration: brandedEmailReady(env),
           managedSubdomains: true,
@@ -206,7 +207,7 @@ export default {
 
       if (url.pathname === "/api/nara") return await naraResponse(request, env, requestId);
       if (url.pathname === "/api/nara/image") {
-        if (!naraImageReady(env)) return jsonResponse(503, { code: "NARA_IMAGE_NOT_CONFIGURED", error: "Generator gambar memerlukan penyedia vision utama yang aktif." }, requestId, request.method, request.headers.get("origin") || "");
+        if (!naraImageReady(env)) return jsonResponse(503, { code: "NARA_IMAGE_NOT_CONFIGURED", error: "Generator gambar belum terhubung ke penyedia AI." }, requestId, request.method, request.headers.get("origin") || "");
         return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
       }
       if (url.pathname.startsWith("/api/domains/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRequest);
