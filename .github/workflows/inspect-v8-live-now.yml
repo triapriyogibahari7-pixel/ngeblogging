@@ -1,0 +1,32 @@
+name: Inspect current v8 live status
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Print current production markers
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const site='https://ngeblogging.com',stamp=`inspect=${Date.now()}`;
+          const get=async(url,options={})=>{const r=await fetch(`${url}${url.includes('?')?'&':'?'}${stamp}`,{...options,headers:{'cache-control':'no-cache',...(options.headers||{})}});return{status:r.status,ok:r.ok,text:await r.text()}};
+          const [healthResult,swResult,htmlResult]=await Promise.all([get(`${site}/api/health`),get(`${site}/sw.js`),get(`${site}/`)]);
+          const health=JSON.parse(healthResult.text||'{}');
+          const queue=[...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map(m=>new URL(m[1],site).href),seen=new Set(),chunks=[];
+          for(let depth=0;depth<7;depth++){const batch=[...new Set(queue)].filter(u=>!seen.has(u));if(!batch.length)break;batch.forEach(u=>seen.add(u));const texts=await Promise.all(batch.map(async u=>{const x=await get(u);return x.text}));chunks.push(...texts);for(const t of texts)for(const m of t.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g))queue.push(new URL(`/${m[1]}`,site).href)}
+          const assets=chunks.join('\n'),compact=assets.replace(/\s+/g,''),errors=[];
+          const checks={pwaV8:swResult.text.includes('ngeblogging-app-v8-20260724'),guardV8:assets.includes('studio-production-guard-v8-20260724'),mergeSidebarMenus:assets.includes('mergeSidebarMenus'),phonePanel:compact.includes('--sn-phone-panel:min(82vw,272px)'),bottomSelectors:compact.includes('.sn-mobile-nav')&&compact.includes('.sn-side-bottom')&&compact.includes('display:none!important'),settings:assets.includes('ngeblogging-settings-extras'),posts:assets.includes('sn-content-tools'),widgetModal:assets.includes('tn-widget-summary'),naraFullscreen:assets.includes('nara-assistant-shell'),devices:['Mobile','Tablet','Laptop','Komputer'].every(x=>assets.includes(x))};
+          for(const [k,v] of Object.entries(checks))if(!v)errors.push(k);
+          const nara=await get(`${site}/api/nara`,{method:'POST',headers:{'content-type':'application/json',origin:site},body:JSON.stringify({message:'uji koneksi',model:'nara-mini',intelligence:'standard',attachments:[],history:[]})});
+          let naraPayload={};try{naraPayload=JSON.parse(nara.text)}catch{}
+          console.log(JSON.stringify({health,swFirstLine:swResult.text.split('\n')[0],assets:[...seen],checks,nara:{status:nara.status,payload:naraPayload},errors},null,2));
+          NODE
