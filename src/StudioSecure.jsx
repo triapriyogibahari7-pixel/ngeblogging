@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
+import "./studio-v9-enhancements.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
