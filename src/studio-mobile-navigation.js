@@ -1,3 +1,4 @@
+const RELEASE = "studio-runtime-rail-v13-20260724";
 const COMPACT_QUERY = "(max-width: 1024px)";
 const PHONE_QUERY = "(max-width: 760px)";
 const compactMedia = window.matchMedia(COMPACT_QUERY);
@@ -16,8 +17,73 @@ function compactMode() {
 function elements(shell) {
   return {
     side: shell.querySelector(":scope > .sn-side"),
+    main: shell.querySelector(":scope > .sn-main"),
     toggle: shell.querySelector(":scope > .sn-main .sn-icon"),
   };
+}
+
+function important(node, property, value) {
+  if (!node) return;
+  node.style.setProperty(property, value, "important");
+}
+
+function phoneRail() {
+  return window.innerWidth <= 360 ? 52 : 56;
+}
+
+function panelWidth() {
+  if (phoneMode()) return Math.max(220, Math.min(Math.round(window.innerWidth * 0.78), 264));
+  if (compactMode()) return Math.min(Math.round(window.innerWidth * 0.82), 288);
+  return 240;
+}
+
+function railWidth() {
+  return phoneMode() ? phoneRail() : 72;
+}
+
+function enforceGeometry(shell, expanded) {
+  const { side, main, toggle } = elements(shell);
+  if (!side || !main || !toggle) return;
+
+  const rail = railWidth();
+  const panel = panelWidth();
+  const sideWidth = expanded ? panel : rail;
+  const compact = compactMode();
+  const mainOffset = compact ? rail : sideWidth;
+  const toggleSize = phoneMode() ? 40 : 44;
+
+  shell.dataset.runtimeRail = RELEASE;
+  shell.style.setProperty("--sn-runtime-rail", `${rail}px`);
+  shell.style.setProperty("--sn-runtime-panel", `${panel}px`);
+
+  important(side, "display", "flex");
+  important(side, "left", "0");
+  important(side, "right", "auto");
+  important(side, "width", `${sideWidth}px`);
+  important(side, "min-width", `${sideWidth}px`);
+  important(side, "max-width", `${sideWidth}px`);
+  important(side, "transform", "translate3d(0,0,0)");
+  important(side, "translate", "none");
+  important(side, "visibility", "visible");
+  important(side, "opacity", "1");
+  important(side, "pointer-events", "auto");
+
+  important(main, "margin-left", `${mainOffset}px`);
+  important(main, "min-width", "0");
+  if (compact) {
+    important(main, "width", `calc(100vw - ${rail}px)`);
+    important(main, "max-width", `calc(100vw - ${rail}px)`);
+  } else {
+    important(main, "width", "auto");
+    important(main, "max-width", "none");
+  }
+
+  important(toggle, "position", "fixed");
+  important(toggle, "left", `${sideWidth - Math.round(toggleSize / 2)}px`);
+  important(toggle, "width", `${toggleSize}px`);
+  important(toggle, "min-width", `${toggleSize}px`);
+  important(toggle, "height", `${toggleSize}px`);
+  important(toggle, "z-index", "13000");
 }
 
 function labelSidebarButtons(side) {
@@ -50,6 +116,7 @@ function updateShell(shell) {
   toggle.setAttribute("aria-label", expanded ? "Tutup menu Studio" : "Buka menu Studio");
   toggle.setAttribute("title", expanded ? "Tutup menu" : "Buka menu");
   labelSidebarButtons(side);
+  enforceGeometry(shell, expanded);
   syncDocumentState();
 }
 
@@ -80,6 +147,7 @@ function attach(shell) {
 }
 
 function scan() {
+  document.documentElement.dataset.studioRuntimeRail = RELEASE;
   document.querySelectorAll(".sn-shell").forEach(attach);
   syncDocumentState();
 }
@@ -112,6 +180,8 @@ function handleViewportChange() {
   });
 }
 
+window.addEventListener("resize", handleViewportChange, { passive: true });
+window.addEventListener("orientationchange", handleViewportChange, { passive: true });
 if (typeof compactMedia.addEventListener === "function") compactMedia.addEventListener("change", handleViewportChange);
 else compactMedia.addListener(handleViewportChange);
 
