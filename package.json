@@ -10,8 +10,8 @@
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
     "cloudflare:preview-dry-run": "wrangler versions upload --dry-run --outdir .wrangler-preview-build",
-    "cloudflare:dry-run": "wrangler deploy --env production --dry-run --outdir .wrangler-build",
-    "deploy:cloudflare": "wrangler deploy --env production --keep-vars",
+    "cloudflare:dry-run": "wrangler deploy --config wrangler.production.jsonc --dry-run --outdir .wrangler-build",
+    "deploy:cloudflare": "wrangler deploy --config wrangler.production.jsonc --keep-vars",
     "check": "npm test && vite build",
     "test": "node --test tests/*.test.mjs",
     "test:production": "node --test tests/*.test.mjs && node scripts/validate-production.mjs"
