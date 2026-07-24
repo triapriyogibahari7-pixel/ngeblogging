@@ -17,12 +17,15 @@ test("v14 authority is the only final Studio layout authority", () => {
 });
 
 test("native camera image and text inputs never leak into the visible Nara UI", () => {
-  assert.match(authority, /\[hidden\],[\s\S]*\.nara-composer input\[type="file"\],[\s\S]*display: none !important/);
+  const hiddenRule = authority.match(/\[hidden\],[\s\S]*?\.nara-composer input\[type="file"\],[\s\S]*?\}/)?.[0] || "";
+  assert.match(hiddenRule, /display: none !important/);
+  assert.match(hiddenRule, /visibility: hidden !important/);
+  assert.match(hiddenRule, /pointer-events: none !important/);
+  assert.doesNotMatch(hiddenRule, /display: block/);
   assert.match(assistant, /ref=\{cameraInput\}/);
   assert.match(assistant, /ref=\{imageInput\}/);
   assert.match(assistant, /ref=\{fileInput\}/);
   assert.match(assistant, /type="file"/);
-  assert.doesNotMatch(authority, /\.nara-composer input\[type="file"\][\s\S]*display: block/);
 });
 
 test("closing the phone drawer does not cancel the selected navigation action", () => {
