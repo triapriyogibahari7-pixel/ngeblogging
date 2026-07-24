@@ -8,7 +8,9 @@ const center = readFileSync(new URL("../src/BackupCenter.jsx",import.meta.url),"
 
 test("Studio routes through the secure wrapper",()=>{
   assert.match(studio,/StudioSecure\.jsx/);
-  assert.match(secure,/\.sn-settings-grid/);
+  assert.match(secure,/\.sn-save-settings/);
+  assert.match(secure,/ngeblogging-settings-extras/);
+  assert.match(secure,/saveButton\.insertAdjacentElement\("afterend", extras\)/);
   assert.match(secure,/createPortal\(<BackupCenter/);
 });
 
