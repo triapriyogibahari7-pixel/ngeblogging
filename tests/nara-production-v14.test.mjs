@@ -4,14 +4,16 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("v14 Studio, v15 mobile, and final Nara authorities replace historical guard stacks", async () => {
+test("v14 Studio, v15 mobile, v16 repair, and final Nara authorities replace historical guard stacks", async () => {
   const index = await read("index.html");
   const v14 = index.indexOf("studio-v14-authority.css");
   const v15 = index.indexOf("studio-mobile-v15.css");
   const nara = index.indexOf("nara-interaction-authority.css");
+  const v16 = index.indexOf("studio-v16-authority.css");
   assert.ok(v14 > -1);
   assert.ok(v15 > v14);
   assert.ok(nara > v15);
+  assert.ok(v16 > nara);
   assert.match(index, /nara-command-center-bridge\.js/);
   for (const legacy of [
     "studio-runtime-layout-guard.js",
@@ -64,10 +66,10 @@ test("plugin catalog includes GitHub Supabase Neon and Cloudflare", async () => 
   }
 });
 
-test("PWA keeps the v14 cache authority and network-first navigation", async () => {
+test("PWA keeps the v16 cache authority and network-first navigation", async () => {
   const sw = await read("public/sw.js");
   const runtime = await read("src/pwa-runtime.js");
-  assert.match(sw, /ngeblogging-app-v14-20260724/);
+  assert.match(sw, /ngeblogging-app-v16-20260724/);
   assert.match(sw, /request\.mode === "navigate"/);
   assert.match(sw, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(runtime, /navigator\.serviceWorker\.register\("\/sw\.js"/);
