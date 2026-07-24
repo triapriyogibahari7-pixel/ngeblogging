@@ -16,6 +16,7 @@ const requiredFiles = [
   "server/paypal-webhook-handler.mjs",
   "server/seo-handler.mjs",
   "wrangler.jsonc",
+  "wrangler.temporary.jsonc",
   "public/_headers",
   "public/sw.js",
   "src/StudioNext.jsx",
@@ -24,6 +25,8 @@ const requiredFiles = [
   "src/studio-v10-authority.css",
   "src/studio-runtime-layout-guard.js",
   "src/nara-availability-bridge.js",
+  "src/nara-command-center-bridge.js",
+  "src/nara-command-center.css",
   "src/NaraAssistant.jsx",
   "src/BackupCenter.jsx",
   "src/ContentEditor.jsx",
@@ -89,21 +92,28 @@ for (const key of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIE
 if (!/^LOCAL_PLAN_PRICES_JSON=\{.+\}$/m.test(productionEnv)) throw new Error("Harga gateway lokal belum didokumentasikan sebagai JSON server-only.");
 
 const wrangler = JSON.parse(await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
+const temporaryWrangler = JSON.parse(await readFile(new URL("../wrangler.temporary.jsonc", import.meta.url), "utf8"));
 const cloudflareProduction = wrangler.env?.production || {};
-const routes = new Set((cloudflareProduction.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
-for (const route of ["ngeblogging.com/*", "*.ngeblogging.com/*"]) if (!routes.has(route)) throw new Error(`Route Cloudflare wajib belum tersedia: ${route}`);
-if (wrangler.routes || wrangler.secrets) throw new Error("Preview Cloudflare tidak boleh mengklaim route atau secret produksi.");
+const routeSet = (config) => new Set((config.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
+for (const [label, config] of [["default", wrangler], ["production", cloudflareProduction]]) {
+  const routes = routeSet(config);
+  for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
+    if (!routes.has(route)) throw new Error(`Route Cloudflare ${label} belum tersedia: ${route}`);
+  }
+}
+if (temporaryWrangler.routes || temporaryWrangler.secrets) throw new Error("Temporary Cloudflare audit tidak boleh mengklaim route atau secret produksi.");
 if (!wrangler.compatibility_flags?.includes("nodejs_compat")) throw new Error("nodejs_compat belum aktif.");
 if (wrangler.assets?.not_found_handling !== "single-page-application") throw new Error("SPA fallback Cloudflare belum aktif.");
 if (wrangler.assets?.run_worker_first !== true) throw new Error("Worker harus berjalan sebelum aset agar SEO tenant dan endpoint discovery aktif.");
-if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada preview dan produksi.");
+if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada default dan produksi.");
 if (wrangler.vars?.CF_AI_MODEL !== "@cf/zai-org/glm-4.7-flash") throw new Error("Model fallback Workers AI belum dipin.");
-if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v5") throw new Error("Runtime preview Cloudflare belum memakai v5.");
-if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v5") throw new Error("Runtime produksi Cloudflare belum memakai v5.");
+if (!/^cloudflare-worker-default-v\d+$/.test(String(wrangler.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime default Cloudflare belum berversi.");
+if (!/^cloudflare-worker-production-v\d+$/.test(String(cloudflareProduction.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime produksi Cloudflare belum berversi.");
+if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v13" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v13") throw new Error("Release Worker belum v13.");
 if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live dan webhook diverifikasi.");
 if (cloudflareProduction.vars?.PAYPAL_MERCHANT_EMAIL !== "triapriyogibahari9@gmail.com") throw new Error("Email merchant PayPal belum sesuai permintaan pemilik.");
 
-for (const vars of [wrangler.vars || {}, cloudflareProduction.vars || {}]) {
+for (const vars of [wrangler.vars || {}, cloudflareProduction.vars || {}, temporaryWrangler.vars || {}]) {
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(String(vars.SUPABASE_URL || ""))) throw new Error("Public Supabase URL Worker belum valid.");
   if (!/^(sb_publishable_|eyJ)/.test(String(vars.SUPABASE_PUBLISHABLE_KEY || ""))) throw new Error("Public Supabase publishable key Worker belum valid.");
   for (const forbidden of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET", "QWEN_API_KEY"]) {
@@ -121,26 +131,30 @@ if (!worker.includes("../server/nara-runtime.mjs")) throw new Error("Worker belu
 if (!worker.includes("../server/workers-ai-nara.mjs")) throw new Error("Worker belum memakai fallback Workers AI.");
 if (!portableApi.includes("../server/nara-runtime.mjs")) throw new Error("API pemulihan belum memakai runtime Nara portable.");
 if (!worker.includes(".ngeblogging.com")) throw new Error("Worker belum menerima origin tenant wildcard.");
-for (const marker of ["handleNaraImage", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
+for (const marker of ["handleNaraImage", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/", "DEFAULT_RELEASE"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
 for (const marker of ["env.AI.run", "consume_nara_quota", "verifyUser", "@cf/zai-org/glm-4.7-flash"]) if (!workersAi.includes(marker)) throw new Error(`Fallback Workers AI belum memuat ${marker}.`);
 for (const source of [worker, portableApi]) if (/netlify\/functions|x-nf-client-connection-ip/.test(source)) throw new Error("Entrypoint produksi masih memiliki dependensi runtime lama.");
 
 const index = await readFile(new URL("../index.html", import.meta.url), "utf8");
 for (const bridge of ["cloudflare-media-bridge", "editor-toolbar-bridge", "workspace-profile-bridge", "workspace-activation-bridge"]) if (index.includes(bridge)) throw new Error(`Bridge DOM lama masih aktif: ${bridge}`);
-if (!index.includes("studio-production-guard.js")) throw new Error("Guard produksi sidebar dan layout belum dimuat.");
+for (const marker of ["studio-production-guard.js", "nara-command-center-bridge.js", "nara-command-center.css"]) if (!index.includes(marker)) throw new Error(`Shell produksi belum memuat ${marker}.`);
 const hardeningPosition = index.indexOf("studio-v8-hardening.css");
 const authorityPosition = index.indexOf("studio-v10-authority.css");
-if (authorityPosition < 0 || authorityPosition <= hardeningPosition) throw new Error("CSS otoritas v10 wajib dimuat paling akhir setelah hardening lama.");
+if (authorityPosition < 0 || authorityPosition <= hardeningPosition) throw new Error("CSS otoritas Studio wajib dimuat setelah hardening lama.");
 
 const productionGuard = await readFile(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
 for (const marker of ["studio-production-guard-v10-20260724", "hideNaraSidebarRoute", "ensureFloatingNara", "ensureNaraCapabilityShortcuts", "requestQrScan", "openNaraWorkspace"]) {
-  if (!productionGuard.includes(marker)) throw new Error(`Guard Studio v10 belum memuat ${marker}.`);
+  if (!productionGuard.includes(marker)) throw new Error(`Guard Studio belum memuat ${marker}.`);
 }
 const capabilityBridge = await readFile(new URL("../src/nara-availability-bridge.js", import.meta.url), "utf8");
 for (const marker of ["nara-capability-bridge-v10-20260724", "preserveAssistantCapabilities", ".nara-select option", ".nara-attachment-menu button", ".nara-composer input"]) {
   if (!capabilityBridge.includes(marker)) throw new Error(`Jembatan kemampuan Nara belum memuat ${marker}.`);
 }
 if (/removeInactiveOptions|controls\.forEach\(conceal\)|startsWith\("Kamera"\).*conceal/s.test(capabilityBridge)) throw new Error("Kemampuan Nara masih dapat dihapus oleh readiness bridge.");
+const commandCenter = await readFile(new URL("../src/nara-command-center-bridge.js", import.meta.url), "utf8");
+for (const marker of ["nara-command-center-v13-20260724", "Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector", "openWorkspace"]) {
+  if (!commandCenter.includes(marker)) throw new Error(`Command Center Nara kehilangan ${marker}.`);
+}
 
 const assistant = await readFile(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 for (const marker of ["Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara", "Jelaskan gambar"]) {
@@ -179,15 +193,15 @@ for (const marker of ["status\",\"active", "is_public", "site_theme_settings", "
 }
 
 const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
-if (!serviceWorker.includes("ngeblogging-app-v10-20260724")) throw new Error("Service worker belum menginvalidasi cache ke v10.");
+if (!serviceWorker.includes("ngeblogging-app-v13-20260724")) throw new Error("Service worker belum menginvalidasi cache ke v13.");
 
 const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
 for (const value of ["Content-Security-Policy", "X-Content-Type-Options", "max-age=31536000, immutable"]) if (!headers.includes(value)) throw new Error(`Header Cloudflare belum memuat ${value}.`);
 
 const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudflare.yml", import.meta.url), "utf8");
 if (cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare tidak boleh lagi dilewati oleh activation gate.");
-for (const marker of ["npm run deploy:cloudflare", "studio-v10-authority.css", "ngeblogging-app-v10-20260724", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {
-  if (!cloudflareWorkflow.includes(marker)) throw new Error(`Deployment Cloudflare v10 belum memuat ${marker}.`);
+for (const marker of ["npm run deploy:cloudflare", "nara-command-center-bridge.js", "ngeblogging-app-v13-20260724", "2026.07.24-studio-v13", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {
+  if (!cloudflareWorkflow.includes(marker)) throw new Error(`Deployment Cloudflare v13 belum memuat ${marker}.`);
 }
 
-console.log(`Validasi produksi v10 lulus: ${requiredFiles.length} berkas wajib, rail ikon, satu tombol sidebar, Nara lengkap, QR, memori, plugin, 100 tema, 25 widget, renderer tenant, PWA v10, dan deploy Cloudflare wajib.`);
+console.log(`Validasi produksi v13 lulus: ${requiredFiles.length} berkas wajib, apex/www/wildcard, rail ikon, satu tombol sidebar, Nara lengkap, QR, memori, plugin, 100 tema, 25 widget, renderer tenant, PWA v13, dan deploy Cloudflare wajib.`);
