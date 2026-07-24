@@ -6,6 +6,20 @@
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
   "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "ngeblogging.com/*",
+      "zone_name": "ngeblogging.com"
+    },
+    {
+      "pattern": "www.ngeblogging.com/*",
+      "zone_name": "ngeblogging.com"
+    },
+    {
+      "pattern": "*.ngeblogging.com/*",
+      "zone_name": "ngeblogging.com"
+    }
+  ],
   "assets": {
     "directory": "./dist/",
     "binding": "ASSETS",
@@ -18,7 +32,7 @@
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-    "APP_RELEASE": "2026.07.24-studio-v12",
+    "APP_RELEASE": "2026.07.24-studio-v13",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
     "QWEN_REGION": "singapore",
@@ -30,7 +44,7 @@
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_PRODUCTION_READY": "true",
     "NARA_PRODUCTION_PROBE": "passed",
-    "NARA_RUNTIME": "cloudflare-worker-preview-v6"
+    "NARA_RUNTIME": "cloudflare-worker-default-v7"
   },
   "observability": {
     "enabled": true,
@@ -46,6 +60,10 @@
           "zone_name": "ngeblogging.com"
         },
         {
+          "pattern": "www.ngeblogging.com/*",
+          "zone_name": "ngeblogging.com"
+        },
+        {
           "pattern": "*.ngeblogging.com/*",
           "zone_name": "ngeblogging.com"
         }
@@ -56,7 +74,7 @@
       "vars": {
         "PUBLIC_SITE_URL": "https://ngeblogging.com",
         "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-        "APP_RELEASE": "2026.07.24-studio-v12",
+        "APP_RELEASE": "2026.07.24-studio-v13",
         "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
         "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
         "QWEN_REGION": "singapore",
@@ -68,7 +86,7 @@
         "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
         "NARA_PRODUCTION_READY": "true",
         "NARA_PRODUCTION_PROBE": "passed",
-        "NARA_RUNTIME": "cloudflare-worker-v6"
+        "NARA_RUNTIME": "cloudflare-worker-production-v7"
       },
       "secrets": {
         "required": [],
