@@ -10,7 +10,7 @@ function originalLauncher() {
 
 function closeSidebarBeforeNara() {
   const shell = document.querySelector('.sn-shell[data-v15-sidebar-open="true"]');
-  const toggle = shell?.querySelector('.sn-icon[data-sidebar-authority="single-v17"], .sn-icon.sn-sidebar-edge-owner-v17');
+  const toggle = shell?.querySelector('.sn-icon[data-sidebar-authority="single-v18"], .sn-icon.sn-sidebar-edge-owner-v18, .sn-icon.sn-sidebar-edge-owner-v17');
   if (toggle) toggle.click();
 }
 
@@ -29,7 +29,7 @@ function ensureProxy() {
     return;
   }
 
-  original.dataset.naraOriginalV18 = "true";
+  original.setAttribute("data-nara-original-v18", "true");
   original.type = "button";
   original.disabled = false;
   original.hidden = false;
