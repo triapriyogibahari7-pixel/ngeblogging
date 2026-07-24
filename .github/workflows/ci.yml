@@ -132,3 +132,120 @@ jobs:
             VITE_PUBLIC_SITE_URL=https://staging.example.com
           cache-from: type=gha,scope=ci-ngeblogging-web
           cache-to: type=gha,mode=max,scope=ci-ngeblogging-web,ignore-error=true
+
+  deploy-cloudflare-audit:
+    needs: [quality, containers]
+    if: github.event_name == 'pull_request' && github.head_ref == 'audit/deploy-v11-production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      SITE_URL: https://ngeblogging.com
+      TENANT_URL: https://tri-apriyogi-bahari.ngeblogging.com
+    steps:
+      - name: Checkout audited merge commit
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate production credentials without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+          test -n "${VITE_SUPABASE_URL}" || { echo "VITE_SUPABASE_URL_MISSING"; exit 1; }
+          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "VITE_SUPABASE_PUBLISHABLE_KEY_MISSING"; exit 1; }
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build audited production release
+        run: npm run test:production && npm run build && npm run cloudflare:dry-run
+
+      - name: Deploy Worker assets Nara API and wildcard tenants
+        run: npm run deploy:cloudflare
+
+      - name: Verify live Studio v11 Nara and public tenant
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const site = process.env.SITE_URL.replace(/\/$/, "");
+          const tenant = process.env.TENANT_URL.replace(/\/$/, "");
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+          async function read(url, options = {}) {
+            const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}audit=${Date.now()}`, {
+              redirect: "follow",
+              ...options,
+              headers: { "cache-control": "no-cache", ...(options.headers || {}) },
+            });
+            return { response, text: await response.text() };
+          }
+
+          let lastErrors = [];
+          for (let attempt = 1; attempt <= 30; attempt += 1) {
+            const errors = [];
+            try {
+              const [healthResult, indexResult, swResult, tenantResult] = await Promise.all([
+                read(`${site}/api/health`, { headers: { accept: "application/json" } }),
+                read(`${site}/`),
+                read(`${site}/sw.js`),
+                read(`${tenant}/`),
+              ]);
+              if (!healthResult.response.ok) errors.push(`health:${healthResult.response.status}`);
+              if (!indexResult.response.ok) errors.push(`index:${indexResult.response.status}`);
+              if (!swResult.response.ok) errors.push(`sw:${swResult.response.status}`);
+              if (!tenantResult.response.ok) errors.push(`tenant:${tenantResult.response.status}`);
+
+              const health = JSON.parse(healthResult.text || "{}");
+              if (health.status !== "ok" || health.service !== "ngeblogging-cloudflare") errors.push("health-payload");
+              if (health.release !== "2026.07.24-studio-v10") errors.push(`release:${health.release || "missing"}`);
+              if (health.nara !== true || (!health.naraProviders?.qwen && !health.naraProviders?.workersAi)) errors.push("nara-provider");
+              if (health.managedSubdomains !== true) errors.push("wildcard-subdomains");
+              if (!swResult.text.includes("ngeblogging-app-v10-20260724")) errors.push("pwa-cache");
+              if (/WHITE-R4-2026\.07\.12/.test(indexResult.text)) errors.push("legacy-shell");
+              if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push("tenant-404");
+
+              const assetUrls = [...indexResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)]
+                .map((match) => new URL(match[1], site).href);
+              const assetTexts = await Promise.all(assetUrls.map(async (url) => (await read(url)).text));
+              const assets = assetTexts.join("\n").replace(/\s+/g, "");
+              for (const marker of ["--sn-phone-rail:56px", "nara-native-file-input", "z-index:30000"]) {
+                if (!assets.includes(marker)) errors.push(`asset:${marker}`);
+              }
+
+              const unauth = await read(`${site}/api/nara`, {
+                method: "POST",
+                headers: { "content-type": "application/json", origin: site },
+                body: JSON.stringify({ message: "uji", model: "nara-mini", intelligence: "standard", attachments: [], history: [] }),
+              });
+              const unauthPayload = JSON.parse(unauth.text || "{}");
+              if (unauth.response.status !== 401 || unauthPayload.code !== "NARA_SESSION_REQUIRED") {
+                errors.push(`nara-auth:${unauth.response.status}/${unauthPayload.code || "none"}`);
+              }
+
+              if (!errors.length) {
+                console.log(JSON.stringify({ release: health.release, runtime: health.runtime, nara: health.nara, tenant: tenantResult.response.status, assets: assetUrls.length }, null, 2));
+                process.exit(0);
+              }
+            } catch (error) {
+              errors.push(error.message);
+            }
+            lastErrors = errors;
+            console.log(`Live audit ${attempt}/30 belum siap: ${errors.join(", ")}`);
+            await sleep(10000);
+          }
+          console.error(`LIVE_V11_AUDIT_FAILED: ${lastErrors.join(", ")}`);
+          process.exit(1);
+          NODE
