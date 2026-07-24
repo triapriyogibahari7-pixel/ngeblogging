@@ -126,6 +126,7 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
+      // Never reload during a click, login, upload, edit, or Nara request.
       document.documentElement.dataset.appUpdate = "applied";
     });
   } catch (error) {
