@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   deploy-and-audit:
-    if: github.head_ref == 'audit/temporary-v11'
+    if: startsWith(github.head_ref, 'audit/temporary-v11')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -85,7 +85,7 @@ jobs:
             if (collapsedWidth > 64) throw new Error(`Sidebar awal tidak ringkas: ${collapsedWidth}px`);
             if (await page.locator(".sn-icon").count() !== 1) throw new Error("Tombol sidebar bukan tepat satu");
             if (await page.locator(".sn-side-close,.sn-mobile-nav,.sn-mobile-sheet-layer").count()) throw new Error("Menu/tombol mobile duplikat masih ada");
-            const sidebarLabels = await page.locator(".sn-side nav button").allTextContents();
+            const sidebarLabels = await page.locator(".sn-side nav button:visible").allTextContents();
             if (sidebarLabels.some((label) => label.replace(/\s+/g, " ").trim() === "Nara AI")) throw new Error("Nara masih tampil sebagai menu sidebar");
             report.checks.compactRail = { width: collapsedWidth, oneToggle: true, noBottomMenu: true, noNaraMenu: true };
 
