@@ -3,14 +3,15 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 const wrangler = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
+const temporary = JSON.parse(readFileSync(new URL("../wrangler.temporary.jsonc", import.meta.url), "utf8"));
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
 const workersAi = readFileSync(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
 const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
 const production = wrangler.env?.production || {};
 
-function routePatterns() {
-  return new Set((production.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
+function routePatterns(config) {
+  return new Set((config?.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
 }
 
 function assertPublicSupabaseConfig(vars, label) {
@@ -26,21 +27,27 @@ test("Cloudflare is the production runtime and Worker runs before SPA assets", (
   assert.equal(wrangler.ai?.binding, "AI");
 });
 
-test("preview builds do not claim production routes and use public auth configuration", () => {
-  assert.equal(wrangler.routes, undefined);
-  assert.equal(wrangler.secrets, undefined);
-  assert.equal(wrangler.vars?.NARA_RUNTIME, "cloudflare-worker-preview-v5");
+test("default Git deployment owns production routes while temporary browser audits remain isolated", () => {
+  const defaultRoutes = routePatterns(wrangler);
+  for (const pattern of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
+    assert.ok(defaultRoutes.has(pattern), `default deployment must bind ${pattern}`);
+  }
+  assert.equal(temporary.routes, undefined);
+  assert.equal(temporary.secrets, undefined);
+  assert.match(String(wrangler.vars?.NARA_RUNTIME || ""), /^cloudflare-worker-default-v\d+$/);
   assert.equal(wrangler.vars?.CF_AI_MODEL, "@cf/zai-org/glm-4.7-flash");
-  assertPublicSupabaseConfig(wrangler.vars, "preview");
+  assertPublicSupabaseConfig(wrangler.vars, "default");
+  assertPublicSupabaseConfig(temporary.vars, "temporary");
   assert.match(packageJson.scripts["cloudflare:preview-dry-run"], /wrangler versions upload/);
 });
 
-test("apex and every Ngeblogging tenant subdomain are routed in production", () => {
-  const routes = routePatterns();
-  assert.ok(routes.has("ngeblogging.com/*"));
-  assert.ok(routes.has("*.ngeblogging.com/*"));
+test("apex www and every Ngeblogging tenant subdomain are routed in production", () => {
+  const routes = routePatterns(production);
+  for (const pattern of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
+    assert.ok(routes.has(pattern), `production must bind ${pattern}`);
+  }
   assert.equal(production.name, "ngeblogging");
-  assert.equal(production.vars?.NARA_RUNTIME, "cloudflare-worker-v5");
+  assert.match(String(production.vars?.NARA_RUNTIME || ""), /^cloudflare-worker-production-v\d+$/);
   assert.equal(production.ai?.binding, "AI");
   assertPublicSupabaseConfig(production.vars, "production");
 });
@@ -52,7 +59,7 @@ test("only public Supabase configuration is stored in vars and every real secret
     assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
   }
 
-  for (const vars of [wrangler.vars || {}, production.vars || {}]) {
+  for (const vars of [wrangler.vars || {}, production.vars || {}, temporary.vars || {}]) {
     assertPublicSupabaseConfig(vars, "Worker");
     for (const name of [
       "SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID",
