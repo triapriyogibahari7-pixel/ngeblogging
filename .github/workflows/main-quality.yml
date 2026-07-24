@@ -45,22 +45,46 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run production source tests
-        run: npm run test:production
+        id: tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:production 2>&1 | tee /tmp/ngeblogging-main-tests.log
 
       - name: Build production application
+        id: build
         env:
           VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
           VITE_PUBLIC_SITE_URL: https://ngeblogging.com
-        run: npm run build
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee /tmp/ngeblogging-main-build.log
 
       - name: Validate Cloudflare bundle without deployment credentials
+        id: dryrun
         env:
           QWEN_API_KEY: ci-dry-run-only
           QWEN_WORKSPACE_ID: ci-dry-run
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
-        run: npm run cloudflare:dry-run
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run cloudflare:dry-run 2>&1 | tee /tmp/ngeblogging-main-cloudflare.log
+
+      - name: Upload quality failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: main-quality-failure-${{ github.run_id }}
+          path: |
+            /tmp/ngeblogging-main-tests.log
+            /tmp/ngeblogging-main-build.log
+            /tmp/ngeblogging-main-cloudflare.log
+          if-no-files-found: warn
+          retention-days: 3
 
       - name: Mark quality gate successful
         if: success()
@@ -88,6 +112,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging main quality',
-              description: 'Production tests, build, or Cloudflare dry-run failed.',
+              description: 'Production tests, build, or Cloudflare dry-run failed. Logs were uploaded.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
