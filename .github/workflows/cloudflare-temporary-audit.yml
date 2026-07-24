@@ -16,10 +16,6 @@ jobs:
     if: github.head_ref == 'audit/temporary-v11'
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
-      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
-      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
     steps:
       - name: Checkout audited source
         uses: actions/checkout@v6
@@ -33,8 +29,15 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run production tests and build
+      - name: Run production tests and build Studio demo audit bundle
+        env:
+          VITE_SUPABASE_URL: ''
+          VITE_SUPABASE_PUBLISHABLE_KEY: ''
+          VITE_PUBLIC_SITE_URL: https://ngeblogging.com
         run: npm run test:production && npm run build
+
+      - name: Install browser audit driver
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright-core@1.55.0
 
       - name: Deploy credential-free temporary Worker
         id: deploy
@@ -50,53 +53,98 @@ jobs:
           printf '%s\n' "$url" | tee /tmp/cloudflare-temporary-url.txt
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
-      - name: Verify mobile rail Nara shell and hidden file controls
+      - name: Audit mobile Studio sidebar and Nara in Chromium
         shell: bash
         env:
           AUDIT_URL: ${{ steps.deploy.outputs.url }}
         run: |
           set -euo pipefail
-          node --input-type=module <<'NODE'
+          node --input-type=module <<'NODE' 2>&1 | tee /tmp/cloudflare-browser-audit.log
+          import { chromium } from "playwright-core";
+          import { writeFile } from "node:fs/promises";
+
           const base = process.env.AUDIT_URL.replace(/\/$/, "");
-          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-          let last = [];
-          for (let attempt = 1; attempt <= 18; attempt += 1) {
-            const errors = [];
-            try {
-              const response = await fetch(`${base}/?audit=${Date.now()}`, { redirect: "follow", headers: { "cache-control": "no-cache" } });
-              const html = await response.text();
-              if (!response.ok) errors.push(`index:${response.status}`);
-              if (/WHITE-R4-2026\.07\.12/.test(html)) errors.push("legacy-shell");
-              for (const marker of ["studio-v11-emergency.css", "studio-production-guard.js", "nara-availability-bridge.js"]) {
-                if (!html.includes(marker)) errors.push(`index:${marker}`);
-              }
-              const assetUrls = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)]
-                .map((match) => new URL(match[1], base).href);
-              const assets = (await Promise.all(assetUrls.map(async (url) => {
-                const assetResponse = await fetch(url, { headers: { "cache-control": "no-cache" } });
-                return assetResponse.ok ? await assetResponse.text() : "";
-              }))).join("\n").replace(/\s+/g, "");
-              for (const marker of ["--sn-phone-rail:56px", "nara-native-file-input", "z-index:30000", "pointerdown"]) {
-                if (!assets.includes(marker)) errors.push(`asset:${marker}`);
-              }
-              if (!assets.includes("event.target.closest") || !assets.includes("nara-floating-button")) errors.push("nara-click-through");
-              if (!assets.includes("type=file") && !assets.includes('type:"file"')) errors.push("file-capability-missing");
-              if (!errors.length) {
-                console.log(JSON.stringify({ url: base, status: response.status, assets: assetUrls.length, audit: "passed" }, null, 2));
-                process.exit(0);
-              }
-            } catch (error) {
-              errors.push(error.message);
+          const report = { url: base, checks: {}, timestamp: new Date().toISOString() };
+          const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--no-sandbox"] });
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+
+          try {
+            const response = await page.goto(`${base}/?audit=${Date.now()}`, { waitUntil: "networkidle", timeout: 60000 });
+            if (!response?.ok()) throw new Error(`Landing gagal: ${response?.status()}`);
+            const html = await page.content();
+            if (/WHITE-R4-2026\.07\.12/.test(html)) throw new Error("Shell lama WHITE-R4 masih aktif");
+            report.checks.landing = true;
+
+            await page.getByRole("button", { name: /Bangun situs Anda|Mulai gratis/i }).first().click();
+            await page.getByRole("button", { name: "Masuk Studio demo" }).click();
+            await page.locator(".sn-shell").waitFor({ state: "visible", timeout: 30000 });
+            await page.waitForTimeout(800);
+
+            const sidebar = page.locator(".sn-side");
+            const collapsedWidth = (await sidebar.boundingBox())?.width || 0;
+            if (collapsedWidth > 64) throw new Error(`Sidebar awal tidak ringkas: ${collapsedWidth}px`);
+            if (await page.locator(".sn-icon").count() !== 1) throw new Error("Tombol sidebar bukan tepat satu");
+            if (await page.locator(".sn-side-close,.sn-mobile-nav,.sn-mobile-sheet-layer").count()) throw new Error("Menu/tombol mobile duplikat masih ada");
+            const sidebarLabels = await page.locator(".sn-side nav button").allTextContents();
+            if (sidebarLabels.some((label) => label.replace(/\s+/g, " ").trim() === "Nara AI")) throw new Error("Nara masih tampil sebagai menu sidebar");
+            report.checks.compactRail = { width: collapsedWidth, oneToggle: true, noBottomMenu: true, noNaraMenu: true };
+
+            await page.locator(".sn-icon").click();
+            await page.waitForTimeout(350);
+            const expandedWidth = (await sidebar.boundingBox())?.width || 0;
+            if (expandedWidth < 220 || expandedWidth > 330) throw new Error(`Lebar sidebar terbuka salah: ${expandedWidth}px`);
+            report.checks.sidebarExpanded = expandedWidth;
+
+            const naraLauncher = page.locator(".nara-floating-button");
+            await naraLauncher.waitFor({ state: "visible", timeout: 10000 });
+            await naraLauncher.click({ timeout: 10000 });
+            await page.locator(".nara-assistant-layer").waitFor({ state: "visible", timeout: 10000 });
+            report.checks.naraClickThrough = true;
+
+            await page.locator(".nara-capability-shortcuts").waitFor({ state: "visible", timeout: 10000 });
+            const capabilityText = (await page.locator(".nara-capability-shortcuts").innerText()).replace(/\s+/g, " ");
+            for (const label of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR"]) {
+              if (!capabilityText.includes(label)) throw new Error(`Kemampuan Nara hilang: ${label}`);
             }
-            last = errors;
-            console.log(`Temporary audit ${attempt}/18 belum siap: ${errors.join(", ")}`);
-            await sleep(5000);
+
+            const fileInputs = page.locator('.nara-composer input[type="file"]');
+            if (await fileInputs.count() !== 3) throw new Error(`Input lampiran harus 3, ditemukan ${await fileInputs.count()}`);
+            for (let index = 0; index < 3; index += 1) {
+              const state = await fileInputs.nth(index).evaluate((node) => {
+                const style = getComputedStyle(node);
+                const rect = node.getBoundingClientRect();
+                return { hidden: node.hidden, display: style.display, visibility: style.visibility, width: rect.width, height: rect.height };
+              });
+              if (!state.hidden || state.display !== "none" || state.width !== 0 || state.height !== 0) {
+                throw new Error(`Input file ${index + 1} bocor: ${JSON.stringify(state)}`);
+              }
+            }
+
+            const modelOptions = await page.locator('.nara-select.model select option').count();
+            const intelligenceOptions = await page.locator('.nara-select.intelligence select option').count();
+            if (modelOptions < 4 || intelligenceOptions < 4) throw new Error(`Pilihan Nara tidak lengkap: model=${modelOptions}, kecerdasan=${intelligenceOptions}`);
+            if (!await page.locator('.nara-composer-tools button[title="Pertanyaan suara"]').isVisible()) throw new Error("Mikrofon Nara tidak terlihat");
+            if (!await page.locator('.nara-composer-tools button[title="Tambahkan lampiran"]').isVisible()) throw new Error("Tombol lampiran Nara tidak terlihat");
+            report.checks.naraCapabilities = { modelOptions, intelligenceOptions, hiddenFileInputs: 3, voice: true, qr: true, plugins: true, memory: true, images: true };
+
+            const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, scrollWidth: document.documentElement.scrollWidth }));
+            if (dimensions.scrollWidth > dimensions.viewport + 1) throw new Error(`Overflow horizontal: ${JSON.stringify(dimensions)}`);
+            report.checks.noHorizontalOverflow = dimensions;
+
+            await page.screenshot({ path: "/tmp/ngeblogging-studio-mobile-v11.png", fullPage: true });
+            await writeFile("/tmp/cloudflare-browser-audit.json", `${JSON.stringify(report, null, 2)}\n`);
+            console.log(JSON.stringify(report, null, 2));
+          } catch (error) {
+            report.error = error.message;
+            await page.screenshot({ path: "/tmp/ngeblogging-studio-mobile-v11-failure.png", fullPage: true }).catch(() => {});
+            await writeFile("/tmp/cloudflare-browser-audit.json", `${JSON.stringify(report, null, 2)}\n`);
+            throw error;
+          } finally {
+            await browser.close();
           }
-          console.error(`TEMPORARY_UI_AUDIT_FAILED: ${last.join(", ")}`);
-          process.exit(1);
           NODE
 
-      - name: Upload deploy URL and logs
+      - name: Upload live URL screenshots and audit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -104,5 +152,9 @@ jobs:
           path: |
             /tmp/cloudflare-temporary-deploy.log
             /tmp/cloudflare-temporary-url.txt
+            /tmp/cloudflare-browser-audit.log
+            /tmp/cloudflare-browser-audit.json
+            /tmp/ngeblogging-studio-mobile-v11.png
+            /tmp/ngeblogging-studio-mobile-v11-failure.png
           if-no-files-found: warn
           retention-days: 1
