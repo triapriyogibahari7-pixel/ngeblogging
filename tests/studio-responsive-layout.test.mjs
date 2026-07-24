@@ -37,7 +37,9 @@ test("phones keep a visible icon rail and overlay only the expanded panel", () =
   assert.match(authority, /\.sn-main,[\s\S]*margin-left: var\(--sn-phone-rail\) !important/);
   assert.match(authority, /\.sn-side:not\(\.collapsed\) \+ \.sn-main::before/);
   assert.match(authority, /pointer-events: none/);
-  assert.match(pwa, /if \(width <= 760\) return "mobile"/);
+  assert.match(pwa, /shortSide <= 760/);
+  assert.match(pwa, /root\.dataset\.physicalMobile/);
+  assert.match(pwa, /root\.dataset\.desktopSitePhone/);
 });
 
 test("tablet and desktop retain precise panel and rail geometry", () => {
@@ -46,9 +48,9 @@ test("tablet and desktop retain precise panel and rail geometry", () => {
   assert.match(authority, /\.sn-main,[\s\S]*margin-left: var\(--sn-panel-width\) !important/);
   assert.match(authority, /\.sn-side\.collapsed \+ \.sn-main[\s\S]*margin-left: var\(--sn-rail-width\) !important/);
   assert.match(authority, /@media \(max-width: 1024px\)/);
-  assert.match(pwa, /if \(width <= 1024\) return "tablet"/);
-  assert.match(pwa, /if \(width <= 1440\) return "laptop"/);
-  assert.match(pwa, /return "desktop"/);
+  assert.match(pwa, /shortSide <= 1024/);
+  assert.match(pwa, /layoutWidth <= 1440/);
+  assert.match(pwa, /let mode = "desktop"/);
 });
 
 test("only the React header button controls sidebar state", () => {
@@ -73,10 +75,21 @@ test("bottom navigation is removed and the full menu remains in the sidebar", ()
 
 test("settings cards posts media domain and Nara remain in normal mobile flow", () => {
   assert.match(authority, /\.sn-view-pad,[\s\S]*\.sn-settings-grid,[\s\S]*min-width: 0/);
-  assert.match(authority, /\.sn-welcome,[\s\S]*\.sn-settings-grid,[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
-  assert.match(authority, /\.sn-content-tools[\s\S]*flex-direction: column/);
-  assert.match(authority, /\.sn-doc-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto 34px !important/);
-  assert.match(authority, /\.sn-domain-card[\s\S]*grid-template-columns: 42px minmax\(0, 1fr\) !important/);
-  assert.match(authority, /\.nara-assistant-layer,[\s\S]*width: 100vw !important/);
-  assert.match(authority, /\.nara-composer textarea[\s\S]*min-height: 88px !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-welcome,[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-main,[\s\S]*width: auto !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-content-tools[\s\S]*flex-direction: column/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-doc-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto 34px !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-domain-card[\s\S]*grid-template-columns: 42px minmax\(0, 1fr\) !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-assistant-layer[\s\S]*inset: 0 !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-floating-button[\s\S]*place-items: center !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-view-site,[\s\S]*place-items: center !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-composer textarea[\s\S]*min-height: 88px !important/);
+});
+
+test("desktop-site mode on a physical phone is scaled back to the real screen", () => {
+  assert.match(pwa, /layoutWidth \/ screenWidth/);
+  assert.match(pwa, /browserScale > 1\.2/);
+  assert.match(pwa, /--sn-physical-layout-width/);
+  assert.match(authority, /html\[data-desktop-site-phone="true"\] \.sn-shell/);
+  assert.match(authority, /zoom: var\(--sn-browser-scale\)/);
 });
