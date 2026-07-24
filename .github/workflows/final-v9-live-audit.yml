@@ -37,6 +37,7 @@ jobs:
             if node --input-type=module <<'NODE'
           const site='https://ngeblogging.com',stamp=`audit=${Date.now()}`;
           const get=async(url,options={})=>{const response=await fetch(`${url}${url.includes('?')?'&':'?'}${stamp}`,{...options,headers:{'cache-control':'no-cache',...(options.headers||{})}});return{response,text:await response.text()}};
+          const renderedClassCount=(source,className)=>{const escaped=className.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return(source.match(new RegExp(`className:(?:\\\`|"|')${escaped}(?:\\\`|"|')`,'g'))||[]).length};
           try{
             const [healthResult,swResult,htmlResult]=await Promise.all([get(`${site}/api/health`),get(`${site}/sw.js`),get(`${site}/`)]);
             if(!healthResult.response.ok||!swResult.response.ok||!htmlResult.response.ok)throw new Error('public endpoints unavailable');
@@ -44,13 +45,15 @@ jobs:
             for(let depth=0;depth<7;depth++){const batch=[...new Set(queue)].filter(url=>!seen.has(url));if(!batch.length)break;batch.forEach(url=>seen.add(url));await Promise.all(batch.map(async url=>{const result=await get(url);if(!result.response.ok)throw new Error(`asset ${url}=${result.response.status}`);assets.set(url,result.text);for(const match of result.text.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g))queue.push(new URL(`/${match[1]}`,site).href)}))}
             const studioEntry=[...assets.entries()].find(([url])=>/\/assets\/Studio-[^/]+\.js(?:\?|$)/.test(url));if(!studioEntry)throw new Error('Studio chunk missing');
             const [studioUrl,studioJs]=studioEntry,allAssets=[...assets.values()].join('\n'),errors=[];
+            const navStart=studioJs.indexOf('Ringkasan'),navEndCandidate=navStart>=0?studioJs.indexOf('sn-main',navStart):-1,navEnd=navEndCandidate>navStart?navEndCandidate:Math.min(studioJs.length,navStart+12000),navSegment=navStart>=0?studioJs.slice(navStart,navEnd):'';
             if(health.release!=='2026.07.24-studio-v9')errors.push(`release:${health.release}`);
             if(!swResult.text.includes('ngeblogging-app-v9-20260724'))errors.push('PWA v9');
             if(!studioJs.includes('studio-source-navigation-v9-20260724'))errors.push('source navigation marker');
-            for(const token of ['sn-mobile-nav','sn-mobile-sheet-layer','mobileMore','sn-side-bottom'])if(studioJs.includes(token))errors.push(`React:${token}`);
-            if((studioJs.match(/sn-icon/g)||[]).length!==1)errors.push('single toggle');
-            for(const text of ['Pengaturan','Keluar','Lihat situs','SUBDOMAIN GRATIS','.ngeblogging.com'])if(!studioJs.includes(text))errors.push(`missing:${text}`);
-            if(studioJs.includes('Pembayaran'))errors.push('inactive payment destination');
+            for(const className of ['sn-mobile-nav','sn-mobile-sheet-layer','sn-side-bottom'])if(renderedClassCount(studioJs,className)!==0)errors.push(`rendered React class:${className}`);
+            if(renderedClassCount(studioJs,'sn-icon')!==1)errors.push('single toggle');
+            for(const text of ['Ringkasan','Posts','Pages','Tema','Media','Nara AI','Analitik','Anggota','Domain','Pengaturan','Keluar'])if(!navSegment.includes(text))errors.push(`sidebar missing:${text}`);
+            if(navSegment.includes('Pembayaran'))errors.push('inactive payment destination');
+            for(const text of ['Lihat situs','SUBDOMAIN GRATIS','.ngeblogging.com'])if(!studioJs.includes(text))errors.push(`missing:${text}`);
             for(const marker of ['naraBillingReady','naraImageReady','tn-widget-summary','ng-widget-recent-posts','ng-widget-popular-posts','Mobile','Tablet','Laptop','Komputer'])if(!allAssets.includes(marker))errors.push(`asset:${marker}`);
             if(health.nara!==true||!health.naraProviders||(!health.naraProviders.qwen&&!health.naraProviders.workersAi))errors.push('Nara provider');
             if(health.managedSubdomains!==true||health.siteLimits?.free!==5||health.siteLimits?.maximum!==12)errors.push('managed subdomain/site limits');
@@ -58,7 +61,7 @@ jobs:
             const nara=await get(`${site}/api/nara`,{method:'POST',headers:{'content-type':'application/json',origin:site},body:JSON.stringify({message:'uji koneksi',model:'nara-mini',intelligence:'standard',attachments:[],history:[]})});let payload={};try{payload=JSON.parse(nara.text||'{}')}catch{}
             if(nara.response.status!==401||payload.code!=='NARA_SESSION_REQUIRED')errors.push(`Nara auth:${nara.response.status}/${payload.code||'none'}`);
             if(/konfigurasi autentikasi/i.test(String(payload.error||'')))errors.push('obsolete Nara auth error');
-            console.log(JSON.stringify({health,studioUrl,assets:assets.size,nara:{status:nara.response.status,code:payload.code},errors},null,2));
+            console.log(JSON.stringify({health,studioUrl,assets:assets.size,renderedClasses:{mobileNav:renderedClassCount(studioJs,'sn-mobile-nav'),sheet:renderedClassCount(studioJs,'sn-mobile-sheet-layer'),sideBottom:renderedClassCount(studioJs,'sn-side-bottom'),toggle:renderedClassCount(studioJs,'sn-icon')},nara:{status:nara.response.status,code:payload.code},errors},null,2));
             if(errors.length)process.exit(1);console.log('FINAL_V9_LIVE_VERIFIED');
           }catch(error){console.error(error.message);process.exit(1)}
           NODE
