@@ -6,7 +6,10 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("single v14 Studio authority replaces historical style and guard stacks", async () => {
   const index = await read("index.html");
-  assert.match(index, /studio-v14-authority\.css/);
+  const studioPosition = index.indexOf("studio-v14-authority.css");
+  const naraPosition = index.indexOf("nara-interaction-authority.css");
+  assert.ok(studioPosition > -1);
+  assert.ok(naraPosition > studioPosition);
   assert.match(index, /nara-command-center-bridge\.js/);
   for (const legacy of [
     "studio-runtime-layout-guard.js",
@@ -15,17 +18,17 @@ test("single v14 Studio authority replaces historical style and guard stacks", a
     "nara-availability-bridge.js",
     "studio-v10-authority.css",
     "studio-v11-mobile-repair.css",
-    "nara-interaction-authority.css",
     "nara-interaction-guard.js",
   ]) assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
 });
 
 test("Nara launcher and assistant remain visible clickable and above Studio", async () => {
-  const css = await read("src/studio-v14-authority.css");
+  const studioCss = await read("src/studio-v14-authority.css");
+  const naraCss = await read("src/nara-interaction-authority.css");
   const secure = await read("src/StudioSecure.jsx");
-  assert.match(css, /\.nara-floating-button[\s\S]*z-index: 24000 !important/);
-  assert.match(css, /\.nara-assistant-layer[\s\S]*z-index: 30000 !important/);
-  assert.match(css, /pointer-events: auto !important/);
+  assert.match(studioCss, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
+  assert.match(naraCss, /\.nara-floating-button[\s\S]*z-index: 2147483000 !important/);
+  assert.match(naraCss, /\.nara-assistant-layer[\s\S]*pointer-events: auto !important/);
   assert.match(secure, /\.sn-top-actions \.sn-nara-button/);
   assert.match(secure, /button\.hidden = false/);
   assert.match(secure, /button\.disabled = false/);
