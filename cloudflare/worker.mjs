@@ -9,6 +9,7 @@ import { handleWorkersAiNara, workersAiReady } from "../server/workers-ai-nara.m
 const MAX_REQUEST_BYTES = 20 * 1024 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "OPTIONS"]);
 const DEFAULT_SITE_ORIGIN = "https://ngeblogging.com";
+const DEFAULT_RELEASE = "2026.07.24-studio-v13";
 
 function enabled(value) {
   return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
@@ -186,8 +187,8 @@ export default {
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          release: "2026.07.24-studio-v10",
-          runtime: env.NARA_RUNTIME || "cloudflare-worker-v5",
+          release: String(env.APP_RELEASE || DEFAULT_RELEASE),
+          runtime: env.NARA_RUNTIME || "cloudflare-worker-v7",
           hostname: url.hostname,
           billing: paypal || localBilling,
           billingProviders: { paypal, local: localBilling },
