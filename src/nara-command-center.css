@@ -1,0 +1,107 @@
+.nara-capability-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  padding: 8px 12px 4px;
+  background: var(--nara-surface, #fff);
+}
+
+.nara-capability-shortcuts > button {
+  appearance: none;
+  min-width: 0;
+  min-height: 54px;
+  padding: 7px 5px;
+  border: 1px solid rgba(42, 83, 132, .14);
+  border-radius: 13px;
+  background: linear-gradient(180deg, #fff, #f5f8fd);
+  color: #17345c;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 5px 16px rgba(22, 54, 91, .05);
+  touch-action: manipulation;
+}
+
+.nara-capability-shortcuts > button:hover,
+.nara-capability-shortcuts > button:focus-visible {
+  border-color: rgba(45, 110, 223, .45);
+  background: #edf4ff;
+  outline: none;
+}
+
+.nara-capability-shortcuts > button > span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: #2d6edf;
+}
+
+.nara-capability-shortcuts svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nara-capability-shortcuts b {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.nara-command-status {
+  margin: 5px 12px 3px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #eef5ff;
+  color: #244a77;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.nara-command-status[data-tone="success"] {
+  background: #eaf8ef;
+  color: #17623b;
+}
+
+.nara-command-status[data-tone="warning"] {
+  background: #fff7e8;
+  color: #7c5310;
+}
+
+.nara-command-status[data-tone="error"] {
+  background: #fff0f1;
+  color: #9a2632;
+}
+
+@media (max-width: 760px) {
+  .nara-capability-shortcuts {
+    grid-template-columns: repeat(5, minmax(58px, 1fr));
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    padding: 7px 8px 3px;
+  }
+
+  .nara-capability-shortcuts::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nara-capability-shortcuts > button {
+    min-height: 52px;
+  }
+
+  .nara-command-status {
+    margin-inline: 8px;
+  }
+}
