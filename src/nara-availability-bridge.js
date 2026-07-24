@@ -1,14 +1,19 @@
-const RELEASE = "nara-capability-bridge-v10-20260724";
+const RELEASE = "nara-capability-bridge-v11-20260724";
 let availability = "pending";
 let billingReady = false;
 let imageGenerationReady = false;
 let retryTimer = 0;
 let frame = 0;
 
-document.documentElement.dataset.naraReady = availability;
-document.documentElement.dataset.naraBillingReady = "false";
-document.documentElement.dataset.naraImageReady = "false";
-document.documentElement.dataset.naraCapabilityRelease = RELEASE;
+function syncRootState() {
+  const root = document.documentElement;
+  if (root.dataset.naraReady !== availability) root.dataset.naraReady = availability;
+  const billing = String(billingReady);
+  const images = String(imageGenerationReady);
+  if (root.dataset.naraBillingReady !== billing) root.dataset.naraBillingReady = billing;
+  if (root.dataset.naraImageReady !== images) root.dataset.naraImageReady = images;
+  if (root.dataset.naraCapabilityRelease !== RELEASE) root.dataset.naraCapabilityRelease = RELEASE;
+}
 
 function labelOf(node) {
   return node?.querySelector?.("span")?.textContent?.trim()
@@ -27,49 +32,42 @@ function assistantLaunchers() {
   });
 }
 
-function reveal(node) {
-  node.hidden = false;
-  node.removeAttribute("aria-hidden");
-  node.style.removeProperty("display");
-  node.style.removeProperty("visibility");
-  node.style.removeProperty("pointer-events");
-  node.style.removeProperty("opacity");
-  if ("disabled" in node) node.disabled = false;
-  if ("tabIndex" in node && node.tabIndex < 0) node.tabIndex = 0;
+function revealLauncher(node) {
+  if (node.hidden) node.hidden = false;
+  if (node.getAttribute("aria-hidden") === "true") node.removeAttribute("aria-hidden");
+  if (node.style.display) node.style.removeProperty("display");
+  if (node.style.visibility) node.style.removeProperty("visibility");
+  if (node.style.pointerEvents) node.style.removeProperty("pointer-events");
+  if (node.style.opacity) node.style.removeProperty("opacity");
+  if ("disabled" in node && node.disabled) node.disabled = false;
+  if (node.tabIndex < 0) node.tabIndex = 0;
 }
 
 function preserveAssistantCapabilities() {
-  document.documentElement.dataset.naraBillingReady = String(billingReady);
-  document.documentElement.dataset.naraImageReady = String(imageGenerationReady);
-
-  // Capabilities remain present in the interface. Readiness controls which
-  // provider answers a request; it must never delete models, intelligence
-  // levels, camera, image, file, voice, memory, plugin, or QR controls.
-  document.querySelectorAll(".nara-select option,.nara-attachment-menu button,.nara-composer input,.nara-quick-prompts button").forEach((node) => {
-    node.hidden = false;
-    node.removeAttribute("aria-hidden");
-    if ("disabled" in node) node.disabled = false;
-    node.style.removeProperty("display");
-    node.style.removeProperty("visibility");
-    node.style.removeProperty("pointer-events");
-  });
-
   document.querySelectorAll(".nara-attachment-menu").forEach((node) => {
     node.dataset.imageProviderReady = String(imageGenerationReady);
+  });
+
+  // Native file controls are implementation details. They must stay hidden;
+  // camera, photo, text-file and QR actions remain available through styled buttons.
+  document.querySelectorAll('.nara-composer input[type="file"]').forEach((input) => {
+    input.hidden = true;
+    input.tabIndex = -1;
+    input.setAttribute("aria-hidden", "true");
+    input.classList.add("nara-native-file-input");
   });
 }
 
 function scan() {
-  document.documentElement.dataset.naraReady = availability;
-  document.documentElement.dataset.naraCapabilityRelease = RELEASE;
-
+  syncRootState();
   assistantLaunchers().forEach((button) => {
-    reveal(button);
+    revealLauncher(button);
     button.dataset.naraLauncher = "active";
     button.setAttribute("aria-label", "Buka Nara AI");
-    button.setAttribute("title", availability === "ready" ? "Buka Nara AI" : "Buka Nara AI — koneksi akan dicoba otomatis");
+    button.setAttribute("title", availability === "ready"
+      ? "Buka Nara AI"
+      : "Buka Nara AI — koneksi akan dicoba otomatis");
   });
-
   preserveAssistantCapabilities();
 }
 
@@ -105,7 +103,8 @@ async function resolveAvailability() {
   }
 }
 
-new MutationObserver(scheduleScan).observe(document.documentElement, { childList: true, subtree: true });
+const root = document.getElementById("root") || document.documentElement;
+new MutationObserver(scheduleScan).observe(root, { childList: true, subtree: true });
 window.addEventListener("online", resolveAvailability);
 window.addEventListener("pageshow", resolveAvailability);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) resolveAvailability(); });
