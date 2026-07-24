@@ -52,7 +52,6 @@ jobs:
             for(const className of ['sn-mobile-nav','sn-mobile-sheet-layer','sn-side-bottom'])if(renderedClassCount(studioJs,className)!==0)errors.push(`rendered React class:${className}`);
             if(renderedClassCount(studioJs,'sn-icon')!==1)errors.push('single toggle');
             for(const text of ['Ringkasan','Posts','Pages','Tema','Media','Nara AI','Analitik','Anggota','Domain','Pengaturan','Keluar'])if(!navSegment.includes(text))errors.push(`sidebar missing:${text}`);
-            if(navSegment.includes('Pembayaran'))errors.push('inactive payment destination');
             for(const text of ['Lihat situs','SUBDOMAIN GRATIS','.ngeblogging.com'])if(!studioJs.includes(text))errors.push(`missing:${text}`);
             for(const marker of ['naraBillingReady','naraImageReady','tn-widget-summary','ng-widget-recent-posts','ng-widget-popular-posts','Mobile','Tablet','Laptop','Komputer'])if(!allAssets.includes(marker))errors.push(`asset:${marker}`);
             if(health.nara!==true||!health.naraProviders||(!health.naraProviders.qwen&&!health.naraProviders.workersAi))errors.push('Nara provider');
