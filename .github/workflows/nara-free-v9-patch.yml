@@ -1,0 +1,89 @@
+name: Apply Nara free runtime v9 patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/nara-free-v9-patch.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove inactive Pro payment and vision controls from Nara
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const path = 'src/NaraAssistant.jsx';
+          let source = readFileSync(path, 'utf8');
+
+          source = source.replace(
+            /const intelligenceOptions = \[[\s\S]*?\n\];\n\nconst modelOptions = \[[\s\S]*?\n\];/,
+            `const intelligenceOptions = [
+  { id: "light", label: "Ringan", description: "Cepat untuk pertanyaan singkat" },
+  { id: "standard", label: "Sedang", description: "Seimbang untuk menulis dan SEO" },
+];
+
+const modelOptions = [
+  { id: "nara-mini", label: "Nara Mini", detail: "Aktif melalui Nara Edge" },
+];`,
+          );
+
+          source = source.replace('const TEXT_FILE_PATTERN = /\\.(txt|md|csv|json)$/i;\n', 'const TEXT_FILE_PATTERN = /\\.(txt|md|csv|json)$/i;\nconst NARA_FREE_RUNTIME_RELEASE = "nara-free-runtime-v9-20260724";\n');
+          source = source.replace('  if (status === 403) return message || "Pilihan ini memerlukan paket Nara Pro.";', '  if (status === 403) return message || "Pilihan tersebut belum tersedia pada runtime aktif.";');
+          source = source.replace('  const [plan, setPlan] = useState(user ? "free" : "guest");\n', '');
+          source = source.replace('  const [showUpgrade, setShowUpgrade] = useState(false);\n', '');
+          source = source.replace(/\n  useEffect\(\(\) => \{\n    let active = true;[\s\S]*?\n  \}, \[user\]\);\n/, '\n');
+          source = source.replace(
+            /  const selectPremiumAware = \(kind, value\) => \{[\s\S]*?\n  \};\n\n  const addFiles/,
+            `  const selectAvailableOption = (kind, value) => {
+    if (kind === "model") setModel(value);
+    else setIntelligence(value);
+  };
+
+  const addFiles`,
+          );
+          source = source.replace(/\n  const requestPro = async \(\) => \{[\s\S]*?\n  \};\n\n  const send/, '\n\n  const send');
+          source = source.replace(/    const modelOption = modelOptions\.find\([\s\S]*?\n    \}\n\n    const outgoing/, '    const outgoing');
+
+          source = source.replace('<span><b>Nara</b><em>AI</em>{plan === "pro" && <i>PRO</i>}</span>', '<span><b>Nara</b><em>AI</em></span>');
+          source = source.replace('<div className="nara-context-bar">\n              <span><ShieldCheck /> Jawaban privat</span>\n              <button onClick={() => setShowUpgrade(true)}>{plan === "pro" ? <><Crown /> Pro aktif</> : <><Zap /> Upgrade Pro</>}</button>\n            </div>', '<div className="nara-context-bar">\n              <span><ShieldCheck /> Jawaban privat</span>\n            </div>');
+          source = source.replace('            <aside className="nara-assistant-shell" aria-busy={busy}>', '            <aside className="nara-assistant-shell" data-runtime={NARA_FREE_RUNTIME_RELEASE} aria-busy={busy}>');
+          source = source.replace('["Buat ide artikel", "Perbaiki tulisan", "Audit SEO", "Jelaskan gambar"]', '["Buat ide artikel", "Perbaiki tulisan", "Audit SEO", "Susun outline"]');
+          source = source.replace('                      <button onClick={() => cameraInput.current?.click()}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button>\n', '');
+          source = source.replace('                      <button onClick={() => imageInput.current?.click()}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button>\n', '');
+          source = source.replace('onChange={(event) => selectPremiumAware("intelligence", event.target.value)}', 'onChange={(event) => selectAvailableOption("intelligence", event.target.value)}');
+          source = source.replace('onChange={(event) => selectPremiumAware("model", event.target.value)}', 'onChange={(event) => selectAvailableOption("model", event.target.value)}');
+          source = source.replace('{item.label}{item.pro ? " · Pro" : ""}', '{item.label}');
+          source = source.replace('<span>{selectedModel?.label}{selectedModel?.pro && <LockKeyhole />}</span>', '<span>{selectedModel?.label}</span>');
+          source = source.replace('              <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />\n', '');
+          source = source.replace('              <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />\n', '');
+          source = source.replace(/\n          \{showUpgrade && \([\s\S]*?\n          \)\}/, '');
+
+          const forbidden = ['Upgrade Pro', 'NARA PRO', 'Pembayaran belum ditagihkan', 'plan_upgrade_requests', 'showUpgrade', 'nara-writer', 'nara-vision', 'nara-max', 'Ekstra tinggi', 'Analisis lebih dalam dan panjang'];
+          for (const token of forbidden) if (source.includes(token)) throw new Error(`Inactive Nara token remains: ${token}`);
+          for (const required of ['nara-free-runtime-v9-20260724', 'Nara Mini', 'Ringan', 'Sedang', 'Susun outline']) if (!source.includes(required)) throw new Error(`Required Nara runtime token missing: ${required}`);
+
+          writeFileSync(path, source);
+          NODE
+
+      - name: Commit patched source
+        shell: bash
+        run: |
+          git config user.name "ngeblogging-release-bot"
+          git config user.email "release-bot@ngeblogging.com"
+          git add src/NaraAssistant.jsx
+          git diff --cached --check
+          git commit -m "Expose only active free Nara capabilities"
+          git push origin HEAD:main
