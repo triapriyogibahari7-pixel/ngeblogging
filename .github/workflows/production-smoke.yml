@@ -16,57 +16,77 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  diagnose-production:
+  verify-live-assets:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Inspect workflows for the deployed main commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
-        run: |
-          set -euo pipefail
-          echo "MAIN_COMMIT=${BASE_SHA}"
-          curl --fail --silent --show-error \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${BASE_SHA}&per_page=30" \
-            | jq -c '.workflow_runs[] | {id,name,event,status,conclusion,head_sha,run_started_at,html_url}'
-
-      - name: Inspect the live release
+      - name: Download live health, shell, service worker, and built assets
         env:
           SITE_URL: https://ngeblogging.com
         run: |
           set -euo pipefail
           stamp="$(date +%s)"
-          curl --fail --silent --show-error --location --max-time 30 \
-            -H 'accept: application/json' -H 'cache-control: no-cache' \
-            "${SITE_URL}/api/health?diagnostic=${stamp}" | tee /tmp/health.json
-          echo
-          echo '--- SERVICE WORKER RELEASE ---'
-          curl --fail --silent --show-error --location --max-time 30 \
-            -H 'cache-control: no-cache' "${SITE_URL}/sw.js?diagnostic=${stamp}" \
-            | grep -E 'ngeblogging-app-v[0-9]+-[0-9]+' | head -n 3 || true
-          echo '--- INDEX ASSETS ---'
-          curl --fail --silent --show-error --location --max-time 30 \
-            -H 'cache-control: no-cache' "${SITE_URL}/?diagnostic=${stamp}" \
-            | grep -Eo '(src|href)="[^"]+\.(js|css)(\?[^"]*)?"' | head -n 30 || true
+          curl --fail --silent --show-error --location --max-time 30 -H 'accept: application/json' -H 'cache-control: no-cache' "${SITE_URL}/api/health?diagnostic=${stamp}" > /tmp/health.json
+          curl --fail --silent --show-error --location --max-time 30 -H 'cache-control: no-cache' "${SITE_URL}/sw.js?diagnostic=${stamp}" > /tmp/sw.js
+          curl --fail --silent --show-error --location --max-time 30 -H 'cache-control: no-cache' "${SITE_URL}/?diagnostic=${stamp}" > /tmp/index.html
+          python <<'PY' > /tmp/assets.txt
+          from html.parser import HTMLParser
+          from urllib.parse import urljoin
+          html = open('/tmp/index.html', encoding='utf-8').read()
+          class Assets(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.urls=[]
+              def handle_starttag(self, tag, attrs):
+                  values=dict(attrs)
+                  value=values.get('src') if tag=='script' else values.get('href') if tag=='link' else None
+                  if value and value.split('?',1)[0].lower().endswith(('.js','.css')):
+                      url=urljoin('https://ngeblogging.com',value)
+                      if url not in self.urls: self.urls.append(url)
+          parser=Assets(); parser.feed(html); print('\n'.join(parser.urls))
+          PY
+          : > /tmp/assets.bundle
+          while IFS= read -r asset; do
+            [ -n "$asset" ] || continue
+            curl --fail --silent --show-error --location --max-time 40 -H 'cache-control: no-cache' "${asset}?diagnostic=${stamp}" >> /tmp/assets.bundle
+            printf '\n' >> /tmp/assets.bundle
+          done < /tmp/assets.txt
 
-      - name: Require release v7
+      - name: Require the complete public v7 release
         run: |
           node <<'NODE'
           const fs = require('node:fs');
-          const health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8'));
-          const errors = [];
+          const health = JSON.parse(fs.readFileSync('/tmp/health.json','utf8'));
+          const sw = fs.readFileSync('/tmp/sw.js','utf8');
+          const index = fs.readFileSync('/tmp/index.html','utf8');
+          const assets = fs.readFileSync('/tmp/assets.bundle','utf8');
+          const errors=[];
+          if (health.status !== 'ok' || health.service !== 'ngeblogging-cloudflare') errors.push('health');
           if (health.release !== '2026.07.24-mobile-final-v7') errors.push(`release=${health.release}`);
-          if (health.runtime !== 'cloudflare-worker-v4') errors.push(`runtime=${health.runtime}`);
+          if (!['cloudflare-worker-preview-v4','cloudflare-worker-v4'].includes(health.runtime)) errors.push(`runtime=${health.runtime}`);
           if (health.nara !== true) errors.push(`nara=${health.nara}`);
-          if (!health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push(`naraProviders=${JSON.stringify(health.naraProviders)}`);
-          if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push(`siteLimits=${JSON.stringify(health.siteLimits)}`);
-          if (errors.length) {
-            console.error(`LIVE_RELEASE_NOT_READY: ${errors.join(', ')}`);
-            process.exit(1);
-          }
-          console.log('LIVE_RELEASE_V7_CONFIRMED');
+          if (!health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push(`providers=${JSON.stringify(health.naraProviders)}`);
+          if (health.managedSubdomains !== true) errors.push('managedSubdomains');
+          if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push(`limits=${JSON.stringify(health.siteLimits)}`);
+          if (!index.includes('<div id="root"></div>')) errors.push('root shell');
+          if (!sw.includes('ngeblogging-app-v7-20260724') || !sw.includes('networkFirst')) errors.push('PWA v7');
+          for (const marker of [
+            'studio-production-guard-v7-20260724',
+            'sidebarAuthority',
+            'ngeblogging-settings-extras',
+            '.sn-content-tools',
+            '.sn-mobile-nav',
+            'display: none !important',
+            '--sn-phone-panel',
+            'ng-shell-poster',
+            'ng-shell-rail',
+            'ng-shell-cards',
+            '.ng-widget-recent-posts ol',
+            '.ng-widget-popular-posts ol',
+            '.ng-header nav.open',
+            'Mobile', 'Tablet', 'Laptop', 'Komputer'
+          ]) if (!assets.includes(marker)) errors.push(`asset:${marker}`);
+          if (assets.includes('uji produksi belum dinyatakan lulus')) errors.push('obsolete Nara gate');
+          console.log(JSON.stringify({health,assetUrls:fs.readFileSync('/tmp/assets.txt','utf8').trim().split(/\n+/).filter(Boolean),errors},null,2));
+          if (errors.length) process.exit(1);
+          console.log('LIVE_RELEASE_V7_ASSETS_CONFIRMED');
           NODE
