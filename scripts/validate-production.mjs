@@ -19,12 +19,11 @@ const requiredFiles = [
   "wrangler.temporary.jsonc",
   "public/_headers",
   "public/sw.js",
+  "src/pwa-runtime.js",
   "src/StudioNext.jsx",
   "src/StudioSecure.jsx",
-  "src/studio-production-guard.js",
-  "src/studio-v10-authority.css",
-  "src/studio-runtime-layout-guard.js",
-  "src/nara-availability-bridge.js",
+  "src/studio-v14-authority.css",
+  "src/nara-interaction-authority.css",
   "src/nara-command-center-bridge.js",
   "src/nara-command-center.css",
   "src/NaraAssistant.jsx",
@@ -106,12 +105,19 @@ if (!wrangler.compatibility_flags?.includes("nodejs_compat")) throw new Error("n
 if (wrangler.assets?.not_found_handling !== "single-page-application") throw new Error("SPA fallback Cloudflare belum aktif.");
 if (wrangler.assets?.run_worker_first !== true) throw new Error("Worker harus berjalan sebelum aset agar SEO tenant dan endpoint discovery aktif.");
 if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada default dan produksi.");
-if (wrangler.vars?.CF_AI_MODEL !== "@cf/zai-org/glm-4.7-flash") throw new Error("Model fallback Workers AI belum dipin.");
+for (const [key, expected] of Object.entries({
+  CF_AI_MODEL: "@cf/zai-org/glm-4.7-flash",
+  CF_AI_VISION_MODEL: "@cf/google/gemma-4-26b-a4b-it",
+  CF_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
+})) {
+  if (wrangler.vars?.[key] !== expected || cloudflareProduction.vars?.[key] !== expected) throw new Error(`${key} belum dipin pada default dan produksi.`);
+}
 if (!/^cloudflare-worker-default-v\d+$/.test(String(wrangler.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime default Cloudflare belum berversi.");
 if (!/^cloudflare-worker-production-v\d+$/.test(String(cloudflareProduction.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime produksi Cloudflare belum berversi.");
-if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v13" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v13") throw new Error("Release Worker belum v13.");
+if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");
 if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live dan webhook diverifikasi.");
 if (cloudflareProduction.vars?.PAYPAL_MERCHANT_EMAIL !== "triapriyogibahari9@gmail.com") throw new Error("Email merchant PayPal belum sesuai permintaan pemilik.");
+if (cloudflareProduction.vars?.AUTH_BRANDED_EMAIL_READY !== "false") throw new Error("Email bermerek tidak boleh diklaim aktif sebelum probe pengiriman lulus.");
 
 for (const vars of [wrangler.vars || {}, cloudflareProduction.vars || {}, temporaryWrangler.vars || {}]) {
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(String(vars.SUPABASE_URL || ""))) throw new Error("Public Supabase URL Worker belum valid.");
@@ -126,33 +132,47 @@ for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID"]) {
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
 const workersAi = await readFile(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
+const imageHandler = await readFile(new URL("../server/nara-image-handler.mjs", import.meta.url), "utf8");
 const portableApi = await readFile(new URL("../api/server.mjs", import.meta.url), "utf8");
 if (!worker.includes("../server/nara-runtime.mjs")) throw new Error("Worker belum memakai runtime Nara portable.");
 if (!worker.includes("../server/workers-ai-nara.mjs")) throw new Error("Worker belum memakai fallback Workers AI.");
 if (!portableApi.includes("../server/nara-runtime.mjs")) throw new Error("API pemulihan belum memakai runtime Nara portable.");
 if (!worker.includes(".ngeblogging.com")) throw new Error("Worker belum menerima origin tenant wildcard.");
-for (const marker of ["handleNaraImage", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/", "DEFAULT_RELEASE"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
-for (const marker of ["env.AI.run", "consume_nara_quota", "verifyUser", "@cf/zai-org/glm-4.7-flash"]) if (!workersAi.includes(marker)) throw new Error(`Fallback Workers AI belum memuat ${marker}.`);
+for (const marker of ["handleNaraImage", "imageGenerationReady", "workersVisionReady", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/", "2026.07.24-studio-v14"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
+for (const marker of ["env.AI.run", "consume_nara_quota", "verifyUser", "@cf/zai-org/glm-4.7-flash", "@cf/google/gemma-4-26b-a4b-it", "imageAttachment", "workersVisionReady"]) if (!workersAi.includes(marker)) throw new Error(`Fallback Workers AI belum memuat ${marker}.`);
+for (const marker of ["imageGenerationReady", "verifySiteAccess", "consumeImageQuota", "generateWithWorkers", "@cf/bytedance/stable-diffusion-xl-lightning", "site-public-media"]) if (!imageHandler.includes(marker)) throw new Error(`Generator gambar Nara belum memuat ${marker}.`);
 for (const source of [worker, portableApi]) if (/netlify\/functions|x-nf-client-connection-ip/.test(source)) throw new Error("Entrypoint produksi masih memiliki dependensi runtime lama.");
 
 const index = await readFile(new URL("../index.html", import.meta.url), "utf8");
 for (const bridge of ["cloudflare-media-bridge", "editor-toolbar-bridge", "workspace-profile-bridge", "workspace-activation-bridge"]) if (index.includes(bridge)) throw new Error(`Bridge DOM lama masih aktif: ${bridge}`);
-for (const marker of ["studio-production-guard.js", "nara-command-center-bridge.js", "nara-command-center.css"]) if (!index.includes(marker)) throw new Error(`Shell produksi belum memuat ${marker}.`);
-const hardeningPosition = index.indexOf("studio-v8-hardening.css");
-const authorityPosition = index.indexOf("studio-v10-authority.css");
-if (authorityPosition < 0 || authorityPosition <= hardeningPosition) throw new Error("CSS otoritas Studio wajib dimuat setelah hardening lama.");
+for (const marker of ["pwa-runtime.js", "studio-v14-authority.css", "nara-interaction-authority.css", "nara-command-center-bridge.js", "nara-command-center.css"]) if (!index.includes(marker)) throw new Error(`Shell produksi belum memuat ${marker}.`);
+for (const legacy of ["studio-runtime-layout-guard.js", "studio-mobile-navigation.js", "studio-production-guard.js", "nara-availability-bridge.js", "nara-interaction-guard.js", "studio-v10-authority.css", "studio-v11-mobile-repair.css"]) {
+  if (index.includes(legacy)) throw new Error(`Guard lama masih aktif dan dapat bentrok: ${legacy}`);
+}
+const studioAuthorityPosition = index.indexOf("studio-v14-authority.css");
+const naraAuthorityPosition = index.indexOf("nara-interaction-authority.css");
+if (studioAuthorityPosition < 0 || naraAuthorityPosition <= studioAuthorityPosition) throw new Error("CSS Nara wajib dimuat setelah CSS otoritas Studio v14.");
+if (index.indexOf("pwa-runtime.js") > index.indexOf("/src/main.jsx")) throw new Error("Runtime PWA dan mode perangkat wajib dimuat sebelum aplikasi React.");
 
-const productionGuard = await readFile(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
-for (const marker of ["studio-production-guard-v10-20260724", "hideNaraSidebarRoute", "ensureFloatingNara", "ensureNaraCapabilityShortcuts", "requestQrScan", "openNaraWorkspace"]) {
-  if (!productionGuard.includes(marker)) throw new Error(`Guard Studio belum memuat ${marker}.`);
+const studioSecure = await readFile(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
+for (const marker of ["studio-source-navigation-v14-20260724", "naraWorkspaceRoute", ".sn-top-actions .sn-nara-button", "sidebarAuthority", "PHONE_QUERY", "health.imageGeneration"]) {
+  if (!studioSecure.includes(marker)) throw new Error(`StudioSecure v14 kehilangan ${marker}.`);
 }
-const capabilityBridge = await readFile(new URL("../src/nara-availability-bridge.js", import.meta.url), "utf8");
-for (const marker of ["nara-capability-bridge-v10-20260724", "preserveAssistantCapabilities", ".nara-select option", ".nara-attachment-menu button", ".nara-composer input"]) {
-  if (!capabilityBridge.includes(marker)) throw new Error(`Jembatan kemampuan Nara belum memuat ${marker}.`);
+const studioAuthority = await readFile(new URL("../src/studio-v14-authority.css", import.meta.url), "utf8");
+for (const marker of ["--sn-phone-rail", ".sn-side.collapsed", ".sn-icon", ".nara-floating-button", ".nara-composer input[type=\"file\"]", ".sn-mobile-nav"]) {
+  if (!studioAuthority.includes(marker)) throw new Error(`CSS Studio v14 kehilangan ${marker}.`);
 }
-if (/removeInactiveOptions|controls\.forEach\(conceal\)|startsWith\("Kamera"\).*conceal/s.test(capabilityBridge)) throw new Error("Kemampuan Nara masih dapat dihapus oleh readiness bridge.");
+const naraAuthority = await readFile(new URL("../src/nara-interaction-authority.css", import.meta.url), "utf8");
+for (const marker of [".nara-floating-button", ".nara-assistant-layer", ".nara-assistant-shell", ".nara-native-file-input", "pointer-events: auto", "2147483000"]) {
+  if (!naraAuthority.includes(marker)) throw new Error(`CSS interaksi Nara kehilangan ${marker}.`);
+}
+const pwaRuntime = await readFile(new URL("../src/pwa-runtime.js", import.meta.url), "utf8");
+for (const marker of ["beforeinstallprompt", "navigator.serviceWorker.register", "updateViaCache", "controllerchange", "dataset.deviceMode", "ngeblogging-pwa-v14-20260724"]) {
+  if (!pwaRuntime.includes(marker)) throw new Error(`Runtime PWA kehilangan ${marker}.`);
+}
+
 const commandCenter = await readFile(new URL("../src/nara-command-center-bridge.js", import.meta.url), "utf8");
-for (const marker of ["nara-command-center-v13-20260724", "Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector", "openWorkspace"]) {
+for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector", "openWorkspace"]) {
   if (!commandCenter.includes(marker)) throw new Error(`Command Center Nara kehilangan ${marker}.`);
 }
 
@@ -165,7 +185,7 @@ for (const marker of ["Projects", "Memory", "Images", "Plugins", "Memori jangka 
   if (!workspace.includes(marker)) throw new Error(`Nara Workspace kehilangan kemampuan: ${marker}`);
 }
 const integrations = await readFile(new URL("../src/lib/nara-data.js", import.meta.url), "utf8");
-for (const marker of ["supabase", "github", "cloudflare", "paypal", "google-drive", "webhook"]) {
+for (const marker of ["supabase", "github", "neon", "cloudflare", "paypal", "google-drive", "webhook"]) {
   if (!integrations.includes(`id:\"${marker}\"`) && !integrations.includes(`id:"${marker}"`)) throw new Error(`Katalog plugin kehilangan ${marker}.`);
 }
 
@@ -193,15 +213,15 @@ for (const marker of ["status\",\"active", "is_public", "site_theme_settings", "
 }
 
 const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
-if (!serviceWorker.includes("ngeblogging-app-v13-20260724")) throw new Error("Service worker belum menginvalidasi cache ke v13.");
+if (!serviceWorker.includes("ngeblogging-app-v14-20260724")) throw new Error("Service worker belum menginvalidasi cache ke v14.");
 
 const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
 for (const value of ["Content-Security-Policy", "X-Content-Type-Options", "max-age=31536000, immutable"]) if (!headers.includes(value)) throw new Error(`Header Cloudflare belum memuat ${value}.`);
 
 const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudflare.yml", import.meta.url), "utf8");
 if (cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare tidak boleh lagi dilewati oleh activation gate.");
-for (const marker of ["npm run deploy:cloudflare", "nara-command-center-bridge.js", "ngeblogging-app-v13-20260724", "2026.07.24-studio-v13", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {
-  if (!cloudflareWorkflow.includes(marker)) throw new Error(`Deployment Cloudflare v13 belum memuat ${marker}.`);
+for (const marker of ["npm run deploy:cloudflare", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "2026.07.24-studio-v14", "health.naraProviders?.vision", "health.imageGeneration", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {
+  if (!cloudflareWorkflow.includes(marker)) throw new Error(`Deployment Cloudflare v14 belum memuat ${marker}.`);
 }
 
-console.log(`Validasi produksi v13 lulus: ${requiredFiles.length} berkas wajib, apex/www/wildcard, rail ikon, satu tombol sidebar, Nara lengkap, QR, memori, plugin, 100 tema, 25 widget, renderer tenant, PWA v13, dan deploy Cloudflare wajib.`);
+console.log(`Validasi produksi v14 lulus: ${requiredFiles.length} berkas wajib, satu sidebar responsif, Nara teks/vision/gambar, QR, memori, plugin, 100 tema, 25 widget, renderer tenant, PWA v14, dan deploy Cloudflare wajib.`);
