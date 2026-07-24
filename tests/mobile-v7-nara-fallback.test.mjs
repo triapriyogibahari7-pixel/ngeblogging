@@ -58,8 +58,8 @@ test("Nara has authenticated Qwen and Workers AI text vision and image fallbacks
   assert.match(workersAi, /consume_nara_quota/);
 });
 
-test("inactive commerce stays hidden while PWA updates to v14", () => {
+test("inactive commerce stays hidden while PWA updates to v16", () => {
   assert.match(billing, /function upgradeButtons\(\)/);
   assert.match(billing, /upgrades\.forEach\(conceal\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v16-20260724/);
 });
