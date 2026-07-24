@@ -28,7 +28,7 @@ function setStatus(shell, message, tone = "info") {
   if (!status) {
     status = document.createElement("div");
     status.className = "nara-command-status";
-    const shortcuts = shell.querySelector(".nara-capability-shortcuts");
+    const shortcuts = shell.querySelector(`.nara-capability-shortcuts[data-release="${RELEASE}"]`);
     shortcuts?.insertAdjacentElement("afterend", status);
   }
   status.dataset.tone = tone;
@@ -133,13 +133,7 @@ function handleCommand(shell, command) {
   else openWorkspace(shell, command.tab);
 }
 
-function attach(shell) {
-  if (attached.has(shell)) return;
-  const quickPrompts = shell.querySelector(".nara-quick-prompts");
-  const composer = shell.querySelector(".nara-composer");
-  if (!quickPrompts || !composer) return;
-  attached.add(shell);
-
+function buildShortcuts(shell) {
   const shortcuts = document.createElement("div");
   shortcuts.className = "nara-capability-shortcuts";
   shortcuts.dataset.release = RELEASE;
@@ -153,9 +147,30 @@ function attach(shell) {
     button.addEventListener("click", () => handleCommand(shell, command));
     shortcuts.append(button);
   }
+  return shortcuts;
+}
 
-  quickPrompts.insertAdjacentElement("beforebegin", shortcuts);
-  shell.dataset.commandCenter = RELEASE;
+function dedupe(shell) {
+  const owner = shell.querySelector(`.nara-capability-shortcuts[data-release="${RELEASE}"]`);
+  if (!owner) return;
+  shell.querySelectorAll(".nara-capability-shortcuts").forEach((node) => {
+    if (node !== owner) node.remove();
+  });
+  const contextBar = shell.querySelector(".nara-context-bar");
+  if (contextBar && owner.parentElement !== contextBar) contextBar.append(owner);
+}
+
+function attach(shell) {
+  const contextBar = shell.querySelector(".nara-context-bar");
+  const composer = shell.querySelector(".nara-composer");
+  if (!contextBar || !composer) return;
+
+  if (!attached.has(shell)) {
+    attached.add(shell);
+    contextBar.append(buildShortcuts(shell));
+    shell.dataset.commandCenter = RELEASE;
+  }
+  dedupe(shell);
 }
 
 ROOT.addEventListener("change", (event) => {
