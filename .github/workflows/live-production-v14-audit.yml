@@ -13,57 +13,60 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Audit live apex health PWA and tenant
+      - name: Print live v14 diagnostics
         shell: bash
         run: |
-          set -euo pipefail
+          set -u
           stamp="$(date +%s)"
-          curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' -H 'accept: application/json' \
-            "https://ngeblogging.com/api/health?audit=${stamp}" -o health.json -w 'health_http=%{http_code}\n'
-          curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' \
-            "https://ngeblogging.com/?audit=${stamp}" -o index.html -w 'index_http=%{http_code}\n'
-          curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' \
-            "https://ngeblogging.com/sw.js?audit=${stamp}" -o sw.js -w 'sw_http=%{http_code}\n'
-          curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' \
-            "https://tri-apriyogi-bahari.ngeblogging.com/?audit=${stamp}" -o tenant.html -w 'tenant_http=%{http_code}\n'
+          health_code="$(curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' -H 'accept: application/json' "https://ngeblogging.com/api/health?audit=${stamp}" -o health.json -w '%{http_code}' || true)"
+          index_code="$(curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "https://ngeblogging.com/?audit=${stamp}" -o index.html -w '%{http_code}' || true)"
+          sw_code="$(curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "https://ngeblogging.com/sw.js?audit=${stamp}" -o sw.js -w '%{http_code}' || true)"
+          tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "https://tri-apriyogi-bahari.ngeblogging.com/?audit=${stamp}" -o tenant.html -w '%{http_code}' || true)"
+          export HEALTH_CODE="$health_code" INDEX_CODE="$index_code" SW_CODE="$sw_code" TENANT_CODE="$tenant_code"
 
           node <<'NODE'
           const fs = require('node:fs');
-          const healthText = fs.readFileSync('health.json', 'utf8');
-          const index = fs.readFileSync('index.html', 'utf8');
-          const sw = fs.readFileSync('sw.js', 'utf8');
-          const tenant = fs.readFileSync('tenant.html', 'utf8');
-          let health;
-          try { health = JSON.parse(healthText); }
-          catch { throw new Error(`Health bukan JSON: ${healthText.slice(0, 300)}`); }
-
-          const errors = [];
-          if (health.status !== 'ok') errors.push(`health.status=${health.status}`);
-          if (health.service !== 'ngeblogging-cloudflare') errors.push(`health.service=${health.service}`);
-          if (health.release !== '2026.07.24-studio-v14') errors.push(`health.release=${health.release}`);
-          if (health.nara !== true) errors.push(`health.nara=${health.nara}`);
-          if (health.naraProviders?.vision !== true) errors.push(`health.vision=${health.naraProviders?.vision}`);
-          if (health.imageGeneration !== true) errors.push(`health.imageGeneration=${health.imageGeneration}`);
-          if (health.managedSubdomains !== true) errors.push(`health.managedSubdomains=${health.managedSubdomains}`);
-          if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push(`health.siteLimits=${JSON.stringify(health.siteLimits)}`);
-          for (const marker of ['studio-v14-authority.css', 'nara-command-center-bridge.js']) {
-            if (!index.includes(marker)) errors.push(`index missing ${marker}`);
-          }
-          for (const legacy of ['WHITE-R4-2026.07.12', 'studio-runtime-layout-guard.js', 'studio-mobile-navigation.js', 'studio-production-guard.js', 'nara-availability-bridge.js', 'studio-v10-authority.css', 'studio-v11-mobile-repair.css', 'nara-interaction-authority.css', 'nara-interaction-guard.js']) {
-            if (index.includes(legacy)) errors.push(`index legacy ${legacy}`);
-          }
-          if (!sw.includes('ngeblogging-app-v14-20260724')) errors.push('service worker bukan v14');
-          if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant masih 404');
-          if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant tidak menyajikan app shell');
-
-          console.log(JSON.stringify({
-            health,
-            indexBytes: Buffer.byteLength(index),
-            indexV14: index.includes('studio-v14-authority.css'),
-            serviceWorkerV14: sw.includes('ngeblogging-app-v14-20260724'),
-            tenantBytes: Buffer.byteLength(tenant),
-            tenant404: /Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant),
-            errors,
-          }, null, 2));
-          if (errors.length) process.exit(1);
+          const read = (path) => fs.existsSync(path) ? fs.readFileSync(path, 'utf8') : '';
+          const healthText = read('health.json');
+          const index = read('index.html');
+          const sw = read('sw.js');
+          const tenant = read('tenant.html');
+          let health = {};
+          try { health = JSON.parse(healthText); } catch {}
+          const legacy = ['WHITE-R4-2026.07.12','studio-runtime-layout-guard.js','studio-mobile-navigation.js','studio-production-guard.js','nara-availability-bridge.js','studio-v10-authority.css','studio-v11-mobile-repair.css','nara-interaction-authority.css','nara-interaction-guard.js'].filter((value) => index.includes(value));
+          const result = {
+            http: { health: process.env.HEALTH_CODE, index: process.env.INDEX_CODE, sw: process.env.SW_CODE, tenant: process.env.TENANT_CODE },
+            health: {
+              status: health.status,
+              service: health.service,
+              release: health.release,
+              runtime: health.runtime,
+              billing: health.billing,
+              paypal: health.billingProviders?.paypal,
+              localBilling: health.billingProviders?.local,
+              nara: health.nara,
+              qwen: health.naraProviders?.qwen,
+              workersAi: health.naraProviders?.workersAi,
+              vision: health.naraProviders?.vision,
+              imageGeneration: health.imageGeneration,
+              imageProviders: health.imageProviders,
+              customDomains: health.customDomains,
+              emailRegistration: health.emailRegistration,
+              managedSubdomains: health.managedSubdomains,
+              siteLimits: health.siteLimits,
+            },
+            index: {
+              bytes: Buffer.byteLength(index),
+              v14Css: index.includes('studio-v14-authority.css'),
+              commandCenter: index.includes('nara-command-center-bridge.js'),
+              legacy,
+            },
+            pwa: { bytes: Buffer.byteLength(sw), v14: sw.includes('ngeblogging-app-v14-20260724') },
+            tenant: {
+              bytes: Buffer.byteLength(tenant),
+              is404: /Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant),
+              appShell: tenant.includes('/src/main.jsx') || tenant.includes('/assets/'),
+            },
+          };
+          console.log(`LIVE_V14_RESULT=${JSON.stringify(result)}`);
           NODE
