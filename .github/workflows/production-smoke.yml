@@ -17,27 +17,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Wait for and verify the complete public v8 release
+      - name: Wait for and verify the complete public v9 release
         shell: bash
         env:
           SITE_URL: https://ngeblogging.com
         run: |
           set -u -o pipefail
-
           for attempt in $(seq 1 36); do
-            echo "Production verification attempt ${attempt}/36"
+            echo "Production v9 verification ${attempt}/36"
             if node --input-type=module <<'NODE'
           const site = process.env.SITE_URL.replace(/\/$/, "");
           const stamp = `smoke=${Date.now()}`;
-
           async function fetchText(url, options = {}) {
-            const target = `${url}${url.includes("?") ? "&" : "?"}${stamp}`;
-            const response = await fetch(target, {
+            const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}${stamp}`, {
               ...options,
               headers: { "cache-control": "no-cache", ...(options.headers || {}) },
             });
-            const text = await response.text();
-            return { response, text };
+            return { response, text: await response.text() };
           }
 
           try {
@@ -54,60 +50,60 @@ jobs:
             const queue = [...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)]
               .map((match) => new URL(match[1], site).href);
             const seen = new Set();
-            const chunks = [];
-
+            const assets = new Map();
             for (let depth = 0; depth < 7; depth += 1) {
               const batch = [...new Set(queue)].filter((url) => !seen.has(url));
               if (!batch.length) break;
               batch.forEach((url) => seen.add(url));
-              const values = await Promise.all(batch.map(async (url) => {
+              await Promise.all(batch.map(async (url) => {
                 const result = await fetchText(url);
                 if (!result.response.ok) throw new Error(`Asset ${url}: ${result.response.status}`);
-                return result.text;
-              }));
-              chunks.push(...values);
-              for (const value of values) {
-                for (const match of value.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g)) {
+                assets.set(url, result.text);
+                for (const match of result.text.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g)) {
                   queue.push(new URL(`/${match[1]}`, site).href);
                 }
-              }
+              }));
             }
 
-            const assets = chunks.join("\n");
-            const compact = assets.replace(/\s+/g, "");
+            const studioEntry = [...assets.entries()].find(([url]) => /\/assets\/Studio-[^/]+\.js(?:\?|$)/.test(url));
+            if (!studioEntry) throw new Error("Studio production chunk not found");
+            const [studioUrl, studioJs] = studioEntry;
+            const allAssets = [...assets.values()].join("\n");
+            const compact = allAssets.replace(/\s+/g, "");
             const errors = [];
+
             if (health.status !== "ok" || health.service !== "ngeblogging-cloudflare") errors.push("health");
-            if (health.release !== "2026.07.24-mobile-final-v7") errors.push(`health.release=${health.release}`);
+            if (health.release !== "2026.07.24-studio-v9") errors.push(`health.release=${health.release}`);
             for (const key of ["billing", "customDomains", "emailRegistration", "nara", "imageGeneration", "managedSubdomains"]) {
               if (typeof health[key] !== "boolean") errors.push(`health.${key}`);
             }
-            if (health.nara !== true) errors.push("Nara provider unavailable");
-            if (!health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push("Nara providers");
-            if (health.managedSubdomains !== true) errors.push("managed subdomains");
-            if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push("site limits");
+            if (health.nara !== true || !health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push("Nara provider");
+            if (health.managedSubdomains !== true || health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push("managed subdomains/site limits");
             if (!htmlResult.text.includes('<div id="root"></div>')) errors.push("application shell");
-            if (!swResult.text.includes("ngeblogging-app-v8-20260724") || !swResult.text.includes("networkFirst")) errors.push("PWA v8");
+            if (!swResult.text.includes("ngeblogging-app-v9-20260724") || !swResult.text.includes("networkFirst")) errors.push("PWA v9");
+
+            if (!studioJs.includes("studio-source-navigation-v9-20260724")) errors.push("source navigation v9");
+            for (const forbidden of ["sn-mobile-nav", "sn-mobile-sheet-layer", "mobileMore", "sn-side-bottom"]) {
+              if (studioJs.includes(forbidden)) errors.push(`React still contains ${forbidden}`);
+            }
+            if ((studioJs.match(/sn-icon/g) || []).length !== 1) errors.push("single sidebar toggle");
+            for (const required of ["Pengaturan", "Keluar", "Lihat situs", "SUBDOMAIN GRATIS", ".ngeblogging.com"]) {
+              if (!studioJs.includes(required)) errors.push(`Studio missing ${required}`);
+            }
+            if (studioJs.includes("Pembayaran")) errors.push("inactive payment destination");
 
             for (const marker of [
-              "studio-production-guard-v8-20260724",
-              "mergeSidebarMenus",
-              "ngeblogging-settings-extras",
-              "sn-content-tools",
-              "tn-widget-summary",
-              "nara-assistant-shell",
-              "ng-widget-recent-posts",
-              "ng-widget-popular-posts",
-              "ng-header nav.open",
+              "ngeblogging-settings-extras", "sn-content-tools", "tn-widget-summary", "nara-assistant-shell",
+              "naraBillingReady", "naraImageReady", "ng-widget-recent-posts", "ng-widget-popular-posts", "ng-header nav.open",
               "Mobile", "Tablet", "Laptop", "Komputer",
               "Editorial", "Journal", "Newsroom", "Business", "Collective", "Forum", "Canvas", "Identity",
               "Diary", "Atlas", "Magazine", "Market", "Voyage", "Academy", "Wellness", "Circuit", "Lens",
               "Prime", "Dawn", "Night", "Coast", "Atelier",
             ]) {
-              if (!assets.includes(marker)) errors.push(`asset:${marker}`);
+              if (!allAssets.includes(marker)) errors.push(`asset:${marker}`);
             }
             if (!compact.includes("--sn-phone-panel:min(82vw,272px)")) errors.push("compact phone sidebar");
-            if (!compact.includes(".sn-mobile-nav") || !compact.includes(".sn-side-bottom") || !compact.includes("display:none!important")) errors.push("bottom navigation removal");
-            if (assets.includes("uji produksi belum dinyatakan lulus") || assets.includes("Konfigurasi autentikasi Nara belum lengkap")) errors.push("obsolete Nara failure path");
+            if (allAssets.includes("uji produksi belum dinyatakan lulus") || allAssets.includes("Konfigurasi autentikasi Nara belum lengkap")) errors.push("obsolete Nara failure path");
 
             const unauth = await fetchText(`${site}/api/nara`, {
               method: "POST",
@@ -115,33 +111,31 @@ jobs:
               body: JSON.stringify({ message: "uji koneksi", model: "nara-mini", intelligence: "standard", attachments: [], history: [] }),
             });
             const unauthPayload = JSON.parse(unauth.text || "{}");
-            if (health.naraProviders?.workersAi && !health.naraProviders?.qwen) {
-              if (unauth.response.status !== 401 || unauthPayload.code !== "NARA_SESSION_REQUIRED") {
-                errors.push(`Nara auth path=${unauth.response.status}/${unauthPayload.code || "none"}`);
-              }
+            if (unauth.response.status !== 401 || unauthPayload.code !== "NARA_SESSION_REQUIRED") {
+              errors.push(`Nara auth=${unauth.response.status}/${unauthPayload.code || "none"}`);
             }
             if (/konfigurasi autentikasi/i.test(String(unauthPayload.error || ""))) errors.push("Nara auth configuration");
 
             console.log(JSON.stringify({
               health,
-              assetsChecked: seen.size,
+              studioUrl,
+              assetsChecked: assets.size,
               naraUnauthenticated: { status: unauth.response.status, code: unauthPayload.code },
               errors,
             }, null, 2));
             if (errors.length) process.exit(1);
-            console.log("LIVE_RELEASE_V8_CONFIRMED");
+            console.log("LIVE_RELEASE_V9_CONFIRMED");
           } catch (error) {
-            console.error(`LIVE_RELEASE_V8_NOT_READY: ${error.message}`);
+            console.error(`LIVE_RELEASE_V9_NOT_READY: ${error.message}`);
             process.exit(1);
           }
           NODE
             then
-              echo "Production v8 deployment verified."
+              echo "Production v9 deployment verified."
               exit 0
             fi
-
             if [ "$attempt" -eq 36 ]; then
-              echo "Production did not expose the complete v8 release within 12 minutes."
+              echo "Production did not expose the complete v9 release within 12 minutes."
               exit 1
             fi
             sleep 20
