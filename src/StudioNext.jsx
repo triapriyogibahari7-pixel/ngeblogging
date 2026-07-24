@@ -1,15 +1,14 @@
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Activity, BarChart3, BookOpen, Check, ChevronDown, Cloud, CloudOff, CreditCard,
+  Activity, BarChart3, BookOpen, Check, ChevronDown, Cloud, CloudOff,
   Eye, FilePlus2, FileText, Globe2, Image, LayoutDashboard, LoaderCircle, LogOut,
-  Menu, MoreHorizontal, Palette, PanelLeftClose, Plus, Search, Send, Settings,
+  MoreHorizontal, Palette, PanelLeftClose, Plus, Search, Send, Settings,
   ShieldCheck, Sparkles, Trash2, Upload, Users, X,
 } from "lucide-react";
 import NaraAssistant from "./NaraAssistant";
 import ContentEditor from "./ContentEditor";
 import MediaLibrary from "./MediaLibrary";
 import NaraWorkspace from "./NaraWorkspace";
-import BillingView from "./BillingView";
 import { supabase, supabaseConfigured } from "./lib/supabase";
 import {
   createUserSite, getOrCreatePrimarySite, getUserProfile, listUserSites,
