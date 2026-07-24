@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: ngeblogging-cloudflare-production
@@ -28,6 +29,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Mark production deployment pending
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'pending',
+              context: 'Ngeblogging Cloudflare production',
+              description: 'Build, tests, deploy, and live verification are running.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -127,3 +142,33 @@ jobs:
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
           echo "Index marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|studio-v14-authority.css|ngeblogging-app-v14-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
           exit 1
+
+      - name: Mark production deployment successful
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              context: 'Ngeblogging Cloudflare production',
+              description: 'v14 apex, Nara, PWA, and tenant smoke tests passed.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Mark production deployment failed
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'failure',
+              context: 'Ngeblogging Cloudflare production',
+              description: 'Build, deploy, or live verification failed. Open the workflow log.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
