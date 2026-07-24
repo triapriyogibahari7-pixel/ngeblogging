@@ -6,7 +6,8 @@ import { BUILT_IN_THEMES, THEME_COUNT } from "../src/theme-catalog.js";
 const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
 const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
-const guard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
+const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
+const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
 const themeStudio = readFileSync(new URL("../src/ThemeStudio.jsx", import.meta.url), "utf8");
 const deviceCss = readFileSync(new URL("../src/theme-device-modes.css", import.meta.url), "utf8");
 const themeSystem = readFileSync(new URL("../src/theme-system.js", import.meta.url), "utf8");
@@ -14,6 +15,7 @@ const publicSite = readFileSync(new URL("../src/PublicSiteNext.jsx", import.meta
 const serviceWorker = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
 const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
 const runtime = readFileSync(new URL("../server/nara-runtime.mjs", import.meta.url), "utf8");
+const workersAiFallback = readFileSync(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
 const wrangler = readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8");
 
 
@@ -22,30 +24,33 @@ test("mobile Studio uses only the left sidebar and one edge toggle", () => {
   const criticalCss = index.indexOf("studio-mobile-critical.css");
   const finalCss = index.indexOf("studio-final-mobile.css");
   const mainScript = index.indexOf("/src/main.jsx");
-  const guardScript = index.indexOf("studio-runtime-layout-guard.js");
+  const runtimeGuardScript = index.indexOf("studio-runtime-layout-guard.js");
+  const productionGuardScript = index.indexOf("studio-production-guard.js");
   assert.ok(criticalCss > deviceAuthority);
   assert.ok(finalCss > criticalCss);
-  assert.ok(guardScript > -1 && guardScript < mainScript);
+  assert.ok(runtimeGuardScript > -1 && runtimeGuardScript < mainScript);
+  assert.ok(productionGuardScript > mainScript);
   assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
   assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
   assert.match(finalMobile, /\.sn-side\.collapsed \+ \.sn-main \.sn-icon[\s\S]*left: 12px !important/);
-  assert.match(finalMobile, /\.sn-side:not\(\.collapsed\) \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-panel\) - 2px\) !important/);
-  assert.match(guard, /removeLegacyControls\(shell\)/);
-  assert.match(guard, /querySelectorAll\(":scope > \.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer"\)/);
-  assert.match(guard, /dataset\.sidebarAuthority = "single"/);
-  assert.match(guard, /studio-sidebar-only-v5-20260724/);
-  assert.doesNotMatch(guard, /important\(nav, "display", "grid"\)/);
+  assert.match(finalMobile, /\.sn-side:not\(\.collapsed\) \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-panel\) - 23px\) !important/);
+  assert.match(runtimeGuard, /removeLegacyControls\(shell\)/);
+  assert.match(productionGuard, /removeLegacyMobileNavigation\(shell\)/);
+  assert.match(productionGuard, /dataset\.sidebarAuthority = "single"/);
+  assert.match(productionGuard, /studio-production-guard-v7-20260724/);
+  assert.doesNotMatch(productionGuard, /important\(nav, "display", "grid"\)/);
 });
 
 
 test("mobile settings, favicon, and backup cards remain in normal document flow", () => {
   assert.match(finalMobile, /\.sn-view-pad:has\(\.sn-settings-grid\)/);
-  assert.match(finalMobile, /\.sn-settings-grid[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(finalMobile, /\.sn-settings-grid,[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(finalMobile, /#ngeblogging-site-favicon-settings/);
   assert.match(finalMobile, /\.sn-backup-host/);
   assert.match(finalMobile, /\.bc-center[\s\S]*position: static !important/);
-  assert.match(finalMobile, /\.sf-header,[\s\S]*\.bc-center > header[\s\S]*display: grid !important/);
+  assert.match(finalMobile, /\.bc-center > header,[\s\S]*\.sf-header[\s\S]*display: grid !important/);
   assert.match(finalMobile, /\.sn-settings-grid input,[\s\S]*font-size: 16px !important/);
+  assert.match(productionGuard, /ngeblogging-settings-extras/);
 });
 
 
@@ -105,21 +110,22 @@ test("public theme widgets are inserted inside the theme and populated from tena
 });
 
 
-test("Nara uses actual Qwen configuration and supports the proven Singapore endpoint", () => {
-  assert.match(worker, /function naraTextReady\(env\)/);
-  assert.match(worker, /region === "singapore"/);
-  assert.match(worker, /code: "NARA_NOT_CONFIGURED"/);
-  assert.doesNotMatch(worker, /NARA_PRODUCTION_PROBE/);
-  assert.doesNotMatch(worker, /uji produksi belum dinyatakan lulus/);
+test("Nara keeps Qwen as primary and uses Workers AI as an independent fallback", () => {
+  assert.match(worker, /function qwenTextReady\(env\)/);
+  assert.match(worker, /qwenTextReady\(env\) \|\| workersAiReady\(env\)/);
+  assert.match(worker, /handleWorkersAiNara\(request, env, requestId, origin\)/);
+  assert.match(worker, /naraProviders: \{ qwen: qwenTextReady\(env\), workersAi: workersAiReady\(env\) \}/);
   assert.match(runtime, /dashscope-intl\.aliyuncs\.com\/compatible-mode\/v1/);
   assert.match(runtime, /QWEN_API_BASE_URL:/);
-  assert.match(wrangler, /"QWEN_API_KEY"/);
-  assert.match(wrangler, /"QWEN_WORKSPACE_ID"/);
+  assert.match(workersAiFallback, /env\.AI\.run\(model/);
+  assert.match(workersAiFallback, /consume_nara_quota/);
+  assert.match(wrangler, /"binding": "AI"/);
+  assert.match(wrangler, /@cf\/zai-org\/glm-4\.7-flash/);
 });
 
 
 test("the release invalidates stale CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v6-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v7-20260724/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });

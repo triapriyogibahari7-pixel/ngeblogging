@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 const wrangler = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
+const workersAi = readFileSync(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
 const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
 const production = wrangler.env?.production || {};
 
@@ -17,12 +18,14 @@ test("Cloudflare is the production runtime and Worker runs before SPA assets", (
   assert.equal(wrangler.assets?.directory, "./dist/");
   assert.equal(wrangler.assets?.not_found_handling, "single-page-application");
   assert.equal(wrangler.assets?.run_worker_first, true);
+  assert.equal(wrangler.ai?.binding, "AI");
 });
 
 test("preview builds do not claim production routes or require production secrets", () => {
   assert.equal(wrangler.routes, undefined);
   assert.equal(wrangler.secrets, undefined);
-  assert.equal(wrangler.vars?.NARA_RUNTIME, "cloudflare-worker-preview-v3");
+  assert.equal(wrangler.vars?.NARA_RUNTIME, "cloudflare-worker-preview-v4");
+  assert.equal(wrangler.vars?.CF_AI_MODEL, "@cf/zai-org/glm-4.7-flash");
   assert.match(packageJson.scripts["cloudflare:preview-dry-run"], /wrangler versions upload/);
 });
 
@@ -31,13 +34,19 @@ test("apex and every Ngeblogging tenant subdomain are routed in production", () 
   assert.ok(routes.has("ngeblogging.com/*"));
   assert.ok(routes.has("*.ngeblogging.com/*"));
   assert.equal(production.name, "ngeblogging");
-  assert.equal(production.vars?.NARA_RUNTIME, "cloudflare-worker-v3");
+  assert.equal(production.vars?.NARA_RUNTIME, "cloudflare-worker-v4");
+  assert.equal(production.ai?.binding, "AI");
 });
 
 test("required production secrets are declared and never stored as plaintext vars", () => {
   const required = new Set(production.secrets?.required || []);
-  for (const name of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
+  for (const name of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
     assert.ok(required.has(name), `${name} must be required`);
+    assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
+  }
+  const optional = new Set(production.secrets?.optional || []);
+  for (const name of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID"]) {
+    assert.ok(optional.has(name), `${name} must be optional because Workers AI is the independent fallback`);
     assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
   }
   for (const name of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
@@ -47,8 +56,13 @@ test("required production secrets are declared and never stored as plaintext var
   assert.match(packageJson.scripts["cloudflare:dry-run"], /--env production/);
 });
 
-test("Worker uses portable Nara billing image and tenant SEO handlers", () => {
+test("Worker uses portable Nara, Workers AI fallback, billing, image, and tenant SEO handlers", () => {
   assert.match(worker, /server\/nara-runtime\.mjs/);
+  assert.match(worker, /server\/workers-ai-nara\.mjs/);
+  assert.match(worker, /handleWorkersAiNara/);
+  assert.match(worker, /workersAiReady/);
+  assert.match(workersAi, /env\.AI\.run\(model/);
+  assert.match(workersAi, /consume_nara_quota/);
   assert.match(worker, /handleNaraImage/);
   assert.match(worker, /handleBillingRequest/);
   assert.match(worker, /seoEndpoint/);

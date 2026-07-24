@@ -12,10 +12,14 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": true
   },
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
     "QWEN_REGION": "singapore",
+    "CF_AI_MODEL": "@cf/zai-org/glm-4.7-flash",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
     "AUTH_BRANDED_EMAIL_READY": "false",
@@ -23,7 +27,7 @@
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_PRODUCTION_READY": "true",
     "NARA_PRODUCTION_PROBE": "passed",
-    "NARA_RUNTIME": "cloudflare-worker-preview-v3"
+    "NARA_RUNTIME": "cloudflare-worker-preview-v4"
   },
   "observability": {
     "enabled": true,
@@ -43,10 +47,14 @@
           "zone_name": "ngeblogging.com"
         }
       ],
+      "ai": {
+        "binding": "AI"
+      },
       "vars": {
         "PUBLIC_SITE_URL": "https://ngeblogging.com",
         "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
         "QWEN_REGION": "singapore",
+        "CF_AI_MODEL": "@cf/zai-org/glm-4.7-flash",
         "PAYPAL_ENV": "sandbox",
         "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
         "AUTH_BRANDED_EMAIL_READY": "false",
@@ -54,14 +62,16 @@
         "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
         "NARA_PRODUCTION_READY": "true",
         "NARA_PRODUCTION_PROBE": "passed",
-        "NARA_RUNTIME": "cloudflare-worker-v3"
+        "NARA_RUNTIME": "cloudflare-worker-v4"
       },
       "secrets": {
         "required": [
-          "QWEN_API_KEY",
-          "QWEN_WORKSPACE_ID",
           "SUPABASE_URL",
           "SUPABASE_PUBLISHABLE_KEY"
+        ],
+        "optional": [
+          "QWEN_API_KEY",
+          "QWEN_WORKSPACE_ID"
         ]
       }
     }

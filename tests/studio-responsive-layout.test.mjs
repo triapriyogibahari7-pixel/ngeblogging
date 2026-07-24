@@ -10,7 +10,8 @@ const deviceMode = readFileSync(new URL("../src/studio-device-mode.css", import.
 const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
 const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
 const controller = readFileSync(new URL("../src/studio-mobile-navigation.js", import.meta.url), "utf8");
-const guard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
+const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
+const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
 const appShell = readFileSync(new URL("../src/app-shell-bridge.js", import.meta.url), "utf8");
 const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 
@@ -30,16 +31,17 @@ test("Studio loads every responsive layer with the final mobile authority last",
   assert.ok(finalPosition > criticalPosition);
   assert.ok(index.indexOf("app-shell-bridge.js") < index.indexOf("studio-runtime-layout-guard.js"));
   assert.ok(index.indexOf("studio-runtime-layout-guard.js") < index.indexOf("/src/main.jsx"));
+  assert.ok(index.indexOf("studio-production-guard.js") > index.indexOf("/src/main.jsx"));
   assert.match(index, /width=device-width,initial-scale=1,viewport-fit=cover/);
   assert.doesNotMatch(index, /maximum-scale=1/);
 });
 
 
-test("phones use a full-width workspace and off-canvas sidebar", () => {
+test("phones use a full-width workspace and a narrower off-canvas sidebar", () => {
   assert.match(production, /@media\(max-width:700px\)/);
   assert.match(deviceMode, /html\[data-device-mode="mobile"\] \.sn-side\.collapsed/);
-  assert.match(finalMobile, /--sn-phone-panel: min\(82vw, 340px\)/);
-  assert.match(finalMobile, /\.sn-side\.collapsed[\s\S]*translateX\(calc\(-100% - 18px\)\)/);
+  assert.match(finalMobile, /--sn-phone-panel: min\(78vw, 300px\)/);
+  assert.match(finalMobile, /\.sn-side\.collapsed[\s\S]*translate3d\(calc\(-100% - 20px\), 0, 0\)/);
   assert.match(finalMobile, /\.sn-main,[\s\S]*margin-left: 0 !important/);
   assert.match(critical, /html\[data-device-mode="mobile"\] \.sn-media-tools\{display:grid!important/);
   assert.match(critical, /\.sn-home-grid>section>button/);
@@ -79,15 +81,17 @@ test("only the React header button controls sidebar state", () => {
   assert.match(controller, /event\.key !== "Escape"/);
   assert.match(controller, /document\.addEventListener\("pointerdown"/);
   assert.match(finalMobile, /\.sn-side\.collapsed \+ \.sn-main \.sn-icon[\s\S]*left: 12px !important/);
-  assert.match(finalMobile, /\.sn-side:not\(\.collapsed\) \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-panel\) - 2px\) !important/);
+  assert.match(finalMobile, /\.sn-side:not\(\.collapsed\) \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-panel\) - 23px\) !important/);
+  assert.match(productionGuard, /dataset\.sidebarAuthority = "single"/);
 });
 
 
 test("bottom navigation is removed and the full menu remains in the sidebar", () => {
   assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
   assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
-  assert.match(guard, /querySelectorAll\(":scope > \.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
-  assert.doesNotMatch(guard, /important\(nav, "display", "grid"\)/);
+  assert.match(runtimeGuard, /querySelectorAll\(":scope > \.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
+  assert.match(productionGuard, /querySelectorAll\(":scope > \.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer"\)\.forEach\(\(node\) => node\.remove\(\)\)/);
+  assert.doesNotMatch(productionGuard, /important\(nav, "display", "grid"\)/);
   assert.match(studio, /<LayoutDashboard\/><span>Ringkasan<\/span>/);
   assert.match(studio, /<Palette\/><span>Tema<\/span>/);
   assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
@@ -95,7 +99,7 @@ test("bottom navigation is removed and the full menu remains in the sidebar", ()
 });
 
 
-test("settings cards stay in normal flow on a real phone", () => {
+test("settings cards and posts remain in normal flow on a real phone", () => {
   assert.doesNotMatch(legacy, /body:has\(\.sn-settings-grid\) \.sn-side/);
   assert.match(legacy, /\.sn-settings-grid\{grid-template-columns:1fr!important;width:100%\}/);
   assert.match(finalMobile, /\.sn-view-pad:has\(\.sn-settings-grid\)/);
@@ -103,6 +107,9 @@ test("settings cards stay in normal flow on a real phone", () => {
   assert.match(finalMobile, /\.sn-backup-host/);
   assert.match(finalMobile, /position: static !important/);
   assert.match(finalMobile, /\.sn-settings-grid input,[\s\S]*font-size: 16px !important/);
+  assert.match(finalMobile, /\.sn-content-tools[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(finalMobile, /\.sn-doc-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto 42px !important/);
+  assert.match(productionGuard, /window\.scrollTo\(\{ top: 0, left: 0/);
   assert.match(legacy, /aside:empty/);
   assert.match(legacy, /div:empty\[data-sidebar\]/);
   assert.doesNotMatch(legacy, /section:empty/);

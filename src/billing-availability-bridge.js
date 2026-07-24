@@ -3,12 +3,17 @@ let resolved = false;
 document.documentElement.dataset.billingReady = "pending";
 
 function labelOf(button) {
-  return button.querySelector("span")?.textContent?.trim() || button.textContent?.trim() || "";
+  return button.querySelector("span")?.textContent?.trim() || button.textContent?.replace(/\s+/g, " ").trim() || "";
 }
 
 function billingButtons() {
   return [...document.querySelectorAll(".sn-side button,.sn-mobile-sheet-layer button,.sn-mobile-nav button")]
     .filter((button) => labelOf(button) === "Pembayaran");
+}
+
+function upgradeButtons() {
+  return [...document.querySelectorAll(".nara-context-bar button,.nara-upgrade-modal button,.nara-upgrade-card button")]
+    .filter((button) => /upgrade pro|tingkatkan|berlangganan|checkout/i.test(labelOf(button)));
 }
 
 function homeButton() {
@@ -34,19 +39,24 @@ function reveal(button) {
 
 function scan() {
   const buttons = billingButtons();
+  const upgrades = upgradeButtons();
+
   if (!resolved) {
     buttons.forEach(conceal);
+    upgrades.forEach(conceal);
     return;
   }
 
   if (checkoutReady) {
     buttons.forEach(reveal);
+    upgrades.forEach(reveal);
     return;
   }
 
   const billingOpen = Boolean(document.querySelector(".bv-page")) || buttons.some((button) => button.classList.contains("active"));
   if (billingOpen) homeButton()?.click();
   buttons.forEach(conceal);
+  upgrades.forEach(conceal);
 }
 
 async function resolveAvailability() {

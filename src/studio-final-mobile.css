@@ -1,6 +1,10 @@
-/* Final mobile authority loaded after every Studio and bridge stylesheet. */
+/* Ngeblogging Studio mobile authority v7.
+   One left sidebar, one edge-mounted toggle, no bottom navigation, no overlap. */
+
 .sn-mobile-nav,
 .sn-mobile-sheet-layer,
+.sn-sidebar-backdrop,
+.sn-side-close,
 .sn-shell > .sn-mobile-nav,
 .sn-shell > .sn-mobile-sheet-layer {
   display: none !important;
@@ -8,300 +12,675 @@
   pointer-events: none !important;
 }
 
+.sn-settings-extras {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 16px;
+}
+
+.sn-settings-extras > *,
+.sn-backup-host,
+#ngeblogging-site-favicon-settings {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
 @media (max-width: 760px) {
+  :root,
   html[data-device-mode="mobile"] {
-    --sn-phone-panel: min(82vw, 340px);
+    --sn-phone-panel: min(78vw, 300px);
   }
 
-  html[data-device-mode="mobile"] .sn-shell {
-    padding-bottom: 0 !important;
-  }
-
-  html[data-device-mode="mobile"] .sn-main,
-  html[data-device-mode="mobile"] .sn-side + .sn-main,
-  html[data-device-mode="mobile"] .sn-side.collapsed + .sn-main {
+  html,
+  body,
+  #root,
+  .sn-shell {
     width: 100% !important;
-    max-width: 100% !important;
     min-width: 0 !important;
-    margin-left: 0 !important;
+    max-width: 100% !important;
     overflow-x: clip !important;
   }
 
-  html[data-device-mode="mobile"] .sn-side {
+  body:has(.sn-shell) {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sn-shell {
+    min-height: 100dvh !important;
+    padding-bottom: 0 !important;
+  }
+
+  .sn-main,
+  .sn-side + .sn-main,
+  .sn-side.collapsed + .sn-main,
+  .sn-side:not(.collapsed) + .sn-main {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding-bottom: 0 !important;
+    overflow-x: clip !important;
+  }
+
+  .sn-side {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    display: flex !important;
     width: var(--sn-phone-panel) !important;
+    min-width: 0 !important;
     max-width: var(--sn-phone-panel) !important;
-    transform: translateX(0) !important;
+    height: 100dvh !important;
+    padding: max(8px, env(safe-area-inset-top)) 0 env(safe-area-inset-bottom) !important;
+    border-right: 1px solid #dbe4ef !important;
+    background: #fff !important;
+    box-shadow: 22px 0 70px rgba(16, 35, 62, .25) !important;
+    transform: translate3d(0, 0, 0) !important;
     visibility: visible !important;
     pointer-events: auto !important;
-    z-index: 4900 !important;
+    overflow: hidden !important;
+    z-index: 5000 !important;
+    transition: transform .2s ease, visibility .2s ease, box-shadow .2s ease !important;
   }
 
-  html[data-device-mode="mobile"] .sn-side.collapsed {
-    transform: translateX(calc(-100% - 18px)) !important;
+  .sn-side.collapsed {
+    width: var(--sn-phone-panel) !important;
+    max-width: var(--sn-phone-panel) !important;
+    transform: translate3d(calc(-100% - 20px), 0, 0) !important;
     visibility: hidden !important;
     pointer-events: none !important;
+    box-shadow: none !important;
   }
 
-  html[data-device-mode="mobile"] .sn-side:not(.collapsed) + .sn-main::before {
+  .sn-side .sn-logo {
+    min-height: 62px !important;
+    height: 62px !important;
+    padding: 0 20px !important;
+    justify-content: flex-start !important;
+    font-size: 28px !important;
+  }
+
+  .sn-side .sn-logo > b {
+    display: inline !important;
+    font-size: 15px !important;
+  }
+
+  .sn-side .sn-new {
+    min-height: 48px !important;
+    margin: 8px 14px 14px !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .sn-side .sn-new span,
+  .sn-side > nav span,
+  .sn-side .sn-side-bottom span {
+    display: inline !important;
+  }
+
+  .sn-side > nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 0 12px 12px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .sn-side > nav button,
+  .sn-side .sn-side-bottom button {
+    width: 100% !important;
+    min-height: 48px !important;
+    justify-content: flex-start !important;
+    gap: 13px !important;
+    padding: 0 14px !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+  }
+
+  .sn-side > nav button svg,
+  .sn-side .sn-side-bottom button svg,
+  .sn-side .sn-new svg {
+    width: 21px !important;
+    height: 21px !important;
+    flex: 0 0 21px !important;
+  }
+
+  .sn-side .sn-side-bottom {
+    flex: 0 0 auto !important;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom)) !important;
+    background: #fff !important;
+  }
+
+  .sn-side:not(.collapsed) + .sn-main::before {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: 4800;
-    background: rgba(16, 35, 62, 0.34);
+    z-index: 4900;
+    background: rgba(16, 35, 62, .34);
     pointer-events: auto;
   }
 
-  html[data-device-mode="mobile"] .sn-top {
+  .sn-top {
     position: sticky !important;
+    inset: 0 0 auto !important;
     top: 0 !important;
+    display: flex !important;
     width: 100% !important;
-    max-width: 100% !important;
     min-width: 0 !important;
-    padding-left: 70px !important;
+    max-width: 100% !important;
+    min-height: 68px !important;
+    height: 68px !important;
+    gap: 8px !important;
+    padding: 8px 10px 8px 68px !important;
+    border-bottom: 1px solid #dfe6ef !important;
+    background: rgba(255, 255, 255, .97) !important;
+    backdrop-filter: blur(18px) !important;
     overflow: visible !important;
     z-index: 4700 !important;
   }
 
-  html[data-device-mode="mobile"] .sn-icon {
+  .sn-icon {
     position: fixed !important;
-    top: max(14px, env(safe-area-inset-top)) !important;
-    width: 46px !important;
-    height: 46px !important;
+    top: max(11px, env(safe-area-inset-top)) !important;
+    left: 12px !important;
     display: grid !important;
     place-items: center !important;
+    width: 46px !important;
+    height: 46px !important;
+    flex: 0 0 46px !important;
+    border: 1px solid #d4dfec !important;
     border-radius: 14px !important;
     background: #fff !important;
     color: #245fc9 !important;
-    box-shadow: 0 12px 34px rgba(16, 35, 62, 0.25) !important;
-    z-index: 5100 !important;
-    transition: left 0.2s ease, transform 0.2s ease !important;
+    box-shadow: 0 12px 34px rgba(16, 35, 62, .23) !important;
+    transform: none !important;
+    z-index: 5200 !important;
+    transition: left .2s ease, transform .2s ease !important;
   }
 
-  html[data-device-mode="mobile"] .sn-side.collapsed + .sn-main .sn-icon {
+  .sn-side:not(.collapsed) + .sn-main .sn-icon {
+    left: calc(var(--sn-phone-panel) - 23px) !important;
+  }
+
+  .sn-side.collapsed + .sn-main .sn-icon {
     left: 12px !important;
   }
 
-  html[data-device-mode="mobile"] .sn-side:not(.collapsed) + .sn-main .sn-icon {
-    left: calc(var(--sn-phone-panel) - 2px) !important;
-  }
-
-  html[data-device-mode="mobile"] .sn-side.collapsed + .sn-main .sn-icon svg {
+  .sn-side.collapsed + .sn-main .sn-icon svg {
     transform: rotate(180deg) !important;
   }
 
-  html[data-device-mode="mobile"] .sn-view-pad {
-    width: 100% !important;
-    max-width: 100% !important;
+  .sn-workspace {
     min-width: 0 !important;
-    padding: 18px 14px 36px !important;
-    overflow: visible !important;
+    max-width: min(47vw, 220px) !important;
+    padding: 4px !important;
   }
 
-  html[data-device-mode="mobile"] .sn-view-pad:has(.sn-settings-grid) {
-    display: block !important;
-    padding-top: 18px !important;
+  .sn-workspace > span {
+    width: 38px !important;
+    height: 38px !important;
+    flex: 0 0 38px !important;
   }
 
-  html[data-device-mode="mobile"] .sn-view-pad:has(.sn-settings-grid) > .sn-page-title {
-    position: static !important;
-    inset: auto !important;
+  .sn-workspace > div {
+    min-width: 0 !important;
+  }
+
+  .sn-workspace small,
+  .sn-workspace > svg,
+  .sn-cloud span {
+    display: none !important;
+  }
+
+  .sn-workspace b {
     display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 0 18px !important;
+    max-width: 150px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+  }
+
+  .sn-cloud {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    justify-content: center !important;
     padding: 0 !important;
-    transform: none !important;
-    clear: both !important;
-    overflow: visible !important;
   }
 
-  html[data-device-mode="mobile"] .sn-page-title > div,
-  html[data-device-mode="mobile"] .sn-page-title h1,
-  html[data-device-mode="mobile"] .sn-page-title p {
-    position: static !important;
-    inset: auto !important;
-    transform: none !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  html[data-device-mode="mobile"] .sn-page-title h1 {
-    margin: 7px 0 6px !important;
-    font-size: clamp(30px, 9vw, 40px) !important;
-    line-height: 1.06 !important;
-    letter-spacing: -0.035em !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  html[data-device-mode="mobile"] .sn-page-title p {
-    margin: 0 !important;
-    font-size: 14px !important;
-    line-height: 1.55 !important;
-  }
-
-  html[data-device-mode="mobile"] .sn-settings-grid {
-    position: static !important;
-    inset: auto !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 14px !important;
-    width: 100% !important;
-    max-width: 100% !important;
+  .sn-top-actions {
     min-width: 0 !important;
-    margin: 0 !important;
-    transform: none !important;
-    clear: both !important;
+    margin-left: auto !important;
+    gap: 5px !important;
   }
 
-  html[data-device-mode="mobile"] .sn-settings-grid section,
-  html[data-device-mode="mobile"] #ngeblogging-site-favicon-settings,
-  html[data-device-mode="mobile"] .sn-backup-host,
-  html[data-device-mode="mobile"] .bc-center {
+  .sn-top-actions > button:first-child {
+    display: none !important;
+  }
+
+  .sn-top-actions .sn-nara-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+  }
+
+  .sn-avatar {
+    width: 38px !important;
+    height: 38px !important;
+    flex: 0 0 38px !important;
+  }
+
+  .sn-toast {
+    top: calc(76px + env(safe-area-inset-top)) !important;
+    width: min(92vw, 460px) !important;
+    max-width: calc(100vw - 24px) !important;
+    border-radius: 14px !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+    z-index: 5300 !important;
+  }
+
+  .sn-view-pad,
+  .bv-page,
+  .nw-page,
+  .ts-page,
+  .ml-page,
+  .tn-studio {
+    position: relative !important;
+    isolation: isolate !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px 14px 42px !important;
+    overflow-x: clip !important;
+  }
+
+  .sn-view-pad > *,
+  .sn-view-pad:has(.sn-settings-grid) > *,
+  .sn-settings-grid,
+  .sn-settings-grid > section,
+  .sn-settings-extras,
+  .sn-backup-host,
+  #ngeblogging-site-favicon-settings,
+  .sf-card,
+  .bc-center {
     position: static !important;
     inset: auto !important;
     float: none !important;
     clear: both !important;
-    display: block !important;
     width: 100% !important;
-    max-width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
     height: auto !important;
-    min-height: 0 !important;
     transform: none !important;
     translate: none !important;
-    overflow: visible !important;
     z-index: auto !important;
   }
 
-  html[data-device-mode="mobile"] .sn-settings-grid section {
-    padding: 20px 16px !important;
-    border-radius: 18px !important;
+  .sn-view-pad:has(.sn-settings-grid) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-content: start !important;
+    gap: 18px !important;
   }
 
-  html[data-device-mode="mobile"] .sn-settings-grid h2 {
-    margin: 0 0 16px !important;
-    font-size: 30px !important;
+  .sn-view-pad:has(.sn-settings-grid) > .sn-page-title,
+  .sn-view-pad:has(.sn-settings-grid) > .sn-settings-grid,
+  .sn-view-pad:has(.sn-settings-grid) > .sn-save-settings,
+  .sn-view-pad:has(.sn-settings-grid) > .sn-settings-extras {
+    margin: 0 !important;
+  }
+
+  .sn-page-title,
+  .sn-welcome,
+  .bv-page > header,
+  .bc-center > header,
+  .sf-header {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 0 18px !important;
+    padding: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  .sn-page-title > div,
+  .sn-page-title h1,
+  .sn-page-title p,
+  .sn-welcome > div,
+  .sf-header > div,
+  .bc-center > header > div {
+    position: static !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
+  }
+
+  .sn-page-title h1,
+  .sn-welcome h1 {
+    margin: 6px 0 7px !important;
+    font-size: clamp(30px, 9vw, 40px) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -.035em !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .sn-page-title p,
+  .sn-welcome p {
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .sn-page-title .sn-primary,
+  .sn-page-title .sn-secondary-link {
+    width: 100% !important;
+    min-height: 50px !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    font-size: 15px !important;
+  }
+
+  .sn-welcome > div:last-child {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .sn-welcome > div:last-child > button {
+    width: 100% !important;
+    min-height: 50px !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+  }
+
+  .sn-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+
+  .sn-metrics article {
+    min-width: 0 !important;
+    min-height: 126px !important;
+    padding: 16px !important;
+  }
+
+  .sn-home-grid,
+  .sn-settings-grid,
+  .sn-info-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .sn-settings-grid > section {
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  .sn-settings-grid h2 {
+    margin: 0 0 17px !important;
+    font-size: 29px !important;
     line-height: 1.1 !important;
   }
 
-  html[data-device-mode="mobile"] .sn-settings-grid label {
+  .sn-settings-grid label {
     display: grid !important;
     gap: 8px !important;
-    margin: 0 0 16px !important;
+    margin: 0 0 17px !important;
     font-size: 15px !important;
     line-height: 1.35 !important;
   }
 
-  html[data-device-mode="mobile"] .sn-settings-grid input,
-  html[data-device-mode="mobile"] .sn-settings-grid textarea,
-  html[data-device-mode="mobile"] .sn-settings-grid select {
+  .sn-settings-grid input,
+  .sn-settings-grid textarea,
+  .sn-settings-grid select {
     width: 100% !important;
-    max-width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
     min-height: 54px !important;
     padding: 13px 14px !important;
     border-radius: 14px !important;
     font-size: 16px !important;
     line-height: 1.4 !important;
-  }
-
-  html[data-device-mode="mobile"] .sn-settings-grid textarea {
-    min-height: 150px !important;
-    resize: vertical !important;
-  }
-
-  html[data-device-mode="mobile"] #ngeblogging-site-favicon-settings,
-  html[data-device-mode="mobile"] .sn-backup-host {
-    margin: 14px 0 0 !important;
-  }
-
-  html[data-device-mode="mobile"] .sf-card,
-  html[data-device-mode="mobile"] .bc-center {
-    margin: 0 !important;
-    padding: 18px 15px !important;
-    border-radius: 18px !important;
-  }
-
-  html[data-device-mode="mobile"] .sf-header,
-  html[data-device-mode="mobile"] .bc-center > header {
-    position: static !important;
-    inset: auto !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 12px !important;
-    align-items: start !important;
-    width: 100% !important;
-    transform: none !important;
-    overflow: visible !important;
-  }
-
-  html[data-device-mode="mobile"] .sf-header > div,
-  html[data-device-mode="mobile"] .bc-center > header > div,
-  html[data-device-mode="mobile"] .sf-header h2,
-  html[data-device-mode="mobile"] .bc-center > header h2,
-  html[data-device-mode="mobile"] .sf-header p,
-  html[data-device-mode="mobile"] .bc-center > header p {
-    position: static !important;
-    inset: auto !important;
-    transform: none !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
     overflow-wrap: anywhere !important;
   }
 
-  html[data-device-mode="mobile"] .sf-header h2,
-  html[data-device-mode="mobile"] .bc-center > header h2 {
-    margin: 6px 0 !important;
-    font-size: 25px !important;
-    line-height: 1.1 !important;
+  .sn-settings-grid textarea {
+    min-height: 142px !important;
+    resize: vertical !important;
   }
 
-  html[data-device-mode="mobile"] .sf-header p,
-  html[data-device-mode="mobile"] .bc-center > header p {
+  .sn-save-settings {
+    width: 100% !important;
+    min-height: 52px !important;
+    margin: 0 !important;
+    font-size: 15px !important;
+  }
+
+  .sn-settings-extras {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+    margin: 0 !important;
+  }
+
+  .sf-card,
+  .bc-center {
+    margin: 0 !important;
+    padding: 18px 15px !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  .sf-header h2,
+  .bc-center > header h2 {
+    margin: 6px 0 !important;
+    font-size: 25px !important;
+    line-height: 1.12 !important;
+  }
+
+  .sf-header p,
+  .bc-center > header p {
     margin: 0 !important;
     font-size: 13px !important;
     line-height: 1.55 !important;
   }
 
-  html[data-device-mode="mobile"] .sf-state,
-  html[data-device-mode="mobile"] .bc-center > header > span {
+  .sf-state,
+  .bc-center > header > span {
     position: static !important;
     width: max-content !important;
     max-width: 100% !important;
-    white-space: normal !important;
     margin: 0 !important;
-    transform: none !important;
+    white-space: normal !important;
   }
 
-  html[data-device-mode="mobile"] .bc-summary,
-  html[data-device-mode="mobile"] .bc-actions,
-  html[data-device-mode="mobile"] .sf-layout {
+  .sf-layout,
+  .bc-summary,
+  .bc-actions {
+    display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
   }
 
-  html[data-device-mode="mobile"] .sn-save-settings {
+  .sn-content-card {
     width: 100% !important;
-    min-height: 50px !important;
-    margin-top: 14px !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    border-radius: 17px !important;
+    overflow: hidden !important;
   }
 
-  html[data-device-mode="mobile"] .nara-panel,
-  html[data-device-mode="mobile"] .nara-assistant-panel {
-    width: min(100vw, 430px) !important;
+  .sn-content-tools {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+    margin-bottom: 10px !important;
+  }
+
+  .sn-content-tools label {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 48px !important;
+  }
+
+  .sn-content-tools input {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 16px !important;
+  }
+
+  .sn-content-tools > span {
+    justify-self: start !important;
+    font-size: 12px !important;
+  }
+
+  .sn-table-head {
+    display: none !important;
+  }
+
+  .sn-doc-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto 42px !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 78px !important;
+    padding: 11px 2px !important;
+  }
+
+  .sn-doc-row time {
+    display: none !important;
+  }
+
+  .sn-doc-row > button:first-child {
+    min-width: 0 !important;
+  }
+
+  .sn-doc-row b,
+  .sn-doc-row small {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .sn-doc-row b {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+  }
+
+  .sn-doc-row small {
+    font-size: 12px !important;
+  }
+
+  .sn-doc-row > i {
+    font-size: 10px !important;
+  }
+
+  .sn-domain-card {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    padding: 17px !important;
+  }
+
+  .sn-domain-card > i {
+    grid-column: 2 !important;
+    width: max-content !important;
+  }
+
+  .sn-domain-card h2 {
+    font-size: 22px !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .sn-launch {
+    padding: 17px !important;
+  }
+
+  .sn-launch > div {
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+  }
+
+  .sn-launch > div span {
+    grid-column: 2 !important;
+  }
+
+  .nara-assistant-layer {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 6000 !important;
+  }
+
+  .nara-assistant-shell,
+  .nara-panel,
+  .nara-assistant-panel,
+  .nara-drawer {
+    width: 100vw !important;
+    min-width: 0 !important;
     max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  body:has(.nara-assistant-layer) .nara-floating-button {
+    display: none !important;
   }
 }
 
 @media (max-width: 390px) {
+  :root,
   html[data-device-mode="mobile"] {
-    --sn-phone-panel: calc(100vw - 58px);
+    --sn-phone-panel: calc(100vw - 70px);
+  }
+
+  .sn-top {
+    padding-right: 8px !important;
+  }
+
+  .sn-workspace b {
+    max-width: 105px !important;
+  }
+
+  .sn-top-actions .sn-nara-button {
+    display: none !important;
+  }
+
+  .sn-view-pad,
+  .bv-page,
+  .nw-page,
+  .ts-page,
+  .ml-page,
+  .tn-studio {
+    padding-left: 11px !important;
+    padding-right: 11px !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-device-mode="mobile"] .sn-icon {
+  .sn-side,
+  .sn-icon {
     transition: none !important;
   }
 }
