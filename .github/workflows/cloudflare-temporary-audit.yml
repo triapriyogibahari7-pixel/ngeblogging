@@ -1,8 +1,8 @@
 name: Cloudflare temporary UI audit
 
 on:
-  push:
-    branches: [audit/temporary-v11]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   deploy-and-audit:
+    if: github.head_ref == 'audit/temporary-v11'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
