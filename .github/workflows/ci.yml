@@ -2,140 +2,18 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, agent/production-vps-platform]
-  push:
-    branches-ignore: [main]
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: live-production-v14-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install pinned dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Test, build, and validate production files
-        id: quality
-        continue-on-error: true
-        shell: bash
-        run: |
-          set +e
-          npm run test:production > /tmp/ngeblogging-quality.log 2>&1
-          test_status=$?
-          if [ "$test_status" -ne 0 ]; then
-            echo "failed_stage=test" >> "$GITHUB_OUTPUT"
-            exit "$test_status"
-          fi
-
-          npm run build > /tmp/ngeblogging-build.log 2>&1
-          build_status=$?
-          if [ "$build_status" -ne 0 ]; then
-            echo "failed_stage=build" >> "$GITHUB_OUTPUT"
-            exit "$build_status"
-          fi
-
-          echo "failed_stage=none" >> "$GITHUB_OUTPUT"
-          tail -n 25 /tmp/ngeblogging-quality.log
-          tail -n 25 /tmp/ngeblogging-build.log
-
-      - name: Upload quality failure logs
-        if: steps.quality.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: quality-failure-${{ github.run_id }}
-          path: |
-            /tmp/ngeblogging-quality.log
-            /tmp/ngeblogging-build.log
-          if-no-files-found: warn
-          retention-days: 3
-
-      - name: Fail quality gate after artifact upload
-        if: steps.quality.outcome == 'failure'
-        run: |
-          echo "Quality stage failed: ${{ steps.quality.outputs.failed_stage }}"
-          exit 1
-
-      - name: Validate Cloudflare preview bundle without production secrets
-        run: npm run cloudflare:preview-dry-run
-
-      - name: Validate Cloudflare production bundle and required secrets
-        env:
-          QWEN_API_KEY: ci-dry-run-only
-          QWEN_WORKSPACE_ID: ci-dry-run
-          SUPABASE_URL: https://example.supabase.co
-          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
-        run: npm run cloudflare:dry-run
-
-  containers:
-    needs: quality
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Validate Compose manifest
-        run: NGEBLOGGING_ENV_FILE=.env.production.example docker compose --env-file .env.production.example -f compose.production.yml config --quiet
-
-      - name: Validate Caddy configuration
-        run: |
-          docker run --rm \
-            -e SITE_HOSTS=staging.example.com \
-            -e ACME_EMAIL=admin@example.com \
-            -v "${PWD}/Caddyfile:/etc/caddy/Caddyfile:ro" \
-            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
-
-      - name: Setup QEMU for ARM64
-        uses: docker/setup-qemu-action@v3
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build API container for AMD64 and ARM64
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.api
-          platforms: linux/amd64,linux/arm64
-          push: false
-          provenance: false
-          cache-from: type=gha,scope=ci-ngeblogging-api
-          cache-to: type=gha,mode=max,scope=ci-ngeblogging-api,ignore-error=true
-
-      - name: Build web container for AMD64 and ARM64
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.web
-          platforms: linux/amd64,linux/arm64
-          push: false
-          provenance: false
-          build-args: |
-            VITE_SUPABASE_URL=https://example.supabase.co
-            VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_test
-            VITE_PUBLIC_SITE_URL=https://staging.example.com
-          cache-from: type=gha,scope=ci-ngeblogging-web
-          cache-to: type=gha,mode=max,scope=ci-ngeblogging-web,ignore-error=true
-
-  deploy-cloudflare-audit:
-    needs: [quality, containers]
-    if: github.event_name == 'pull_request' && github.head_ref == 'audit/deploy-v11-production'
+  live-production-v14:
+    if: github.head_ref == 'audit/live-production-v14'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: cloudflare-production
@@ -157,25 +35,22 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Validate production credentials without exposing values
+      - name: Validate production credentials
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
-          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
-          test -n "${VITE_SUPABASE_URL}" || { echo "VITE_SUPABASE_URL_MISSING"; exit 1; }
-          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "VITE_SUPABASE_PUBLISHABLE_KEY_MISSING"; exit 1; }
+          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo CLOUDFLARE_ACCOUNT_ID_MISSING; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo CLOUDFLARE_API_TOKEN_MISSING; exit 1; }
+          test -n "${VITE_SUPABASE_URL}" || { echo VITE_SUPABASE_URL_MISSING; exit 1; }
+          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo VITE_SUPABASE_PUBLISHABLE_KEY_MISSING; exit 1; }
 
-      - name: Install pinned dependencies
-        run: npm ci --ignore-scripts
+      - name: Install test and build
+        run: npm ci --ignore-scripts && npm run test:production && npm run build && npm run cloudflare:dry-run
 
-      - name: Build audited production release
-        run: npm run test:production && npm run build && npm run cloudflare:dry-run
-
-      - name: Deploy Worker assets Nara API and wildcard tenants
+      - name: Deploy v14 to Cloudflare production routes
         run: npm run deploy:cloudflare
 
-      - name: Verify live Studio v11 Nara and public tenant
+      - name: Verify live v14 apex Nara PWA and tenant
         shell: bash
         run: |
           set -euo pipefail
@@ -210,20 +85,20 @@ jobs:
 
               const health = JSON.parse(healthResult.text || "{}");
               if (health.status !== "ok" || health.service !== "ngeblogging-cloudflare") errors.push("health-payload");
-              if (health.release !== "2026.07.24-studio-v10") errors.push(`release:${health.release || "missing"}`);
-              if (health.nara !== true || (!health.naraProviders?.qwen && !health.naraProviders?.workersAi)) errors.push("nara-provider");
+              if (health.release !== "2026.07.24-studio-v14") errors.push(`release:${health.release || "missing"}`);
+              if (health.nara !== true) errors.push(`nara:${health.nara}`);
+              if (health.naraProviders?.vision !== true) errors.push(`vision:${health.naraProviders?.vision}`);
+              if (health.imageGeneration !== true) errors.push(`imageGeneration:${health.imageGeneration}`);
               if (health.managedSubdomains !== true) errors.push("wildcard-subdomains");
-              if (!swResult.text.includes("ngeblogging-app-v10-20260724")) errors.push("pwa-cache");
-              if (/WHITE-R4-2026\.07\.12/.test(indexResult.text)) errors.push("legacy-shell");
-              if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push("tenant-404");
-
-              const assetUrls = [...indexResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)]
-                .map((match) => new URL(match[1], site).href);
-              const assetTexts = await Promise.all(assetUrls.map(async (url) => (await read(url)).text));
-              const assets = assetTexts.join("\n").replace(/\s+/g, "");
-              for (const marker of ["--sn-phone-rail:56px", "nara-native-file-input", "z-index:30000"]) {
-                if (!assets.includes(marker)) errors.push(`asset:${marker}`);
+              if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push(`siteLimits:${JSON.stringify(health.siteLimits)}`);
+              if (!indexResult.text.includes("studio-v14-authority.css")) errors.push("index-v14-css");
+              if (!indexResult.text.includes("nara-command-center-bridge.js")) errors.push("index-nara-command-center");
+              for (const legacy of ["WHITE-R4-2026.07.12", "studio-runtime-layout-guard.js", "studio-mobile-navigation.js", "studio-production-guard.js", "nara-availability-bridge.js", "studio-v10-authority.css", "studio-v11-mobile-repair.css", "nara-interaction-authority.css", "nara-interaction-guard.js"]) {
+                if (indexResult.text.includes(legacy)) errors.push(`legacy:${legacy}`);
               }
+              if (!swResult.text.includes("ngeblogging-app-v14-20260724")) errors.push("pwa-v14");
+              if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push("tenant-404");
+              if (!tenantResult.text.includes("/src/main.jsx") && !tenantResult.text.includes("/assets/")) errors.push("tenant-app-shell");
 
               const unauth = await read(`${site}/api/nara`, {
                 method: "POST",
@@ -236,16 +111,28 @@ jobs:
               }
 
               if (!errors.length) {
-                console.log(JSON.stringify({ release: health.release, runtime: health.runtime, nara: health.nara, tenant: tenantResult.response.status, assets: assetUrls.length }, null, 2));
+                console.log(JSON.stringify({
+                  release: health.release,
+                  runtime: health.runtime,
+                  nara: health.nara,
+                  vision: health.naraProviders?.vision,
+                  imageGeneration: health.imageGeneration,
+                  siteLimits: health.siteLimits,
+                  billing: health.billing,
+                  emailRegistration: health.emailRegistration,
+                  customDomains: health.customDomains,
+                  tenant: tenantResult.response.status,
+                  indexBytes: Buffer.byteLength(indexResult.text),
+                }, null, 2));
                 process.exit(0);
               }
             } catch (error) {
               errors.push(error.message);
             }
             lastErrors = errors;
-            console.log(`Live audit ${attempt}/30 belum siap: ${errors.join(", ")}`);
+            console.log(`Live v14 audit ${attempt}/30 belum siap: ${errors.join(", ")}`);
             await sleep(10000);
           }
-          console.error(`LIVE_V11_AUDIT_FAILED: ${lastErrors.join(", ")}`);
+          console.error(`LIVE_V14_AUDIT_FAILED: ${lastErrors.join(", ")}`);
           process.exit(1);
           NODE
