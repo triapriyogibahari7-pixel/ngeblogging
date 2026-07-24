@@ -3,6 +3,8 @@ name: Diagnose live public auth config v8
 on:
   push:
     branches: [fix/v8-mobile-ui-nara-auth]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
