@@ -37,6 +37,15 @@ function syncShell(shell) {
   original.tabIndex = -1;
   original.setAttribute("aria-hidden", "true");
 
+  if (profile.mobile && shell.dataset.v15InitialSidebarResolved !== "true") {
+    shell.dataset.v15InitialSidebarResolved = "true";
+    if (!side.classList.contains("collapsed")) {
+      original.click();
+      requestAnimationFrame(() => syncShell(shell));
+      return;
+    }
+  }
+
   let edge = shell.querySelector(":scope > .sn-sidebar-edge-v15");
   if (!edge) {
     edge = document.createElement("button");
@@ -110,6 +119,15 @@ function sync() {
 
 const observer = new MutationObserver(sync);
 observer.observe(document.documentElement, { childList: true, subtree: true });
+
+document.addEventListener("pointerdown", (event) => {
+  if (!deviceProfile().mobile) return;
+  const launcher = event.target.closest(".nara-floating-button, .sn-top-actions .sn-nara-button");
+  if (!launcher || launcher.disabled) return;
+  event.preventDefault();
+  event.stopPropagation();
+  launcher.click();
+}, true);
 
 document.addEventListener("click", (event) => {
   const navButton = event.target.closest(".sn-side nav button");
