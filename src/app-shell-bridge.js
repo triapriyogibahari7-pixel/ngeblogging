@@ -1,4 +1,3 @@
-const SERVICE_WORKER_RELOAD_KEY = "ngeblogging-sw-v6-reloaded";
 let installPrompt = null;
 let installButton = null;
 let registration = null;
@@ -45,7 +44,8 @@ function isStandalone() {
 
 function supportedHost() {
   const hostname = location.hostname.toLowerCase();
-  return hostname === "ngeblogging.com" || hostname === "www.ngeblogging.com" || hostname.endsWith(".workers.dev") || ["localhost", "127.0.0.1"].includes(hostname);
+  if (["localhost", "127.0.0.1"].includes(hostname)) return true;
+  return hostname === "ngeblogging.com" || hostname === "www.ngeblogging.com" || hostname.endsWith(".ngeblogging.com");
 }
 
 function setNetworkState() {
@@ -96,9 +96,7 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (sessionStorage.getItem(SERVICE_WORKER_RELOAD_KEY) === "1") return;
-      sessionStorage.setItem(SERVICE_WORKER_RELOAD_KEY, "1");
-      window.location.reload();
+      document.documentElement.dataset.appUpdate = "applied";
     });
   } catch (error) {
     console.warn("PWA registration failed", error);
@@ -126,7 +124,7 @@ window.matchMedia("(orientation: portrait)").addEventListener?.("change", syncDe
 window.matchMedia("(pointer: coarse)").addEventListener?.("change", syncDeviceMode);
 
 const observer = new MutationObserver(() => ensureInstallButton());
-observer.observe(document.documentElement, { childList: true, subtree: true });
+observer.observe(document.getElementById("root") || document.documentElement, { childList: true, subtree: true });
 
 syncDeviceMode();
 setNetworkState();
