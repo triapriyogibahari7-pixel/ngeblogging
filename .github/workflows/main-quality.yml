@@ -1,0 +1,48 @@
+name: Main quality gate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-main-quality
+  cancel-in-progress: true
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run production source tests
+        run: npm run test:production
+
+      - name: Build production application
+        env:
+          VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+          VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+        run: npm run build
+
+      - name: Validate Cloudflare bundle without deployment credentials
+        env:
+          QWEN_API_KEY: ci-dry-run-only
+          QWEN_WORKSPACE_ID: ci-dry-run
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
+        run: npm run cloudflare:dry-run
