@@ -48,6 +48,9 @@ test("plugin catalog includes GitHub Supabase Neon and Cloudflare", async () => 
   }
 });
 
-test("PWA cache invalidates the broken previous shell", async () => {
-  assert.match(await read("public/sw.js"), /ngeblogging-app-v14-20260724/);
+test("PWA keeps the current v13 cache authority and network-first navigation", async () => {
+  const sw = await read("public/sw.js");
+  assert.match(sw, /ngeblogging-app-v13-20260724/);
+  assert.match(sw, /request\.mode === "navigate"/);
+  assert.match(sw, /fetch\(request, \{ cache: "no-store" \}\)/);
 });
