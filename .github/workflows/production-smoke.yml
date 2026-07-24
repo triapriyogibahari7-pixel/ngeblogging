@@ -91,20 +91,23 @@ jobs:
           const errors = [];
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
-          if (health.release !== '2026.07.24-mobile-final-v6') errors.push('health.release');
+          if (health.release !== '2026.07.24-mobile-final-v7') errors.push('health.release');
           for (const key of requiredBooleans) {
             if (typeof health[key] !== 'boolean') errors.push(`health.${key}`);
           }
           if (health.nara !== true) errors.push('Nara text runtime');
+          if (typeof health.naraProviders?.qwen !== 'boolean' || typeof health.naraProviders?.workersAi !== 'boolean') errors.push('Nara providers');
+          if (health.naraProviders && !health.naraProviders.qwen && !health.naraProviders.workersAi) errors.push('Nara provider availability');
           if (health.managedSubdomains !== true) errors.push('managed subdomains');
           if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('site limits');
           if (!index.includes('<div id="root"></div>')) errors.push('application shell');
-          if (!sw.includes('ngeblogging-app-v6-20260724') || !sw.includes('networkFirst')) errors.push('service worker');
-          if (!assets.includes('studio-sidebar-only-v5-20260724')) errors.push('sidebar runtime');
+          if (!sw.includes('ngeblogging-app-v7-20260724') || !sw.includes('networkFirst')) errors.push('service worker');
+          if (!assets.includes('studio-production-guard-v7-20260724')) errors.push('sidebar runtime');
           if (!assets.includes('studio-final-mobile.css') && !assets.includes('--sn-phone-panel')) errors.push('final mobile authority');
           if (!assets.includes('.sn-mobile-nav') || !assets.includes('display: none !important')) errors.push('bottom navigation removal');
           if (!assets.includes('dataset.sidebarAuthority="single"') && !assets.includes('sidebarAuthority')) errors.push('single sidebar toggle');
-          if (!assets.includes('.sn-view-pad:has(.sn-settings-grid)') || !assets.includes('#ngeblogging-site-favicon-settings')) errors.push('mobile settings flow');
+          if (!assets.includes('.sn-view-pad:has(.sn-settings-grid)') || !assets.includes('ngeblogging-settings-extras')) errors.push('mobile settings flow');
+          if (!assets.includes('.sn-content-tools') || !assets.includes('grid-template-columns: minmax(0, 1fr)')) errors.push('posts mobile flow');
           for (const label of ['Mobile', 'Tablet', 'Laptop', 'Komputer']) {
             if (!assets.includes(label)) errors.push(`theme device:${label}`);
           }
@@ -127,11 +130,12 @@ jobs:
             customDomains: health.customDomains,
             emailRegistration: health.emailRegistration,
             nara: health.nara,
+            naraProviders: health.naraProviders,
             imageGeneration: health.imageGeneration,
             managedSubdomains: health.managedSubdomains,
             siteLimits: health.siteLimits,
-            uiRelease: 'mobile-final-v6',
-            pwaRelease: 'ngeblogging-app-v6-20260724',
+            uiRelease: 'mobile-final-v7',
+            pwaRelease: 'ngeblogging-app-v7-20260724',
             assetsChecked: fs.readFileSync('/tmp/assets.txt', 'utf8').trim().split(/\n+/).filter(Boolean).length,
           }, null, 2));
           NODE
