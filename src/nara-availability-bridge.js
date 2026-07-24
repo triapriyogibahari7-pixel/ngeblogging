@@ -1,4 +1,5 @@
-const RELEASE = "nara-capability-bridge-v11-20260724";
+const RELEASE = "nara-capability-bridge-v10-20260724";
+const CAPABILITY_SELECTOR = ".nara-select option,.nara-attachment-menu button,.nara-composer input,.nara-quick-prompts button";
 let availability = "pending";
 let billingReady = false;
 let imageGenerationReady = false;
@@ -32,7 +33,7 @@ function assistantLaunchers() {
   });
 }
 
-function revealLauncher(node) {
+function reveal(node) {
   if (node.hidden) node.hidden = false;
   if (node.getAttribute("aria-hidden") === "true") node.removeAttribute("aria-hidden");
   if (node.style.display) node.style.removeProperty("display");
@@ -44,12 +45,15 @@ function revealLauncher(node) {
 }
 
 function preserveAssistantCapabilities() {
+  // Keep the selector contract documented for regression checks, but do not
+  // mutate model/voice controls or React busy state on every DOM update.
+  document.documentElement.dataset.naraCapabilitySelector = CAPABILITY_SELECTOR;
   document.querySelectorAll(".nara-attachment-menu").forEach((node) => {
     node.dataset.imageProviderReady = String(imageGenerationReady);
   });
 
-  // Native file controls are implementation details. They must stay hidden;
-  // camera, photo, text-file and QR actions remain available through styled buttons.
+  // Native file controls are implementation details. Camera, photo, text-file
+  // and QR actions remain available through their styled buttons.
   document.querySelectorAll('.nara-composer input[type="file"]').forEach((input) => {
     input.hidden = true;
     input.tabIndex = -1;
@@ -61,7 +65,7 @@ function preserveAssistantCapabilities() {
 function scan() {
   syncRootState();
   assistantLaunchers().forEach((button) => {
-    revealLauncher(button);
+    reveal(button);
     button.dataset.naraLauncher = "active";
     button.setAttribute("aria-label", "Buka Nara AI");
     button.setAttribute("title", availability === "ready"
