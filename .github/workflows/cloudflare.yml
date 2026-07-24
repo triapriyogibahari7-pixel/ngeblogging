@@ -14,17 +14,17 @@ concurrency:
 
 jobs:
   deploy:
-    if: vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
       CLOUDFLARE_SMOKE_TEST_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
+      TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -38,13 +38,16 @@ jobs:
       - name: Validate required deployment configuration
         shell: bash
         run: |
+          set -euo pipefail
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
-          test -n "${VITE_SUPABASE_URL}" || { echo "Variable VITE_SUPABASE_URL belum diisi"; exit 1; }
-          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "Secret VITE_SUPABASE_PUBLISHABLE_KEY belum diisi"; exit 1; }
+          test -n "${VITE_SUPABASE_URL}" || { echo "Public Supabase URL belum tersedia"; exit 1; }
+          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "Public Supabase publishable key belum tersedia"; exit 1; }
           [[ "${VITE_SUPABASE_URL}" == https://*.supabase.co ]] || { echo "VITE_SUPABASE_URL tidak valid"; exit 1; }
+          [[ "${VITE_SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${VITE_SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "Publishable key Supabase tidak valid"; exit 1; }
           [[ "${VITE_PUBLIC_SITE_URL}" == https://* ]] || { echo "VITE_PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
           [[ "${CLOUDFLARE_SMOKE_TEST_URL}" == https://* ]] || { echo "CLOUDFLARE_SMOKE_TEST_URL wajib HTTPS"; exit 1; }
+          [[ "${TENANT_SMOKE_TEST_URL}" == https://*.ngeblogging.com ]] || { echo "TENANT_SMOKE_TEST_URL wajib subdomain ngeblogging.com"; exit 1; }
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
@@ -52,22 +55,68 @@ jobs:
       - name: Test and build production application
         run: npm run test:production && npm run build
 
-      - name: Validate Cloudflare bundle and required secrets
+      - name: Validate Cloudflare production bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy apex, wildcard tenants, assets, and API to Cloudflare Workers
+      - name: Deploy apex, wildcard tenants, assets, Nara, and API
         run: npm run deploy:cloudflare
 
-      - name: Verify production health endpoint
+      - name: Verify v10 apex and tenant release
         shell: bash
         run: |
-          response="$(curl --fail --silent --show-error --retry 8 --retry-delay 4 --max-time 20 "${CLOUDFLARE_SMOKE_TEST_URL%/}/api/health")"
-          echo "${response}" | node -e '
-            let input="";
-            process.stdin.on("data", (chunk) => input += chunk);
-            process.stdin.on("end", () => {
-              const payload = JSON.parse(input);
-              if (payload.status !== "ok" || payload.service !== "ngeblogging-cloudflare") process.exit(1);
-              console.log(`Cloudflare sehat: ${payload.runtime} · ${payload.hostname || "hostname tidak dilaporkan"}`);
-            });
-          '
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            stamp="$(date +%s)-${attempt}"
+            echo "Production verification ${attempt}/24"
+
+            health_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/health.json -w '%{http_code}' \
+              -H 'accept: application/json' -H 'cache-control: no-cache' \
+              "${CLOUDFLARE_SMOKE_TEST_URL%/}/api/health?release=${stamp}" || true)"
+            index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/index.html -w '%{http_code}' \
+              -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/?release=${stamp}" || true)"
+            sw_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/sw.js -w '%{http_code}' \
+              -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/sw.js?release=${stamp}" || true)"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant.html -w '%{http_code}' \
+              -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?release=${stamp}" || true)"
+
+            if [[ "${health_code}" == "200" && "${index_code}" == "200" && "${sw_code}" == "200" && "${tenant_code}" == "200" ]]; then
+              if node <<'NODE'
+          const fs = require('node:fs');
+          const health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8'));
+          const index = fs.readFileSync('/tmp/index.html', 'utf8');
+          const sw = fs.readFileSync('/tmp/sw.js', 'utf8');
+          const tenant = fs.readFileSync('/tmp/tenant.html', 'utf8');
+          const errors = [];
+
+          if (health.status !== 'ok') errors.push('health.status');
+          if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
+          if (health.nara !== true) errors.push('health.nara');
+          if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
+          if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
+          for (const marker of ['studio-v10-authority.css', 'studio-production-guard.js', 'nara-availability-bridge.js']) {
+            if (!index.includes(marker)) errors.push(`index:${marker}`);
+          }
+          if (!sw.includes('ngeblogging-app-v10-20260724')) errors.push('service-worker-v10');
+          if (/WHITE-R4-2026\.07\.12/.test(index)) errors.push('legacy-white-r4');
+          if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
+          if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
+
+          if (errors.length) {
+            console.error(`Release belum siap: ${errors.join(', ')}`);
+            process.exit(1);
+          }
+          console.log(JSON.stringify({ runtime: health.runtime, nara: health.nara, tenant: 'ok', release: 'v10' }, null, 2));
+          NODE
+              then
+                echo "Cloudflare v10 dan tenant publik terverifikasi."
+                exit 0
+              fi
+            fi
+
+            sleep 15
+          done
+
+          echo "Cloudflare belum menyajikan rilis v10."
+          echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
+          echo "Index marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|studio-v10-authority.css|ngeblogging-app-v10-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
+          exit 1
