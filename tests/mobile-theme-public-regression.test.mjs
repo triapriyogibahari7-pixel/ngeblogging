@@ -11,6 +11,7 @@ const authority = readFileSync(new URL("../src/studio-v10-authority.css", import
 const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
 const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
 const capabilityBridge = readFileSync(new URL("../src/nara-availability-bridge.js", import.meta.url), "utf8");
+const commandCenter = readFileSync(new URL("../src/nara-command-center-bridge.js", import.meta.url), "utf8");
 const assistant = readFileSync(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../src/NaraWorkspace.jsx", import.meta.url), "utf8");
 const integrations = readFileSync(new URL("../src/lib/nara-data.js", import.meta.url), "utf8");
@@ -74,12 +75,14 @@ test("Nara keeps models, intelligence, files, images, voice, QR, memory, and plu
   for (const marker of ["Projects", "Memory", "Images", "Plugins", "Memori jangka panjang", "Buat gambar"]) {
     assert.ok(workspace.includes(marker), `workspace missing ${marker}`);
   }
-  for (const marker of ["ensureNaraCapabilityShortcuts", "requestQrScan", "openNaraWorkspace", "Baca QR"]) {
-    assert.ok(productionGuard.includes(marker), `guard missing ${marker}`);
+  for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector", "openWorkspace"]) {
+    assert.ok(commandCenter.includes(marker), `command center missing ${marker}`);
   }
   for (const plugin of ["supabase", "github", "cloudflare", "paypal", "google-drive", "webhook"]) {
     assert.ok(integrations.includes(`id:\"${plugin}\"`) || integrations.includes(`id:"${plugin}"`), `plugin missing ${plugin}`);
   }
+  assert.match(index, /nara-command-center-bridge\.js/);
+  assert.match(index, /nara-command-center\.css/);
 });
 
 
@@ -172,8 +175,8 @@ test("Nara keeps Qwen primary and Workers AI as an authenticated fallback", () =
 });
 
 
-test("the v10 release invalidates stale CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v10-20260724/);
+test("the v13 release invalidates stale CSS and JavaScript caches", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v13-20260724/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
