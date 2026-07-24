@@ -2,34 +2,34 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 
-const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
-const bridge = readFileSync(new URL("../src/nara-availability-bridge.js", import.meta.url), "utf8");
-
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const index = read("index.html");
+const worker = read("cloudflare/worker.mjs");
+const secure = read("src/StudioSecure.jsx");
+const authority = read("src/studio-v14-authority.css");
+const commandCenter = read("src/nara-command-center-bridge.js");
 
 test("Nara follows real provider health without disappearing or locking the application", () => {
   assert.match(worker, /function naraTextReady\(env\)/);
   assert.match(worker, /const nara = naraTextReady\(env\)/);
-  assert.match(worker, /nara,/);
+  assert.match(worker, /naraProviders: \{ qwen: qwenTextReady\(env\), workersAi: workersAiReady\(env\), vision: workersVisionReady\(env\) \}/);
+  assert.match(worker, /imageGeneration,/);
   assert.doesNotMatch(worker, /uji produksi belum dinyatakan lulus/);
 
-  assert.match(bridge, /nara-capability-bridge-v10-20260724/);
-  assert.match(bridge, /let availability = "pending"/);
-  assert.match(bridge, /availability = health\.nara === false \? "degraded" : "ready"/);
-  assert.match(bridge, /availability = "degraded"/);
-  assert.match(bridge, /function scheduleRetry\(delay = 3000\)/);
-  assert.match(bridge, /assistantLaunchers\(\)\.forEach/);
-  assert.match(bridge, /reveal\(button\)/);
-  assert.match(bridge, /preserveAssistantCapabilities\(\)/);
-  assert.match(bridge, /billingReady = health\.billing === true/);
-  assert.match(bridge, /imageGenerationReady = health\.imageGeneration === true/);
+  assert.match(secure, /cache: "no-store"/);
+  assert.match(secure, /dataset\.naraReady = String\(health\.nara === true\)/);
+  assert.match(secure, /dataset\.naraImageReady = String\(health\.imageGeneration === true\)/);
+  assert.match(secure, /dataset\.naraReady = "false"/);
+  assert.match(secure, /button\.hidden = false/);
+  assert.match(secure, /button\.disabled = false/);
+  assert.match(authority, /\.nara-floating-button[\s\S]*visibility: visible !important/);
+  assert.match(authority, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
 
-  assert.doesNotMatch(bridge, /function conceal\(node\)/);
-  assert.doesNotMatch(bridge, /homeButton\(\)\?\.click\(\)/);
-  assert.doesNotMatch(bridge, /controls\.forEach\(conceal\)/);
-  assert.doesNotMatch(bridge, /removeInactiveOptions/);
-
-  assert.match(index, /nara-availability-bridge\.js/);
+  assert.match(commandCenter, /nara-command-center-v13-20260724/);
+  assert.match(commandCenter, /Projects/);
+  assert.match(commandCenter, /Baca QR/);
+  assert.match(index, /nara-command-center-bridge\.js/);
   assert.match(index, /nara-v9-readiness\.css/);
-  assert.match(index, /studio-v10-authority\.css/);
+  assert.match(index, /studio-v14-authority\.css/);
+  assert.doesNotMatch(index, /nara-availability-bridge\.js/);
 });
