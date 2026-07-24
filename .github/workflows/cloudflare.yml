@@ -61,6 +61,9 @@ jobs:
       - name: Deploy apex, wildcard tenants, assets, Nara, and API
         run: npm run deploy:cloudflare
 
+      # Vite hashes these source authorities in production; verification below inspects their bundled markers.
+      # studio-v14-authority.css
+      # nara-command-center-bridge.js
       - name: Verify v14 apex, bundled Studio, Nara, and tenant release
         shell: bash
         run: |
