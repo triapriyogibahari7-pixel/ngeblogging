@@ -15,6 +15,11 @@ function conceal(node) {
   node.style.setProperty("pointer-events", "none", "important");
 }
 
+function hiddenNaraRoute(shell = document.querySelector(".sn-shell")) {
+  return [...(shell?.querySelectorAll(".sn-side nav > button") || [])]
+    .find((button) => labelOf(button) === "Nara AI");
+}
+
 function ensureSingleSidebar(shell) {
   if (!shell) return;
   shell.querySelectorAll(":scope > .sn-mobile-nav, :scope > .sn-mobile-sheet-layer").forEach((node) => node.remove());
@@ -24,7 +29,9 @@ function ensureSingleSidebar(shell) {
   const nav = side?.querySelector(":scope > nav");
   if (nav) {
     [...nav.querySelectorAll(":scope > button")].forEach((button) => {
-      if (labelOf(button) === "Nara AI") conceal(button);
+      if (labelOf(button) !== "Nara AI") return;
+      button.dataset.naraWorkspaceRoute = "true";
+      conceal(button);
     });
   }
   shell.querySelectorAll(".sn-top-actions .sn-nara-button").forEach(conceal);
@@ -48,6 +55,59 @@ function ensureSingleSidebar(shell) {
   }
 }
 
+function setReactInputValue(input, value) {
+  const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
+  setter?.call(input, value);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function openNaraControlCenter() {
+  const route = hiddenNaraRoute();
+  if (!route) return;
+  route.click();
+  document.querySelector('.nara-assistant-header button[title="Tutup"]')?.click();
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function ensureControlCenterButton(layer) {
+  const context = layer?.querySelector(".nara-context-bar");
+  if (!context || context.querySelector(".nara-control-center-button")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "nara-control-center-button";
+  button.setAttribute("aria-label", "Buka Projects, Memory, Images, dan Plugins Nara");
+  button.innerHTML = "<span aria-hidden='true'>✦</span><b>Control Center</b><small>Projects · Memory · Images · Plugins</small>";
+  button.addEventListener("click", openNaraControlCenter);
+  context.append(button);
+}
+
+function ensureQrButton(layer) {
+  const menu = layer?.querySelector(".nara-attachment-menu");
+  if (!menu || menu.querySelector(".nara-qr-button")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "nara-qr-button";
+  button.innerHTML = "<span class='nara-qr-glyph' aria-hidden='true'>▦</span><span><b>Kode QR</b><small>Foto atau pilih gambar QR untuk dibaca</small></span>";
+  button.addEventListener("click", () => {
+    const textarea = layer.querySelector(".nara-composer textarea");
+    if (textarea) setReactInputValue(textarea, "Baca kode QR pada gambar ini. Tampilkan isi kodenya dengan aman, jelaskan tujuannya, dan jangan membuka tautan atau menjalankan tindakan tanpa konfirmasi saya.");
+    const camera = layer.querySelector('.nara-composer input[type="file"][capture]');
+    const image = layer.querySelector('.nara-composer input[type="file"][accept="image/*"][multiple]');
+    (camera || image)?.click();
+  });
+  menu.append(button);
+}
+
+function ensureCapabilitySummary(layer) {
+  const context = layer?.querySelector(".nara-context-bar");
+  if (!context || context.querySelector(".nara-capability-summary")) return;
+  const summary = document.createElement("span");
+  summary.className = "nara-capability-summary";
+  summary.textContent = "Model · Kecerdasan · File · Gambar · Suara · QR";
+  context.append(summary);
+}
+
 function ensureNara() {
   const launcher = document.querySelector(".nara-floating-button");
   if (launcher) {
@@ -56,7 +116,7 @@ function ensureNara() {
     launcher.tabIndex = 0;
     launcher.removeAttribute("aria-hidden");
     launcher.setAttribute("aria-label", "Buka Nara AI");
-    launcher.style.setProperty("display", window.matchMedia(PHONE_QUERY).matches ? "grid" : "grid", "important");
+    launcher.style.setProperty("display", "grid", "important");
     launcher.style.setProperty("visibility", "visible", "important");
     launcher.style.setProperty("opacity", "1", "important");
     launcher.style.setProperty("pointer-events", "auto", "important");
@@ -67,6 +127,9 @@ function ensureNara() {
   if (layer) {
     layer.dataset.naraInteractionAuthority = RELEASE;
     layer.style.setProperty("pointer-events", "auto", "important");
+    ensureControlCenterButton(layer);
+    ensureCapabilitySummary(layer);
+    ensureQrButton(layer);
   }
 }
 
@@ -93,8 +156,8 @@ function pointInside(rect, event) {
   return event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
 }
 
-/* Some legacy overlays covered the floating launcher. Capture the physical tap
-   before those overlays and route it to the real React button. */
+/* Legacy overlays previously covered the floating launcher. Capture the
+   physical tap before those overlays and route it to the real React button. */
 document.addEventListener("pointerdown", (event) => {
   forcedPointer = false;
   if (document.querySelector(".nara-assistant-layer")) return;
@@ -116,8 +179,7 @@ document.addEventListener("pointerup", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  const close = document.querySelector('.nara-assistant-header button[title="Tutup"]');
-  close?.click();
+  document.querySelector('.nara-assistant-header button[title="Tutup"]')?.click();
 });
 
 window.addEventListener("resize", schedule, { passive: true });
