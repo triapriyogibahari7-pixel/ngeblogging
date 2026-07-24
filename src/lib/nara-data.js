@@ -75,6 +75,7 @@ export async function deleteNaraMemory(memoryId) {
 
 export const INTEGRATION_CATALOG = [
   {id:"supabase",name:"Supabase",category:"Data",description:"Database, Auth, Storage, Realtime, dan Edge Functions.",scopes:["schema:read","data:read","data:write"]},
+  {id:"neon",name:"Neon",category:"Data",description:"Postgres serverless, branching database, connection pooling, dan observability.",scopes:["projects:read","branches:read","branches:write","database:connect"]},
   {id:"github",name:"GitHub",category:"Developer",description:"Repository, issues, pull requests, deployment, dan audit perubahan.",scopes:["repo:read","issues:write","pull_requests:write"]},
   {id:"cloudflare",name:"Cloudflare",category:"Infrastructure",description:"Workers, DNS, R2, Images, Stream, cache, dan observability.",scopes:["workers:read","dns:read","analytics:read"]},
   {id:"paypal",name:"PayPal",category:"Payments",description:"Checkout, langganan, invoice, dan webhook pembayaran.",scopes:["orders:read","orders:write"]},
