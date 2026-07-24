@@ -59,4 +59,5 @@ jobs:
           git add tests .github/workflows
           git diff --cached --check
           git commit -m "Synchronize tests and smoke checks with v9 release"
+          git pull --rebase origin main
           git push origin HEAD:main
