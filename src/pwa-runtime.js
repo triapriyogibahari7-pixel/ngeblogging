@@ -1,4 +1,4 @@
-const RELEASE = "ngeblogging-pwa-v14-20260724";
+const RELEASE = "ngeblogging-pwa-v16-20260724";
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
 let installButton = null;
@@ -118,8 +118,8 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      // Never reload during a click, login, upload, edit, or Nara request.
       document.documentElement.dataset.appUpdate = "applied";
+      try { sessionStorage.setItem("ngeblogging-app-release", RELEASE); } catch {}
     });
   } catch (error) {
     console.warn("PWA registration failed", error);
