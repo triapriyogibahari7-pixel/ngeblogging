@@ -6,7 +6,7 @@ const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "
 const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
 const enhancements = readFileSync(new URL("../src/studio-v9-enhancements.css", import.meta.url), "utf8");
 
-test("Studio source contains no bottom navigation or mobile more sheet", () => {
+ test("Studio source contains no bottom navigation or mobile more sheet", () => {
   assert.doesNotMatch(studio, /sn-mobile-nav/);
   assert.doesNotMatch(studio, /sn-mobile-sheet-layer/);
   assert.doesNotMatch(studio, /mobileMore/);
@@ -17,8 +17,10 @@ test("Studio has exactly one sidebar toggle and keeps settings and sign out in t
   assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
   assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
   assert.match(studio, /<LogOut\/><span>Keluar<\/span>/);
-  assert.match(secure, /studio-source-navigation-v9-20260724/);
+  assert.match(secure, /studio-source-navigation-v14-20260724/);
   assert.match(secure, /dataset\.sidebarAuthority = "single"/);
+  assert.match(secure, /aria-controls/);
+  assert.match(secure, /aria-expanded/);
   assert.match(enhancements, /\.sn-side > nav \{[\s\S]*flex: 1 1 auto/);
 });
 
