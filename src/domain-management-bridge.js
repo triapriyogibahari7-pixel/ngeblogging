@@ -73,18 +73,12 @@ function renderDomain(domain, cnameTarget) {
 
 function render(container, state) {
   const { loading, error, config, domains, siteId } = state;
-  if (loading) {
-    container.innerHTML = `<section class="dm-panel"><div class="dm-loading">Memeriksa domain produksi…</div></section>`;
+  if (loading || error || !config?.enabled) {
+    container.hidden = true;
+    container.replaceChildren();
     return;
   }
-  if (error) {
-    container.innerHTML = `<section class="dm-panel"><header><div><small>DOMAIN CUSTOM</small><h2>Pengelolaan domain belum dapat dimuat</h2></div></header><p class="dm-error">${escapeHtml(error)}</p><button type="button" class="dm-retry">Coba lagi</button></section>`;
-    return;
-  }
-  if (!config?.enabled) {
-    container.innerHTML = `<section class="dm-panel dm-disabled"><header><div><small>DOMAIN CUSTOM</small><h2>Belum dibuka untuk produksi</h2></div><i>Aman</i></header><p>Form domain, tombol aktivasi, dan instruksi DNS disembunyikan sampai Cloudflare for SaaS, target CNAME, token server, dan penyimpanan domain benar-benar siap. Subdomain gratis tetap tersedia.</p></section>`;
-    return;
-  }
+  container.hidden = false;
   container.innerHTML = `<section class="dm-panel"><header><div><small>DOMAIN CUSTOM</small><h2>Hubungkan domain milik Anda</h2><p>Masukkan hostname seperti <b>blog.contoh.com</b>. Jangan masukkan protokol atau path.</p></div><i>Cloudflare siap</i></header>
     <form class="dm-form"><label>Nama domain<input name="hostname" required inputmode="url" autocomplete="off" spellcheck="false" placeholder="blog.contoh.com"/></label><button type="submit">Tambahkan domain</button></form>
     <div class="dm-target"><span>Target CNAME Ngeblogging</span><code>${escapeHtml(config.cnameTarget || "")}</code><button type="button" data-copy="${escapeHtml(config.cnameTarget || "")}">Salin</button></div>
@@ -135,6 +129,7 @@ function attach(card) {
   card.dataset.domainEnhanced = "true";
   const container = document.createElement("div");
   container.className = "dm-root";
+  container.hidden = true;
   card.insertAdjacentElement("afterend", container);
   const state = { loading: true, error: "", config: null, domains: [], siteId: "" };
 
