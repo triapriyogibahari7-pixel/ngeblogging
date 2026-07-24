@@ -65,8 +65,6 @@ function attach(shell) {
   if (!side || !toggle) return;
   attachedShells.add(shell);
 
-  // There must be exactly one sidebar open/close control: the React header
-  // button. Remove any legacy control if an older cached script inserted it.
   side.querySelectorAll(":scope > .sn-side-close").forEach((node) => node.remove());
 
   const sideObserver = new MutationObserver(() => updateShell(shell));
@@ -87,7 +85,7 @@ function scan() {
 }
 
 const rootObserver = new MutationObserver(scan);
-rootObserver.observe(document.documentElement, { childList: true, subtree: true });
+rootObserver.observe(document.getElementById("root") || document.documentElement, { childList: true, subtree: true });
 scan();
 
 document.addEventListener("keydown", (event) => {
@@ -95,14 +93,14 @@ document.addEventListener("keydown", (event) => {
   document.querySelectorAll(".sn-shell").forEach(collapseSidebar);
 });
 
+// Closing an expanded drawer must never cancel the user's intended click.
+// In particular, the same tap must still open the floating Nara assistant.
 document.addEventListener("pointerdown", (event) => {
   if (!compactMode()) return;
   document.querySelectorAll(".sn-shell").forEach((shell) => {
     const { side, toggle } = elements(shell);
     if (!side || !toggle || side.classList.contains("collapsed")) return;
     if (side.contains(event.target) || toggle.contains(event.target)) return;
-    event.preventDefault();
-    event.stopPropagation();
     collapseSidebar(shell);
   });
 }, true);
