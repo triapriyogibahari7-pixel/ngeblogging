@@ -24,7 +24,7 @@ const LEGACY_UI = [
   "studio-v11-mobile-repair.css",
 ];
 
-test("main favicon and PWA v14 install without interaction-cancelling reloads", () => {
+test("main favicon and PWA v16 install without interaction-cancelling reloads", () => {
   assert.match(index, /rel="icon" href="\/favicon\.svg"/);
   assert.match(index, /rel="manifest" href="\/site\.webmanifest"/);
   assert.match(index, /apple-mobile-web-app-title/);
@@ -34,7 +34,7 @@ test("main favicon and PWA v14 install without interaction-cancelling reloads", 
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v16-20260724/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
