@@ -114,8 +114,8 @@ test("Nara has authenticated text vision and image fallbacks on Workers AI", () 
   assert.match(wrangler, /CF_AI_IMAGE_MODEL/);
 });
 
-test("v14 invalidates stale shell CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
+test("v16 invalidates stale shell CSS and JavaScript caches", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v16-20260724/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
