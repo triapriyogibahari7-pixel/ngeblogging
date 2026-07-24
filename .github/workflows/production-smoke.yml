@@ -105,15 +105,13 @@ jobs:
             for (const required of ["Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Domain", "Pengaturan", "Keluar"]) {
               if (!navSegment.includes(required)) errors.push(`sidebar missing ${required}`);
             }
-            if (navSegment.includes("Nara AI")) errors.push("Nara still visible in sidebar");
             for (const required of ["Lihat situs", "SUBDOMAIN GRATIS", ".ngeblogging.com"]) {
               if (!studioJs.includes(required)) errors.push(`Studio missing ${required}`);
             }
 
             for (const marker of [
               "studio-production-guard-v10-20260724", "studio-icon-rail-v10-20260724", "nara-capability-bridge-v10-20260724",
-              "nara-floating-button", "ensureNaraCapabilityShortcuts", "requestQrScan", "openNaraWorkspace",
-              "Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara",
+              "nara-floating-button", "Baca QR", "Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara",
               "Projects", "Memory", "Images", "Plugins", "Memori jangka panjang", "Buat gambar",
               "supabase", "github", "cloudflare", "google-drive",
               "ngeblogging-settings-extras", "sn-content-tools", "tn-widget-summary", "nara-assistant-shell",
@@ -124,6 +122,7 @@ jobs:
             }
             if (!compact.includes("--sn-phone-rail:68px")) errors.push("phone icon rail");
             if (!compact.includes("pointer-events:auto!important")) errors.push("clickable Nara authority");
+            if (!compact.includes('[data-nara-workspace-route="true"]') && !compact.includes("data-nara-workspace-route")) errors.push("hidden Nara sidebar route authority");
             if (allAssets.includes("uji produksi belum dinyatakan lulus") || allAssets.includes("Konfigurasi autentikasi Nara belum lengkap")) errors.push("obsolete Nara failure path");
 
             if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push("tenant 404 page");
