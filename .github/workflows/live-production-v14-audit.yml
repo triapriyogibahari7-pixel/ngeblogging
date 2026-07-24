@@ -13,7 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Checkout audit script
-        uses: actions/checkout@v6
       - name: Inspect live v14 runtime and bundled capabilities
-        run: node scripts/live-v14-audit.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            -H "authorization: Bearer ${GH_TOKEN}" \
+            -H "accept: application/vnd.github.raw+json" \
+            "https://api.github.com/repos/triapriyogibahari7-pixel/ngeblogging/contents/scripts/live-v14-audit.mjs?ref=audit/live-production-v14" \
+            -o /tmp/live-v14-audit.mjs
+          node /tmp/live-v14-audit.mjs
