@@ -10,7 +10,7 @@ const secure = read("src/StudioSecure.jsx");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
 
- test("v14 authority is the only final Studio layout authority", () => {
+test("v14 authority is the only final Studio layout authority", () => {
   assert.match(index, /studio-v14-authority\.css/);
   assert.ok(index.indexOf("nara-interaction-authority.css") > index.indexOf("studio-v14-authority.css"));
   for (const legacy of ["studio-v10-authority.css", "studio-v11-mobile-repair.css", "studio-production-guard.js", "studio-mobile-navigation.js", "nara-interaction-guard.js"]) {
