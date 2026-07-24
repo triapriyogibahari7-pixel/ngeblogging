@@ -90,7 +90,7 @@ function syncShell(shell) {
   side.querySelectorAll(":scope > nav > button").forEach((button) => {
     if (textLabel(button) !== "Nara AI") return;
     button.hidden = true;
-    button.disabled = true;
+    button.disabled = false;
     button.tabIndex = -1;
     button.setAttribute("aria-hidden", "true");
     button.dataset.naraWorkspaceRoute = "true";
@@ -100,6 +100,7 @@ function syncShell(shell) {
     .forEach((node) => node.remove());
 
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .nara-floating-button").forEach((button) => {
+    button.type = "button";
     button.hidden = false;
     button.disabled = false;
     button.removeAttribute("aria-hidden");
