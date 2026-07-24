@@ -1,7 +1,6 @@
 /* Nara capability visibility authority.
-   Readiness may change the active provider, but it must never remove the
-   user's model, intelligence, camera, image, file, voice, memory, QR, or
-   plugin controls from the interface. */
+   Provider readiness may change the answer path, but must never remove the
+   model, intelligence, camera, image, file, voice, memory, QR, or plugin UI. */
 
 .nara-floating-button,
 .nara-select,
@@ -10,9 +9,25 @@
 .nara-attachment-menu > button,
 .nara-quick-prompts,
 .nara-quick-prompts > button,
-.nara-composer input,
 .nara-composer button {
   visibility: visible;
+}
+
+.nara-composer input[type="file"],
+.nara-composer input.nara-native-file-input,
+.nara-native-file-input[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 html[data-nara-ready="degraded"] .nara-floating-button::after {
