@@ -1,93 +1,84 @@
+const RELEASE = "nara-capability-bridge-v10-20260724";
 let availability = "pending";
 let billingReady = false;
 let imageGenerationReady = false;
 let retryTimer = 0;
+let frame = 0;
+
 document.documentElement.dataset.naraReady = availability;
 document.documentElement.dataset.naraBillingReady = "false";
 document.documentElement.dataset.naraImageReady = "false";
+document.documentElement.dataset.naraCapabilityRelease = RELEASE;
 
 function labelOf(node) {
-  return node?.querySelector?.("span")?.textContent?.trim() || node?.textContent?.replace(/\s+/g, " ").trim() || "";
+  return node?.querySelector?.("span")?.textContent?.trim()
+    || node?.textContent?.replace(/\s+/g, " ").trim()
+    || "";
 }
 
-function naraControls() {
-  return [...document.querySelectorAll(".sn-side button,.sn-top-actions button,.sn-home-grid button")]
-    .filter((button) => {
-      const label = labelOf(button);
-      return label === "Nara AI" || label.includes("Tanya Nara") || label === "Buka Nara";
-    });
-}
-
-function homeButton() {
-  return [...document.querySelectorAll(".sn-side nav button")]
-    .find((button) => labelOf(button) === "Ringkasan");
-}
-
-function conceal(node) {
-  node.style.display = "none";
-  node.hidden = true;
-  if ("disabled" in node) node.disabled = true;
-  node.setAttribute("aria-hidden", "true");
-  if ("tabIndex" in node) node.tabIndex = -1;
+function assistantLaunchers() {
+  return [...document.querySelectorAll(
+    ".nara-floating-button,.sn-top-actions .sn-nara-button,.sn-home-grid button",
+  )].filter((button) => {
+    const label = labelOf(button);
+    return button.classList.contains("nara-floating-button")
+      || label.includes("Tanya Nara")
+      || label === "Buka Nara";
+  });
 }
 
 function reveal(node) {
-  node.style.removeProperty("display");
   node.hidden = false;
+  node.removeAttribute("aria-hidden");
+  node.style.removeProperty("display");
+  node.style.removeProperty("visibility");
+  node.style.removeProperty("pointer-events");
+  node.style.removeProperty("opacity");
   if ("disabled" in node) node.disabled = false;
-  node.setAttribute("aria-hidden", "false");
-  if ("tabIndex" in node) node.tabIndex = 0;
+  if ("tabIndex" in node && node.tabIndex < 0) node.tabIndex = 0;
 }
 
-function removeInactiveOptions(select, allowedValues, fallback) {
-  [...select.options].forEach((option) => {
-    if (!allowedValues.has(option.value)) option.remove();
-  });
-  if (!allowedValues.has(select.value)) {
-    select.value = fallback;
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-}
-
-function enforceActiveNaraCapabilities() {
+function preserveAssistantCapabilities() {
   document.documentElement.dataset.naraBillingReady = String(billingReady);
   document.documentElement.dataset.naraImageReady = String(imageGenerationReady);
 
-  if (!billingReady) {
-    document.querySelectorAll(".nara-upgrade-card,.nara-context-bar button").forEach(conceal);
-    document.querySelectorAll('.nara-select.intelligence select').forEach((select) => removeInactiveOptions(select, new Set(["light", "standard"]), "standard"));
-    document.querySelectorAll('.nara-select.model select').forEach((select) => removeInactiveOptions(select, new Set(["nara-mini"]), "nara-mini"));
-    document.querySelectorAll(".nara-select option").forEach((option) => {
-      option.textContent = option.textContent.replace(/\s*·\s*Pro\s*$/i, "");
-    });
-  }
+  // Capabilities remain present in the interface. Readiness controls which
+  // provider answers a request; it must never delete models, intelligence
+  // levels, camera, image, file, voice, memory, plugin, or QR controls.
+  document.querySelectorAll(".nara-select option,.nara-attachment-menu button,.nara-composer input,.nara-quick-prompts button").forEach((node) => {
+    node.hidden = false;
+    node.removeAttribute("aria-hidden");
+    if ("disabled" in node) node.disabled = false;
+    node.style.removeProperty("display");
+    node.style.removeProperty("visibility");
+    node.style.removeProperty("pointer-events");
+  });
 
-  if (!imageGenerationReady) {
-    document.querySelectorAll(".nara-attachment-menu button").forEach((button) => {
-      const label = labelOf(button);
-      if (label.startsWith("Kamera") || label.startsWith("Foto")) conceal(button);
-    });
-    document.querySelectorAll('.nara-composer input[accept^="image/"]').forEach((input) => {
-      input.disabled = true;
-    });
-    document.querySelectorAll(".nara-quick-prompts button").forEach((button) => {
-      if (labelOf(button) === "Jelaskan gambar") button.textContent = "Susun outline";
-    });
-  }
+  document.querySelectorAll(".nara-attachment-menu").forEach((node) => {
+    node.dataset.imageProviderReady = String(imageGenerationReady);
+  });
 }
 
 function scan() {
-  const controls = naraControls();
-  if (availability === "unavailable") {
-    controls.forEach(conceal);
-    if (document.querySelector(".nw-page") || controls.some((button) => button.classList.contains("active"))) homeButton()?.click();
-    return;
-  }
-  controls.forEach(reveal);
-  enforceActiveNaraCapabilities();
+  document.documentElement.dataset.naraReady = availability;
+  document.documentElement.dataset.naraCapabilityRelease = RELEASE;
+
+  assistantLaunchers().forEach((button) => {
+    reveal(button);
+    button.dataset.naraLauncher = "active";
+    button.setAttribute("aria-label", "Buka Nara AI");
+    button.setAttribute("title", availability === "ready" ? "Buka Nara AI" : "Buka Nara AI — koneksi akan dicoba otomatis");
+  });
+
+  preserveAssistantCapabilities();
 }
 
-function scheduleRetry(delay = 2500) {
+function scheduleScan() {
+  cancelAnimationFrame(frame);
+  frame = requestAnimationFrame(scan);
+}
+
+function scheduleRetry(delay = 3000) {
   clearTimeout(retryTimer);
   retryTimer = window.setTimeout(resolveAvailability, delay);
 }
@@ -95,25 +86,28 @@ function scheduleRetry(delay = 2500) {
 async function resolveAvailability() {
   clearTimeout(retryTimer);
   try {
-    const response = await fetch(`/api/health?nara=${Date.now()}`, { cache: "no-store", headers: { accept: "application/json", "cache-control": "no-cache" } });
-    if (!response.ok) throw new Error("Nara readiness unavailable");
+    const response = await fetch(`/api/health?nara=${Date.now()}`, {
+      cache: "no-store",
+      headers: { accept: "application/json", "cache-control": "no-cache" },
+    });
+    if (!response.ok) throw new Error(`Health ${response.status}`);
     const health = await response.json().catch(() => ({}));
-    availability = health.nara === false ? "unavailable" : "ready";
+    availability = health.nara === false ? "degraded" : "ready";
     billingReady = health.billing === true;
     imageGenerationReady = health.imageGeneration === true;
   } catch {
-    availability = "unknown";
+    availability = "degraded";
     billingReady = false;
     imageGenerationReady = false;
-    scheduleRetry(3000);
+    scheduleRetry();
   } finally {
-    document.documentElement.dataset.naraReady = availability;
     scan();
   }
 }
 
-new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+new MutationObserver(scheduleScan).observe(document.documentElement, { childList: true, subtree: true });
 window.addEventListener("online", resolveAvailability);
+window.addEventListener("pageshow", resolveAvailability);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) resolveAvailability(); });
 scan();
 resolveAvailability();
