@@ -1,4 +1,4 @@
-const RELEASE = "ngeblogging-pwa-v14-20260724";
+const RELEASE = "ngeblogging-pwa-v18-20260724";
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
 let installButton = null;
@@ -14,17 +14,22 @@ function viewportProfile() {
   const browserScale = physicalMobile
     ? Math.max(1, Math.min(3, layoutWidth / screenWidth))
     : 1;
+  const desktopSitePhone = physicalMobile && browserScale > 1.2;
 
   let mode = "desktop";
-  if (shortSide <= 760) mode = "mobile";
-  else if (shortSide <= 1024) mode = "tablet";
-  else if (layoutWidth <= 1440) mode = "laptop";
+  if (!desktopSitePhone && shortSide <= 760) mode = "mobile";
+  else if (!desktopSitePhone && shortSide <= 1024) mode = "tablet";
+  else if (!desktopSitePhone && layoutWidth <= 1440) mode = "laptop";
 
   return {
     mode,
     physicalMobile,
-    desktopSitePhone: physicalMobile && browserScale > 1.2,
+    desktopSitePhone,
     browserScale,
+    layoutWidth,
+    layoutHeight,
+    screenWidth,
+    screenHeight,
     physicalLayoutWidth: layoutWidth / browserScale,
     physicalLayoutHeight: layoutHeight / browserScale,
   };
@@ -40,9 +45,12 @@ function syncDeviceMode() {
   root.dataset.deviceMode = profile.mode;
   root.dataset.physicalMobile = String(profile.physicalMobile);
   root.dataset.desktopSitePhone = String(profile.desktopSitePhone);
+  root.dataset.desktopLayoutRequested = String(profile.desktopSitePhone);
   root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
   root.style.setProperty("--sn-browser-scale", profile.browserScale.toFixed(3));
+  root.style.setProperty("--sn-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
+  root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-width", `${profile.physicalLayoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-height", `${profile.physicalLayoutHeight.toFixed(2)}px`);
 }
@@ -118,7 +126,6 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      // Never reload during a click, login, upload, edit, or Nara request.
       document.documentElement.dataset.appUpdate = "applied";
     });
   } catch (error) {
