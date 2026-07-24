@@ -69,8 +69,14 @@ jobs:
           const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
 
           try {
-            const response = await page.goto(`${base}/?audit=${Date.now()}`, { waitUntil: "networkidle", timeout: 60000 });
-            if (!response?.ok()) throw new Error(`Landing gagal: ${response?.status()}`);
+            let response = null;
+            for (let attempt = 1; attempt <= 18; attempt += 1) {
+              response = await page.goto(`${base}/?audit=${Date.now()}-${attempt}`, { waitUntil: "networkidle", timeout: 60000 }).catch(() => null);
+              if (response?.ok()) break;
+              console.log(`Menunggu propagasi Worker ${attempt}/18; status=${response?.status() || "network"}`);
+              await page.waitForTimeout(5000);
+            }
+            if (!response?.ok()) throw new Error(`Landing gagal setelah propagasi: ${response?.status()}`);
             const html = await page.content();
             if (/WHITE-R4-2026\.07\.12/.test(html)) throw new Error("Shell lama WHITE-R4 masih aktif");
             report.checks.landing = true;
