@@ -22,7 +22,7 @@ test("native camera image and text inputs never leak into the visible Nara UI", 
   assert.match(assistant, /ref=\{imageInput\}/);
   assert.match(assistant, /ref=\{fileInput\}/);
   assert.match(assistant, /type="file"/);
-  assert.doesNotMatch(authority, /\.nara-composer input\[type="file"\][\s\S]*display: block/);
+  assert.doesNotMatch(authority, /\.nara-composer input\[type="file"\][^{]*\{[^}]*display:\s*block\b/);
 });
 
 test("closing the phone drawer does not cancel the selected navigation action", () => {
