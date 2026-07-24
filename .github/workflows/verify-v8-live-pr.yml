@@ -1,0 +1,94 @@
+name: Verify deployed v8
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Verify live assets, sidebar, themes, and Nara auth
+        shell: bash
+        run: |
+          set -u -o pipefail
+          for attempt in $(seq 1 36); do
+            echo "Live v8 attempt ${attempt}/36"
+            if node --input-type=module <<'NODE'
+          const site = 'https://ngeblogging.com';
+          const stamp = `verify=${Date.now()}`;
+          const get = async (url, options = {}) => {
+            const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}${stamp}`, {
+              ...options,
+              headers: { 'cache-control': 'no-cache', ...(options.headers || {}) },
+            });
+            return { response, text: await response.text() };
+          };
+          try {
+            const [healthResult, swResult, htmlResult] = await Promise.all([
+              get(`${site}/api/health`, { headers: { accept: 'application/json' } }),
+              get(`${site}/sw.js`),
+              get(`${site}/`),
+            ]);
+            if (![healthResult, swResult, htmlResult].every(({ response }) => response.ok)) throw new Error('public endpoints not ready');
+            const health = JSON.parse(healthResult.text);
+            const queue = [...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map((match) => new URL(match[1], site).href);
+            const seen = new Set();
+            const chunks = [];
+            for (let depth = 0; depth < 7; depth += 1) {
+              const batch = [...new Set(queue)].filter((url) => !seen.has(url));
+              if (!batch.length) break;
+              batch.forEach((url) => seen.add(url));
+              const texts = await Promise.all(batch.map(async (url) => {
+                const result = await get(url);
+                if (!result.response.ok) throw new Error(`asset ${url}:${result.response.status}`);
+                return result.text;
+              }));
+              chunks.push(...texts);
+              for (const text of texts) {
+                for (const match of text.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g)) queue.push(new URL(`/${match[1]}`, site).href);
+              }
+            }
+            const assets = chunks.join('\n');
+            const compact = assets.replace(/\s+/g, '');
+            const errors = [];
+            if (health.status !== 'ok' || health.nara !== true || health.managedSubdomains !== true) errors.push('health');
+            if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('siteLimits');
+            if (!swResult.text.includes('ngeblogging-app-v8-20260724')) errors.push('PWA v8');
+            for (const marker of [
+              'studio-production-guard-v8-20260724', 'mergeSidebarMenus', 'ngeblogging-settings-extras',
+              'sn-content-tools', 'tn-widget-summary', 'nara-assistant-shell', 'ng-widget-recent-posts',
+              'ng-widget-popular-posts', 'ng-header nav.open', 'Mobile', 'Tablet', 'Laptop', 'Komputer',
+              'Editorial', 'Journal', 'Newsroom', 'Business', 'Collective', 'Forum', 'Canvas', 'Identity',
+              'Diary', 'Atlas', 'Magazine', 'Market', 'Voyage', 'Academy', 'Wellness', 'Circuit', 'Lens',
+              'Prime', 'Dawn', 'Night', 'Coast', 'Atelier'
+            ]) if (!assets.includes(marker)) errors.push(`asset:${marker}`);
+            if (!compact.includes('--sn-phone-panel:min(82vw,272px)')) errors.push('sidebarWidth');
+            if (!compact.includes('.sn-mobile-nav') || !compact.includes('.sn-side-bottom') || !compact.includes('display:none!important')) errors.push('bottomNavigation');
+            if (assets.includes('Konfigurasi autentikasi Nara belum lengkap')) errors.push('obsoleteAuthError');
+            const nara = await get(`${site}/api/nara`, {
+              method: 'POST', headers: { 'content-type': 'application/json', origin: site },
+              body: JSON.stringify({ message: 'uji koneksi', model: 'nara-mini', intelligence: 'standard', attachments: [], history: [] }),
+            });
+            const naraPayload = JSON.parse(nara.text || '{}');
+            if (health.naraProviders?.workersAi && !health.naraProviders?.qwen && (nara.response.status !== 401 || naraPayload.code !== 'NARA_SESSION_REQUIRED')) {
+              errors.push(`NaraAuth:${nara.response.status}/${naraPayload.code || 'none'}`);
+            }
+            if (/konfigurasi autentikasi/i.test(String(naraPayload.error || ''))) errors.push('NaraConfig');
+            console.log(JSON.stringify({ health, assetsChecked: seen.size, nara: { status: nara.response.status, code: naraPayload.code }, errors }, null, 2));
+            if (errors.length) process.exit(1);
+            console.log('LIVE_RELEASE_V8_CONFIRMED');
+          } catch (error) {
+            console.error(error.message);
+            process.exit(1);
+          }
+          NODE
+            then exit 0; fi
+            [ "$attempt" -lt 36 ] || exit 1
+            sleep 20
+          done
