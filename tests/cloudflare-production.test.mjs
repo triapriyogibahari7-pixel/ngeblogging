@@ -13,6 +13,11 @@ function routePatterns() {
   return new Set((production.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
 }
 
+function assertPublicSupabaseConfig(vars, label) {
+  assert.match(String(vars?.SUPABASE_URL || ""), /^https:\/\/[a-z0-9-]+\.supabase\.co$/i, `${label} Supabase URL`);
+  assert.match(String(vars?.SUPABASE_PUBLISHABLE_KEY || ""), /^(sb_publishable_|eyJ)/, `${label} publishable key`);
+}
+
 test("Cloudflare is the production runtime and Worker runs before SPA assets", () => {
   assert.equal(wrangler.main, "./cloudflare/worker.mjs");
   assert.equal(wrangler.assets?.directory, "./dist/");
@@ -21,11 +26,12 @@ test("Cloudflare is the production runtime and Worker runs before SPA assets", (
   assert.equal(wrangler.ai?.binding, "AI");
 });
 
-test("preview builds do not claim production routes or require production secrets", () => {
+test("preview builds do not claim production routes and use public auth configuration", () => {
   assert.equal(wrangler.routes, undefined);
   assert.equal(wrangler.secrets, undefined);
-  assert.equal(wrangler.vars?.NARA_RUNTIME, "cloudflare-worker-preview-v4");
+  assert.equal(wrangler.vars?.NARA_RUNTIME, "cloudflare-worker-preview-v5");
   assert.equal(wrangler.vars?.CF_AI_MODEL, "@cf/zai-org/glm-4.7-flash");
+  assertPublicSupabaseConfig(wrangler.vars, "preview");
   assert.match(packageJson.scripts["cloudflare:preview-dry-run"], /wrangler versions upload/);
 });
 
@@ -34,24 +40,28 @@ test("apex and every Ngeblogging tenant subdomain are routed in production", () 
   assert.ok(routes.has("ngeblogging.com/*"));
   assert.ok(routes.has("*.ngeblogging.com/*"));
   assert.equal(production.name, "ngeblogging");
-  assert.equal(production.vars?.NARA_RUNTIME, "cloudflare-worker-v4");
+  assert.equal(production.vars?.NARA_RUNTIME, "cloudflare-worker-v5");
   assert.equal(production.ai?.binding, "AI");
+  assertPublicSupabaseConfig(production.vars, "production");
 });
 
-test("required production secrets are declared and never stored as plaintext vars", () => {
-  const required = new Set(production.secrets?.required || []);
-  for (const name of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
-    assert.ok(required.has(name), `${name} must be required`);
-    assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
-  }
+test("only public Supabase configuration is stored in vars and every real secret remains server-only", () => {
   const optional = new Set(production.secrets?.optional || []);
   for (const name of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID"]) {
-    assert.ok(optional.has(name), `${name} must be optional because Workers AI is the independent fallback`);
+    assert.ok(optional.has(name), `${name} must remain optional because Workers AI is the independent fallback`);
     assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
   }
-  for (const name of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
-    assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
+
+  for (const vars of [wrangler.vars || {}, production.vars || {}]) {
+    assertPublicSupabaseConfig(vars, "Worker");
+    for (const name of [
+      "SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID",
+      "LOCAL_PAYMENT_GATEWAY_SECRET", "QWEN_API_KEY",
+    ]) {
+      assert.equal(Object.hasOwn(vars, name), false, `${name} must not be a plaintext var`);
+    }
   }
+
   assert.match(packageJson.scripts["deploy:cloudflare"], /--env production/);
   assert.match(packageJson.scripts["cloudflare:dry-run"], /--env production/);
 });
@@ -63,6 +73,8 @@ test("Worker uses portable Nara, Workers AI fallback, billing, image, and tenant
   assert.match(worker, /workersAiReady/);
   assert.match(workersAi, /env\.AI\.run\(model/);
   assert.match(workersAi, /consume_nara_quota/);
+  assert.match(workersAi, /DEFAULT_SUPABASE_URL/);
+  assert.match(workersAi, /DEFAULT_SUPABASE_PUBLISHABLE_KEY/);
   assert.match(worker, /handleNaraImage/);
   assert.match(worker, /handleBillingRequest/);
   assert.match(worker, /seoEndpoint/);
