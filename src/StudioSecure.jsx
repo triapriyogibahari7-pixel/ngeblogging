@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
+import "./studio-v11-mobile-repair.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
