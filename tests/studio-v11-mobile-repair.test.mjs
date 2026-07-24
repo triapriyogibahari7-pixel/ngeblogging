@@ -45,9 +45,10 @@ test("Studio observers watch mounted nodes without a class-mutation feedback loo
 
 test("mobile layout keeps a compact icon rail and a full-width usable Nara composer", () => {
   assert.match(authority, /--sn-phone-rail: 58px/);
-  assert.match(authority, /width: calc\(100vw - var\(--sn-phone-rail\)\) !important/);
-  assert.match(authority, /\.nara-composer-tools[\s\S]*grid-template-columns:/);
-  assert.match(authority, /\.nara-assistant-layer[\s\S]*z-index: 30000 !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-main,[\s\S]*width: auto !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-composer-tools[\s\S]*grid-template-columns:/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-assistant-layer[\s\S]*z-index: 2147483100 !important/);
+  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-floating-button[\s\S]*display: grid !important/);
 });
 
 test("all requested Nara capabilities remain in source and one command center owns them", () => {
