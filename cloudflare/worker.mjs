@@ -132,9 +132,6 @@ async function naraResponse(request, env, requestId) {
     return jsonResponse(413, { code: "PAYLOAD_TOO_LARGE", error: "Lampiran atau payload terlalu besar." }, requestId, request.method, origin);
   }
 
-  // Qwen remains the primary provider. Workers AI is an independent edge
-  // fallback so Nara text chat does not disappear when a Qwen secret expires
-  // or is missing from a deployment environment.
   if (!qwenTextReady(env)) {
     if (workersAiReady(env)) return handleWorkersAiNara(request, env, requestId, origin);
     return jsonResponse(503, { code: "NARA_NOT_CONFIGURED", error: "Mesin Nara belum terhubung pada deployment server." }, requestId, request.method, origin);
@@ -189,7 +186,7 @@ export default {
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          release: "2026.07.24-mobile-final-v7",
+          release: "2026.07.24-studio-v9",
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v4",
           hostname: url.hostname,
           billing: paypal || localBilling,
