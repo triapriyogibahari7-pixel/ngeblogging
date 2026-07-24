@@ -13,6 +13,7 @@ const production = readFileSync(new URL("../src/studio-production-audit.css", im
 const critical = readFileSync(new URL("../src/studio-mobile-critical.css", import.meta.url), "utf8");
 const finalMobile = readFileSync(new URL("../src/studio-final-mobile.css", import.meta.url), "utf8");
 const hardening = readFileSync(new URL("../src/studio-v8-hardening.css", import.meta.url), "utf8");
+const authority = readFileSync(new URL("../src/studio-v10-authority.css", import.meta.url), "utf8");
 const runtimeGuard = readFileSync(new URL("../src/studio-runtime-layout-guard.js", import.meta.url), "utf8");
 const productionGuard = readFileSync(new URL("../src/studio-production-guard.js", import.meta.url), "utf8");
 const seo = readFileSync(new URL("../server/seo-handler.mjs", import.meta.url), "utf8");
@@ -28,7 +29,7 @@ test("main Ngeblogging favicon and PWA shell are installable and update safely",
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v9-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v10-20260724/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
@@ -70,12 +71,14 @@ test("Cloudflare edge emits tenant favicon, manifest, and structured SEO", () =>
 });
 
 
-test("Studio uses one accessible edge toggle and no bottom navigation", () => {
+test("Studio uses one accessible edge toggle, icon-only collapsed rail, and no bottom navigation", () => {
   assert.match(index, /studio-production-audit\.css/);
   assert.match(index, /studio-mobile-critical\.css/);
   assert.match(index, /studio-final-mobile\.css/);
   assert.match(index, /studio-v8-hardening\.css/);
+  assert.match(index, /studio-v10-authority\.css/);
   assert.ok(index.indexOf("studio-v8-hardening.css") > index.indexOf("studio-final-mobile.css"));
+  assert.ok(index.indexOf("studio-v10-authority.css") > index.indexOf("studio-v8-hardening.css"));
   assert.match(index, /studio-mobile-navigation\.js/);
   assert.match(index, /studio-runtime-layout-guard\.js/);
   assert.match(index, /studio-production-guard\.js/);
@@ -96,9 +99,13 @@ test("Studio uses one accessible edge toggle and no bottom navigation", () => {
   assert.match(critical, /\.sn-shell>\.sn-mobile-nav,\.sn-shell>\.sn-mobile-sheet-layer\{display:none!important\}/);
   assert.match(finalMobile, /\.sn-mobile-nav,[\s\S]*display: none !important/);
   assert.match(hardening, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
-  assert.match(hardening, /--sn-phone-panel: min\(82vw, 272px\)/);
-  assert.match(runtimeGuard, /removeLegacyControls\(shell\)/);
-  assert.match(productionGuard, /studio-production-guard-v8-20260724/);
+  assert.match(authority, /--sn-phone-rail: 68px/);
+  assert.match(authority, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-rail-width\) !important/);
+  assert.match(authority, /\.sn-side\.collapsed > nav > button[\s\S]*justify-content: center !important/);
+  assert.match(runtimeGuard, /studio-icon-rail-v10-20260724/);
+  assert.match(productionGuard, /studio-production-guard-v10-20260724/);
   assert.match(productionGuard, /mergeSidebarMenus\(side\)/);
+  assert.match(productionGuard, /hideNaraSidebarRoute\(side\)/);
+  assert.match(productionGuard, /ensureFloatingNara\(\)/);
   assert.match(productionGuard, /dataset\.sidebarAuthority = "single"/);
 });
