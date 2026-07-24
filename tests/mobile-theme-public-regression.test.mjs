@@ -135,7 +135,7 @@ test("Nara keeps Qwen as primary and uses Workers AI as an authenticated fallbac
 
 
 test("the release invalidates stale CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v8-20260724/);
+  assert.match(serviceWorker, /ngeblogging-app-v9-20260724/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
