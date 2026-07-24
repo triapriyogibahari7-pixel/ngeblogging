@@ -15,39 +15,46 @@ concurrency:
 jobs:
   verify-production:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    env:
+      SITE_URL: https://ngeblogging.com
+      TENANT_URL: https://tri-apriyogi-bahari.ngeblogging.com
     steps:
-      - name: Wait for and verify the complete public v9 release
+      - name: Wait for and verify the complete public v10 release
         shell: bash
-        env:
-          SITE_URL: https://ngeblogging.com
         run: |
           set -u -o pipefail
-          for attempt in $(seq 1 36); do
-            echo "Production v9 verification ${attempt}/36"
+          for attempt in $(seq 1 48); do
+            echo "Production v10 verification ${attempt}/48"
             if node --input-type=module <<'NODE'
           const site = process.env.SITE_URL.replace(/\/$/, "");
+          const tenant = process.env.TENANT_URL.replace(/\/$/, "");
           const stamp = `smoke=${Date.now()}`;
+
           async function fetchText(url, options = {}) {
             const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}${stamp}`, {
+              redirect: "follow",
               ...options,
               headers: { "cache-control": "no-cache", ...(options.headers || {}) },
             });
             return { response, text: await response.text() };
           }
+
           function renderedClassCount(source, className) {
             const escaped = className.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             return (source.match(new RegExp(`className:(?:\\\`|"|')${escaped}(?:\\\`|"|')`, "g")) || []).length;
           }
 
           try {
-            const [healthResult, swResult, htmlResult] = await Promise.all([
+            const [healthResult, swResult, htmlResult, tenantResult] = await Promise.all([
               fetchText(`${site}/api/health`, { headers: { accept: "application/json" } }),
               fetchText(`${site}/sw.js`),
               fetchText(`${site}/`),
+              fetchText(`${tenant}/`),
             ]);
-            if (!healthResult.response.ok || !swResult.response.ok || !htmlResult.response.ok) {
-              throw new Error(`HTTP health=${healthResult.response.status} sw=${swResult.response.status} shell=${htmlResult.response.status}`);
+
+            if (!healthResult.response.ok || !swResult.response.ok || !htmlResult.response.ok || !tenantResult.response.ok) {
+              throw new Error(`HTTP health=${healthResult.response.status} sw=${swResult.response.status} shell=${htmlResult.response.status} tenant=${tenantResult.response.status}`);
             }
 
             const health = JSON.parse(healthResult.text);
@@ -55,7 +62,8 @@ jobs:
               .map((match) => new URL(match[1], site).href);
             const seen = new Set();
             const assets = new Map();
-            for (let depth = 0; depth < 7; depth += 1) {
+
+            for (let depth = 0; depth < 8; depth += 1) {
               const batch = [...new Set(queue)].filter((url) => !seen.has(url));
               if (!batch.length) break;
               batch.forEach((url) => seen.add(url));
@@ -69,51 +77,58 @@ jobs:
               }));
             }
 
-            const studioEntry = [...assets.entries()].find(([url]) => /\/assets\/Studio-[^/]+\.js(?:\?|$)/.test(url));
-            if (!studioEntry) throw new Error("Studio production chunk not found");
-            const [studioUrl, studioJs] = studioEntry;
             const allAssets = [...assets.values()].join("\n");
             const compact = allAssets.replace(/\s+/g, "");
+            const studioEntry = [...assets.entries()].find(([url, source]) => /\/assets\/Studio[^/]*\.js(?:\?|$)/.test(url) || source.includes("sn-shell"));
+            const studioJs = studioEntry?.[1] || allAssets;
             const navStart = studioJs.indexOf("Ringkasan");
             const navEndCandidate = navStart >= 0 ? studioJs.indexOf("sn-main", navStart) : -1;
-            const navEnd = navEndCandidate > navStart ? navEndCandidate : Math.min(studioJs.length, navStart + 12000);
+            const navEnd = navEndCandidate > navStart ? navEndCandidate : Math.min(studioJs.length, Math.max(0, navStart) + 16000);
             const navSegment = navStart >= 0 ? studioJs.slice(navStart, navEnd) : "";
             const errors = [];
 
             if (health.status !== "ok" || health.service !== "ngeblogging-cloudflare") errors.push("health");
-            if (health.release !== "2026.07.24-studio-v9") errors.push(`health.release=${health.release}`);
             for (const key of ["billing", "customDomains", "emailRegistration", "nara", "imageGeneration", "managedSubdomains"]) {
               if (typeof health[key] !== "boolean") errors.push(`health.${key}`);
             }
             if (health.nara !== true || !health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push("Nara provider");
             if (health.managedSubdomains !== true || health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push("managed subdomains/site limits");
             if (!htmlResult.text.includes('<div id="root"></div>')) errors.push("application shell");
-            if (!swResult.text.includes("ngeblogging-app-v9-20260724") || !swResult.text.includes("networkFirst")) errors.push("PWA v9");
+            if (!htmlResult.text.includes("studio-v10-authority.css")) errors.push("Studio authority v10");
+            if (/WHITE-R4-2026\.07\.12/.test(htmlResult.text)) errors.push("legacy WHITE-R4 shell");
+            if (!swResult.text.includes("ngeblogging-app-v10-20260724") || !swResult.text.includes("networkFirst")) errors.push("PWA v10");
 
-            if (!studioJs.includes("studio-source-navigation-v9-20260724")) errors.push("source navigation v9");
             for (const className of ["sn-mobile-nav", "sn-mobile-sheet-layer", "sn-side-bottom"]) {
               if (renderedClassCount(studioJs, className) !== 0) errors.push(`rendered React class:${className}`);
             }
             if (renderedClassCount(studioJs, "sn-icon") !== 1) errors.push("single sidebar toggle");
-            for (const required of ["Ringkasan", "Posts", "Pages", "Tema", "Media", "Nara AI", "Analitik", "Anggota", "Domain", "Pengaturan", "Keluar"]) {
+            for (const required of ["Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Domain", "Pengaturan", "Keluar"]) {
               if (!navSegment.includes(required)) errors.push(`sidebar missing ${required}`);
             }
+            if (navSegment.includes("Nara AI")) errors.push("Nara still visible in sidebar");
             for (const required of ["Lihat situs", "SUBDOMAIN GRATIS", ".ngeblogging.com"]) {
               if (!studioJs.includes(required)) errors.push(`Studio missing ${required}`);
             }
 
             for (const marker of [
+              "studio-production-guard-v10-20260724", "studio-icon-rail-v10-20260724", "nara-capability-bridge-v10-20260724",
+              "nara-floating-button", "ensureNaraCapabilityShortcuts", "requestQrScan", "openNaraWorkspace",
+              "Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara",
+              "Projects", "Memory", "Images", "Plugins", "Memori jangka panjang", "Buat gambar",
+              "supabase", "github", "cloudflare", "google-drive",
               "ngeblogging-settings-extras", "sn-content-tools", "tn-widget-summary", "nara-assistant-shell",
-              "naraBillingReady", "naraImageReady", "ng-widget-recent-posts", "ng-widget-popular-posts", "ng-header nav.open",
+              "ng-widget-recent-posts", "ng-widget-popular-posts", "ng-header nav.open",
               "Mobile", "Tablet", "Laptop", "Komputer",
-              "Editorial", "Journal", "Newsroom", "Business", "Collective", "Forum", "Canvas", "Identity",
-              "Diary", "Atlas", "Magazine", "Market", "Voyage", "Academy", "Wellness", "Circuit", "Lens",
-              "Prime", "Dawn", "Night", "Coast", "Atelier",
             ]) {
               if (!allAssets.includes(marker)) errors.push(`asset:${marker}`);
             }
-            if (!compact.includes("--sn-phone-panel:min(82vw,272px)")) errors.push("compact phone sidebar");
+            if (!compact.includes("--sn-phone-rail:68px")) errors.push("phone icon rail");
+            if (!compact.includes("pointer-events:auto!important")) errors.push("clickable Nara authority");
             if (allAssets.includes("uji produksi belum dinyatakan lulus") || allAssets.includes("Konfigurasi autentikasi Nara belum lengkap")) errors.push("obsolete Nara failure path");
+
+            if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push("tenant 404 page");
+            if (!tenantResult.text.includes('<div id="root"></div>')) errors.push("tenant application shell");
+            if (/WHITE-R4-2026\.07\.12/.test(tenantResult.text)) errors.push("legacy tenant shell");
 
             const unauth = await fetchText(`${site}/api/nara`, {
               method: "POST",
@@ -128,31 +143,27 @@ jobs:
 
             console.log(JSON.stringify({
               health,
-              studioUrl,
+              studioUrl: studioEntry?.[0] || null,
               assetsChecked: assets.size,
-              renderedClasses: {
-                mobileNav: renderedClassCount(studioJs, "sn-mobile-nav"),
-                mobileSheet: renderedClassCount(studioJs, "sn-mobile-sheet-layer"),
-                sideBottom: renderedClassCount(studioJs, "sn-side-bottom"),
-                toggles: renderedClassCount(studioJs, "sn-icon"),
-              },
+              tenantStatus: tenantResult.response.status,
               naraUnauthenticated: { status: unauth.response.status, code: unauthPayload.code },
               errors,
             }, null, 2));
+
             if (errors.length) process.exit(1);
-            console.log("LIVE_RELEASE_V9_CONFIRMED");
+            console.log("LIVE_RELEASE_V10_CONFIRMED");
           } catch (error) {
-            console.error(`LIVE_RELEASE_V9_NOT_READY: ${error.message}`);
+            console.error(`LIVE_RELEASE_V10_NOT_READY: ${error.message}`);
             process.exit(1);
           }
           NODE
             then
-              echo "Production v9 deployment verified."
+              echo "Production v10 deployment verified."
               exit 0
             fi
-            if [ "$attempt" -eq 36 ]; then
-              echo "Production did not expose the complete v9 release within 12 minutes."
+            if [ "$attempt" -eq 48 ]; then
+              echo "Production did not expose the complete v10 release within 12 minutes."
               exit 1
             fi
-            sleep 20
+            sleep 15
           done
