@@ -1,3 +1,4 @@
+const SERVICE_WORKER_RELOAD_KEY = "ngeblogging-sw-v6-reloaded";
 let installPrompt = null;
 let installButton = null;
 let registration = null;
@@ -95,8 +96,8 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (sessionStorage.getItem("ngeblogging-sw-reloaded") === "1") return;
-      sessionStorage.setItem("ngeblogging-sw-reloaded", "1");
+      if (sessionStorage.getItem(SERVICE_WORKER_RELOAD_KEY) === "1") return;
+      sessionStorage.setItem(SERVICE_WORKER_RELOAD_KEY, "1");
       window.location.reload();
     });
   } catch (error) {

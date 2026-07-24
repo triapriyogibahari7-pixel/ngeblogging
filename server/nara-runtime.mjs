@@ -44,9 +44,13 @@ function originAllowed(origin, env) {
 function runtimeEnvironment(env, origin) {
   const allowed = [...configuredOrigins(env)];
   if (trustedDynamicOrigin(origin) && !allowed.includes(origin)) allowed.push(origin);
+  const region = String(env.QWEN_REGION || "singapore").trim().toLowerCase();
+  const legacySingaporeBase = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+  const fallbackBaseUrl = !env.QWEN_WORKSPACE_ID && region === "singapore" ? legacySingaporeBase : "";
   return {
     ...env,
     NARA_RUNTIME: env.NARA_RUNTIME || "portable-nara-v4",
+    QWEN_API_BASE_URL: String(env.QWEN_API_BASE_URL || fallbackBaseUrl).replace(/\/$/, ""),
     PUBLIC_ALLOWED_ORIGINS: allowed.join(","),
   };
 }

@@ -1,13 +1,13 @@
-let resolved = false;
-let naraReady = false;
-document.documentElement.dataset.naraReady = "pending";
+let availability = "pending";
+let retryTimer = 0;
+document.documentElement.dataset.naraReady = availability;
 
 function labelOf(button) {
   return button.querySelector("span")?.textContent?.trim() || button.textContent?.replace(/\s+/g, " ").trim() || "";
 }
 
 function naraControls() {
-  return [...document.querySelectorAll(".sn-side button,.sn-mobile-sheet-layer button,.sn-mobile-nav button,.sn-top-actions button,.sn-home-grid button")]
+  return [...document.querySelectorAll(".sn-side button,.sn-top-actions button,.sn-home-grid button")]
     .filter((button) => {
       const label = labelOf(button);
       return label === "Nara AI" || label.includes("Tanya Nara") || label === "Buka Nara";
@@ -15,8 +15,8 @@ function naraControls() {
 }
 
 function homeButton() {
-  return [...document.querySelectorAll(".sn-side nav button,.sn-mobile-nav button")]
-    .find((button) => ["Ringkasan", "Home"].includes(labelOf(button)));
+  return [...document.querySelectorAll(".sn-side nav button")]
+    .find((button) => labelOf(button) === "Ringkasan");
 }
 
 function conceal(button) {
@@ -37,31 +37,37 @@ function reveal(button) {
 
 function scan() {
   const controls = naraControls();
-  if (!resolved || !naraReady) {
+  if (availability === "unavailable") {
     controls.forEach(conceal);
-    if (resolved && !naraReady && (document.querySelector(".nw-page") || controls.some((button) => button.classList.contains("active")))) {
-      homeButton()?.click();
-    }
+    if (document.querySelector(".nw-page") || controls.some((button) => button.classList.contains("active"))) homeButton()?.click();
     return;
   }
   controls.forEach(reveal);
 }
 
+function scheduleRetry(delay = 2500) {
+  clearTimeout(retryTimer);
+  retryTimer = window.setTimeout(resolveAvailability, delay);
+}
+
 async function resolveAvailability() {
+  clearTimeout(retryTimer);
   try {
-    const response = await fetch("/api/health", { cache: "no-store", headers: { accept: "application/json" } });
+    const response = await fetch(`/api/health?nara=${Date.now()}`, { cache: "no-store", headers: { accept: "application/json", "cache-control": "no-cache" } });
     if (!response.ok) throw new Error("Nara readiness unavailable");
     const health = await response.json().catch(() => ({}));
-    naraReady = health.nara === true;
+    availability = health.nara === false ? "unavailable" : "ready";
   } catch {
-    naraReady = false;
+    availability = "unknown";
+    scheduleRetry(3000);
   } finally {
-    resolved = true;
-    document.documentElement.dataset.naraReady = String(naraReady);
+    document.documentElement.dataset.naraReady = availability;
     scan();
   }
 }
 
 new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+window.addEventListener("online", resolveAvailability);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) resolveAvailability(); });
 scan();
 resolveAvailability();

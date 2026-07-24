@@ -13,11 +13,18 @@ function enabled(value) {
   return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
 }
 
-function naraReady(env) {
-  const deliveryProbe = String(env.NARA_PRODUCTION_PROBE || "").trim().toLowerCase();
-  return enabled(env.NARA_PRODUCTION_READY)
-    && deliveryProbe === "passed"
-    && Boolean((env.QWEN_API_KEY || env.DASHSCOPE_API_KEY) && env.QWEN_WORKSPACE_ID);
+function qwenKey(env) {
+  return String(env.QWEN_API_KEY || env.DASHSCOPE_API_KEY || "").trim();
+}
+
+function naraTextReady(env) {
+  const region = String(env.QWEN_REGION || "singapore").trim().toLowerCase();
+  const endpointAvailable = Boolean(env.QWEN_API_BASE_URL || env.QWEN_WORKSPACE_ID || region === "singapore");
+  return Boolean(qwenKey(env) && endpointAvailable);
+}
+
+function naraImageReady(env) {
+  return Boolean(qwenKey(env) && String(env.QWEN_WORKSPACE_ID || "").trim());
 }
 
 function paypalReady(env) {
@@ -119,8 +126,8 @@ async function naraResponse(request, env, requestId) {
   if (Number.isFinite(length) && length > MAX_REQUEST_BYTES) {
     return jsonResponse(413, { code: "PAYLOAD_TOO_LARGE", error: "Lampiran atau payload terlalu besar." }, requestId, request.method, origin);
   }
-  if (!naraReady(env)) {
-    return jsonResponse(503, { code: "NARA_NOT_READY", error: "Nara belum dibuka karena uji produksi belum dinyatakan lulus." }, requestId, request.method, origin);
+  if (!naraTextReady(env)) {
+    return jsonResponse(503, { code: "NARA_NOT_CONFIGURED", error: "Nara belum dapat terhubung karena API key atau endpoint Qwen belum tersedia di server." }, requestId, request.method, origin);
   }
   const headers = Object.fromEntries(request.headers.entries());
   const address = clientAddress(request).slice(0, 80);
@@ -166,16 +173,18 @@ export default {
         if (!["GET", "HEAD"].includes(request.method)) return jsonResponse(405, { error: "Metode tidak didukung." }, requestId, request.method, origin);
         const paypal = paypalReady(env);
         const localBilling = localBillingReady(env);
+        const nara = naraTextReady(env);
+        const imageGeneration = naraImageReady(env);
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          release: "2026.07.24-mobile-theme-v4",
+          release: "2026.07.24-mobile-final-v6",
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v3",
           hostname: url.hostname,
           billing: paypal || localBilling,
           billingProviders: { paypal, local: localBilling },
-          nara: naraReady(env),
-          imageGeneration: naraReady(env),
+          nara,
+          imageGeneration,
           customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
           emailRegistration: brandedEmailReady(env),
           managedSubdomains: true,
@@ -187,7 +196,7 @@ export default {
 
       if (url.pathname === "/api/nara") return await naraResponse(request, env, requestId);
       if (url.pathname === "/api/nara/image") {
-        if (!naraReady(env)) return jsonResponse(503, { code: "NARA_NOT_READY", error: "Generasi gambar belum dibuka karena uji produksi belum lulus." }, requestId, request.method, request.headers.get("origin") || "");
+        if (!naraImageReady(env)) return jsonResponse(503, { code: "NARA_IMAGE_NOT_CONFIGURED", error: "Generator gambar memerlukan QWEN_WORKSPACE_ID yang valid di server." }, requestId, request.method, request.headers.get("origin") || "");
         return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
       }
       if (url.pathname.startsWith("/api/domains/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRequest);
