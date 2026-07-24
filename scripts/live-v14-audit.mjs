@@ -4,7 +4,8 @@ const stamp = Date.now();
 
 async function read(url, options = {}) {
   try {
-    const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}audit=${stamp}`, {
+    const cacheBusted = `${url}${url.includes("?") ? "&" : "?"}audit=${stamp}`;
+    const response = await fetch(cacheBusted, {
       redirect: "follow",
       ...options,
       headers: { "cache-control": "no-cache", ...(options.headers || {}) },
@@ -24,10 +25,23 @@ const [healthResult, indexResult, swResult, tenantResult] = await Promise.all([
 let health = {};
 try { health = JSON.parse(healthResult.text || "{}"); } catch {}
 
-const assetUrls = [...indexResult.text.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)]
-  .map((match) => new URL(match[1], base).href)
-  .filter((url, index, all) => all.indexOf(url) === index);
-const assets = await Promise.all(assetUrls.map(async (url) => ({ url, ...(await read(url)) })));
+const initialAssets = [...indexResult.text.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)]
+  .map((match) => new URL(match[1], base).href);
+const queue = [...new Set(initialAssets)];
+const visited = new Set();
+const assets = [];
+while (queue.length && visited.size < 80) {
+  const url = queue.shift();
+  if (!url || visited.has(url)) continue;
+  visited.add(url);
+  const result = await read(url);
+  assets.push({ url, ...result });
+  if (result.status !== 200 || !url.match(/\.js(?:\?|$)/i)) continue;
+  for (const match of result.text.matchAll(/["']((?:\/assets\/|\.\/)[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)) {
+    const child = new URL(match[1], url).href;
+    if (child.startsWith(`${base}/assets/`) && !visited.has(child)) queue.push(child);
+  }
+}
 const combined = assets.map((asset) => asset.text).join("\n");
 const compact = combined.replace(/\s+/g, "");
 
@@ -90,6 +104,7 @@ const result = {
   },
   bundle: {
     indexBytes: Buffer.byteLength(indexResult.text),
+    initialAssetCount: initialAssets.length,
     assetCount: assets.length,
     failedAssets: assets.filter((asset) => asset.status !== 200).map((asset) => ({ url: asset.url, status: asset.status })),
     assetBytes: assets.reduce((total, asset) => total + Buffer.byteLength(asset.text), 0),
