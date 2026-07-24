@@ -20,7 +20,7 @@ RUN npm run build \
     && test -f dist/index.html \
     && test -f dist/sw.js \
     && test -f dist/site.webmanifest \
-    && grep -q 'ngeblogging-app-v10-20260724' dist/sw.js
+    && grep -q 'ngeblogging-app-v14-20260724' dist/sw.js
 
 FROM caddy:2-alpine
 COPY Caddyfile /etc/caddy/Caddyfile

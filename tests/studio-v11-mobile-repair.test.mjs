@@ -5,24 +5,28 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
 const authority = read("src/studio-v14-authority.css");
+const naraAuthority = read("src/nara-interaction-authority.css");
 const secure = read("src/StudioSecure.jsx");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
 
 test("v14 authority is the only final Studio layout authority", () => {
   assert.match(index, /studio-v14-authority\.css/);
-  for (const legacy of ["studio-v10-authority.css", "studio-v11-mobile-repair.css", "studio-production-guard.js", "studio-mobile-navigation.js"]) {
+  assert.ok(index.indexOf("nara-interaction-authority.css") > index.indexOf("studio-v14-authority.css"));
+  for (const legacy of ["studio-v10-authority.css", "studio-v11-mobile-repair.css", "studio-production-guard.js", "studio-mobile-navigation.js", "nara-interaction-guard.js"]) {
     assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
   }
 });
 
 test("native camera image and text inputs never leak into the visible Nara UI", () => {
-  assert.match(authority, /\[hidden\],[\s\S]*\.nara-composer input\[type="file"\],[\s\S]*display: none !important/);
+  const hiddenBlock = authority.match(/\[hidden\],[\s\S]*?\.nara-native-file-input\s*\{([\s\S]*?)\}/)?.[1] || "";
+  assert.match(hiddenBlock, /display:\s*none\s*!important/);
+  assert.doesNotMatch(hiddenBlock, /display:\s*block/);
+  assert.match(naraAuthority, /\.nara-native-file-input[\s\S]*display:\s*none\s*!important/);
   assert.match(assistant, /ref=\{cameraInput\}/);
   assert.match(assistant, /ref=\{imageInput\}/);
   assert.match(assistant, /ref=\{fileInput\}/);
   assert.match(assistant, /type="file"/);
-  assert.doesNotMatch(authority, /\.nara-composer input\[type="file"\][\s\S]*display: block/);
 });
 
 test("closing the phone drawer does not cancel the selected navigation action", () => {
@@ -44,7 +48,7 @@ test("mobile layout keeps a compact icon rail and a full-width usable Nara compo
   assert.match(authority, /--sn-phone-rail: 58px/);
   assert.match(authority, /width: calc\(100vw - var\(--sn-phone-rail\)\) !important/);
   assert.match(authority, /\.nara-composer-tools[\s\S]*grid-template-columns:/);
-  assert.match(authority, /\.nara-assistant-layer[\s\S]*z-index: 30000 !important/);
+  assert.match(naraAuthority, /\.nara-assistant-layer[\s\S]*height: 100dvh !important/);
 });
 
 test("all requested Nara capabilities remain in source and one command center owns them", () => {
