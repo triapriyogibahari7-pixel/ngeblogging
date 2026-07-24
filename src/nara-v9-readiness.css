@@ -1,0 +1,17 @@
+html:not([data-nara-billing-ready="true"]) .nara-upgrade-card,
+html:not([data-nara-billing-ready="true"]) .nara-context-bar > button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html:not([data-nara-image-ready="true"]) .nara-attachment-menu > button:nth-child(1),
+html:not([data-nara-image-ready="true"]) .nara-attachment-menu > button:nth-child(2) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html:not([data-nara-image-ready="true"]) .nara-composer input[accept^="image/"] {
+  display: none !important;
+}
