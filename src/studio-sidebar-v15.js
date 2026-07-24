@@ -1,4 +1,4 @@
-const RELEASE = "studio-sidebar-v18-20260724";
+const RELEASE = "studio-sidebar-v19-20260724";
 let frame = 0;
 let layoutTicket = 0;
 
@@ -12,11 +12,13 @@ function deviceProfile() {
   const browserScale = physicalMobile ? Math.max(1, Math.min(3, layoutWidth / screenWidth)) : 1;
   const desktopSitePhone = document.documentElement.dataset.desktopSitePhone === "true"
     || (physicalMobile && browserScale > 1.2);
+  const compactDesktop = physicalMobile && desktopSitePhone;
   const mobile = !desktopSitePhone && (shortSide <= 760 || window.matchMedia("(max-width: 760px)").matches);
   return {
     mobile,
-    narrow: mobile && shortSide <= 390,
+    narrow: physicalMobile && shortSide <= 390,
     desktopSitePhone,
+    compactDesktop,
   };
 }
 
@@ -52,28 +54,29 @@ function ensureLayoutRoute(side) {
   const theme = findNavButton(side, "Tema");
   if (!nav || !theme) return;
 
-  let layout = nav.querySelector(':scope > button[data-layout-route-v18="true"]');
-  nav.querySelectorAll(':scope > button[data-layout-route-v16="true"], :scope > button[data-layout-route-v17="true"]').forEach((node) => {
+  let layout = nav.querySelector(':scope > button[data-layout-route-v19="true"]');
+  nav.querySelectorAll(':scope > button[data-layout-route-v16="true"], :scope > button[data-layout-route-v17="true"], :scope > button[data-layout-route-v18="true"]').forEach((node) => {
     if (!layout) {
       layout = node;
       delete layout.dataset.layoutRouteV16;
       delete layout.dataset.layoutRouteV17;
-      layout.dataset.layoutRouteV18 = "true";
+      delete layout.dataset.layoutRouteV18;
+      layout.dataset.layoutRouteV19 = "true";
     } else if (node !== layout) node.remove();
   });
 
   if (!layout) {
     layout = document.createElement("button");
     layout.type = "button";
-    layout.dataset.layoutRouteV18 = "true";
-    layout.className = "sn-layout-route-v16 sn-layout-route-v17 sn-layout-route-v18";
+    layout.dataset.layoutRouteV19 = "true";
+    layout.className = "sn-layout-route-v16 sn-layout-route-v17 sn-layout-route-v18 sn-layout-route-v19";
     layout.innerHTML = `${LAYOUT_ICON}<span>Tata Letak</span>`;
     layout.setAttribute("aria-label", "Buka pengaturan tata letak situs");
     theme.insertAdjacentElement("afterend", layout);
   }
 
-  if (layout.dataset.layoutHandlerV18 !== "true") {
-    layout.dataset.layoutHandlerV18 = "true";
+  if (layout.dataset.layoutHandlerV19 !== "true") {
+    layout.dataset.layoutHandlerV19 = "true";
     layout.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -102,15 +105,16 @@ function ensureScrim(shell, original, side, profile) {
     shell.append(scrim);
   }
 
-  if (scrim.dataset.scrimHandlerV18 !== "true") {
-    scrim.dataset.scrimHandlerV18 = "true";
+  if (scrim.dataset.scrimHandlerV19 !== "true") {
+    scrim.dataset.scrimHandlerV19 = "true";
     scrim.addEventListener("click", () => {
       const currentSide = shell.querySelector(":scope > .sn-side");
       if (currentSide && !currentSide.classList.contains("collapsed")) original.click();
     });
   }
 
-  scrim.hidden = side.classList.contains("collapsed") || !profile.mobile;
+  const overlayMode = profile.mobile || profile.compactDesktop;
+  scrim.hidden = side.classList.contains("collapsed") || !overlayMode;
 }
 
 function normalizeToggle(shell, side, original, profile) {
@@ -118,8 +122,8 @@ function normalizeToggle(shell, side, original, profile) {
 
   original.removeAttribute("data-v15-original-toggle");
   delete original.dataset.v15OriginalToggle;
-  original.dataset.sidebarAuthority = "single-v18";
-  original.classList.add("sn-sidebar-edge-owner-v17", "sn-sidebar-edge-owner-v18");
+  original.dataset.sidebarAuthority = "single-v19";
+  original.classList.add("sn-sidebar-edge-owner-v17", "sn-sidebar-edge-owner-v18", "sn-sidebar-edge-owner-v19");
   original.hidden = false;
   original.disabled = false;
   original.tabIndex = 0;
@@ -129,13 +133,14 @@ function normalizeToggle(shell, side, original, profile) {
   original.setAttribute("aria-label", side.classList.contains("collapsed") ? "Buka menu Studio" : "Tutup menu Studio");
   original.title = side.classList.contains("collapsed") ? "Buka menu" : "Tutup menu";
 
-  if (original.dataset.sidebarSyncV18 !== "true") {
-    original.dataset.sidebarSyncV18 = "true";
+  if (original.dataset.sidebarSyncV19 !== "true") {
+    original.dataset.sidebarSyncV19 = "true";
     original.addEventListener("click", () => requestAnimationFrame(schedule));
   }
 
-  if (profile.mobile && shell.dataset.v18InitialSidebarResolved !== "true") {
-    shell.dataset.v18InitialSidebarResolved = "true";
+  const compactMode = profile.mobile || profile.compactDesktop;
+  if (compactMode && shell.dataset.v19InitialSidebarResolved !== "true") {
+    shell.dataset.v19InitialSidebarResolved = "true";
     if (!side.classList.contains("collapsed")) {
       original.click();
       return false;
@@ -150,6 +155,7 @@ function syncShell(shell) {
   root.dataset.v15Mobile = String(profile.mobile);
   root.dataset.v15Narrow = String(profile.narrow);
   root.dataset.studioDesktopSitePhone = String(profile.desktopSitePhone);
+  root.dataset.studioCompactDesktopPhone = String(profile.compactDesktop);
   root.dataset.studioSidebarRelease = RELEASE;
 
   const side = shell.querySelector(":scope > .sn-side");
