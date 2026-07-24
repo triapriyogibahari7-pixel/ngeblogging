@@ -10,6 +10,7 @@ const requiredFiles = [
   "cloudflare/worker.mjs",
   "server/nara-handler.mjs",
   "server/nara-runtime.mjs",
+  "server/workers-ai-nara.mjs",
   "server/nara-image-handler.mjs",
   "server/billing-handler.mjs",
   "server/paypal-webhook-handler.mjs",
@@ -18,6 +19,7 @@ const requiredFiles = [
   "public/_headers",
   "src/StudioNext.jsx",
   "src/StudioSecure.jsx",
+  "src/studio-production-guard.js",
   "src/BackupCenter.jsx",
   "src/ContentEditor.jsx",
   "src/MediaLibrary.jsx",
@@ -89,12 +91,18 @@ if (wrangler.routes || wrangler.secrets) throw new Error("Preview Cloudflare tid
 if (!wrangler.compatibility_flags?.includes("nodejs_compat")) throw new Error("nodejs_compat belum aktif.");
 if (wrangler.assets?.not_found_handling !== "single-page-application") throw new Error("SPA fallback Cloudflare belum aktif.");
 if (wrangler.assets?.run_worker_first !== true) throw new Error("Worker harus berjalan sebelum aset agar SEO tenant dan endpoint discovery aktif.");
-if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v3") throw new Error("Runtime preview Cloudflare belum terisolasi pada versi terbaru.");
-if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v3") throw new Error("Runtime produksi Cloudflare belum memakai versi terbaru.");
+if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada preview dan produksi.");
+if (wrangler.vars?.CF_AI_MODEL !== "@cf/zai-org/glm-4.7-flash") throw new Error("Model fallback Workers AI belum dipin.");
+if (wrangler.vars?.NARA_RUNTIME !== "cloudflare-worker-preview-v4") throw new Error("Runtime preview Cloudflare belum terisolasi pada versi terbaru.");
+if (cloudflareProduction.vars?.NARA_RUNTIME !== "cloudflare-worker-v4") throw new Error("Runtime produksi Cloudflare belum memakai versi terbaru.");
 if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live dan webhook diverifikasi.");
 if (cloudflareProduction.vars?.PAYPAL_MERCHANT_EMAIL !== "triapriyogibahari9@gmail.com") throw new Error("Email merchant PayPal belum sesuai permintaan pemilik.");
-for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
+for (const secret of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
   if (!cloudflareProduction.secrets?.required?.includes(secret)) throw new Error(`Secret wajib belum dideklarasikan: ${secret}`);
+  if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
+}
+for (const secret of ["QWEN_API_KEY", "QWEN_WORKSPACE_ID"]) {
+  if (!cloudflareProduction.secrets?.optional?.includes(secret)) throw new Error(`Secret penyedia utama harus dideklarasikan opsional: ${secret}`);
   if (Object.hasOwn(cloudflareProduction.vars || {}, secret)) throw new Error(`Secret ${secret} tidak boleh disimpan sebagai plaintext vars.`);
 }
 for (const secret of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET"]) {
@@ -102,15 +110,19 @@ for (const secret of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_C
 }
 
 const worker = await readFile(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
+const workersAi = await readFile(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
 const portableApi = await readFile(new URL("../api/server.mjs", import.meta.url), "utf8");
 if (!worker.includes("../server/nara-runtime.mjs")) throw new Error("Worker belum memakai runtime Nara portable.");
+if (!worker.includes("../server/workers-ai-nara.mjs")) throw new Error("Worker belum memakai fallback Workers AI.");
 if (!portableApi.includes("../server/nara-runtime.mjs")) throw new Error("API pemulihan belum memakai runtime Nara portable.");
 if (!worker.includes(".ngeblogging.com")) throw new Error("Worker belum menerima origin tenant wildcard.");
-for (const marker of ["handleNaraImage", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
+for (const marker of ["handleNaraImage", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/"]) if (!worker.includes(marker)) throw new Error(`Worker belum memuat kemampuan produksi: ${marker}`);
+for (const marker of ["env.AI.run", "consume_nara_quota", "verifyUser", "@cf/zai-org/glm-4.7-flash"]) if (!workersAi.includes(marker)) throw new Error(`Fallback Workers AI belum memuat ${marker}.`);
 for (const source of [worker, portableApi]) if (/netlify\/functions|x-nf-client-connection-ip/.test(source)) throw new Error("Entrypoint produksi masih memiliki dependensi runtime lama.");
 
 const index = await readFile(new URL("../index.html", import.meta.url), "utf8");
 for (const bridge of ["cloudflare-media-bridge", "editor-toolbar-bridge", "workspace-profile-bridge", "workspace-activation-bridge"]) if (index.includes(bridge)) throw new Error(`Bridge DOM lama masih aktif: ${bridge}`);
+if (!index.includes("studio-production-guard.js")) throw new Error("Guard produksi sidebar dan layout belum dimuat.");
 
 const studio = await readFile(new URL("../src/Studio.jsx", import.meta.url), "utf8");
 if (!studio.includes("StudioSecure.jsx")) throw new Error("Studio belum mengaktifkan pusat cadangan di Pengaturan.");
@@ -137,4 +149,4 @@ const cloudflareWorkflow = await readFile(new URL("../.github/workflows/cloudfla
 if (!cloudflareWorkflow.includes("CLOUDFLARE_DEPLOY_ENABLED == 'true'")) throw new Error("Deployment Cloudflare belum memiliki activation gate.");
 if (!cloudflareWorkflow.includes("/api/health")) throw new Error("Deployment Cloudflare belum memiliki smoke test health endpoint.");
 
-console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, cadangan portabel, invoice, webhook terverifikasi, 100 tema struktural, 25 widget, Posts/Pages, SEO tenant, Nara image, runtime Cloudflare v3, dan pemulihan server di-hardening.`);
+console.log(`Validasi produksi lulus: ${requiredFiles.length} berkas wajib, layout mobile v7, cadangan portabel, invoice, webhook terverifikasi, 100 tema struktural, 25 widget, Posts/Pages, SEO tenant, Nara Qwen + Workers AI fallback, dan runtime Cloudflare v4.`);
