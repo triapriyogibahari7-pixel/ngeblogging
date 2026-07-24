@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: ngeblogging-main-quality
@@ -19,6 +20,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Mark quality gate pending
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'pending',
+              context: 'Ngeblogging main quality',
+              description: 'Production tests, build, and Cloudflare dry-run are running.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -46,3 +61,33 @@ jobs:
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
         run: npm run cloudflare:dry-run
+
+      - name: Mark quality gate successful
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              context: 'Ngeblogging main quality',
+              description: 'Production tests, build, and Cloudflare dry-run passed.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Mark quality gate failed
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'failure',
+              context: 'Ngeblogging main quality',
+              description: 'Production tests, build, or Cloudflare dry-run failed.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
