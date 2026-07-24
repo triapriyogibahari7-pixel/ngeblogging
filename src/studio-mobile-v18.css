@@ -1,0 +1,384 @@
+/* Studio/Nara v18 — browser desktop mode is desktop, mobile mode is mobile,
+   and the Nara launcher lives outside Studio stacking contexts. */
+
+.nara-floating-button[data-nara-original-v18="true"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.nara-floating-proxy-v18 {
+  position: fixed !important;
+  right: max(14px, env(safe-area-inset-right)) !important;
+  bottom: max(16px, env(safe-area-inset-bottom)) !important;
+  z-index: 2147483646 !important;
+  box-sizing: border-box !important;
+  width: 62px !important;
+  min-width: 62px !important;
+  max-width: 62px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 5px solid rgba(255,255,255,.78) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(145deg,#2d6edf,#6557db) !important;
+  color: #fff !important;
+  box-shadow: 0 14px 36px rgba(24,68,135,.38) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  isolation: isolate !important;
+}
+
+.nara-floating-proxy-v18[hidden] {
+  display: none !important;
+}
+
+.nara-floating-proxy-v18::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border-radius: 13px;
+  background: linear-gradient(145deg,#3978ea,#6a58e1);
+}
+
+.nara-floating-proxy-v18 svg {
+  display: block !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-floating-proxy-v18:focus-visible {
+  outline: 3px solid #fff !important;
+  outline-offset: 3px !important;
+}
+
+.nara-assistant-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483645 !important;
+  pointer-events: auto !important;
+}
+
+.sn-shell:has(.nara-assistant-layer) {
+  overflow: visible !important;
+}
+
+/* A phone asking the browser for “Desktop site” must receive the real desktop
+   application. Do not convert the 980px desktop viewport back into a 390px
+   mobile canvas and do not apply browser-scale zoom a second time. */
+html[data-desktop-site-phone="true"] {
+  min-width: 980px !important;
+  overflow-x: auto !important;
+}
+
+html[data-desktop-site-phone="true"] body,
+html[data-desktop-site-phone="true"] #root {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 980px !important;
+  max-width: none !important;
+  margin: 0 !important;
+  overflow-x: auto !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-shell,
+html[data-desktop-site-phone="true"] .ce-app {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 980px !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  zoom: 1 !important;
+  transform: none !important;
+  overflow-x: visible !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: 220px !important;
+  min-width: 220px !important;
+  max-width: 220px !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  display: flex !important;
+  transform: none !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-side.collapsed {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-main,
+html[data-desktop-site-phone="true"] .sn-side:not(.collapsed) + .sn-main {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin-left: 220px !important;
+  overflow: visible !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-side.collapsed + .sn-main {
+  margin-left: 70px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-top {
+  position: sticky !important;
+  top: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 67px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 16px !important;
+  overflow: visible !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-icon.sn-sidebar-edge-owner-v17,
+html[data-desktop-site-phone="true"] .sn-icon.sn-sidebar-edge-owner-v18 {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: auto !important;
+  width: 37px !important;
+  min-width: 37px !important;
+  max-width: 37px !important;
+  height: 37px !important;
+  min-height: 37px !important;
+  max-height: 37px !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-sidebar-scrim-v15 {
+  display: none !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-workspace {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  display: flex !important;
+  padding: 5px 8px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-workspace > span {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-workspace > div,
+html[data-desktop-site-phone="true"] .sn-workspace > svg,
+html[data-desktop-site-phone="true"] .sn-cloud,
+html[data-desktop-site-phone="true"] .sn-avatar {
+  display: initial !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-workspace > div {
+  display: grid !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-cloud,
+html[data-desktop-site-phone="true"] .sn-top-actions,
+html[data-desktop-site-phone="true"] .sn-view-site,
+html[data-desktop-site-phone="true"] .sn-top-actions .sn-nara-button,
+html[data-desktop-site-phone="true"] .sn-avatar {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-top-actions {
+  margin-left: auto !important;
+  gap: 7px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-view-site,
+html[data-desktop-site-phone="true"] .sn-top-actions .sn-nara-button {
+  padding: 0 10px !important;
+  font-size: 8px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-avatar {
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-view-pad {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 28px 32px 70px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-page-title,
+html[data-desktop-site-phone="true"] .sn-welcome {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-page-title > .sn-primary,
+html[data-desktop-site-phone="true"] .sn-page-title > a,
+html[data-desktop-site-phone="true"] .sn-page-title > button {
+  width: auto !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-metrics {
+  grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-home-grid {
+  grid-template-columns: 1.35fr .65fr !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-content-tools {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-content-tools label {
+  width: auto !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-content-tools input {
+  width: 270px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-table-head {
+  display: grid !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-table-head,
+html[data-desktop-site-phone="true"] .sn-doc-row {
+  grid-template-columns: minmax(0,1fr) 95px 125px 36px !important;
+}
+
+html[data-desktop-site-phone="true"] .sn-doc-row time {
+  display: block !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-titlebar {
+  height: 66px !important;
+  display: flex !important;
+  gap: 12px !important;
+  padding: 0 14px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-file > svg {
+  display: block !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-file input {
+  width: min(560px,52vw) !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-actions {
+  display: flex !important;
+  gap: 7px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-actions button {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 38px !important;
+  display: flex !important;
+  padding: 0 12px !important;
+  font-size: 9px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-tabs {
+  top: 66px !important;
+  height: 40px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-ribbon {
+  top: 106px !important;
+  min-height: 62px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-nara {
+  width: auto !important;
+  min-width: 0 !important;
+  height: 36px !important;
+  padding: 0 13px !important;
+  display: flex !important;
+  font-size: 9px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-workspace {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) 350px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-paper-shell {
+  min-height: calc(100dvh - 168px) !important;
+  padding: 40px 26px !important;
+  align-items: center !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-paper {
+  width: min(850px,100%) !important;
+  min-height: 980px !important;
+  padding: 74px 82px !important;
+}
+
+html[data-desktop-site-phone="true"] .ce-sidebar {
+  position: sticky !important;
+  top: 168px !important;
+  max-height: calc(100dvh - 168px) !important;
+  overflow: auto !important;
+  border-left: 1px solid #dbe2eb !important;
+  border-top: 0 !important;
+}
+
+/* Real mobile mode remains compact. The original button is hidden only after
+   the body-level proxy has been installed, so Nara never disappears. */
+html[data-v15-mobile="true"] .nara-floating-proxy-v18 {
+  right: max(12px, env(safe-area-inset-right)) !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+}
+
+@media (max-width: 380px) {
+  .nara-floating-proxy-v18 {
+    width: 58px !important;
+    min-width: 58px !important;
+    max-width: 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    max-height: 58px !important;
+  }
+}
