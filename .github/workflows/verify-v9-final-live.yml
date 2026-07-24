@@ -1,0 +1,101 @@
+name: Verify v9 final live release
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for v9 Studio and verify real production behavior
+        shell: bash
+        run: |
+          set -u -o pipefail
+          for attempt in $(seq 1 30); do
+            echo "v9 live verification ${attempt}/30"
+            if node --input-type=module <<'NODE'
+          const site = 'https://ngeblogging.com';
+          const nonce = `v9=${Date.now()}`;
+          const get = async (url, options = {}) => {
+            const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}${nonce}`, {
+              ...options,
+              headers: { 'cache-control': 'no-cache', ...(options.headers || {}) },
+            });
+            return { response, text: await response.text() };
+          };
+
+          try {
+            const [healthResult, swResult, htmlResult] = await Promise.all([get(`${site}/api/health`), get(`${site}/sw.js`), get(`${site}/`)]);
+            if (!healthResult.response.ok || !swResult.response.ok || !htmlResult.response.ok) throw new Error('public endpoints unavailable');
+            const health = JSON.parse(healthResult.text || '{}');
+            const queue = [...htmlResult.text.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)].map((match) => new URL(match[1], site).href);
+            const seen = new Set();
+            const assets = new Map();
+            for (let depth = 0; depth < 7; depth += 1) {
+              const batch = [...new Set(queue)].filter((url) => !seen.has(url));
+              if (!batch.length) break;
+              batch.forEach((url) => seen.add(url));
+              await Promise.all(batch.map(async (url) => {
+                const result = await get(url);
+                if (!result.response.ok) throw new Error(`asset ${url} returned ${result.response.status}`);
+                assets.set(url, result.text);
+                for (const match of result.text.matchAll(/(?:^|["'(])\/?(assets\/[A-Za-z0-9._-]+\.(?:js|css))/g)) queue.push(new URL(`/${match[1]}`, site).href);
+              }));
+            }
+
+            const studioEntry = [...assets.entries()].find(([url]) => /\/assets\/Studio-[^/]+\.js(?:\?|$)/.test(url));
+            if (!studioEntry) throw new Error('Studio chunk missing');
+            const [studioUrl, studioJs] = studioEntry;
+            const allAssets = [...assets.values()].join('\n');
+            const errors = [];
+
+            if (!studioJs.includes('studio-source-navigation-v9-20260724')) errors.push('source marker');
+            for (const forbidden of ['sn-mobile-nav', 'sn-mobile-sheet-layer', 'mobileMore', 'sn-side-bottom', 'Pembayaran']) {
+              if (studioJs.includes(forbidden)) errors.push(`forbidden:${forbidden}`);
+            }
+            if ((studioJs.match(/sn-icon/g) || []).length !== 1) errors.push('single toggle');
+            for (const required of ['Pengaturan', 'Keluar', 'Lihat situs', 'SUBDOMAIN GRATIS', '.ngeblogging.com']) {
+              if (!studioJs.includes(required)) errors.push(`required:${required}`);
+            }
+            if (!allAssets.includes('.sn-view-site')) errors.push('v9 visual enhancements');
+            if (!swResult.text.includes('ngeblogging-app-v8-20260724')) errors.push('PWA cache release');
+
+            if (health.nara !== true || !health.naraProviders || (!health.naraProviders.qwen && !health.naraProviders.workersAi)) errors.push('Nara provider');
+            if (health.managedSubdomains !== true || health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('managed domains/limits');
+            if (health.billing !== false || health.emailRegistration !== false || health.customDomains !== false) errors.push('inactive feature readiness');
+
+            const nara = await get(`${site}/api/nara`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json', origin: site },
+              body: JSON.stringify({ message: 'uji koneksi', model: 'nara-mini', intelligence: 'standard', attachments: [], history: [] }),
+            });
+            let payload = {};
+            try { payload = JSON.parse(nara.text || '{}'); } catch {}
+            if (nara.response.status !== 401 || payload.code !== 'NARA_SESSION_REQUIRED') errors.push(`Nara auth:${nara.response.status}/${payload.code || 'none'}`);
+            if (/konfigurasi autentikasi/i.test(String(payload.error || ''))) errors.push('obsolete Nara configuration failure');
+
+            for (const marker of ['Mobile', 'Tablet', 'Laptop', 'Komputer', 'tn-widget-summary', 'ng-widget-recent-posts', 'ng-widget-popular-posts']) {
+              if (!allAssets.includes(marker)) errors.push(`theme/widget:${marker}`);
+            }
+
+            console.log(JSON.stringify({ health, studioUrl, assets: assets.size, nara: { status: nara.response.status, code: payload.code }, errors }, null, 2));
+            if (errors.length) process.exit(1);
+            console.log('NGEBLOGGING_V9_LIVE_VERIFIED');
+          } catch (error) {
+            console.error(error.message);
+            process.exit(1);
+          }
+          NODE
+            then
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "v9 was not fully visible in production within ten minutes"
+          exit 1
