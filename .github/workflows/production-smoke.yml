@@ -35,6 +35,10 @@ jobs:
             });
             return { response, text: await response.text() };
           }
+          function renderedClassCount(source, className) {
+            const escaped = className.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            return (source.match(new RegExp(`className:(?:\\\`|"|')${escaped}(?:\\\`|"|')`, "g")) || []).length;
+          }
 
           try {
             const [healthResult, swResult, htmlResult] = await Promise.all([
@@ -70,6 +74,10 @@ jobs:
             const [studioUrl, studioJs] = studioEntry;
             const allAssets = [...assets.values()].join("\n");
             const compact = allAssets.replace(/\s+/g, "");
+            const navStart = studioJs.indexOf("Ringkasan");
+            const navEndCandidate = navStart >= 0 ? studioJs.indexOf("sn-main", navStart) : -1;
+            const navEnd = navEndCandidate > navStart ? navEndCandidate : Math.min(studioJs.length, navStart + 12000);
+            const navSegment = navStart >= 0 ? studioJs.slice(navStart, navEnd) : "";
             const errors = [];
 
             if (health.status !== "ok" || health.service !== "ngeblogging-cloudflare") errors.push("health");
@@ -83,14 +91,17 @@ jobs:
             if (!swResult.text.includes("ngeblogging-app-v9-20260724") || !swResult.text.includes("networkFirst")) errors.push("PWA v9");
 
             if (!studioJs.includes("studio-source-navigation-v9-20260724")) errors.push("source navigation v9");
-            for (const forbidden of ["sn-mobile-nav", "sn-mobile-sheet-layer", "mobileMore", "sn-side-bottom"]) {
-              if (studioJs.includes(forbidden)) errors.push(`React still contains ${forbidden}`);
+            for (const className of ["sn-mobile-nav", "sn-mobile-sheet-layer", "sn-side-bottom"]) {
+              if (renderedClassCount(studioJs, className) !== 0) errors.push(`rendered React class:${className}`);
             }
-            if ((studioJs.match(/sn-icon/g) || []).length !== 1) errors.push("single sidebar toggle");
-            for (const required of ["Pengaturan", "Keluar", "Lihat situs", "SUBDOMAIN GRATIS", ".ngeblogging.com"]) {
+            if (renderedClassCount(studioJs, "sn-icon") !== 1) errors.push("single sidebar toggle");
+            for (const required of ["Ringkasan", "Posts", "Pages", "Tema", "Media", "Nara AI", "Analitik", "Anggota", "Domain", "Pengaturan", "Keluar"]) {
+              if (!navSegment.includes(required)) errors.push(`sidebar missing ${required}`);
+            }
+            if (navSegment.includes("Pembayaran")) errors.push("inactive payment destination");
+            for (const required of ["Lihat situs", "SUBDOMAIN GRATIS", ".ngeblogging.com"]) {
               if (!studioJs.includes(required)) errors.push(`Studio missing ${required}`);
             }
-            if (studioJs.includes("Pembayaran")) errors.push("inactive payment destination");
 
             for (const marker of [
               "ngeblogging-settings-extras", "sn-content-tools", "tn-widget-summary", "nara-assistant-shell",
@@ -120,6 +131,12 @@ jobs:
               health,
               studioUrl,
               assetsChecked: assets.size,
+              renderedClasses: {
+                mobileNav: renderedClassCount(studioJs, "sn-mobile-nav"),
+                mobileSheet: renderedClassCount(studioJs, "sn-mobile-sheet-layer"),
+                sideBottom: renderedClassCount(studioJs, "sn-side-bottom"),
+                toggles: renderedClassCount(studioJs, "sn-icon"),
+              },
               naraUnauthenticated: { status: unauth.response.status, code: unauthPayload.code },
               errors,
             }, null, 2));
