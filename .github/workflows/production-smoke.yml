@@ -90,7 +90,7 @@ jobs:
 
             for (const marker of [
               "studio-production-guard-v8-20260724",
-              "mergeSidebarMenus",
+              "sidebarAuthority",
               "ngeblogging-settings-extras",
               "sn-content-tools",
               "tn-widget-summary",
