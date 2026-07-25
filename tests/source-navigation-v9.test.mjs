@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
-const runtime = readFileSync(new URL("../src/studio-runtime-v23.js", import.meta.url), "utf8");
+const runtime = readFileSync(new URL("../src/studio-shell-v29.js", import.meta.url), "utf8");
 const enhancements = readFileSync(new URL("../src/studio-v9-enhancements.css", import.meta.url), "utf8");
 
  test("Studio source contains no bottom navigation or mobile more sheet", () => {
@@ -13,27 +13,29 @@ const enhancements = readFileSync(new URL("../src/studio-v9-enhancements.css", i
   assert.doesNotMatch(studio, /mobileMore/);
   assert.doesNotMatch(studio, /sn-side-bottom/);
   assert.match(secure, /sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
-  assert.match(runtime, /\.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
+  assert.match(runtime, /sn-mobile-v29-scrim/);
 });
 
-test("Studio has exactly one sidebar toggle and keeps settings and sign out in the main sidebar", () => {
+test("Studio keeps one React toggle and adds one device-owned n. launcher on compact screens", () => {
   assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
   assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
   assert.match(studio, /<LogOut\/><span>Keluar<\/span>/);
-  assert.match(secure, /studio-source-navigation-v23-20260725/);
-  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v23"/);
-  assert.match(runtime, /sn-sidebar-edge-owner-v23/);
+  assert.match(secure, /studio-source-navigation-v29-20260725/);
+  assert.match(runtime, /source\.dataset\.v29SourceToggle = profile\.compact \? "programmatic" : "visible"/);
+  assert.match(runtime, /sn-mobile-v29-launcher/);
+  assert.match(runtime, /aria-label", "Buka menu Ngeblogging"/);
   assert.match(enhancements, /\.sn-side > nav \{[\s\S]*flex: 1 1 auto/);
 });
 
-test("Nara is outside the sidebar and only the floating launcher remains visible", () => {
+test("Nara workspace is visible in the sidebar and duplicate top launchers remain hidden", () => {
   assert.match(secure, /naraRoute\.dataset\.naraWorkspaceRoute = "true"/);
-  assert.match(secure, /naraRoute\.hidden = true/);
-  assert.match(runtime, /button\.dataset\.naraWorkspaceRoute = "true"/);
+  assert.match(secure, /naraRoute\.hidden = false/);
+  assert.match(secure, /naraRoute\.disabled = false/);
+  assert.match(secure, /naraRoute\.removeAttribute\("aria-hidden"\)/);
   assert.match(secure, /\.sn-top-actions \.sn-nara-button, \.ce-nara/);
-  assert.match(runtime, /button\.hidden = false/);
-  assert.match(runtime, /button\.disabled = false/);
-  assert.match(runtime, /dataset\.naraLauncherAuthority = "single-v23"/);
+  assert.match(secure, /button\.hidden = true/);
+  assert.match(runtime, /autoOpenNara/);
+  assert.match(runtime, /profile\.compact \? "mini" : "compact"/);
 });
 
 test("inactive payment is not rendered as a Studio destination", () => {
