@@ -1,0 +1,490 @@
+/* Ngeblogging Studio interaction v25.
+   Scope: Studio sidebar interaction and Nara window modes only.
+   No public landing-page, theme-renderer, or tenant-page selectors belong here. */
+
+:root {
+  --sn-v25-rail: 60px;
+  --sn-v25-panel: min(86vw, 292px);
+  --sn-v25-edge-button: 38px;
+  --sn-v25-safe-bottom: max(9px, env(safe-area-inset-bottom));
+}
+
+/* Nara always owns one visible expand/restore control beside Close. */
+html .nara-assistant-shell[data-nara-window-v24="true"] .nara-assistant-header {
+  grid-template-columns: 42px minmax(0, 1fr) 36px 36px 36px !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+html .nara-window-toggle-v24 {
+  appearance: none !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  color: #607086 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html .nara-window-toggle-v24:hover,
+html .nara-window-toggle-v24:focus-visible {
+  background: #eef3f9 !important;
+  color: #245fc9 !important;
+  outline: none !important;
+}
+
+html .nara-window-toggle-v24 svg {
+  width: 18px !important;
+  height: 18px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+/* Expanded Nara works on actual computers, tablets, desktop-site mode, and phones. */
+html .nara-assistant-layer[data-nara-window-mode="expanded"] {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  display: grid !important;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr) !important;
+  place-items: stretch !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  z-index: 2147483600 !important;
+}
+
+html .nara-assistant-layer[data-nara-window-mode="expanded"] > .nara-assistant-backdrop {
+  display: none !important;
+}
+
+html .nara-assistant-layer[data-nara-window-mode="expanded"] > .nara-assistant-shell {
+  position: relative !important;
+  inset: auto !important;
+  grid-area: 1 / 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  contain: layout paint !important;
+}
+
+@media (max-width: 760px) {
+  /* A narrow viewport is always mobile, regardless of inconsistent screen/UA reports. */
+  html .sn-shell > .sn-side {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: var(--sn-v25-panel) !important;
+    min-width: var(--sn-v25-panel) !important;
+    max-width: var(--sn-v25-panel) !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border-right: 1px solid #dce4ee !important;
+    background: #fff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    z-index: 30000 !important;
+  }
+
+  html .sn-shell > .sn-side.collapsed {
+    width: var(--sn-v25-rail) !important;
+    min-width: var(--sn-v25-rail) !important;
+    max-width: var(--sn-v25-rail) !important;
+  }
+
+  html .sn-shell > .sn-side::before,
+  html .sn-shell > .sn-side::after,
+  html .sn-shell > .sn-side > nav::before,
+  html .sn-shell > .sn-side > nav::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  html .sn-shell > .sn-side > nav {
+    position: relative !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    padding: 4px 8px 14px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    pointer-events: auto !important;
+    z-index: 1 !important;
+  }
+
+  html .sn-shell > .sn-side > nav::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+    background: transparent !important;
+  }
+
+  html .sn-shell > .sn-side.collapsed .sn-logo {
+    width: 100% !important;
+    height: 66px !important;
+    min-height: 66px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+  }
+
+  html .sn-shell > .sn-side.collapsed .sn-logo b,
+  html .sn-shell > .sn-side.collapsed .sn-new span,
+  html .sn-shell > .sn-side.collapsed > nav > button span {
+    display: none !important;
+  }
+
+  html .sn-shell > .sn-side.collapsed .sn-new,
+  html .sn-shell > .sn-side.collapsed > nav > button {
+    position: relative !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    display: grid !important;
+    place-items: center !important;
+    gap: 0 !important;
+    margin: 2px auto !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    transform: none !important;
+    z-index: 2 !important;
+  }
+
+  html .sn-shell > .sn-side.collapsed > nav > button[hidden] {
+    display: none !important;
+  }
+
+  html .sn-shell > .sn-side.collapsed .sn-new svg,
+  html .sn-shell > .sn-side.collapsed > nav > button svg {
+    position: static !important;
+    flex: 0 0 auto !important;
+    width: 20px !important;
+    height: 20px !important;
+    margin: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    rotate: 0deg !important;
+  }
+
+  html .sn-shell > .sn-side:not(.collapsed) .sn-new,
+  html .sn-shell > .sn-side:not(.collapsed) > nav > button {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 11px !important;
+    margin-inline: 0 !important;
+    padding: 0 12px !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  html .sn-shell > .sn-main,
+  html .sn-shell > .sn-side + .sn-main,
+  html .sn-shell > .sn-side.collapsed + .sn-main,
+  html .sn-shell > .sn-side:not(.collapsed) + .sn-main {
+    width: calc(100% - var(--sn-v25-rail)) !important;
+    min-width: 0 !important;
+    max-width: calc(100% - var(--sn-v25-rail)) !important;
+    margin: 0 0 0 var(--sn-v25-rail) !important;
+    overflow-x: hidden !important;
+  }
+
+  html .sn-shell .sn-icon.sn-sidebar-edge-owner-v23,
+  html .sn-shell .sn-icon[data-sidebar-authority="single-v23"] {
+    position: fixed !important;
+    left: calc(var(--sn-v25-rail) - (var(--sn-v25-edge-button) / 2)) !important;
+    top: 76px !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: var(--sn-v25-edge-button) !important;
+    min-width: var(--sn-v25-edge-button) !important;
+    max-width: var(--sn-v25-edge-button) !important;
+    height: var(--sn-v25-edge-button) !important;
+    min-height: var(--sn-v25-edge-button) !important;
+    max-height: var(--sn-v25-edge-button) !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid #d8e2ef !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    color: #2d6edf !important;
+    box-shadow: 0 9px 24px rgba(17, 43, 78, .20) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    transform: none !important;
+    z-index: 30100 !important;
+  }
+
+  html .sn-shell[data-v23-sidebar-open="true"] .sn-icon.sn-sidebar-edge-owner-v23,
+  html .sn-shell[data-v23-sidebar-open="true"] .sn-icon[data-sidebar-authority="single-v23"] {
+    left: calc(var(--sn-v25-panel) - (var(--sn-v25-edge-button) / 2)) !important;
+  }
+
+  html .sn-shell .sn-icon[data-sidebar-authority="single-v23"] svg {
+    width: 19px !important;
+    height: 19px !important;
+    margin: auto !important;
+    transform: none !important;
+    rotate: 0deg !important;
+  }
+
+  html .sn-shell > .sn-sidebar-scrim-v23 {
+    position: fixed !important;
+    inset: 0 !important;
+    display: block !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: rgba(18, 35, 58, .46) !important;
+    backdrop-filter: blur(2px) !important;
+    pointer-events: auto !important;
+    z-index: 29900 !important;
+  }
+
+  html .sn-shell > .sn-sidebar-scrim-v23[hidden] {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  html .sn-mobile-nav,
+  html .sn-mobile-sheet-layer,
+  html .sn-side-close,
+  html .sn-side-bottom {
+    display: none !important;
+  }
+
+  html .sn-top {
+    min-width: 0 !important;
+    padding-left: 25px !important;
+    overflow: hidden !important;
+  }
+
+  html .sn-workspace,
+  html .sn-top-actions,
+  html .sn-view-site,
+  html .sn-avatar {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  html .sn-view-site svg,
+  html .sn-avatar svg,
+  html .sn-workspace svg {
+    margin: auto !important;
+    transform: none !important;
+    rotate: 0deg !important;
+  }
+
+  /* Mobile Nara starts as a complete floating box, never an accidental fullscreen page. */
+  html .nara-assistant-layer[data-nara-window-mode="compact"] {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    display: grid !important;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr) !important;
+    place-items: end center !important;
+    padding: 8px max(8px, env(safe-area-inset-right)) var(--sn-v25-safe-bottom) max(8px, env(safe-area-inset-left)) !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+    z-index: 2147483600 !important;
+  }
+
+  html .nara-assistant-layer[data-nara-window-mode="compact"] > .nara-assistant-backdrop {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    visibility: visible !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: rgba(9, 23, 43, .50) !important;
+    backdrop-filter: blur(3px) !important;
+    pointer-events: auto !important;
+  }
+
+  html .nara-assistant-layer[data-nara-window-mode="compact"] > .nara-assistant-shell {
+    position: relative !important;
+    inset: auto !important;
+    grid-area: 1 / 1 !important;
+    width: min(100%, 430px) !important;
+    min-width: 0 !important;
+    max-width: 430px !important;
+    height: min(80dvh, 720px) !important;
+    min-height: min(500px, calc(100dvh - 16px)) !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-bottom)) !important;
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(49, 77, 113, .18) !important;
+    border-radius: 20px !important;
+    background: #fff !important;
+    box-shadow: 0 24px 72px rgba(8, 25, 49, .36) !important;
+    contain: layout paint !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    z-index: 2 !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-assistant-header {
+    min-height: 60px !important;
+    padding: max(8px, env(safe-area-inset-top)) 9px 8px !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-context-bar {
+    min-height: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 9px !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-capability-shortcuts {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    display: flex !important;
+    gap: 6px !important;
+    padding: 3px 0 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-capability-shortcuts::-webkit-scrollbar,
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-quick-prompts::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-capability-shortcuts > button {
+    flex: 0 0 72px !important;
+    min-width: 72px !important;
+    min-height: 48px !important;
+    padding: 5px 4px !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-quick-prompts {
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-composer-tools {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 5px !important;
+    overflow: visible !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-composer-tools > button,
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-attachment-menu-wrap > button {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-select.intelligence {
+    flex: 1 1 72px !important;
+    width: auto !important;
+    min-width: 68px !important;
+    margin-left: auto !important;
+  }
+
+  html .nara-assistant-shell[data-nara-window-v24="true"] .nara-select.model {
+    flex: 1.2 1 92px !important;
+    width: auto !important;
+    min-width: 84px !important;
+  }
+}
+
+@supports not (height: 100dvh) {
+  html .nara-assistant-layer,
+  html .sn-shell,
+  html .sn-side {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}

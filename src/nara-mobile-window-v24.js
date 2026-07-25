@@ -7,7 +7,8 @@ import {
 } from "./lib/nara-data.js";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 
-const RELEASE = "nara-mobile-window-v24-20260725";
+const RELEASE = "nara-mobile-window-v25-20260725";
+const PRODUCTION_COMPAT_RELEASE = "nara-mobile-window-v24-20260725";
 const ROOT = document.getElementById("root") || document.documentElement;
 const attached = new WeakSet();
 const pluginStates = new WeakMap();
@@ -18,11 +19,12 @@ const RESTORE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const PLUGIN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 3H5a2 2 0 0 0-2 2v3.5a2.5 2.5 0 1 1 0 5V17a2 2 0 0 0 2 2h3.5a2.5 2.5 0 1 0 5 0H17a2 2 0 0 0 2-2v-3.5a2.5 2.5 0 1 0 0-5V5a2 2 0 0 0-2-2h-3.5a2.5 2.5 0 1 1-5 0Z"/></svg>';
 const CLOSE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg>';
 
-function compactMobile() {
-  const root = document.documentElement;
-  if (root.dataset.desktopLayoutRequested === "true") return false;
-  if (root.dataset.compactViewport === "true") return true;
+function mobileViewport() {
   return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function defaultWindowMode() {
+  return mobileViewport() ? "compact" : "desktop";
 }
 
 function pluginState(shell) {
@@ -235,7 +237,7 @@ function setWindowMode(layer, mode) {
   if (!shell) return;
   layer.dataset.naraWindowMode = mode;
   shell.dataset.naraWindowMode = mode;
-  document.documentElement.dataset.naraMobileExpanded = String(mode === "expanded");
+  document.documentElement.dataset.naraExpanded = String(mode === "expanded");
   const toggle = shell.querySelector(".nara-window-toggle-v24");
   if (toggle) {
     const expanded = mode === "expanded";
@@ -251,6 +253,7 @@ function ensureWindowControls(shell) {
   const header = shell.querySelector(".nara-assistant-header");
   if (!layer || !header) return;
   shell.dataset.naraWindowV24 = "true";
+  shell.dataset.naraWindowOwner = RELEASE;
   layer.dataset.naraWindowV24 = RELEASE;
 
   const close = [...header.querySelectorAll(":scope > button")]
@@ -263,25 +266,22 @@ function ensureWindowControls(shell) {
     toggle.type = "button";
     toggle.className = "nara-window-toggle-v24";
     toggle.addEventListener("click", () => {
-      const next = layer.dataset.naraWindowMode === "expanded" ? "compact" : "expanded";
+      const next = layer.dataset.naraWindowMode === "expanded" ? defaultWindowMode() : "expanded";
       setWindowMode(layer, next);
     });
     close.insertAdjacentElement("beforebegin", toggle);
   }
 
-  if (compactMobile()) {
-    if (!layer.dataset.naraWindowMode || layer.dataset.naraWindowMode === "desktop") setWindowMode(layer, "compact");
-    toggle.hidden = false;
-    toggle.disabled = false;
-    toggle.removeAttribute("aria-hidden");
+  const baseMode = defaultWindowMode();
+  if (!layer.dataset.naraWindowMode || layer.dataset.naraWindowMode === "desktop" || layer.dataset.naraWindowMode === "compact") {
+    setWindowMode(layer, baseMode);
   } else {
-    layer.dataset.naraWindowMode = "desktop";
-    shell.dataset.naraWindowMode = "desktop";
-    toggle.hidden = true;
-    toggle.disabled = true;
-    toggle.setAttribute("aria-hidden", "true");
-    document.documentElement.dataset.naraMobileExpanded = "false";
+    setWindowMode(layer, "expanded");
   }
+
+  toggle.hidden = false;
+  toggle.disabled = false;
+  toggle.removeAttribute("aria-hidden");
 }
 
 function attach(shell) {
@@ -295,6 +295,7 @@ function attach(shell) {
 
 function scan() {
   document.documentElement.dataset.naraMobileWindow = RELEASE;
+  document.documentElement.dataset.naraMobileWindowCompatibility = PRODUCTION_COMPAT_RELEASE;
   document.querySelectorAll(".nara-assistant-shell").forEach(attach);
 }
 
