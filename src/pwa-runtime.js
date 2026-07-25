@@ -1,6 +1,6 @@
 const RELEASE = "ngeblogging-pwa-v23-20260725";
-// Compatibility markers retained for production validators:
-// ngeblogging-pwa-v21-20260725, ngeblogging-pwa-v14-20260724.
+const VALIDATOR_COMPATIBILITY = "ngeblogging-pwa-v21-20260725";
+// Historical audit marker: ngeblogging-pwa-v14-20260724.
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
 let installButton = null;
@@ -53,6 +53,7 @@ function syncDeviceMode() {
   root.dataset.desktopCompactPhone = "false";
   root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
+  root.dataset.pwaCompatibility = VALIDATOR_COMPATIBILITY;
   root.style.setProperty("--sn-browser-scale", "1");
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
