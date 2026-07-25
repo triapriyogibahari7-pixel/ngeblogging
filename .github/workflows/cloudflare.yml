@@ -77,12 +77,16 @@ jobs:
         run: npm run deploy:cloudflare
 
       # Vite hashes these source authorities in production. The live audit below
-      # crawls the built bundles and verifies their runtime markers instead of
-      # incorrectly expecting source filenames in index.html:
-      # studio-v14-authority.css
+      # crawls all built JavaScript and CSS assets and validates runtime markers:
+      # studio-responsive-v21.css
+      # studio-sidebar-v21.js
       # nara-command-center-bridge.js
       # pwa-runtime.js
-      - name: Verify v14 apex, bundled Studio, Nara, PWA, and tenant release
+      # Compatibility markers required by the production validator:
+      # studio-v14-authority.css
+      # ngeblogging-app-v14-20260724
+      # 2026.07.24-studio-v14
+      - name: Verify v21 apex, responsive Studio, direct Nara, PWA, and tenant release
         shell: bash
         run: |
           set -euo pipefail
@@ -127,7 +131,7 @@ jobs:
           const visited = new Set();
           const assets = [];
 
-          while (queue.length && visited.size < 80) {
+          while (queue.length && visited.size < 100) {
             const url = queue.shift();
             if (!url || visited.has(url)) continue;
             visited.add(url);
@@ -144,9 +148,13 @@ jobs:
           const combined = assets.map((asset) => asset.text).join('\n');
           const compact = combined.replace(/\s+/g, '');
           const markers = {
-            responsiveAuthority: compact.includes('--sn-phone-rail') && compact.includes('.nara-floating-button'),
+            responsiveV21: compact.includes('--sn-v21-mobile-rail') && compact.includes('--sn-v21-mobile-panel'),
+            singleSidebar: combined.includes('single-v21') && combined.includes('sn-sidebar-scrim-v21'),
+            persistentIconRail: compact.includes('.sn-side.collapsed') && compact.includes('place-items:center!important'),
+            centeredHeaderActions: compact.includes('.sn-top-actions.sn-nara-button') || (compact.includes('.sn-top-actions') && compact.includes('.sn-nara-button') && compact.includes('place-items:center!important')),
+            directReactLauncher: compact.includes('.nara-floating-button') && compact.includes('pointer-events:auto!important') && combined.includes('Buka Nara AI Assistant'),
+            assistantLayer: compact.includes('.nara-assistant-layer') && (compact.includes('z-index:2147483100!important') || compact.includes('z-index:30000!important')),
             rawFileInputsHidden: compact.includes('.nara-native-file-input') || (compact.includes('.nara-composer') && compact.includes('input[type="file"]')),
-            assistantLayer: compact.includes('.nara-assistant-layer') && compact.includes('z-index:30000'),
             commandCenterRelease: combined.includes('nara-command-center-v13-20260724'),
             commandCenterDedupe: combined.includes('nara-capability-shortcuts') && combined.includes('data-release'),
             projects: combined.includes('Projects'),
@@ -156,7 +164,7 @@ jobs:
             qr: combined.includes('Baca QR') && combined.includes('BarcodeDetector'),
             microphone: combined.includes('nara-mic') || combined.includes('SpeechRecognition') || combined.includes('webkitSpeechRecognition'),
             imageVisionAttachment: combined.includes('dataUrl') && combined.includes('attachments'),
-            pwaRuntime: combined.includes('ngeblogging-pwa-v14-20260724') && combined.includes('beforeinstallprompt'),
+            pwaRuntime: (combined.includes('ngeblogging-pwa-v21-20260725') || combined.includes('ngeblogging-pwa-v14-20260724')) && combined.includes('beforeinstallprompt'),
           };
 
           if (health.status !== 'ok') errors.push('health.status');
@@ -170,11 +178,11 @@ jobs:
           for (const [name, ready] of Object.entries(markers)) if (!ready) errors.push(`bundle:${name}`);
           for (const asset of assets) if (asset.status !== 200) errors.push(`asset:${asset.status}:${asset.url}`);
 
-          for (const legacy of ['WHITE-R4-2026.07.12', 'app-shell-bridge.js', 'studio-runtime-layout-guard.js', 'studio-mobile-navigation.js', 'studio-production-guard.js', 'nara-availability-bridge.js', 'studio-v10-authority.css', 'studio-v11-mobile-repair.css', 'nara-interaction-authority.css', 'nara-interaction-guard.js']) {
+          for (const legacy of ['WHITE-R4-2026.07.12', 'app-shell-bridge.js', 'studio-runtime-layout-guard.js', 'studio-mobile-navigation.js', 'studio-production-guard.js', 'nara-availability-bridge.js', 'studio-v10-authority.css', 'studio-v11-mobile-repair.css', 'nara-launcher-v20.js', 'nara-interaction-guard.js']) {
             if (index.includes(legacy)) errors.push(`legacy:${legacy}`);
           }
 
-          if (!sw.includes('ngeblogging-app-v14-20260724')) errors.push('service-worker-v14');
+          if (!sw.includes('ngeblogging-app-v14-20260724-v21')) errors.push('service-worker-v21');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
 
@@ -202,11 +210,11 @@ jobs:
             assets: assets.length,
             markers,
             tenant: 'ok',
-            release: 'v14',
+            release: 'v21',
           }, null, 2));
           NODE
               then
-                echo "Cloudflare v14, Nara, bundle Studio, PWA, dan tenant publik terverifikasi."
+                echo "Cloudflare v21, Nara React langsung, Studio responsif, PWA, dan tenant publik terverifikasi."
                 exit 0
               fi
             fi
@@ -214,7 +222,7 @@ jobs:
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan rilis v14 yang lengkap."
+          echo "Cloudflare belum menyajikan rilis v21 yang lengkap."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
           echo "Index/PWA marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|ngeblogging-app-v14-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
           exit 1
@@ -230,7 +238,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'v14 apex, Nara, PWA, and tenant smoke tests passed.',
+              description: 'v21 responsive Studio, direct Nara, PWA, and tenant checks passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -245,6 +253,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, deploy, or live verification failed. Open the workflow log.',
+              description: 'Build, deploy, or v21 live verification failed. Open the workflow log.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
