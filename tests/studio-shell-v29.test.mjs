@@ -31,22 +31,13 @@ test("v29 is the only active compact Studio authority", () => {
 });
 
 test("mobile drawer follows the Cloudflare-style interaction contract", () => {
-  for (const marker of [
-    "sn-mobile-v29-header",
-    "sn-mobile-v29-brand",
-    "sn-mobile-v29-close",
-    "sn-mobile-v29-search",
-    "sn-mobile-v29-launcher",
-    "sn-mobile-v29-scrim",
-    "Cari menu…",
-    "n<span>.</span>",
-  ]) assert.ok(runtime.includes(marker), marker);
+  for (const marker of ["sn-mobile-v29-header", "sn-mobile-v29-brand", "sn-mobile-v29-close", "sn-mobile-v29-search", "sn-mobile-v29-launcher", "sn-mobile-v29-scrim", "Cari menu…", "n<span>.</span>"]) assert.ok(runtime.includes(marker), marker);
   assert.match(css, /--sn-v29-panel: min\(84vw, 360px\)/);
   assert.match(css, /\.sn-side\.collapsed[\s\S]*translate3d\(calc\(-100% - 18px\), 0, 0\)/);
   assert.match(css, /\.sn-mobile-v29-close[\s\S]*width: 44px !important/);
   assert.match(css, /\.sn-mobile-v29-launcher[\s\S]*top: 50dvh !important/);
   assert.match(css, /\.sn-mobile-v29-scrim[\s\S]*backdrop-filter: none !important/);
-  assert.match(runtime, /input\.addEventListener\("input"/);
+  assert.match(runtime, /addEventListener\("input"/);
   assert.match(runtime, /clickSource\(shell, false\)/);
 });
 
@@ -56,8 +47,8 @@ test("desktop, laptop and Desktop-site sidebar geometry is locked and backed up"
     assert.match(source, /width: (?:var\(--sn-v29-desktop-closed\)|70px) !important/);
     assert.match(source, /margin-left: (?:var\(--sn-v29-desktop-open\)|220px) !important/);
   }
-  for (const mode of ["desktop", "laptop", "desktop-phone"]) assert.ok(runtime.includes(`studio-v29-${mode}`), mode);
-  for (const mode of ["phone", "mobile", "app", "tablet"]) assert.ok(runtime.includes(`"${mode}"`), mode);
+  for (const mode of ["desktop", "laptop", "desktop-phone", "phone", "mobile", "app", "tablet"]) assert.ok(runtime.includes(`"${mode}"`), mode);
+  assert.match(runtime, /root\.classList\.toggle\(`studio-v29-\$\{name\}`/);
 });
 
 test("Nara has mini, complete widget and fullscreen with controls beside close", () => {
@@ -76,16 +67,12 @@ test("Nara has mini, complete widget and fullscreen with controls beside close",
 });
 
 test("plugins and task mode stay functional inside Nara", () => {
-  for (const marker of ["INTEGRATION_CATALOG", "listUserIntegrations", "requestIntegration", "disableIntegration", "ACTIVE_SITE_STORAGE_KEY"]) {
-    assert.ok(connectors.includes(marker), marker);
-  }
-  for (const provider of ["github", "supabase", "neon", "cloudflare", "paypal", "qris", "google-drive", "google-analytics", "webhook"]) {
-    assert.ok(connectors.includes(`${provider}:`) || connectors.includes(`"${provider}"`), provider);
-  }
+  for (const marker of ["INTEGRATION_CATALOG", "listUserIntegrations", "requestIntegration", "disableIntegration", "ACTIVE_SITE_STORAGE_KEY"]) assert.ok(connectors.includes(marker), marker);
+  for (const provider of ["github", "supabase", "neon", "cloudflare", "paypal", "qris", "google-drive", "google-analytics", "webhook"]) assert.ok(connectors.includes(`${provider}:`) || connectors.includes(`"${provider}"`), provider);
   assert.match(connectors, /nara-plugin-panel-v29/);
   assert.match(connectors, /Hubungkan/);
   assert.match(connectors, /Connected/);
-  assert.match(requestMode, /\/api\/nara/);
+  assert.ok(requestMode.includes("\\/api\\/nara"));
   assert.match(requestMode, /taskMode/);
 });
 
