@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ngeblogging",
-  "main": "./cloudflare/worker.mjs",
+  "main": "./cloudflare/worker-v22.mjs",
   "compatibility_date": "2026-07-23",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
@@ -18,11 +18,12 @@
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-    "APP_RELEASE": "2026.07.24-studio-v14",
+    "APP_RELEASE": "2026.07.25-studio-v22",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
     "QWEN_REGION": "singapore",
-    "CF_AI_MODEL": "@cf/zai-org/glm-4.7-flash",
+    "CF_AI_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8",
+    "CF_AI_FALLBACK_MODEL": "@cf/zai-org/glm-4.7-flash",
     "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
     "PAYPAL_ENV": "sandbox",
@@ -32,7 +33,7 @@
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_PRODUCTION_READY": "true",
     "NARA_PRODUCTION_PROBE": "passed",
-    "NARA_RUNTIME": "cloudflare-worker-production-v14"
+    "NARA_RUNTIME": "cloudflare-worker-production-v22"
   },
   "observability": {
     "enabled": true,
