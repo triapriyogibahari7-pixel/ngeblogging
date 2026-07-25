@@ -1,0 +1,684 @@
+/*
+ * Studio compact polish + Nara toolbar authority v32 — 2026-07-25
+ * Scope: compact phone/tablet/PWA content, Theme Studio, and Nara internals.
+ * The approved v30 sidebar, launcher, desktop/laptop geometry, and public sites are not targeted.
+ */
+
+:root {
+  --nara-v32-mini-width: min(292px, calc(100vw - 18px));
+  --nara-v32-mini-height: min(500px, calc(100svh - 78px - env(safe-area-inset-bottom)));
+}
+
+/* Route content must begin cleanly after the sticky Studio header. */
+html.studio-v30-compact .sn-main {
+  min-width: 0 !important;
+  scroll-padding-top: 88px !important;
+  overflow-x: clip !important;
+}
+
+html.studio-v30-compact .sn-view-pad,
+html.studio-v30-compact .nw-page,
+html.studio-v30-compact .tn-studio,
+html.studio-v30-compact .sn-view-pad > .sn-media-library {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+html.studio-v30-compact .sn-view-pad,
+html.studio-v30-compact .nw-page {
+  padding-top: 24px !important;
+}
+
+html.studio-v30-compact .sn-page-title,
+html.studio-v30-compact .sn-welcome,
+html.studio-v30-compact .nw-page > header,
+html.studio-v30-compact .sn-view-pad > :first-child {
+  position: relative !important;
+  inset: auto !important;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-page-title h1,
+html.studio-v30-compact .sn-welcome h1,
+html.studio-v30-compact .nw-page > header h1 {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+/* ---------- Theme Studio mobile page ---------- */
+html.studio-v30-compact .tn-studio {
+  width: 100% !important;
+  padding: 20px 14px calc(98px + env(safe-area-inset-bottom)) !important;
+  background: #f6f8fc !important;
+}
+
+html.studio-v30-compact .tn-hero {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+html.studio-v30-compact .tn-hero-copy {
+  min-width: 0 !important;
+  padding: 22px 17px !important;
+  border-radius: 18px !important;
+}
+
+html.studio-v30-compact .tn-hero-copy h1 {
+  max-width: 100% !important;
+  margin: 10px 0 12px !important;
+  font-size: clamp(32px, 10vw, 44px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.035em !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.studio-v30-compact .tn-hero-copy p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+html.studio-v30-compact .tn-hero-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-top: 18px !important;
+}
+
+html.studio-v30-compact .tn-hero-actions button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  padding: 0 9px !important;
+  font-size: 10px !important;
+  white-space: normal !important;
+}
+
+html.studio-v30-compact .tn-trust {
+  gap: 7px !important;
+  margin-top: 17px !important;
+}
+
+html.studio-v30-compact .tn-active-stage {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 500px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+html.studio-v30-compact .tn-stage-toolbar {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 68px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .tn-stage-toolbar > b {
+  max-width: 100% !important;
+  font-size: 12px !important;
+}
+
+html.studio-v30-compact .tn-device-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  overflow: hidden !important;
+}
+
+html.studio-v30-compact .tn-device-switch button {
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+  padding: 0 4px !important;
+}
+
+html.studio-v30-compact .tn-device-switch button span {
+  display: none !important;
+}
+
+html.studio-v30-compact .tn-frame-shell {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 390px !important;
+  padding: 8px !important;
+  overflow: auto !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .tn-frame-shell iframe,
+html.studio-v30-compact .tn-frame-shell.mobile iframe,
+html.studio-v30-compact .tn-frame-shell.tablet iframe,
+html.studio-v30-compact .tn-frame-shell.laptop iframe,
+html.studio-v30-compact .tn-frame-shell.desktop iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 390px !important;
+  border-radius: 10px !important;
+}
+
+html.studio-v30-compact .tn-apply-bar {
+  position: static !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: auto !important;
+  max-width: none !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin: 8px !important;
+  padding: 9px 10px !important;
+  border-radius: 14px !important;
+}
+
+html.studio-v30-compact .tn-command {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+  padding: 16px !important;
+}
+
+html.studio-v30-compact .tn-command nav {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+html.studio-v30-compact .tn-command nav button {
+  width: 100% !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+}
+
+html.studio-v30-compact .tn-blueprints,
+html.studio-v30-compact .tn-library {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-top: 14px !important;
+  padding: 16px !important;
+  border-radius: 18px !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .tn-blueprint-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+html.studio-v30-compact .tn-library header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+}
+
+html.studio-v30-compact .tn-library header label {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .tn-category-tabs {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+html.studio-v30-compact .tn-theme-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+html.studio-v30-compact .tn-theme-grid > article,
+html.studio-v30-compact .tn-theme-preview,
+html.studio-v30-compact .tn-card-mock {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .tn-audit-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+/* Theme customizer, HTML editor, preview, and widget dialogs use a true mobile sheet. */
+html.studio-v30-compact .tn-modal-layer {
+  place-items: stretch !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  z-index: 2147482400 !important;
+}
+
+html.studio-v30-compact .tn-modal,
+html.studio-v30-compact .tn-modal.large,
+html.studio-v30-compact .tn-modal.fullscreen,
+html.studio-v30-compact .tn-modal.preview {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+}
+
+html.studio-v30-compact .tn-modal > header {
+  flex: 0 0 auto !important;
+  min-height: 66px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 42px !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: max(10px, env(safe-area-inset-top)) 12px 10px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 6 !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .tn-modal > header > div {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+html.studio-v30-compact .tn-modal > header h2 {
+  max-width: 100% !important;
+  margin: 3px 0 0 !important;
+  font-size: 21px !important;
+  line-height: 1.12 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.studio-v30-compact .tn-modal > header > button {
+  width: 42px !important;
+  height: 42px !important;
+  margin: 0 !important;
+}
+
+html.studio-v30-compact .tn-modal-body {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html.studio-v30-compact .tn-customizer {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html.studio-v30-compact .tn-fields {
+  min-width: 0 !important;
+  padding: 16px !important;
+  overflow: visible !important;
+}
+
+html.studio-v30-compact .tn-color-grid,
+html.studio-v30-compact .tn-form-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html.studio-v30-compact .tn-customizer > .tn-frame-shell {
+  min-height: 420px !important;
+  border-top: 1px solid #dfe6ef !important;
+}
+
+html.studio-v30-compact .tn-code-workspace {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html.studio-v30-compact .tn-code-pane {
+  min-width: 0 !important;
+  min-height: 55svh !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid #dfe6ef !important;
+}
+
+html.studio-v30-compact .tn-code-pane > nav {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+html.studio-v30-compact .tn-widget-grid,
+html.studio-v30-compact .tn-widget-studio,
+html.studio-v30-compact .tn-widget-summary {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .tn-widget-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html.studio-v30-compact .tn-modal > footer {
+  flex: 0 0 auto !important;
+  min-height: 64px !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  padding: 9px 12px calc(9px + env(safe-area-inset-bottom)) !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 6 !important;
+}
+
+html.studio-v30-compact .tn-modal > footer button {
+  flex: 1 1 130px !important;
+  min-width: 0 !important;
+}
+
+/* ---------- Nara mini widget: every control, including Send, stays visible ---------- */
+html.studio-v30-compact[data-studio-shell-authority-v30]
+  .nara-assistant-layer[data-nara-size-v30="mini"] > .nara-assistant-shell {
+  width: var(--nara-v32-mini-width) !important;
+  min-width: 0 !important;
+  max-width: var(--nara-v32-mini-width) !important;
+  height: var(--nara-v32-mini-height) !important;
+  min-height: 410px !important;
+  max-height: var(--nara-v32-mini-height) !important;
+  right: max(9px, env(safe-area-inset-right)) !important;
+  bottom: max(9px, env(safe-area-inset-bottom)) !important;
+  border-radius: 18px !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto !important;
+}
+
+html.studio-v30-compact .nara-assistant-shell[data-nara-controls-v30="true"] .nara-assistant-header {
+  min-height: 56px !important;
+  grid-template-columns: 38px minmax(0, 1fr) repeat(4, 27px) !important;
+  gap: 3px !important;
+  padding: 7px 7px !important;
+}
+
+html.studio-v30-compact .nara-assistant-shell .nara-brand-orb {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+}
+
+html.studio-v30-compact .nara-assistant-shell .nara-brand-orb svg {
+  width: 19px !important;
+  height: 19px !important;
+}
+
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) b {
+  font-size: 16px !important;
+}
+
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) small {
+  font-size: 8px !important;
+}
+
+html.studio-v30-compact .nara-assistant-header > button,
+html.studio-v30-compact .nara-size-toggle-v30,
+html.studio-v30-compact .nara-expand-toggle-v30 {
+  width: 27px !important;
+  min-width: 27px !important;
+  height: 27px !important;
+  min-height: 27px !important;
+  border-radius: 8px !important;
+}
+
+html.studio-v30-compact .nara-assistant-header > button svg,
+html.studio-v30-compact .nara-size-toggle-v30 svg,
+html.studio-v30-compact .nara-expand-toggle-v30 svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+html.studio-v30-compact .nara-context-bar {
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 5px 8px !important;
+}
+
+html.studio-v30-compact .nara-context-bar > span,
+html.studio-v30-compact .nara-context-bar > button {
+  font-size: 9px !important;
+}
+
+html.studio-v30-compact .nara-assistant-messages {
+  min-height: 0 !important;
+  padding: 8px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html.studio-v30-compact .nara-message {
+  grid-template-columns: 26px minmax(0, 1fr) !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+html.studio-v30-compact .nara-message.user {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html.studio-v30-compact .nara-message-avatar {
+  width: 26px !important;
+  min-width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+}
+
+html.studio-v30-compact .nara-message > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .nara-message-content,
+html.studio-v30-compact .nara-message > div > p {
+  max-width: 100% !important;
+  padding: 9px 10px !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.studio-v30-compact .nara-quick-prompts {
+  min-height: 35px !important;
+  max-height: 35px !important;
+  gap: 5px !important;
+  padding: 4px 7px !important;
+}
+
+html.studio-v30-compact .nara-quick-prompts > button {
+  min-height: 27px !important;
+  padding: 0 8px !important;
+  font-size: 9px !important;
+}
+
+html.studio-v30-compact .nara-composer {
+  position: relative !important;
+  min-width: 0 !important;
+  min-height: 116px !important;
+  max-height: 180px !important;
+  display: grid !important;
+  grid-template-rows: minmax(66px, 1fr) auto !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  overflow: visible !important;
+}
+
+html.studio-v30-compact .nara-composer textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 66px !important;
+  max-height: 105px !important;
+  margin: 0 !important;
+  padding: 9px 10px !important;
+  border-radius: 13px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  resize: none !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .nara-composer-tools {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns:
+    repeat(4, minmax(24px, 26px))
+    minmax(34px, .70fr)
+    minmax(36px, .76fr)
+    minmax(46px, 1fr)
+    28px !important;
+  align-items: center !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+html.studio-v30-compact .nara-composer-tools > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+html.studio-v30-compact .nara-composer-tools > .nara-attachment-menu-wrap {
+  width: 100% !important;
+  min-width: 0 !important;
+  position: relative !important;
+}
+
+html.studio-v30-compact .nara-composer-tools > button,
+html.studio-v30-compact .nara-composer-tools > .nara-attachment-menu-wrap > button,
+html.studio-v30-compact .nara-composer-tools > .nara-plugin-trigger-v29,
+html.studio-v30-compact .nara-composer-tools > .nara-speaker-v30 {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+
+html.studio-v30-compact .nara-composer-tools svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+html.studio-v30-compact .nara-select,
+html.studio-v30-compact .nara-mode-v30 {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 4px !important;
+  border-radius: 8px !important;
+  font-size: 8px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+html.studio-v30-compact .nara-select > span,
+html.studio-v30-compact .nara-mode-v30 > span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+html.studio-v30-compact .nara-select > svg,
+html.studio-v30-compact .nara-mode-v30 > svg {
+  width: 10px !important;
+  min-width: 10px !important;
+  height: 10px !important;
+}
+
+html.studio-v30-compact .nara-composer-tools > .nara-send {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  display: grid !important;
+  place-items: center !important;
+  justify-self: end !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .nara-composer-tools > .nara-send:disabled {
+  opacity: .48 !important;
+  visibility: visible !important;
+}
+
+/* Menus do not exist visually before their buttons are pressed. */
+html.studio-v30-compact .nara-plugin-panel-v29[hidden],
+html.studio-v30-compact .nara-plugin-panel-v24[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.studio-v30-compact .nara-attachment-menu,
+html.studio-v30-compact .nara-plugin-panel-v29,
+html.studio-v30-compact .nara-plugin-panel-v24 {
+  width: min(258px, calc(100vw - 34px)) !important;
+  max-width: min(258px, calc(100vw - 34px)) !important;
+  max-height: min(48svh, 360px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  z-index: 50 !important;
+}
+
+html.studio-v30-compact .nara-attachment-menu {
+  left: 0 !important;
+  right: auto !important;
+  bottom: 34px !important;
+}
+
+@media (max-width: 340px) {
+  :root {
+    --nara-v32-mini-width: min(282px, calc(100vw - 14px));
+  }
+
+  html.studio-v30-compact .tn-blueprint-list,
+  html.studio-v30-compact .tn-audit-strip,
+  html.studio-v30-compact .tn-command nav,
+  html.studio-v30-compact .tn-hero-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html.studio-v30-compact .nara-composer-tools {
+    grid-template-columns:
+      repeat(4, 24px)
+      32px
+      34px
+      minmax(42px, 1fr)
+      27px !important;
+    gap: 2px !important;
+  }
+}
