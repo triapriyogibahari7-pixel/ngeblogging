@@ -1,4 +1,4 @@
-const RELEASE = "ngeblogging-pwa-v21-20260725";
+const RELEASE = "ngeblogging-pwa-v22-20260725";
 // Compatibility marker retained for production validators: ngeblogging-pwa-v14-20260724
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
@@ -12,15 +12,18 @@ function viewportProfile() {
   const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
   const physicalShortSide = Math.min(screenWidth, screenHeight);
   const physicalScreenMobile = physicalShortSide <= 760;
+  const viewportToScreenRatio = layoutWidth / Math.max(1, screenWidth);
 
-  // Responsive layout follows the browser viewport. When Android requests
-  // “Desktop site” it exposes a desktop-width viewport, so the Studio must use
-  // the real desktop/tablet layout instead of counter-scaling back to mobile.
-  const compactViewport = layoutWidth <= 760;
-  const desktopLayoutRequested = physicalScreenMobile && layoutWidth > 760;
+  // Android browsers do not all expose the same Desktop-site viewport. Some use
+  // >760 CSS px, while others keep a smaller CSS width but report a large ratio
+  // against the physical screen. Treat either signal as an explicit desktop view.
+  const desktopLayoutRequested = physicalScreenMobile
+    && (layoutWidth > 760 || viewportToScreenRatio >= 1.18);
+  const compactViewport = layoutWidth <= 760 && !desktopLayoutRequested;
 
   let mode = "desktop";
-  if (compactViewport) mode = "mobile";
+  if (desktopLayoutRequested) mode = layoutWidth <= 1024 ? "tablet" : "desktop";
+  else if (compactViewport) mode = "mobile";
   else if (layoutWidth <= 1024) mode = "tablet";
   else if (layoutWidth <= 1440) mode = "laptop";
 
@@ -29,6 +32,7 @@ function viewportProfile() {
     physicalScreenMobile,
     compactViewport,
     desktopLayoutRequested,
+    viewportToScreenRatio,
     browserScale: 1,
     layoutWidth,
     layoutHeight,
@@ -45,6 +49,7 @@ function syncDeviceMode() {
   const profile = viewportProfile();
   const root = document.documentElement;
   root.dataset.deviceMode = profile.mode;
+  root.dataset.compactViewport = String(profile.compactViewport);
   root.dataset.physicalMobile = String(profile.compactViewport);
   root.dataset.physicalScreenMobile = String(profile.physicalScreenMobile);
   root.dataset.desktopSitePhone = "false";
@@ -57,6 +62,7 @@ function syncDeviceMode() {
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
+  root.style.setProperty("--sn-viewport-screen-ratio", profile.viewportToScreenRatio.toFixed(3));
 }
 
 function standalone() {
@@ -130,7 +136,6 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      // Never reload during a click, login, upload, edit, or Nara request.
       document.documentElement.dataset.appUpdate = "applied";
     });
   } catch (error) {
