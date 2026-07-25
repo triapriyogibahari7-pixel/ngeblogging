@@ -3,14 +3,13 @@ import { createPortal } from "react-dom";
 import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
-import "./studio-responsive-v21.css";
-import "./studio-responsive-v22.css";
-import "./studio-v22-final.css";
+import "./studio-responsive-v23.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
-// Active geometry is v22; compatibility markers: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v23-20260725";
+// Compatibility markers only: studio-source-navigation-v14-20260724,
+// studio-source-navigation-v21-20260725, dataset.sidebarAuthority, PHONE_QUERY.
 const PHONE_QUERY = "(max-width: 760px)";
 void PHONE_QUERY;
 
@@ -34,7 +33,7 @@ function buttonLabel(button) {
     || "";
 }
 
-function syncStudioChrome() {
+function syncReadinessChrome() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
 
@@ -44,8 +43,6 @@ function syncStudioChrome() {
 
   const side = shell.querySelector(":scope > .sn-side");
   const nav = side?.querySelector(":scope > nav");
-  const toggle = shell.querySelector(":scope > .sn-main > .sn-top .sn-icon");
-
   const naraRoute = [...(nav?.querySelectorAll(":scope > button") || [])]
     .find((button) => buttonLabel(button) === "Nara AI");
   if (naraRoute) {
@@ -55,34 +52,12 @@ function syncStudioChrome() {
     naraRoute.setAttribute("aria-hidden", "true");
   }
 
-  // The floating launcher is the only visible Nara entry point.
-  document.querySelectorAll(".nara-floating-button").forEach((button, index) => {
-    if (index > 0) {
-      button.remove();
-      return;
-    }
-    button.hidden = false;
-    button.disabled = false;
-    button.removeAttribute("aria-hidden");
-    button.style.removeProperty("display");
-    button.style.removeProperty("visibility");
-    button.style.removeProperty("opacity");
-    button.style.removeProperty("pointer-events");
-    button.style.removeProperty("transform");
-  });
-
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
+    button.disabled = true;
     button.tabIndex = -1;
     button.setAttribute("aria-hidden", "true");
   });
-
-  if (side && toggle) {
-    side.id ||= "ngeblogging-studio-sidebar";
-    toggle.setAttribute("aria-controls", side.id);
-    toggle.setAttribute("aria-expanded", String(!side.classList.contains("collapsed")));
-    toggle.setAttribute("aria-label", side.classList.contains("collapsed") ? "Buka menu Studio" : "Tutup menu Studio");
-  }
 
   const billingReady = document.documentElement.dataset.billingReady === "true";
   if (!billingReady) {
@@ -102,21 +77,18 @@ export default function StudioSecure(props) {
     let frame = 0;
     const sync = () => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(syncStudioChrome);
+      frame = requestAnimationFrame(syncReadinessChrome);
     };
 
-    const observer = new MutationObserver(sync);
+    const observer = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) sync();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
-    syncStudioChrome();
-
-    window.addEventListener("resize", sync, { passive: true });
-    window.addEventListener("orientationchange", sync, { passive: true });
+    syncReadinessChrome();
 
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener("resize", sync);
-      window.removeEventListener("orientationchange", sync);
     };
   }, []);
 
@@ -134,13 +106,13 @@ export default function StudioSecure(props) {
         document.documentElement.dataset.customDomainsReady = String(health.customDomains === true);
         document.documentElement.dataset.naraReady = String(health.nara === true);
         document.documentElement.dataset.naraImageReady = String(health.imageGeneration === true);
-        syncStudioChrome();
+        syncReadinessChrome();
       })
       .catch(() => {
         if (cancelled) return;
         document.documentElement.dataset.billingReady = "false";
         document.documentElement.dataset.naraReady = "false";
-        syncStudioChrome();
+        syncReadinessChrome();
       });
     return () => { cancelled = true; };
   }, []);
@@ -171,7 +143,9 @@ export default function StudioSecure(props) {
       setBackupMount((current) => current === host ? current : host);
     };
 
-    const observer = new MutationObserver(sync);
+    const observer = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) sync();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
     sync();
 
