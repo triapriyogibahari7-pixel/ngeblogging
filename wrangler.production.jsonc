@@ -1,6 +1,5 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  // worker-v35.mjs wraps and preserves every worker-v22.mjs Nara fallback path.
   "name": "ngeblogging",
   "main": "./cloudflare/worker-v35.mjs",
   "compatibility_date": "2026-07-23",
@@ -27,6 +26,7 @@
     "CF_AI_FALLBACK_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8",
     "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
+    "NARA_FALLBACK_WORKER_COMPAT": "worker-v22.mjs",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
     "AUTH_BRANDED_EMAIL_READY": "false",
