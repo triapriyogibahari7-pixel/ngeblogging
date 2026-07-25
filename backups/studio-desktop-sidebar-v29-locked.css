@@ -1,0 +1,44 @@
+/* Recovery-only backup. Do not load directly in index.html. */
+html.studio-v29-desktop .sn-shell > .sn-side,
+html.studio-v29-laptop .sn-shell > .sn-side,
+html.studio-v29-desktop-phone .sn-shell > .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: 220px !important;
+  min-width: 220px !important;
+  max-width: 220px !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-right: 1px solid #dce3ed !important;
+  background: #fff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  z-index: 30000 !important;
+}
+
+html.studio-v29-desktop .sn-shell > .sn-side.collapsed,
+html.studio-v29-laptop .sn-shell > .sn-side.collapsed,
+html.studio-v29-desktop-phone .sn-shell > .sn-side.collapsed {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+}
+
+html.studio-v29-desktop .sn-shell > .sn-side + .sn-main,
+html.studio-v29-laptop .sn-shell > .sn-side + .sn-main,
+html.studio-v29-desktop-phone .sn-shell > .sn-side + .sn-main {
+  width: calc(100% - 220px) !important;
+  max-width: calc(100% - 220px) !important;
+  margin-left: 220px !important;
+}
+
+html.studio-v29-desktop .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v29-laptop .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v29-desktop-phone .sn-shell > .sn-side.collapsed + .sn-main {
+  width: calc(100% - 70px) !important;
+  max-width: calc(100% - 70px) !important;
+  margin-left: 70px !important;
+}
