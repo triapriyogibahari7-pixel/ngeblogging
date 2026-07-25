@@ -1,6 +1,5 @@
 const RELEASE = "studio-content-flow-v34-20260725";
 const VIEW_SELECTOR = ".sn-main > .sn-view-pad, .sn-main > .nw-page, .sn-main > .tn-studio";
-const ROUTE_SELECTOR = ".sn-side > nav > button, .sn-avatar";
 const FAVICON_ID = "ngeblogging-site-favicon-settings";
 let resetToken = 0;
 
@@ -68,12 +67,6 @@ function normalizeAll() {
 
 document.documentElement.dataset.studioContentFlowV34 = RELEASE;
 normalizeAll();
-
-document.addEventListener("click", (event) => {
-  if (!event.target.closest(ROUTE_SELECTOR)) return;
-  resetStudioScroll();
-}, true);
-
 document.addEventListener("popstate", resetStudioScroll);
 
 new MutationObserver((mutations) => {
