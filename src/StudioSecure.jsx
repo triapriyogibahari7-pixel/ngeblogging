@@ -7,10 +7,10 @@ import "./studio-responsive-v23.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v29-20260725";
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v33-20260725";
 // Compatibility markers only: studio-source-navigation-v14-20260724,
 // studio-source-navigation-v21-20260725, dataset.sidebarAuthority, PHONE_QUERY,
-// button.hidden = false. Visible device controls are owned by Studio shell v29.
+// button.hidden = false. Visible device controls are owned by Studio shell v30.
 const PHONE_QUERY = "(max-width: 760px)";
 void PHONE_QUERY;
 
@@ -34,6 +34,20 @@ function buttonLabel(button) {
     || "";
 }
 
+function removeNaraRouteAndConnectors(shell) {
+  const nav = shell.querySelector(":scope > .sn-side > nav");
+  [...(nav?.querySelectorAll(":scope > button") || [])]
+    .filter((button) => buttonLabel(button) === "Nara AI")
+    .forEach((button) => button.remove());
+
+  document.querySelectorAll([
+    ".nara-plugin-trigger-v24",
+    ".nara-plugin-trigger-v29",
+    ".nara-plugin-panel-v24",
+    ".nara-plugin-panel-v29",
+  ].join(",")).forEach((node) => node.remove());
+}
+
 function syncReadinessChrome() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
@@ -42,16 +56,7 @@ function syncReadinessChrome() {
   shell.querySelectorAll(":scope > .sn-mobile-nav, :scope > .sn-mobile-sheet-layer, .sn-side-close, .sn-side-bottom")
     .forEach((node) => node.remove());
 
-  const nav = shell.querySelector(":scope > .sn-side > nav");
-  const naraRoute = [...(nav?.querySelectorAll(":scope > button") || [])]
-    .find((button) => buttonLabel(button) === "Nara AI");
-  if (naraRoute) {
-    naraRoute.dataset.naraWorkspaceRoute = "true";
-    naraRoute.hidden = false;
-    naraRoute.disabled = false;
-    naraRoute.tabIndex = 0;
-    naraRoute.removeAttribute("aria-hidden");
-  }
+  removeNaraRouteAndConnectors(shell);
 
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
