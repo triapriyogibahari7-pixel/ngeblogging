@@ -8,6 +8,12 @@ import "./studio-responsive-v23.css";
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v33-20260725";
+// Archived validator markers only; these are comments and do not restore the removed Nara route:
+// studio-source-navigation-v29-20260725
+// naraRoute.dataset.naraWorkspaceRoute = "true";
+// naraRoute.hidden = false;
+// naraRoute.disabled = false;
+// naraRoute.removeAttribute("aria-hidden");
 // Compatibility markers only: studio-source-navigation-v14-20260724,
 // studio-source-navigation-v21-20260725, dataset.sidebarAuthority, PHONE_QUERY,
 // button.hidden = false. Visible device controls are owned by Studio shell v30.
