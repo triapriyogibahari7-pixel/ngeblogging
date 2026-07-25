@@ -23,8 +23,8 @@ test("v29 is the only active compact Studio authority", () => {
   assert.match(index, /nara-connectors-v29\.js/);
   assert.match(index, /nara-request-mode-v29\.js/);
   for (const legacy of ["studio-mobile-nara-v24.css", "studio-interaction-v25.css", "studio-device-sidebar-v26.css", "studio-mobile-widget-v28.css"]) {
-    assert.match(index, new RegExp(`${legacy.replaceAll(".", "\\.")}[^
-]+media="not all"`));
+    const escaped = legacy.replaceAll(".", "\\.");
+    assert.match(index, new RegExp(`${escaped}[^\\n]+media="not all"`));
   }
   assert.match(index, /type="application\/x-disabled" src="\/src\/studio-runtime-v23\.js"/);
   assert.doesNotMatch(index, /type="module" src="\/src\/(?:nara-mobile-window-v24|studio-device-sidebar-v26|studio-mobile-widget-v28)\.js"/);
