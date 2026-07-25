@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 const wrangler = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
 const temporary = JSON.parse(readFileSync(new URL("../wrangler.temporary.jsonc", import.meta.url), "utf8"));
+const productionConfig = JSON.parse(readFileSync(new URL("../wrangler.production.jsonc", import.meta.url), "utf8"));
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const worker = readFileSync(new URL("../cloudflare/worker.mjs", import.meta.url), "utf8");
 const workersAi = readFileSync(new URL("../server/workers-ai-nara.mjs", import.meta.url), "utf8");
@@ -59,7 +60,7 @@ test("only public Supabase configuration is stored in vars and every real secret
     assert.equal(Object.hasOwn(production.vars || {}, name), false, `${name} must not be a plaintext var`);
   }
 
-  for (const vars of [wrangler.vars || {}, production.vars || {}, temporary.vars || {}]) {
+  for (const vars of [wrangler.vars || {}, production.vars || {}, temporary.vars || {}, productionConfig.vars || {}]) {
     assertPublicSupabaseConfig(vars, "Worker");
     for (const name of [
       "SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID",
@@ -69,8 +70,14 @@ test("only public Supabase configuration is stored in vars and every real secret
     }
   }
 
-  assert.match(packageJson.scripts["deploy:cloudflare"], /--env production/);
-  assert.match(packageJson.scripts["cloudflare:dry-run"], /--env production/);
+  for (const scriptName of ["deploy:cloudflare", "cloudflare:dry-run"]) {
+    const script = String(packageJson.scripts[scriptName] || "");
+    assert.match(script, /--config wrangler\.production\.jsonc/, `${scriptName} must use the route-preserving production config`);
+    assert.doesNotMatch(script, /--env production/, `${scriptName} must not redeclare existing production routes`);
+  }
+  assert.equal(productionConfig.routes, undefined);
+  assert.equal(productionConfig.env, undefined);
+  assert.equal(productionConfig.keep_vars, true);
 });
 
 test("Worker uses portable Nara, Workers AI fallback, billing, image, and tenant SEO handlers", () => {
