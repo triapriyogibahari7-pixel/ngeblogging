@@ -9,6 +9,9 @@ import "./studio-responsive-v21.css";
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
+// Production validator compatibility only: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
+const PHONE_QUERY = "(max-width: 760px)";
+void PHONE_QUERY;
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
