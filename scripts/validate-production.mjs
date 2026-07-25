@@ -16,6 +16,7 @@ const requiredFiles = [
   "server/paypal-webhook-handler.mjs",
   "server/seo-handler.mjs",
   "wrangler.jsonc",
+  "wrangler.production.jsonc",
   "wrangler.temporary.jsonc",
   "public/_headers",
   "public/sw.js",
@@ -68,7 +69,11 @@ const packageJson = JSON.parse(await readFile(new URL("../package.json", import.
 for (const [name, version] of Object.entries({ ...packageJson.dependencies, ...packageJson.devDependencies })) {
   if (/^(latest|next)$|^[~^*]/.test(version)) throw new Error(`Dependency ${name} belum dipin: ${version}`);
 }
-if (!packageJson.scripts["deploy:cloudflare"]?.includes("--env production")) throw new Error("Deployment Cloudflare wajib memakai environment production.");
+for (const scriptName of ["deploy:cloudflare", "cloudflare:dry-run"]) {
+  const script = String(packageJson.scripts[scriptName] || "");
+  if (!script.includes("--config wrangler.production.jsonc")) throw new Error(`${scriptName} wajib memakai konfigurasi produksi yang menjaga route aktif.`);
+  if (script.includes("--env production")) throw new Error(`${scriptName} tidak boleh mendeklarasikan ulang route produksi yang sudah aktif.`);
+}
 if (!packageJson.scripts["cloudflare:preview-dry-run"]?.includes("wrangler versions upload")) throw new Error("Preview Cloudflare wajib divalidasi dengan versions upload.");
 
 const compose = await readFile(new URL("../compose.production.yml", import.meta.url), "utf8");
@@ -91,6 +96,7 @@ for (const key of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIE
 if (!/^LOCAL_PLAN_PRICES_JSON=\{.+\}$/m.test(productionEnv)) throw new Error("Harga gateway lokal belum didokumentasikan sebagai JSON server-only.");
 
 const wrangler = JSON.parse(await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
+const productionWrangler = JSON.parse(await readFile(new URL("../wrangler.production.jsonc", import.meta.url), "utf8"));
 const temporaryWrangler = JSON.parse(await readFile(new URL("../wrangler.temporary.jsonc", import.meta.url), "utf8"));
 const cloudflareProduction = wrangler.env?.production || {};
 const routeSet = (config) => new Set((config.routes || []).map((route) => typeof route === "string" ? route : route.pattern));
@@ -100,26 +106,29 @@ for (const [label, config] of [["default", wrangler], ["production", cloudflareP
     if (!routes.has(route)) throw new Error(`Route Cloudflare ${label} belum tersedia: ${route}`);
   }
 }
+if (productionWrangler.routes || productionWrangler.env) throw new Error("Konfigurasi upload produksi tidak boleh menulis ulang route atau environment yang sudah aktif.");
+if (productionWrangler.keep_vars !== true) throw new Error("Konfigurasi upload produksi wajib mempertahankan secret dan variable server yang sudah aktif.");
 if (temporaryWrangler.routes || temporaryWrangler.secrets) throw new Error("Temporary Cloudflare audit tidak boleh mengklaim route atau secret produksi.");
 if (!wrangler.compatibility_flags?.includes("nodejs_compat")) throw new Error("nodejs_compat belum aktif.");
 if (wrangler.assets?.not_found_handling !== "single-page-application") throw new Error("SPA fallback Cloudflare belum aktif.");
 if (wrangler.assets?.run_worker_first !== true) throw new Error("Worker harus berjalan sebelum aset agar SEO tenant dan endpoint discovery aktif.");
-if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada default dan produksi.");
+if (wrangler.ai?.binding !== "AI" || cloudflareProduction.ai?.binding !== "AI" || productionWrangler.ai?.binding !== "AI") throw new Error("Workers AI binding belum aktif pada default dan produksi.");
 for (const [key, expected] of Object.entries({
   CF_AI_MODEL: "@cf/zai-org/glm-4.7-flash",
   CF_AI_VISION_MODEL: "@cf/google/gemma-4-26b-a4b-it",
   CF_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
 })) {
-  if (wrangler.vars?.[key] !== expected || cloudflareProduction.vars?.[key] !== expected) throw new Error(`${key} belum dipin pada default dan produksi.`);
+  if (wrangler.vars?.[key] !== expected || cloudflareProduction.vars?.[key] !== expected || productionWrangler.vars?.[key] !== expected) throw new Error(`${key} belum dipin pada default dan produksi.`);
 }
 if (!/^cloudflare-worker-default-v\d+$/.test(String(wrangler.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime default Cloudflare belum berversi.");
 if (!/^cloudflare-worker-production-v\d+$/.test(String(cloudflareProduction.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime produksi Cloudflare belum berversi.");
-if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");
+if (!/^cloudflare-worker-production-v\d+$/.test(String(productionWrangler.vars?.NARA_RUNTIME || ""))) throw new Error("Runtime konfigurasi upload produksi belum berversi.");
+if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || productionWrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");
 if (cloudflareProduction.vars?.PAYPAL_ENV !== "sandbox") throw new Error("PayPal harus tetap sandbox sampai credential live dan webhook diverifikasi.");
 if (cloudflareProduction.vars?.PAYPAL_MERCHANT_EMAIL !== "triapriyogibahari9@gmail.com") throw new Error("Email merchant PayPal belum sesuai permintaan pemilik.");
 if (cloudflareProduction.vars?.AUTH_BRANDED_EMAIL_READY !== "false") throw new Error("Email bermerek tidak boleh diklaim aktif sebelum probe pengiriman lulus.");
 
-for (const vars of [wrangler.vars || {}, cloudflareProduction.vars || {}, temporaryWrangler.vars || {}]) {
+for (const vars of [wrangler.vars || {}, cloudflareProduction.vars || {}, productionWrangler.vars || {}, temporaryWrangler.vars || {}]) {
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(String(vars.SUPABASE_URL || ""))) throw new Error("Public Supabase URL Worker belum valid.");
   if (!/^(sb_publishable_|eyJ)/.test(String(vars.SUPABASE_PUBLISHABLE_KEY || ""))) throw new Error("Public Supabase publishable key Worker belum valid.");
   for (const forbidden of ["SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID", "LOCAL_PAYMENT_GATEWAY_SECRET", "QWEN_API_KEY"]) {
