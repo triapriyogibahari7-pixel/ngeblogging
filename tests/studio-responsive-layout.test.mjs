@@ -19,7 +19,7 @@ test("Studio loads v22 and the final geometry after v21 without activating v14",
   assert.ok(v21Position > -1);
   assert.ok(v22Position > v21Position);
   assert.ok(finalPosition > v22Position);
-  assert.doesNotMatch(index, /<link[^>]+href=["']\/src\/studio-v14-authority\.css["']/);
+  assert.match(index, /href="\/src\/studio-v14-authority\.css"[^>]+media="not all"/);
   assert.doesNotMatch(secure, /import\s+["']\.\/studio-v14-authority\.css["']/);
   assert.match(index, /studio-runtime-v22\.js/);
   assert.match(index, /width=device-width,initial-scale=1,viewport-fit=cover/);
@@ -54,6 +54,8 @@ test("Nara uses one floating launcher and fills every physical-phone viewport", 
   assert.match(v22, /\.sn-top-actions \.sn-nara-button,[\s\S]*\.ce-nara,[\s\S]*display: none !important/);
   assert.match(runtime, /data\.naraLauncherAuthority|dataset\.naraLauncherAuthority/);
   assert.match(runtime, /launchers\.forEach\(\(button, index\)/);
+  assert.match(secure, /button\.hidden = false/);
+  assert.match(secure, /button\.disabled = false/);
   assert.match(finalCss, /html\[data-nara-open="true"\] \.nara-floating-button/);
   assert.match(finalCss, /data-physical-screen-mobile="true"\] \.nara-assistant-layer/);
   assert.match(finalCss, /height: 100dvh !important/);
@@ -62,6 +64,7 @@ test("Nara uses one floating launcher and fills every physical-phone viewport", 
 test("editor and content remain constrained without horizontal overflow", () => {
   assert.match(v22, /\.ce-titlebar,[\s\S]*\.ce-tabs,[\s\S]*\.ce-ribbon/);
   assert.match(v22, /\.ce-workspace[\s\S]*display: block !important/);
-  assert.match(v21, /\.ce-paper[\s\S]*min-height:max\(480px/);
+  assert.match(v22, /\.ce-paper[\s\S]*min-height: 720px !important/);
+  assert.match(v21, /overflow-x: hidden !important/);
   assert.match(finalCss, /data-desktop-layout-requested="true"\] \.ce-workspace[\s\S]*350px/);
 });
