@@ -2,6 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ngeblogging",
   "main": "./cloudflare/worker-v37.mjs",
+  // Compatibility authority retained: worker-v35.mjs, 2026.07.25-studio-v35.
   "compatibility_date": "2026-07-23",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
