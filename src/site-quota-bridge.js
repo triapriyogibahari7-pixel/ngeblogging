@@ -7,7 +7,7 @@ function quotaText(quota) {
   const allowed = Number(quota?.allowed_limit || 12);
   const free = Number(quota?.free_limit || 12);
   const maximum = Number(quota?.maximum_limit || 12);
-  return `${current} dari ${allowed} situs digunakan · ${free} situs tersedia untuk setiap akun · maksimum ${maximum} situs per akun`;
+  return `${current} dari ${allowed} situs digunakan · ${free} situs pada paket gratis · maksimum ${maximum} situs per akun`;
 }
 
 async function loadQuota() {
