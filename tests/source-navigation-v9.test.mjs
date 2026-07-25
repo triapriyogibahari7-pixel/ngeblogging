@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 const studio = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const secure = readFileSync(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
+const sidebar = readFileSync(new URL("../src/studio-sidebar-v21.js", import.meta.url), "utf8");
 const enhancements = readFileSync(new URL("../src/studio-v9-enhancements.css", import.meta.url), "utf8");
 
 test("Studio source contains no bottom navigation or mobile more sheet", () => {
@@ -12,20 +13,23 @@ test("Studio source contains no bottom navigation or mobile more sheet", () => {
   assert.doesNotMatch(studio, /mobileMore/);
   assert.doesNotMatch(studio, /sn-side-bottom/);
   assert.match(secure, /sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
+  assert.match(sidebar, /\.sn-mobile-nav, \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
 });
 
 test("Studio has exactly one sidebar toggle and keeps settings and sign out in the main sidebar", () => {
   assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
   assert.match(studio, /<Settings\/><span>Pengaturan<\/span>/);
   assert.match(studio, /<LogOut\/><span>Keluar<\/span>/);
-  assert.match(secure, /studio-source-navigation-v14-20260724/);
-  assert.match(secure, /dataset\.sidebarAuthority = "single"/);
+  assert.match(secure, /studio-source-navigation-v21-20260725/);
+  assert.match(sidebar, /toggle\.dataset\.sidebarAuthority = "single-v21"/);
+  assert.match(sidebar, /sn-sidebar-edge-owner-v21/);
   assert.match(enhancements, /\.sn-side > nav \{[\s\S]*flex: 1 1 auto/);
 });
 
 test("Nara is outside the sidebar but its hidden workspace route remains operable", () => {
   assert.match(secure, /naraRoute\.dataset\.naraWorkspaceRoute = "true"/);
   assert.match(secure, /naraRoute\.hidden = true/);
+  assert.match(sidebar, /button\.dataset\.naraWorkspaceRoute = "true"/);
   assert.match(secure, /\.sn-top-actions \.sn-nara-button/);
   assert.match(secure, /button\.hidden = false/);
   assert.match(secure, /button\.disabled = false/);
