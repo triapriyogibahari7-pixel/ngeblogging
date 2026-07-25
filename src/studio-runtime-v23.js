@@ -1,7 +1,10 @@
 const RELEASE = "studio-runtime-v23-20260725";
+const MOBILE_FIX_RELEASE = "studio-mobile-interaction-v25-20260725";
 const MOBILE_BREAKPOINT = 760;
 const TABLET_BREAKPOINT = 1100;
 const LAYOUT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M9 9v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const SIDEBAR_CLOSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 9l-3 3 3 3"/></svg>';
+const SIDEBAR_OPEN_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M12 9l3 3-3 3"/></svg>';
 
 let frame = 0;
 let layoutTicket = 0;
@@ -16,9 +19,10 @@ function viewportProfile() {
   const screenShortSide = Math.min(screenWidth, screenHeight);
   const physicalPhone = screenShortSide <= MOBILE_BREAKPOINT;
   const viewportToScreenRatio = layoutWidth / screenWidth;
+  const compact = layoutWidth <= MOBILE_BREAKPOINT;
   const desktopRequested = physicalPhone
+    && !compact
     && (layoutWidth >= 780 || viewportToScreenRatio >= 1.18);
-  const compact = layoutWidth <= MOBILE_BREAKPOINT && !desktopRequested;
   const tablet = !compact && !desktopRequested && layoutWidth <= TABLET_BREAKPOINT;
   return {
     layoutWidth,
@@ -39,6 +43,7 @@ function syncDeviceFlags() {
   const profile = viewportProfile();
   const root = document.documentElement;
   root.dataset.studioRuntime = RELEASE;
+  root.dataset.studioMobileInteraction = MOBILE_FIX_RELEASE;
   root.dataset.studioAuthority = "v23";
   root.dataset.physicalPhone = String(profile.physicalPhone);
   root.dataset.physicalScreenMobile = String(profile.physicalPhone);
@@ -172,6 +177,7 @@ function syncSidebar(shell, profile) {
     .forEach((name) => toggle.classList.remove(name));
   toggle.classList.add("sn-sidebar-edge-owner-v23");
   toggle.dataset.sidebarAuthority = "single-v23";
+  toggle.dataset.sidebarInteraction = MOBILE_FIX_RELEASE;
 
   if (toggle.dataset.sidebarUserHandlerV23 !== "true") {
     toggle.dataset.sidebarUserHandlerV23 = "true";
@@ -200,6 +206,7 @@ function syncSidebar(shell, profile) {
   const open = !side.classList.contains("collapsed");
   shell.dataset.v23SidebarOpen = String(open);
   shell.dataset.sidebarMode = mode;
+  toggle.innerHTML = open ? SIDEBAR_CLOSE_ICON : SIDEBAR_OPEN_ICON;
   toggle.setAttribute("aria-controls", side.id);
   toggle.setAttribute("aria-expanded", String(open));
   toggle.setAttribute("aria-label", open ? "Tutup menu Studio" : "Buka menu Studio");
