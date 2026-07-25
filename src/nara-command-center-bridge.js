@@ -1,5 +1,5 @@
 const RELEASE = "nara-command-center-v24-20260725";
-// Compatibility marker for production validators: nara-command-center-v13-20260724.
+const PRODUCTION_COMPAT_RELEASE = "nara-command-center-v13-20260724";
 const ROOT = document.getElementById("root") || document.documentElement;
 const attached = new WeakSet();
 let scanFrame = 0;
@@ -195,6 +195,7 @@ ROOT.addEventListener("change", (event) => {
 
 function scan() {
   document.documentElement.dataset.naraCommandCenter = RELEASE;
+  document.documentElement.dataset.naraCommandCenterCompatibility = PRODUCTION_COMPAT_RELEASE;
   document.querySelectorAll(".nara-assistant-shell").forEach(attach);
 }
 
