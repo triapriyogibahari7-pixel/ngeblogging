@@ -55,11 +55,11 @@ export function getLayoutArea(areaId) {
 }
 
 export function createDefaultWidgetState(ids = ["search", "recent-posts", "categories", "newsletter"]) {
-  const defaults = ["header-right", "sidebar-right", "sidebar-right", "footer-left"];
+  const defaults = ["sidebar", "sidebar", "sidebar", "footer"];
   return ids.filter((id, index, all) => getWidget(id) && all.indexOf(id) === index).map((id, index) => ({
     id,
     enabled: true,
-    area: defaults[index] || "sidebar-right",
+    area: defaults[index] || "sidebar",
     order: index,
     title: getWidget(id)?.name || id,
     settings: {},
@@ -75,7 +75,7 @@ export function normalizeWidgetState(input, fallbackIds) {
     const widget = getWidget(id);
     if (!widget || seen.has(id)) return [];
     seen.add(id);
-    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar-right";
+    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar";
     return [{
       id,
       enabled: entry?.enabled !== false,
@@ -92,7 +92,7 @@ function escapeHtml(value) {
   return String(value || "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
 }
 
-export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right") {
+export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar") {
   const widget = getWidget(widgetId);
   if (!widget) return "";
   const heading = `<h3>${escapeHtml(title || widget.name)}</h3>`;
