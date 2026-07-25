@@ -6,6 +6,8 @@ import { BUILT_IN_THEMES, THEME_COUNT } from "../src/theme-catalog.js";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
 const authority = read("src/studio-v14-authority.css");
+const responsive = read("src/studio-responsive-v21.css");
+const sidebar = read("src/studio-sidebar-v21.js");
 const secure = read("src/StudioSecure.jsx");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
@@ -22,28 +24,40 @@ const workersAi = read("server/workers-ai-nara.mjs");
 const imageHandler = read("server/nara-image-handler.mjs");
 const wrangler = read("wrangler.jsonc");
 
-test("mobile Studio v14 uses one sidebar one toggle and a persistent icon rail", () => {
+test("mobile Studio v21 uses one sidebar one toggle and a persistent icon rail", () => {
   assert.match(index, /studio-v14-authority\.css/);
+  assert.match(index, /studio-responsive-v21\.css/);
+  assert.match(index, /studio-sidebar-v21\.js/);
   for (const legacy of [
     "studio-runtime-layout-guard.js",
     "studio-mobile-navigation.js",
     "studio-production-guard.js",
     "studio-v10-authority.css",
     "studio-v11-mobile-repair.css",
+    "studio-mobile-v15.css",
+    "studio-mobile-v16.css",
+    "studio-mobile-v17.css",
+    "studio-mobile-v18.css",
+    "studio-mobile-v19.css",
+    "studio-mobile-v20.css",
+    "nara-launcher-v20.js",
   ]) assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
-  assert.match(authority, /--sn-phone-rail: 58px/);
-  assert.match(authority, /--sn-phone-panel: min\(78vw, 272px\)/);
-  assert.match(authority, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-phone-rail\) !important/);
-  assert.match(authority, /\.sn-side\.collapsed \+ \.sn-main \.sn-icon[\s\S]*left: calc\(var\(--sn-phone-rail\) - 20px\) !important/);
-  assert.match(secure, /dataset\.sidebarAuthority = "single"/);
-  assert.match(secure, /sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
+  assert.match(responsive, /--sn-v21-mobile-rail: 64px/);
+  assert.match(responsive, /--sn-v21-mobile-panel: min\(86vw, 304px\)/);
+  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v21-mobile-rail\) !important/);
+  assert.match(responsive, /\.sn-icon\.sn-sidebar-edge-owner-v21[\s\S]*left: calc\(var\(--sn-v21-mobile-rail\) - 20px\) !important/);
+  assert.match(sidebar, /toggle\.dataset\.sidebarAuthority = "single-v21"/);
+  assert.match(sidebar, /\.sn-mobile-nav, \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
+  assert.match(secure, /studio-source-navigation-v21-20260725/);
 });
 
-test("Nara is outside the sidebar and remains clickable in healthy or degraded mode", () => {
-  assert.match(secure, /naraRoute\.dataset\.naraWorkspaceRoute = "true"/);
+test("Nara is outside the sidebar and remains directly clickable in healthy or degraded mode", () => {
+  assert.match(sidebar, /button\.dataset\.naraWorkspaceRoute = "true"/);
   assert.match(secure, /\.sn-top-actions \.sn-nara-button/);
-  assert.match(authority, /\.sn-top-actions \.sn-nara-button,[\s\S]*\.nara-floating-button[\s\S]*pointer-events: auto !important/);
-  assert.match(authority, /\.nara-assistant-layer[\s\S]*z-index: 30000 !important/);
+  assert.doesNotMatch(index, /nara-launcher-v20\.js/);
+  assert.match(assistant, /className="nara-floating-button" onClick=\{\(\) => setOpen\(true\)\}/);
+  assert.match(responsive, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
+  assert.match(responsive, /\.nara-assistant-layer[\s\S]*z-index: 2147483100 !important/);
   assert.match(secure, /document\.documentElement\.dataset\.naraReady/);
   assert.match(secure, /document\.documentElement\.dataset\.naraImageReady/);
 });
@@ -114,8 +128,8 @@ test("Nara has authenticated text vision and image fallbacks on Workers AI", () 
   assert.match(wrangler, /CF_AI_IMAGE_MODEL/);
 });
 
-test("v14 invalidates stale shell CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
+test("v21 invalidates stale shell CSS and JavaScript caches", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v14-20260724-v21/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
