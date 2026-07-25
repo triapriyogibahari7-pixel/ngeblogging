@@ -4,11 +4,12 @@ import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
 import "./studio-v14-authority.css";
+import "./studio-responsive-v21.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const PHONE_QUERY = "(max-width: 760px)";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v14-20260724";
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
@@ -64,7 +65,7 @@ function syncStudioChrome() {
 
   if (side && toggle) {
     side.id ||= "ngeblogging-studio-sidebar";
-    toggle.dataset.sidebarAuthority = "single";
+    toggle.dataset.sidebarAuthority ||= "single-v21";
     toggle.setAttribute("aria-controls", side.id);
     toggle.setAttribute("aria-expanded", String(!side.classList.contains("collapsed")));
     toggle.setAttribute("aria-label", side.classList.contains("collapsed") ? "Buka menu Studio" : "Tutup menu Studio");
