@@ -1,0 +1,550 @@
+/*
+ * Studio mobile content + Nara density authority v31 — 2026-07-25
+ * Scope: compact phone/tablet/PWA layouts only.
+ * Approved sidebar v30 and desktop/laptop geometry are intentionally untouched.
+ */
+
+/* ---------- Compact Studio pages: every view must flow vertically ---------- */
+html.studio-v30-compact .sn-main,
+html.studio-v30-compact .sn-main > *,
+html.studio-v30-compact .sn-view-pad,
+html.studio-v30-compact .sn-view-pad > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .sn-main {
+  width: 100% !important;
+  margin-left: 0 !important;
+  overflow-x: clip !important;
+}
+
+html.studio-v30-compact .sn-view-pad {
+  width: 100% !important;
+  padding: 18px 14px calc(96px + env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+}
+
+html.studio-v30-compact .sn-page-title,
+html.studio-v30-compact .sn-welcome,
+html.studio-v30-compact .sn-content-tools,
+html.studio-v30-compact .sn-memory > header,
+html.studio-v30-compact .sn-plugins > header {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+}
+
+html.studio-v30-compact .sn-page-title > div,
+html.studio-v30-compact .sn-welcome > div,
+html.studio-v30-compact .sn-page-title h1,
+html.studio-v30-compact .sn-page-title p,
+html.studio-v30-compact .sn-welcome h1,
+html.studio-v30-compact .sn-welcome p {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+html.studio-v30-compact .sn-page-title h1,
+html.studio-v30-compact .sn-welcome h1 {
+  margin: 6px 0 !important;
+  font-size: clamp(28px, 9vw, 42px) !important;
+  line-height: 1.04 !important;
+  letter-spacing: -.035em !important;
+}
+
+html.studio-v30-compact .sn-page-title p,
+html.studio-v30-compact .sn-welcome p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+html.studio-v30-compact .sn-page-title > button,
+html.studio-v30-compact .sn-page-title > a,
+html.studio-v30-compact .sn-page-title .sn-primary,
+html.studio-v30-compact .sn-page-title .sn-secondary-link,
+html.studio-v30-compact .sn-welcome > div:last-child,
+html.studio-v30-compact .sn-welcome > div:last-child > button,
+html.studio-v30-compact .sn-welcome > div:last-child > a {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .sn-welcome > div:last-child {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 9px !important;
+}
+
+html.studio-v30-compact .sn-welcome > div:last-child > button,
+html.studio-v30-compact .sn-welcome > div:last-child > a,
+html.studio-v30-compact .sn-page-title > button,
+html.studio-v30-compact .sn-page-title > a {
+  min-height: 50px !important;
+  justify-content: center !important;
+  padding-inline: 14px !important;
+  font-size: 13px !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+
+html.studio-v30-compact .sn-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+html.studio-v30-compact .sn-metrics article {
+  min-width: 0 !important;
+  padding: 15px !important;
+}
+
+html.studio-v30-compact .sn-metrics b { font-size: 30px !important; }
+html.studio-v30-compact .sn-metrics span { font-size: 12px !important; }
+html.studio-v30-compact .sn-metrics small { font-size: 10px !important; line-height: 1.4 !important; }
+
+html.studio-v30-compact .sn-home-grid,
+html.studio-v30-compact .sn-info-grid,
+html.studio-v30-compact .sn-settings-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+html.studio-v30-compact .sn-home-grid > section,
+html.studio-v30-compact .sn-home-grid > aside,
+html.studio-v30-compact .sn-info-grid article,
+html.studio-v30-compact .sn-settings-grid section {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .sn-home-grid > section > button {
+  grid-template-columns: 38px minmax(0, 1fr) auto !important;
+  gap: 9px !important;
+}
+
+html.studio-v30-compact .sn-home-grid > section b,
+html.studio-v30-compact .sn-home-grid > section small {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Posts / Pages become cards, not a squeezed desktop table. */
+html.studio-v30-compact .sn-content-card {
+  width: 100% !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+}
+
+html.studio-v30-compact .sn-content-tools label {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 46px !important;
+}
+
+html.studio-v30-compact .sn-content-tools input {
+  width: 100% !important;
+  min-width: 0 !important;
+  font-size: 14px !important;
+}
+
+html.studio-v30-compact .sn-table-head { display: none !important; }
+
+html.studio-v30-compact .sn-doc-row {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 38px !important;
+  grid-template-areas:
+    "title delete"
+    "status time" !important;
+  align-items: center !important;
+  gap: 8px 10px !important;
+  margin: 0 !important;
+  padding: 12px 4px !important;
+}
+
+html.studio-v30-compact .sn-doc-row > button:first-child {
+  grid-area: title !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .sn-doc-row > i {
+  grid-area: status !important;
+  justify-self: start !important;
+  width: fit-content !important;
+}
+
+html.studio-v30-compact .sn-doc-row > time {
+  grid-area: time !important;
+  justify-self: end !important;
+  white-space: nowrap !important;
+}
+
+html.studio-v30-compact .sn-doc-row > .trash {
+  grid-area: delete !important;
+  justify-self: end !important;
+}
+
+html.studio-v30-compact .sn-doc-row b {
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+html.studio-v30-compact .sn-doc-row small,
+html.studio-v30-compact .sn-doc-row time {
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+
+/* Members, domains, settings and launch rows must wrap instead of collide. */
+html.studio-v30-compact .sn-members article {
+  grid-template-columns: 40px minmax(0, 1fr) 34px !important;
+  grid-template-areas:
+    "avatar identity more"
+    ". role role" !important;
+  gap: 8px 10px !important;
+}
+html.studio-v30-compact .sn-members article > span { grid-area: avatar !important; }
+html.studio-v30-compact .sn-members article > div { grid-area: identity !important; min-width: 0 !important; }
+html.studio-v30-compact .sn-members article > i { grid-area: role !important; justify-self: start !important; }
+html.studio-v30-compact .sn-members article > button { grid-area: more !important; }
+
+html.studio-v30-compact .sn-domain-card {
+  grid-template-columns: 44px minmax(0, 1fr) !important;
+  align-items: start !important;
+  padding: 16px !important;
+}
+html.studio-v30-compact .sn-domain-card > i {
+  grid-column: 1 / -1 !important;
+  justify-self: start !important;
+}
+html.studio-v30-compact .sn-domain-card h2 {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  font-size: 23px !important;
+  line-height: 1.15 !important;
+}
+
+html.studio-v30-compact .sn-launch { padding: 16px !important; }
+html.studio-v30-compact .sn-launch > div {
+  grid-template-columns: 22px minmax(0, 1fr) !important;
+  gap: 7px 9px !important;
+}
+html.studio-v30-compact .sn-launch > div > span {
+  grid-column: 2 !important;
+  justify-self: start !important;
+  white-space: normal !important;
+}
+
+/* Nara Workspace and plugin pages become single-column mobile flows. */
+html.studio-v30-compact .nw-page {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 18px 14px calc(96px + env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .nw-page > header,
+html.studio-v30-compact .nw-memory > header,
+html.studio-v30-compact .nw-plugins > header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+html.studio-v30-compact .nw-page > header h1 {
+  font-size: clamp(28px, 9vw, 40px) !important;
+  line-height: 1.05 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.studio-v30-compact .nw-page > header .nw-primary,
+html.studio-v30-compact .nw-memory > header .nw-primary {
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+html.studio-v30-compact .nw-tabs {
+  width: 100% !important;
+  display: flex !important;
+  gap: 4px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+}
+html.studio-v30-compact .nw-tabs::-webkit-scrollbar { display: none !important; }
+html.studio-v30-compact .nw-tabs button { flex: 0 0 auto !important; padding-inline: 12px !important; }
+
+html.studio-v30-compact .nw-project-layout {
+  grid-template-columns: minmax(0, 1fr) !important;
+  min-height: 0 !important;
+  border-radius: 15px !important;
+}
+html.studio-v30-compact .nw-project-layout > aside {
+  width: 100% !important;
+  display: flex !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid #e1e7ef !important;
+}
+html.studio-v30-compact .nw-project-layout > aside > button { min-width: 180px !important; }
+html.studio-v30-compact .nw-project-layout > main { min-width: 0 !important; padding: 16px !important; }
+html.studio-v30-compact .nw-project-title { gap: 10px !important; }
+html.studio-v30-compact .nw-project-title h2 { font-size: 26px !important; overflow-wrap: anywhere !important; }
+html.studio-v30-compact .nw-guardrails,
+html.studio-v30-compact .nw-plugin-grid { grid-template-columns: minmax(0, 1fr) !important; }
+html.studio-v30-compact .nw-plugin-grid article {
+  grid-template-columns: 40px minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+html.studio-v30-compact .nw-plugin-grid article > button {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+/* ---------- Nara mini widget: compact typography, no overlapping rows ---------- */
+html.studio-v30-compact[data-studio-shell-authority-v30]
+  .nara-assistant-layer[data-nara-size-v30="mini"] > .nara-assistant-shell {
+  width: min(300px, calc(100vw - 24px)) !important;
+  height: min(590px, calc(100svh - 32px - env(safe-area-inset-bottom))) !important;
+  max-height: calc(100svh - 32px - env(safe-area-inset-bottom)) !important;
+  right: max(10px, env(safe-area-inset-right)) !important;
+  bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  border-radius: 18px !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto !important;
+}
+
+html.studio-v30-compact[data-studio-shell-authority-v30]
+  .nara-assistant-layer[data-nara-size-v30="compact"] > .nara-assistant-shell {
+  width: min(390px, calc(100vw - 20px)) !important;
+  height: min(72svh, 620px) !important;
+  max-height: calc(100svh - 20px - env(safe-area-inset-bottom)) !important;
+}
+
+html.studio-v30-compact .nara-assistant-shell[data-nara-controls-v30="true"] .nara-assistant-header {
+  min-height: 62px !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) repeat(4, 30px) !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 8px 9px !important;
+  overflow: hidden !important;
+}
+
+html.studio-v30-compact .nara-assistant-shell .nara-brand-orb {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+}
+html.studio-v30-compact .nara-assistant-shell .nara-brand-orb svg { width: 22px !important; height: 22px !important; }
+
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) > span {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) b {
+  font-size: 17px !important;
+  line-height: 1 !important;
+}
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) em,
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) i {
+  font-size: 9px !important;
+  line-height: 1 !important;
+}
+html.studio-v30-compact .nara-assistant-header > div:nth-child(2) small {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-top: 3px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 9px !important;
+  line-height: 1.2 !important;
+}
+
+html.studio-v30-compact .nara-assistant-header > button,
+html.studio-v30-compact .nara-size-toggle-v30,
+html.studio-v30-compact .nara-expand-toggle-v30 {
+  width: 30px !important;
+  min-width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+html.studio-v30-compact .nara-assistant-header > button svg,
+html.studio-v30-compact .nara-size-toggle-v30 svg,
+html.studio-v30-compact .nara-expand-toggle-v30 svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+html.studio-v30-compact .nara-context-bar {
+  min-height: 36px !important;
+  padding: 6px 10px !important;
+  gap: 6px !important;
+  overflow: hidden !important;
+}
+html.studio-v30-compact .nara-context-bar > span,
+html.studio-v30-compact .nara-context-bar > button {
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+}
+
+html.studio-v30-compact .nara-assistant-messages {
+  min-height: 0 !important;
+  padding: 10px !important;
+  gap: 10px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html.studio-v30-compact .nara-message {
+  min-width: 0 !important;
+  gap: 7px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+html.studio-v30-compact .nara-message-avatar {
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+}
+html.studio-v30-compact .nara-message-avatar svg { width: 15px !important; height: 15px !important; }
+html.studio-v30-compact .nara-message > div { min-width: 0 !important; max-width: calc(100% - 35px) !important; }
+html.studio-v30-compact .nara-message-content,
+html.studio-v30-compact .nara-message > div > p {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 10px 11px !important;
+  border-radius: 14px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  overflow-wrap: anywhere !important;
+}
+html.studio-v30-compact .nara-message-content p,
+html.studio-v30-compact .nara-message-content li,
+html.studio-v30-compact .nara-message-content span,
+html.studio-v30-compact .nara-message-content strong {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+html.studio-v30-compact .nara-message-action {
+  margin-top: 5px !important;
+  padding: 3px 5px !important;
+  font-size: 10px !important;
+}
+
+html.studio-v30-compact .nara-quick-prompts {
+  min-height: 40px !important;
+  display: flex !important;
+  gap: 6px !important;
+  padding: 6px 9px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+}
+html.studio-v30-compact .nara-quick-prompts::-webkit-scrollbar { display: none !important; }
+html.studio-v30-compact .nara-quick-prompts > button {
+  flex: 0 0 auto !important;
+  min-height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+}
+
+html.studio-v30-compact .nara-composer {
+  min-width: 0 !important;
+  padding: 8px 9px 9px !important;
+  overflow: visible !important;
+}
+html.studio-v30-compact .nara-composer textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 70px !important;
+  max-height: 120px !important;
+  padding: 10px 11px 38px !important;
+  border-radius: 14px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  resize: none !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .nara-composer-tools {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-top: -36px !important;
+  padding: 0 5px 5px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+}
+html.studio-v30-compact .nara-composer-tools::-webkit-scrollbar { display: none !important; }
+
+html.studio-v30-compact .nara-composer-tools > button,
+html.studio-v30-compact .nara-composer-tools .nara-attachment-menu-wrap > button,
+html.studio-v30-compact .nara-speaker-v30,
+html.studio-v30-compact .nara-send {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+}
+html.studio-v30-compact .nara-composer-tools svg { width: 16px !important; height: 16px !important; }
+
+html.studio-v30-compact .nara-select,
+html.studio-v30-compact .nara-mode-v30 {
+  flex: 0 0 auto !important;
+  min-width: 58px !important;
+  max-width: 86px !important;
+  min-height: 32px !important;
+  padding: 0 7px !important;
+  border-radius: 9px !important;
+  font-size: 9px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+html.studio-v30-compact .nara-select > span,
+html.studio-v30-compact .nara-mode-v30 > span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+html.studio-v30-compact .nara-attachment-menu,
+html.studio-v30-compact .nara-plugin-panel-v24,
+html.studio-v30-compact .nara-plugin-panel-v29 {
+  max-width: calc(100vw - 32px) !important;
+  max-height: min(52svh, 420px) !important;
+}
+
+/* Fullscreen remains intentionally untouched. */
