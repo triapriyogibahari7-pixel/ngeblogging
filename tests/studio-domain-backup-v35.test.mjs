@@ -52,6 +52,15 @@ test("every account quota and database authority are twelve sites", async () => 
   assert.match(migration, /private\.site_limit_for_plan\(account_plan\)/);
 });
 
+test("production worker reports v35 and twelve independent workspaces", async () => {
+  const config = await read("wrangler.production.jsonc");
+  const worker = await read("cloudflare/worker-v35.mjs");
+  assert.match(config, /worker-v35\.mjs/);
+  assert.match(config, /2026\.07\.25-studio-v35/);
+  assert.match(worker, /siteLimits: \{ free: 12, maximum: 12 \}/);
+  assert.match(worker, /independentSiteWorkspaces: true/);
+});
+
 test("PWA cache rotates to v35", async () => {
   const sw = await read("public/sw.js");
   assert.match(sw, /ngeblogging-app-v35-20260725/);
