@@ -1,0 +1,193 @@
+/* Studio v22 final geometry. Loaded after studio-responsive-v22.css. */
+
+:root {
+  --sn-v22-desktop-panel: 228px;
+  --sn-v22-desktop-rail: 72px;
+}
+
+html[data-nara-open="true"] .nara-floating-button,
+body.nara-open-v22 .nara-floating-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 760px) {
+  html:not([data-desktop-layout-requested="true"]) .sn-icon.sn-sidebar-edge-owner-v21,
+  html:not([data-desktop-layout-requested="true"]) .sn-icon[data-sidebar-authority] {
+    top: 76px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-top {
+    overflow: hidden !important;
+    padding-left: 8px !important;
+  }
+}
+
+html[data-desktop-layout-requested="true"],
+html[data-desktop-layout-requested="true"] body,
+html[data-desktop-layout-requested="true"] #root {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  overflow-x: hidden !important;
+  zoom: 1 !important;
+  transform: none !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-shell {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: var(--sn-v22-desktop-panel) !important;
+  min-width: var(--sn-v22-desktop-panel) !important;
+  max-width: var(--sn-v22-desktop-panel) !important;
+  height: 100dvh !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-side.collapsed {
+  width: var(--sn-v22-desktop-rail) !important;
+  min-width: var(--sn-v22-desktop-rail) !important;
+  max-width: var(--sn-v22-desktop-rail) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-main,
+html[data-desktop-layout-requested="true"] .sn-side + .sn-main {
+  width: calc(100% - var(--sn-v22-desktop-panel)) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - var(--sn-v22-desktop-panel)) !important;
+  margin: 0 0 0 var(--sn-v22-desktop-panel) !important;
+  overflow-x: hidden !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-side.collapsed + .sn-main {
+  width: calc(100% - var(--sn-v22-desktop-rail)) !important;
+  max-width: calc(100% - var(--sn-v22-desktop-rail)) !important;
+  margin-left: var(--sn-v22-desktop-rail) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-top {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 68px !important;
+  min-height: 68px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 16px !important;
+  overflow: visible !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-icon.sn-sidebar-edge-owner-v21,
+html[data-desktop-layout-requested="true"] .sn-icon[data-sidebar-authority] {
+  position: static !important;
+  inset: auto !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-workspace {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: min(360px, 38vw) !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-top-actions {
+  width: auto !important;
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 7px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-view-pad {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 28px 32px 72px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome,
+html[data-desktop-layout-requested="true"] .sn-page-title {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child {
+  width: auto !important;
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 8px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child > * {
+  width: auto !important;
+  max-width: none !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome h1,
+html[data-desktop-layout-requested="true"] .sn-page-title h1 {
+  max-width: 900px !important;
+  font-size: clamp(32px, 3.2vw, 48px) !important;
+  line-height: 1.06 !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-home-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr) !important;
+}
+
+html[data-desktop-layout-requested="true"] .ce-workspace {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 350px !important;
+}
+
+html[data-desktop-layout-requested="true"] .ce-sidebar {
+  position: sticky !important;
+  top: 168px !important;
+  max-height: calc(100dvh - 168px) !important;
+  overflow: auto !important;
+  border-left: 1px solid #dbe2eb !important;
+  border-top: 0 !important;
+}
+
+html[data-physical-screen-mobile="true"] .nara-assistant-layer,
+html[data-physical-screen-mobile="true"] .nara-assistant-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+
+html[data-physical-screen-mobile="true"] .nara-assistant-shell {
+  box-shadow: none !important;
+  contain: none !important;
+}
