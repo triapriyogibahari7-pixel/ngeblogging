@@ -1,0 +1,1081 @@
+/* Ngeblogging Studio v23 — single responsive authority.
+   Compatibility markers only (not active authorities):
+   studio-responsive-v21.css, studio-responsive-v22.css, studio-v22-final.css,
+   studio-v14-authority.css, --sn-v21-mobile-rail, --sn-v21-mobile-panel.
+*/
+
+:root {
+  --sn-v23-blue: #2d6edf;
+  --sn-v23-ink: #17253c;
+  --sn-v23-line: #dfe6ef;
+  --sn-v23-surface: #ffffff;
+  --sn-v23-canvas: #f5f7fb;
+  --sn-v23-rail: 64px;
+  --sn-v23-panel: min(86vw, 292px);
+  --sn-v23-tablet-rail: 72px;
+  --sn-v23-desktop-panel: 220px;
+  --sn-v23-desktop-rail: 70px;
+  --sn-v23-safe-bottom: max(14px, env(safe-area-inset-bottom));
+  --sn-v23-safe-right: max(14px, env(safe-area-inset-right));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+body {
+  background: var(--sn-v23-canvas) !important;
+}
+
+html[data-nara-open="true"],
+html[data-nara-open="true"] body,
+body.nara-open-v23 {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+/* One Nara entry point: the floating React launcher. */
+.sn-top-actions .sn-nara-button,
+.ce-nara,
+.sn-side [data-nara-workspace-route="true"],
+.nara-floating-proxy-v14,
+.nara-floating-proxy-v15,
+.nara-floating-proxy-v16,
+.nara-floating-proxy-v17,
+.nara-floating-proxy-v18,
+.nara-floating-proxy-v19,
+.nara-floating-proxy-v20,
+.nara-floating-proxy-v21,
+.nara-floating-proxy-v22,
+.nara-floating-button[data-nara-launcher-authority="single-v23"][aria-hidden="true"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.nara-floating-button {
+  position: fixed !important;
+  right: var(--sn-v23-safe-right) !important;
+  bottom: var(--sn-v23-safe-bottom) !important;
+  left: auto !important;
+  top: auto !important;
+  width: 64px !important;
+  min-width: 64px !important;
+  max-width: 64px !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+  display: grid !important;
+  grid-template: 1fr / 1fr !important;
+  place-items: center !important;
+  padding: 7px !important;
+  margin: 0 !important;
+  border-radius: 19px !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  touch-action: manipulation !important;
+  pointer-events: auto !important;
+  z-index: 2147483000 !important;
+}
+
+.nara-floating-button > span {
+  grid-area: 1 / 1 !important;
+  width: 48px !important;
+  height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-floating-button svg {
+  width: 25px !important;
+  height: 25px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-floating-button > b,
+.nara-floating-button > small {
+  display: none !important;
+}
+
+html[data-nara-open="true"] .nara-floating-button,
+body.nara-open-v23 .nara-floating-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Full viewport Nara on every physical phone, including browser Desktop-site. */
+html[data-physical-phone="true"] .nara-assistant-layer,
+html[data-physical-screen-mobile="true"] .nara-assistant-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  place-items: stretch !important;
+  justify-content: stretch !important;
+  align-items: stretch !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  filter: none !important;
+  contain: none !important;
+  z-index: 2147483600 !important;
+}
+
+html[data-physical-phone="true"] .nara-assistant-backdrop,
+html[data-physical-screen-mobile="true"] .nara-assistant-backdrop {
+  display: none !important;
+}
+
+html[data-physical-phone="true"] .nara-assistant-shell,
+html[data-physical-screen-mobile="true"] .nara-assistant-shell {
+  position: relative !important;
+  inset: auto !important;
+  grid-area: 1 / 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  filter: none !important;
+  contain: none !important;
+}
+
+html[data-nara-open="true"] .sn-shell,
+html[data-nara-open="true"] .sn-main,
+html[data-nara-open="true"] .ce-app,
+body.nara-open-v23 .sn-shell,
+body.nara-open-v23 .sn-main,
+body.nara-open-v23 .ce-app {
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+  contain: none !important;
+  will-change: auto !important;
+}
+
+.nara-assistant-header,
+.nara-context-bar,
+.nara-quick-prompts,
+.nara-composer {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+}
+
+.nara-assistant-messages {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+.nara-message,
+.nara-message > div,
+.nara-message-content,
+.nara-rich-text,
+.nara-composer,
+.nara-composer textarea {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.nara-composer {
+  padding-bottom: var(--sn-v23-safe-bottom) !important;
+}
+
+.nara-composer input[type="file"] {
+  display: none !important;
+}
+
+/* Stable Studio shell. */
+.sn-shell,
+.sn-main,
+.sn-view-pad,
+.sn-welcome,
+.sn-page-title,
+.sn-metrics,
+.sn-home-grid,
+.sn-content-card,
+.sn-info-grid,
+.sn-settings-grid,
+.sn-domain-card,
+.sn-launch {
+  min-width: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+  background: var(--sn-v23-canvas) !important;
+}
+
+.sn-side {
+  z-index: 30000 !important;
+  background: #fff !important;
+}
+
+.sn-side > nav {
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin !important;
+}
+
+.sn-main {
+  min-width: 0 !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+  background: var(--sn-v23-canvas) !important;
+}
+
+.sn-top {
+  isolation: isolate !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.sn-workspace,
+.sn-workspace > div,
+.sn-workspace b,
+.sn-top-actions,
+.sn-view-pad,
+.sn-home-grid > section,
+.sn-home-grid > aside,
+.sn-doc-row,
+.sn-doc-row > button:first-child,
+.sn-doc-row > button:first-child > div {
+  min-width: 0 !important;
+}
+
+.sn-workspace b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.sn-top-actions {
+  flex: 0 0 auto !important;
+}
+
+.sn-view-site,
+.sn-view-site svg,
+.sn-avatar,
+.sn-avatar svg,
+.sn-icon,
+.sn-icon svg {
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.sn-view-site,
+.sn-icon {
+  display: grid !important;
+  place-items: center !important;
+}
+
+.sn-view-site svg,
+.sn-icon svg {
+  margin: auto !important;
+}
+
+.sn-welcome h1,
+.sn-page-title h1 {
+  max-width: 100% !important;
+  text-wrap: balance !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+.sn-mobile-nav,
+.sn-mobile-sheet-layer,
+.sn-side-close,
+.sn-side-bottom {
+  display: none !important;
+}
+
+.sn-sidebar-scrim-v23 {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 29900 !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: rgba(18, 35, 58, .46) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+.sn-sidebar-scrim-v23[hidden] {
+  display: none !important;
+}
+
+/* Editor base: no overlapping chrome and no blank gray column under short content. */
+.ce-app,
+.ce-titlebar,
+.ce-tabs,
+.ce-ribbon,
+.ce-workspace,
+.ce-paper-shell,
+.ce-paper,
+.ce-sidebar,
+.ce-word-status {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.ce-app {
+  width: 100% !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+  background: var(--sn-v23-canvas) !important;
+}
+
+.ce-titlebar,
+.ce-tabs,
+.ce-ribbon {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.ce-tabs,
+.ce-ribbon {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+  scrollbar-width: none !important;
+}
+
+.ce-tabs::-webkit-scrollbar,
+.ce-ribbon::-webkit-scrollbar {
+  display: none !important;
+}
+
+.ce-workspace {
+  width: 100% !important;
+  align-items: stretch !important;
+}
+
+.ce-paper-shell {
+  align-self: stretch !important;
+  min-height: calc(100dvh - 168px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #fff !important;
+}
+
+.ce-paper {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  min-height: calc(100dvh - 220px) !important;
+  margin: 0 !important;
+  background: #fff !important;
+}
+
+.ce-word-status {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin: 0 !important;
+  background: #fff !important;
+}
+
+.ce-sidebar {
+  align-self: stretch !important;
+  background: #fff !important;
+}
+
+/* Real desktop and Desktop-site requested on a phone. */
+@media (min-width: 761px) {
+  .sn-side {
+    width: var(--sn-v23-desktop-panel) !important;
+    min-width: var(--sn-v23-desktop-panel) !important;
+    max-width: var(--sn-v23-desktop-panel) !important;
+  }
+
+  .sn-side.collapsed {
+    width: var(--sn-v23-desktop-rail) !important;
+    min-width: var(--sn-v23-desktop-rail) !important;
+    max-width: var(--sn-v23-desktop-rail) !important;
+  }
+
+  .sn-main,
+  .sn-side + .sn-main {
+    width: calc(100% - var(--sn-v23-desktop-panel)) !important;
+    max-width: calc(100% - var(--sn-v23-desktop-panel)) !important;
+    margin-left: var(--sn-v23-desktop-panel) !important;
+  }
+
+  .sn-side.collapsed + .sn-main {
+    width: calc(100% - var(--sn-v23-desktop-rail)) !important;
+    max-width: calc(100% - var(--sn-v23-desktop-rail)) !important;
+    margin-left: var(--sn-v23-desktop-rail) !important;
+  }
+
+  .sn-icon.sn-sidebar-edge-owner-v23,
+  .sn-icon[data-sidebar-authority="single-v23"] {
+    position: static !important;
+    inset: auto !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+  }
+
+  .ce-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 360px) !important;
+    align-items: stretch !important;
+  }
+
+  .ce-paper-shell {
+    height: 100% !important;
+    min-height: 100% !important;
+    padding-bottom: 0 !important;
+  }
+
+  .ce-paper {
+    min-height: max(calc(100dvh - 220px), 980px) !important;
+  }
+
+  .ce-sidebar {
+    position: relative !important;
+    top: auto !important;
+    max-height: none !important;
+    border-top: 0 !important;
+    border-left: 1px solid var(--sn-v23-line) !important;
+  }
+}
+
+/* Tablet keeps a persistent icon rail and desktop-like content. */
+html[data-layout-mode="tablet"] .sn-side {
+  width: var(--sn-v23-tablet-rail) !important;
+  min-width: var(--sn-v23-tablet-rail) !important;
+  max-width: var(--sn-v23-tablet-rail) !important;
+}
+
+html[data-layout-mode="tablet"] .sn-side .sn-logo b,
+html[data-layout-mode="tablet"] .sn-side .sn-new span,
+html[data-layout-mode="tablet"] .sn-side nav span {
+  display: none !important;
+}
+
+html[data-layout-mode="tablet"] .sn-side .sn-new,
+html[data-layout-mode="tablet"] .sn-side > nav > button {
+  width: 48px !important;
+  min-width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  margin-inline: auto !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+html[data-layout-mode="tablet"] .sn-main,
+html[data-layout-mode="tablet"] .sn-side + .sn-main,
+html[data-layout-mode="tablet"] .sn-side.collapsed + .sn-main {
+  width: calc(100% - var(--sn-v23-tablet-rail)) !important;
+  max-width: calc(100% - var(--sn-v23-tablet-rail)) !important;
+  margin-left: var(--sn-v23-tablet-rail) !important;
+}
+
+/* Compact phone/PWA. Prefix every rule so Desktop-site Android is never forced into mobile. */
+@media (max-width: 760px) {
+  html:not([data-desktop-layout-requested="true"]) .sn-side {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: var(--sn-v23-panel) !important;
+    min-width: var(--sn-v23-panel) !important;
+    max-width: var(--sn-v23-panel) !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    transition: width .18s ease !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed {
+    width: var(--sn-v23-rail) !important;
+    min-width: var(--sn-v23-rail) !important;
+    max-width: var(--sn-v23-rail) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed .sn-logo {
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed .sn-logo b,
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed .sn-new span,
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed > nav > button span {
+    display: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed .sn-new,
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed > nav > button {
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    margin: 2px auto !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed .sn-new svg,
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed > nav > button svg {
+    width: 21px !important;
+    height: 21px !important;
+    margin: auto !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-main,
+  html:not([data-desktop-layout-requested="true"]) .sn-side + .sn-main,
+  html:not([data-desktop-layout-requested="true"]) .sn-side.collapsed + .sn-main,
+  html:not([data-desktop-layout-requested="true"]) .sn-side:not(.collapsed) + .sn-main {
+    width: calc(100% - var(--sn-v23-rail)) !important;
+    min-width: 0 !important;
+    max-width: calc(100% - var(--sn-v23-rail)) !important;
+    margin: 0 0 0 var(--sn-v23-rail) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-icon.sn-sidebar-edge-owner-v23,
+  html:not([data-desktop-layout-requested="true"]) .sn-icon[data-sidebar-authority="single-v23"] {
+    position: fixed !important;
+    left: calc(var(--sn-v23-rail) - 20px) !important;
+    top: 76px !important;
+    z-index: 30100 !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    box-shadow: 0 8px 22px rgba(17, 43, 78, .18) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-shell[data-v23-sidebar-open="true"] .sn-icon.sn-sidebar-edge-owner-v23,
+  html:not([data-desktop-layout-requested="true"]) .sn-shell[data-v23-sidebar-open="true"] .sn-icon[data-sidebar-authority="single-v23"] {
+    left: calc(var(--sn-v23-panel) - 20px) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-top {
+    height: 64px !important;
+    min-height: 64px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 7px 7px 28px !important;
+    overflow: hidden !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-workspace {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
+    padding: 4px !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-workspace > span {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-workspace b {
+    max-width: clamp(84px, 31vw, 176px) !important;
+    font-size: 10px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-workspace > svg,
+  html:not([data-desktop-layout-requested="true"]) .sn-cloud,
+  html:not([data-desktop-layout-requested="true"]) .sn-install-app,
+  html:not([data-desktop-layout-requested="true"]) .sn-top-actions > button[aria-label="Cari"] {
+    display: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-top-actions {
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 5px !important;
+    margin: 0 !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-view-site,
+  html:not([data-desktop-layout-requested="true"]) .sn-avatar {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 40px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-view-site span {
+    display: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-view-pad {
+    width: 100% !important;
+    min-height: calc(100dvh - 64px) !important;
+    padding: 20px 14px 96px !important;
+    overflow-x: hidden !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-welcome,
+  html:not([data-desktop-layout-requested="true"]) .sn-page-title {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-welcome > div:last-child {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-welcome > div:last-child > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-welcome h1,
+  html:not([data-desktop-layout-requested="true"]) .sn-page-title h1 {
+    margin-top: 8px !important;
+    font-size: clamp(32px, 9.2vw, 46px) !important;
+    line-height: 1.04 !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-home-grid,
+  html:not([data-desktop-layout-requested="true"]) .sn-info-grid,
+  html:not([data-desktop-layout-requested="true"]) .sn-settings-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-table-head {
+    display: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-doc-row {
+    grid-template-columns: minmax(0, 1fr) auto 34px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-doc-row time {
+    display: none !important;
+  }
+
+  /* Mobile editor. */
+  html:not([data-desktop-layout-requested="true"]) .ce-titlebar {
+    top: 0 !important;
+    z-index: 220 !important;
+    height: 62px !important;
+    min-height: 62px !important;
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    padding: 6px 8px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-back {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-file {
+    overflow: hidden !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-file > svg {
+    display: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-file input {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    font-size: 11px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-actions {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 40px !important;
+    gap: 5px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-actions button,
+  html:not([data-desktop-layout-requested="true"]) .ce-actions .ce-primary {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+    font-size: 0 !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-actions svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin: auto !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-tabs {
+    top: 62px !important;
+    z-index: 219 !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    gap: 22px !important;
+    padding: 0 14px !important;
+    white-space: nowrap !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-tabs button {
+    flex: 0 0 auto !important;
+    height: 42px !important;
+    padding: 0 2px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-ribbon {
+    top: 104px !important;
+    z-index: 218 !important;
+    min-height: 56px !important;
+    max-height: 64px !important;
+    align-items: center !important;
+    padding: 5px 7px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-ribbon > section {
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-ribbon > section > span,
+  html:not([data-desktop-layout-requested="true"]) .ce-ribbon .selects {
+    display: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-workspace {
+    display: block !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-paper-shell {
+    min-height: auto !important;
+    padding: 18px 9px 0 !important;
+    background: #fff !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-paper {
+    width: 100% !important;
+    min-height: max(70dvh, 720px) !important;
+    padding: 42px 25px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-paper h1 {
+    font-size: clamp(34px, 10vw, 44px) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-sidebar {
+    position: static !important;
+    top: auto !important;
+    max-height: none !important;
+    border-left: 0 !important;
+    border-top: 1px solid var(--sn-v23-line) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .ce-word-status {
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 14px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-assistant-header {
+    height: 64px !important;
+    min-height: 64px !important;
+    grid-template-columns: 42px minmax(0, 1fr) 36px 36px !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-context-bar {
+    min-height: 40px !important;
+    padding: 0 10px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-assistant-messages {
+    padding: 16px 11px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-message > div {
+    max-width: 92% !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-quick-prompts {
+    padding: 8px 9px 4px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-composer {
+    padding: 8px 9px var(--sn-v23-safe-bottom) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-composer-tools {
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 2px !important;
+    padding: 5px !important;
+    min-width: 0 !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-composer-tools > button,
+  html:not([data-desktop-layout-requested="true"]) .nara-attachment-menu-wrap > button {
+    width: 31px !important;
+    min-width: 31px !important;
+    flex-basis: 31px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-select {
+    min-width: 0 !important;
+    padding: 0 5px !important;
+    font-size: 8px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-select.intelligence {
+    width: 70px !important;
+    margin-left: auto !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .nara-select.model {
+    width: 88px !important;
+  }
+}
+
+/* Desktop-site Android: force actual desktop geometry even when a browser reports a narrow media query. */
+html[data-desktop-layout-requested="true"] .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: var(--sn-v23-desktop-panel) !important;
+  min-width: var(--sn-v23-desktop-panel) !important;
+  max-width: var(--sn-v23-desktop-panel) !important;
+  height: 100dvh !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-side.collapsed {
+  width: var(--sn-v23-desktop-rail) !important;
+  min-width: var(--sn-v23-desktop-rail) !important;
+  max-width: var(--sn-v23-desktop-rail) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-main,
+html[data-desktop-layout-requested="true"] .sn-side + .sn-main {
+  width: calc(100% - var(--sn-v23-desktop-panel)) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - var(--sn-v23-desktop-panel)) !important;
+  margin: 0 0 0 var(--sn-v23-desktop-panel) !important;
+  overflow-x: hidden !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-side.collapsed + .sn-main {
+  width: calc(100% - var(--sn-v23-desktop-rail)) !important;
+  max-width: calc(100% - var(--sn-v23-desktop-rail)) !important;
+  margin-left: var(--sn-v23-desktop-rail) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-icon.sn-sidebar-edge-owner-v23,
+html[data-desktop-layout-requested="true"] .sn-icon[data-sidebar-authority="single-v23"] {
+  position: static !important;
+  inset: auto !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-top {
+  height: 68px !important;
+  min-height: 68px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 16px !important;
+  overflow: visible !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-workspace {
+  width: auto !important;
+  max-width: min(360px, 38vw) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-top-actions {
+  width: auto !important;
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 7px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-view-pad {
+  width: 100% !important;
+  padding: 28px 32px 72px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome,
+html[data-desktop-layout-requested="true"] .sn-page-title {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child {
+  width: auto !important;
+  display: flex !important;
+  gap: 8px !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child > * {
+  width: auto !important;
+  max-width: none !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome h1,
+html[data-desktop-layout-requested="true"] .sn-page-title h1 {
+  max-width: 900px !important;
+  font-size: clamp(32px, 3.2vw, 48px) !important;
+  line-height: 1.06 !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-home-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr) !important;
+}
+
+html[data-desktop-layout-requested="true"] .ce-workspace {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px) !important;
+  align-items: stretch !important;
+}
+
+html[data-desktop-layout-requested="true"] .ce-paper-shell {
+  height: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #fff !important;
+}
+
+html[data-desktop-layout-requested="true"] .ce-paper {
+  flex: 1 1 auto !important;
+  min-height: max(calc(100dvh - 220px), 980px) !important;
+  background: #fff !important;
+}
+
+html[data-desktop-layout-requested="true"] .ce-sidebar {
+  position: relative !important;
+  top: auto !important;
+  max-height: none !important;
+  border-left: 1px solid var(--sn-v23-line) !important;
+  border-top: 0 !important;
+}
+
+@supports not (height: 100dvh) {
+  .sn-shell,
+  .sn-side,
+  .ce-app,
+  html[data-physical-phone="true"] .nara-assistant-layer,
+  html[data-physical-phone="true"] .nara-assistant-shell {
+    min-height: 100vh !important;
+    height: 100vh !important;
+  }
+}

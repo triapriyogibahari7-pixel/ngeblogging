@@ -9,9 +9,8 @@ const manifest = JSON.parse(read("public/site.webmanifest"));
 const serviceWorker = read("public/sw.js");
 const pwa = read("src/pwa-runtime.js");
 const faviconBridge = read("src/site-favicon-bridge.js");
-const authority = read("src/studio-v14-authority.css");
-const responsive = read("src/studio-responsive-v21.css");
-const sidebar = read("src/studio-sidebar-v21.js");
+const responsive = read("src/studio-responsive-v23.css");
+const runtime = read("src/studio-runtime-v23.js");
 const secure = read("src/StudioSecure.jsx");
 const studio = read("src/StudioNext.jsx");
 const seo = read("server/seo-handler.mjs");
@@ -33,7 +32,7 @@ const LEGACY_UI = [
   "nara-launcher-v20.js",
 ];
 
-test("main favicon and PWA v21 install without interaction-cancelling reloads", () => {
+test("main favicon and PWA v23 install without interaction-cancelling reloads", () => {
   assert.match(index, /rel="icon" href="\/favicon\.svg"/);
   assert.match(index, /rel="manifest" href="\/site\.webmanifest"/);
   assert.match(index, /apple-mobile-web-app-title/);
@@ -43,11 +42,11 @@ test("main favicon and PWA v21 install without interaction-cancelling reloads", 
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724-v21/);
+  assert.match(serviceWorker, /ngeblogging-app-v23-20260725/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
-  assert.match(pwa, /ngeblogging-pwa-v21-20260725/);
+  assert.match(pwa, /ngeblogging-pwa-v23-20260725/);
   assert.match(pwa, /beforeinstallprompt/);
   assert.match(pwa, /navigator\.serviceWorker\.register\("\/sw\.js"/);
   assert.match(pwa, /Never reload during a click, login, upload, edit, or Nara request/);
@@ -78,19 +77,18 @@ test("Cloudflare edge emits tenant favicon manifest and structured SEO", () => {
   ]) assert.ok(seo.includes(marker), marker);
 });
 
-test("Studio v21 has one accessible toggle, persistent icon rail, and no bottom menu", () => {
-  assert.match(index, /studio-v14-authority\.css/);
-  assert.match(index, /studio-responsive-v21\.css/);
-  assert.match(index, /studio-sidebar-v21\.js/);
-  for (const legacy of LEGACY_UI) assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
+test("Studio v23 has one accessible toggle, persistent icon rail, and no bottom menu", () => {
+  assert.match(index, /studio-responsive-v23\.css/);
+  assert.match(index, /studio-runtime-v23\.js/);
+  for (const legacy of LEGACY_UI) assert.doesNotMatch(index, new RegExp(`<script[^>]+${legacy.replaceAll(".", "\\.")}|<link[^>]+${legacy.replaceAll(".", "\\.")}`));
   assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
   assert.doesNotMatch(studio, /sn-mobile-nav|sn-mobile-sheet-layer|sn-side-bottom/);
-  assert.match(secure, /studio-source-navigation-v21-20260725/);
-  assert.match(sidebar, /toggle\.dataset\.sidebarAuthority = "single-v21"/);
-  assert.match(sidebar, /button\.dataset\.naraWorkspaceRoute = "true"/);
-  assert.match(responsive, /--sn-v21-mobile-rail: 64px/);
-  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v21-mobile-rail\) !important/);
-  assert.match(responsive, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom,[\s\S]*display: none !important/);
-  assert.match(authority, /\.nara-composer input\[type="file"\][\s\S]*display: none !important/);
+  assert.match(secure, /studio-source-navigation-v23-20260725/);
+  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v23"/);
+  assert.match(runtime, /button\.dataset\.naraWorkspaceRoute = "true"/);
+  assert.match(responsive, /--sn-v23-rail: 64px/);
+  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v23-rail\) !important/);
+  assert.match(responsive, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
+  assert.match(responsive, /\.nara-composer input\[type="file"\][\s\S]*display: none !important/);
   assert.match(responsive, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
 });
