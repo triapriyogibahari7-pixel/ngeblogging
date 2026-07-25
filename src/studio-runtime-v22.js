@@ -1,4 +1,4 @@
-const RELEASE = "studio-runtime-v22-20260725";
+const RELEASE = "studio-runtime-v22-1-20260725";
 let frame = 0;
 
 function viewportProfile() {
@@ -7,9 +7,20 @@ function viewportProfile() {
   const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
   const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
   const physicalScreenMobile = Math.min(screenWidth, screenHeight) <= 760;
-  const compactViewport = layoutWidth <= 760;
-  const desktopSitePhone = physicalScreenMobile && !compactViewport;
-  return { layoutWidth, layoutHeight, screenWidth, screenHeight, physicalScreenMobile, compactViewport, desktopSitePhone };
+  const viewportToScreenRatio = layoutWidth / Math.max(1, screenWidth);
+  const desktopSitePhone = physicalScreenMobile
+    && (layoutWidth > 760 || viewportToScreenRatio >= 1.18);
+  const compactViewport = layoutWidth <= 760 && !desktopSitePhone;
+  return {
+    layoutWidth,
+    layoutHeight,
+    screenWidth,
+    screenHeight,
+    physicalScreenMobile,
+    compactViewport,
+    desktopSitePhone,
+    viewportToScreenRatio,
+  };
 }
 
 function syncDeviceFlags() {
@@ -20,9 +31,11 @@ function syncDeviceFlags() {
   root.dataset.desktopSitePhone = String(profile.desktopSitePhone);
   root.dataset.desktopLayoutRequested = String(profile.desktopSitePhone);
   root.dataset.physicalMobile = String(profile.compactViewport);
+  root.dataset.compactViewport = String(profile.compactViewport);
   root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
+  root.style.setProperty("--sn-viewport-screen-ratio", profile.viewportToScreenRatio.toFixed(3));
 }
 
 function normalizeNara() {

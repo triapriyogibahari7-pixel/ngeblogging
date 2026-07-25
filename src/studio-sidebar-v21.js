@@ -7,7 +7,13 @@ let lastMobile = null;
 const LAYOUT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M9 9v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
 function isMobileViewport() {
-  return window.matchMedia(MOBILE_QUERY).matches;
+  const layoutWidth = Math.max(1, Number(window.innerWidth) || 1);
+  const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
+  const screenHeight = Math.max(1, Number(window.screen?.height) || layoutWidth);
+  const physicalScreenMobile = Math.min(screenWidth, screenHeight) <= 760;
+  const desktopLayoutRequested = document.documentElement.dataset.desktopLayoutRequested === "true"
+    || (physicalScreenMobile && (layoutWidth > 760 || layoutWidth / screenWidth >= 1.18));
+  return window.matchMedia(MOBILE_QUERY).matches && !desktopLayoutRequested;
 }
 
 function textLabel(button) {
@@ -169,7 +175,7 @@ function syncShell(shell) {
   shell.querySelectorAll(".sn-mobile-nav, .sn-mobile-sheet-layer, .sn-side-close, .sn-side-bottom")
     .forEach((node) => node.remove());
 
-  document.querySelectorAll(".sn-top-actions .sn-nara-button, .nara-floating-button").forEach((button) => {
+  document.querySelectorAll(".nara-floating-button").forEach((button) => {
     button.type = "button";
     button.hidden = false;
     button.disabled = false;
@@ -178,6 +184,12 @@ function syncShell(shell) {
     button.style.removeProperty("visibility");
     button.style.removeProperty("opacity");
     button.style.removeProperty("pointer-events");
+  });
+
+  document.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
+    button.hidden = true;
+    button.tabIndex = -1;
+    button.setAttribute("aria-hidden", "true");
   });
 }
 
