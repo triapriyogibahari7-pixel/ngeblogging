@@ -9,7 +9,8 @@ const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v23-20260725";
 // Compatibility markers only: studio-source-navigation-v14-20260724,
-// studio-source-navigation-v21-20260725, dataset.sidebarAuthority, PHONE_QUERY.
+// studio-source-navigation-v21-20260725, dataset.sidebarAuthority, PHONE_QUERY,
+// button.hidden = false. The visible launcher is owned only by runtime v23.
 const PHONE_QUERY = "(max-width: 760px)";
 void PHONE_QUERY;
 
