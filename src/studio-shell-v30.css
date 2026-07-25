@@ -1,0 +1,601 @@
+/* Ngeblogging Studio shell authority v30.
+   Scope: authenticated Studio navigation and the Nara assistant window.
+   Public landing/theme/tenant renderers are not targeted. */
+
+:root {
+  --sn-v30-blue: #2d6edf;
+  --sn-v30-ink: #14243b;
+  --sn-v30-muted: #6f7d91;
+  --sn-v30-line: #dce4ee;
+  --sn-v30-panel: min(86vw, 368px);
+  --sn-v30-tablet-panel: min(54vw, 420px);
+  --sn-v30-desktop-open: 220px;
+  --sn-v30-desktop-closed: 70px;
+  --sn-v30-safe-bottom: max(12px, env(safe-area-inset-bottom));
+  --sn-v30-safe-right: max(12px, env(safe-area-inset-right));
+}
+
+/* Disable every older mobile shell control so only v30 can own the UI. */
+html[data-studio-shell-authority-v30] .sn-mobile-v29-header,
+html[data-studio-shell-authority-v30] .sn-mobile-v29-search,
+html[data-studio-shell-authority-v30] .sn-mobile-v29-launcher,
+html[data-studio-shell-authority-v30] .sn-mobile-v29-scrim,
+html[data-studio-shell-authority-v30] .sn-device-toggle-v26,
+html[data-studio-shell-authority-v30] .sn-device-toggle-v27,
+html[data-studio-shell-authority-v30] .sn-device-scrim-v27,
+html[data-studio-shell-authority-v30] .sn-sidebar-scrim-v23,
+html[data-studio-shell-authority-v30] .sn-mobile-nav,
+html[data-studio-shell-authority-v30] .sn-mobile-sheet-layer,
+html[data-studio-shell-authority-v30] .sn-side-close,
+html[data-studio-shell-authority-v30] .sn-side-bottom {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.sn-mobile-v30-header,
+.sn-mobile-v30-search,
+.sn-mobile-v30-launcher,
+.sn-mobile-v30-scrim {
+  display: none;
+}
+
+/* Desktop/laptop remains locked to the approved geometry. */
+html.studio-v30-desktop .sn-shell > .sn-side,
+html.studio-v30-laptop .sn-shell > .sn-side,
+html.studio-v30-desktop-phone .sn-shell > .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: var(--sn-v30-desktop-open) !important;
+  min-width: var(--sn-v30-desktop-open) !important;
+  max-width: var(--sn-v30-desktop-open) !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-right: 1px solid var(--sn-v30-line) !important;
+  background: #fff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  z-index: 30000 !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-side.collapsed,
+html.studio-v30-laptop .sn-shell > .sn-side.collapsed,
+html.studio-v30-desktop-phone .sn-shell > .sn-side.collapsed {
+  width: var(--sn-v30-desktop-closed) !important;
+  min-width: var(--sn-v30-desktop-closed) !important;
+  max-width: var(--sn-v30-desktop-closed) !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-side + .sn-main,
+html.studio-v30-laptop .sn-shell > .sn-side + .sn-main,
+html.studio-v30-desktop-phone .sn-shell > .sn-side + .sn-main {
+  width: calc(100% - var(--sn-v30-desktop-open)) !important;
+  max-width: calc(100% - var(--sn-v30-desktop-open)) !important;
+  margin-left: var(--sn-v30-desktop-open) !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v30-laptop .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v30-desktop-phone .sn-shell > .sn-side.collapsed + .sn-main {
+  width: calc(100% - var(--sn-v30-desktop-closed)) !important;
+  max-width: calc(100% - var(--sn-v30-desktop-closed)) !important;
+  margin-left: var(--sn-v30-desktop-closed) !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-main > .sn-top > .sn-icon,
+html.studio-v30-laptop .sn-shell > .sn-main > .sn-top > .sn-icon,
+html.studio-v30-desktop-phone .sn-shell > .sn-main > .sn-top > .sn-icon {
+  position: static !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  clip: auto !important;
+  clip-path: none !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+/* Phone/mobile/app/tablet drawer. It is flush to the left edge with no gutter. */
+html.studio-v30-compact .sn-shell {
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+html.studio-v30-compact .sn-shell > .sn-main,
+html.studio-v30-compact .sn-shell > .sn-side + .sn-main,
+html.studio-v30-compact .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v30-compact .sn-shell > .sn-side:not(.collapsed) + .sn-main {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+html.studio-v30-compact .sn-shell > .sn-main > .sn-top > .sn-icon {
+  position: absolute !important;
+  width: 1px !important;
+  min-width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+}
+
+html.studio-v30-compact .sn-shell > .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: var(--sn-v30-panel) !important;
+  min-width: var(--sn-v30-panel) !important;
+  max-width: var(--sn-v30-panel) !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(39, 67, 101, .14) !important;
+  border-radius: 0 22px 22px 0 !important;
+  background: #fff !important;
+  box-shadow: 20px 0 54px rgba(7, 24, 48, .22) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate3d(0, 0, 0) !important;
+  transition: transform .22s ease !important;
+  z-index: 52000 !important;
+}
+
+html.studio-v30-compact .sn-shell > .sn-side.collapsed {
+  width: var(--sn-v30-panel) !important;
+  min-width: var(--sn-v30-panel) !important;
+  max-width: var(--sn-v30-panel) !important;
+  margin: 0 !important;
+  transform: translate3d(-101%, 0, 0) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.studio-v30-tablet { --sn-v30-panel: var(--sn-v30-tablet-panel); }
+html.studio-v30-compact .sn-side > .sn-logo { display: none !important; }
+
+html.studio-v30-compact .sn-mobile-v30-header {
+  flex: 0 0 auto !important;
+  min-height: 76px !important;
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 44px !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: max(14px, env(safe-area-inset-top)) 16px 10px !important;
+  border-bottom: 1px solid rgba(39, 67, 101, .10) !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+
+.sn-mobile-v30-brand {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: var(--sn-v30-ink) !important;
+}
+
+.sn-mobile-v30-logo,
+.sn-mobile-v30-launcher strong {
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: none !important;
+  border-radius: 12px !important;
+  background: #f6f9fd !important;
+  font: 800 29px/1 "DM Sans", sans-serif !important;
+  letter-spacing: -.07em !important;
+  color: #111d31 !important;
+  white-space: nowrap !important;
+}
+
+.sn-mobile-v30-logo span,
+.sn-mobile-v30-launcher strong span { color: var(--sn-v30-blue) !important; }
+
+.sn-mobile-v30-brand b {
+  min-width: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font: 700 18px/1.2 "DM Sans", sans-serif !important;
+  color: var(--sn-v30-ink) !important;
+}
+
+.sn-mobile-v30-close {
+  width: 44px !important;
+  height: 44px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: #647287 !important;
+  touch-action: manipulation !important;
+}
+
+.sn-mobile-v30-close:hover,
+.sn-mobile-v30-close:focus-visible {
+  background: #edf3fb !important;
+  color: var(--sn-v30-blue) !important;
+  outline: none !important;
+}
+
+.sn-mobile-v30-close svg { width: 22px !important; height: 22px !important; }
+
+html.studio-v30-compact .sn-mobile-v30-search {
+  flex: 0 0 auto !important;
+  min-height: 48px !important;
+  width: auto !important;
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 12px 16px 8px !important;
+  padding: 0 14px !important;
+  position: static !important;
+  inset: auto !important;
+  border: 1px solid #d9e1ec !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 8px rgba(14, 35, 65, .05) !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+}
+
+.sn-mobile-v30-search svg { width: 20px !important; height: 20px !important; color: #8290a3 !important; }
+.sn-mobile-v30-search input {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 44px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: static !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: var(--sn-v30-ink) !important;
+  font: 500 15px/1 "DM Sans", sans-serif !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-side > .sn-new {
+  flex: 0 0 54px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 54px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  margin: 8px 16px 12px !important;
+  padding: 0 18px !important;
+  position: static !important;
+  inset: auto !important;
+  border-radius: 15px !important;
+  background: linear-gradient(135deg, #2d6edf, #367cf2) !important;
+  box-shadow: 0 12px 28px rgba(45, 110, 223, .23) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-side > .sn-new span {
+  display: inline !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+html.studio-v30-compact .sn-side > nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 6px 14px calc(18px + env(safe-area-inset-bottom)) !important;
+  position: static !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: none !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .sn-side > nav::-webkit-scrollbar { display: none !important; }
+
+html.studio-v30-compact .sn-side > nav > button {
+  flex: 0 0 50px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 50px !important;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) !important;
+  align-items: center !important;
+  justify-items: start !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  position: relative !important;
+  inset: auto !important;
+  border-radius: 13px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-side > nav > button svg {
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html.studio-v30-compact .sn-side > nav > button span {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+html.studio-v30-compact .sn-side > nav > button.active {
+  background: #eaf2ff !important;
+  color: #2564cc !important;
+}
+
+html.studio-v30-compact .sn-side > nav > button[data-v30-search-hidden="true"] { display: none !important; }
+
+/* Closed mobile trigger lives at the top-left, not in the middle of the page. */
+html.studio-v30-compact .sn-mobile-v30-launcher {
+  position: fixed !important;
+  left: 0 !important;
+  top: max(14px, env(safe-area-inset-top)) !important;
+  width: 56px !important;
+  min-width: 56px !important;
+  height: 56px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #d8e1ed !important;
+  border-left: 0 !important;
+  border-radius: 0 16px 16px 0 !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 12px 30px rgba(10,31,60,.20) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  z-index: 51800 !important;
+}
+
+html.studio-v30-compact .sn-shell[data-v30-sidebar-open="true"] > .sn-mobile-v30-launcher {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.studio-v30-compact .sn-mobile-v30-launcher strong {
+  width: 44px !important;
+  height: 44px !important;
+  font-size: 25px !important;
+  background: transparent !important;
+}
+
+html.studio-v30-compact .sn-mobile-v30-scrim {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: rgba(16,30,50,.48) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 51900 !important;
+}
+
+html.studio-v30-compact .sn-mobile-v30-scrim[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Nara fallback applies immediately, even before JS decorates a portal outside #root. */
+html[data-studio-shell-authority-v30] .nara-assistant-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  z-index: 2147483600 !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-assistant-layer > .nara-assistant-backdrop {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-assistant-layer > .nara-assistant-shell {
+  position: fixed !important;
+  inset: auto var(--sn-v30-safe-right) var(--sn-v30-safe-bottom) auto !important;
+  width: min(430px, calc(100vw - 24px)) !important;
+  height: min(640px, calc(100dvh - 24px - env(safe-area-inset-bottom))) !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 24px) !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-bottom)) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0,1fr) auto auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(42,72,111,.18) !important;
+  border-radius: 20px !important;
+  background: #fff !important;
+  box-shadow: 0 24px 72px rgba(8,25,49,.30) !important;
+  pointer-events: auto !important;
+  contain: layout paint !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact[data-studio-shell-authority-v30] .nara-assistant-layer > .nara-assistant-shell {
+  width: min(330px, calc(100vw - 20px)) !important;
+  height: min(430px, calc(100dvh - 20px - env(safe-area-inset-bottom))) !important;
+  inset: auto max(10px, env(safe-area-inset-right)) var(--sn-v30-safe-bottom) auto !important;
+}
+
+html[data-nara-v30-open="true"] .nara-floating-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-assistant-layer[data-nara-size-v30="mini"] > .nara-assistant-shell {
+  width: min(350px, calc(100vw - 24px)) !important;
+  height: min(470px, calc(100dvh - 24px - env(safe-area-inset-bottom))) !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-assistant-layer[data-nara-size-v30="compact"] > .nara-assistant-shell {
+  width: min(430px, calc(100vw - 24px)) !important;
+  height: min(640px, calc(100dvh - 24px - env(safe-area-inset-bottom))) !important;
+}
+
+html.studio-v30-compact[data-studio-shell-authority-v30] .nara-assistant-layer[data-nara-size-v30="mini"] > .nara-assistant-shell {
+  width: min(320px, calc(100vw - 20px)) !important;
+  height: min(410px, calc(100dvh - 20px - env(safe-area-inset-bottom))) !important;
+}
+
+html.studio-v30-compact[data-studio-shell-authority-v30] .nara-assistant-layer[data-nara-size-v30="compact"] > .nara-assistant-shell {
+  width: min(430px, calc(100vw - 20px)) !important;
+  height: min(72dvh, 610px) !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-assistant-layer[data-nara-size-v30="expanded"] {
+  background: #fff !important;
+  pointer-events: auto !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-assistant-layer[data-nara-size-v30="expanded"] > .nara-assistant-shell {
+  inset: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-size-toggle-v30,
+html[data-studio-shell-authority-v30] .nara-expand-toggle-v30,
+html[data-studio-shell-authority-v30] .nara-speaker-v30 {
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #647287 !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-size-toggle-v30:hover,
+html[data-studio-shell-authority-v30] .nara-expand-toggle-v30:hover,
+html[data-studio-shell-authority-v30] .nara-speaker-v30:hover,
+html[data-studio-shell-authority-v30] .nara-speaker-v30.active {
+  background: #edf3fb !important;
+  color: var(--sn-v30-blue) !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-size-toggle-v30 svg,
+html[data-studio-shell-authority-v30] .nara-expand-toggle-v30 svg,
+html[data-studio-shell-authority-v30] .nara-speaker-v30 svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-mode-v30 {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 32px !important;
+  padding: 0 10px !important;
+  border: 1px solid #dce4ee !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  color: #66758a !important;
+  font-size: 11px !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-mode-v30 select {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+}
