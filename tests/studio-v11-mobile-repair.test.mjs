@@ -5,15 +5,28 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
 const authority = read("src/studio-v14-authority.css");
+const responsive = read("src/studio-responsive-v21.css");
 const secure = read("src/StudioSecure.jsx");
+const sidebar = read("src/studio-sidebar-v21.js");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
 
-test("v14 authority is the only final Studio layout authority", () => {
+test("v21 responsive authority is the final Studio layout authority", () => {
   assert.match(index, /studio-v14-authority\.css/);
-  for (const legacy of ["studio-v10-authority.css", "studio-v11-mobile-repair.css", "studio-production-guard.js", "studio-mobile-navigation.js"]) {
-    assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
-  }
+  assert.match(index, /studio-responsive-v21\.css/);
+  assert.ok(index.indexOf("studio-responsive-v21.css") > index.indexOf("studio-v14-authority.css"));
+  for (const legacy of [
+    "studio-v10-authority.css",
+    "studio-v11-mobile-repair.css",
+    "studio-production-guard.js",
+    "studio-mobile-navigation.js",
+    "studio-mobile-v15.css",
+    "studio-mobile-v16.css",
+    "studio-mobile-v17.css",
+    "studio-mobile-v18.css",
+    "studio-mobile-v19.css",
+    "studio-mobile-v20.css",
+  ]) assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
 });
 
 test("native camera image and text inputs never leak into the visible Nara UI", () => {
@@ -29,26 +42,28 @@ test("native camera image and text inputs never leak into the visible Nara UI", 
 });
 
 test("closing the phone drawer does not cancel the selected navigation action", () => {
-  assert.match(secure, /const closeAfterSelection = \(event\) =>/);
-  assert.match(secure, /requestAnimationFrame\(\(\) =>/);
-  assert.match(secure, /if \(side && toggle && !side\.classList\.contains\("collapsed"\)\) toggle\.click\(\)/);
-  assert.doesNotMatch(secure, /event\.preventDefault\(\)/);
-  assert.doesNotMatch(secure, /event\.stopPropagation\(\)/);
+  assert.match(sidebar, /function closeAfterMobileSelection\(event\)/);
+  assert.match(sidebar, /requestAnimationFrame\(\(\) => toggle\.click\(\)\)/);
+  assert.match(sidebar, /if \(side && toggle && !side\.classList\.contains\("collapsed"\)\)/);
+  assert.doesNotMatch(sidebar.match(/function closeAfterMobileSelection[\s\S]*?\n\}/)?.[0] || "", /event\.preventDefault\(\)/);
+  assert.doesNotMatch(sidebar.match(/function closeAfterMobileSelection[\s\S]*?\n\}/)?.[0] || "", /event\.stopPropagation\(\)/);
+  assert.doesNotMatch(secure, /closeAfterSelection/);
 });
 
 test("Studio observers watch mounted nodes without a class-mutation feedback loop", () => {
   assert.match(secure, /new MutationObserver\(sync\)/);
   assert.match(secure, /childList: true, subtree: true/);
+  assert.match(sidebar, /new MutationObserver\(\(mutations\) =>/);
   assert.doesNotMatch(secure, /attributeFilter:/);
   assert.doesNotMatch(secure, /attributes: true/);
 });
 
 test("mobile layout keeps a compact icon rail and a full-width usable Nara composer", () => {
-  assert.match(authority, /--sn-phone-rail: 58px/);
-  assert.match(authority, /html\[data-physical-mobile="true"\] \.sn-main,[\s\S]*width: auto !important/);
-  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-composer-tools[\s\S]*grid-template-columns:/);
-  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-assistant-layer[\s\S]*z-index: 2147483100 !important/);
-  assert.match(authority, /html\[data-physical-mobile="true"\] \.nara-floating-button[\s\S]*display: grid !important/);
+  assert.match(responsive, /--sn-v21-mobile-rail: 64px/);
+  assert.match(responsive, /\.sn-main,[\s\S]*width: calc\(100% - var\(--sn-v21-mobile-rail\)\) !important/);
+  assert.match(responsive, /\.nara-composer-tools[\s\S]*grid-template-columns:/);
+  assert.match(responsive, /\.nara-assistant-layer[\s\S]*z-index: 2147483100 !important/);
+  assert.match(responsive, /\.nara-floating-button[\s\S]*display: grid !important/);
 });
 
 test("all requested Nara capabilities remain in source and one command center owns them", () => {
