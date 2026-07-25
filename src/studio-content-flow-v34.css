@@ -1,0 +1,388 @@
+/*
+ * Studio content-flow authority v34 — 2026-07-25
+ * Scope: route content, Settings/Favicon, Domain and Home headings only.
+ * Locked sidebar v30 and locked Nara v33 are intentionally not targeted.
+ */
+
+html[data-studio-content-flow-v34] .sn-shell,
+html[data-studio-content-flow-v34] .sn-shell * {
+  box-sizing: border-box;
+}
+
+html[data-studio-content-flow-v34] .sn-main > .sn-view-pad {
+  position: relative !important;
+  inset: auto !important;
+  isolation: isolate !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+}
+
+/* Every route heading owns a real row. Actions can never float over the next card. */
+html[data-studio-content-flow-v34] .sn-page-title {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 16px !important;
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-content-flow-v34] .sn-page-title > div,
+html[data-studio-content-flow-v34] .sn-page-title small,
+html[data-studio-content-flow-v34] .sn-page-title h1,
+html[data-studio-content-flow-v34] .sn-page-title p {
+  position: static !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] .sn-page-title small {
+  display: block !important;
+  margin: 0 !important;
+  color: #2d6edf !important;
+  font: 900 10px/1.35 "DM Sans", sans-serif !important;
+  letter-spacing: .14em !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-content-flow-v34] .sn-page-title h1 {
+  margin: 8px 0 8px !important;
+  color: #17253c !important;
+  font: 600 34px/1.08 "Playfair Display", serif !important;
+  letter-spacing: -.025em !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+html[data-studio-content-flow-v34] .sn-page-title p {
+  margin: 0 !important;
+  color: #748196 !important;
+  font: 400 14px/1.6 "DM Sans", sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-content-flow-v34] .sn-page-title > a,
+html[data-studio-content-flow-v34] .sn-page-title > button,
+html[data-studio-content-flow-v34] .sn-page-title > .sn-secondary-link {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  align-self: start !important;
+  justify-self: end !important;
+  min-width: 160px !important;
+  max-width: min(100%, 280px) !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] .sn-page-title + * {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  clear: both !important;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+
+/* Domain: preview remains in the title row, hostname remains inside its own card. */
+html[data-studio-content-flow-v34] .sn-domain-card {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 50px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 15px !important;
+  margin: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+html[data-studio-content-flow-v34] .sn-domain-card > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-content-flow-v34] .sn-domain-card small,
+html[data-studio-content-flow-v34] .sn-domain-card h2,
+html[data-studio-content-flow-v34] .sn-domain-card p,
+html[data-studio-content-flow-v34] .sn-domain-card > i {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] .sn-domain-card h2 {
+  max-width: 100% !important;
+  margin: 7px 0 9px !important;
+  font: 600 clamp(24px, 3vw, 34px)/1.08 "Playfair Display", serif !important;
+  letter-spacing: -.02em !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+html[data-studio-content-flow-v34] .sn-domain-card p {
+  max-width: 100% !important;
+  margin: 0 !important;
+  font: 400 13px/1.55 "DM Sans", sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Settings bridges are forced after the form and isolated from the page title. */
+html[data-studio-content-flow-v34] .sn-settings-grid,
+html[data-studio-content-flow-v34] .sn-settings-grid > section,
+html[data-studio-content-flow-v34] .sn-settings-extras,
+html[data-studio-content-flow-v34] .sn-backup-host,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings {
+  display: block !important;
+  width: 100% !important;
+  margin: 18px 0 0 !important;
+  padding: 22px !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  contain: layout paint !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 16px !important;
+  margin: 0 !important;
+  padding: 0 0 18px !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header > div,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header small,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header h2,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header p,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-state {
+  position: static !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header small {
+  display: block !important;
+  margin: 0 !important;
+  color: #2d6edf !important;
+  font: 900 10px/1.35 "DM Sans", sans-serif !important;
+  letter-spacing: .13em !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header h2 {
+  margin: 8px 0 7px !important;
+  color: #17253c !important;
+  font: 600 26px/1.12 "Playfair Display", serif !important;
+  letter-spacing: -.015em !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header p {
+  margin: 0 !important;
+  color: #68788f !important;
+  font: 400 13px/1.6 "DM Sans", sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-state {
+  align-self: start !important;
+  justify-self: end !important;
+  width: max-content !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+}
+
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-layout,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-preview-wrap,
+html[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-controls {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+/* Home: welcome block and “Konten terbaru” get separate, non-overlapping rows. */
+html[data-studio-content-flow-v34] .sn-welcome {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 0 20px !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-content-flow-v34] .sn-welcome small,
+html[data-studio-content-flow-v34] .sn-welcome h1,
+html[data-studio-content-flow-v34] .sn-welcome p {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] .sn-welcome small {
+  font: 900 10px/1.35 "DM Sans", sans-serif !important;
+  letter-spacing: .14em !important;
+}
+
+html[data-studio-content-flow-v34] .sn-home-grid {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-top: 18px !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-content-flow-v34] .sn-home-grid > section,
+html[data-studio-content-flow-v34] .sn-home-grid > aside {
+  position: relative !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-content-flow-v34] .sn-home-grid > section > header {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 4px 4px 12px !important;
+  transform: none !important;
+}
+
+html[data-studio-content-flow-v34] .sn-home-grid > section > header h2 {
+  position: static !important;
+  inset: auto !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  color: #17253c !important;
+  font: 600 21px/1.2 "Playfair Display", serif !important;
+  letter-spacing: -.01em !important;
+  overflow-wrap: anywhere !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-page-title {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 14px !important;
+  margin-bottom: 20px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-page-title h1 {
+  font-size: clamp(32px, 9vw, 42px) !important;
+  line-height: 1.04 !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-page-title > a,
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-page-title > button,
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-page-title > .sn-secondary-link {
+  justify-self: stretch !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 52px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-domain-card {
+  grid-template-columns: 36px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+  padding: 18px 16px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-domain-card > i {
+  grid-column: 1 / -1 !important;
+  justify-self: start !important;
+  margin-top: 4px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-domain-card h2 {
+  font-size: clamp(25px, 7.8vw, 32px) !important;
+  line-height: 1.08 !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings {
+  margin-top: 14px !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-state {
+  justify-self: start !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-layout {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 16px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-welcome {
+  margin-bottom: 18px !important;
+}
+
+html.studio-v30-compact[data-studio-content-flow-v34] .sn-home-grid {
+  margin-top: 16px !important;
+}
+
+@media (max-width: 360px) {
+  html.studio-v30-compact[data-studio-content-flow-v34] .sn-page-title h1 {
+    font-size: 31px !important;
+  }
+
+  html.studio-v30-compact[data-studio-content-flow-v34] #ngeblogging-site-favicon-settings .sf-header h2 {
+    font-size: 23px !important;
+  }
+}
