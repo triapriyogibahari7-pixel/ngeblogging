@@ -1,5 +1,6 @@
-const RELEASE = "ngeblogging-pwa-v21-20260725";
-// Compatibility marker retained for production validators: ngeblogging-pwa-v14-20260724
+const RELEASE = "ngeblogging-pwa-v23-20260725";
+// Compatibility markers retained for production validators:
+// ngeblogging-pwa-v21-20260725, ngeblogging-pwa-v14-20260724.
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
 let installButton = null;
@@ -12,16 +13,14 @@ function viewportProfile() {
   const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
   const physicalShortSide = Math.min(screenWidth, screenHeight);
   const physicalScreenMobile = physicalShortSide <= 760;
-
-  // Responsive layout follows the browser viewport. When Android requests
-  // “Desktop site” it exposes a desktop-width viewport, so the Studio must use
-  // the real desktop/tablet layout instead of counter-scaling back to mobile.
-  const compactViewport = layoutWidth <= 760;
-  const desktopLayoutRequested = physicalScreenMobile && layoutWidth > 760;
+  const viewportToScreenRatio = layoutWidth / screenWidth;
+  const desktopLayoutRequested = physicalScreenMobile
+    && (layoutWidth >= 780 || viewportToScreenRatio >= 1.18);
+  const compactViewport = layoutWidth <= 760 && !desktopLayoutRequested;
 
   let mode = "desktop";
   if (compactViewport) mode = "mobile";
-  else if (layoutWidth <= 1024) mode = "tablet";
+  else if (!desktopLayoutRequested && layoutWidth <= 1100) mode = "tablet";
   else if (layoutWidth <= 1440) mode = "laptop";
 
   return {
@@ -29,6 +28,7 @@ function viewportProfile() {
     physicalScreenMobile,
     compactViewport,
     desktopLayoutRequested,
+    viewportToScreenRatio,
     browserScale: 1,
     layoutWidth,
     layoutHeight,
@@ -45,9 +45,10 @@ function syncDeviceMode() {
   const profile = viewportProfile();
   const root = document.documentElement;
   root.dataset.deviceMode = profile.mode;
+  root.dataset.physicalPhone = String(profile.physicalScreenMobile);
   root.dataset.physicalMobile = String(profile.compactViewport);
   root.dataset.physicalScreenMobile = String(profile.physicalScreenMobile);
-  root.dataset.desktopSitePhone = "false";
+  root.dataset.desktopSitePhone = String(profile.desktopLayoutRequested);
   root.dataset.desktopLayoutRequested = String(profile.desktopLayoutRequested);
   root.dataset.desktopCompactPhone = "false";
   root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
@@ -57,6 +58,7 @@ function syncDeviceMode() {
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
+  root.style.setProperty("--sn-viewport-screen-ratio", profile.viewportToScreenRatio.toFixed(3));
 }
 
 function standalone() {
