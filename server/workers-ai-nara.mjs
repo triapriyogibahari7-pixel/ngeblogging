@@ -1,13 +1,11 @@
 const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
+const FALLBACK_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const DEFAULT_VISION_MODEL = "@cf/google/gemma-4-26b-a4b-it";
+const FALLBACK_VISION_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
 const MAX_MESSAGE_LENGTH = 8_000;
 const MAX_HISTORY_ITEMS = 12;
 const MAX_IMAGE_DATA_URL_LENGTH = 8 * 1024 * 1024;
 
-// Supabase publishable configuration is intentionally public and already ships
-// in the browser bundle. Keeping the same verified project here prevents the
-// Worker runtime from losing authentication when a deployment environment only
-// injects Vite build variables and not Worker variables.
 const DEFAULT_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
 
@@ -130,13 +128,18 @@ function imageAttachment(input) {
   const candidate = safeAttachments(input.attachments).find((item) => item?.kind === "image" && typeof item?.dataUrl === "string");
   if (!candidate) return null;
   const dataUrl = candidate.dataUrl.trim();
-  if (!/^data:image\/(?:png|jpe?g|webp);base64,/i.test(dataUrl)) {
+  const match = dataUrl.match(/^data:image\/(?:png|jpe?g|webp);base64,([a-z0-9+/=\s]+)$/i);
+  if (!match) {
     throw Object.assign(new Error("Format gambar belum didukung. Gunakan PNG, JPG, atau WebP."), { status: 400, code: "INVALID_IMAGE_FORMAT" });
   }
   if (dataUrl.length > MAX_IMAGE_DATA_URL_LENGTH) {
     throw Object.assign(new Error("Gambar terlalu besar untuk dibaca Nara. Kompres atau pilih gambar yang lebih kecil."), { status: 413, code: "IMAGE_TOO_LARGE" });
   }
-  return { dataUrl, name: String(candidate.name || "gambar").slice(0, 120) };
+  return {
+    dataUrl,
+    base64: match[1].replace(/\s+/g, ""),
+    name: String(candidate.name || "gambar").slice(0, 120),
+  };
 }
 
 function userMessage(input) {
@@ -165,9 +168,19 @@ function intelligenceSettings(value) {
   const intelligence = String(value || "standard");
   return {
     intelligence,
-    maxTokens: intelligence === "light" ? 900 : intelligence === "high" ? 2_800 : intelligence === "xhigh" ? 4_000 : 1_800,
+    maxTokens: intelligence === "light" ? 700 : intelligence === "high" ? 2_200 : intelligence === "xhigh" ? 3_200 : 1_500,
     label: intelligence === "light" ? "Ringan" : intelligence === "high" ? "Tinggi" : intelligence === "xhigh" ? "Ekstra tinggi" : "Sedang",
   };
+}
+
+function uniqueModels(values) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+async function runWithTimeout(env, model, payload, timeoutMs) {
+  const inference = env.AI.run(model, payload);
+  const timeout = new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("Workers AI timeout"), { timeout: true })), timeoutMs));
+  return Promise.race([inference, timeout]);
 }
 
 export function workersAiReady(env) {
@@ -221,43 +234,48 @@ export async function handleWorkersAiNara(request, env, requestId, corsOrigin = 
   try { image = imageAttachment(input); }
   catch (error) { return json(error.status || 400, { code: error.code || "INVALID_IMAGE", error: error.message }, requestId, corsOrigin); }
 
-  const model = image
-    ? String(env.CF_AI_VISION_MODEL || DEFAULT_VISION_MODEL)
-    : String(env.CF_AI_MODEL || DEFAULT_MODEL);
+  const models = image
+    ? uniqueModels([env.CF_AI_VISION_MODEL, DEFAULT_VISION_MODEL, FALLBACK_VISION_MODEL])
+    : uniqueModels([env.CF_AI_MODEL, DEFAULT_MODEL, FALLBACK_MODEL]);
+  const failures = [];
 
-  try {
-    const inference = env.AI.run(model, {
-      messages,
-      ...(image ? { image: image.dataUrl } : {}),
-      max_tokens: maxTokens,
-      temperature: intelligence === "xhigh" ? 0.2 : 0.35,
-    });
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("Workers AI timeout"), { timeout: true })), image ? 58_000 : 50_000));
-    const result = await Promise.race([inference, timeout]);
-    const answer = outputText(result);
-    if (!answer) throw new Error("Workers AI returned an empty answer");
+  for (const model of models) {
+    try {
+      const result = await runWithTimeout(env, model, {
+        messages,
+        ...(image ? { image: image.base64 } : {}),
+        max_tokens: maxTokens,
+        temperature: intelligence === "xhigh" ? 0.2 : 0.35,
+      }, image ? 58_000 : 50_000);
+      const answer = outputText(result);
+      if (!answer) throw new Error("Workers AI returned an empty answer");
 
-    return json(200, {
-      answer,
-      modelLabel: image ? "Nara Vision Edge" : "Nara Edge",
-      intelligence,
-      intelligenceLabel,
-      providerModel: model,
-      provider: "Cloudflare Workers AI",
-      capability: image ? "vision" : "text",
-      plan: quota.account_plan,
-      remaining: quota.remaining,
-    }, requestId, corsOrigin);
-  } catch (error) {
-    console.error("Workers AI Nara failed", { requestId, model, vision: Boolean(image), name: error?.name || "Error" });
-    return json(error?.timeout ? 504 : 502, {
-      code: error?.timeout ? "WORKERS_AI_TIMEOUT" : image ? "WORKERS_VISION_UNAVAILABLE" : "WORKERS_AI_UNAVAILABLE",
-      error: error?.timeout
-        ? "Jawaban Nara melewati batas waktu. Tekan Coba lagi."
-        : image
-          ? "Nara Vision sedang mengalami gangguan sementara. Coba lagi dengan JPG, PNG, atau WebP yang lebih kecil."
-          : "Mesin Nara sedang mengalami gangguan sementara. Coba lagi beberapa saat.",
-      retryable: true,
-    }, requestId, corsOrigin);
+      return json(200, {
+        answer,
+        modelLabel: image ? "Nara Vision Edge" : "Nara Edge",
+        intelligence,
+        intelligenceLabel,
+        providerModel: model,
+        provider: "Cloudflare Workers AI",
+        capability: image ? "vision" : "text",
+        plan: quota.account_plan,
+        remaining: quota.remaining,
+      }, requestId, corsOrigin);
+    } catch (error) {
+      failures.push({ model, timeout: Boolean(error?.timeout), name: error?.name || "Error" });
+      console.error("Workers AI Nara model failed", { requestId, model, vision: Boolean(image), timeout: Boolean(error?.timeout), name: error?.name || "Error" });
+    }
   }
+
+  const timedOut = failures.length > 0 && failures.every((failure) => failure.timeout);
+  return json(timedOut ? 504 : 502, {
+    code: timedOut ? "WORKERS_AI_TIMEOUT" : image ? "WORKERS_VISION_UNAVAILABLE" : "WORKERS_AI_UNAVAILABLE",
+    error: timedOut
+      ? "Jawaban Nara melewati batas waktu. Tekan Coba lagi."
+      : image
+        ? "Nara Vision sedang mengalami gangguan sementara. Coba lagi dengan JPG, PNG, atau WebP yang lebih kecil."
+        : "Mesin Nara sedang mengalami gangguan sementara. Sistem cadangan juga belum menjawab; coba lagi beberapa saat.",
+    retryable: true,
+    attemptedModels: failures.map((failure) => failure.model),
+  }, requestId, corsOrigin);
 }
