@@ -1,0 +1,45 @@
+/* Companion rules for the same v31 authority.
+   Nara has eight composer controls: add, plugin, mic, speaker,
+   intelligence, model, work mode, and send. */
+
+html[data-studio-shell-authority-v30] .nara-composer-tools {
+  grid-template-columns:
+    repeat(4, 32px)
+    minmax(46px, .55fr)
+    minmax(54px, .65fr)
+    minmax(64px, 1fr)
+    34px !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-composer-tools > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-shell-authority-v30] .nara-mode-v30,
+html[data-studio-shell-authority-v30] .nara-select.intelligence,
+html[data-studio-shell-authority-v30] .nara-select.model {
+  overflow: hidden !important;
+}
+
+@media (max-width: 380px) {
+  html[data-studio-shell-authority-v30] .nara-composer-tools {
+    grid-template-columns:
+      repeat(4, 28px)
+      42px
+      46px
+      minmax(50px, 1fr)
+      30px !important;
+    gap: 3px !important;
+  }
+
+  html[data-studio-shell-authority-v30] .nara-composer-tools > button,
+  html[data-studio-shell-authority-v30] .nara-composer-tools > .nara-attachment-menu-wrap > button,
+  html[data-studio-shell-authority-v30] .nara-composer-tools > .nara-speaker-v30,
+  html[data-studio-shell-authority-v30] .nara-composer-tools > .nara-send {
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+}
