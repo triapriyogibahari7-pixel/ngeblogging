@@ -18,7 +18,7 @@
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-    "APP_RELEASE": "2026.07.25-production-audit-v37",
+    "APP_RELEASE": "2026.07.24-studio-v14",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
     "UI_V35_RELEASE_COMPAT": "2026.07.25-studio-v35",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
