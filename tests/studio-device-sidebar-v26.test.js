@@ -12,44 +12,65 @@ const serviceWorker = read("public/sw.js");
 
 const cssRules = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
-test("v26 loads last and stays scoped to Studio and Nara", () => {
+test("v27 replaces the v26 authority in place and remains scoped to Studio and Nara", () => {
   const v25Css = index.indexOf("studio-interaction-v25.css");
-  const v26Css = index.indexOf("studio-device-sidebar-v26.css");
+  const authorityCss = index.indexOf("studio-device-sidebar-v26.css");
   const v24Runtime = index.indexOf("nara-mobile-window-v24.js");
-  const v26Runtime = index.indexOf("studio-device-sidebar-v26.js");
+  const authorityRuntime = index.indexOf("studio-device-sidebar-v26.js");
   assert.ok(v25Css > -1);
-  assert.ok(v26Css > v25Css);
+  assert.ok(authorityCss > v25Css);
   assert.ok(v24Runtime > -1);
-  assert.ok(v26Runtime > v24Runtime);
+  assert.ok(authorityRuntime > v24Runtime);
+  assert.match(runtime, /studio-device-sidebar-nara-v27-20260725/);
+  assert.match(runtime, /studio-device-sidebar-nara-v26-20260725/);
   assert.doesNotMatch(cssRules, /homepage|hero-public|public-site|tenant-page/i);
 });
 
-test("phone, mobile, tablet, laptop, desktop, standalone, and Apple mobile are classified", () => {
-  for (const marker of ["phone", "mobile", "tablet", "laptop", "desktop", "standalone", "studioAppleMobile"]) {
-    assert.ok(runtime.includes(marker), marker);
-  }
-  assert.match(css, /@media \(max-width: 480px\)/);
-  assert.match(css, /@media \(min-width: 481px\) and \(max-width: 760px\)/);
-  assert.match(css, /@media \(min-width: 761px\) and \(max-width: 1100px\)/);
-  assert.match(css, /@media \(min-width: 1101px\)/);
-  assert.match(css, /@media \(display-mode: standalone\)/);
-  assert.match(css, /-webkit-touch-callout/);
+test("desktop-site on a physical phone is not confused with a true desktop", () => {
+  for (const marker of [
+    "physicalPhone",
+    "desktopPhone",
+    "desktop-phone",
+    "screenShortSide",
+    "desktopSitePhone",
+    "desktopLayoutRequested",
+    "studio-compact-v27",
+    "studio-desktop-v27",
+  ]) assert.ok(runtime.includes(marker), marker);
+  assert.match(runtime, /physicalPhone && width > MOBILE_MAX/);
+  assert.match(css, /studio-desktop-v27[\s\S]*width: 220px !important/);
+  assert.match(css, /data-v27-source-toggle="visible"/);
 });
 
-test("mobile and tablet own one unclipped edge toggle with clickable navigation", () => {
-  assert.match(runtime, /sn-device-toggle-v26/);
-  assert.match(runtime, /currentSource\.click\(\)/);
+test("compact modes own one direct edge toggle and one non-blurred scrim", () => {
+  assert.match(runtime, /sn-device-toggle-v27/);
+  assert.match(runtime, /sn-device-scrim-v27/);
+  assert.match(runtime, /clickSourceToggle/);
   assert.match(runtime, /ensureNavAccessibility/);
   assert.match(runtime, /button\.tabIndex = 0/);
-  assert.match(css, /direct child of the Studio shell/i);
-  assert.match(css, /z-index: 31200 !important/);
-  assert.match(css, /pointer-events: auto !important/);
-  assert.match(css, /data-v26-sidebar-open="true"/);
-  assert.match(css, /sn-sidebar-scrim-v23[\s\S]*z-index: 30900 !important/);
+  assert.match(css, /studio-compact-v27[\s\S]*z-index: 41000 !important/);
+  assert.match(css, /sn-device-toggle-v27[\s\S]*z-index: 41200 !important/);
+  assert.match(css, /sn-device-scrim-v27[\s\S]*z-index: 40900 !important/);
+  assert.match(css, /sn-device-scrim-v27[\s\S]*backdrop-filter: none !important/);
+  assert.match(css, /sn-sidebar-scrim-v23[\s\S]*display: none !important/);
+  assert.match(css, /data-v27-source-toggle="programmatic"/);
   assert.match(css, /sn-mobile-nav,[\s\S]*sn-side-bottom[\s\S]*display: none !important/);
 });
 
-test("approved desktop geometry is locked and recoverable", () => {
+test("phone, mobile, tablet, application, Apple mobile, laptop, and desktop remain separate", () => {
+  for (const marker of ["phone", "mobile", "tablet", "desktop-phone", "laptop", "desktop", "standalone", "appleMobile"]) {
+    assert.ok(runtime.includes(marker), marker);
+  }
+  for (const selector of ["studio-phone-v27", "studio-mobile-v27", "studio-tablet-v27", "studio-standalone-v27"]) {
+    assert.ok(css.includes(selector), selector);
+  }
+  assert.match(css, /--sn-v27-rail: 58px/);
+  assert.match(css, /--sn-v27-rail: 64px/);
+  assert.match(css, /--sn-v27-rail: 72px/);
+  assert.match(css, /-webkit-touch-callout/);
+});
+
+test("approved desktop geometry remains locked and recoverable", () => {
   for (const source of [css, backupCss]) {
     assert.match(source, /width: 220px !important/);
     assert.match(source, /width: 70px !important/);
@@ -61,20 +82,19 @@ test("approved desktop geometry is locked and recoverable", () => {
   assert.equal(index.includes("backups/studio-desktop-sidebar-v25-locked.css"), false);
 });
 
-test("Nara exposes mini widget, complete box, and expanded viewport without removing capabilities", () => {
-  assert.match(css, /data-nara-size-v26="mini"/);
-  assert.match(runtime, /"mini" : "compact"/);
-  assert.match(runtime, /nara-size-toggle-v26/);
+test("Nara still exposes mini widget, complete box, and fullscreen controls beside Close", () => {
+  assert.match(css, /data-nara-size-v27="mini"/);
+  assert.match(runtime, /nara-size-toggle-v26 nara-size-toggle-v27/);
   assert.match(runtime, /nara-window-toggle-v24/);
   assert.match(runtime, /leaveExpanded/);
-  assert.match(runtime, /grid-template-columns: 42px minmax\(0, 1fr\) 36px 36px 36px 36px !important/);
+  assert.match(css, /grid-template-columns: 42px minmax\(0, 1fr\) 36px 36px 36px 36px !important/);
   assert.match(css, /data-nara-window-mode="expanded"/);
   assert.match(runtime, /Buka kotak Nara lengkap/);
   assert.match(runtime, /Kecilkan menjadi widget/);
 });
 
-test("PWA cache rotates after responsive authority changes", () => {
+test("PWA cache rotates after removing the conflicting sidebar authority", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v27-20260725/);
   assert.match(serviceWorker, /ngeblogging-app-v26-20260725/);
-  assert.match(serviceWorker, /ngeblogging-app-v25-20260725/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
 });
