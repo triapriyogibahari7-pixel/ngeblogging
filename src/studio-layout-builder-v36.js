@@ -119,14 +119,14 @@ function canvasMarkup(widgets, owner) {
   </div>`;
 }
 
-function widgetRows(widgets, query = "") {
+function widgetRows(widgets) {
   const current = new Map(widgets.map((widget) => [widget.id, widget]));
-  const needle = query.trim().toLowerCase();
-  return BUILT_IN_WIDGETS.filter((widget) => `${widget.name} ${widget.category} ${widget.description}`.toLowerCase().includes(needle)).map((widget) => {
+  return BUILT_IN_WIDGETS.map((widget) => {
     const entry = current.get(widget.id);
     const enabled = Boolean(entry?.enabled);
     const area = normalizeArea(entry?.area);
-    return `<article class="lb36-widget${enabled ? " enabled" : ""}" data-widget="${widget.id}">
+    const searchText = `${widget.name} ${widget.category} ${widget.description}`.toLowerCase();
+    return `<article class="lb36-widget${enabled ? " enabled" : ""}" data-widget="${widget.id}" data-search="${escapeHtml(searchText)}">
       <button type="button" class="lb36-widget-toggle" aria-pressed="${enabled}">${enabled ? "✓" : widget.icon}</button>
       <div class="lb36-widget-main"><b>${escapeHtml(widget.name)}</b><small>${escapeHtml(widget.category)} · ${escapeHtml(widget.description)}</small>
       <select aria-label="Area ${escapeHtml(widget.name)}" ${enabled ? "" : "disabled"}>${LAYOUT_AREAS.map((areaItem) => `<option value="${areaItem.id}"${areaItem.id === area ? " selected" : ""}>${escapeHtml(areaItem.label)}</option>`).join("")}</select></div>
@@ -190,24 +190,22 @@ function bindLibrary(layer, baseWidgets) {
   const list = layer.querySelector(".lb36-widget-list");
   const search = layer.querySelector(".lb36-search");
 
-  const bindRows = () => {
-    list.querySelectorAll(".lb36-widget").forEach((row) => {
-      row.querySelector(".lb36-widget-toggle")?.addEventListener("click", () => {
-        row.classList.toggle("enabled");
-        const enabled = row.classList.contains("enabled");
-        row.querySelector("select").disabled = !enabled;
-        row.querySelector(".lb36-widget-toggle").textContent = enabled ? "✓" : BUILT_IN_WIDGETS.find((widget) => widget.id === row.dataset.widget)?.icon || "+";
-        rerenderCanvas(layer, baseWidgets);
-      });
-      row.querySelector("select")?.addEventListener("change", () => rerenderCanvas(layer, baseWidgets));
+  list.querySelectorAll(".lb36-widget").forEach((row) => {
+    row.querySelector(".lb36-widget-toggle")?.addEventListener("click", () => {
+      row.classList.toggle("enabled");
+      const enabled = row.classList.contains("enabled");
+      row.querySelector("select").disabled = !enabled;
+      row.querySelector(".lb36-widget-toggle").textContent = enabled ? "✓" : BUILT_IN_WIDGETS.find((widget) => widget.id === row.dataset.widget)?.icon || "+";
+      rerenderCanvas(layer, baseWidgets);
     });
-  };
+    row.querySelector("select")?.addEventListener("change", () => rerenderCanvas(layer, baseWidgets));
+  });
 
-  bindRows();
   search?.addEventListener("input", () => {
-    const current = selectedWidgets(layer, baseWidgets);
-    list.innerHTML = widgetRows(current, search.value);
-    bindRows();
+    const needle = search.value.trim().toLowerCase();
+    list.querySelectorAll(".lb36-widget").forEach((row) => {
+      row.hidden = Boolean(needle && !String(row.dataset.search || "").includes(needle));
+    });
   });
 }
 
