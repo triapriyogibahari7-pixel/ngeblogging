@@ -8,7 +8,6 @@ import "./studio-responsive-v21.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const PHONE_QUERY = "(max-width: 760px)";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
 
 function ensureExtrasContainer() {
@@ -65,15 +64,9 @@ function syncStudioChrome() {
 
   if (side && toggle) {
     side.id ||= "ngeblogging-studio-sidebar";
-    toggle.dataset.sidebarAuthority ||= "single-v21";
     toggle.setAttribute("aria-controls", side.id);
     toggle.setAttribute("aria-expanded", String(!side.classList.contains("collapsed")));
     toggle.setAttribute("aria-label", side.classList.contains("collapsed") ? "Buka menu Studio" : "Tutup menu Studio");
-
-    if (window.matchMedia(PHONE_QUERY).matches && shell.dataset.initialSidebarResolved !== "true") {
-      shell.dataset.initialSidebarResolved = "true";
-      if (!side.classList.contains("collapsed")) toggle.click();
-    }
   }
 
   const billingReady = document.documentElement.dataset.billingReady === "true";
@@ -101,24 +94,12 @@ export default function StudioSecure(props) {
     observer.observe(document.body, { childList: true, subtree: true });
     syncStudioChrome();
 
-    const closeAfterSelection = (event) => {
-      const button = event.target.closest(".sn-side nav button");
-      if (!button || !window.matchMedia(PHONE_QUERY).matches) return;
-      requestAnimationFrame(() => {
-        const side = document.querySelector(".sn-shell > .sn-side");
-        const toggle = document.querySelector(".sn-shell > .sn-main > .sn-top .sn-icon");
-        if (side && toggle && !side.classList.contains("collapsed")) toggle.click();
-      });
-    };
-
-    document.addEventListener("click", closeAfterSelection, true);
     window.addEventListener("resize", sync, { passive: true });
     window.addEventListener("orientationchange", sync, { passive: true });
 
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
-      document.removeEventListener("click", closeAfterSelection, true);
       window.removeEventListener("resize", sync);
       window.removeEventListener("orientationchange", sync);
     };
