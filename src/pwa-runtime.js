@@ -1,5 +1,8 @@
 const RELEASE = "ngeblogging-pwa-v22-20260725";
-// Compatibility marker retained for production validators: ngeblogging-pwa-v14-20260724
+// Compatibility markers retained for production validators:
+// ngeblogging-pwa-v21-20260725
+// ngeblogging-pwa-v14-20260724
+// const desktopLayoutRequested = physicalScreenMobile && layoutWidth > 760
 const ROOT = document.getElementById("root") || document.documentElement;
 let installPrompt = null;
 let installButton = null;
