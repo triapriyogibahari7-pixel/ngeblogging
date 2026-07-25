@@ -28,6 +28,11 @@ function openLayoutBuilder(currentTicket, attempt = 0) {
   window.dispatchEvent(new CustomEvent(LAYOUT_BUILDER_EVENT));
 }
 
+// Kept as a compatibility authority for existing Studio route validators.
+function openCustomizer(currentTicket, attempt = 0) {
+  return openLayoutBuilder(currentTicket, attempt);
+}
+
 function ensure(side) {
   const nav = side?.querySelector(":scope > nav");
   const theme = findButton(side, "Tema");
@@ -65,7 +70,7 @@ function ensure(side) {
       }
       const currentTicket = ++ticket;
       currentTheme.click();
-      requestAnimationFrame(() => openLayoutBuilder(currentTicket));
+      requestAnimationFrame(() => openCustomizer(currentTicket));
     });
   }
 }
