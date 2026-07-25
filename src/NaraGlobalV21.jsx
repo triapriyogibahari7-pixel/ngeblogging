@@ -25,6 +25,14 @@ function requestLogin() {
   candidate?.click?.();
 }
 
+function naraEntry(eventTarget) {
+  const direct = eventTarget?.closest?.(".sn-top-actions .sn-nara-button, .ce-nara, [data-open-nara-v21='true']");
+  if (direct) return direct;
+  const named = eventTarget?.closest?.("button,a");
+  if (!named || named.closest(`#${HOST_ID}`)) return null;
+  return /buka nara|tanya nara/i.test(named.textContent || "") ? named : null;
+}
+
 function GlobalNara() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -70,7 +78,7 @@ function GlobalNara() {
 
   useEffect(() => {
     const intercept = (event) => {
-      const target = event.target?.closest?.(".sn-top-actions .sn-nara-button, .ce-nara, [data-open-nara-v21='true']");
+      const target = naraEntry(event.target);
       if (!target || target.closest(`#${HOST_ID}`)) return;
       event.preventDefault();
       event.stopPropagation();
@@ -79,11 +87,19 @@ function GlobalNara() {
       setOpen(true);
     };
     document.addEventListener("click", intercept, true);
-    document.addEventListener("pointerup", intercept, true);
+    if (!("PointerEvent" in window)) document.addEventListener("touchend", intercept, { capture: true, passive: false });
     return () => {
       document.removeEventListener("click", intercept, true);
-      document.removeEventListener("pointerup", intercept, true);
+      if (!("PointerEvent" in window)) document.removeEventListener("touchend", intercept, true);
     };
+  }, []);
+
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
   }, []);
 
   const assistantContext = useMemo(() => ({ ...context, globalRelease: RELEASE }), [context]);
