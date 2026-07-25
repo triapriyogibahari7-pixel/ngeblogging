@@ -1,0 +1,136 @@
+/*
+ * APPROVED SIDEBAR BACKUP — 2026-07-25
+ * Source authority: src/studio-shell-v30.css
+ * This file is intentionally NOT loaded by index.html.
+ * Restore only if the active sidebar regresses.
+ */
+
+:root {
+  --sn-v30-panel: min(86vw, 368px);
+  --sn-v30-tablet-panel: min(54vw, 420px);
+  --sn-v30-desktop-open: 220px;
+  --sn-v30-desktop-closed: 70px;
+}
+
+/* Desktop/laptop/sidebar geometry approved by the owner. */
+html.studio-v30-desktop .sn-shell > .sn-side,
+html.studio-v30-laptop .sn-shell > .sn-side,
+html.studio-v30-desktop-phone .sn-shell > .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: var(--sn-v30-desktop-open) !important;
+  min-width: var(--sn-v30-desktop-open) !important;
+  max-width: var(--sn-v30-desktop-open) !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-right: 1px solid #dce4ee !important;
+  background: #fff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  z-index: 30000 !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-side.collapsed,
+html.studio-v30-laptop .sn-shell > .sn-side.collapsed,
+html.studio-v30-desktop-phone .sn-shell > .sn-side.collapsed {
+  width: var(--sn-v30-desktop-closed) !important;
+  min-width: var(--sn-v30-desktop-closed) !important;
+  max-width: var(--sn-v30-desktop-closed) !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-side + .sn-main,
+html.studio-v30-laptop .sn-shell > .sn-side + .sn-main,
+html.studio-v30-desktop-phone .sn-shell > .sn-side + .sn-main {
+  width: calc(100% - var(--sn-v30-desktop-open)) !important;
+  max-width: calc(100% - var(--sn-v30-desktop-open)) !important;
+  margin-left: var(--sn-v30-desktop-open) !important;
+}
+
+html.studio-v30-desktop .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v30-laptop .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v30-desktop-phone .sn-shell > .sn-side.collapsed + .sn-main {
+  width: calc(100% - var(--sn-v30-desktop-closed)) !important;
+  max-width: calc(100% - var(--sn-v30-desktop-closed)) !important;
+  margin-left: var(--sn-v30-desktop-closed) !important;
+}
+
+/* Approved compact drawer: flush left, no gutter. */
+html.studio-v30-compact .sn-shell > .sn-main,
+html.studio-v30-compact .sn-shell > .sn-side + .sn-main,
+html.studio-v30-compact .sn-shell > .sn-side.collapsed + .sn-main,
+html.studio-v30-compact .sn-shell > .sn-side:not(.collapsed) + .sn-main {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+html.studio-v30-compact .sn-shell > .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: var(--sn-v30-panel) !important;
+  min-width: var(--sn-v30-panel) !important;
+  max-width: var(--sn-v30-panel) !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-right: 1px solid rgba(39, 67, 101, .14) !important;
+  border-radius: 0 22px 22px 0 !important;
+  background: #fff !important;
+  box-shadow: 20px 0 54px rgba(7, 24, 48, .22) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate3d(0, 0, 0) !important;
+  z-index: 52000 !important;
+}
+
+html.studio-v30-compact .sn-shell > .sn-side.collapsed {
+  transform: translate3d(-101%, 0, 0) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.studio-v30-tablet { --sn-v30-panel: var(--sn-v30-tablet-panel); }
+
+html.studio-v30-compact .sn-mobile-v30-launcher {
+  position: fixed !important;
+  left: 0 !important;
+  top: max(14px, env(safe-area-inset-top)) !important;
+  width: 56px !important;
+  min-width: 56px !important;
+  height: 56px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #d8e1ed !important;
+  border-left: 0 !important;
+  border-radius: 0 16px 16px 0 !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 12px 30px rgba(10,31,60,.20) !important;
+  z-index: 51800 !important;
+}
+
+html.studio-v30-compact .sn-mobile-v30-scrim {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  background: rgba(16,30,50,.48) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  z-index: 51900 !important;
+}
