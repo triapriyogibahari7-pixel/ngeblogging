@@ -9,8 +9,8 @@ const manifest = JSON.parse(read("public/site.webmanifest"));
 const serviceWorker = read("public/sw.js");
 const pwa = read("src/pwa-runtime.js");
 const faviconBridge = read("src/site-favicon-bridge.js");
-const responsive = read("src/studio-responsive-v23.css");
-const runtime = read("src/studio-runtime-v23.js");
+const shellCss = read("src/studio-shell-v29.css");
+const shellRuntime = read("src/studio-shell-v29.js");
 const secure = read("src/StudioSecure.jsx");
 const studio = read("src/StudioNext.jsx");
 const seo = read("server/seo-handler.mjs");
@@ -32,7 +32,7 @@ const LEGACY_UI = [
   "nara-launcher-v20.js",
 ];
 
-test("main favicon and PWA v23 install without interaction-cancelling reloads", () => {
+test("main favicon and PWA v29 install without interaction-cancelling reloads", () => {
   assert.match(index, /rel="icon" href="\/favicon\.svg"/);
   assert.match(index, /rel="manifest" href="\/site\.webmanifest"/);
   assert.match(index, /apple-mobile-web-app-title/);
@@ -42,7 +42,7 @@ test("main favicon and PWA v23 install without interaction-cancelling reloads", 
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v23-20260725/);
+  assert.match(serviceWorker, /ngeblogging-app-v29-20260725/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
@@ -77,18 +77,18 @@ test("Cloudflare edge emits tenant favicon manifest and structured SEO", () => {
   ]) assert.ok(seo.includes(marker), marker);
 });
 
-test("Studio v23 has one accessible toggle, persistent icon rail, and no bottom menu", () => {
-  assert.match(index, /studio-responsive-v23\.css/);
-  assert.match(index, /studio-runtime-v23\.js/);
+test("Studio v29 has one Cloudflare-style mobile drawer and no bottom menu", () => {
+  assert.match(index, /studio-shell-v29\.css/);
+  assert.match(index, /studio-shell-v29\.js/);
   for (const legacy of LEGACY_UI) assert.doesNotMatch(index, new RegExp(`<script[^>]+${legacy.replaceAll(".", "\\.")}|<link[^>]+${legacy.replaceAll(".", "\\.")}`));
   assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
   assert.doesNotMatch(studio, /sn-mobile-nav|sn-mobile-sheet-layer|sn-side-bottom/);
-  assert.match(secure, /studio-source-navigation-v23-20260725/);
-  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v23"/);
-  assert.match(runtime, /button\.dataset\.naraWorkspaceRoute = "true"/);
-  assert.match(responsive, /--sn-v23-rail: 64px/);
-  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v23-rail\) !important/);
-  assert.match(responsive, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
-  assert.match(responsive, /\.nara-composer input\[type="file"\][\s\S]*display: none !important/);
-  assert.match(responsive, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
+  assert.match(secure, /studio-source-navigation-v29-20260725/);
+  for (const marker of ["sn-mobile-v29-header", "sn-mobile-v29-close", "sn-mobile-v29-launcher", "sn-mobile-v29-scrim"]) {
+    assert.ok(shellRuntime.includes(marker), marker);
+  }
+  assert.match(shellCss, /--sn-v29-panel: min\(84vw, 360px\)/);
+  assert.match(shellCss, /\.sn-side\.collapsed[\s\S]*translate3d\(calc\(-100% - 18px\), 0, 0\)/);
+  assert.match(shellCss, /\.sn-mobile-v29-scrim[\s\S]*backdrop-filter: none !important/);
+  assert.match(shellCss, /\.nara-assistant-layer\[data-nara-shell-v29="true"\][\s\S]*z-index: 2147483600 !important/);
 });
