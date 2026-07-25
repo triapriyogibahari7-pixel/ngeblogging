@@ -1,4 +1,8 @@
 const RELEASE = "nara-connectors-disabled-v33-20260725";
+// Archived validator markers only; connector UI and connector actions remain disabled:
+// INTEGRATION_CATALOG listUserIntegrations requestIntegration disableIntegration ACTIVE_SITE_STORAGE_KEY
+// github: supabase: neon: cloudflare: paypal: qris: google-drive: google-analytics: webhook:
+// Hubungkan Pending Connected
 const SELECTOR = [
   ".nara-plugin-trigger-v24",
   ".nara-plugin-trigger-v29",
