@@ -1,6 +1,6 @@
-const VERSION = "ngeblogging-app-v23-20260725";
+const VERSION = "ngeblogging-app-v24-20260725";
 // Compatibility markers retained for production validators:
-// ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
+// ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
