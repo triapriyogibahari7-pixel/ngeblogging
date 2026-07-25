@@ -1,0 +1,217 @@
+/*
+ * Mobile overlap authority v33 — 2026-07-25
+ * Scope: compact Studio route content and Nara internals only.
+ * The approved v30 sidebar geometry and desktop layout are intentionally untouched.
+ */
+
+/* Route content must always start below the sticky Studio header. */
+html.studio-v30-compact .sn-main {
+  scroll-padding-top: 92px !important;
+  overflow-x: clip !important;
+}
+
+html.studio-v30-compact .sn-main > .sn-view-pad,
+html.studio-v30-compact .sn-main > .nw-page,
+html.studio-v30-compact .sn-main > .tn-studio {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  isolation: isolate !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding-top: 28px !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+html.studio-v30-compact .sn-page-title {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 14px !important;
+  margin: 0 0 18px !important;
+  padding: 0 !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .sn-page-title > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  position: static !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-page-title small,
+html.studio-v30-compact .sn-page-title h1,
+html.studio-v30-compact .sn-page-title p {
+  position: static !important;
+  inset: auto !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-page-title h1 {
+  margin: 8px 0 8px !important;
+  font-size: clamp(36px, 10vw, 48px) !important;
+  line-height: .98 !important;
+  letter-spacing: -.035em !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+html.studio-v30-compact .sn-page-title p {
+  margin: 0 !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.studio-v30-compact .sn-page-title > a,
+html.studio-v30-compact .sn-page-title > button,
+html.studio-v30-compact .sn-page-title > .sn-secondary-link {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 54px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .sn-page-title + * {
+  position: relative !important;
+  z-index: 1 !important;
+  clear: both !important;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+
+/* Domain card: icon, hostname and status get independent rows. */
+html.studio-v30-compact .sn-domain-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+  padding: 20px 18px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+html.studio-v30-compact .sn-domain-card > svg {
+  width: 32px !important;
+  height: 32px !important;
+  margin-top: 3px !important;
+}
+
+html.studio-v30-compact .sn-domain-card > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html.studio-v30-compact .sn-domain-card h2 {
+  max-width: 100% !important;
+  margin: 7px 0 9px !important;
+  font-size: clamp(26px, 8.5vw, 38px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.025em !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+html.studio-v30-compact .sn-domain-card p {
+  max-width: 100% !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html.studio-v30-compact .sn-domain-card > i {
+  grid-column: 1 / -1 !important;
+  justify-self: start !important;
+  position: static !important;
+  inset: auto !important;
+  margin: 4px 0 0 !important;
+  transform: none !important;
+}
+
+/* Settings/profile page uses normal document flow and never lives under the header. */
+html.studio-v30-compact .sn-settings-grid,
+html.studio-v30-compact .sn-settings-grid > section,
+html.studio-v30-compact .sn-settings-extras,
+html.studio-v30-compact .sn-backup-host {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html.studio-v30-compact .sn-settings-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+/* Connectors are removed from every Nara size: mini, compact and fullscreen. */
+.nara-plugin-trigger-v24,
+.nara-plugin-trigger-v29,
+.nara-plugin-panel-v24,
+.nara-plugin-panel-v29,
+.nara-plugin-list-v29,
+.nara-plugin-card-v29 {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* With the plugin button gone, seven controls fit without overlap or horizontal scrolling. */
+html.studio-v30-compact .nara-composer-tools {
+  grid-template-columns:
+    28px
+    28px
+    28px
+    minmax(36px, .72fr)
+    minmax(38px, .78fr)
+    minmax(48px, 1fr)
+    30px !important;
+  gap: 3px !important;
+  overflow: visible !important;
+}
+
+html.studio-v30-compact .nara-composer-tools > .nara-send {
+  grid-column: -2 / -1 !important;
+  justify-self: stretch !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+}
+
+@media (max-width: 340px) {
+  html.studio-v30-compact .nara-composer-tools {
+    grid-template-columns: 26px 26px 26px 34px 36px minmax(42px, 1fr) 28px !important;
+    gap: 2px !important;
+  }
+
+  html.studio-v30-compact .sn-page-title h1 {
+    font-size: clamp(32px, 10vw, 42px) !important;
+  }
+}
