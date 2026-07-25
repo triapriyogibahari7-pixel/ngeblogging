@@ -26,17 +26,40 @@ export const BUILT_IN_WIDGETS = [
   { id: "event-calendar", name: "Kalender acara", category: "Komunitas", description: "Daftar acara, tanggal, waktu, lokasi, dan CTA.", icon: "□" },
 ];
 
-const DEFAULT_AREAS = ["sidebar", "after-content", "footer"];
+export const LAYOUT_AREAS = [
+  { id: "header-left", label: "Header kiri", group: "header" },
+  { id: "header-right", label: "Header kanan", group: "header" },
+  { id: "below-header", label: "Di bawah header", group: "header" },
+  { id: "sidebar-left", label: "Sidebar kiri", group: "content" },
+  { id: "before-content", label: "Di atas postingan", group: "content" },
+  { id: "after-content", label: "Di bawah postingan", group: "content" },
+  { id: "sidebar-right", label: "Sidebar kanan", group: "content" },
+  { id: "footer-left", label: "Footer kiri", group: "footer" },
+  { id: "footer-right", label: "Footer kanan", group: "footer" },
+];
+
+const LEGACY_AREAS = ["sidebar", "after-content", "footer"];
+const VALID_AREAS = new Set([...LAYOUT_AREAS.map((area) => area.id), ...LEGACY_AREAS]);
+const RENDER_GROUPS = {
+  sidebar: new Set(["sidebar", "sidebar-left", "sidebar-right"]),
+  "after-content": new Set(["header-left", "header-right", "below-header", "before-content", "after-content"]),
+  footer: new Set(["footer", "footer-left", "footer-right"]),
+};
 
 export function getWidget(widgetId) {
   return BUILT_IN_WIDGETS.find((widget) => widget.id === widgetId) || null;
 }
 
+export function getLayoutArea(areaId) {
+  return LAYOUT_AREAS.find((area) => area.id === areaId) || null;
+}
+
 export function createDefaultWidgetState(ids = ["search", "recent-posts", "categories", "newsletter"]) {
+  const defaults = ["header-right", "sidebar-right", "sidebar-right", "footer-left"];
   return ids.filter((id, index, all) => getWidget(id) && all.indexOf(id) === index).map((id, index) => ({
     id,
     enabled: true,
-    area: index < 3 ? "sidebar" : "footer",
+    area: defaults[index] || "sidebar-right",
     order: index,
     title: getWidget(id)?.name || id,
     settings: {},
@@ -52,7 +75,7 @@ export function normalizeWidgetState(input, fallbackIds) {
     const widget = getWidget(id);
     if (!widget || seen.has(id)) return [];
     seen.add(id);
-    const area = DEFAULT_AREAS.includes(entry?.area) ? entry.area : "sidebar";
+    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar-right";
     return [{
       id,
       enabled: entry?.enabled !== false,
@@ -69,7 +92,7 @@ function escapeHtml(value) {
   return String(value || "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
 }
 
-export function widgetPreviewMarkup(widgetId, title = "") {
+export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right") {
   const widget = getWidget(widgetId);
   if (!widget) return "";
   const heading = `<h3>${escapeHtml(title || widget.name)}</h3>`;
@@ -100,11 +123,15 @@ export function widgetPreviewMarkup(widgetId, title = "") {
     "map-location": `${heading}<address>Jakarta, Indonesia · Buka peta</address>`,
     "event-calendar": `${heading}<time>23 Juli 2026 · 19.00 WIB</time><p>Acara komunitas Ngeblogging.</p>`,
   };
-  return `<section class="ng-widget ng-widget-${escapeHtml(widgetId)}">${samples[widgetId] || `${heading}<p>${escapeHtml(widget.description)}</p>`}</section>`;
+  return `<section class="ng-widget ng-widget-${escapeHtml(widgetId)}" data-widget-id="${escapeHtml(widgetId)}" data-layout-area="${escapeHtml(area)}">${samples[widgetId] || `${heading}<p>${escapeHtml(widget.description)}</p>`}</section>`;
 }
 
-export function widgetsMarkup(state, area) {
-  return normalizeWidgetState(state).filter((widget) => widget.enabled && widget.area === area).map((widget) => widgetPreviewMarkup(widget.id, widget.title)).join("");
+export function widgetsMarkup(state, renderGroup) {
+  const accepted = RENDER_GROUPS[renderGroup] || new Set([renderGroup]);
+  return normalizeWidgetState(state)
+    .filter((widget) => widget.enabled && accepted.has(widget.area))
+    .map((widget) => widgetPreviewMarkup(widget.id, widget.title, widget.area))
+    .join("");
 }
 
 export const WIDGET_COUNT = BUILT_IN_WIDGETS.length;
