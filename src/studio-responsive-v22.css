@@ -1,0 +1,732 @@
+/* Ngeblogging Studio v22 — final responsive and interaction authority.
+   This layer is intentionally loaded last. It removes duplicate Nara controls,
+   prevents header/editor overlap, and keeps Studio usable in mobile, tablet,
+   desktop-site-on-phone, desktop, PWA, and embedded-app viewports. */
+
+:root {
+  --sn-v22-rail: 64px;
+  --sn-v22-panel: min(86vw, 304px);
+  --sn-v22-safe-bottom: max(14px, env(safe-area-inset-bottom));
+}
+
+html,
+body,
+#root,
+.sn-shell,
+.sn-main,
+.sn-view-pad,
+.ce-app,
+.ce-workspace,
+.ce-paper-shell {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+html,
+body,
+#root {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+body {
+  overflow-x: hidden !important;
+}
+
+/* Nara has one persistent entry point only: the floating launcher. */
+.sn-top-actions .sn-nara-button,
+.ce-nara,
+.sn-side [data-nara-workspace-route="true"],
+.nara-floating-proxy-v14,
+.nara-floating-proxy-v15,
+.nara-floating-proxy-v16,
+.nara-floating-proxy-v17,
+.nara-floating-proxy-v18,
+.nara-floating-proxy-v19,
+.nara-floating-proxy-v20,
+.nara-floating-proxy-v21 {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.nara-floating-button {
+  right: max(14px, env(safe-area-inset-right)) !important;
+  bottom: var(--sn-v22-safe-bottom) !important;
+  width: 64px !important;
+  min-width: 64px !important;
+  max-width: 64px !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+  display: grid !important;
+  grid-template: 1fr / 1fr !important;
+  place-items: center !important;
+  padding: 7px !important;
+  border-radius: 19px !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  touch-action: manipulation !important;
+}
+
+.nara-floating-button > span {
+  grid-area: 1 / 1 !important;
+  width: 48px !important;
+  height: 48px !important;
+  margin: 0 !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-floating-button > span svg {
+  width: 25px !important;
+  height: 25px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-floating-button > b,
+.nara-floating-button > small {
+  display: none !important;
+}
+
+/* Stable Studio shell. */
+.sn-shell {
+  width: 100% !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+}
+
+.sn-main {
+  overflow-x: hidden !important;
+  background: #f5f7fb !important;
+}
+
+.sn-top {
+  isolation: isolate !important;
+}
+
+.sn-workspace,
+.sn-workspace > div,
+.sn-workspace b {
+  min-width: 0 !important;
+}
+
+.sn-workspace b {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.sn-top-actions {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+}
+
+.sn-view-site,
+.sn-avatar,
+.sn-icon {
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.sn-view-site svg,
+.sn-avatar svg,
+.sn-icon svg {
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.sn-view-pad,
+.sn-welcome,
+.sn-metrics,
+.sn-home-grid,
+.sn-content-card,
+.sn-info-grid,
+.sn-settings-grid,
+.sn-domain-card,
+.sn-launch {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.sn-welcome h1,
+.sn-page-title h1 {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  text-wrap: balance;
+}
+
+.sn-home-grid > section,
+.sn-home-grid > aside,
+.sn-metrics article,
+.sn-content-card,
+.sn-doc-row,
+.sn-doc-row > button:first-child,
+.sn-doc-row > button:first-child > div {
+  min-width: 0 !important;
+}
+
+/* Nara drawer: full viewport on every physical phone, including Desktop site. */
+html[data-physical-screen-mobile="true"] .nara-assistant-layer {
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+}
+
+html[data-physical-screen-mobile="true"] .nara-assistant-backdrop {
+  display: none !important;
+}
+
+html[data-physical-screen-mobile="true"] .nara-assistant-shell {
+  width: 100vw !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.nara-assistant-shell {
+  min-width: 0 !important;
+}
+
+.nara-assistant-header {
+  flex: 0 0 auto !important;
+}
+
+.nara-assistant-messages {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+.nara-message > div,
+.nara-message-content,
+.nara-rich-text,
+.nara-composer,
+.nara-composer > textarea {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.nara-composer {
+  flex: 0 0 auto !important;
+  padding-bottom: var(--sn-v22-safe-bottom) !important;
+}
+
+.nara-composer-tools {
+  display: flex !important;
+  grid-template-columns: none !important;
+  min-width: 0 !important;
+}
+
+.nara-select.intelligence {
+  margin-left: auto !important;
+}
+
+/* Editor chrome must never cover its tabs, ribbon, paper, or action buttons. */
+.ce-titlebar,
+.ce-tabs,
+.ce-ribbon {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.ce-titlebar {
+  isolation: isolate !important;
+}
+
+.ce-file,
+.ce-file label,
+.ce-actions {
+  min-width: 0 !important;
+}
+
+.ce-actions {
+  flex: 0 0 auto !important;
+}
+
+.ce-tabs,
+.ce-ribbon {
+  scrollbar-width: none !important;
+  overscroll-behavior-x: contain !important;
+}
+
+.ce-tabs::-webkit-scrollbar,
+.ce-ribbon::-webkit-scrollbar {
+  display: none !important;
+}
+
+.ce-paper,
+.ce-word-status {
+  max-width: 100% !important;
+}
+
+@media (max-width: 1024px) {
+  .sn-cloud span,
+  .sn-view-site span {
+    display: none !important;
+  }
+
+  .sn-view-site {
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .sn-view-site svg {
+    width: 20px !important;
+    height: 20px !important;
+    margin: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --sn-v22-rail: 62px;
+    --sn-v22-panel: min(86vw, 304px);
+  }
+
+  html,
+  body,
+  #root,
+  .sn-shell {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .sn-side {
+    width: var(--sn-v22-panel) !important;
+    min-width: var(--sn-v22-panel) !important;
+    max-width: var(--sn-v22-panel) !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .sn-side.collapsed {
+    width: var(--sn-v22-rail) !important;
+    min-width: var(--sn-v22-rail) !important;
+    max-width: var(--sn-v22-rail) !important;
+  }
+
+  .sn-side.collapsed .sn-logo {
+    height: 62px !important;
+    min-height: 62px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+
+  .sn-side.collapsed .sn-new,
+  .sn-side.collapsed > nav > button {
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    margin: 2px auto !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .sn-side.collapsed .sn-new svg,
+  .sn-side.collapsed > nav > button svg {
+    width: 21px !important;
+    height: 21px !important;
+    margin: auto !important;
+  }
+
+  .sn-main,
+  .sn-side + .sn-main,
+  .sn-side.collapsed + .sn-main,
+  .sn-side:not(.collapsed) + .sn-main {
+    width: calc(100% - var(--sn-v22-rail)) !important;
+    min-width: 0 !important;
+    max-width: calc(100% - var(--sn-v22-rail)) !important;
+    margin: 0 0 0 var(--sn-v22-rail) !important;
+  }
+
+  .sn-icon.sn-sidebar-edge-owner-v21,
+  .sn-icon[data-sidebar-authority] {
+    position: fixed !important;
+    left: calc(var(--sn-v22-rail) - 20px) !important;
+    top: max(11px, env(safe-area-inset-top)) !important;
+    z-index: 33050 !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    box-shadow: 0 8px 22px rgba(17,43,78,.18) !important;
+  }
+
+  .sn-shell[data-v21-sidebar-open="true"] .sn-icon.sn-sidebar-edge-owner-v21,
+  .sn-shell[data-v21-sidebar-open="true"] .sn-icon[data-sidebar-authority] {
+    left: calc(var(--sn-v22-panel) - 20px) !important;
+  }
+
+  .sn-top {
+    width: 100% !important;
+    height: 62px !important;
+    min-height: 62px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 7px 7px 27px !important;
+    overflow: visible !important;
+  }
+
+  .sn-workspace {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
+    padding: 4px !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+  }
+
+  .sn-workspace > span {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  .sn-workspace b {
+    max-width: clamp(90px, 34vw, 190px) !important;
+    font-size: 10px !important;
+  }
+
+  .sn-workspace > svg,
+  .sn-cloud,
+  .sn-install-app,
+  .sn-top-actions > button[aria-label="Cari"] {
+    display: none !important;
+  }
+
+  .sn-top-actions {
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 5px !important;
+    margin: 0 !important;
+  }
+
+  .sn-view-site,
+  .sn-avatar {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 40px !important;
+  }
+
+  .sn-view-pad {
+    width: 100% !important;
+    min-height: calc(100dvh - 62px) !important;
+    padding: 20px 14px 96px !important;
+    overflow-x: hidden !important;
+  }
+
+  .sn-welcome,
+  .sn-page-title {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 16px !important;
+  }
+
+  .sn-welcome > div:last-child {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 9px !important;
+  }
+
+  .sn-welcome > div:last-child > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+  }
+
+  .sn-welcome h1,
+  .sn-page-title h1 {
+    margin-top: 8px !important;
+    font-size: clamp(33px, 10vw, 48px) !important;
+    line-height: 1.04 !important;
+  }
+
+  .sn-metrics {
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .sn-home-grid,
+  .sn-info-grid,
+  .sn-settings-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+
+  .sn-home-grid > aside {
+    min-height: 300px !important;
+  }
+
+  .sn-table-head {
+    display: none !important;
+  }
+
+  .sn-doc-row {
+    grid-template-columns: minmax(0,1fr) auto 34px !important;
+  }
+
+  .sn-doc-row time {
+    display: none !important;
+  }
+
+  /* Mobile editor: fixed heights and grid prevent every overlap shown in the screenshots. */
+  .ce-titlebar {
+    top: 0 !important;
+    z-index: 220 !important;
+    height: 62px !important;
+    min-height: 62px !important;
+    display: grid !important;
+    grid-template-columns: 40px minmax(0,1fr) auto !important;
+    gap: 8px !important;
+    padding: 6px 8px !important;
+  }
+
+  .ce-back {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .ce-file {
+    overflow: hidden !important;
+  }
+
+  .ce-file > svg {
+    display: none !important;
+  }
+
+  .ce-file input {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    font-size: 11px !important;
+  }
+
+  .ce-actions {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 40px !important;
+    gap: 5px !important;
+  }
+
+  .ce-actions button,
+  .ce-actions .ce-primary {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+    font-size: 0 !important;
+  }
+
+  .ce-actions svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin: auto !important;
+  }
+
+  .ce-tabs {
+    top: 62px !important;
+    z-index: 219 !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    gap: 22px !important;
+    padding: 0 14px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+  }
+
+  .ce-tabs button {
+    flex: 0 0 auto !important;
+    height: 42px !important;
+    padding: 0 2px !important;
+  }
+
+  .ce-ribbon {
+    top: 104px !important;
+    z-index: 218 !important;
+    min-height: 56px !important;
+    max-height: 64px !important;
+    align-items: center !important;
+    padding: 5px 7px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+
+  .ce-ribbon > section {
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+
+  .ce-ribbon > section > span {
+    display: none !important;
+  }
+
+  .ce-ribbon .selects {
+    display: none !important;
+  }
+
+  .ce-workspace {
+    display: block !important;
+  }
+
+  .ce-paper-shell {
+    min-height: auto !important;
+    padding: 18px 9px 34px !important;
+  }
+
+  .ce-paper {
+    width: 100% !important;
+    min-height: 720px !important;
+    padding: 42px 25px !important;
+  }
+
+  .ce-paper h1 {
+    font-size: clamp(34px, 10vw, 44px) !important;
+  }
+
+  .ce-sidebar {
+    position: static !important;
+    top: auto !important;
+    max-height: none !important;
+    border-left: 0 !important;
+    border-top: 1px solid #dbe2eb !important;
+  }
+
+  .ce-word-status {
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+
+  .nara-assistant-header {
+    height: 64px !important;
+    min-height: 64px !important;
+    grid-template-columns: 42px minmax(0,1fr) 36px 36px !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+  }
+
+  .nara-context-bar {
+    min-height: 40px !important;
+    padding: 0 10px !important;
+  }
+
+  .nara-assistant-messages {
+    padding: 16px 11px !important;
+  }
+
+  .nara-message > div {
+    max-width: 92% !important;
+  }
+
+  .nara-quick-prompts {
+    padding: 8px 9px 4px !important;
+  }
+
+  .nara-composer {
+    padding: 8px 9px var(--sn-v22-safe-bottom) !important;
+  }
+
+  .nara-composer-tools {
+    gap: 2px !important;
+    padding: 5px !important;
+  }
+
+  .nara-composer-tools > button,
+  .nara-attachment-menu-wrap > button {
+    width: 31px !important;
+    min-width: 31px !important;
+    flex-basis: 31px !important;
+  }
+
+  .nara-select {
+    min-width: 0 !important;
+    padding: 0 5px !important;
+    font-size: 8px !important;
+  }
+
+  .nara-select.intelligence {
+    width: 70px !important;
+  }
+
+  .nara-select.model {
+    width: 88px !important;
+  }
+}
+
+/* Desktop-site on a physical phone still gets a complete full-width Nara panel
+   and a clean Studio canvas, without altering the requested desktop breakpoints. */
+html[data-desktop-layout-requested="true"] .sn-main,
+html[data-desktop-site-phone="true"] .sn-main {
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-view-pad,
+html[data-desktop-site-phone="true"] .sn-view-pad {
+  max-width: none !important;
+  overflow-x: hidden !important;
+}
+
+@supports not (overflow: clip) {
+  body,
+  .sn-shell,
+  .sn-main {
+    overflow-x: hidden !important;
+  }
+}
