@@ -1,0 +1,465 @@
+/* Ngeblogging Studio v21 — final physical-phone authority.
+   One left sidebar, one edge toggle, no bottom navigation, and a native
+   body-level Nara dialog that is not trapped by Studio zoom/stacking contexts. */
+
+.nara-floating-proxy-v18,
+.nara-floating-proxy-v19,
+.nara-floating-proxy-v20,
+.sn-sidebar-edge-v15,
+.sn-mobile-nav,
+.sn-mobile-sheet-layer,
+.sn-side-close,
+.sn-side-bottom {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* The real React launcher is portalled to body by NaraAssistant. */
+body > .nara-floating-button {
+  position: fixed !important;
+  right: max(12px, env(safe-area-inset-right)) !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  z-index: 2147483646 !important;
+  box-sizing: border-box !important;
+  width: 62px !important;
+  min-width: 62px !important;
+  max-width: 62px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  margin: 0 !important;
+  padding: 6px !important;
+  display: grid !important;
+  grid-template: 1fr / 1fr !important;
+  place-items: center !important;
+  border: 5px solid rgba(255,255,255,.84) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(145deg,#2d6edf,#6557db) !important;
+  color: #fff !important;
+  box-shadow: 0 14px 36px rgba(24,68,135,.38) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  isolation: isolate !important;
+}
+
+body > .nara-floating-button > span {
+  grid-area: 1 / 1 !important;
+  box-sizing: border-box !important;
+  width: 46px !important;
+  height: 46px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+body > .nara-floating-button > b,
+body > .nara-floating-button > small { display: none !important; }
+body > .nara-floating-button svg {
+  display: block !important;
+  width: 26px !important;
+  height: 26px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+body > .nara-floating-button[aria-expanded="true"] { display: none !important; }
+
+/* Native dialog is also portalled to body. */
+body > .nara-assistant-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  box-sizing: border-box !important;
+  width: 100dvw !important;
+  min-width: 0 !important;
+  max-width: 100dvw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  isolation: isolate !important;
+}
+
+body > .nara-assistant-layer > .nara-assistant-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body > .nara-assistant-layer > .nara-assistant-shell {
+  position: absolute !important;
+  inset: 0 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+body.nara-dialog-open { overflow: hidden !important; overscroll-behavior: none !important; }
+
+/* Android/UC/Opera desktop-site mode exposes a wide CSS viewport and scales it
+   down. Give the portalled body-level controls the same counter-scale as #root. */
+html[data-desktop-site-phone="true"] body > .nara-floating-button {
+  zoom: var(--sn-browser-scale,1) !important;
+}
+html[data-desktop-site-phone="true"] body > .nara-assistant-layer {
+  inset: 0 auto auto 0 !important;
+  width: var(--sn-physical-layout-width,390px) !important;
+  min-width: var(--sn-physical-layout-width,390px) !important;
+  max-width: var(--sn-physical-layout-width,390px) !important;
+  height: var(--sn-physical-layout-height,100vh) !important;
+  min-height: var(--sn-physical-layout-height,100vh) !important;
+  max-height: var(--sn-physical-layout-height,100vh) !important;
+  zoom: var(--sn-browser-scale,1) !important;
+  transform-origin: top left !important;
+}
+
+/* A physical phone always receives the same reliable sidebar interaction,
+   including when the browser requests “Desktop site”. */
+html[data-studio-compact-phone="true"] .sn-shell {
+  --sn-v21-rail: 64px;
+  --sn-v21-panel: min(86vw, 310px);
+  position: relative !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+html[data-studio-compact-phone="true"] .sn-side {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  z-index: 30020 !important;
+  box-sizing: border-box !important;
+  width: var(--sn-v21-panel) !important;
+  min-width: var(--sn-v21-panel) !important;
+  max-width: var(--sn-v21-panel) !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  display: flex !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  box-shadow: 16px 0 42px rgba(16,39,72,.18) !important;
+  transform: translate3d(0,0,0) !important;
+  transition: width .18s ease, min-width .18s ease, max-width .18s ease !important;
+}
+
+html[data-studio-compact-phone="true"] .sn-side.collapsed {
+  width: var(--sn-v21-rail) !important;
+  min-width: var(--sn-v21-rail) !important;
+  max-width: var(--sn-v21-rail) !important;
+  box-shadow: 3px 0 16px rgba(16,39,72,.08) !important;
+}
+
+html[data-studio-compact-phone="true"] .sn-side .sn-logo {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  padding: 0 18px !important;
+  overflow: hidden !important;
+}
+html[data-studio-compact-phone="true"] .sn-side.collapsed .sn-logo {
+  justify-content: center !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+html[data-studio-compact-phone="true"] .sn-side.collapsed .sn-logo b { display: none !important; }
+
+html[data-studio-compact-phone="true"] .sn-side > nav {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 4px 10px max(14px,env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+html[data-studio-compact-phone="true"] .sn-side > nav::-webkit-scrollbar { display: none !important; width: 0 !important; }
+html[data-studio-compact-phone="true"] .sn-side.collapsed > nav { padding-inline: 5px !important; align-items: center !important; }
+
+html[data-studio-compact-phone="true"] .sn-side .sn-new,
+html[data-studio-compact-phone="true"] .sn-side > nav > button {
+  position: static !important;
+  inset: auto !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 44px !important;
+  margin: 2px 0 !important;
+  padding: 0 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+html[data-studio-compact-phone="true"] .sn-side .sn-new { margin: 8px 10px 10px !important; width: calc(100% - 20px) !important; }
+html[data-studio-compact-phone="true"] .sn-side.collapsed .sn-new,
+html[data-studio-compact-phone="true"] .sn-side.collapsed > nav > button {
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  margin: 2px auto !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 0 !important;
+  overflow: visible !important;
+}
+html[data-studio-compact-phone="true"] .sn-side.collapsed .sn-new { margin: 8px auto 10px !important; }
+html[data-studio-compact-phone="true"] .sn-side.collapsed .sn-new span,
+html[data-studio-compact-phone="true"] .sn-side.collapsed > nav > button span { display: none !important; }
+html[data-studio-compact-phone="true"] .sn-side .sn-new svg,
+html[data-studio-compact-phone="true"] .sn-side > nav > button svg {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: 21px !important;
+  min-width: 21px !important;
+  height: 21px !important;
+  min-height: 21px !important;
+  margin: 0 !important;
+  flex: 0 0 21px !important;
+  clip: auto !important;
+  clip-path: none !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+html[data-studio-compact-phone="true"] .sn-side.collapsed .sn-new svg,
+html[data-studio-compact-phone="true"] .sn-side.collapsed > nav > button svg { margin: auto !important; }
+
+html[data-studio-compact-phone="true"] .sn-main,
+html[data-studio-compact-phone="true"] .sn-side + .sn-main,
+html[data-studio-compact-phone="true"] .sn-side.collapsed + .sn-main,
+html[data-studio-compact-phone="true"] .sn-side:not(.collapsed) + .sn-main {
+  box-sizing: border-box !important;
+  width: calc(100% - var(--sn-v21-rail)) !important;
+  min-width: 0 !important;
+  max-width: calc(100% - var(--sn-v21-rail)) !important;
+  margin: 0 0 0 var(--sn-v21-rail) !important;
+  overflow-x: hidden !important;
+}
+
+html[data-studio-compact-phone="true"] .sn-sidebar-scrim-v15 {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 30010 !important;
+  box-sizing: border-box !important;
+  width: 100dvw !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgba(13,31,55,.48) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+  pointer-events: auto !important;
+}
+html[data-studio-compact-phone="true"] .sn-sidebar-scrim-v15[hidden] { display: none !important; }
+
+html[data-studio-compact-phone="true"] .sn-icon[data-sidebar-authority="single-v21"] {
+  position: fixed !important;
+  left: calc(var(--sn-v21-rail) - 20px) !important;
+  top: 72px !important;
+  z-index: 30030 !important;
+  box-sizing: border-box !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid #d9e2ed !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #566981 !important;
+  box-shadow: 0 9px 26px rgba(16,39,72,.2) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+html[data-studio-compact-phone="true"] .sn-shell[data-v21-sidebar-open="true"] .sn-icon[data-sidebar-authority="single-v21"] {
+  left: calc(var(--sn-v21-panel) - 20px) !important;
+}
+html[data-studio-compact-phone="true"] .sn-icon[data-sidebar-authority="single-v21"] svg {
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html[data-studio-compact-phone="true"] .sn-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 160 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) max-content !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+}
+html[data-studio-compact-phone="true"] .sn-workspace {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 44px !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+}
+html[data-studio-compact-phone="true"] .sn-workspace > span { width:36px !important; min-width:36px !important; height:36px !important; min-height:36px !important; display:grid !important; place-items:center !important; }
+html[data-studio-compact-phone="true"] .sn-workspace > div,
+html[data-studio-compact-phone="true"] .sn-workspace b { min-width:0 !important; max-width:100% !important; }
+html[data-studio-compact-phone="true"] .sn-workspace b { display:block !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; }
+html[data-studio-compact-phone="true"] .sn-workspace > svg,
+html[data-studio-compact-phone="true"] .sn-cloud,
+html[data-studio-compact-phone="true"] .sn-install-app,
+html[data-studio-compact-phone="true"] .sn-top-actions > button[aria-label="Cari"] { display:none !important; }
+
+html[data-studio-compact-phone="true"] .sn-top-actions {
+  width: max-content !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: 42px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+html[data-studio-compact-phone="true"] .sn-view-site,
+html[data-studio-compact-phone="true"] .sn-top-actions .sn-nara-button,
+html[data-studio-compact-phone="true"] .sn-avatar {
+  box-sizing: border-box !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  line-height: 1 !important;
+  transform: none !important;
+  rotate: 0deg !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+html[data-studio-compact-phone="true"] .sn-view-site span,
+html[data-studio-compact-phone="true"] .sn-top-actions .sn-nara-button { font-size:0 !important; }
+html[data-studio-compact-phone="true"] .sn-view-site svg,
+html[data-studio-compact-phone="true"] .sn-top-actions .sn-nara-button svg {
+  display:block !important;
+  width:22px !important;
+  height:22px !important;
+  margin:auto !important;
+  transform:none !important;
+  rotate:0deg !important;
+}
+
+html[data-studio-compact-phone="true"] .sn-view-pad,
+html[data-studio-compact-phone="true"] .nw-page,
+html[data-studio-compact-phone="true"] .tn-studio,
+html[data-studio-compact-phone="true"] .ml-page,
+html[data-studio-compact-phone="true"] .bc-center {
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  margin:0 !important;
+  padding:18px 13px 104px !important;
+  overflow-x:hidden !important;
+}
+html[data-studio-compact-phone="true"] .sn-welcome,
+html[data-studio-compact-phone="true"] .sn-page-title { box-sizing:border-box !important; width:100% !important; min-width:0 !important; max-width:100% !important; }
+html[data-studio-compact-phone="true"] .sn-welcome h1,
+html[data-studio-compact-phone="true"] .sn-page-title h1 {
+  box-sizing:border-box !important;
+  max-width:100% !important;
+  font-size:clamp(28px,8.4vw,40px) !important;
+  line-height:1.08 !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+html[data-studio-compact-phone="true"] .sn-welcome > div:last-child {
+  width:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:10px !important;
+}
+html[data-studio-compact-phone="true"] .sn-welcome > div:last-child > a,
+html[data-studio-compact-phone="true"] .sn-welcome > div:last-child > button { width:100% !important; min-width:0 !important; min-height:48px !important; justify-content:center !important; }
+html[data-studio-compact-phone="true"] .sn-metrics { width:100% !important; min-width:0 !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px !important; }
+html[data-studio-compact-phone="true"] .sn-home-grid,
+html[data-studio-compact-phone="true"] .sn-info-grid,
+html[data-studio-compact-phone="true"] .sn-settings-grid { width:100% !important; min-width:0 !important; grid-template-columns:minmax(0,1fr) !important; }
+
+@media (max-width:380px) {
+  body > .nara-floating-button { width:58px !important; min-width:58px !important; max-width:58px !important; height:58px !important; min-height:58px !important; max-height:58px !important; }
+  html[data-studio-compact-phone="true"] .sn-shell { --sn-v21-rail:58px; --sn-v21-panel:min(88vw,286px); }
+  html[data-studio-compact-phone="true"] .sn-avatar { display:none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-studio-compact-phone="true"] .sn-side,
+  body > .nara-floating-button { transition:none !important; animation:none !important; }
+}
