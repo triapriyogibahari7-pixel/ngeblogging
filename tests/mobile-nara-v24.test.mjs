@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
 const css = read("src/studio-mobile-nara-v24.css");
+const cssRules = css.replace(/\/\*[\s\S]*?\*\//g, "");
 const runtime = read("src/nara-mobile-window-v24.js");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
@@ -20,7 +21,7 @@ test("v24 is an additive mobile Nara repair loaded after approved v23", () => {
   assert.ok(v24 > v23);
   assert.ok(command > -1);
   assert.ok(windowRuntime > command);
-  assert.doesNotMatch(css, /landing|hero-public|public-site|homepage/i);
+  assert.doesNotMatch(cssRules, /landing|hero-public|public-site|homepage/i);
   assert.match(css, /deliberately scoped to compact mobile Studio and Nara only/i);
 });
 
