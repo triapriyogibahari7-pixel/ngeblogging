@@ -3,13 +3,14 @@ import { createPortal } from "react-dom";
 import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
-import "./studio-v14-authority.css";
 import "./studio-responsive-v21.css";
+import "./studio-responsive-v22.css";
+import "./studio-v22-final.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
-// Production validator compatibility only: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v22-20260725";
+// Compatibility marker: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
 const PHONE_QUERY = "(max-width: 760px)";
 void PHONE_QUERY;
 
@@ -45,7 +46,6 @@ function syncStudioChrome() {
   const nav = side?.querySelector(":scope > nav");
   const toggle = shell.querySelector(":scope > .sn-main > .sn-top .sn-icon");
 
-  // Nara is a persistent floating assistant and top action, not a sidebar route.
   const naraRoute = [...(nav?.querySelectorAll(":scope > button") || [])]
     .find((button) => buttonLabel(button) === "Nara AI");
   if (naraRoute) {
@@ -55,14 +55,11 @@ function syncStudioChrome() {
     naraRoute.setAttribute("aria-hidden", "true");
   }
 
-  shell.querySelectorAll(".sn-top-actions .sn-nara-button").forEach((button) => {
-    button.hidden = false;
-    button.disabled = false;
-    button.removeAttribute("aria-hidden");
-    button.style.removeProperty("display");
-    button.style.removeProperty("visibility");
-    button.style.removeProperty("opacity");
-    button.style.removeProperty("pointer-events");
+  // v22 exposes only the floating React launcher; no header/editor duplicates.
+  shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
+    button.hidden = true;
+    button.tabIndex = -1;
+    button.setAttribute("aria-hidden", "true");
   });
 
   if (side && toggle) {
