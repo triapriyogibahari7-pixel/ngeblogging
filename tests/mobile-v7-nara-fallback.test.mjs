@@ -4,8 +4,8 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
-const responsive = read("src/studio-responsive-v23.css");
-const runtime = read("src/studio-runtime-v23.js");
+const css = read("src/studio-shell-v29.css");
+const runtime = read("src/studio-shell-v29.js");
 const secure = read("src/StudioSecure.jsx");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
@@ -15,39 +15,37 @@ const workersAi = read("server/workers-ai-nara.mjs");
 const wrangler = JSON.parse(read("wrangler.jsonc"));
 const serviceWorker = read("public/sw.js");
 
-test("phone navigation is sidebar-only with one edge control and a visible icon rail", () => {
-  assert.match(index, /studio-responsive-v23\.css/);
-  assert.match(index, /studio-runtime-v23\.js/);
-  assert.match(responsive, /--sn-v23-rail: 64px/);
-  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v23-rail\) !important/);
-  assert.match(responsive, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
-  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v23"/);
-  assert.match(runtime, /if \(\(profile\.compact \|\| profile\.tablet\) && !side\.classList\.contains\("collapsed"\)\)/);
+test("phone navigation is a Cloudflare-style drawer with one n. launcher and internal X", () => {
+  assert.match(index, /studio-shell-v29\.css/);
+  assert.match(index, /studio-shell-v29\.js/);
+  assert.match(css, /--sn-v29-panel: min\(84vw, 360px\)/);
+  assert.match(css, /\.sn-mobile-v29-launcher[\s\S]*top: 50dvh !important/);
+  assert.match(css, /\.sn-mobile-v29-close[\s\S]*display: grid !important/);
+  assert.match(css, /\.sn-mobile-v29-scrim[\s\S]*backdrop-filter: none !important/);
+  assert.match(runtime, /sn-mobile-v29-brand/);
+  assert.match(runtime, /Cari menu…/);
+  assert.match(runtime, /if \(profile\.compact && !side\.classList\.contains\("collapsed"\)\)/);
   assert.doesNotMatch(index, /<script[^>]+studio-mobile-navigation\.js|<script[^>]+studio-production-guard\.js|<script[^>]+nara-launcher-v20\.js/);
-  assert.match(secure, /studio-source-navigation-v23-20260725/);
+  assert.match(secure, /studio-source-navigation-v29-20260725/);
 });
 
 test("settings site manager theme content and Nara use bounded mobile layouts", () => {
-  assert.match(responsive, /@media \(max-width: 760px\)/);
-  assert.match(responsive, /\.sn-welcome,[\s\S]*\.sn-settings-grid[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
-  assert.match(responsive, /\.sn-content-card/);
-  assert.match(responsive, /data-physical-phone="true"\] \.nara-assistant-layer[\s\S]*inset: 0 !important/);
-  assert.match(responsive, /data-physical-phone="true"\] \.nara-assistant-shell[\s\S]*height: 100% !important/);
-  assert.match(responsive, /\.nara-composer-tools[\s\S]*display: flex !important/);
-  assert.match(responsive, /\.nara-composer input\[type="file"\][\s\S]*display: none !important/);
+  assert.match(css, /html\.studio-v29-compact \.sn-shell/);
+  assert.match(css, /html\.studio-v29-compact \.sn-shell > \.sn-main[\s\S]*width: 100% !important/);
+  assert.match(css, /\.nara-assistant-layer\[data-nara-shell-v29="true"\] > \.nara-assistant-shell[\s\S]*max-width: calc\(100vw - 24px\) !important/);
+  assert.match(css, /data-nara-size-v29="mini"[\s\S]*width: min\(350px/);
+  assert.match(css, /data-nara-size-v29="compact"[\s\S]*height: min\(640px/);
+  assert.match(css, /\.nara-assistant-layer\[data-nara-shell-v29="true"\] \.nara-composer-tools[\s\S]*display: flex !important/);
 });
 
 test("Nara launcher and complete capability center remain available", () => {
   assert.match(assistant, /className="nara-floating-button" onClick=\{\(\) => setOpen\(true\)\}/);
-  assert.match(responsive, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
-  assert.match(responsive, /\.nara-assistant-layer[\s\S]*z-index: 2147483600 !important/);
+  assert.match(css, /\.nara-assistant-layer\[data-nara-shell-v29="true"\][\s\S]*z-index: 2147483600 !important/);
   assert.doesNotMatch(index, /<script[^>]+nara-launcher-v20\.js/);
-  for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector"]) {
-    assert.ok(commandCenter.includes(marker), marker);
-  }
-  for (const marker of ["Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara"]) {
-    assert.ok(assistant.includes(marker), marker);
-  }
+  for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector"]) assert.ok(commandCenter.includes(marker), marker);
+  for (const marker of ["Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara"]) assert.ok(assistant.includes(marker), marker);
+  assert.match(runtime, /SpeechSynthesisUtterance/);
+  assert.match(runtime, /Mode kerja Nara/);
 });
 
 test("Nara has authenticated Qwen and Workers AI text vision and image fallbacks", () => {
@@ -63,8 +61,8 @@ test("Nara has authenticated Qwen and Workers AI text vision and image fallbacks
   assert.match(workersAi, /consume_nara_quota/);
 });
 
-test("inactive commerce stays hidden while PWA updates to v23", () => {
+test("inactive commerce stays hidden while PWA updates to v29", () => {
   assert.match(billing, /function upgradeButtons\(\)/);
   assert.match(billing, /upgrades\.forEach\(conceal\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v23-20260725/);
+  assert.match(serviceWorker, /ngeblogging-app-v29-20260725/);
 });

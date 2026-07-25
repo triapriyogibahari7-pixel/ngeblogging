@@ -1,0 +1,58 @@
+/* Nara v29 composer controls. Scoped to the assistant decorated by Studio shell v29. */
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-plugin-trigger-v29,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-speaker-v29 {
+  appearance: none !important;
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #607086 !important;
+  touch-action: manipulation !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-plugin-trigger-v29:hover,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-plugin-trigger-v29:focus-visible,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-plugin-trigger-v29.active,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-speaker-v29:hover,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-speaker-v29:focus-visible,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-speaker-v29.active {
+  background: #edf3fb !important;
+  color: #245fc9 !important;
+  outline: none !important;
+}
+
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-plugin-trigger-v29 svg,
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-speaker-v29 svg {
+  width: 18px !important;
+  height: 18px !important;
+  margin: auto !important;
+  pointer-events: none !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+.nara-assistant-shell[data-nara-controls-v29="true"] .nara-composer {
+  position: relative !important;
+}
+
+@media (max-width: 760px) {
+  .nara-assistant-shell[data-nara-controls-v29="true"] .nara-mode-v29 {
+    min-width: 76px !important;
+  }
+
+  .nara-assistant-shell[data-nara-controls-v29="true"] .nara-select {
+    flex: 0 0 auto !important;
+  }
+}

@@ -4,74 +4,56 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
-const css = read("src/studio-mobile-nara-v24.css");
-const cssRules = css.replace(/\/\*[\s\S]*?\*\//g, "");
-const runtime = read("src/nara-mobile-window-v24.js");
+const archivedCss = read("src/studio-mobile-nara-v24.css");
+const css = read("src/studio-shell-v29.css");
+const runtime = read("src/studio-shell-v29.js");
+const connectors = read("src/nara-connectors-v29.js");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
 const integrations = read("src/lib/nara-data.js");
 const serviceWorker = read("public/sw.js");
 
-test("v24 is an additive mobile Nara repair loaded after approved v23", () => {
-  const v23 = index.indexOf("studio-responsive-v23.css");
-  const v24 = index.indexOf("studio-mobile-nara-v24.css");
-  const command = index.indexOf("nara-command-center-bridge.js");
-  const windowRuntime = index.indexOf("nara-mobile-window-v24.js");
-  assert.ok(v23 > -1);
-  assert.ok(v24 > v23);
-  assert.ok(command > -1);
-  assert.ok(windowRuntime > command);
-  assert.doesNotMatch(cssRules, /landing|hero-public|public-site|homepage/i);
-  assert.match(css, /deliberately scoped to compact mobile Studio and Nara only/i);
+test("v24 stays archived while v29 is the active mobile Nara authority", () => {
+  assert.match(index, /studio-mobile-nara-v24\.css" rel="stylesheet" media="not all"/);
+  assert.match(index, /studio-shell-v29\.css" rel="stylesheet"/);
+  assert.doesNotMatch(index, /type="module" src="\/src\/nara-mobile-window-v24\.js"/);
+  assert.match(archivedCss, /compact mobile Studio and Nara only/i);
 });
 
-test("mobile Nara opens compact and has an explicit fullscreen restore control beside close", () => {
-  assert.match(css, /data-nara-window-mode="compact"/);
-  assert.match(css, /height: min\(76dvh, 680px\) !important/);
-  assert.match(css, /border-radius: var\(--nara-v24-radius\) !important/);
-  assert.match(css, /data-nara-window-mode="expanded"/);
-  assert.match(css, /width: 100vw !important/);
-  assert.match(css, /height: 100dvh !important/);
-  assert.match(css, /grid-template-columns: 42px minmax\(0, 1fr\) 36px 36px 36px !important/);
-  assert.match(runtime, /close\.insertAdjacentElement\("beforebegin", toggle\)/);
-  assert.match(runtime, /Kembali ke kotak kecil/);
-  assert.match(runtime, /Lebarkan layar penuh/);
-  assert.match(runtime, /return mobileViewport\(\) \? "compact" : "desktop"/);
-  assert.match(runtime, /layer\.dataset\.naraWindowMode === "expanded" \? defaultWindowMode\(\) : "expanded"/);
+test("Nara has mini compact and fullscreen controls beside close", () => {
+  for (const size of ["mini", "compact", "expanded"]) assert.ok(css.includes(`data-nara-size-v29="${size}"`), size);
+  assert.match(css, /data-nara-size-v29="mini"[\s\S]*height: min\(470px/);
+  assert.match(css, /data-nara-size-v29="compact"[\s\S]*height: min\(640px/);
+  assert.match(css, /data-nara-size-v29="expanded"[\s\S]*width: 100% !important/);
+  assert.match(runtime, /close\.insertAdjacentElement\("beforebegin", expand\)/);
+  assert.match(runtime, /expand\.insertAdjacentElement\("beforebegin", size\)/);
+  assert.match(runtime, /Buka Nara layar penuh/);
+  assert.match(runtime, /Kembali ke kotak Nara/);
 });
 
-test("mobile keeps one visible sidebar rail above its scrim and no bottom navigation", () => {
-  assert.match(css, /\.sn-shell > \.sn-side[\s\S]*display: flex !important/);
-  assert.match(css, /\.sn-shell > \.sn-side[\s\S]*z-index: 30000 !important/);
-  assert.match(css, /\.sn-sidebar-scrim-v23[\s\S]*z-index: 29900 !important/);
-  assert.match(css, /\.sn-icon\.sn-sidebar-edge-owner-v23[\s\S]*z-index: 30100 !important/);
+test("mobile drawer is separate from the Nara window and bottom navigation remains absent", () => {
+  assert.match(css, /\.sn-mobile-v29-launcher[\s\S]*top: 50dvh !important/);
+  assert.match(css, /\.sn-mobile-v29-close[\s\S]*width: 44px !important/);
+  assert.match(css, /\.sn-mobile-v29-scrim[\s\S]*z-index: 51900 !important/);
+  assert.match(css, /\.sn-shell > \.sn-side[\s\S]*z-index: 52000 !important/);
   assert.match(css, /\.sn-mobile-nav,[\s\S]*\.sn-side-bottom[\s\S]*display: none !important/);
-  assert.match(css, /\.sn-side\.collapsed > nav > button[\s\S]*place-items: center !important/);
 });
 
 test("plugins stay inside Nara with permission-first connection status", () => {
-  for (const marker of [
-    "INTEGRATION_CATALOG",
-    "listUserIntegrations",
-    "requestIntegration",
-    "disableIntegration",
-    "ACTIVE_SITE_STORAGE_KEY",
-    "nara-plugin-trigger-v24",
-    "nara-plugin-panel-v24",
-  ]) assert.ok(runtime.includes(marker), marker);
-  assert.match(commandCenter, /openInlinePlugins/);
-  assert.match(commandCenter, /trigger\.click\(\)/);
+  for (const marker of ["INTEGRATION_CATALOG", "listUserIntegrations", "requestIntegration", "disableIntegration", "ACTIVE_SITE_STORAGE_KEY", "nara-plugin-trigger-v29", "nara-plugin-panel-v29"]) {
+    assert.ok(connectors.includes(marker), marker);
+  }
   for (const provider of ["github", "supabase", "neon", "cloudflare"]) assert.ok(integrations.includes(`id:"${provider}"`), provider);
-  assert.match(css, /GPT-style permission-first plugin drawer/);
+  assert.match(connectors, /Hubungkan/);
+  assert.match(connectors, /Pending/);
+  assert.match(connectors, /Connected/);
 });
 
 test("all existing Nara capabilities remain and the PWA cache rotates", () => {
-  for (const marker of ["Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara", "Jelaskan gambar"]) {
-    assert.ok(assistant.includes(marker), marker);
-  }
-  for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector"]) {
-    assert.ok(commandCenter.includes(marker), marker);
-  }
-  assert.match(serviceWorker, /ngeblogging-app-v24-20260725/);
+  for (const marker of ["Tingkat kecerdasan", "Model Nara", "Kamera", "Foto", "File teks", "Pertanyaan suara", "Jelaskan gambar"]) assert.ok(assistant.includes(marker), marker);
+  for (const marker of ["Projects", "Memori", "Buat gambar", "Plugins", "Baca QR", "BarcodeDetector"]) assert.ok(commandCenter.includes(marker), marker);
+  assert.match(runtime, /SpeechSynthesisUtterance/);
+  assert.match(runtime, /Mode kerja Nara/);
+  assert.match(serviceWorker, /ngeblogging-app-v29-20260725/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
 });

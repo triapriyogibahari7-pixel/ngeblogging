@@ -41,10 +41,12 @@
     <link href="/src/studio-v23-validator-compat.css" rel="stylesheet" media="not all" data-disabled-authority="validator-only"/>
     <link href="/src/nara-interaction-authority.css" rel="stylesheet"/>
     <link href="/src/studio-responsive-v23.css" rel="stylesheet"/>
-    <link href="/src/studio-mobile-nara-v24.css" rel="stylesheet"/>
-    <link href="/src/studio-interaction-v25.css" rel="stylesheet"/>
-    <link href="/src/studio-device-sidebar-v26.css" rel="stylesheet"/>
-    <link href="/src/studio-mobile-widget-v28.css" rel="stylesheet"/>
+    <link href="/src/studio-mobile-nara-v24.css" rel="stylesheet" media="not all" data-disabled-authority="v24"/>
+    <link href="/src/studio-interaction-v25.css" rel="stylesheet" media="not all" data-disabled-authority="v25"/>
+    <link href="/src/studio-device-sidebar-v26.css" rel="stylesheet" media="not all" data-disabled-authority="v27"/>
+    <link href="/src/studio-mobile-widget-v28.css" rel="stylesheet" media="not all" data-disabled-authority="v28"/>
+    <link href="/src/studio-shell-v29.css" rel="stylesheet"/>
+    <link href="/src/nara-tools-v29.css" rel="stylesheet"/>
     <title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
   </head>
@@ -52,15 +54,16 @@
     <div id="root"></div>
     <script type="module" src="/src/pwa-runtime.js"></script>
     <script type="module" src="/src/main.jsx"></script>
-    <script type="module" src="/src/studio-runtime-v23.js"></script>
+    <script type="application/x-disabled" src="/src/studio-runtime-v23.js" data-disabled-authority="v23"></script>
     <script type="module" src="/src/site-favicon-bridge.js"></script>
     <script type="module" src="/src/domain-management-bridge.js"></script>
     <script type="module" src="/src/site-quota-bridge.js"></script>
     <script type="module" src="/src/billing-availability-bridge.js"></script>
     <script type="module" src="/src/auth-readiness-bridge.js"></script>
     <script type="module" src="/src/nara-command-center-bridge.js"></script>
-    <script type="module" src="/src/nara-mobile-window-v24.js"></script>
-    <script type="module" src="/src/studio-device-sidebar-v26.js"></script>
-    <script type="module" src="/src/studio-mobile-widget-v28.js"></script>
+    <script type="module" src="/src/nara-request-mode-v29.js"></script>
+    <script type="module" src="/src/studio-layout-route-v29.js"></script>
+    <script type="module" src="/src/studio-shell-v29.js"></script>
+    <script type="module" src="/src/nara-connectors-v29.js"></script>
   </body>
 </html>
