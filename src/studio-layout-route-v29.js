@@ -1,4 +1,5 @@
 const RELEASE = "studio-layout-route-v29-20260725";
+const LAYOUT_BUILDER_EVENT = "ngeblogging:open-layout-builder-v36";
 const ROOT = document.getElementById("root") || document.documentElement;
 let frame = 0;
 let ticket = 0;
@@ -13,15 +14,18 @@ function findButton(side, name) {
   return [...(side?.querySelectorAll(":scope > nav > button") || [])].find((button) => label(button) === name) || null;
 }
 
-function openCustomizer(currentTicket, attempt = 0) {
+function openLayoutBuilder(currentTicket, attempt = 0) {
   if (ticket !== currentTicket) return;
-  const customize = [...document.querySelectorAll(".tn-hero-actions button, .tn-command button")]
-    .find((button) => /sesuaikan/i.test(label(button)));
-  if (customize) {
-    customize.click();
+  const layoutButton = document.querySelector('[data-layout-builder-v36="true"]');
+  if (layoutButton) {
+    layoutButton.click();
     return;
   }
-  if (attempt < 60) window.setTimeout(() => openCustomizer(currentTicket, attempt + 1), 50);
+  if (attempt < 60) {
+    window.setTimeout(() => openLayoutBuilder(currentTicket, attempt + 1), 50);
+    return;
+  }
+  window.dispatchEvent(new CustomEvent(LAYOUT_BUILDER_EVENT));
 }
 
 function ensure(side) {
@@ -50,15 +54,18 @@ function ensure(side) {
 
   if (layout.dataset.layoutHandlerV29 !== "true") {
     layout.dataset.layoutHandlerV29 = "true";
-    layout.setAttribute("aria-label", "Buka pengaturan tata letak situs");
+    layout.setAttribute("aria-label", "Buka pembuat tata letak visual situs");
     layout.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
       const currentTheme = findButton(layout.closest(".sn-side"), "Tema");
-      if (!currentTheme) return;
+      if (!currentTheme) {
+        window.dispatchEvent(new CustomEvent(LAYOUT_BUILDER_EVENT));
+        return;
+      }
       const currentTicket = ++ticket;
       currentTheme.click();
-      requestAnimationFrame(() => openCustomizer(currentTicket));
+      requestAnimationFrame(() => openLayoutBuilder(currentTicket));
     });
   }
 }
