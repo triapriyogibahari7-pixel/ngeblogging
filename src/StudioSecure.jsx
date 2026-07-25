@@ -9,8 +9,8 @@ import "./studio-v22-final.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v22-20260725";
-// Compatibility marker: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
+// Active geometry is v22; compatibility markers: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
 const PHONE_QUERY = "(max-width: 760px)";
 void PHONE_QUERY;
 
@@ -55,7 +55,22 @@ function syncStudioChrome() {
     naraRoute.setAttribute("aria-hidden", "true");
   }
 
-  // v22 exposes only the floating React launcher; no header/editor duplicates.
+  // The floating launcher is the only visible Nara entry point.
+  document.querySelectorAll(".nara-floating-button").forEach((button, index) => {
+    if (index > 0) {
+      button.remove();
+      return;
+    }
+    button.hidden = false;
+    button.disabled = false;
+    button.removeAttribute("aria-hidden");
+    button.style.removeProperty("display");
+    button.style.removeProperty("visibility");
+    button.style.removeProperty("opacity");
+    button.style.removeProperty("pointer-events");
+    button.style.removeProperty("transform");
+  });
+
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
     button.tabIndex = -1;
