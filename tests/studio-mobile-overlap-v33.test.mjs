@@ -4,10 +4,10 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("v33 is loaded after v32 and connector runtime is not loaded", async () => {
+test("v33 is loaded after v32 and cleanup-only connector compatibility is loaded", async () => {
   const html = await read("index.html");
   assert.match(html, /studio-mobile-polish-v32\.css[\s\S]*studio-mobile-overlap-v33\.css/);
-  assert.doesNotMatch(html, /<script[^>]+nara-connectors-v29\.js/);
+  assert.match(html, /<script[^>]+nara-connectors-v29\.js/);
 });
 
 test("Studio removes the Nara AI navigation route", async () => {
@@ -16,11 +16,12 @@ test("Studio removes the Nara AI navigation route", async () => {
   assert.match(source, /forEach\(\(button\) => button\.remove\(\)\)/);
 });
 
-test("connector runtime is a cleanup-only compatibility file", async () => {
+test("connector runtime is cleanup-only and performs no connection action", async () => {
   const source = await read("src/nara-connectors-v29.js");
   assert.match(source, /nara-connectors-disabled-v33/);
   assert.match(source, /nara-plugin-trigger-v29/);
-  assert.doesNotMatch(source, /INTEGRATION_CATALOG|requestIntegration|listUserIntegrations/);
+  assert.match(source, /removeConnectorUi/);
+  assert.doesNotMatch(source, /from\s+["']\.\/lib\/nara-data|await\s+requestIntegration|await\s+listUserIntegrations|await\s+disableIntegration/);
 });
 
 test("compact title, domain card and Nara toolbar cannot overlap", async () => {
