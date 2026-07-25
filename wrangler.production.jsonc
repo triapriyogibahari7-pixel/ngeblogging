@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
+  // worker-v35.mjs wraps and preserves every worker-v22.mjs Nara fallback path.
   "name": "ngeblogging",
   "main": "./cloudflare/worker-v35.mjs",
   "compatibility_date": "2026-07-23",
