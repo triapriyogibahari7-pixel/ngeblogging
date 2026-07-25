@@ -5,9 +5,8 @@ import { BUILT_IN_THEMES, THEME_COUNT } from "../src/theme-catalog.js";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const index = read("index.html");
-const authority = read("src/studio-v14-authority.css");
-const responsive = read("src/studio-responsive-v21.css");
-const sidebar = read("src/studio-sidebar-v21.js");
+const responsive = read("src/studio-responsive-v23.css");
+const runtime = read("src/studio-runtime-v23.js");
 const secure = read("src/StudioSecure.jsx");
 const commandCenter = read("src/nara-command-center-bridge.js");
 const assistant = read("src/NaraAssistant.jsx");
@@ -24,10 +23,9 @@ const workersAi = read("server/workers-ai-nara.mjs");
 const imageHandler = read("server/nara-image-handler.mjs");
 const wrangler = read("wrangler.jsonc");
 
-test("mobile Studio v21 uses one sidebar one toggle and a persistent icon rail", () => {
-  assert.match(index, /studio-v14-authority\.css/);
-  assert.match(index, /studio-responsive-v21\.css/);
-  assert.match(index, /studio-sidebar-v21\.js/);
+test("mobile Studio v23 uses one sidebar one toggle and a persistent icon rail", () => {
+  assert.match(index, /studio-responsive-v23\.css/);
+  assert.match(index, /studio-runtime-v23\.js/);
   for (const legacy of [
     "studio-runtime-layout-guard.js",
     "studio-mobile-navigation.js",
@@ -41,23 +39,23 @@ test("mobile Studio v21 uses one sidebar one toggle and a persistent icon rail",
     "studio-mobile-v19.css",
     "studio-mobile-v20.css",
     "nara-launcher-v20.js",
-  ]) assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
-  assert.match(responsive, /--sn-v21-mobile-rail: 64px/);
-  assert.match(responsive, /--sn-v21-mobile-panel: min\(86vw, 304px\)/);
-  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v21-mobile-rail\) !important/);
-  assert.match(responsive, /\.sn-icon\.sn-sidebar-edge-owner-v21[\s\S]*left: calc\(var\(--sn-v21-mobile-rail\) - 20px\) !important/);
-  assert.match(sidebar, /toggle\.dataset\.sidebarAuthority = "single-v21"/);
-  assert.match(sidebar, /\.sn-mobile-nav, \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
-  assert.match(secure, /studio-source-navigation-v21-20260725/);
+  ]) assert.doesNotMatch(index, new RegExp(`<script[^>]+${legacy.replaceAll(".", "\\.")}|<link[^>]+${legacy.replaceAll(".", "\\.")}`));
+  assert.match(responsive, /--sn-v23-rail: 64px/);
+  assert.match(responsive, /--sn-v23-panel: min\(86vw, 292px\)/);
+  assert.match(responsive, /\.sn-side\.collapsed[\s\S]*width: var\(--sn-v23-rail\) !important/);
+  assert.match(responsive, /\.sn-icon\.sn-sidebar-edge-owner-v23[\s\S]*left: calc\(var\(--sn-v23-rail\) - 20px\) !important/);
+  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v23"/);
+  assert.match(runtime, /\.sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
+  assert.match(secure, /studio-source-navigation-v23-20260725/);
 });
 
 test("Nara is outside the sidebar and remains directly clickable in healthy or degraded mode", () => {
-  assert.match(sidebar, /button\.dataset\.naraWorkspaceRoute = "true"/);
-  assert.match(secure, /\.sn-top-actions \.sn-nara-button/);
-  assert.doesNotMatch(index, /nara-launcher-v20\.js/);
+  assert.match(runtime, /button\.dataset\.naraWorkspaceRoute = "true"/);
+  assert.match(secure, /\.sn-top-actions \.sn-nara-button, \.ce-nara/);
+  assert.doesNotMatch(index, /<script[^>]+nara-launcher-v20\.js/);
   assert.match(assistant, /className="nara-floating-button" onClick=\{\(\) => setOpen\(true\)\}/);
   assert.match(responsive, /\.nara-floating-button[\s\S]*pointer-events: auto !important/);
-  assert.match(responsive, /\.nara-assistant-layer[\s\S]*z-index: 2147483100 !important/);
+  assert.match(responsive, /\.nara-assistant-layer[\s\S]*z-index: 2147483600 !important/);
   assert.match(secure, /document\.documentElement\.dataset\.naraReady/);
   assert.match(secure, /document\.documentElement\.dataset\.naraImageReady/);
 });
@@ -128,8 +126,8 @@ test("Nara has authenticated text vision and image fallbacks on Workers AI", () 
   assert.match(wrangler, /CF_AI_IMAGE_MODEL/);
 });
 
-test("v21 invalidates stale shell CSS and JavaScript caches", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724-v21/);
+test("v23 invalidates stale shell CSS and JavaScript caches", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v23-20260725/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
