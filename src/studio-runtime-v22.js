@@ -136,12 +136,10 @@ function schedule() {
 }
 
 new MutationObserver((mutations) => {
-  if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "attributes")) schedule();
+  if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule();
 }).observe(document.documentElement, {
   childList: true,
   subtree: true,
-  attributes: true,
-  attributeFilter: ["class", "hidden", "aria-hidden"],
 });
 
 window.addEventListener("resize", schedule, { passive: true });
