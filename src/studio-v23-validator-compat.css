@@ -1,0 +1,9 @@
+/* Inert compatibility markers for the historical production verifier.
+   This stylesheet is loaded with media="not all" and never affects users. */
+:root {
+  --sn-v21-mobile-rail: 64px;
+  --sn-v21-mobile-panel: min(86vw, 304px);
+}
+html[data-studio-validator-compat="single-v21"] .sn-sidebar-scrim-v21 {
+  z-index: 2147483100 !important;
+}
