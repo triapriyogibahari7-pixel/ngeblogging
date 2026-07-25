@@ -1,0 +1,342 @@
+/*
+ * Studio Domain + Backup flow authority v35 — 2026-07-25
+ * Scope: Domain route preview/card and Backup Center only.
+ * Locked sidebar v30 and Nara widget v33 are intentionally untouched.
+ */
+
+html[data-studio-domain-backup-v35] .sn-domain-view-v35,
+html[data-studio-domain-backup-v35] .sn-domain-view-v35 > *,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center * {
+  box-sizing: border-box !important;
+}
+
+/* Domain route: title, preview action and hostname card own separate rows. */
+html[data-studio-domain-backup-v35] .sn-domain-view-v35 {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+  isolation: isolate !important;
+}
+
+html[data-studio-domain-backup-v35] .sn-domain-title-v35 {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 0 18px !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-domain-backup-v35] .sn-domain-preview-row-v35 {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: block !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-domain-backup-v35] .sn-domain-preview-row-v35 > a,
+html[data-studio-domain-backup-v35] .sn-domain-preview-row-v35 > button {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 58px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  transform: none !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+
+html[data-studio-domain-backup-v35] .sn-domain-view-v35 .sn-domain-card {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 0 18px !important;
+  transform: none !important;
+  clear: both !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-domain-backup-v35] .sn-domain-view-v35 .sn-domain-card h2 {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+}
+
+/* Backup Center: every heading, card and control returns to normal document flow. */
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: min(1180px, calc(100% - 32px)) !important;
+  min-width: 0 !important;
+  max-width: 1180px !important;
+  display: block !important;
+  margin: 24px auto calc(104px + env(safe-area-inset-bottom)) !important;
+  padding: 26px !important;
+  transform: none !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  contain: layout paint !important;
+  clear: both !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 18px !important;
+  margin: 0 0 22px !important;
+  padding: 0 0 20px !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head > div,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head span,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head h2,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head p,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head button {
+  position: static !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head span {
+  display: block !important;
+  margin: 0 !important;
+  color: #2d6edf !important;
+  font: 900 11px/1.4 "DM Sans", sans-serif !important;
+  letter-spacing: .16em !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head h2 {
+  display: block !important;
+  margin: 10px 0 10px !important;
+  color: #17253c !important;
+  font: 600 clamp(34px, 4.4vw, 54px)/1.04 "Playfair Display", serif !important;
+  letter-spacing: -.025em !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head p {
+  display: block !important;
+  margin: 0 !important;
+  color: #68788f !important;
+  font: 400 14px/1.65 "DM Sans", sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-all {
+  align-self: start !important;
+  justify-self: end !important;
+  min-width: 158px !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  white-space: normal !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-grid {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  clear: both !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 13px !important;
+  margin: 0 !important;
+  padding: 18px !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card > svg,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card > div,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card h3,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card p,
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card button {
+  position: static !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card > div {
+  width: 100% !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card h3 {
+  display: block !important;
+  margin: 0 0 6px !important;
+  color: #17253c !important;
+  font: 700 16px/1.35 "DM Sans", sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card p {
+  display: block !important;
+  margin: 0 !important;
+  color: #718097 !important;
+  font: 400 12px/1.55 "DM Sans", sans-serif !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card button {
+  align-self: center !important;
+  justify-self: end !important;
+  min-height: 42px !important;
+  white-space: normal !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-manifest {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 14px !important;
+  margin: 18px 0 0 !important;
+  transform: none !important;
+  clear: both !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-manifest > * {
+  position: static !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+@media (max-width: 820px) {
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center {
+    width: calc(100% - 24px) !important;
+    margin-top: 18px !important;
+    padding: 18px 16px !important;
+    border-radius: 18px !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head h2 {
+    font-size: clamp(29px, 8.5vw, 40px) !important;
+    line-height: 1.06 !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-all {
+    justify-self: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    gap: 11px !important;
+    padding: 15px !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card button {
+    grid-column: 1 / -1 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-manifest {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html[data-studio-domain-backup-v35] .sn-domain-preview-row-v35 > a,
+  html[data-studio-domain-backup-v35] .sn-domain-preview-row-v35 > button {
+    min-height: 54px !important;
+    padding-inline: 12px !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center {
+    width: calc(100% - 16px) !important;
+    padding: 16px 13px !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head h2 {
+    font-size: clamp(27px, 8.9vw, 34px) !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-head p {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+
+  html[data-studio-domain-backup-v35] #ngeblogging-backup-center .nb-backup-card {
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+    padding: 14px 12px !important;
+  }
+}
