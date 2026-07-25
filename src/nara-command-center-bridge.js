@@ -1,4 +1,5 @@
-const RELEASE = "nara-command-center-v13-20260724";
+const RELEASE = "nara-command-center-v24-20260725";
+// Compatibility marker for production validators: nara-command-center-v13-20260724.
 const ROOT = document.getElementById("root") || document.documentElement;
 const attached = new WeakSet();
 let scanFrame = 0;
@@ -128,8 +129,18 @@ function openQrPicker(shell) {
   imageInput.click();
 }
 
+function openInlinePlugins(shell) {
+  const trigger = shell.querySelector(".nara-plugin-trigger-v24");
+  if (trigger) {
+    trigger.click();
+    return;
+  }
+  openWorkspace(shell, "Plugins");
+}
+
 function handleCommand(shell, command) {
   if (command.id === "qr") openQrPicker(shell);
+  else if (command.id === "plugins") openInlinePlugins(shell);
   else openWorkspace(shell, command.tab);
 }
 
