@@ -1,0 +1,170 @@
+/* Ngeblogging interaction repair v28.
+   Scope: the compact-device sidebar edge control and Nara window sizing only.
+   It does not alter the landing-page layout, public tenant renderer, themes,
+   or the approved desktop Studio sidebar geometry. */
+
+:root {
+  --nara-v28-gap: max(12px, env(safe-area-inset-right));
+  --nara-v28-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* Put the only compact sidebar control exactly on the sidebar edge and at
+   the vertical centre. It can no longer cover Buat Post or other blue CTAs. */
+html.studio-compact-v27 .sn-device-toggle-v27 {
+  top: 50dvh !important;
+  left: var(--sn-v27-rail) !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: grid !important;
+  place-items: center !important;
+  line-height: 0 !important;
+  transform: translate(-50%, -50%) !important;
+  transform-origin: center !important;
+}
+
+html.studio-compact-v27 .sn-shell[data-v27-sidebar-open="true"] > .sn-device-toggle-v27 {
+  left: var(--sn-v27-panel) !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+html.studio-compact-v27 .sn-device-toggle-v27 > svg {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin: auto !important;
+  padding: 0 !important;
+  translate: none !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+/* While an assistant window is open, the separate launcher is not duplicated. */
+html[data-nara-default-open-v28="true"] .nara-floating-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* All non-fullscreen Nara states are true floating widgets. The page remains
+   visible around them and no white fullscreen layer is created. */
+html .nara-assistant-layer[data-nara-default-v28="true"]:not([data-nara-window-mode="expanded"]) {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  z-index: 2147483600 !important;
+}
+
+html .nara-assistant-layer[data-nara-default-v28="true"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-backdrop {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html .nara-assistant-layer[data-nara-default-v28="true"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell {
+  position: fixed !important;
+  inset: auto var(--nara-v28-gap) var(--nara-v28-bottom) auto !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 24px) !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-bottom)) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(42, 72, 111, .18) !important;
+  border-radius: 22px !important;
+  background: #fff !important;
+  box-shadow: 0 24px 72px rgba(8, 25, 49, .32) !important;
+  pointer-events: auto !important;
+  contain: layout paint !important;
+  transform: none !important;
+}
+
+/* Mini is the initial state on ordinary phones, mobile browsers and PWA. */
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell,
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v26="mini"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell {
+  width: min(320px, calc(100vw - 24px)) !important;
+  height: min(380px, calc(100dvh - 24px - env(safe-area-inset-bottom))) !important;
+}
+
+/* Compact is the complete widget used initially on landing/desktop/laptop and
+   after pressing the mini-to-box button on a phone. */
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="compact"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell,
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v26="compact"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell {
+  width: min(410px, calc(100vw - 24px)) !important;
+  height: min(600px, calc(100dvh - 24px - env(safe-area-inset-bottom))) !important;
+}
+
+/* Small devices remain visibly widget-sized rather than almost fullscreen. */
+html.studio-phone-v27 .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell,
+html.studio-mobile-v27 .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell,
+html.studio-standalone-v27.studio-compact-v27 .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell {
+  width: min(310px, calc(100vw - 20px)) !important;
+  height: min(350px, calc(100dvh - 20px - env(safe-area-inset-bottom))) !important;
+  border-radius: 20px !important;
+}
+
+html.studio-phone-v27 .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="compact"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell,
+html.studio-mobile-v27 .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="compact"]:not([data-nara-window-mode="expanded"]) > .nara-assistant-shell {
+  width: calc(100vw - 20px) !important;
+  height: min(68dvh, 590px) !important;
+  max-width: 430px !important;
+}
+
+/* The mini widget keeps the essential chat and composer visible while saving
+   space. The complete box reveals context shortcuts again. */
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) .nara-context-bar,
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) .nara-quick-prompts {
+  display: none !important;
+}
+
+html .nara-assistant-layer[data-nara-default-v28="true"][data-nara-size-v27="mini"]:not([data-nara-window-mode="expanded"]) .nara-assistant-header {
+  grid-template-columns: 38px minmax(0, 1fr) 32px 32px 32px 32px !important;
+  gap: 3px !important;
+  padding-inline: 7px !important;
+}
+
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-size-toggle-v26,
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-size-toggle-v27,
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-window-toggle-v24,
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-assistant-header > button {
+  align-self: center !important;
+  justify-self: center !important;
+  margin: 0 !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-size-toggle-v26 svg,
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-size-toggle-v27 svg,
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-window-toggle-v24 svg,
+html .nara-assistant-layer[data-nara-default-v28="true"] .nara-assistant-header > button svg {
+  display: block !important;
+  margin: auto !important;
+  transform: none !important;
+  rotate: 0deg !important;
+}
+
+@supports not (height: 100dvh) {
+  html .nara-assistant-layer[data-nara-default-v28="true"]:not([data-nara-window-mode="expanded"]) {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}
