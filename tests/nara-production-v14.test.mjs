@@ -4,20 +4,17 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("v22 Studio and Nara authorities replace historical guard stacks", async () => {
+test("v23 is the only active Studio and Nara responsive authority", async () => {
   const index = await read("index.html");
   const nara = index.indexOf("nara-interaction-authority.css");
-  const v21 = index.indexOf("studio-responsive-v21.css");
-  const v22 = index.indexOf("studio-responsive-v22.css");
-  const finalCss = index.indexOf("studio-v22-final.css");
+  const v23 = index.indexOf("studio-responsive-v23.css");
   assert.ok(nara > -1);
-  assert.ok(v21 > nara);
-  assert.ok(v22 > v21);
-  assert.ok(finalCss > v22);
-  assert.match(index, /studio-sidebar-v21\.js/);
-  assert.match(index, /studio-runtime-v22\.js/);
+  assert.ok(v23 > nara);
+  assert.match(index, /studio-runtime-v23\.js/);
   assert.match(index, /nara-command-center-bridge\.js/);
-  assert.match(index, /href="\/src\/studio-v14-authority\.css"[^>]+media="not all"/);
+  for (const legacy of ["studio-v14-authority.css", "studio-responsive-v21.css", "studio-responsive-v22.css", "studio-v22-final.css"]) {
+    assert.match(index, new RegExp(`href="/src/${legacy.replaceAll(".", "\\.")}"[^>]+media="not all"`));
+  }
   for (const legacy of [
     "studio-runtime-layout-guard.js",
     "studio-mobile-navigation.js",
@@ -33,35 +30,34 @@ test("v22 Studio and Nara authorities replace historical guard stacks", async ()
     "studio-mobile-v19.css",
     "studio-mobile-v20.css",
     "nara-launcher-v20.js",
-  ]) assert.doesNotMatch(index, new RegExp(legacy.replaceAll(".", "\\.")));
+  ]) assert.doesNotMatch(index, new RegExp(`<script[^>]+${legacy.replaceAll(".", "\\.")}|<link[^>]+${legacy.replaceAll(".", "\\.")}`));
 });
 
-test("Nara launcher remains clickable, singular, centered, and above Studio", async () => {
-  const css = await read("src/studio-responsive-v22.css");
-  const finalCss = await read("src/studio-v22-final.css");
-  const runtime = await read("src/studio-runtime-v22.js");
+test("Nara launcher remains clickable, singular, centered, and full viewport on phones", async () => {
+  const css = await read("src/studio-responsive-v23.css");
+  const runtime = await read("src/studio-runtime-v23.js");
   const secure = await read("src/StudioSecure.jsx");
   const assistant = await read("src/NaraAssistant.jsx");
   assert.match(css, /\.nara-floating-button[\s\S]*place-items: center !important/);
-  assert.match(css, /data-physical-screen-mobile="true"\] \.nara-assistant-layer[\s\S]*100dvh/);
-  assert.match(runtime, /dataset\.naraLauncherAuthority = "single-v22"/);
-  assert.match(runtime, /if \(index > 0\)[\s\S]*button\.remove\(\)/);
-  assert.match(secure, /button\.hidden = false/);
-  assert.match(secure, /button\.disabled = false/);
-  assert.match(finalCss, /data-nara-open="true"\] \.nara-floating-button/);
+  assert.match(css, /data-physical-phone="true"\] \.nara-assistant-layer[\s\S]*100dvh/);
+  assert.match(runtime, /dataset\.naraLauncherAuthority = "single-v23"/);
+  assert.match(runtime, /launchers\.forEach\(\(button, index\)/);
+  assert.match(runtime, /button\.hidden = false/);
+  assert.match(runtime, /button\.disabled = false/);
+  assert.match(secure, /\.sn-top-actions \.sn-nara-button, \.ce-nara/);
+  assert.match(css, /data-nara-open="true"\] \.nara-floating-button/);
   assert.match(assistant, /className="nara-floating-button" onClick=\{\(\) => setOpen\(true\)\}/);
 });
 
 test("only one left sidebar remains and Nara is outside the menu", async () => {
   const secure = await read("src/StudioSecure.jsx");
   const studio = await read("src/StudioNext.jsx");
-  const sidebar = await read("src/studio-sidebar-v21.js");
-  const runtime = await read("src/studio-runtime-v22.js");
+  const runtime = await read("src/studio-runtime-v23.js");
   assert.equal((studio.match(/className="sn-icon"/g) || []).length, 1);
   assert.doesNotMatch(studio, /sn-mobile-nav|sn-mobile-sheet-layer|sn-side-bottom/);
   assert.match(secure, /sn-mobile-nav, :scope > \.sn-mobile-sheet-layer, \.sn-side-close, \.sn-side-bottom/);
-  assert.match(sidebar, /button\.dataset\.naraWorkspaceRoute = "true"/);
-  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v22"/);
+  assert.match(runtime, /button\.dataset\.naraWorkspaceRoute = "true"/);
+  assert.match(runtime, /toggle\.dataset\.sidebarAuthority = "single-v23"/);
 });
 
 test("one Control Center keeps QR and all requested Nara capabilities reachable", async () => {
@@ -82,13 +78,13 @@ test("plugin catalog includes GitHub Supabase Neon and Cloudflare", async () => 
   }
 });
 
-test("PWA keeps v22 cache authority and network-first navigation", async () => {
+test("PWA keeps v23 cache authority and network-first navigation", async () => {
   const sw = await read("public/sw.js");
   const runtime = await read("src/pwa-runtime.js");
-  assert.match(sw, /ngeblogging-app-v22-20260725/);
+  assert.match(sw, /ngeblogging-app-v23-20260725/);
   assert.match(sw, /request\.mode === "navigate"/);
   assert.match(sw, /fetch\(request, \{ cache: "no-store" \}\)/);
-  assert.match(runtime, /ngeblogging-pwa-v21-20260725|ngeblogging-pwa-v22/);
+  assert.match(runtime, /ngeblogging-pwa-v23-20260725/);
   assert.match(runtime, /navigator\.serviceWorker\.register\("\/sw\.js"/);
   assert.doesNotMatch(runtime, /window\.location\.reload/);
 });
