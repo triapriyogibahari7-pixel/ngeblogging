@@ -10,7 +10,7 @@ const sw = read("public/sw.js");
 
 test("v30 is the only active Studio shell authority", () => {
   assert.match(index, /studio-shell-v29\.css[^>]+media="not all"/);
-  assert.match(index, /studio-shell-v29\.js[^>]+application\/x-disabled/);
+  assert.match(index, /type="application\/x-disabled"[^>]+studio-shell-v29\.js/);
   assert.match(index, /studio-shell-v30\.css" rel="stylesheet"/);
   assert.match(index, /studio-shell-v30\.js/);
 });
