@@ -36,7 +36,8 @@ test("mobile Nara opens compact and has an explicit fullscreen restore control b
   assert.match(runtime, /close\.insertAdjacentElement\("beforebegin", toggle\)/);
   assert.match(runtime, /Kembali ke kotak kecil/);
   assert.match(runtime, /Lebarkan layar penuh/);
-  assert.match(runtime, /setWindowMode\(layer, "compact"\)/);
+  assert.match(runtime, /return mobileViewport\(\) \? "compact" : "desktop"/);
+  assert.match(runtime, /layer\.dataset\.naraWindowMode === "expanded" \? defaultWindowMode\(\) : "expanded"/);
 });
 
 test("mobile keeps one visible sidebar rail above its scrim and no bottom navigation", () => {
