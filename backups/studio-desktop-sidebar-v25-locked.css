@@ -1,0 +1,65 @@
+/* OFFLINE BACKUP — DO NOT LOAD AUTOMATICALLY.
+   Approved desktop/laptop sidebar snapshot before v26 device separation.
+   Source production merge: e3c3e1603fbd0aa1b3a6a467af154399b730723b.
+   Restore by copying these rules into the final active Studio stylesheet only after review. */
+
+@media (min-width: 1101px) {
+  .sn-shell > .sn-side {
+    width: 220px !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-right: 1px solid #dce3ed !important;
+    background: #fff !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    z-index: 30000 !important;
+  }
+
+  .sn-shell > .sn-side.collapsed {
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+  }
+
+  .sn-shell > .sn-side + .sn-main {
+    width: calc(100% - 220px) !important;
+    max-width: calc(100% - 220px) !important;
+    margin-left: 220px !important;
+  }
+
+  .sn-shell > .sn-side.collapsed + .sn-main {
+    width: calc(100% - 70px) !important;
+    max-width: calc(100% - 70px) !important;
+    margin-left: 70px !important;
+  }
+
+  .sn-shell > .sn-main > .sn-top > .sn-icon {
+    position: static !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    display: grid !important;
+    place-items: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .sn-shell > .sn-side > nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .sn-shell > .sn-side.collapsed .sn-logo b,
+  .sn-shell > .sn-side.collapsed nav span,
+  .sn-shell > .sn-side.collapsed .sn-new span {
+    display: none !important;
+  }
+}
