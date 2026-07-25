@@ -3,12 +3,12 @@ import { createPortal } from "react-dom";
 import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
-import "./studio-v14-authority.css";
 import "./studio-responsive-v21.css";
+import "./studio-device-v22.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v21-20260725";
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v22-20260725";
 // Production validator compatibility only: studio-source-navigation-v14-20260724, dataset.sidebarAuthority, PHONE_QUERY.
 const PHONE_QUERY = "(max-width: 760px)";
 void PHONE_QUERY;
@@ -45,7 +45,7 @@ function syncStudioChrome() {
   const nav = side?.querySelector(":scope > nav");
   const toggle = shell.querySelector(":scope > .sn-main > .sn-top .sn-icon");
 
-  // Nara is a persistent floating assistant and top action, not a sidebar route.
+  // Nara is a persistent assistant, never a sidebar route.
   const naraRoute = [...(nav?.querySelectorAll(":scope > button") || [])]
     .find((button) => buttonLabel(button) === "Nara AI");
   if (naraRoute) {
