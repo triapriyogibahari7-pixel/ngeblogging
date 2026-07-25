@@ -32,7 +32,8 @@ test("phone navigation is a Cloudflare-style drawer with one n. launcher and int
 test("settings site manager theme content and Nara use bounded mobile layouts", () => {
   assert.match(css, /html\.studio-v29-compact \.sn-shell/);
   assert.match(css, /html\.studio-v29-compact \.sn-shell > \.sn-main[\s\S]*width: 100% !important/);
-  assert.match(css, /data-nara-size-v29="mini"[\s\S]*max-width: calc\(100vw - 24px\) !important/);
+  assert.match(css, /\.nara-assistant-layer\[data-nara-shell-v29="true"\] > \.nara-assistant-shell[\s\S]*max-width: calc\(100vw - 24px\) !important/);
+  assert.match(css, /data-nara-size-v29="mini"[\s\S]*width: min\(350px/);
   assert.match(css, /data-nara-size-v29="compact"[\s\S]*height: min\(640px/);
   assert.match(css, /\.nara-assistant-layer\[data-nara-shell-v29="true"\] \.nara-composer-tools[\s\S]*display: flex !important/);
 });
