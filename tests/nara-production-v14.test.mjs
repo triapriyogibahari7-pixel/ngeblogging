@@ -17,7 +17,7 @@ test("v22 Studio and Nara authorities replace historical guard stacks", async ()
   assert.match(index, /studio-sidebar-v21\.js/);
   assert.match(index, /studio-runtime-v22\.js/);
   assert.match(index, /nara-command-center-bridge\.js/);
-  assert.doesNotMatch(index, /<link[^>]+href=["']\/src\/studio-v14-authority\.css["']/);
+  assert.match(index, /href="\/src\/studio-v14-authority\.css"[^>]+media="not all"/);
   for (const legacy of [
     "studio-runtime-layout-guard.js",
     "studio-mobile-navigation.js",
@@ -40,11 +40,14 @@ test("Nara launcher remains clickable, singular, centered, and above Studio", as
   const css = await read("src/studio-responsive-v22.css");
   const finalCss = await read("src/studio-v22-final.css");
   const runtime = await read("src/studio-runtime-v22.js");
+  const secure = await read("src/StudioSecure.jsx");
   const assistant = await read("src/NaraAssistant.jsx");
   assert.match(css, /\.nara-floating-button[\s\S]*place-items: center !important/);
   assert.match(css, /data-physical-screen-mobile="true"\] \.nara-assistant-layer[\s\S]*100dvh/);
   assert.match(runtime, /dataset\.naraLauncherAuthority = "single-v22"/);
   assert.match(runtime, /if \(index > 0\)[\s\S]*button\.remove\(\)/);
+  assert.match(secure, /button\.hidden = false/);
+  assert.match(secure, /button\.disabled = false/);
   assert.match(finalCss, /data-nara-open="true"\] \.nara-floating-button/);
   assert.match(assistant, /className="nara-floating-button" onClick=\{\(\) => setOpen\(true\)\}/);
 });
