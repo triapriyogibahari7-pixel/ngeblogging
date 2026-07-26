@@ -31,6 +31,7 @@ test("generated Wrangler configuration pins every official route to the resolved
   await execFileAsync(process.execPath, [new URL("../scripts/build-active-zone-wrangler.mjs", import.meta.url).pathname, input, output], {
     env: {
       ...process.env,
+      CLOUDFLARE_API_TOKEN: "",
       RESOLVED_CLOUDFLARE_ZONE_ID: "0123456789abcdef0123456789abcdef",
       RESOLVED_CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210",
     },
@@ -57,6 +58,7 @@ test("generated Wrangler upload preserves existing routes when Zone Read is unav
   await execFileAsync(process.execPath, [new URL("../scripts/build-active-zone-wrangler.mjs", import.meta.url).pathname, input, output], {
     env: {
       ...process.env,
+      CLOUDFLARE_API_TOKEN: "",
       CLOUDFLARE_ZONE_ID: "",
       RESOLVED_CLOUDFLARE_ZONE_ID: "",
       CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210",
