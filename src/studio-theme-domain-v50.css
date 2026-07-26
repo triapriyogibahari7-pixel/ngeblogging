@@ -1,0 +1,505 @@
+/* Theme and domain authority v50.
+   Removes the remaining landing-page header/footer leakage from Theme Studio,
+   keeps filters clickable, and exposes honest root-domain plus host/subdomain controls. */
+
+html[data-studio-theme-domain-v50] .tn-studio {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  container-type: inline-size;
+  overflow: visible !important;
+  isolation: isolate !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-studio :where(
+  .tn-hero,
+  .tn-hero-copy,
+  .tn-active-stage,
+  .tn-command,
+  .tn-blueprints,
+  .tn-library,
+  .tn-audit-strip,
+  .tn-theme-grid,
+  .tn-theme-grid > article,
+  .tn-frame-shell
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+  translate: none !important;
+  filter: none !important;
+  clip-path: none !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-hero,
+html[data-studio-theme-domain-v50] .tn-command,
+html[data-studio-theme-domain-v50] .tn-blueprints,
+html[data-studio-theme-domain-v50] .tn-library,
+html[data-studio-theme-domain-v50] .tn-audit-strip {
+  position: relative !important;
+  inset: auto !important;
+  z-index: auto !important;
+  clear: both !important;
+  float: none !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* The landing page owns a broad `header` and `footer` rule. These resets keep
+   Theme Studio headers inside their own cards instead of absolutely positioning
+   them over the next section. */
+html[data-studio-theme-domain-v50] .tn-library > header,
+html[data-studio-theme-domain-v50] .tn-card-mock > header,
+html[data-studio-theme-domain-v50] .tn-modal > header,
+html[data-studio-theme-domain-v50] .tn-theme-grid > article > div > footer,
+html[data-studio-theme-domain-v50] .tn-modal > footer {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  float: none !important;
+  clear: both !important;
+  transform: none !important;
+  translate: none !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-library > header {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 360px) !important;
+  align-items: end !important;
+  gap: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-library > header > div,
+html[data-studio-theme-domain-v50] .tn-library > header h2,
+html[data-studio-theme-domain-v50] .tn-library > header p,
+html[data-studio-theme-domain-v50] .tn-library > header label {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-library > header label {
+  width: 100% !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+  z-index: 2 !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-category-tabs {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 20 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 7px !important;
+  margin: 18px 0 !important;
+  padding: 2px 0 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  background: #fff !important;
+  pointer-events: auto !important;
+  touch-action: pan-x !important;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+html[data-studio-theme-domain-v50] .tn-category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-studio-theme-domain-v50] .tn-category-tabs > button {
+  position: relative !important;
+  z-index: 1 !important;
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+  min-height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 15px !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-category-tabs > button.active,
+html[data-studio-theme-domain-v50] .tn-category-tabs > button[aria-pressed="true"] {
+  border-color: #2869df !important;
+  background: #2869df !important;
+  color: #fff !important;
+  box-shadow: 0 7px 18px rgba(40, 105, 223, .22) !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-theme-grid {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  clear: both !important;
+  width: 100% !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-theme-grid > article,
+html[data-studio-theme-domain-v50] .tn-theme-preview,
+html[data-studio-theme-domain-v50] .tn-card-mock {
+  position: relative !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  transform: none !important;
+  filter: none !important;
+  clip-path: none !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-card-mock > header {
+  width: auto !important;
+  height: 14% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 0 6% !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-card-mock > main {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-theme-grid > article > div > footer {
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  gap: 7px !important;
+  margin: 14px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-active-stage,
+html[data-studio-theme-domain-v50] .tn-frame-shell {
+  border-radius: 20px !important;
+  background: #e8edf4 !important;
+  box-shadow: none !important;
+  isolation: isolate !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-active-stage {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-active-stage::before,
+html[data-studio-theme-domain-v50] .tn-active-stage::after,
+html[data-studio-theme-domain-v50] .tn-frame-shell::before,
+html[data-studio-theme-domain-v50] .tn-frame-shell::after,
+html[data-studio-theme-domain-v50] .tn-studio :where([class*="glow"], [class*="halo"], [class*="ambient"], [class*="blur-orb"]) {
+  display: none !important;
+  content: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-command {
+  display: grid !important;
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin: 22px 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-command > nav {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-blueprint-list,
+html[data-studio-theme-domain-v50] .tn-blueprint-list > button {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+html[data-studio-theme-domain-v50] .tn-blueprints > div:first-child h2,
+html[data-studio-theme-domain-v50] .tn-library > header h2 {
+  font-size: clamp(29px, 4cqi, 46px) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.035em !important;
+}
+
+/* Domain controls: two explicit workflows. The controls remain visible while
+   Cloudflare permission is pending, but submit is disabled rather than faked. */
+html[data-studio-theme-domain-v50] .op50-domain-controls {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin: 18px 0 !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-card {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 12px !important;
+  padding: 18px !important;
+  border: 1px solid #dce4ee !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(25, 48, 82, .06) !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-card > header {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  z-index: auto !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-card h3 {
+  margin: 5px 0 4px !important;
+  font-size: 20px !important;
+  line-height: 1.2 !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-card p,
+html[data-studio-theme-domain-v50] .op50-domain-card small {
+  margin: 0 !important;
+  color: #728096 !important;
+  line-height: 1.5 !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-form {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: end !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-host-form {
+  grid-template-columns: minmax(120px, .7fr) minmax(180px, 1fr) auto !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-form label {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #536176 !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-form input,
+html[data-studio-theme-domain-v50] .op50-domain-form button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-form input {
+  border: 1px solid #d8e1ec !important;
+  border-radius: 10px !important;
+  padding: 0 12px !important;
+  background: #fff !important;
+  color: #26364e !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-form button {
+  width: auto !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: #2d6edf !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-form button:disabled {
+  background: #dbe3ef !important;
+  color: #7d8999 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-host-preview,
+html[data-studio-theme-domain-v50] .op50-domain-target {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 9px 11px !important;
+  border-radius: 9px !important;
+  background: #f3f6fa !important;
+  color: #536176 !important;
+  font-size: 11px !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-target {
+  grid-column: 1 / -1 !important;
+}
+
+html[data-studio-theme-domain-v50] .op50-domain-pending {
+  grid-column: 1 / -1 !important;
+  margin: 0 !important;
+  padding: 11px 13px !important;
+  border: 1px solid #f0d9a7 !important;
+  border-radius: 10px !important;
+  background: #fff8e9 !important;
+  color: #765318 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+@container (max-width: 900px) {
+  html[data-studio-theme-domain-v50] .tn-library > header,
+  html[data-studio-theme-domain-v50] .tn-command,
+  html[data-studio-theme-domain-v50] .op50-domain-controls {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-command > nav {
+    justify-content: flex-start !important;
+  }
+}
+
+@container (max-width: 680px) {
+  html[data-studio-theme-domain-v50] .tn-studio {
+    padding: 14px 12px 72px !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  /* Embedded full-site previews are intentionally removed from the small-screen
+     library page. The explicit Preview button still opens the responsive modal. */
+  html[data-studio-theme-domain-v50] .tn-hero > .tn-active-stage {
+    display: none !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-hero-copy,
+  html[data-studio-theme-domain-v50] .tn-command,
+  html[data-studio-theme-domain-v50] .tn-blueprints,
+  html[data-studio-theme-domain-v50] .tn-library {
+    padding: 20px !important;
+    border-radius: 18px !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-hero-copy h1 {
+    font-size: clamp(34px, 11cqi, 48px) !important;
+    line-height: 1 !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-blueprints > div:first-child h2,
+  html[data-studio-theme-domain-v50] .tn-library > header h2 {
+    font-size: clamp(30px, 10cqi, 42px) !important;
+    line-height: 1.04 !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-command > nav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-command > nav > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-blueprint-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-studio-theme-domain-v50] .tn-theme-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  html[data-studio-theme-domain-v50] .op50-domain-form,
+  html[data-studio-theme-domain-v50] .op50-domain-host-form {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  html[data-studio-theme-domain-v50] .op50-domain-form button {
+    width: 100% !important;
+  }
+}
+
+/* Android Desktop-site can expose a large CSS viewport while the physical screen
+   is still narrow. Apply the compact Theme treatment using the shell class too. */
+html.studio-v30-desktop-phone[data-studio-theme-domain-v50] .tn-hero > .tn-active-stage,
+html[data-physical-phone="true"][data-studio-theme-domain-v50] .tn-hero > .tn-active-stage,
+html[data-physical-screen-mobile="true"][data-studio-theme-domain-v50] .tn-hero > .tn-active-stage {
+  display: none !important;
+}
+
+html.studio-v30-desktop-phone[data-studio-theme-domain-v50] .tn-library > header,
+html.studio-v30-desktop-phone[data-studio-theme-domain-v50] .tn-command,
+html.studio-v30-desktop-phone[data-studio-theme-domain-v50] .op50-domain-controls {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html.studio-v30-desktop-phone[data-studio-theme-domain-v50] .tn-theme-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
