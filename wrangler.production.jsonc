@@ -20,6 +20,7 @@
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
     "APP_RELEASE": "2026.07.24-studio-v14",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
+    "UI_V37_WORKER_COMPAT": "worker-v37.mjs",
     "UI_V35_RELEASE_COMPAT": "2026.07.25-studio-v35",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
