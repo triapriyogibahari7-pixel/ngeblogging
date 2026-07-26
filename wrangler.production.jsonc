@@ -18,7 +18,7 @@
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-    "APP_RELEASE": "2026.07.26-responsive-v40",
+    "APP_RELEASE": "2026.07.24-studio-v14",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
     "UI_V35_RELEASE_COMPAT": "2026.07.25-studio-v35",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
@@ -29,7 +29,7 @@
     "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
     "NARA_FALLBACK_WORKER_COMPAT": "worker-v22.mjs",
-    "UI_AUTHORITY_RELEASE": "2026.07.26-responsive-layout-v39",
+    "UI_AUTHORITY_RELEASE": "2026.07.25-production-audit-v37",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
     "AUTH_BRANDED_EMAIL_READY": "false",
