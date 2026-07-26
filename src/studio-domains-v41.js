@@ -95,7 +95,7 @@ function readinessMarkup(state) {
   const permissionMissing = bindings.apiToken === true && bindings.zoneId === true && bindings.providerApi !== true;
   const detail = permissionMissing
     ? "Token Cloudflare terbaca, tetapi belum lolos izin SSL and Certificates Read/Write pada zone ngeblogging.com. Form tetap ditampilkan agar fiturnya tidak hilang, namun tombol dikunci sampai izin resmi tersebut aktif."
-    : "Form domain ditampilkan sekarang dan akan aktif otomatis setelah Cloudflare serta akses database berbasis sesi pengguna terbaca oleh Worker. Subdomain gratis tetap aktif; service-role server tidak diperlukan.";
+    : "Form domain ditampilkan sekarang dan akan aktif otomatis setelah Cloudflare serta akses database berbasis sesi pengguna terbaca oleh Worker. Subdomain gratis tetap aktif; Service-role server tidak diperlukan.";
   return `<section class="op41-panel"><div class="op41-toolbar"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Domain utama, WWW, dan subdomain</h2><p>Semua TLD valid didukung. Alamat bertingkat seperti cloud.console.domain.com juga dapat digunakan.</p></div><span>Menunggu verifikasi produksi</span></div>${domainControlsMarkup({ ready:false, cnameTarget:bindings.cnameTargetValue || "" })}<section class="op41-readiness"><div><small class="op41-kicker">STATUS KONEKSI</small><h2>Koneksi produksi sedang diverifikasi</h2><p>${escapeHtml(detail)}</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, ready]) => `<li data-ready="${ready === true}">${ready === true ? "✓" : "○"} ${escapeHtml(name)}</li>`).join("")}</ul></section></section>`;
 }
 
