@@ -24,6 +24,7 @@ export const BUILT_IN_WIDGETS = [
   { id: "audio", name: "Audio & podcast", category: "Media", description: "Pemutar audio, episode, dan tautan berlangganan.", icon: "◉" },
   { id: "map-location", name: "Peta & lokasi", category: "Bisnis", description: "Alamat, koordinat, dan tautan peta tanpa pelacakan paksa.", icon: "⌖" },
   { id: "event-calendar", name: "Kalender acara", category: "Komunitas", description: "Daftar acara, tanggal, waktu, lokasi, dan CTA.", icon: "□" },
+  { id: "custom-html", name: "HTML / JavaScript", category: "Kode", description: "Widget kode kustom dalam iframe sandbox terisolasi.", icon: "</>" },
 ];
 
 export const LAYOUT_AREAS = [
@@ -36,6 +37,7 @@ export const LAYOUT_AREAS = [
   { id: "sidebar-right", label: "Sidebar kanan", group: "content" },
   { id: "footer-left", label: "Footer kiri", group: "footer" },
   { id: "footer-right", label: "Footer kanan", group: "footer" },
+  { id: "footer-wide", label: "Footer panjang", group: "footer" },
 ];
 
 const LEGACY_AREAS = ["sidebar", "after-content", "footer"];
@@ -43,7 +45,7 @@ const VALID_AREAS = new Set([...LAYOUT_AREAS.map((area) => area.id), ...LEGACY_A
 const RENDER_GROUPS = {
   sidebar: new Set(["sidebar", "sidebar-left", "sidebar-right"]),
   "after-content": new Set(["header-left", "header-right", "below-header", "before-content", "after-content"]),
-  footer: new Set(["footer", "footer-left", "footer-right"]),
+  footer: new Set(["footer", "footer-left", "footer-right", "footer-wide"]),
 };
 
 export function getWidget(widgetId) {
@@ -55,11 +57,11 @@ export function getLayoutArea(areaId) {
 }
 
 export function createDefaultWidgetState(ids = ["search", "recent-posts", "categories", "newsletter"]) {
-  const defaults = ["sidebar", "sidebar", "sidebar", "footer"];
+  const defaults = ["sidebar-right", "sidebar-right", "sidebar-right", "footer-left"];
   return ids.filter((id, index, all) => getWidget(id) && all.indexOf(id) === index).map((id, index) => ({
     id,
     enabled: true,
-    area: defaults[index] || "sidebar",
+    area: defaults[index] || "sidebar-right",
     order: index,
     title: getWidget(id)?.name || id,
     settings: {},
@@ -75,7 +77,7 @@ export function normalizeWidgetState(input, fallbackIds) {
     const widget = getWidget(id);
     if (!widget || seen.has(id)) return [];
     seen.add(id);
-    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar";
+    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar-right";
     return [{
       id,
       enabled: entry?.enabled !== false,
@@ -92,7 +94,18 @@ function escapeHtml(value) {
   return String(value || "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
 }
 
-export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar") {
+function escapeAttribute(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
+}
+
+function customWidgetSrcDoc(settings = {}) {
+  const html = String(settings.html || "<div style=\"font-family:system-ui;padding:16px\"><strong>Widget HTML / JavaScript</strong><p>Tambahkan kode dari Studio Tema.</p></div>").slice(0, 200_000);
+  const javascript = String(settings.javascript || "").slice(0, 100_000).replace(/<\/script/gi, "<\\/script");
+  const source = `<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;min-width:0;overflow-wrap:anywhere}*{box-sizing:border-box}img,video,iframe{max-width:100%;height:auto}</style></head><body>${html}${javascript ? `<script>"use strict";${javascript}<\/script>` : ""}</body></html>`;
+  return escapeAttribute(source);
+}
+
+export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right", settings = {}) {
   const widget = getWidget(widgetId);
   if (!widget) return "";
   const heading = `<h3>${escapeHtml(title || widget.name)}</h3>`;
@@ -122,6 +135,7 @@ export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar") {
     audio: `${heading}<audio controls></audio>`,
     "map-location": `${heading}<address>Jakarta, Indonesia · Buka peta</address>`,
     "event-calendar": `${heading}<time>23 Juli 2026 · 19.00 WIB</time><p>Acara komunitas Ngeblogging.</p>`,
+    "custom-html": `<iframe class="ng-widget-custom-frame" title="${escapeAttribute(title || widget.name)}" loading="lazy" sandbox="allow-scripts allow-forms" srcdoc="${customWidgetSrcDoc(settings)}"></iframe>`,
   };
   return `<section class="ng-widget ng-widget-${escapeHtml(widgetId)}" data-widget-id="${escapeHtml(widgetId)}" data-layout-area="${escapeHtml(area)}">${samples[widgetId] || `${heading}<p>${escapeHtml(widget.description)}</p>`}</section>`;
 }
@@ -130,7 +144,7 @@ export function widgetsMarkup(state, renderGroup) {
   const accepted = RENDER_GROUPS[renderGroup] || new Set([renderGroup]);
   return normalizeWidgetState(state)
     .filter((widget) => widget.enabled && accepted.has(widget.area))
-    .map((widget) => widgetPreviewMarkup(widget.id, widget.title, widget.area))
+    .map((widget) => widgetPreviewMarkup(widget.id, widget.title, widget.area, widget.settings))
     .join("");
 }
 
