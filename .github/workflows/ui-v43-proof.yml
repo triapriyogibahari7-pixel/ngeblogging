@@ -1,0 +1,100 @@
+name: Ngeblogging v43 UI proof
+
+on:
+  workflow_run:
+    workflows: ["Cloudflare Workers production"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-v43-ui-proof
+  cancel-in-progress: true
+
+jobs:
+  prove:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify responsive v43 code in live assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ngeblogging-v43
+          stamp="$(date +%s)"
+          curl -sS -L --fail-with-body --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "https://ngeblogging.com/?ui_proof=${stamp}" -o /tmp/ngeblogging-v43/index.html
+          curl -sS -L --fail-with-body --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "https://ngeblogging.com/sw.js?ui_proof=${stamp}" -o /tmp/ngeblogging-v43/sw.js
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const origin = 'https://ngeblogging.com';
+          const html = fs.readFileSync('/tmp/ngeblogging-v43/index.html', 'utf8');
+          const urls = [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)]
+            .map((match) => new URL(match[1], origin).href);
+          const queue = [...new Set(urls)];
+          const visited = new Set();
+          const bodies = [];
+          while (queue.length && visited.size < 120) {
+            const url = queue.shift();
+            if (!url || visited.has(url)) continue;
+            visited.add(url);
+            const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}ui_proof=${Date.now()}`, {
+              headers: { 'cache-control': 'no-cache' },
+              redirect: 'follow',
+            });
+            const text = await response.text();
+            bodies.push(`\n/* ${url} ${response.status} */\n${text}`);
+            if (!response.ok) throw new Error(`Aset UI gagal dimuat: ${response.status} ${url}`);
+            if (!/\.js(?:\?|$)/i.test(url)) continue;
+            for (const match of text.matchAll(/["']((?:\/assets\/|\.\/)[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)) {
+              const child = new URL(match[1], url).href;
+              if (child.startsWith(`${origin}/assets/`) && !visited.has(child)) queue.push(child);
+            }
+          }
+          const combined = bodies.join('\n');
+          fs.writeFileSync('/tmp/ngeblogging-v43/assets.txt', combined);
+          const required = [
+            'studio-responsive-repair-v43-20260726',
+            'sp43-real-empty',
+            'data-lb40-preview',
+            'Kelola & ganti situs',
+            'Ponsel / aplikasi',
+            'studio-domain-v41-20260726',
+          ];
+          const missing = required.filter((marker) => !combined.includes(marker));
+          if (missing.length) throw new Error(`Marker UI produksi belum lengkap: ${missing.join(', ')}`);
+          console.log(JSON.stringify({ assets: visited.size, required, status: 'verified' }, null, 2));
+          NODE
+
+          grep -q 'ngeblogging-app-v43-20260726' /tmp/ngeblogging-v43/sw.js
+          echo 'Studio responsive repair v43 dan PWA v43 terbukti aktif pada aset produksi.' | tee /tmp/ngeblogging-v43/summary.txt
+
+      - name: Publish UI proof status
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const success = '${{ job.status }}' === 'success';
+            const sha = context.eventName === 'workflow_run' ? context.payload.workflow_run.head_sha : context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: success ? 'success' : 'failure',
+              context: 'Ngeblogging responsive UI v43',
+              description: success ? 'Live assets contain responsive v43, device layouts, domains, and PWA v43.' : 'Responsive v43 marker verification failed.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Upload UI proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngeblogging-v43-ui-proof-${{ github.run_id }}
+          path: /tmp/ngeblogging-v43
+          if-no-files-found: error
+          retention-days: 3
