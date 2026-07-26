@@ -6,7 +6,7 @@ Dokumen ini sengaja memisahkan kemampuan yang benar-benar gratis dari layanan Cl
 
 Status: **diimplementasikan**.
 
-Ngeblogging memakai project `ngeblogging.netlify.app` sebagai bridge publik. React membaca hostname pengunjung dan memuat tenant yang sesuai dari Supabase. API publik diproksi ke `https://ngeblogging.com/api/*` melalui `public/_redirects`, sehingga konfigurasi root produksi tetap Cloudflare-only.
+Ngeblogging memakai project `ngeblogging.netlify.app` sebagai bridge publik. React membaca hostname pengunjung dan memuat tenant yang sesuai dari Supabase. Pada build Netlify, skrip `scripts/write-netlify-redirects.mjs` membuat `dist/_redirects` untuk memproksi API ke `https://ngeblogging.com/api/*` dan memberi SPA fallback. File tersebut tidak dibuat pada build Cloudflare, sehingga kedua deployment tidak saling merusak.
 
 Alur domain utama:
 
