@@ -1,7 +1,7 @@
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import { ACTIVE_SITE_STORAGE_KEY, setActiveSiteId } from "./lib/studio-data.js";
 
-const RELEASE = "studio-site-switcher-v52-20260726";
+const RELEASE = "studio-site-switcher-v52-20260726-stable";
 const SITE_LIMIT = 12;
 const PANEL_ID = "sp52-site-switcher-panel";
 const ROLE_LABEL = {
@@ -12,6 +12,8 @@ const ROLE_LABEL = {
   contributor: "Kontributor",
   viewer: "Pengamat",
 };
+
+document.documentElement.dataset.studioSiteSwitcherV52 = RELEASE;
 
 let frame = 0;
 let sitesPromise = null;
@@ -70,23 +72,32 @@ function findHome() {
   return welcome?.parentElement ? { welcome, container: welcome.parentElement } : null;
 }
 
+function quarantineLegacyCards(home) {
+  const legacyCards = [...home.container.querySelectorAll(":scope > .sp37-active-site")];
+  legacyCards.forEach((card, index) => {
+    card.hidden = true;
+    card.setAttribute("aria-hidden", "true");
+    card.dataset.sp52LegacyHidden = "true";
+    if (index > 0) card.remove();
+  });
+}
+
 function ensureSingleHost() {
   const home = findHome();
   if (!home) return null;
 
-  const cards = [...home.container.querySelectorAll(":scope > .sp37-active-site")];
-  let host = cards.find((card) => card.classList.contains("sp52-site-switcher")) || cards[0] || null;
+  quarantineLegacyCards(home);
 
+  let host = home.container.querySelector(":scope > .sp52-site-switcher");
   if (!host) {
     host = document.createElement("section");
-    host.className = "sp37-active-site sp52-site-switcher";
+    host.className = "sp52-site-switcher";
+    home.welcome.insertAdjacentElement("afterend", host);
+  } else if (home.welcome.nextElementSibling !== host) {
     home.welcome.insertAdjacentElement("afterend", host);
   }
 
-  host.classList.add("sp52-site-switcher");
   host.dataset.sp52Release = RELEASE;
-
-  cards.filter((card) => card !== host).forEach((card) => card.remove());
   return host;
 }
 
@@ -244,14 +255,16 @@ async function render() {
       const sites = await loadSites();
       if (!card.isConnected) return;
       if (!sites.length) {
-        card.innerHTML = `<div class="sp52-empty"><small>SITUS YANG DIKELOLA</small><h2>Belum ada situs aktif</h2><p>Buat situs pertama untuk memulai workspace Ngeblogging.</p><button type="button">+ Tambah situs</button></div>`;
-        card.querySelector("button")?.addEventListener("click", () => openExistingWorkspace(card, "add"));
+        if (!card.querySelector(".sp52-empty")) {
+          card.innerHTML = `<div class="sp52-empty"><small>SITUS YANG DIKELOLA</small><h2>Belum ada situs aktif</h2><p>Buat situs pertama untuk memulai workspace Ngeblogging.</p><button type="button">+ Tambah situs</button></div>`;
+          card.querySelector("button")?.addEventListener("click", () => openExistingWorkspace(card, "add"));
+        }
         return;
       }
 
-      let selected = sites.find((site) => site.id === activeSiteId()) || sites[0];
+      const selected = sites.find((site) => site.id === activeSiteId()) || sites[0];
       if (selected.id !== activeSiteId()) setActiveSiteId(selected.id);
-      const signature = `${selected.id}:${sites.map((site) => `${site.id}:${site.updated_at || ""}`).join("|")}`;
+      const signature = `${selected.id}:${sites.map((site) => site.id).join("|")}`;
       if (card.dataset.sp52Signature === signature && card.querySelector(".sp52-current-site")) return;
 
       card.sp52Controller?.abort();
@@ -261,12 +274,14 @@ async function render() {
       card.dataset.open = "false";
       bind(card, sites);
     } catch (error) {
-      card.innerHTML = `<div class="sp52-empty sp52-error"><small>WORKSPACE</small><h2>Daftar situs belum dapat dimuat</h2><p>${escapeHtml(error.message || "Terjadi gangguan sementara.")}</p><button type="button">Coba lagi</button></div>`;
-      card.querySelector("button")?.addEventListener("click", () => {
-        sitesPromise = null;
-        card.dataset.sp52Signature = "";
-        schedule();
-      });
+      if (!card.querySelector(".sp52-error")) {
+        card.innerHTML = `<div class="sp52-empty sp52-error"><small>WORKSPACE</small><h2>Daftar situs belum dapat dimuat</h2><p>${escapeHtml(error.message || "Terjadi gangguan sementara.")}</p><button type="button">Coba lagi</button></div>`;
+        card.querySelector("button")?.addEventListener("click", () => {
+          sitesPromise = null;
+          card.dataset.sp52Signature = "";
+          schedule();
+        });
+      }
     }
   })().finally(() => {
     renderPromise = null;
@@ -300,16 +315,11 @@ window.addEventListener("storage", (event) => {
 
 window.addEventListener("ngeblogging:active-site-changed", () => {
   sitesPromise = null;
-  const card = ensureSingleHost();
-  if (card) card.dataset.sp52Signature = "";
-  schedule();
 });
 
 if (supabase) {
   supabase.auth.onAuthStateChange(() => {
     sitesPromise = null;
-    const card = ensureSingleHost();
-    if (card) card.dataset.sp52Signature = "";
     schedule();
   });
 }
