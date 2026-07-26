@@ -14,7 +14,7 @@ const replacements = [
   ],
   [
     'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || productionWrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");',
-    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.26-responsive-v41") throw new Error("Release upload produksi belum v41.");\nif (productionWrangler.vars?.UI_AUTHORITY_RELEASE !== "2026.07.26-studio-operations-v41") throw new Error("UI authority produksi belum v41.");',
+    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.26-responsive-v41") throw new Error("Release upload produksi belum v41.");\nif (productionWrangler.vars?.UI_AUTHORITY_RELEASE !== "2026.07.26-responsive-operations-v41-domain-v41") throw new Error("UI authority produksi belum responsive operations v41 + domain v41.");',
   ],
 ];
 
