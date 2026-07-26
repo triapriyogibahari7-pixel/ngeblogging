@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("v35 loads after v34 and its runtime is last", async () => {
+test("v35 loads after v34 and its runtime is last among the v35 pair", async () => {
   const html = await read("index.html");
   assert.ok(html.indexOf("studio-domain-backup-v35.css") > html.indexOf("studio-content-flow-v34.css"));
   assert.ok(html.indexOf("studio-domain-backup-v35.js") > html.indexOf("studio-content-flow-v34.js"));
@@ -41,18 +41,22 @@ test("v35 does not target the locked sidebar or Nara widget", async () => {
   }
 });
 
-test("every account quota and database authority are twelve sites", async () => {
+test("legacy twelve-site authority is superseded by dynamic per-account capacity", async () => {
   const bridge = await read("src/site-quota-bridge.js");
-  const migration = await read("supabase/migrations/20260725150000_expand_all_accounts_to_12_sites.sql");
-  assert.match(bridge, /allowed_limit \|\| 12/);
-  assert.match(bridge, /free_limit \|\| 12/);
-  assert.match(migration, /create or replace function private\.site_limit_for_plan/);
-  assert.match(migration, /select 12;/);
-  assert.match(migration, /private\.site_limit_for_plan\(state\.plan\)/);
-  assert.match(migration, /private\.site_limit_for_plan\(account_plan\)/);
+  const migration = await read("supabase/migrations/20260726091500_dynamic_site_capacity_v40.sql");
+  const productionWorker = await read("cloudflare/worker-v37.mjs");
+  assert.match(bridge, /KAPASITAS SITUS DINAMIS/);
+  assert.match(bridge, /capacityMode = "dynamic"/);
+  assert.doesNotMatch(bridge, /allowed_limit \|\| 12|free_limit \|\| 12|maximum_limit/i);
+  assert.match(migration, /create table if not exists private\.account_site_capacity/);
+  assert.match(migration, /create or replace function private\.site_limit_for_owner/);
+  assert.match(migration, /select 1000;/);
+  assert.match(migration, /SITE_CAPACITY_REACHED/);
+  assert.match(productionWorker, /siteCapacity: \{ mode:"dynamic", defaultLimit:1000, perAccountOverrides:true \}/);
+  assert.match(productionWorker, /siteLimitsDeprecated: true/);
 });
 
-test("production worker reports v35 and twelve independent workspaces", async () => {
+test("production worker keeps the v35 compatibility contract while workspaces remain independent", async () => {
   const config = await read("wrangler.production.jsonc");
   const worker = await read("cloudflare/worker-v35.mjs");
   assert.match(config, /worker-v35\.mjs/);
@@ -61,8 +65,9 @@ test("production worker reports v35 and twelve independent workspaces", async ()
   assert.match(worker, /independentSiteWorkspaces: true/);
 });
 
-test("PWA cache rotates to v35", async () => {
+test("PWA cache keeps v35 compatibility and rotates to v40", async () => {
   const sw = await read("public/sw.js");
+  assert.match(sw, /ngeblogging-app-v40-20260726/);
   assert.match(sw, /ngeblogging-app-v35-20260725/);
   assert.match(sw, /ngeblogging-app-v34-20260725/);
 });

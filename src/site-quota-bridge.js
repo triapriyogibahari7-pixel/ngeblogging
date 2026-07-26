@@ -2,12 +2,11 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 
 const attached = new WeakSet();
 
-function quotaText(quota) {
-  const current = Number(quota?.current_count || 0);
-  const allowed = Number(quota?.allowed_limit || 12);
-  const free = Number(quota?.free_limit || 12);
-  const maximum = Number(quota?.maximum_limit || 12);
-  return `${current} dari ${allowed} situs digunakan · ${free} situs pada paket gratis · maksimum ${maximum} situs per akun`;
+function capacityText(quota) {
+  const current = Math.max(0, Number(quota?.current_count || 0));
+  return current === 0
+    ? "Workspace siap untuk situs pertama"
+    : `${current.toLocaleString("id-ID")} situs sedang dikelola`;
 }
 
 async function loadQuota() {
@@ -26,13 +25,16 @@ function apply(manager, quota) {
     banner.className = "sq-banner";
     createSection.prepend(banner);
   }
-  const remaining = Number(quota?.remaining || 0);
-  const allowed = Number(quota?.allowed_limit || 12);
-  banner.innerHTML = `<div><small>KUOTA SITUS AKUN</small><b>${quotaText(quota)}</b><span>Setiap situs memperoleh alamat gratis <code>nama-situs.ngeblogging.com</code>, favicon, tema, tata letak, Posts, Pages, media, dan pengaturannya sendiri.</span></div><i class="${remaining > 0 ? "ready" : "full"}">${remaining > 0 ? `${remaining} tersisa` : "Kuota penuh"}</i>`;
+  const remaining = Math.max(0, Number(quota?.remaining || 0));
+  const canCreate = remaining > 0;
+  banner.dataset.capacityMode = "dynamic";
+  banner.innerHTML = `<div><small>KAPASITAS SITUS DINAMIS</small><b>${capacityText(quota)}</b><span>Setiap situs mempunyai subdomain gratis <code>nama-situs.ngeblogging.com</code>, favicon, tema, tata letak, Posts, Pages, media, analitik, anggota, domain, dan pengaturan terpisah. Kapasitas dikelola oleh server dan dapat diperluas sesuai kebutuhan akun.</span></div><i class="${canCreate ? "ready" : "full"}">${canCreate ? "Siap ditambah" : "Perlu perluasan"}</i>`;
   const createButton = createSection.querySelector(":scope > button.sn-primary");
   if (createButton) {
-    createButton.disabled = remaining <= 0;
-    createButton.title = remaining <= 0 ? `Batas ${allowed} situs untuk akun ini sudah tercapai.` : `Buat situs baru; ${remaining} slot tersisa.`;
+    createButton.disabled = !canCreate;
+    createButton.title = canCreate
+      ? "Buat situs baru dengan workspace dan subdomain terpisah."
+      : "Kapasitas akun saat ini telah terpakai dan perlu diperluas.";
   }
 }
 
@@ -43,7 +45,7 @@ async function attach(manager) {
     const quota = await loadQuota();
     if (quota) apply(manager, quota);
   } catch (error) {
-    console.warn("Site quota unavailable", error);
+    console.warn("Site capacity unavailable", error);
   }
 }
 
