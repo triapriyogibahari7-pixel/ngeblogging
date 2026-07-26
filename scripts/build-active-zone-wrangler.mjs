@@ -57,22 +57,16 @@ if (/^[a-f0-9]{32}$/i.test(zoneId)) {
   config.routes = requiredPatterns.map((pattern) => ({ pattern, zone_id: zoneId }));
   console.log("Route produksi dikunci memakai Zone ID aktif.");
 } else {
-  const sourceRoutes = new Map(
-    (config.routes || []).map((route) => [
-      typeof route === "string" ? route : route.pattern,
-      route,
-    ]),
-  );
-
-  config.routes = requiredPatterns.map((pattern) => {
-    const route = sourceRoutes.get(pattern);
-    if (route && typeof route === "object" && route.zone_name === "ngeblogging.com") {
-      return route;
-    }
-    return { pattern, zone_name: "ngeblogging.com" };
-  });
-
-  console.warn("Zone ID tidak tersedia bagi GitHub Actions; route tetap dikunci dengan zone_name ngeblogging.com dan Account ID resmi.");
+  /*
+   * Token produksi saat ini dapat mengelola Worker dan Worker Domains,
+   * tetapi tidak memiliki Zone Read. Jangan meminta Wrangler menyelesaikan
+   * zone_name karena itu juga membutuhkan Zone Read. Menghapus routes dari
+   * konfigurasi upload hanya memperbarui kode/aset Worker; route apex,
+   * www, dan wildcard yang sudah aktif tetap dipertahankan di Cloudflare.
+   * Smoke test produksi sesudah deploy membuktikan ketiga route tetap hidup.
+   */
+  delete config.routes;
+  console.warn("Zone ID tidak tersedia; upload Worker tidak menulis ulang route yang sudah aktif.");
 }
 
 await writeFile(outputPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
@@ -85,4 +79,8 @@ if (process.env.GITHUB_ENV) {
   );
 }
 
-console.log(`Konfigurasi produksi aktif dibuat untuk ${requiredPatterns.length} route resmi pada account pemilik zone.`);
+console.log(
+  /^[a-f0-9]{32}$/i.test(zoneId)
+    ? `Konfigurasi produksi aktif dibuat untuk ${requiredPatterns.length} route resmi pada account pemilik zone.`
+    : "Konfigurasi produksi aktif dibuat untuk memperbarui Worker tanpa mengubah route resmi.",
+);
