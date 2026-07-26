@@ -18,9 +18,9 @@ jobs:
   diagnose:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
-      - name: Probe apex, tenant, analytics, Nara, and PWA
+      - name: Probe apex, tenant, analytics, Nara, PWA, and Studio operations
         shell: bash
         run: |
           set -uo pipefail
@@ -32,25 +32,66 @@ jobs:
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/sw.headers -o /tmp/ngeblogging-live/sw.body -w '%{http_code}\n' "https://ngeblogging.com/sw.js?diagnostic=${stamp}" > /tmp/ngeblogging-live/sw.status 2>/tmp/ngeblogging-live/sw.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/tenant.headers -o /tmp/ngeblogging-live/tenant.body -w '%{http_code}\n' "https://tri-apriyogi-bahari.ngeblogging.com/?diagnostic=${stamp}" > /tmp/ngeblogging-live/tenant.status 2>/tmp/ngeblogging-live/tenant.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/analytics.headers -o /tmp/ngeblogging-live/analytics.body -w '%{http_code}\n' \
-            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/43' \
-            --data "{\"path\":\"/__live-diagnostic-v43\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
+            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/44' \
+            --data "{\"path\":\"/__live-diagnostic-v44\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
             "https://tri-apriyogi-bahari.ngeblogging.com/api/analytics/collect?diagnostic=${stamp}" > /tmp/ngeblogging-live/analytics.status 2>/tmp/ngeblogging-live/analytics.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/nara.headers -o /tmp/ngeblogging-live/nara.body -w '%{http_code}\n' \
             -X POST -H 'content-type: application/json' -H 'origin: https://ngeblogging.com' \
             --data '{"message":"uji","model":"nara-mini","intelligence":"standard","attachments":[],"history":[]}' \
             "https://ngeblogging.com/api/nara?diagnostic=${stamp}" > /tmp/ngeblogging-live/nara.status 2>/tmp/ngeblogging-live/nara.curl-error || true
 
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const root = 'https://ngeblogging.com';
+          const index = fs.readFileSync('/tmp/ngeblogging-live/index.body', 'utf8');
+          const queue = [...index.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)]
+            .map((match) => new URL(match[1], root).href);
+          const visited = new Set();
+          const assets = [];
+          while (queue.length && visited.size < 140) {
+            const url = queue.shift();
+            if (!url || visited.has(url)) continue;
+            visited.add(url);
+            try {
+              const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}diagnostic=${Date.now()}`, { headers:{ 'cache-control':'no-cache' } });
+              const text = await response.text();
+              assets.push({ url, status:response.status, text });
+              if (response.ok && /\.js(?:\?|$)/i.test(url)) {
+                for (const match of text.matchAll(/["']((?:\/assets\/|\.\/)[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)) {
+                  const child = new URL(match[1], url).href;
+                  if (child.startsWith(`${root}/assets/`) && !visited.has(child)) queue.push(child);
+                }
+              }
+            } catch (error) {
+              assets.push({ url, status:0, text:String(error) });
+            }
+          }
+          const combined = assets.map((asset) => asset.text).join('\n');
+          const required = {
+            responsiveV43:combined.includes('studio-responsive-repair-v43-20260726'),
+            operations:combined.includes('studio-operations-v41-20260726'),
+            analytics:combined.includes('get_site_analytics_dashboard') && combined.includes('DATA PRODUKSI NYATA'),
+            members:combined.includes('get_site_member_quota') && combined.includes('/api/member-invitations/create'),
+            domains:combined.includes('SUPABASE JWT + ROW LEVEL SECURITY') && combined.includes('/api/domains/register'),
+            activeSite:combined.includes('SITUS YANG SEDANG DIKELOLA') && combined.includes('Tambah situs'),
+          };
+          const ok = Object.values(required).every(Boolean) && assets.every((asset) => asset.status === 200);
+          fs.writeFileSync('/tmp/ngeblogging-live/operations.status', ok ? 'true' : 'false');
+          fs.writeFileSync('/tmp/ngeblogging-live/bundle-markers.json', JSON.stringify({ required, assets:assets.map(({url,status}) => ({url,status})) }, null, 2));
+          NODE
+
           {
             echo "Ngeblogging live diagnostic ${stamp}"
             for name in health index sw tenant analytics nara; do
               printf '%-10s HTTP %s\n' "$name" "$(cat /tmp/ngeblogging-live/${name}.status 2>/dev/null || echo missing)"
             done
+            printf '%-10s %s\n' "operations" "$(cat /tmp/ngeblogging-live/operations.status 2>/dev/null || echo missing)"
             echo
             echo "HEALTH:"; cat /tmp/ngeblogging-live/health.body 2>/dev/null || true
             echo; echo "ANALYTICS:"; cat /tmp/ngeblogging-live/analytics.body 2>/dev/null || true
             echo; echo "NARA:"; cat /tmp/ngeblogging-live/nara.body 2>/dev/null || true
+            echo; echo "BUNDLE MARKERS:"; cat /tmp/ngeblogging-live/bundle-markers.json 2>/dev/null || true
             echo; echo "SERVICE WORKER MARKERS:"; grep -Eo 'ngeblogging-app-v[0-9]+-[0-9]+' /tmp/ngeblogging-live/sw.body 2>/dev/null | head -20 || true
-            echo; echo "INDEX ASSETS:"; grep -Eo '(src|href)="[^"]+\.(js|css)(\?[^"]*)?"' /tmp/ngeblogging-live/index.body 2>/dev/null | head -50 || true
           } | tee /tmp/ngeblogging-live/summary.txt
 
       - name: Publish diagnostic commit status
@@ -63,6 +104,7 @@ jobs:
             const healthCode = read('health.status');
             const analyticsCode = read('analytics.status');
             const naraCode = read('nara.status');
+            const operations = read('operations.status');
             let release = 'unknown';
             let domainRelease = 'unknown';
             try {
@@ -70,7 +112,7 @@ jobs:
               release = health.release || 'unknown';
               domainRelease = health.domainRelease || 'unknown';
             } catch {}
-            const ok = healthCode === '200' && analyticsCode === '202' && naraCode === '401' && release === '2026.07.25-production-audit-v37' && domainRelease === '2026.07.26-custom-domains-v41';
+            const ok = healthCode === '200' && analyticsCode === '202' && naraCode === '401' && operations === 'true' && release === '2026.07.25-production-audit-v37' && domainRelease === '2026.07.26-custom-domains-v41';
             const sha = context.eventName === 'workflow_run' ? context.payload.workflow_run.head_sha : context.sha;
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
@@ -78,7 +120,7 @@ jobs:
               sha,
               state: ok ? 'success' : 'failure',
               context: 'Ngeblogging live diagnostic',
-              description: `health ${healthCode}; analytics ${analyticsCode}; nara ${naraCode}; ${domainRelease}`.slice(0, 140),
+              description: `health ${healthCode}; analytics ${analyticsCode}; Nara ${naraCode}; operations ${operations}`.slice(0, 140),
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -91,4 +133,4 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-# diagnostic-contract-v43
+# diagnostic-contract-v44
