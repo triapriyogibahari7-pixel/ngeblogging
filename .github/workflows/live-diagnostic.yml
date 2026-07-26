@@ -23,16 +23,6 @@ jobs:
           set -uo pipefail
           mkdir -p /tmp/ngeblogging-live
           stamp="$(date +%s)"
-          probe() {
-            local name="$1"
-            local url="$2"
-            shift 2
-            curl -sS -L --connect-timeout 10 --max-time 30 \
-              -D "/tmp/ngeblogging-live/${name}.headers" \
-              -o "/tmp/ngeblogging-live/${name}.body" \
-              -w '%{http_code}\n' "$@" "${url}${url//*\?*/&}${url//*\?*/?}diagnostic=${stamp}" \
-              > "/tmp/ngeblogging-live/${name}.status" 2> "/tmp/ngeblogging-live/${name}.curl-error" || true
-          }
 
           # Explicit URLs avoid ambiguity in the production audit.
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/health.headers -o /tmp/ngeblogging-live/health.body -w '%{http_code}\n' "https://ngeblogging.com/api/health?diagnostic=${stamp}" > /tmp/ngeblogging-live/health.status 2>/tmp/ngeblogging-live/health.curl-error || true
@@ -69,3 +59,5 @@ jobs:
           path: /tmp/ngeblogging-live
           if-no-files-found: error
           retention-days: 3
+
+# diagnostic-contract-v40
