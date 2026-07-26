@@ -20,6 +20,13 @@ function assertPublicSupabaseConfig(vars, label) {
   assert.match(String(vars?.SUPABASE_PUBLISHABLE_KEY || ""), /^(sb_publishable_|eyJ)/, `${label} publishable key`);
 }
 
+function assertProductionRoutes(config, label) {
+  const routes = routePatterns(config);
+  for (const pattern of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
+    assert.ok(routes.has(pattern), `${label} must bind ${pattern}`);
+  }
+}
+
 test("Cloudflare is the production runtime and Worker runs before SPA assets", () => {
   assert.equal(wrangler.main, "./cloudflare/worker.mjs");
   assert.equal(wrangler.assets?.directory, "./dist/");
@@ -29,10 +36,7 @@ test("Cloudflare is the production runtime and Worker runs before SPA assets", (
 });
 
 test("default Git deployment owns production routes while temporary browser audits remain isolated", () => {
-  const defaultRoutes = routePatterns(wrangler);
-  for (const pattern of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
-    assert.ok(defaultRoutes.has(pattern), `default deployment must bind ${pattern}`);
-  }
+  assertProductionRoutes(wrangler, "default deployment");
   assert.equal(temporary.routes, undefined);
   assert.equal(temporary.secrets, undefined);
   assert.match(String(wrangler.vars?.NARA_RUNTIME || ""), /^cloudflare-worker-default-v\d+$/);
@@ -43,14 +47,16 @@ test("default Git deployment owns production routes while temporary browser audi
 });
 
 test("apex www and every Ngeblogging tenant subdomain are routed in production", () => {
-  const routes = routePatterns(production);
-  for (const pattern of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
-    assert.ok(routes.has(pattern), `production must bind ${pattern}`);
-  }
+  assertProductionRoutes(production, "canonical production environment");
+  assertProductionRoutes(productionConfig, "production deploy config");
   assert.equal(production.name, "ngeblogging");
+  assert.equal(productionConfig.name, "ngeblogging");
   assert.match(String(production.vars?.NARA_RUNTIME || ""), /^cloudflare-worker-production-v\d+$/);
+  assert.match(String(productionConfig.vars?.NARA_RUNTIME || ""), /^cloudflare-worker-production-v\d+$/);
   assert.equal(production.ai?.binding, "AI");
+  assert.equal(productionConfig.ai?.binding, "AI");
   assertPublicSupabaseConfig(production.vars, "production");
+  assertPublicSupabaseConfig(productionConfig.vars, "production deploy");
 });
 
 test("only public Supabase configuration is stored in vars and every real secret remains server-only", () => {
@@ -64,7 +70,7 @@ test("only public Supabase configuration is stored in vars and every real secret
     assertPublicSupabaseConfig(vars, "Worker");
     for (const name of [
       "SUPABASE_SERVICE_ROLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET", "PAYPAL_WEBHOOK_ID",
-      "LOCAL_PAYMENT_GATEWAY_SECRET", "QWEN_API_KEY",
+      "LOCAL_PAYMENT_GATEWAY_SECRET", "QWEN_API_KEY", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ZONE_ID",
     ]) {
       assert.equal(Object.hasOwn(vars, name), false, `${name} must not be a plaintext var`);
     }
@@ -72,10 +78,10 @@ test("only public Supabase configuration is stored in vars and every real secret
 
   for (const scriptName of ["deploy:cloudflare", "cloudflare:dry-run"]) {
     const script = String(packageJson.scripts[scriptName] || "");
-    assert.match(script, /--config wrangler\.production\.jsonc/, `${scriptName} must use the route-preserving production config`);
-    assert.doesNotMatch(script, /--env production/, `${scriptName} must not redeclare existing production routes`);
+    assert.match(script, /--config wrangler\.production\.jsonc/, `${scriptName} must use the explicit production config`);
+    assert.doesNotMatch(script, /--env production/, `${scriptName} must not combine a standalone config with an environment selector`);
   }
-  assert.equal(productionConfig.routes, undefined);
+  assertProductionRoutes(productionConfig, "production deploy config");
   assert.equal(productionConfig.env, undefined);
   assert.equal(productionConfig.keep_vars, true);
 });
