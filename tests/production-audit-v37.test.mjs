@@ -78,8 +78,10 @@ test("member invitations remain hidden until email delivery is genuinely ready",
   assert.match(migration, /get_site_member_quota/);
   assert.match(handler, /AUTH_MEMBER_INVITES_READY/);
   assert.match(handler, /AUTH_EMAIL_DELIVERY_PROBE/);
-  assert.match(handler, /auth\/v1\/invite/);
+  assert.match(handler, /functions\/v1\/member-invitations/);
+  assert.match(handler, /actionFromPath/);
   assert.match(config, /"AUTH_MEMBER_INVITES_READY": "false"/);
+  assert.match(config, /"AUTH_EMAIL_DELIVERY_PROBE": "not-run"/);
   assert.match(runtime, /state\.memberInvites === true/);
 });
 
