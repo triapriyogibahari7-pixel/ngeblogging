@@ -41,19 +41,17 @@ test("v35 does not target the locked sidebar or Nara widget", async () => {
   }
 });
 
-test("legacy twelve-site authority is superseded by dynamic per-account capacity", async () => {
+test("twelve-site authority is restored as the production account capacity", async () => {
   const bridge = await read("src/site-quota-bridge.js");
-  const migration = await read("supabase/migrations/20260726091500_dynamic_site_capacity_v40.sql");
+  const migration = await read("supabase/migrations/20260726140500_enforce_twelve_site_capacity_v55.sql");
   const productionWorker = await read("cloudflare/worker-v37.mjs");
-  assert.match(bridge, /KAPASITAS SITUS DINAMIS/);
-  assert.match(bridge, /capacityMode = "dynamic"/);
-  assert.doesNotMatch(bridge, /allowed_limit \|\| 12|free_limit \|\| 12|maximum_limit/i);
-  assert.match(migration, /create table if not exists private\.account_site_capacity/);
-  assert.match(migration, /create or replace function private\.site_limit_for_owner/);
-  assert.match(migration, /select 1000;/);
-  assert.match(migration, /SITE_CAPACITY_REACHED/);
-  assert.match(productionWorker, /siteCapacity: \{ mode:"dynamic", defaultLimit:1000, perAccountOverrides:true \}/);
-  assert.match(productionWorker, /siteLimitsDeprecated: true/);
+  assert.match(bridge, /MAX_SITES_PER_ACCOUNT = 12/);
+  assert.match(bridge, /KAPASITAS 12 SITUS PER AKUN/);
+  assert.match(bridge, /capacityMode = "twelve-sites"/);
+  assert.match(migration, /select 12;/);
+  assert.match(migration, /greatest\(12 - state\.current_count, 0\)/);
+  assert.match(productionWorker, /siteCapacity: \{ mode: "fixed", defaultLimit: 12, perAccountOverrides: false \}/);
+  assert.match(productionWorker, /siteLimitsDeprecated: false/);
 });
 
 test("production worker keeps the v35 compatibility contract while workspaces remain independent", async () => {
