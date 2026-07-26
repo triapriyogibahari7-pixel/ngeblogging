@@ -1,0 +1,71 @@
+name: Ngeblogging live diagnostic
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-live-diagnostic
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Probe apex, tenant, analytics, Nara, and PWA
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p /tmp/ngeblogging-live
+          stamp="$(date +%s)"
+          probe() {
+            local name="$1"
+            local url="$2"
+            shift 2
+            curl -sS -L --connect-timeout 10 --max-time 30 \
+              -D "/tmp/ngeblogging-live/${name}.headers" \
+              -o "/tmp/ngeblogging-live/${name}.body" \
+              -w '%{http_code}\n' "$@" "${url}${url//*\?*/&}${url//*\?*/?}diagnostic=${stamp}" \
+              > "/tmp/ngeblogging-live/${name}.status" 2> "/tmp/ngeblogging-live/${name}.curl-error" || true
+          }
+
+          # Explicit URLs avoid ambiguity in the production audit.
+          curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/health.headers -o /tmp/ngeblogging-live/health.body -w '%{http_code}\n' "https://ngeblogging.com/api/health?diagnostic=${stamp}" > /tmp/ngeblogging-live/health.status 2>/tmp/ngeblogging-live/health.curl-error || true
+          curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/index.headers -o /tmp/ngeblogging-live/index.body -w '%{http_code}\n' "https://ngeblogging.com/?diagnostic=${stamp}" > /tmp/ngeblogging-live/index.status 2>/tmp/ngeblogging-live/index.curl-error || true
+          curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/sw.headers -o /tmp/ngeblogging-live/sw.body -w '%{http_code}\n' "https://ngeblogging.com/sw.js?diagnostic=${stamp}" > /tmp/ngeblogging-live/sw.status 2>/tmp/ngeblogging-live/sw.curl-error || true
+          curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/tenant.headers -o /tmp/ngeblogging-live/tenant.body -w '%{http_code}\n' "https://tri-apriyogi-bahari.ngeblogging.com/?diagnostic=${stamp}" > /tmp/ngeblogging-live/tenant.status 2>/tmp/ngeblogging-live/tenant.curl-error || true
+          curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/analytics.headers -o /tmp/ngeblogging-live/analytics.body -w '%{http_code}\n' \
+            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/40' \
+            --data "{\"path\":\"/__live-diagnostic-v40\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
+            "https://tri-apriyogi-bahari.ngeblogging.com/api/analytics/collect?diagnostic=${stamp}" > /tmp/ngeblogging-live/analytics.status 2>/tmp/ngeblogging-live/analytics.curl-error || true
+          curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/nara.headers -o /tmp/ngeblogging-live/nara.body -w '%{http_code}\n' \
+            -X POST -H 'content-type: application/json' -H 'origin: https://ngeblogging.com' \
+            --data '{"message":"uji","model":"nara-mini","intelligence":"standard","attachments":[],"history":[]}' \
+            "https://ngeblogging.com/api/nara?diagnostic=${stamp}" > /tmp/ngeblogging-live/nara.status 2>/tmp/ngeblogging-live/nara.curl-error || true
+
+          {
+            echo "Ngeblogging live diagnostic ${stamp}"
+            for name in health index sw tenant analytics nara; do
+              printf '%-10s HTTP %s\n' "$name" "$(cat /tmp/ngeblogging-live/${name}.status 2>/dev/null || echo missing)"
+            done
+            echo
+            echo "HEALTH:"; cat /tmp/ngeblogging-live/health.body 2>/dev/null || true
+            echo; echo "ANALYTICS:"; cat /tmp/ngeblogging-live/analytics.body 2>/dev/null || true
+            echo; echo "NARA:"; cat /tmp/ngeblogging-live/nara.body 2>/dev/null || true
+            echo; echo "SERVICE WORKER MARKERS:"; grep -Eo 'ngeblogging-app-v[0-9]+-[0-9]+' /tmp/ngeblogging-live/sw.body 2>/dev/null | head -20 || true
+            echo; echo "INDEX ASSETS:"; grep -Eo '(src|href)="[^"]+\.(js|css)(\?[^"]*)?"' /tmp/ngeblogging-live/index.body 2>/dev/null | head -50 || true
+          } | tee /tmp/ngeblogging-live/summary.txt
+
+      - name: Upload live diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngeblogging-live-diagnostic-${{ github.run_id }}
+          path: /tmp/ngeblogging-live
+          if-no-files-found: error
+          retention-days: 3
