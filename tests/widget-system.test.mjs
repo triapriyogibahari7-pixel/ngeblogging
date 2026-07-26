@@ -5,11 +5,12 @@ import {
   widgetPreviewMarkup, widgetsMarkup, WIDGET_COUNT,
 } from "../src/widget-system.js";
 
-test("Ngeblogging ships exactly 25 distinct built-in widgets", () => {
-  assert.equal(WIDGET_COUNT, 25);
-  assert.equal(BUILT_IN_WIDGETS.length, 25);
-  assert.equal(new Set(BUILT_IN_WIDGETS.map((widget) => widget.id)).size, 25);
-  assert.equal(new Set(BUILT_IN_WIDGETS.map((widget) => widget.name)).size, 25);
+test("Ngeblogging ships 25 built-in widgets plus isolated HTML JavaScript", () => {
+  assert.equal(WIDGET_COUNT, 26);
+  assert.equal(BUILT_IN_WIDGETS.length, 26);
+  assert.equal(new Set(BUILT_IN_WIDGETS.map((widget) => widget.id)).size, 26);
+  assert.equal(new Set(BUILT_IN_WIDGETS.map((widget) => widget.name)).size, 26);
+  assert.ok(BUILT_IN_WIDGETS.some((widget) => widget.id === "custom-html"));
 });
 
 test("every widget has useful metadata and renderable markup", () => {
@@ -20,6 +21,13 @@ test("every widget has useful metadata and renderable markup", () => {
     assert.match(markup, new RegExp(`ng-widget-${widget.id}`));
     assert.ok(markup.length > 60);
   }
+});
+
+test("custom HTML JavaScript widget stays inside an isolated iframe", () => {
+  const markup = widgetPreviewMarkup("custom-html", "Kode", "footer-wide", { html:"<b>Uji</b>", javascript:"document.body.dataset.ready='true'" });
+  assert.match(markup, /sandbox="allow-scripts allow-forms"/);
+  assert.doesNotMatch(markup, /allow-same-origin/);
+  assert.match(markup, /data-layout-area="footer-wide"/);
 });
 
 test("widget state removes duplicates and invalid IDs", () => {

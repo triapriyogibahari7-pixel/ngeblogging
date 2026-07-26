@@ -1,0 +1,158 @@
+/* Final responsive content-flow authority v39. Does not alter Studio navigation or Nara. */
+html[data-studio-quality-v39],
+html[data-studio-quality-v39] body,
+html[data-studio-quality-v39] #root,
+html[data-studio-quality-v39] .sn-main,
+html[data-studio-quality-v39] .sn-main > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-quality-v39] .sn-main {
+  overflow-x: clip !important;
+}
+
+html[data-studio-quality-v39] .sn-main > .sn-view-pad,
+html[data-studio-quality-v39] .sn-main > .tn-studio,
+html[data-studio-quality-v39] .sn-main > .nw-page {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: clip !important;
+}
+
+html[data-studio-quality-v39] .sn-page-title,
+html[data-studio-quality-v39] .sn-welcome,
+html[data-studio-quality-v39] .sp37-active-site,
+html[data-studio-quality-v39] .sn-settings-grid,
+html[data-studio-quality-v39] .sp37-analytics,
+html[data-studio-quality-v39] .sp37-members-panel,
+html[data-studio-quality-v39] .sp37-domain-panel,
+html[data-studio-quality-v39] .sp37-domain-readiness {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-quality-v39] .sp37-active-site {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr) auto !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+html[data-studio-quality-v39] .sp39-site-actions {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+html[data-studio-quality-v39] .sp39-site-actions button {
+  min-height: 42px;
+  width: 100%;
+  border: 1px solid #d5e0ec;
+  border-radius: 11px;
+  padding: 0 14px;
+  background: #fff;
+  color: #425a73;
+  font-weight: 800;
+  white-space: nowrap;
+}
+html[data-studio-quality-v39] .sp39-site-actions button.primary {
+  border-color: #2d6edf;
+  background: #2d6edf;
+  color: #fff;
+}
+
+html[data-studio-quality-v39] .sp37-domain-readiness li[data-ready="true"] { color: #24754d !important; }
+html[data-studio-quality-v39] .sp37-domain-readiness li[data-ready="false"] { color: #9a650e !important; }
+
+html[data-studio-quality-v39] .sp37-table-head,
+html[data-studio-quality-v39] .sp37-table-row,
+html[data-studio-quality-v39] .sp37-dns-list > div {
+  min-width: 0 !important;
+}
+
+html[data-studio-quality-v39] .sp37-content-table,
+html[data-studio-quality-v39] .sp37-domain-list,
+html[data-studio-quality-v39] .sp37-member-list,
+html[data-studio-quality-v39] .sp37-invite-list {
+  overflow-x: auto !important;
+  overscroll-behavior-inline: contain;
+}
+
+html[data-studio-quality-v39] .sn-settings-grid > *,
+html[data-studio-quality-v39] .sn-settings-grid label,
+html[data-studio-quality-v39] .sn-settings-grid input,
+html[data-studio-quality-v39] .sn-settings-grid textarea,
+html[data-studio-quality-v39] .sn-settings-grid select {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 980px) {
+  html[data-studio-quality-v39] .sp37-active-site {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+  html[data-studio-quality-v39] .sp39-site-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  html[data-studio-quality-v39] .sp37-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  html[data-studio-quality-v39] .sp37-chart-grid,
+  html[data-studio-quality-v39] .sp37-chart-grid-equal,
+  html[data-studio-quality-v39] .sp37-member-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  html[data-studio-quality-v39] .sn-main > .sn-view-pad {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  html[data-studio-quality-v39] .sn-page-title {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+  html[data-studio-quality-v39] .sn-page-title h1 {
+    font-size: clamp(34px, 12vw, 54px) !important;
+    overflow-wrap: anywhere !important;
+  }
+  html[data-studio-quality-v39] .sn-welcome,
+  html[data-studio-quality-v39] .sp37-analytics-toolbar,
+  html[data-studio-quality-v39] .sp37-domain-panel > header,
+  html[data-studio-quality-v39] .sp37-invite-form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+  html[data-studio-quality-v39] .sn-welcome > div:last-child,
+  html[data-studio-quality-v39] .sp37-analytics-toolbar > div:last-child {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  html[data-studio-quality-v39] .sn-welcome button,
+  html[data-studio-quality-v39] .sn-welcome a,
+  html[data-studio-quality-v39] .sp37-analytics-toolbar button,
+  html[data-studio-quality-v39] .sp37-analytics-toolbar select {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  html[data-studio-quality-v39] .sp37-metrics,
+  html[data-studio-quality-v39] .sp37-member-summary {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html[data-studio-quality-v39] .sp39-site-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html[data-studio-quality-v39] .sp37-table-head,
+  html[data-studio-quality-v39] .sp37-table-row {
+    min-width: 620px !important;
+  }
+  html[data-studio-quality-v39] .sp37-dns-list > div {
+    min-width: 680px !important;
+  }
+}
