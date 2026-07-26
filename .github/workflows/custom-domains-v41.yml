@@ -36,7 +36,7 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'pending', context: 'Ngeblogging custom domains', description: 'Resolving Cloudflare zone and validating Custom Hostnames.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'pending', context: 'Ngeblogging custom domains', description: 'Resolving the authoritative Cloudflare zone and validating Custom Hostnames.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -58,29 +58,51 @@ jobs:
         run: |
           set -euo pipefail
           zone_id="${CONFIGURED_ZONE_ID}"
+          verify_zone() {
+            local candidate="$1"
+            [[ "${candidate}" =~ ^[a-f0-9]{32}$ ]] || return 1
+            curl -sS --fail-with-body -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "accept: application/json" "https://api.cloudflare.com/client/v4/zones/${candidate}" -o /tmp/zone.json
+            ZONE_CANDIDATE="${candidate}" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/zone.json', 'utf8'));
+          const zone = payload.result || {};
+          if (payload.success !== true || zone.id !== process.env.ZONE_CANDIDATE || zone.name !== 'ngeblogging.com' || zone.status !== 'active') process.exit(1);
+          NODE
+          }
+          if [[ -n "${zone_id}" ]] && ! verify_zone "${zone_id}"; then
+            echo "::warning::CLOUDFLARE_ZONE_ID tersimpan bukan zone aktif ngeblogging.com; mencari zone otoritatif."
+            zone_id=""
+          fi
           if [[ -z "${zone_id}" ]]; then
             curl -sS --fail-with-body -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "accept: application/json" "https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&status=active&per_page=5" -o /tmp/zones.json
             zone_id="$(node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const payload = JSON.parse(fs.readFileSync('/tmp/zones.json', 'utf8'));
-          const zone = (payload.result || []).find((item) => item?.name === 'ngeblogging.com' && item?.status === 'active');
-          if (payload.success !== true || !zone?.id) process.exit(1);
-          process.stdout.write(zone.id);
+          const zones = (payload.result || []).filter((item) => item?.name === 'ngeblogging.com' && item?.status === 'active');
+          if (payload.success !== true || zones.length !== 1 || !/^[a-f0-9]{32}$/i.test(zones[0]?.id || '')) process.exit(1);
+          process.stdout.write(zones[0].id);
           NODE
-            )" || { echo "Token tidak dapat menemukan zone aktif ngeblogging.com. Tambahkan izin Zone:Read atau isi CLOUDFLARE_ZONE_ID."; exit 1; }
+            )" || { echo "Token tidak dapat menemukan tepat satu zone aktif ngeblogging.com. Tambahkan izin Zone:Read."; exit 1; }
           fi
-          [[ "${zone_id}" =~ ^[a-f0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID tidak valid"; exit 1; }
           echo "::add-mask::${zone_id}"
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
           echo "RESOLVED_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
-          curl -sS --fail-with-body -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "accept: application/json" "https://api.cloudflare.com/client/v4/zones/${zone_id}/custom_hostnames?per_page=1" -o /tmp/custom-hostnames.json
-          node --input-type=module <<'NODE'
+
+          RESOLVED_CLOUDFLARE_ZONE_ID="${zone_id}" node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
+
+          # Cloudflare menetapkan per_page minimum 5 untuk endpoint Custom Hostnames.
+          http_code="$(curl -sS -o /tmp/custom-hostnames.json -w '%{http_code}' -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "accept: application/json" "https://api.cloudflare.com/client/v4/zones/${zone_id}/custom_hostnames?per_page=5")"
+          CUSTOM_HOSTNAMES_HTTP_CODE="${http_code}" node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const payload = JSON.parse(fs.readFileSync('/tmp/custom-hostnames.json', 'utf8'));
-          if (payload.success !== true) process.exit(1);
-          console.log('Cloudflare Custom Hostnames API dapat diakses.');
+          if (process.env.CUSTOM_HOSTNAMES_HTTP_CODE !== '200' || payload.success !== true) {
+            const message = [...(payload.errors || []), ...(payload.messages || [])].map((item) => typeof item === 'string' ? item : item?.message).filter(Boolean).join('; ');
+            throw new Error(`Cloudflare Custom Hostnames API belum dapat diakses (${process.env.CUSTOM_HOSTNAMES_HTTP_CODE}): ${message || 'respons tidak valid'}. Token memerlukan SSL and Certificates Read/Write.`);
+          }
+          console.log('Cloudflare Custom Hostnames API dapat diakses pada zone otoritatif.');
           NODE
 
-      - name: Synchronize domain secrets to Worker
+      - name: Synchronize domain secrets to authoritative Worker
         shell: bash
         run: |
           set -euo pipefail
@@ -88,7 +110,7 @@ jobs:
           import fs from 'node:fs';
           fs.writeFileSync('/tmp/domain-secrets.json', JSON.stringify({ CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID: process.env.RESOLVED_ZONE_ID }));
           NODE
-          npx wrangler secret bulk /tmp/domain-secrets.json --config wrangler.production.jsonc
+          npx wrangler secret bulk /tmp/domain-secrets.json --config wrangler.production.active-zone.jsonc
           rm -f /tmp/domain-secrets.json
 
       - name: Verify live v41 domain readiness
@@ -96,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            curl -sS -L --connect-timeout 10 --max-time 25 -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_release=v41-${attempt}-$(date +%s)" -o /tmp/health.json || true
+            curl -sS -L --connect-timeout 10 --max-time 25 -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_release=v45-${attempt}-$(date +%s)" -o /tmp/health.json || true
             if node --input-type=module <<'NODE'
           import fs from 'node:fs';
           let health = {};
@@ -111,16 +133,27 @@ jobs:
           cat /tmp/health.json 2>/dev/null || true
           exit 1
 
+      - name: Upload Custom Hostnames evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngeblogging-custom-domains-${{ github.run_id }}
+          path: |
+            /tmp/custom-hostnames.json
+            /tmp/health.json
+          if-no-files-found: warn
+          retention-days: 3
+
       - name: Mark domain activation successful
         if: success()
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'success', context: 'Ngeblogging custom domains', description: 'Custom Hostnames, DNS verification, JWT/RLS storage, and Worker bindings are live.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'success', context: 'Ngeblogging custom domains', description: 'Custom Hostnames, DNS verification, JWT/RLS storage, and authoritative Worker bindings are live.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
 
       - name: Mark domain activation failed
         if: failure()
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'failure', context: 'Ngeblogging custom domains', description: 'Zone resolution, Custom Hostnames permission, secret synchronization, or live readiness failed.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'failure', context: 'Ngeblogging custom domains', description: 'Custom Hostnames permission, authoritative secret synchronization, or live readiness failed.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
