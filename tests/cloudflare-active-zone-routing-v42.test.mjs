@@ -30,6 +30,7 @@ test("generated Wrangler configuration pins every official route to the resolved
   await execFileAsync(process.execPath, [new URL("../scripts/build-active-zone-wrangler.mjs", import.meta.url).pathname, input, output], {
     env: {
       ...process.env,
+      NODE_ENV: "test",
       RESOLVED_CLOUDFLARE_ZONE_ID: "0123456789abcdef0123456789abcdef",
       CLOUDFLARE_API_TOKEN: "test-token",
       CLOUDFLARE_ACCOUNT_ID: accountId,
