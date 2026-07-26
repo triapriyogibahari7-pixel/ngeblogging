@@ -24,13 +24,22 @@ test("generated Wrangler configuration pins every official route to the resolved
   const directory = await mkdtemp(join(tmpdir(), "ngeblogging-zone-v42-"));
   const input = join(directory, "input.jsonc");
   const output = join(directory, "output.jsonc");
+  const accountId = "fedcba9876543210fedcba9876543210";
   await writeFile(input, JSON.stringify({ name: "ngeblogging", routes: [{ pattern: "old.example/*", zone_name: "old.example" }] }), "utf8");
 
   await execFileAsync(process.execPath, [new URL("../scripts/build-active-zone-wrangler.mjs", import.meta.url).pathname, input, output], {
-    env: { ...process.env, RESOLVED_CLOUDFLARE_ZONE_ID: "0123456789abcdef0123456789abcdef" },
+    env: {
+      ...process.env,
+      RESOLVED_CLOUDFLARE_ZONE_ID: "0123456789abcdef0123456789abcdef",
+      CLOUDFLARE_API_TOKEN: "test-token",
+      CLOUDFLARE_ACCOUNT_ID: accountId,
+      RESOLVED_CLOUDFLARE_ACCOUNT_ID: accountId,
+      NGEBLOGGING_SKIP_CLOUDFLARE_ZONE_FETCH: "true",
+    },
   });
 
   const generated = JSON.parse(await readFile(output, "utf8"));
+  assert.equal(generated.account_id, accountId);
   assert.deepEqual(generated.routes.map((route) => route.pattern), requiredRoutes);
   for (const route of generated.routes) {
     assert.equal(route.zone_id, "0123456789abcdef0123456789abcdef");
