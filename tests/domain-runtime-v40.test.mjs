@@ -15,6 +15,8 @@ test("health exposes custom-domain runtime binding readiness without secret valu
 test("Cloudflare workflow safely provisions available domain bindings and reports missing ones", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
   for (const marker of [
+    "Resolve the active ngeblogging.com zone",
+    "Build active-zone Wrangler configuration",
     "Synchronize available custom-domain runtime secrets",
     "put_secret_if_present CLOUDFLARE_API_TOKEN",
     "put_secret_if_present CLOUDFLARE_ZONE_ID",
@@ -23,7 +25,7 @@ test("Cloudflare workflow safely provisions available domain bindings and report
     "DOMAIN_RUNTIME_EXPECTED",
     "health.customDomains",
     "health.customDomainBindings",
-    "service-worker-v39",
+    "service-worker-v40",
   ]) assert.ok(workflow.includes(marker), marker);
-  assert.match(workflow, /Custom domain tetap dikunci, fitur inti tetap dideploy/);
+  assert.match(workflow, /Aktivasi domain eksternal akan diverifikasi oleh workflow v41/);
 });
