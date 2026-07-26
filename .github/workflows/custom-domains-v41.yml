@@ -90,6 +90,9 @@ jobs:
 
           RESOLVED_CLOUDFLARE_ZONE_ID="${zone_id}" node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
 
+          # Tutup form terlebih dahulu. Hanya probe API yang sukses yang membukanya lagi.
+          printf 'false' | npx wrangler secret put CLOUDFLARE_CUSTOM_HOSTNAMES_READY --config wrangler.production.active-zone.jsonc >/dev/null
+
           # Cloudflare menetapkan per_page minimum 5 untuk endpoint Custom Hostnames.
           http_code="$(curl -sS -o /tmp/custom-hostnames.json -w '%{http_code}' -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "accept: application/json" "https://api.cloudflare.com/client/v4/zones/${zone_id}/custom_hostnames?per_page=5")"
           CUSTOM_HOSTNAMES_HTTP_CODE="${http_code}" node --input-type=module <<'NODE'
@@ -108,7 +111,7 @@ jobs:
           set -euo pipefail
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
-          fs.writeFileSync('/tmp/domain-secrets.json', JSON.stringify({ CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID: process.env.RESOLVED_ZONE_ID }));
+          fs.writeFileSync('/tmp/domain-secrets.json', JSON.stringify({ CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID: process.env.RESOLVED_ZONE_ID, CLOUDFLARE_CUSTOM_HOSTNAMES_READY: 'true' }));
           NODE
           npx wrangler secret bulk /tmp/domain-secrets.json --config wrangler.production.active-zone.jsonc
           rm -f /tmp/domain-secrets.json
@@ -118,13 +121,13 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            curl -sS -L --connect-timeout 10 --max-time 25 -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_release=v45-${attempt}-$(date +%s)" -o /tmp/health.json || true
+            curl -sS -L --connect-timeout 10 --max-time 25 -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_release=v46-${attempt}-$(date +%s)" -o /tmp/health.json || true
             if node --input-type=module <<'NODE'
           import fs from 'node:fs';
           let health = {};
           try { health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8')); } catch {}
           const bindings = health.customDomainBindings || {};
-          if (!(health.customDomains === true && health.domainRelease === '2026.07.26-custom-domains-v41' && bindings.apiToken && bindings.zoneId && bindings.cnameTarget && bindings.databaseAccess && health.customDomainDatabaseMode === 'user-jwt-rls' && health.customDomainServiceRoleRequired === false)) process.exit(1);
+          if (!(health.customDomains === true && health.domainRelease === '2026.07.26-custom-domains-v41' && bindings.apiToken && bindings.zoneId && bindings.cnameTarget && bindings.databaseAccess && bindings.providerApi && health.customDomainDatabaseMode === 'user-jwt-rls' && health.customDomainServiceRoleRequired === false)) process.exit(1);
           console.log(JSON.stringify({ customDomains: true, bindings, target: health.customHostnameTarget }, null, 2));
           NODE
             then exit 0; fi
@@ -149,11 +152,11 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'success', context: 'Ngeblogging custom domains', description: 'Custom Hostnames, DNS verification, JWT/RLS storage, and authoritative Worker bindings are live.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'success', context: 'Ngeblogging custom domains', description: 'Custom Hostnames API, DNS verification, JWT/RLS storage, and authoritative bindings are live.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
 
       - name: Mark domain activation failed
         if: failure()
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'failure', context: 'Ngeblogging custom domains', description: 'Custom Hostnames permission, authoritative secret synchronization, or live readiness failed.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'failure', context: 'Ngeblogging custom domains', description: 'Form ditutup aman: token belum lolos izin SSL and Certificates untuk Custom Hostnames.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
