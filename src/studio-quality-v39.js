@@ -67,7 +67,7 @@ function ensureHomeActions() {
   const welcome = document.querySelector(".sn-main > .sn-view-pad > .sn-welcome");
   if (!welcome) return;
   const card = welcome.parentElement?.querySelector(":scope > .sp37-active-site");
-  if (!card) return;
+  if (!card || card.classList.contains("sp52-site-switcher")) return;
   let actions = card.querySelector(".sp39-site-actions");
   if (!actions) {
     const existing = card.querySelector(":scope > button");
