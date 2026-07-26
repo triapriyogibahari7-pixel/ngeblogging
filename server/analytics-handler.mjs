@@ -18,13 +18,13 @@ function json(status, body, requestId = "") {
 function supabaseConfig(env) {
   return {
     url: String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").replace(/\/$/, ""),
-    serviceKey: String(env.SUPABASE_SERVICE_ROLE_KEY || ""),
+    publishableKey: String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || ""),
   };
 }
 
 function ready(env) {
   const config = supabaseConfig(env);
-  return Boolean(config.url && config.serviceKey);
+  return Boolean(config.url && config.publishableKey);
 }
 
 function safeText(value, limit = 500) {
@@ -80,7 +80,7 @@ function botName(userAgent) {
 
 function classification(request, userAgent) {
   const cf = request.cf || {};
-  const verifiedBot = Boolean(cf.botManagement?.verifiedBot || cf.botManagement?.corporateProxy === false && cf.botManagement?.score === 1);
+  const verifiedBot = Boolean(cf.botManagement?.verifiedBot || (cf.botManagement?.corporateProxy === false && cf.botManagement?.score === 1));
   const score = Number(cf.botManagement?.score);
   if (verifiedBot || BOT_PATTERN.test(userAgent) || (Number.isFinite(score) && score > 0 && score <= 20)) return "bot";
   if (HUMAN_BROWSER_PATTERN.test(userAgent) || (Number.isFinite(score) && score >= 30)) return "human";
@@ -99,23 +99,24 @@ async function sha256(value) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-async function insertEvent(env, event) {
+async function recordEvent(env, event) {
   const config = supabaseConfig(env);
-  const response = await fetch(`${config.url}/rest/v1/analytics_events`, {
+  const response = await fetch(`${config.url}/rest/v1/rpc/record_analytics_event`, {
     method: "POST",
     headers: {
-      apikey: config.serviceKey,
-      authorization: `Bearer ${config.serviceKey}`,
+      apikey: config.publishableKey,
+      authorization: `Bearer ${config.publishableKey}`,
       "content-type": "application/json",
-      prefer: "return=minimal",
+      accept: "application/json",
     },
     body: JSON.stringify(event),
   });
+  const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    console.error("Analytics insert failed", { status: response.status, code: error?.code });
+    console.error("Analytics RPC failed", { status: response.status, code: payload?.code });
     throw new Error("Analytics storage unavailable");
   }
+  return payload || {};
 }
 
 export function analyticsReady(env) {
@@ -143,23 +144,23 @@ export async function handleAnalyticsRequest(request, env, requestId = "") {
   const length = Number(request.headers.get("content-length") || 0);
   if (Number.isFinite(length) && length > 12_000) return json(413, { error: "Payload analitik terlalu besar." }, requestId);
   const body = await request.json().catch(() => ({}));
+  if (body.doNotTrack === true) return json(202, { recorded: false, reason: "privacy_preference" }, requestId);
+
   const userAgent = safeText(request.headers.get("user-agent"), 600);
   const className = classification(request, userAgent);
   const day = new Date().toISOString().slice(0, 10);
-  const secret = String(env.ANALYTICS_HASH_SECRET || env.SUPABASE_SERVICE_ROLE_KEY || "ngeblogging-analytics").slice(-128);
   const suppliedVisitor = safeText(body.visitorId, 160);
   const suppliedSession = safeText(body.sessionId, 160);
   const address = clientAddress(request);
-  const visitorHash = await sha256(`${site.id}|${day}|${suppliedVisitor || address}|${userAgent}|${secret}`);
-  const sessionHash = suppliedSession ? await sha256(`${site.id}|${day}|${suppliedSession}|${secret}`) : null;
+  const visitorHash = await sha256(`${site.id}|${day}|${suppliedVisitor || address}|${userAgent}|analytics-v38`);
+  const sessionHash = suppliedSession ? await sha256(`${site.id}|${day}|${suppliedSession}|analytics-v38`) : null;
   const path = safePath(body.path || url.pathname);
   const slug = decodeURIComponent(path.split("?")[0].split("/").filter(Boolean)[0] || "").slice(0, 180) || null;
   const screenWidth = Math.max(0, Math.min(10000, Number(body.screenWidth) || 0));
 
-  await insertEvent(env, {
-    site_id: site.id,
-    event_type: "page_view",
-    path,
+  const result = await recordEvent(env, {
+    target_site: site.id,
+    event_path: path,
     content_slug: slug,
     visitor_hash: visitorHash,
     session_hash: sessionHash,
@@ -171,10 +172,9 @@ export async function handleAnalyticsRequest(request, env, requestId = "") {
     metadata: {
       language: safeText(body.language, 24) || null,
       screenBucket: screenWidth ? (screenWidth < 480 ? "small" : screenWidth < 900 ? "medium" : screenWidth < 1440 ? "large" : "xlarge") : "unknown",
-      doNotTrack: body.doNotTrack === true,
-      release: "analytics-v37",
+      release: "analytics-v38",
     },
   });
 
-  return json(202, { recorded: true, classification: className }, requestId);
+  return json(202, { recorded: result.recorded === true, classification: className, reason: result.reason || null }, requestId);
 }
