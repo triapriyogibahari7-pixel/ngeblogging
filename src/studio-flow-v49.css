@@ -1,0 +1,338 @@
+/* Studio normal-flow authority v49.
+   Fixes the remaining overlap caused by the global landing-page header/footer rules,
+   container widths in desktop-site-on-phone mode, and the retired domain bridge. */
+
+html[data-studio-interaction-v49] .sn-view-pad {
+  container-type: inline-size;
+}
+
+html[data-studio-interaction-v49] .sn-view-pad,
+html[data-studio-interaction-v49] .sn-view-pad > *,
+html[data-studio-interaction-v49] .op41-host,
+html[data-studio-interaction-v49] .op41-panel,
+html[data-studio-interaction-v49] .op41-panel > *,
+html[data-studio-interaction-v49] .op41-card,
+html[data-studio-interaction-v49] .op41-card > *,
+html[data-studio-interaction-v49] .op41-domain,
+html[data-studio-interaction-v49] .op41-domain > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Retired domain UI must never coexist with the v41 production domain surface. */
+html[data-studio-interaction-v49] .dm-root,
+html[data-studio-interaction-v49] .dm-panel {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* The public landing stylesheet has a broad `header` rule. Reset every operational
+   header/footer that must participate in normal Studio document flow. */
+html[data-studio-interaction-v49] :is(
+  .sn-view-pad > .sn-page-title,
+  .sn-media-library > .sn-page-title,
+  .op41-card > header,
+  .op41-domain > header,
+  .op41-domain > footer
+) {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: none !important;
+  translate: none !important;
+  float: none !important;
+  clear: both !important;
+}
+
+html[data-studio-interaction-v49] .sn-view-pad > .sn-page-title,
+html[data-studio-interaction-v49] .sn-media-library > .sn-page-title {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 14px !important;
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+}
+
+html[data-studio-interaction-v49] .sn-page-title > div,
+html[data-studio-interaction-v49] .sn-page-title h1,
+html[data-studio-interaction-v49] .sn-page-title p {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  position: static !important;
+  transform: none !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-interaction-v49] .sn-page-title h1 {
+  margin: 0 0 10px !important;
+  font-size: clamp(34px, 5cqi, 62px) !important;
+  line-height: 1.02 !important;
+}
+
+html[data-studio-interaction-v49] .sn-page-title p {
+  margin: 0 !important;
+  font-size: clamp(14px, 1.5cqi, 18px) !important;
+  line-height: 1.55 !important;
+}
+
+/* Analytics toolbar and all charts use intrinsic, container-safe grids. */
+html[data-studio-interaction-v49] .op41-panel {
+  position: relative !important;
+  inset: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  isolation: isolate !important;
+}
+
+html[data-studio-interaction-v49] .op41-toolbar {
+  position: static !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr)) !important;
+  align-items: start !important;
+  gap: 14px !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-interaction-v49] .op41-toolbar > div,
+html[data-studio-interaction-v49] .op41-toolbar h2,
+html[data-studio-interaction-v49] .op41-toolbar p,
+html[data-studio-interaction-v49] .op41-toolbar small {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-interaction-v49] .op41-toolbar h2 {
+  margin: 5px 0 7px !important;
+  font-size: clamp(25px, 3.6cqi, 39px) !important;
+  line-height: 1.08 !important;
+}
+
+html[data-studio-interaction-v49] .op41-toolbar-actions {
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  position: static !important;
+}
+
+html[data-studio-interaction-v49] .op41-toolbar-actions > * {
+  flex: 1 1 130px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+}
+
+html[data-studio-interaction-v49] .op41-metrics {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+html[data-studio-interaction-v49] .op41-chart-grid,
+html[data-studio-interaction-v49] .op41-chart-grid.equal,
+html[data-studio-interaction-v49] .op41-member-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)) !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  width: 100% !important;
+}
+
+html[data-studio-interaction-v49] .op41-card {
+  position: relative !important;
+  inset: auto !important;
+  display: block !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+
+html[data-studio-interaction-v49] .op41-card > header {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-studio-interaction-v49] .op41-card > header > div,
+html[data-studio-interaction-v49] .op41-card > header > span,
+html[data-studio-interaction-v49] .op41-card h2,
+html[data-studio-interaction-v49] .op41-card small {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-interaction-v49] .op41-card h2 {
+  margin: 5px 0 0 !important;
+  font-size: clamp(19px, 2.4cqi, 28px) !important;
+  line-height: 1.15 !important;
+}
+
+html[data-studio-interaction-v49] .op41-donut-wrap {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)) !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+html[data-studio-interaction-v49] .op41-line,
+html[data-studio-interaction-v49] .op41-donut,
+html[data-studio-interaction-v49] .op41-bars,
+html[data-studio-interaction-v49] .op41-legend {
+  position: static !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+html[data-studio-interaction-v49] .op41-line {
+  width: 100% !important;
+  height: auto !important;
+}
+
+html[data-studio-interaction-v49] .op41-donut {
+  width: min(220px, 100%) !important;
+  margin-inline: auto !important;
+}
+
+/* Domain production panel is the sole authority. */
+html[data-studio-interaction-v49] .sn-domain-card,
+html[data-studio-interaction-v49] .sn-launch,
+html[data-studio-interaction-v49] .op41-host[data-surface="domains"],
+html[data-studio-interaction-v49] .op41-readiness,
+html[data-studio-interaction-v49] .op41-domain-list,
+html[data-studio-interaction-v49] .op41-domain {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+
+html[data-studio-interaction-v49] .op41-readiness {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)) !important;
+  align-items: start !important;
+  gap: 16px !important;
+  margin-top: 18px !important;
+}
+
+html[data-studio-interaction-v49] .op41-domain > header,
+html[data-studio-interaction-v49] .op41-domain > footer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+html[data-studio-interaction-v49] .op41-domain > header {
+  margin: 0 0 12px !important;
+  border: 0 !important;
+}
+
+html[data-studio-interaction-v49] .op41-domain > footer {
+  margin: 12px 0 0 !important;
+  border: 0 !important;
+}
+
+/* Nara is a manual floating tool. Closed means no layer; compact means it never
+   blocks or dims the Studio page behind it. */
+html[data-studio-interaction-v49] .nara-assistant-layer:not([data-nara-size-v30="expanded"]) {
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+html[data-studio-interaction-v49] .nara-assistant-layer:not([data-nara-size-v30="expanded"]) > .nara-assistant-backdrop {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html[data-studio-interaction-v49] .nara-assistant-layer:not([data-nara-size-v30="expanded"]) > .nara-assistant-shell {
+  pointer-events: auto !important;
+}
+
+html[data-studio-interaction-v49][data-nara-manual-open-v49="false"] .nara-floating-button {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+@container (max-width: 720px) {
+  html[data-studio-interaction-v49] .sn-view-pad > .sn-page-title,
+  html[data-studio-interaction-v49] .sn-media-library > .sn-page-title {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-studio-interaction-v49] .sn-page-title > :last-child:not(div) {
+    justify-self: stretch !important;
+    width: 100% !important;
+  }
+
+  html[data-studio-interaction-v49] .op41-toolbar-actions {
+    justify-content: stretch !important;
+  }
+
+  html[data-studio-interaction-v49] .op41-toolbar-actions > * {
+    flex-basis: calc(50% - 4px) !important;
+  }
+}
+
+@container (max-width: 460px) {
+  html[data-studio-interaction-v49] .op41-toolbar-actions > * {
+    flex-basis: 100% !important;
+  }
+
+  html[data-studio-interaction-v49] .op41-legend li {
+    grid-template-columns: 12px minmax(0, 1fr) auto !important;
+  }
+
+  html[data-studio-interaction-v49] .op41-legend li small {
+    grid-column: 2 / -1 !important;
+  }
+}
