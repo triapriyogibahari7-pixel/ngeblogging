@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: ngeblogging-live-diagnostic
@@ -24,7 +25,6 @@ jobs:
           mkdir -p /tmp/ngeblogging-live
           stamp="$(date +%s)"
 
-          # Explicit URLs avoid ambiguity in the production audit.
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/health.headers -o /tmp/ngeblogging-live/health.body -w '%{http_code}\n' "https://ngeblogging.com/api/health?diagnostic=${stamp}" > /tmp/ngeblogging-live/health.status 2>/tmp/ngeblogging-live/health.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/index.headers -o /tmp/ngeblogging-live/index.body -w '%{http_code}\n' "https://ngeblogging.com/?diagnostic=${stamp}" > /tmp/ngeblogging-live/index.status 2>/tmp/ngeblogging-live/index.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/sw.headers -o /tmp/ngeblogging-live/sw.body -w '%{http_code}\n' "https://ngeblogging.com/sw.js?diagnostic=${stamp}" > /tmp/ngeblogging-live/sw.status 2>/tmp/ngeblogging-live/sw.curl-error || true
@@ -51,6 +51,29 @@ jobs:
             echo; echo "INDEX ASSETS:"; grep -Eo '(src|href)="[^"]+\.(js|css)(\?[^"]*)?"' /tmp/ngeblogging-live/index.body 2>/dev/null | head -50 || true
           } | tee /tmp/ngeblogging-live/summary.txt
 
+      - name: Publish diagnostic commit status
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('node:fs');
+            const read = (name) => { try { return fs.readFileSync(`/tmp/ngeblogging-live/${name}`, 'utf8').trim(); } catch { return 'missing'; } };
+            const healthCode = read('health.status');
+            const analyticsCode = read('analytics.status');
+            const naraCode = read('nara.status');
+            let release = 'unknown';
+            try { release = JSON.parse(read('health.body')).release || 'unknown'; } catch {}
+            const ok = healthCode === '200' && analyticsCode === '202' && naraCode === '401' && release === '2026.07.25-production-audit-v37';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ok ? 'success' : 'failure',
+              context: 'Ngeblogging live diagnostic',
+              description: `health ${healthCode} ${release}; analytics ${analyticsCode}; nara ${naraCode}`.slice(0, 140),
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
       - name: Upload live diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -60,4 +83,4 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-# diagnostic-contract-v40
+# diagnostic-contract-v41
