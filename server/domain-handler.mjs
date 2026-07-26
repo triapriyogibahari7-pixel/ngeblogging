@@ -1,5 +1,7 @@
 import {
+  attachDefaultWorkerDomains,
   fullZoneProviderReady,
+  getFullZoneStatus,
   getOrCreateFullZone,
   normalizeZoneName,
   publicZoneState,
@@ -294,6 +296,217 @@ function fullZoneOwnership(zoneState) {
   };
 }
 
+function publicWorkerDomain(workerDomain) {
+  if (!workerDomain) return null;
+
+  return {
+    id: String(workerDomain.id || ""),
+    certificateId:
+      String(workerDomain.cert_id || "") || null,
+    hostname: String(workerDomain.hostname || ""),
+    service: String(workerDomain.service || ""),
+    zoneId: String(workerDomain.zone_id || ""),
+    zoneName: String(workerDomain.zone_name || ""),
+  };
+}
+
+function workerDomainsReady(workerDomains) {
+  return Boolean(
+    workerDomains?.apex?.id
+    && workerDomains?.apex?.cert_id
+    && workerDomains?.www?.id
+    && workerDomains?.www?.cert_id
+  );
+}
+
+async function saveFullZoneRefreshState(
+  env,
+  domainRow,
+  zoneState,
+  workerDomains = null,
+) {
+  const now = new Date().toISOString();
+  const attached =
+    workerDomainsReady(workerDomains);
+  const active =
+    zoneState.active && attached;
+  const failed =
+    zoneState.status === "moved";
+
+  const sslValidation = attached
+    ? [
+        publicWorkerDomain(
+          workerDomains.apex,
+        ),
+        publicWorkerDomain(
+          workerDomains.www,
+        ),
+      ]
+    : [];
+
+  const update = {
+    status: active
+      ? "active"
+      : failed
+        ? "failed"
+        : "verifying",
+    provider: "cloudflare-full-zone",
+    provider_hostname_id:
+      zoneState.id
+      || domainRow.provider_hostname_id,
+    provider_status: zoneState.status,
+    ssl_status: active
+      ? "active"
+      : "pending",
+    ownership_verification:
+      fullZoneOwnership(zoneState),
+    ssl_validation: sslValidation,
+    last_checked_at: now,
+    verified_at: active
+      ? domainRow.verified_at || now
+      : null,
+    is_primary: active,
+    error_message: failed
+      ? "Cloudflare tidak lagi mendeteksi nameserver yang diwajibkan."
+      : null,
+    updated_at: now,
+  };
+
+  const rows = await adminJson(
+    env,
+    `site_domains?id=eq.${encodeURIComponent(domainRow.id)}&select=${DOMAIN_SELECT}`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: JSON.stringify(update),
+    },
+  );
+
+  const saved = rows?.[0] || {
+    ...domainRow,
+    ...update,
+  };
+
+  if (active) {
+    await adminJson(
+      env,
+      `site_domains?site_id=eq.${encodeURIComponent(saved.site_id)}&id=neq.${encodeURIComponent(saved.id)}`,
+      {
+        method: "PATCH",
+        prefer: "return=minimal",
+        body: JSON.stringify({
+          is_primary: false,
+          updated_at: now,
+        }),
+      },
+    );
+
+    await adminJson(
+      env,
+      `sites?id=eq.${encodeURIComponent(saved.site_id)}`,
+      {
+        method: "PATCH",
+        prefer: "return=minimal",
+        body: JSON.stringify({
+          custom_domain: saved.hostname,
+          updated_at: now,
+        }),
+      },
+    );
+  }
+
+  return saved;
+}
+
+async function refreshFullZoneDomain(
+  env,
+  domain,
+  requestId,
+) {
+  const zoneId = String(
+    domain.provider_hostname_id || "",
+  ).trim();
+
+  if (!/^[0-9a-f]{32}$/i.test(zoneId)) {
+    return response(
+      409,
+      {
+        code: "INVALID_FULL_ZONE_ID",
+        error: "Domain belum memiliki Cloudflare Zone ID yang valid.",
+      },
+      requestId,
+    );
+  }
+
+  const zone = await getFullZoneStatus(
+    env,
+    zoneId,
+  );
+
+  const zoneState =
+    publicZoneState(zone);
+
+  if (
+    zoneState.id !== zoneId
+    || zoneState.name !== domain.hostname
+  ) {
+    throw Object.assign(
+      new Error(
+        "Cloudflare Zone tidak cocok dengan domain yang tersimpan.",
+      ),
+      {
+        code: "FULL_ZONE_MISMATCH",
+        status: 409,
+      },
+    );
+  }
+
+  let workerDomains = null;
+
+  if (zoneState.active) {
+    workerDomains =
+      await attachDefaultWorkerDomains(
+        env,
+        zone,
+      );
+  }
+
+  const saved =
+    await saveFullZoneRefreshState(
+      env,
+      domain,
+      zoneState,
+      workerDomains,
+    );
+
+  return response(
+    200,
+    {
+      domain: saved,
+      provider: "cloudflare-full-zone",
+      zone: zoneState,
+      instructions:
+        fullZoneInstructions(zoneState),
+      attached:
+        workerDomainsReady(workerDomains),
+      workerDomains: workerDomains
+        ? {
+            apex:
+              publicWorkerDomain(
+                workerDomains.apex,
+              ),
+            www:
+              publicWorkerDomain(
+                workerDomains.www,
+              ),
+          }
+        : null,
+      cnameTarget: null,
+    },
+    requestId,
+  );
+}
+
 async function registerFullZoneDomain(
   body,
   env,
@@ -542,12 +755,9 @@ async function refreshDomain(request, env, user, requestId) {
   await verifySiteManager(env, domain.site_id, user.id);
 
   if (domain.provider === "cloudflare-full-zone") {
-    return response(
-      503,
-      {
-        code: "FULL_ZONE_REFRESH_NOT_WIRED",
-        error: "Pemeriksaan nameserver full-zone sedang disiapkan.",
-      },
+    return refreshFullZoneDomain(
+      env,
+      domain,
       requestId,
     );
   }
