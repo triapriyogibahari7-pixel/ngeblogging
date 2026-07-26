@@ -45,15 +45,22 @@ test("v37 never modifies the locked Studio navigation or Nara widget", async () 
   }
 });
 
-test("analytics is a real server-collected, role-protected dashboard with explicit simulation", async () => {
-  const migration = await read("supabase/migrations/20260725170000_real_analytics_and_member_quota.sql");
+test("analytics is server collected through a rate-limited RPC with explicit simulation", async () => {
+  const baseMigration = await read("supabase/migrations/20260725170000_real_analytics_and_member_quota.sql");
+  const collectorMigration = await read("supabase/migrations/20260726013000_public_analytics_collector_v38.sql");
   const handler = await read("server/analytics-handler.mjs");
   const runtime = await read("src/studio-production-audit-v37.js");
-  assert.match(migration, /create table if not exists public\.analytics_events/);
-  assert.match(migration, /alter table public\.analytics_events enable row level security/);
-  assert.match(migration, /get_site_analytics_dashboard/);
+  assert.match(baseMigration, /create table if not exists public\.analytics_events/);
+  assert.match(baseMigration, /alter table public\.analytics_events enable row level security/);
+  assert.match(baseMigration, /get_site_analytics_dashboard/);
+  assert.match(collectorMigration, /record_analytics_event/);
+  assert.match(collectorMigration, /security definer/);
+  assert.match(collectorMigration, /rate_limited/);
+  assert.match(collectorMigration, /interval '3 seconds'/);
   assert.match(handler, /classification/);
-  assert.match(handler, /visitor_hash/);
+  assert.match(handler, /visitorHash/);
+  assert.match(handler, /rpc\/record_analytics_event/);
+  assert.match(handler, /SUPABASE_PUBLISHABLE_KEY/);
   assert.doesNotMatch(handler, /raw_ip|ip_address/);
   assert.match(runtime, /get_site_analytics_dashboard/);
   assert.match(runtime, /SIMULASI TAMPILAN — BUKAN DATA PRODUKSI/);
@@ -61,7 +68,7 @@ test("analytics is a real server-collected, role-protected dashboard with explic
   assert.match(runtime, /sp37-donut/);
 });
 
-test("member invitations are server verified and hidden until delivery is genuinely ready", async () => {
+test("member invitations remain hidden until email delivery is genuinely ready", async () => {
   const migration = await read("supabase/migrations/20260725170000_real_analytics_and_member_quota.sql");
   const handler = await read("server/member-invite-handler.mjs");
   const config = await read("wrangler.production.jsonc");
@@ -97,7 +104,7 @@ test("Ringkasan clearly identifies and switches the active site", async () => {
   assert.match(runtime, /\.sn-workspace/);
 });
 
-test("Cloudflare production worker routes analytics and member invitations", async () => {
+test("Cloudflare production worker routes analytics and preserves privacy preferences", async () => {
   const config = await read("wrangler.production.jsonc");
   const worker = await read("cloudflare/worker-v37.mjs");
   assert.match(config, /worker-v37\.mjs/);
@@ -105,6 +112,7 @@ test("Cloudflare production worker routes analytics and member invitations", asy
   assert.match(worker, /api\/analytics\/collect/);
   assert.match(worker, /api\/member-invitations/);
   assert.match(worker, /data-ngeblogging-analytics-v37/);
+  assert.match(worker, /if\(privacy\)return/);
   assert.match(worker, /resolveSeoSite/);
 });
 
