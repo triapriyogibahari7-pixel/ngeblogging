@@ -1,5 +1,5 @@
 import {
-  attachDefaultWorkerDomains,
+  attachWorkerDomain,
   deleteFullZone,
   detachWorkerDomain,
   fullZoneProviderReady,
@@ -364,8 +364,24 @@ function fullZoneInstructions(zoneState) {
   };
 }
 
-function fullZoneOwnership(zoneState) {
+function plainObject(value) {
+  return Boolean(
+    value
+    && typeof value === "object"
+    && !Array.isArray(value),
+  );
+}
+
+function fullZoneOwnership(
+  zoneState,
+  currentOwnership = {},
+) {
+  const current = plainObject(currentOwnership)
+    ? currentOwnership
+    : {};
+
   return {
+    ...current,
     method: "nameserver",
     zone_name: zoneState.name,
     required_name_servers: zoneState.nameServers,
@@ -387,13 +403,358 @@ function publicWorkerDomain(workerDomain) {
   };
 }
 
+function normalizeAdditionalHost(
+  input,
+  zoneName,
+) {
+  const normalizedZone = normalizeZoneName(
+    zoneName,
+  );
+
+  let value = String(input || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, "");
+
+  if (!value) {
+    throw Object.assign(
+      new Error(
+        "Masukkan www atau nama subdomain.",
+      ),
+      {
+        code: "ADDITIONAL_HOST_REQUIRED",
+        status: 400,
+      },
+    );
+  }
+
+  if (value.includes("://")) {
+    let parsed;
+
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw Object.assign(
+        new Error(
+          "Format alamat tambahan tidak valid.",
+        ),
+        {
+          code: "INVALID_ADDITIONAL_HOST",
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      parsed.pathname !== "/"
+      || parsed.search
+      || parsed.hash
+      || parsed.port
+      || parsed.username
+      || parsed.password
+    ) {
+      throw Object.assign(
+        new Error(
+          "Masukkan nama host tanpa path, parameter, atau port.",
+        ),
+        {
+          code: "INVALID_ADDITIONAL_HOST",
+          status: 400,
+        },
+      );
+    }
+
+    value = parsed.hostname
+      .toLowerCase()
+      .replace(/\.$/, "");
+  }
+
+  if (
+    value === normalizedZone
+    || value === `www.${normalizedZone}`
+      && value === normalizedZone
+  ) {
+    throw Object.assign(
+      new Error(
+        "Alamat utama tidak dapat ditambahkan sebagai subdomain.",
+      ),
+      {
+        code: "APEX_HOST_NOT_ALLOWED",
+        status: 400,
+      },
+    );
+  }
+
+  const suffix = `.${normalizedZone}`;
+
+  const host = value.endsWith(suffix)
+    ? value.slice(0, -suffix.length)
+    : value;
+
+  const labels = host.split(".");
+
+  if (
+    host.length < 1
+    || host.length > 190
+    || labels.length > 8
+    || labels.some(
+      (label) =>
+        !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(
+          label,
+        ),
+    )
+  ) {
+    throw Object.assign(
+      new Error(
+        "Gunakan nama seperti www, blog, toko, app, atau docs.tim.",
+      ),
+      {
+        code: "INVALID_ADDITIONAL_HOST",
+        status: 400,
+      },
+    );
+  }
+
+  return {
+    host,
+    hostname: `${host}.${normalizedZone}`,
+  };
+}
+
+function additionalHostnameRecords(domain) {
+  const ownership = plainObject(
+    domain?.ownership_verification,
+  )
+    ? domain.ownership_verification
+    : {};
+
+  const source = Array.isArray(
+    ownership.additional_hostnames,
+  )
+    ? ownership.additional_hostnames
+    : [];
+
+  return source
+    .filter(
+      (record) =>
+        plainObject(record)
+        && typeof record.host === "string"
+        && typeof record.hostname === "string",
+    )
+    .map((record) => ({
+      host: String(record.host),
+      hostname: String(record.hostname),
+      enabled: record.enabled !== false,
+      workerDomainId:
+        String(
+          record.workerDomainId
+          || record.worker_domain_id
+          || "",
+        ) || null,
+      certificateId:
+        String(
+          record.certificateId
+          || record.certificate_id
+          || "",
+        ) || null,
+      service:
+        String(record.service || "") || null,
+      createdAt:
+        record.createdAt
+        || record.created_at
+        || null,
+      updatedAt:
+        record.updatedAt
+        || record.updated_at
+        || null,
+    }));
+}
+
+function workerDomainForHostname(
+  domain,
+  hostname,
+) {
+  const records = Array.isArray(
+    domain?.ssl_validation,
+  )
+    ? domain.ssl_validation
+    : [];
+
+  return records.find(
+    (record) =>
+      String(record?.hostname || "")
+        .toLowerCase()
+      === hostname.toLowerCase(),
+  ) || null;
+}
+
 function workerDomainsReady(workerDomains) {
   return Boolean(
     workerDomains?.apex?.id
-    && workerDomains?.apex?.cert_id
-    && workerDomains?.www?.id
-    && workerDomains?.www?.cert_id
+    && workerDomains?.apex?.cert_id,
   );
+}
+
+function workerDomainValues(workerDomains) {
+  return [
+    workerDomains?.apex,
+    workerDomains?.www,
+    ...(Array.isArray(workerDomains?.additional)
+      ? workerDomains.additional
+      : []),
+  ].filter(Boolean);
+}
+
+function addressRecordsWithWorkerState(
+  domain,
+  workerDomains,
+  zoneName,
+) {
+  const now = new Date().toISOString();
+
+  const records = new Map(
+    additionalHostnameRecords(domain)
+      .map((record) => [
+        record.hostname,
+        record,
+      ]),
+  );
+
+  const storeWorker = (
+    workerDomain,
+  ) => {
+    const publicWorker =
+      publicWorkerDomain(workerDomain);
+
+    if (!publicWorker?.hostname) return;
+
+    const suffix = `.${zoneName}`;
+
+    if (
+      !publicWorker.hostname.endsWith(
+        suffix,
+      )
+    ) {
+      return;
+    }
+
+    const host =
+      publicWorker.hostname.slice(
+        0,
+        -suffix.length,
+      );
+
+    const existing =
+      records.get(publicWorker.hostname);
+
+    records.set(
+      publicWorker.hostname,
+      {
+        host,
+        hostname:
+          publicWorker.hostname,
+        enabled: true,
+        workerDomainId:
+          publicWorker.id || null,
+        certificateId:
+          publicWorker.certificateId,
+        service:
+          publicWorker.service || null,
+        createdAt:
+          existing?.createdAt || now,
+        updatedAt: now,
+      },
+    );
+  };
+
+  if (workerDomains?.www) {
+    storeWorker(workerDomains.www);
+  }
+
+  for (
+    const workerDomain
+    of workerDomains?.additional || []
+  ) {
+    storeWorker(workerDomain);
+  }
+
+  return [...records.values()]
+    .sort((left, right) => {
+      if (left.host === "www") return -1;
+      if (right.host === "www") return 1;
+
+      return left.hostname.localeCompare(
+        right.hostname,
+      );
+    });
+}
+
+async function attachConfiguredWorkerDomains(
+  env,
+  domain,
+  zoneState,
+) {
+  const apex = await attachWorkerDomain(
+    env,
+    {
+      hostname: zoneState.name,
+      zoneId: zoneState.id,
+      zoneName: zoneState.name,
+    },
+  );
+
+  const settings =
+    additionalHostnameRecords(domain);
+
+  const wwwSetting = settings.find(
+    (record) => record.host === "www",
+  );
+
+  let www = null;
+
+  /*
+   * Untuk domain lama, www tetap aktif secara
+   * bawaan. Setelah pengguna menonaktifkannya,
+   * record enabled:false mencegah pemasangan ulang.
+   */
+  if (!wwwSetting || wwwSetting.enabled) {
+    www = await attachWorkerDomain(
+      env,
+      {
+        hostname: `www.${zoneState.name}`,
+        zoneId: zoneState.id,
+        zoneName: zoneState.name,
+      },
+    );
+  }
+
+  const additional = [];
+
+  for (const setting of settings) {
+    if (
+      setting.host === "www"
+      || setting.enabled === false
+    ) {
+      continue;
+    }
+
+    additional.push(
+      await attachWorkerDomain(
+        env,
+        {
+          hostname: setting.hostname,
+          zoneId: zoneState.id,
+          zoneName: zoneState.name,
+        },
+      ),
+    );
+  }
+
+  return {
+    apex,
+    www,
+    additional,
+  };
 }
 
 async function saveFullZoneRefreshState(
@@ -403,23 +764,41 @@ async function saveFullZoneRefreshState(
   workerDomains = null,
 ) {
   const now = new Date().toISOString();
+
   const attached =
     workerDomainsReady(workerDomains);
+
   const active =
     zoneState.active && attached;
+
   const failed =
     zoneState.status === "moved";
 
-  const sslValidation = attached
-    ? [
-        publicWorkerDomain(
-          workerDomains.apex,
-        ),
-        publicWorkerDomain(
-          workerDomains.www,
-        ),
-      ]
-    : [];
+  const sslValidation =
+    workerDomainValues(workerDomains)
+      .map(publicWorkerDomain)
+      .filter(Boolean);
+
+  const additionalHostnames =
+    addressRecordsWithWorkerState(
+      domainRow,
+      workerDomains,
+      zoneState.name,
+    );
+
+  const ownership =
+    fullZoneOwnership(
+      zoneState,
+      {
+        ...(plainObject(
+          domainRow.ownership_verification,
+        )
+          ? domainRow.ownership_verification
+          : {}),
+        additional_hostnames:
+          additionalHostnames,
+      },
+    );
 
   const update = {
     status: active
@@ -436,7 +815,7 @@ async function saveFullZoneRefreshState(
       ? "active"
       : "pending",
     ownership_verification:
-      fullZoneOwnership(zoneState),
+      ownership,
     ssl_validation: sslValidation,
     last_checked_at: now,
     verified_at: active
@@ -509,7 +888,8 @@ async function refreshFullZoneDomain(
       409,
       {
         code: "INVALID_FULL_ZONE_ID",
-        error: "Domain belum memiliki Cloudflare Zone ID yang valid.",
+        error:
+          "Domain belum memiliki Cloudflare Zone ID yang valid.",
       },
       requestId,
     );
@@ -542,9 +922,10 @@ async function refreshFullZoneDomain(
 
   if (zoneState.active) {
     workerDomains =
-      await attachDefaultWorkerDomains(
+      await attachConfiguredWorkerDomains(
         env,
-        zone,
+        domain,
+        zoneState,
       );
   }
 
@@ -576,8 +957,14 @@ async function refreshFullZoneDomain(
               publicWorkerDomain(
                 workerDomains.www,
               ),
+            additional:
+              workerDomains.additional
+                .map(publicWorkerDomain)
+                .filter(Boolean),
           }
         : null,
+      addresses:
+        additionalHostnameRecords(saved),
       cnameTarget: null,
     },
     requestId,
@@ -1233,6 +1620,333 @@ async function finalizeFullZoneRemoval(
   );
 }
 
+async function manageAdditionalAddress(
+  request,
+  env,
+  user,
+  requestId,
+) {
+  const body = await request
+    .json()
+    .catch(() => ({}));
+
+  const domainId = String(
+    body.domainId || "",
+  );
+
+  const rows = await userJson(
+    env,
+    `site_domains?id=eq.${encodeURIComponent(domainId)}&select=${DOMAIN_SELECT}&limit=1`,
+  );
+
+  const domain = rows?.[0];
+
+  if (!domain) {
+    return response(
+      404,
+      {
+        code: "DOMAIN_NOT_FOUND",
+        error: "Domain tidak ditemukan.",
+      },
+      requestId,
+    );
+  }
+
+  await verifySiteManager(
+    env,
+    domain.site_id,
+    user.id,
+  );
+
+  if (
+    domain.provider
+      !== "cloudflare-full-zone"
+  ) {
+    return response(
+      409,
+      {
+        code:
+          "ADDITIONAL_HOST_REQUIRES_FULL_ZONE",
+        error:
+          "Alamat tambahan hanya tersedia untuk domain full-zone.",
+      },
+      requestId,
+    );
+  }
+
+  if (
+    domain.status !== "active"
+    || domain.provider_status !== "active"
+  ) {
+    return response(
+      409,
+      {
+        code: "ROOT_DOMAIN_NOT_ACTIVE",
+        error:
+          "Aktifkan dan verifikasi domain utama terlebih dahulu.",
+      },
+      requestId,
+    );
+  }
+
+  const zoneId = String(
+    domain.provider_hostname_id || "",
+  ).trim();
+
+  if (!/^[0-9a-f]{32}$/i.test(zoneId)) {
+    return response(
+      409,
+      {
+        code: "INVALID_FULL_ZONE_ID",
+        error:
+          "Cloudflare Zone ID tidak valid.",
+      },
+      requestId,
+    );
+  }
+
+  const zone = await getFullZoneStatus(
+    env,
+    zoneId,
+  );
+
+  const zoneState =
+    publicZoneState(zone);
+
+  if (
+    !zoneState.active
+    || zoneState.name !== domain.hostname
+  ) {
+    return response(
+      409,
+      {
+        code: "ROOT_ZONE_NOT_ACTIVE",
+        error:
+          "Nameserver domain utama belum aktif.",
+        zone: zoneState,
+      },
+      requestId,
+    );
+  }
+
+  const {
+    host,
+    hostname,
+  } = normalizeAdditionalHost(
+    body.host || body.hostname,
+    domain.hostname,
+  );
+
+  const remove =
+    body.remove === true
+    || body.action === "remove";
+
+  const enabled =
+    !remove
+    && body.enabled !== false
+    && body.action !== "disable";
+
+  const current =
+    additionalHostnameRecords(domain);
+
+  const index = current.findIndex(
+    (record) =>
+      record.hostname === hostname,
+  );
+
+  if (
+    enabled
+    && index < 0
+    && current.length >= 20
+  ) {
+    return response(
+      409,
+      {
+        code:
+          "ADDITIONAL_HOST_LIMIT_REACHED",
+        error:
+          "Maksimal 20 alamat tambahan untuk satu domain.",
+      },
+      requestId,
+    );
+  }
+
+  const existing =
+    index >= 0 ? current[index] : null;
+
+  const validationRecord =
+    workerDomainForHostname(
+      domain,
+      hostname,
+    );
+
+  const storedWorkerDomainId =
+    existing?.workerDomainId
+    || validationRecord?.id
+    || null;
+
+  let workerDomain = null;
+
+  if (enabled) {
+    workerDomain =
+      await attachWorkerDomain(
+        env,
+        {
+          hostname,
+          zoneId,
+          zoneName: domain.hostname,
+        },
+      );
+  } else if (storedWorkerDomainId) {
+    try {
+      await detachWorkerDomain(
+        env,
+        storedWorkerDomainId,
+      );
+    } catch (error) {
+      if (error?.providerStatus !== 404) {
+        throw error;
+      }
+    }
+  }
+
+  const now =
+    new Date().toISOString();
+
+  let nextAddresses = [...current];
+
+  if (remove) {
+    nextAddresses =
+      nextAddresses.filter(
+        (record) =>
+          record.hostname !== hostname,
+      );
+  } else {
+    const publicWorker =
+      publicWorkerDomain(workerDomain);
+
+    const nextRecord = {
+      host,
+      hostname,
+      enabled,
+      workerDomainId:
+        enabled
+          ? publicWorker?.id || null
+          : null,
+      certificateId:
+        enabled
+          ? publicWorker?.certificateId
+            || null
+          : null,
+      service:
+        enabled
+          ? publicWorker?.service
+            || readiness(env).workerService
+            || "ngeblogging"
+          : existing?.service
+            || readiness(env).workerService
+            || "ngeblogging",
+      createdAt:
+        existing?.createdAt || now,
+      updatedAt: now,
+    };
+
+    if (index >= 0) {
+      nextAddresses[index] =
+        nextRecord;
+    } else {
+      nextAddresses.push(
+        nextRecord,
+      );
+    }
+  }
+
+  nextAddresses.sort(
+    (left, right) => {
+      if (left.host === "www") return -1;
+      if (right.host === "www") return 1;
+
+      return left.hostname.localeCompare(
+        right.hostname,
+      );
+    },
+  );
+
+  const sslValidation = (
+    Array.isArray(domain.ssl_validation)
+      ? domain.ssl_validation
+      : []
+  ).filter(
+    (record) =>
+      String(record?.hostname || "")
+        .toLowerCase()
+      !== hostname,
+  );
+
+  if (workerDomain) {
+    sslValidation.push(
+      publicWorkerDomain(workerDomain),
+    );
+  }
+
+  const currentOwnership =
+    plainObject(
+      domain.ownership_verification,
+    )
+      ? domain.ownership_verification
+      : {};
+
+  const ownership = {
+    ...currentOwnership,
+    additional_hostnames:
+      nextAddresses,
+  };
+
+  const savedRows = await userJson(
+    env,
+    `site_domains?id=eq.${encodeURIComponent(domain.id)}&select=${DOMAIN_SELECT}`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: JSON.stringify({
+        ownership_verification:
+          ownership,
+        ssl_validation:
+          sslValidation,
+        updated_at: now,
+        last_checked_at: now,
+      }),
+    },
+  );
+
+  const saved = savedRows?.[0] || {
+    ...domain,
+    ownership_verification:
+      ownership,
+    ssl_validation:
+      sslValidation,
+    updated_at: now,
+    last_checked_at: now,
+  };
+
+  return response(
+    200,
+    {
+      domain: saved,
+      address: remove
+        ? null
+        : nextAddresses.find(
+            (record) =>
+              record.hostname
+              === hostname,
+          ),
+      addresses: nextAddresses,
+      removed: remove,
+    },
+    requestId,
+  );
+}
+
 async function removeDomain(request, env, user, requestId) {
   const body = await request.json().catch(() => ({}));
   const domainId = String(body.domainId || "");
@@ -1354,6 +2068,18 @@ export async function handleDomainRequest(
       && url.pathname === "/api/domains/refresh"
     ) {
       return refreshDomain(
+        request,
+        requestEnv,
+        user,
+        requestId,
+      );
+    }
+
+    if (
+      request.method === "POST"
+      && url.pathname === "/api/domains/address"
+    ) {
+      return manageAdditionalAddress(
         request,
         requestEnv,
         user,
