@@ -30,7 +30,7 @@
     <link href="/src/nara-image-studio.css" rel="stylesheet"/>
     <link href="/src/nara-v9-readiness.css" rel="stylesheet"/>
     <link href="/src/nara-command-center.css" rel="stylesheet"/>
-    <link href="/src/domain-management-bridge.css" rel="stylesheet"/>
+    <link href="/src/domain-management-bridge.css" rel="stylesheet" media="not all" data-disabled-authority="legacy-domain-v49"/>
     <link href="/src/site-quota-bridge.css" rel="stylesheet"/>
     <link href="/src/auth-readiness-bridge.css" rel="stylesheet"/>
     <link href="/src/theme-device-modes.css" rel="stylesheet"/>
@@ -61,6 +61,7 @@
     <link href="/src/studio-responsive-repair-v43.css" rel="stylesheet"/>
     <link href="/src/studio-operations-v41.css" rel="stylesheet"/>
     <link href="/src/studio-reflow-v48.css" rel="stylesheet"/>
+    <link href="/src/studio-flow-v49.css" rel="stylesheet"/>
     <title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
   </head>
@@ -68,9 +69,10 @@
     <div id="root"></div>
     <script type="module" src="/src/pwa-runtime.js"></script>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/studio-interaction-v49.js"></script>
     <script type="application/x-disabled" src="/src/studio-runtime-v23.js" data-disabled-authority="v23"></script>
     <script type="module" src="/src/site-favicon-bridge.js"></script>
-    <script type="module" src="/src/domain-management-bridge.js"></script>
+    <script type="application/x-disabled" src="/src/domain-management-bridge.js" data-disabled-authority="legacy-domain-v49"></script>
     <script type="module" src="/src/site-quota-bridge.js"></script>
     <script type="module" src="/src/billing-availability-bridge.js"></script>
     <script type="module" src="/src/auth-readiness-bridge.js"></script>
