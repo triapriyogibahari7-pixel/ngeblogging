@@ -20,17 +20,22 @@ test("production workflow resolves one active zone and verifies route ownership"
   assert.match(workflow, /WORKERS_DEV_SMOKE_TEST_URL/);
 });
 
-test("generated Wrangler configuration pins every official route to the resolved zone", async () => {
+test("generated Wrangler configuration pins every official route to the resolved zone and account", async () => {
   const directory = await mkdtemp(join(tmpdir(), "ngeblogging-zone-v42-"));
   const input = join(directory, "input.jsonc");
   const output = join(directory, "output.jsonc");
   await writeFile(input, JSON.stringify({ name: "ngeblogging", routes: [{ pattern: "old.example/*", zone_name: "old.example" }] }), "utf8");
 
   await execFileAsync(process.execPath, [new URL("../scripts/build-active-zone-wrangler.mjs", import.meta.url).pathname, input, output], {
-    env: { ...process.env, RESOLVED_CLOUDFLARE_ZONE_ID: "0123456789abcdef0123456789abcdef" },
+    env: {
+      ...process.env,
+      RESOLVED_CLOUDFLARE_ZONE_ID: "0123456789abcdef0123456789abcdef",
+      RESOLVED_CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210",
+    },
   });
 
   const generated = JSON.parse(await readFile(output, "utf8"));
+  assert.equal(generated.account_id, "fedcba9876543210fedcba9876543210");
   assert.deepEqual(generated.routes.map((route) => route.pattern), requiredRoutes);
   for (const route of generated.routes) {
     assert.equal(route.zone_id, "0123456789abcdef0123456789abcdef");
