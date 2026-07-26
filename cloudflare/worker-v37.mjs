@@ -1,9 +1,10 @@
 import baseWorker from "./worker-v35.mjs";
 import { analyticsReady, handleAnalyticsRequest } from "../server/analytics-handler.mjs";
 import { handleMemberInviteRequest, memberInvitesReady } from "../server/member-invite-handler.mjs";
+import { customDomainReadiness } from "../server/domain-readiness.mjs";
 import { resolveSeoSite } from "../server/seo-handler.mjs";
 
-const RELEASE = "2026.07.25-production-audit-v37";
+const RELEASE = "2026.07.26-responsive-v39";
 const TRACKER_MARKER = "data-ngeblogging-analytics-v37";
 
 function trackerScript() {
@@ -31,16 +32,21 @@ async function injectAnalytics(request, response, env) {
 function enrichHealth(response, env) {
   if (!response.ok) return response;
   return response.clone().json().then((payload) => {
+    const domain = customDomainReadiness(env);
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
     return new Response(JSON.stringify({
       ...payload,
       release: RELEASE,
+      responsiveStudio: "v39",
       analytics: analyticsReady(env),
       analyticsCollector: analyticsReady(env),
       memberInvites: memberInvitesReady(env),
       memberLimitPerSite: 100,
+      customDomains: domain.enabled,
+      customDomainMissing: domain.missing,
+      customDomainTarget: domain.cnameTarget,
       siteLimits: { free: 12, maximum: 12 },
       independentSiteWorkspaces: true,
     }), { status: response.status, statusText: response.statusText, headers });
