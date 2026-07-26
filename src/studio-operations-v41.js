@@ -17,7 +17,7 @@ let lastSiteId = currentSiteId();
 
 async function enhanceSiteIdentity() {
   const welcome = document.querySelector(".sn-main > .sn-view-pad > .sn-welcome");
-  if (!welcome || welcome.dataset.op41IdentityBusy === "true") return;
+  if (!welcome || welcome.dataset.op41IdentityBusy === "true" || welcome.parentElement?.querySelector(":scope > .sp52-site-switcher")) return;
   welcome.dataset.op41IdentityBusy = "true";
   try {
     const siteId = await resolveSiteId();
