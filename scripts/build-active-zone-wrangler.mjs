@@ -6,15 +6,15 @@ const zoneId = String(
   process.env.RESOLVED_CLOUDFLARE_ZONE_ID || process.env.CLOUDFLARE_ZONE_ID || "",
 ).trim();
 const apiToken = String(process.env.CLOUDFLARE_API_TOKEN || "").trim();
-let accountId = String(process.env.RESOLVED_CLOUDFLARE_ACCOUNT_ID || "").trim();
-
-if (!/^[a-f0-9]{32}$/i.test(zoneId)) {
-  throw new Error("RESOLVED_CLOUDFLARE_ZONE_ID wajib berupa Zone ID Cloudflare 32 karakter.");
-}
+let accountId = String(
+  process.env.RESOLVED_CLOUDFLARE_ACCOUNT_ID
+  || process.env.CLOUDFLARE_ACCOUNT_ID
+  || "",
+).trim();
 
 if (!/^[a-f0-9]{32}$/i.test(accountId)) {
-  if (!apiToken) {
-    throw new Error("CLOUDFLARE_API_TOKEN wajib tersedia untuk mengunci account aktif dari zone ngeblogging.com.");
+  if (!/^[a-f0-9]{32}$/i.test(zoneId) || !apiToken) {
+    throw new Error("CLOUDFLARE_ACCOUNT_ID wajib berupa Account ID Cloudflare 32 karakter.");
   }
 
   const response = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}`, {
@@ -52,7 +52,28 @@ const requiredPatterns = [
 ];
 
 config.account_id = accountId;
-config.routes = requiredPatterns.map((pattern) => ({ pattern, zone_id: zoneId }));
+
+if (/^[a-f0-9]{32}$/i.test(zoneId)) {
+  config.routes = requiredPatterns.map((pattern) => ({ pattern, zone_id: zoneId }));
+  console.log("Route produksi dikunci memakai Zone ID aktif.");
+} else {
+  const sourceRoutes = new Map(
+    (config.routes || []).map((route) => [
+      typeof route === "string" ? route : route.pattern,
+      route,
+    ]),
+  );
+
+  config.routes = requiredPatterns.map((pattern) => {
+    const route = sourceRoutes.get(pattern);
+    if (route && typeof route === "object" && route.zone_name === "ngeblogging.com") {
+      return route;
+    }
+    return { pattern, zone_name: "ngeblogging.com" };
+  });
+
+  console.warn("Zone ID tidak tersedia bagi GitHub Actions; route tetap dikunci dengan zone_name ngeblogging.com dan Account ID resmi.");
+}
 
 await writeFile(outputPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 
