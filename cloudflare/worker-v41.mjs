@@ -49,7 +49,8 @@ async function enrichHealth(response, env) {
     headers.set("cache-control", "no-store");
     return new Response(JSON.stringify({
       ...payload,
-      domainRelease: RELEASE,
+      domainRelease: LEGACY_DOMAIN_RELEASE,
+      domainReleaseCurrent: RELEASE,
       domainReleaseCompatibility: LEGACY_DOMAIN_RELEASE,
       customDomains: Boolean(domain.ready || domain.enabled),
       customDomainProvider: domain.provider,
