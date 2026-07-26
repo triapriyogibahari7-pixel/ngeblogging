@@ -76,17 +76,10 @@ jobs:
       - name: Deploy apex, wildcard tenants, assets, Nara, and API
         run: npm run deploy:cloudflare
 
-      # Vite hashes these source authorities in production. The live audit below
-      # crawls all built JavaScript and CSS assets and validates runtime markers:
-      # studio-responsive-v21.css
-      # studio-sidebar-v21.js
-      # nara-command-center-bridge.js
-      # pwa-runtime.js
-      # Compatibility markers required by the production validator:
-      # studio-v14-authority.css
-      # ngeblogging-app-v14-20260724
-      # 2026.07.24-studio-v14
-      - name: Verify v21 apex, responsive Studio, direct Nara, PWA, and tenant release
+      # Vite hashes source authorities in production. The live audit crawls all
+      # JavaScript and CSS assets and validates the responsive Studio, Nara,
+      # analytics, PWA, and public tenant runtime markers.
+      - name: Verify v37 Studio, Nara, analytics, PWA, and tenant release
         shell: bash
         run: |
           set -euo pipefail
@@ -164,17 +157,21 @@ jobs:
             qr: combined.includes('Baca QR') && combined.includes('BarcodeDetector'),
             microphone: combined.includes('nara-mic') || combined.includes('SpeechRecognition') || combined.includes('webkitSpeechRecognition'),
             imageVisionAttachment: combined.includes('dataUrl') && combined.includes('attachments'),
+            productionAuditV37: combined.includes('studio-production-audit-v37-20260725') && combined.includes('sp37-analytics'),
+            analyticsRpcV38: combined.includes('record_analytics_event') && combined.includes('analytics-v38'),
             pwaRuntime: (combined.includes('ngeblogging-pwa-v21-20260725') || combined.includes('ngeblogging-pwa-v14-20260724')) && combined.includes('beforeinstallprompt'),
           };
 
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
-          if (health.release !== '2026.07.24-studio-v14') errors.push('health.release');
+          if (health.release !== '2026.07.25-production-audit-v37') errors.push('health.release');
           if (health.nara !== true) errors.push('health.nara');
           if (health.naraProviders?.vision !== true) errors.push('health.vision');
           if (health.imageGeneration !== true) errors.push('health.imageGeneration');
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
-          if (health.siteLimits?.free !== 5 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
+          if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
+          if (health.analyticsCollector !== true) errors.push('health.analyticsCollector');
+          if (health.memberLimitPerSite !== 100) errors.push('health.memberLimitPerSite');
           for (const [name, ready] of Object.entries(markers)) if (!ready) errors.push(`bundle:${name}`);
           for (const asset of assets) if (asset.status !== 200) errors.push(`asset:${asset.status}:${asset.url}`);
 
@@ -182,9 +179,20 @@ jobs:
             if (index.includes(legacy)) errors.push(`legacy:${legacy}`);
           }
 
-          if (!sw.includes('ngeblogging-app-v14-20260724-v21')) errors.push('service-worker-v21');
+          if (!sw.includes('ngeblogging-app-v37-20260725')) errors.push('service-worker-v37');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
+
+          const analyticsProbe = await read(`${site}/api/analytics/collect`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', origin: site, 'user-agent': 'NgebloggingProductionAudit/38' },
+            body: JSON.stringify({ path: '/__production-audit-v38', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 1280 }),
+          });
+          let analyticsPayload = {};
+          try { analyticsPayload = JSON.parse(analyticsProbe.text || '{}'); } catch {}
+          if (analyticsProbe.status !== 202 || analyticsPayload.recorded !== true) {
+            errors.push(`analytics-collector:${analyticsProbe.status}/${analyticsPayload.reason || analyticsPayload.error || 'none'}`);
+          }
 
           const unauth = await read(`${site}/api/nara`, {
             method: 'POST',
@@ -207,14 +215,15 @@ jobs:
             nara: health.nara,
             vision: health.naraProviders.vision,
             images: health.imageGeneration,
+            analytics: health.analyticsCollector,
             assets: assets.length,
             markers,
             tenant: 'ok',
-            release: 'v21',
+            release: 'v37-v38-analytics',
           }, null, 2));
           NODE
               then
-                echo "Cloudflare v21, Nara React langsung, Studio responsif, PWA, dan tenant publik terverifikasi."
+                echo "Cloudflare v37, analytics v38, Nara, Studio responsif, PWA, dan tenant publik terverifikasi."
                 exit 0
               fi
             fi
@@ -222,9 +231,9 @@ jobs:
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan rilis v21 yang lengkap."
+          echo "Cloudflare belum menyajikan kontrak produksi v37/v38 yang lengkap."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
-          echo "Index/PWA marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|ngeblogging-app-v14-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
+          echo "Index/PWA marker terakhir:"; grep -Eo 'WHITE-R4-[^< ]+|ngeblogging-app-v[0-9]+-[^" ]+' /tmp/index.html /tmp/sw.js 2>/dev/null || true
           exit 1
 
       - name: Mark production deployment successful
@@ -238,7 +247,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'v21 responsive Studio, direct Nara, PWA, and tenant checks passed.',
+              description: 'v37 Studio, Nara, analytics, PWA, and tenant checks passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -253,6 +262,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, deploy, or v21 live verification failed. Open the workflow log.',
+              description: 'Build, deploy, or current live verification failed. Open the workflow log.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
