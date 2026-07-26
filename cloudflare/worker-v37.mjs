@@ -6,6 +6,16 @@ import { resolveSeoSite } from "../server/seo-handler.mjs";
 const RELEASE = "2026.07.25-production-audit-v37";
 const TRACKER_MARKER = "data-ngeblogging-analytics-v37";
 
+function customDomainBindings(env) {
+  const bindings = {
+    apiToken: Boolean(String(env.CLOUDFLARE_API_TOKEN || "").trim()),
+    zoneId: Boolean(String(env.CLOUDFLARE_ZONE_ID || "").trim()),
+    cnameTarget: Boolean(String(env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET || "").trim()),
+    serviceRole: Boolean(String(env.SUPABASE_SERVICE_ROLE_KEY || "").trim()),
+  };
+  return { bindings, ready: Object.values(bindings).every(Boolean) };
+}
+
 function trackerScript() {
   return `<script ${TRACKER_MARKER}="true">(()=>{if(window.__ngebloggingAnalyticsV37)return;window.__ngebloggingAnalyticsV37=true;const privacy=Boolean(navigator.globalPrivacyControl)||navigator.doNotTrack==='1';if(privacy)return;const id=(store,key)=>{try{let value=store.getItem(key);if(!value){value=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));store.setItem(key,value)}return value}catch{return''}};const visitorId=id(localStorage,'ng_anonymous_visitor_v1');const sessionId=id(sessionStorage,'ng_anonymous_session_v1');let last='';const send=()=>{const path=location.pathname+location.search;if(path===last)return;last=path;const payload=JSON.stringify({path,referrer:document.referrer,visitorId,sessionId,language:navigator.language,screenWidth:screen.width,doNotTrack:false});try{if(navigator.sendBeacon){navigator.sendBeacon('/api/analytics/collect',new Blob([payload],{type:'application/json'}));return}}catch{}fetch('/api/analytics/collect',{method:'POST',headers:{'content-type':'application/json'},body:payload,keepalive:true,credentials:'omit'}).catch(()=>{})};const wrap=name=>{const original=history[name];history[name]=function(){const result=original.apply(this,arguments);queueMicrotask(send);return result}};wrap('pushState');wrap('replaceState');addEventListener('popstate',send);if(document.readyState==='loading')addEventListener('DOMContentLoaded',send,{once:true});else send()})();</script>`;
 }
@@ -31,6 +41,7 @@ async function injectAnalytics(request, response, env) {
 function enrichHealth(response, env) {
   if (!response.ok) return response;
   return response.clone().json().then((payload) => {
+    const domain = customDomainBindings(env);
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
@@ -41,6 +52,8 @@ function enrichHealth(response, env) {
       analyticsCollector: analyticsReady(env),
       memberInvites: memberInvitesReady(env),
       memberLimitPerSite: 100,
+      customDomains: domain.ready,
+      customDomainBindings: domain.bindings,
       siteLimits: { free: 12, maximum: 12 },
       independentSiteWorkspaces: true,
     }), { status: response.status, statusText: response.statusText, headers });
