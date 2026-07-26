@@ -531,3 +531,663 @@ test(
     }
   },
 );
+
+test(
+  "remove full-zone melepaskan Worker tetapi tidak menghapus zone",
+  async () => {
+    const DOMAIN_ID =
+      "44444444-4444-4444-8444-444444444444";
+
+    const APEX_WORKER_DOMAIN_ID =
+      "55555555-5555-4555-8555-555555555555";
+
+    const WWW_WORKER_DOMAIN_ID =
+      "66666666-6666-4666-8666-666666666666";
+
+    const originalFetch =
+      globalThis.fetch;
+
+    const detachedIds = [];
+    const zoneDeleteCalls = [];
+    let savedDomainUpdate = null;
+    let savedSiteUpdate = null;
+
+    const storedDomain = {
+      id: DOMAIN_ID,
+      site_id: SITE_ID,
+      hostname: "example.com",
+      status: "active",
+      provider:
+        "cloudflare-full-zone",
+      provider_hostname_id: ZONE_ID,
+      provider_status: "active",
+      ssl_status: "active",
+      ownership_verification: {
+        method: "nameserver",
+        required_name_servers: [
+          "alice.ns.cloudflare.com",
+          "bob.ns.cloudflare.com",
+        ],
+      },
+      ssl_validation: [
+        {
+          id: APEX_WORKER_DOMAIN_ID,
+          hostname: "example.com",
+        },
+        {
+          id: WWW_WORKER_DOMAIN_ID,
+          hostname: "www.example.com",
+        },
+      ],
+      is_primary: true,
+      verified_at:
+        "2026-07-26T11:00:00Z",
+      created_at:
+        "2026-07-26T10:00:00Z",
+      updated_at:
+        "2026-07-26T11:00:00Z",
+      last_checked_at:
+        "2026-07-26T11:00:00Z",
+      error_message: null,
+      verification_token: null,
+    };
+
+    globalThis.fetch = async (
+      input,
+      options = {},
+    ) => {
+      const url =
+        new URL(String(input));
+
+      const method =
+        options.method || "GET";
+
+      if (
+        url.pathname ===
+        "/auth/v1/user"
+      ) {
+        return jsonResponse({
+          id: USER_ID,
+          email: "owner@example.com",
+        });
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_domains"
+        && method === "GET"
+      ) {
+        return jsonResponse([
+          storedDomain,
+        ]);
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_members"
+        && method === "GET"
+      ) {
+        return jsonResponse([
+          {
+            role: "owner",
+          },
+        ]);
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname.startsWith(
+          `/client/v4/accounts/${ACCOUNT_ID}/workers/domains/`,
+        )
+        && method === "DELETE"
+      ) {
+        detachedIds.push(
+          url.pathname.split("/").at(-1),
+        );
+
+        return jsonResponse({
+          success: true,
+          errors: [],
+          messages: [],
+          result: null,
+        });
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname ===
+          `/client/v4/zones/${ZONE_ID}`
+        && method === "DELETE"
+      ) {
+        zoneDeleteCalls.push(
+          url.toString(),
+        );
+
+        return jsonResponse({
+          success: true,
+          errors: [],
+          messages: [],
+          result: {
+            id: ZONE_ID,
+          },
+        });
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_domains"
+        && method === "PATCH"
+      ) {
+        savedDomainUpdate =
+          JSON.parse(options.body);
+
+        return jsonResponse([
+          {
+            ...storedDomain,
+            ...savedDomainUpdate,
+          },
+        ]);
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/sites"
+        && method === "PATCH"
+      ) {
+        savedSiteUpdate =
+          JSON.parse(options.body);
+
+        return jsonResponse([]);
+      }
+
+      throw new Error(
+        `Fetch tidak terduga: ${method} ${url}`,
+      );
+    };
+
+    try {
+      const request = new Request(
+        "https://ngeblogging.com/api/domains/remove",
+        {
+          method: "POST",
+          headers: {
+            authorization:
+              "Bearer user-session-test",
+            "content-type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            domainId: DOMAIN_ID,
+          }),
+        },
+      );
+
+      const response =
+        await handleDomainRequest(
+          request,
+          ENV,
+          "request-test-remove",
+        );
+
+      const payload =
+        await response.json();
+
+      assert.equal(
+        response.status,
+        202,
+      );
+
+      assert.deepEqual(
+        detachedIds.sort(),
+        [
+          APEX_WORKER_DOMAIN_ID,
+          WWW_WORKER_DOMAIN_ID,
+        ].sort(),
+      );
+
+      assert.equal(
+        zoneDeleteCalls.length,
+        0,
+      );
+
+      assert.equal(
+        savedDomainUpdate.status,
+        "pending_deletion",
+      );
+
+      assert.equal(
+        savedDomainUpdate.is_primary,
+        false,
+      );
+
+      assert.equal(
+        savedDomainUpdate.verified_at,
+        null,
+      );
+
+      assert.deepEqual(
+        savedDomainUpdate.ssl_validation,
+        [],
+      );
+
+      assert.equal(
+        savedSiteUpdate.custom_domain,
+        null,
+      );
+
+      assert.equal(
+        payload.removal.zoneDeleted,
+        false,
+      );
+
+      assert.equal(
+        payload.removal
+          .finalConfirmationRequired,
+        true,
+      );
+
+      assert.equal(
+        payload
+          .detachedWorkerDomainCount,
+        2,
+      );
+    } finally {
+      globalThis.fetch =
+        originalFetch;
+    }
+  },
+);
+
+test(
+  "konfirmasi final menolak zone yang masih aktif",
+  async () => {
+    const DOMAIN_ID =
+      "77777777-7777-4777-8777-777777777777";
+
+    const originalFetch =
+      globalThis.fetch;
+
+    let zoneDeleteCount = 0;
+
+    const storedDomain = {
+      id: DOMAIN_ID,
+      site_id: SITE_ID,
+      hostname: "example.com",
+      status: "pending_deletion",
+      provider:
+        "cloudflare-full-zone",
+      provider_hostname_id: ZONE_ID,
+      provider_status: "active",
+      ssl_status: "pending",
+      ownership_verification: {},
+      ssl_validation: [],
+      is_primary: false,
+      verified_at: null,
+      created_at:
+        "2026-07-26T10:00:00Z",
+      updated_at:
+        "2026-07-26T12:00:00Z",
+      last_checked_at:
+        "2026-07-26T12:00:00Z",
+      error_message: null,
+      verification_token: null,
+    };
+
+    globalThis.fetch = async (
+      input,
+      options = {},
+    ) => {
+      const url =
+        new URL(String(input));
+
+      const method =
+        options.method || "GET";
+
+      if (
+        url.pathname ===
+        "/auth/v1/user"
+      ) {
+        return jsonResponse({
+          id: USER_ID,
+        });
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_domains"
+        && method === "GET"
+      ) {
+        return jsonResponse([
+          storedDomain,
+        ]);
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_members"
+        && method === "GET"
+      ) {
+        return jsonResponse([
+          {
+            role: "owner",
+          },
+        ]);
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname ===
+          `/client/v4/zones/${ZONE_ID}`
+        && method === "GET"
+      ) {
+        return jsonResponse({
+          success: true,
+          errors: [],
+          messages: [],
+          result: {
+            id: ZONE_ID,
+            name: "example.com",
+            status: "active",
+            name_servers: [
+              "alice.ns.cloudflare.com",
+              "bob.ns.cloudflare.com",
+            ],
+          },
+        });
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname ===
+          `/client/v4/zones/${ZONE_ID}`
+        && method === "DELETE"
+      ) {
+        zoneDeleteCount += 1;
+
+        return jsonResponse({
+          success: true,
+          result: {
+            id: ZONE_ID,
+          },
+        });
+      }
+
+      throw new Error(
+        `Fetch tidak terduga: ${method} ${url}`,
+      );
+    };
+
+    try {
+      const request = new Request(
+        "https://ngeblogging.com/api/domains/remove",
+        {
+          method: "POST",
+          headers: {
+            authorization:
+              "Bearer user-session-test",
+            "content-type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            domainId: DOMAIN_ID,
+            confirmFinal: true,
+            confirmation:
+              "example.com",
+          }),
+        },
+      );
+
+      const response =
+        await handleDomainRequest(
+          request,
+          ENV,
+          "request-final-active",
+        );
+
+      const payload =
+        await response.json();
+
+      assert.equal(
+        response.status,
+        409,
+      );
+
+      assert.equal(
+        payload.code,
+        "FULL_ZONE_STILL_AUTHORITATIVE",
+      );
+
+      assert.equal(
+        payload.zone.status,
+        "active",
+      );
+
+      assert.equal(
+        zoneDeleteCount,
+        0,
+      );
+    } finally {
+      globalThis.fetch =
+        originalFetch;
+    }
+  },
+);
+
+test(
+  "konfirmasi final menghapus zone moved dan data domain",
+  async () => {
+    const DOMAIN_ID =
+      "88888888-8888-4888-8888-888888888888";
+
+    const originalFetch =
+      globalThis.fetch;
+
+    let zoneDeleteCount = 0;
+    let domainDeleteCount = 0;
+    let siteCleared = false;
+
+    const storedDomain = {
+      id: DOMAIN_ID,
+      site_id: SITE_ID,
+      hostname: "example.com",
+      status: "pending_deletion",
+      provider:
+        "cloudflare-full-zone",
+      provider_hostname_id: ZONE_ID,
+      provider_status: "moved",
+      ssl_status: "pending",
+      ownership_verification: {},
+      ssl_validation: [],
+      is_primary: false,
+      verified_at: null,
+      created_at:
+        "2026-07-26T10:00:00Z",
+      updated_at:
+        "2026-07-26T12:00:00Z",
+      last_checked_at:
+        "2026-07-26T12:00:00Z",
+      error_message: null,
+      verification_token: null,
+    };
+
+    globalThis.fetch = async (
+      input,
+      options = {},
+    ) => {
+      const url =
+        new URL(String(input));
+
+      const method =
+        options.method || "GET";
+
+      if (
+        url.pathname ===
+        "/auth/v1/user"
+      ) {
+        return jsonResponse({
+          id: USER_ID,
+        });
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_domains"
+        && method === "GET"
+      ) {
+        return jsonResponse([
+          storedDomain,
+        ]);
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_members"
+        && method === "GET"
+      ) {
+        return jsonResponse([
+          {
+            role: "owner",
+          },
+        ]);
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname ===
+          `/client/v4/zones/${ZONE_ID}`
+        && method === "GET"
+      ) {
+        return jsonResponse({
+          success: true,
+          errors: [],
+          messages: [],
+          result: {
+            id: ZONE_ID,
+            name: "example.com",
+            status: "moved",
+            name_servers: [
+              "alice.ns.cloudflare.com",
+              "bob.ns.cloudflare.com",
+            ],
+          },
+        });
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname ===
+          `/client/v4/zones/${ZONE_ID}`
+        && method === "DELETE"
+      ) {
+        zoneDeleteCount += 1;
+
+        return jsonResponse({
+          success: true,
+          errors: [],
+          messages: [],
+          result: {
+            id: ZONE_ID,
+          },
+        });
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/site_domains"
+        && method === "DELETE"
+      ) {
+        domainDeleteCount += 1;
+
+        return jsonResponse([]);
+      }
+
+      if (
+        url.pathname ===
+          "/rest/v1/sites"
+        && method === "PATCH"
+      ) {
+        const body =
+          JSON.parse(options.body);
+
+        siteCleared =
+          body.custom_domain === null;
+
+        return jsonResponse([]);
+      }
+
+      throw new Error(
+        `Fetch tidak terduga: ${method} ${url}`,
+      );
+    };
+
+    try {
+      const request = new Request(
+        "https://ngeblogging.com/api/domains/remove",
+        {
+          method: "POST",
+          headers: {
+            authorization:
+              "Bearer user-session-test",
+            "content-type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            domainId: DOMAIN_ID,
+            confirmFinal: true,
+            confirmation:
+              "example.com",
+          }),
+        },
+      );
+
+      const response =
+        await handleDomainRequest(
+          request,
+          ENV,
+          "request-final-moved",
+        );
+
+      const payload =
+        await response.json();
+
+      assert.equal(
+        response.status,
+        200,
+      );
+
+      assert.equal(
+        payload.removed,
+        true,
+      );
+
+      assert.equal(
+        payload.zoneDeleted,
+        true,
+      );
+
+      assert.equal(
+        zoneDeleteCount,
+        1,
+      );
+
+      assert.equal(
+        domainDeleteCount,
+        1,
+      );
+
+      assert.equal(
+        siteCleared,
+        true,
+      );
+    } finally {
+      globalThis.fetch =
+        originalFetch;
+    }
+  },
+);

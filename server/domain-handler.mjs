@@ -1,5 +1,7 @@
 import {
   attachDefaultWorkerDomains,
+  deleteFullZone,
+  detachWorkerDomain,
   fullZoneProviderReady,
   getFullZoneStatus,
   getOrCreateFullZone,
@@ -768,6 +770,394 @@ async function refreshDomain(request, env, user, requestId) {
   return response(200, { domain: saved, cnameTarget: readiness(env).cnameTarget }, requestId);
 }
 
+function fullZoneWorkerDomainIds(domain) {
+  const records = Array.isArray(
+    domain?.ssl_validation,
+  )
+    ? domain.ssl_validation
+    : [];
+
+  return [
+    ...new Set(
+      records
+        .map((record) =>
+          String(record?.id || "").trim(),
+        )
+        .filter((id) =>
+          /^[a-z0-9_-]{1,128}$/i.test(id),
+        ),
+    ),
+  ];
+}
+
+async function detachStoredWorkerDomains(
+  env,
+  domain,
+) {
+  const domainIds =
+    fullZoneWorkerDomainIds(domain);
+
+  const detachedIds = [];
+
+  for (const domainId of domainIds) {
+    try {
+      await detachWorkerDomain(
+        env,
+        domainId,
+      );
+
+      detachedIds.push(domainId);
+    } catch (error) {
+      /*
+       * Jika domain sebelumnya sudah terlepas,
+       * operasi tetap dianggap aman dan dapat
+       * dilanjutkan.
+       */
+      if (error?.providerStatus === 404) {
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  return detachedIds;
+}
+
+function fullZoneRemovalInstructions(domain) {
+  return {
+    stage: "awaiting-nameserver-change",
+    requiredAction:
+      "Ganti nameserver domain di registrar ke penyedia DNS baru sebelum menghapus zone Cloudflare.",
+    finalConfirmationRequired: true,
+    zoneDeleted: false,
+    domain: domain.hostname,
+  };
+}
+
+async function requestFullZoneRemoval(
+  env,
+  domain,
+  requestId,
+) {
+  if (domain.status === "pending_deletion") {
+    return response(
+      200,
+      {
+        domain,
+        provider:
+          "cloudflare-full-zone",
+        reused: true,
+        removal:
+          fullZoneRemovalInstructions(
+            domain,
+          ),
+      },
+      requestId,
+    );
+  }
+
+  const detachedIds =
+    await detachStoredWorkerDomains(
+      env,
+      domain,
+    );
+
+  const now =
+    new Date().toISOString();
+
+  const currentOwnership =
+    domain.ownership_verification
+    && typeof domain.ownership_verification
+      === "object"
+    && !Array.isArray(
+      domain.ownership_verification,
+    )
+      ? domain.ownership_verification
+      : {};
+
+  const update = {
+    status: "pending_deletion",
+    is_primary: false,
+    verified_at: null,
+    ssl_status: "pending",
+    ssl_validation: [],
+    ownership_verification: {
+      ...currentOwnership,
+      removal: {
+        stage:
+          "awaiting-nameserver-change",
+        requested_at: now,
+        final_confirmation_required:
+          true,
+        zone_deleted: false,
+      },
+    },
+    last_checked_at: now,
+    error_message: null,
+    updated_at: now,
+  };
+
+  const rows = await adminJson(
+    env,
+    `site_domains?id=eq.${encodeURIComponent(domain.id)}&select=${DOMAIN_SELECT}`,
+    {
+      method: "PATCH",
+      prefer: "return=representation",
+      body: JSON.stringify(update),
+    },
+  );
+
+  const saved = rows?.[0] || {
+    ...domain,
+    ...update,
+  };
+
+  await adminJson(
+    env,
+    `sites?id=eq.${encodeURIComponent(domain.site_id)}&custom_domain=eq.${encodeURIComponent(domain.hostname)}`,
+    {
+      method: "PATCH",
+      prefer: "return=minimal",
+      body: JSON.stringify({
+        custom_domain: null,
+        updated_at: now,
+      }),
+    },
+  );
+
+  return response(
+    202,
+    {
+      domain: saved,
+      provider:
+        "cloudflare-full-zone",
+      detachedWorkerDomainCount:
+        detachedIds.length,
+      removal:
+        fullZoneRemovalInstructions(
+          saved,
+        ),
+    },
+    requestId,
+  );
+}
+
+function validFinalRemovalConfirmation(
+  body,
+  domain,
+) {
+  const confirmation = String(
+    body?.confirmation || "",
+  ).trim().toLowerCase();
+
+  const hostname = String(
+    domain?.hostname || "",
+  ).trim().toLowerCase();
+
+  return (
+    body?.confirmFinal === true
+    && confirmation === hostname
+  );
+}
+
+function finalRemovalInstructions(
+  domain,
+  zoneState = null,
+) {
+  const zoneStatus = String(
+    zoneState?.status
+    || domain?.provider_status
+    || "unknown",
+  ).toLowerCase();
+
+  return {
+    stage: zoneStatus === "moved"
+      ? "ready-to-delete-zone"
+      : "awaiting-nameserver-change",
+    confirmationRequired: true,
+    confirmationValue: domain.hostname,
+    zoneStatus,
+    zoneDeleted: false,
+    message: zoneStatus === "moved"
+      ? "Nameserver Cloudflare sudah tidak digunakan. Zone siap dihapus."
+      : "Ganti nameserver domain dahulu, kemudian tunggu status Cloudflare menjadi moved.",
+  };
+}
+
+async function finalizeFullZoneRemoval(
+  body,
+  env,
+  domain,
+  requestId,
+) {
+  if (domain.status !== "pending_deletion") {
+    return response(
+      409,
+      {
+        code:
+          "FULL_ZONE_REMOVAL_NOT_REQUESTED",
+        error:
+          "Lakukan tahap Lepaskan domain terlebih dahulu.",
+      },
+      requestId,
+    );
+  }
+
+  if (
+    !validFinalRemovalConfirmation(
+      body,
+      domain,
+    )
+  ) {
+    return response(
+      400,
+      {
+        code:
+          "FULL_ZONE_FINAL_CONFIRMATION_REQUIRED",
+        error:
+          `Ketik ${domain.hostname} untuk mengonfirmasi penghapusan final.`,
+        confirmationValue:
+          domain.hostname,
+      },
+      requestId,
+    );
+  }
+
+  const zoneId = String(
+    domain.provider_hostname_id || "",
+  ).trim();
+
+  if (!/^[0-9a-f]{32}$/i.test(zoneId)) {
+    return response(
+      409,
+      {
+        code: "INVALID_FULL_ZONE_ID",
+        error:
+          "Cloudflare Zone ID tidak valid.",
+      },
+      requestId,
+    );
+  }
+
+  /*
+   * Aman dipanggil ulang. Jika masih ada
+   * Worker Domain tersimpan, lepaskan dahulu.
+   */
+  await detachStoredWorkerDomains(
+    env,
+    domain,
+  );
+
+  let zoneState = null;
+  let zoneAlreadyGone = false;
+
+  try {
+    const zone =
+      await getFullZoneStatus(
+        env,
+        zoneId,
+      );
+
+    zoneState =
+      publicZoneState(zone);
+  } catch (error) {
+    /*
+     * Cloudflare dapat menghapus zone moved
+     * secara otomatis. HTTP 404 berarti zone
+     * sudah tidak ada dan proses lokal boleh
+     * diselesaikan.
+     */
+    if (error?.providerStatus === 404) {
+      zoneAlreadyGone = true;
+    } else {
+      throw error;
+    }
+  }
+
+  if (!zoneAlreadyGone) {
+    if (
+      zoneState.id !== zoneId
+      || zoneState.name !== domain.hostname
+    ) {
+      throw Object.assign(
+        new Error(
+          "Cloudflare Zone tidak cocok dengan domain yang tersimpan.",
+        ),
+        {
+          code: "FULL_ZONE_MISMATCH",
+          status: 409,
+        },
+      );
+    }
+
+    if (zoneState.status !== "moved") {
+      return response(
+        409,
+        {
+          code:
+            "FULL_ZONE_STILL_AUTHORITATIVE",
+          error:
+            "Zone belum boleh dihapus karena nameserver Cloudflare masih digunakan atau perubahan belum terdeteksi.",
+          zone: zoneState,
+          removal:
+            finalRemovalInstructions(
+              domain,
+              zoneState,
+            ),
+        },
+        requestId,
+      );
+    }
+
+    await deleteFullZone(
+      env,
+      zoneId,
+    );
+  }
+
+  const now =
+    new Date().toISOString();
+
+  await adminJson(
+    env,
+    `site_domains?id=eq.${encodeURIComponent(domain.id)}`,
+    {
+      method: "DELETE",
+      prefer: "return=minimal",
+    },
+  );
+
+  await adminJson(
+    env,
+    `sites?id=eq.${encodeURIComponent(domain.site_id)}&custom_domain=eq.${encodeURIComponent(domain.hostname)}`,
+    {
+      method: "PATCH",
+      prefer: "return=minimal",
+      body: JSON.stringify({
+        custom_domain: null,
+        updated_at: now,
+      }),
+    },
+  );
+
+  return response(
+    200,
+    {
+      removed: true,
+      provider:
+        "cloudflare-full-zone",
+      hostname: domain.hostname,
+      zoneId,
+      zoneDeleted:
+        !zoneAlreadyGone,
+      zoneAlreadyGone,
+      zone: zoneState,
+    },
+    requestId,
+  );
+}
+
 async function removeDomain(request, env, user, requestId) {
   const body = await request.json().catch(() => ({}));
   const domainId = String(body.domainId || "");
@@ -777,12 +1167,18 @@ async function removeDomain(request, env, user, requestId) {
   await verifySiteManager(env, domain.site_id, user.id);
 
   if (domain.provider === "cloudflare-full-zone") {
-    return response(
-      503,
-      {
-        code: "FULL_ZONE_REMOVE_NOT_WIRED",
-        error: "Penghapusan full-zone sedang disiapkan agar DNS pelanggan tetap aman.",
-      },
+    if (body.confirmFinal === true) {
+      return finalizeFullZoneRemoval(
+        body,
+        env,
+        domain,
+        requestId,
+      );
+    }
+
+    return requestFullZoneRemoval(
+      env,
+      domain,
       requestId,
     );
   }
