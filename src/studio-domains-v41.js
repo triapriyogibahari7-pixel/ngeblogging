@@ -42,8 +42,13 @@ function readinessMarkup(state) {
     ["CLOUDFLARE_ZONE_ID", bindings.zoneId],
     ["CLOUDFLARE_CUSTOM_HOSTNAME_TARGET", bindings.cnameTarget],
     ["SUPABASE JWT + ROW LEVEL SECURITY", bindings.databaseAccess],
+    ["CLOUDFLARE CUSTOM HOSTNAMES API", bindings.providerApi],
   ];
-  return `<section class="op41-readiness"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Koneksi produksi sedang diverifikasi</h2><p>Form domain hanya dibuka setelah Cloudflare dan akses database berbasis sesi pengguna terbaca oleh Worker. Subdomain gratis tetap aktif. Service-role server tidak diperlukan pada alur ini.</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, ready]) => `<li data-ready="${ready === true}">${ready === true ? "✓" : "○"} ${name}</li>`).join("")}</ul></section>`;
+  const permissionMissing = bindings.apiToken === true && bindings.zoneId === true && bindings.providerApi !== true;
+  const detail = permissionMissing
+    ? "Token Cloudflare terbaca, tetapi belum lolos izin SSL and Certificates Read/Write pada zone ngeblogging.com. Demi mencegah form rusak, penambahan domain ditutup sampai izin resmi tersebut aktif."
+    : "Form domain hanya dibuka setelah Cloudflare dan akses database berbasis sesi pengguna terbaca oleh Worker. Subdomain gratis tetap aktif. Service-role server tidak diperlukan pada alur ini.";
+  return `<section class="op41-readiness"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Koneksi produksi sedang diverifikasi</h2><p>${escapeHtml(detail)}</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, ready]) => `<li data-ready="${ready === true}">${ready === true ? "✓" : "○"} ${escapeHtml(name)}</li>`).join("")}</ul></section>`;
 }
 
 function reloadAfterMutation(view) {
