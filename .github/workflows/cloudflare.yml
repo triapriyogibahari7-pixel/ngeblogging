@@ -29,6 +29,7 @@ jobs:
       VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
       CLOUDFLARE_SMOKE_TEST_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
+      WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -43,7 +44,7 @@ jobs:
               sha: context.sha,
               state: 'pending',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, tests, deploy, and live verification are running.',
+              description: 'Build, active-zone routing, deploy, and live verification are running.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -63,27 +64,78 @@ jobs:
           [[ "${VITE_SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${VITE_SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "Publishable key Supabase tidak valid"; exit 1; }
           [[ "${CLOUDFLARE_SMOKE_TEST_URL}" == https://* ]] || { echo "CLOUDFLARE_SMOKE_TEST_URL wajib HTTPS"; exit 1; }
           [[ "${TENANT_SMOKE_TEST_URL}" == https://*.ngeblogging.com ]] || { echo "TENANT_SMOKE_TEST_URL wajib subdomain ngeblogging.com"; exit 1; }
+          [[ "${WORKERS_DEV_SMOKE_TEST_URL}" == https://*.workers.dev ]] || { echo "WORKERS_DEV_SMOKE_TEST_URL wajib workers.dev"; exit 1; }
 
           domain_ready=true
-          for name in CLOUDFLARE_ZONE_ID CLOUDFLARE_CUSTOM_HOSTNAME_TARGET SUPABASE_SERVICE_ROLE_KEY; do
+          for name in CLOUDFLARE_CUSTOM_HOSTNAME_TARGET; do
             if [[ -z "${!name:-}" ]]; then
-              echo "::warning::${name} belum tersedia pada environment cloudflare-production. Custom domain tetap dikunci, fitur inti tetap dideploy."
+              echo "::warning::${name} belum tersedia pada environment cloudflare-production. Aktivasi domain eksternal akan diverifikasi oleh workflow v41."
               domain_ready=false
             fi
           done
           echo "DOMAIN_RUNTIME_EXPECTED=${domain_ready}" >> "${GITHUB_ENV}"
 
+      - name: Resolve the active ngeblogging.com zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          zone_id="${CLOUDFLARE_ZONE_ID:-}"
+
+          verify_zone() {
+            local candidate="$1"
+            [[ "${candidate}" =~ ^[a-f0-9]{32}$ ]] || return 1
+            curl -sS --fail-with-body \
+              -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "accept: application/json" \
+              "https://api.cloudflare.com/client/v4/zones/${candidate}" \
+              -o /tmp/zone.json
+            ZONE_CANDIDATE="${candidate}" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/zone.json', 'utf8'));
+          const zone = payload.result || {};
+          if (payload.success !== true || zone.id !== process.env.ZONE_CANDIDATE || zone.name !== 'ngeblogging.com' || zone.status !== 'active') process.exit(1);
+          NODE
+          }
+
+          if [[ -n "${zone_id}" ]] && ! verify_zone "${zone_id}"; then
+            echo "::warning::CLOUDFLARE_ZONE_ID yang tersimpan bukan zone ngeblogging.com aktif; sistem akan mencari zone aktif secara otomatis."
+            zone_id=""
+          fi
+
+          if [[ -z "${zone_id}" ]]; then
+            curl -sS --fail-with-body \
+              -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "accept: application/json" \
+              "https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&status=active&per_page=10" \
+              -o /tmp/zones.json
+            zone_id="$(node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/zones.json', 'utf8'));
+          const zones = (payload.result || []).filter((zone) => zone?.name === 'ngeblogging.com' && zone?.status === 'active');
+          if (payload.success !== true || zones.length !== 1 || !/^[a-f0-9]{32}$/i.test(zones[0].id || '')) process.exit(1);
+          process.stdout.write(zones[0].id);
+          NODE
+            )" || { echo "Token tidak menemukan tepat satu zone aktif ngeblogging.com. Pastikan izin Zone:Read tersedia."; exit 1; }
+          fi
+
+          echo "::add-mask::${zone_id}"
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
+          echo "Zone aktif ngeblogging.com berhasil dikunci untuk deployment ini."
+
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
+
+      - name: Build active-zone Wrangler configuration
+        run: node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
 
       - name: Test and build production application
         run: npm run test:production && npm run build
 
       - name: Validate Cloudflare production bundle
-        run: npm run cloudflare:dry-run
+        run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-build
 
       - name: Deploy apex, wildcard tenants, assets, Nara, and API
-        run: npm run deploy:cloudflare
+        run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
       - name: Synchronize available custom-domain runtime secrets
         shell: bash
@@ -96,16 +148,57 @@ jobs:
               echo "::warning::Runtime binding ${name} dilewati karena GitHub Environment belum menyediakannya."
               return 0
             fi
-            printf '%s' "${value}" | npx wrangler secret put "${name}" --config wrangler.production.jsonc >/dev/null
+            printf '%s' "${value}" | npx wrangler secret put "${name}" --config wrangler.production.active-zone.jsonc >/dev/null
             echo "Runtime binding ${name} tersinkronisasi."
           }
           put_secret_if_present CLOUDFLARE_API_TOKEN "${CLOUDFLARE_API_TOKEN}"
-          put_secret_if_present CLOUDFLARE_ZONE_ID "${CLOUDFLARE_ZONE_ID}"
+          put_secret_if_present CLOUDFLARE_ZONE_ID "${RESOLVED_CLOUDFLARE_ZONE_ID}"
           put_secret_if_present CLOUDFLARE_CUSTOM_HOSTNAME_TARGET "${CLOUDFLARE_CUSTOM_HOSTNAME_TARGET}"
           put_secret_if_present SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
 
+      - name: Verify official route ownership on the active zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sS --fail-with-body \
+            -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "accept: application/json" \
+            "https://api.cloudflare.com/client/v4/zones/${RESOLVED_CLOUDFLARE_ZONE_ID}/workers/routes" \
+            -o /tmp/routes.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/routes.json', 'utf8'));
+          if (payload.success !== true) throw new Error('Cloudflare route API tidak berhasil.');
+          const required = ['ngeblogging.com/*', 'www.ngeblogging.com/*', '*.ngeblogging.com/*'];
+          const routes = new Map((payload.result || []).map((route) => [route.pattern, route.script || null]));
+          const errors = required.filter((pattern) => routes.get(pattern) !== 'ngeblogging');
+          if (errors.length) throw new Error(`Route resmi belum dimiliki Worker ngeblogging: ${errors.join(', ')}`);
+          console.log(JSON.stringify(Object.fromEntries(required.map((pattern) => [pattern, routes.get(pattern)])), null, 2));
+          NODE
+
+      - name: Verify the deployed Worker directly
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/api/health?worker_release=v42-${attempt}-$(date +%s)" || true)"
+            if [[ "${code}" == "200" ]] && node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const health = JSON.parse(fs.readFileSync('/tmp/worker-health.json', 'utf8'));
+          if (health.status !== 'ok' || health.service !== 'ngeblogging-cloudflare' || health.domainRelease !== '2026.07.26-custom-domains-v41' || health.siteCapacity?.mode !== 'dynamic') process.exit(1);
+          NODE
+            then
+              echo "Worker terbaru terverifikasi langsung melalui workers.dev."
+              break
+            fi
+            if [[ "${attempt}" == "18" ]]; then
+              echo "Worker terbaru belum aktif di workers.dev."; cat /tmp/worker-health.json 2>/dev/null || true; exit 1
+            fi
+            sleep 10
+          done
+
       # Compatibility markers retained for the source validator while the live
-      # contract is now v37/v38/v39/v40:
+      # contract is now v37/v38/v39/v40/v41/v42:
       # studio-v14-authority.css
       # nara-command-center-bridge.js
       # ngeblogging-app-v14-20260724
@@ -173,30 +266,34 @@ jobs:
             naraTools: combined.includes('Projects') && combined.includes('Memori') && combined.includes('Buat gambar') && combined.includes('Plugins') && combined.includes('Baca QR'),
             productionAuditV37: combined.includes('studio-production-audit-v37-20260725') && combined.includes('sp37-analytics'),
             analyticsRpcV38: combined.includes('record_analytics_event') && combined.includes('analytics-v38'),
+            layoutBuilderV39: combined.includes('studio-layout-builder-v39-20260726') && combined.includes('studio-quality-v39-20260726'),
+            deviceLayoutV40: combined.includes('studio-layout-device-v40-20260726') && combined.includes('Ponsel / aplikasi'),
+            domainPanelV41: combined.includes('studio-domain-v41-20260726'),
             pwaRuntime: combined.includes('beforeinstallprompt'),
           };
 
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
           if (health.release !== '2026.07.25-production-audit-v37') errors.push('health.release');
+          if (health.domainRelease !== '2026.07.26-custom-domains-v41') errors.push('health.domainRelease');
           if (health.nara !== true) errors.push('health.nara');
           if (health.naraProviders?.vision !== true) errors.push('health.vision');
           if (health.imageGeneration !== true) errors.push('health.imageGeneration');
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
-          if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
+          if (health.siteCapacity?.mode !== 'dynamic' || health.siteLimitsDeprecated !== true) errors.push('health.siteCapacity');
           if (health.analyticsCollector !== true) errors.push('health.analyticsCollector');
           if (health.memberLimitPerSite !== 100) errors.push('health.memberLimitPerSite');
           for (const [name, ready] of Object.entries(markers)) if (!ready) errors.push(`bundle:${name}`);
           for (const asset of assets) if (asset.status !== 200) errors.push(`asset:${asset.status}:${asset.url}`);
 
-          if (!sw.includes('ngeblogging-app-v39-20260726')) errors.push('service-worker-v39');
+          if (!sw.includes('ngeblogging-app-v40-20260726')) errors.push('service-worker-v40');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
 
           const analyticsProbe = await read(`${tenantSite}/api/analytics/collect`, {
             method: 'POST',
-            headers: { 'content-type': 'application/json', origin: tenantSite, 'user-agent': 'NgebloggingProductionAudit/40' },
-            body: JSON.stringify({ path: '/__production-audit-v40', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 1280 }),
+            headers: { 'content-type': 'application/json', origin: tenantSite, 'user-agent': 'NgebloggingProductionAudit/42' },
+            body: JSON.stringify({ path: '/__production-audit-v42', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 1280 }),
           });
           let analyticsPayload = {};
           try { analyticsPayload = JSON.parse(analyticsProbe.text || '{}'); } catch {}
@@ -221,17 +318,17 @@ jobs:
             customDomains: health.customDomains,
             bindings: health.customDomainBindings || null,
           };
-          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domainReadiness, tenant: 'ok', release: 'v37-v40' }, null, 2));
+          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domainReadiness, tenant: 'ok', release: 'v37-v42' }, null, 2));
           NODE
               then
-                echo "Studio v39, analitik, Nara, PWA, tenant, dan pelaporan kesiapan domain terverifikasi."
+                echo "Studio v40/v41, analitik, anggota, Nara, PWA, tenant, dan routing aktif terverifikasi."
                 exit 0
               fi
             fi
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan kontrak produksi inti yang lengkap."
+          echo "Cloudflare belum menyajikan kontrak produksi aktif yang lengkap."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
           exit 1
 
@@ -246,7 +343,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Studio, domain readiness, Nara, analytics, PWA, and tenant checks passed.',
+              description: 'Active-zone routes, responsive Studio, analytics, Nara, PWA, and tenants passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -261,6 +358,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, deploy, or current live verification failed. Open the workflow log.',
+              description: 'Build, active-zone routing, deploy, or live verification failed. Open the workflow log.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
