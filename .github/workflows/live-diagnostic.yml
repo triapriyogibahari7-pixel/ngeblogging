@@ -32,8 +32,8 @@ jobs:
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/sw.headers -o /tmp/ngeblogging-live/sw.body -w '%{http_code}\n' "https://ngeblogging.com/sw.js?diagnostic=${stamp}" > /tmp/ngeblogging-live/sw.status 2>/tmp/ngeblogging-live/sw.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/tenant.headers -o /tmp/ngeblogging-live/tenant.body -w '%{http_code}\n' "https://tri-apriyogi-bahari.ngeblogging.com/?diagnostic=${stamp}" > /tmp/ngeblogging-live/tenant.status 2>/tmp/ngeblogging-live/tenant.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/analytics.headers -o /tmp/ngeblogging-live/analytics.body -w '%{http_code}\n' \
-            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/44' \
-            --data "{\"path\":\"/__live-diagnostic-v44\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
+            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/55' \
+            --data "{\"path\":\"/__live-diagnostic-v55\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
             "https://tri-apriyogi-bahari.ngeblogging.com/api/analytics/collect?diagnostic=${stamp}" > /tmp/ngeblogging-live/analytics.status 2>/tmp/ngeblogging-live/analytics.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/nara.headers -o /tmp/ngeblogging-live/nara.body -w '%{http_code}\n' \
             -X POST -H 'content-type: application/json' -H 'origin: https://ngeblogging.com' \
@@ -72,7 +72,7 @@ jobs:
             operations:combined.includes('studio-operations-v41-20260726'),
             analytics:combined.includes('get_site_analytics_dashboard') && combined.includes('DATA PRODUKSI NYATA'),
             members:combined.includes('get_site_member_quota') && combined.includes('/api/member-invitations/create'),
-            domains:combined.includes('SUPABASE JWT + ROW LEVEL SECURITY') && combined.includes('/api/domains/register'),
+            domains:combined.includes('/api/domains/register') && combined.includes('/api/domains/remove'),
             activeSite:combined.includes('SITUS YANG SEDANG DIKELOLA') && combined.includes('Tambah situs'),
           };
           const ok = Object.values(required).every(Boolean) && assets.every((asset) => asset.status === 200);
@@ -102,17 +102,34 @@ jobs:
             const fs = require('node:fs');
             const read = (name) => { try { return fs.readFileSync(`/tmp/ngeblogging-live/${name}`, 'utf8').trim(); } catch { return 'missing'; } };
             const healthCode = read('health.status');
+            const indexCode = read('index.status');
+            const swCode = read('sw.status');
+            const tenantCode = read('tenant.status');
             const analyticsCode = read('analytics.status');
             const naraCode = read('nara.status');
             const operations = read('operations.status');
-            let release = 'unknown';
-            let domainRelease = 'unknown';
-            try {
-              const health = JSON.parse(read('health.body'));
-              release = health.release || 'unknown';
-              domainRelease = health.domainRelease || 'unknown';
-            } catch {}
-            const ok = healthCode === '200' && analyticsCode === '202' && naraCode === '401' && operations === 'true' && release === '2026.07.25-production-audit-v37' && domainRelease === '2026.07.26-custom-domains-v41';
+            let health = {};
+            try { health = JSON.parse(read('health.body')); } catch {}
+            const bindings = health.customDomainBindings || {};
+            const ok = healthCode === '200'
+              && indexCode === '200'
+              && swCode === '200'
+              && tenantCode === '200'
+              && analyticsCode === '202'
+              && naraCode === '401'
+              && operations === 'true'
+              && health.release === '2026.07.26-full-zone-v55'
+              && health.domainRelease === '2026.07.26-full-zone-domains-v55'
+              && health.customDomains === true
+              && health.customDomainProvider === 'cloudflare-full-zone'
+              && health.customDomainMode === 'full-zone-nameserver'
+              && bindings.apiToken === true
+              && bindings.accountId === true
+              && bindings.workerService === true
+              && bindings.databaseAccess === true
+              && health.siteCapacity?.mode === 'fixed'
+              && health.siteCapacity?.defaultLimit === 12
+              && health.siteLimits?.maximum === 12;
             const sha = context.eventName === 'workflow_run' ? context.payload.workflow_run.head_sha : context.sha;
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
@@ -120,7 +137,7 @@ jobs:
               sha,
               state: ok ? 'success' : 'failure',
               context: 'Ngeblogging live diagnostic',
-              description: `health ${healthCode}; analytics ${analyticsCode}; Nara ${naraCode}; operations ${operations}`.slice(0, 140),
+              description: `health ${healthCode}; tenant ${tenantCode}; full-zone ${health.customDomains === true}; limit ${health.siteLimits?.maximum || 'unknown'}`.slice(0, 140),
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -133,4 +150,4 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-# diagnostic-contract-v44
+# diagnostic-contract-v55
