@@ -2,6 +2,7 @@ import baseWorker from "./worker-v37.mjs";
 import { freeDomainReadiness, handleFreeDomainRequest } from "../server/free-domain-handler.mjs";
 
 const RELEASE = "2026.07.26-free-domains-v51";
+const LEGACY_DOMAIN_RELEASE = "2026.07.26-custom-domains-v41";
 
 function cloudflareDomainReadiness(env) {
   const bindings = {
@@ -49,6 +50,7 @@ async function enrichHealth(response, env) {
     return new Response(JSON.stringify({
       ...payload,
       domainRelease: RELEASE,
+      domainReleaseCompatibility: LEGACY_DOMAIN_RELEASE,
       customDomains: Boolean(domain.ready || domain.enabled),
       customDomainProvider: domain.provider,
       customDomainMode: domain.mode,
