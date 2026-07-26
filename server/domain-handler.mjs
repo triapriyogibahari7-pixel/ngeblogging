@@ -21,8 +21,7 @@ function bearerToken(request) {
 function supabaseConfig(env) {
   return {
     url: String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").replace(/\/$/, ""),
-    publishableKey: env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "",
-    serviceKey: env.SUPABASE_SERVICE_ROLE_KEY || "",
+    publishableKey: String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || ""),
   };
 }
 
@@ -44,8 +43,7 @@ function readiness(env) {
   if (!cf.cnameTarget) missing.push("CLOUDFLARE_CUSTOM_HOSTNAME_TARGET");
   if (!db.url) missing.push("SUPABASE_URL");
   if (!db.publishableKey) missing.push("SUPABASE_PUBLISHABLE_KEY");
-  if (!db.serviceKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
-  return { enabled: missing.length === 0, missing, cnameTarget: cf.cnameTarget };
+  return { enabled: missing.length === 0, missing, cnameTarget: cf.cnameTarget, databaseMode: "user-jwt-rls" };
 }
 
 async function verifyUser(request, env) {
@@ -58,40 +56,43 @@ async function verifyUser(request, env) {
   return { user: await result.json(), token };
 }
 
-function adminHeaders(serviceKey, prefer = "") {
+function userHeaders(env, token, prefer = "") {
+  const { publishableKey } = supabaseConfig(env);
   return {
-    apikey: serviceKey,
-    authorization: `Bearer ${serviceKey}`,
+    apikey: publishableKey,
+    authorization: `Bearer ${token}`,
     "content-type": "application/json",
     ...(prefer ? { prefer } : {}),
   };
 }
 
-async function adminJson(env, path, options = {}) {
-  const { url, serviceKey } = supabaseConfig(env);
-  if (!url || !serviceKey) throw Object.assign(new Error("Penyimpanan domain server belum dikonfigurasi."), { status: 503, code: "DOMAIN_STORAGE_REQUIRED" });
+async function userJson(env, token, path, options = {}) {
+  const { url, publishableKey } = supabaseConfig(env);
+  if (!url || !publishableKey) throw Object.assign(new Error("Penyimpanan domain belum dikonfigurasi."), { status: 503, code: "DOMAIN_STORAGE_REQUIRED" });
   const result = await fetch(`${url}/rest/v1/${path}`, {
     ...options,
-    headers: { ...adminHeaders(serviceKey, options.prefer), ...(options.headers || {}) },
+    headers: { ...userHeaders(env, token, options.prefer), ...(options.headers || {}) },
   });
   const payload = await result.json().catch(() => null);
   if (!result.ok) {
+    const duplicate = result.status === 409 || payload?.code === "23505";
     console.error("Domain database request failed", { path, status: result.status, code: payload?.code });
-    throw Object.assign(new Error("Penyimpanan domain belum dapat diproses."), { status: 503, code: "DOMAIN_DATABASE_ERROR" });
+    throw Object.assign(
+      new Error(duplicate ? "Domain ini sudah terhubung ke situs lain." : "Penyimpanan domain belum dapat diproses."),
+      { status: duplicate ? 409 : result.status === 401 || result.status === 403 ? result.status : 503, code: duplicate ? "DOMAIN_ALREADY_USED" : "DOMAIN_DATABASE_ERROR" },
+    );
   }
   return payload;
 }
 
-async function verifySiteManager(env, siteId, userId) {
+async function verifySiteManager(env, token, siteId, userId) {
   if (!/^[0-9a-f-]{36}$/i.test(String(siteId || ""))) throw Object.assign(new Error("Situs tidak valid."), { status: 400, code: "INVALID_SITE" });
-  const rows = await adminJson(env, `site_members?site_id=eq.${encodeURIComponent(siteId)}&user_id=eq.${encodeURIComponent(userId)}&select=role&limit=1`);
-  const role = rows?.[0]?.role;
-  if (!role) {
-    const sites = await adminJson(env, `sites?id=eq.${encodeURIComponent(siteId)}&owner_id=eq.${encodeURIComponent(userId)}&select=id&limit=1`);
-    if (sites?.[0]) return "owner";
-  }
-  if (!new Set(["owner", "admin"]).has(role)) throw Object.assign(new Error("Hanya pemilik atau admin situs yang dapat mengelola domain."), { status: 403, code: "SITE_MANAGER_REQUIRED" });
-  return role;
+  const memberships = await userJson(env, token, `site_members?site_id=eq.${encodeURIComponent(siteId)}&user_id=eq.${encodeURIComponent(userId)}&select=role&limit=1`);
+  const role = memberships?.[0]?.role;
+  if (new Set(["owner", "admin"]).has(role)) return role;
+  const sites = await userJson(env, token, `sites?id=eq.${encodeURIComponent(siteId)}&owner_id=eq.${encodeURIComponent(userId)}&select=id&limit=1`);
+  if (sites?.[0]) return "owner";
+  throw Object.assign(new Error("Hanya pemilik atau admin situs yang dapat mengelola domain."), { status: 403, code: "SITE_MANAGER_REQUIRED" });
 }
 
 function normalizeHostname(input) {
@@ -99,7 +100,8 @@ function normalizeHostname(input) {
   if (!value) throw Object.assign(new Error("Masukkan nama domain."), { status: 400, code: "HOSTNAME_REQUIRED" });
   if (!value.includes("://")) value = `https://${value}`;
   let parsed;
-  try { parsed = new URL(value); } catch { throw Object.assign(new Error("Format domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" }); }
+  try { parsed = new URL(value); }
+  catch { throw Object.assign(new Error("Format domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" }); }
   const hostname = parsed.hostname.toLowerCase().replace(/\.$/, "");
   if (parsed.pathname !== "/" || parsed.search || parsed.hash || parsed.port || parsed.username || parsed.password) throw Object.assign(new Error("Masukkan domain saja tanpa path, parameter, port, atau kredensial."), { status: 400, code: "INVALID_HOSTNAME" });
   if (hostname.length < 4 || hostname.length > 253 || !hostname.includes(".") || !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])$/.test(hostname) || hostname.includes("..")) throw Object.assign(new Error("Nama domain tidak valid."), { status: 400, code: "INVALID_HOSTNAME" });
@@ -144,10 +146,10 @@ function providerState(provider) {
   };
 }
 
-async function saveProviderState(env, domainRow, provider) {
+async function saveProviderState(env, token, domainRow, provider) {
   const state = providerState(provider);
   const now = new Date().toISOString();
-  const rows = await adminJson(env, `site_domains?id=eq.${encodeURIComponent(domainRow.id)}&select=${DOMAIN_SELECT}`, {
+  const rows = await userJson(env, token, `site_domains?id=eq.${encodeURIComponent(domainRow.id)}&select=${DOMAIN_SELECT}`, {
     method: "PATCH",
     prefer: "return=representation",
     body: JSON.stringify({
@@ -166,12 +168,12 @@ async function saveProviderState(env, domainRow, provider) {
   });
   const saved = rows?.[0] || domainRow;
   if (state.active) {
-    await adminJson(env, `site_domains?site_id=eq.${encodeURIComponent(saved.site_id)}&id=neq.${encodeURIComponent(saved.id)}`, {
+    await userJson(env, token, `site_domains?site_id=eq.${encodeURIComponent(saved.site_id)}&id=neq.${encodeURIComponent(saved.id)}`, {
       method: "PATCH",
       prefer: "return=minimal",
       body: JSON.stringify({ is_primary: false, updated_at: now }),
     });
-    await adminJson(env, `sites?id=eq.${encodeURIComponent(saved.site_id)}`, {
+    await userJson(env, token, `sites?id=eq.${encodeURIComponent(saved.site_id)}`, {
       method: "PATCH",
       prefer: "return=minimal",
       body: JSON.stringify({ custom_domain: saved.hostname, updated_at: now }),
@@ -180,19 +182,19 @@ async function saveProviderState(env, domainRow, provider) {
   return saved;
 }
 
-async function listDomains(env, siteId) {
-  return adminJson(env, `site_domains?site_id=eq.${encodeURIComponent(siteId)}&select=${DOMAIN_SELECT}&order=created_at.desc&limit=20`);
+async function listDomains(env, token, siteId) {
+  return userJson(env, token, `site_domains?site_id=eq.${encodeURIComponent(siteId)}&select=${DOMAIN_SELECT}&order=created_at.desc&limit=20`);
 }
 
-async function registerDomain(request, env, user, requestId) {
+async function registerDomain(request, env, user, token, requestId) {
   const ready = readiness(env);
   if (!ready.enabled) return response(503, { code: "CUSTOM_DOMAIN_NOT_CONFIGURED", error: "Custom domain belum dibuka karena konfigurasi produksi belum lengkap.", ...ready }, requestId);
   const body = await request.json().catch(() => ({}));
   const siteId = String(body.siteId || "");
-  await verifySiteManager(env, siteId, user.id);
+  await verifySiteManager(env, token, siteId, user.id);
   const hostname = normalizeHostname(body.hostname);
 
-  const existing = await adminJson(env, `site_domains?hostname=eq.${encodeURIComponent(hostname)}&select=${DOMAIN_SELECT}&limit=1`);
+  const existing = await userJson(env, token, `site_domains?hostname=eq.${encodeURIComponent(hostname)}&select=${DOMAIN_SELECT}&limit=1`);
   if (existing?.[0] && existing[0].site_id !== siteId) return response(409, { code: "DOMAIN_ALREADY_USED", error: "Domain ini sudah terhubung ke situs lain." }, requestId);
   if (existing?.[0]?.provider_hostname_id) return response(200, { domain: existing[0], reused: true, cnameTarget: ready.cnameTarget }, requestId);
 
@@ -211,14 +213,14 @@ async function registerDomain(request, env, user, requestId) {
   const now = new Date().toISOString();
   let row;
   if (existing?.[0]) {
-    const rows = await adminJson(env, `site_domains?id=eq.${encodeURIComponent(existing[0].id)}&select=${DOMAIN_SELECT}`, {
+    const rows = await userJson(env, token, `site_domains?id=eq.${encodeURIComponent(existing[0].id)}&select=${DOMAIN_SELECT}`, {
       method: "PATCH",
       prefer: "return=representation",
       body: JSON.stringify({ provider_hostname_id: provider.id, provider_status: state.providerStatus, ssl_status: state.sslStatus, status: state.status, ownership_verification: state.ownershipVerification, ssl_validation: state.sslValidation, last_checked_at: now, error_message: state.errorMessage, updated_at: now }),
     });
     row = rows?.[0];
   } else {
-    const rows = await adminJson(env, `site_domains?select=${DOMAIN_SELECT}`, {
+    const rows = await userJson(env, token, `site_domains?select=${DOMAIN_SELECT}`, {
       method: "POST",
       prefer: "return=representation",
       body: JSON.stringify({ site_id: siteId, hostname, status: state.status, provider: "cloudflare", provider_hostname_id: provider.id, provider_status: state.providerStatus, ssl_status: state.sslStatus, ownership_verification: state.ownershipVerification, ssl_validation: state.sslValidation, last_checked_at: now, error_message: state.errorMessage }),
@@ -228,50 +230,48 @@ async function registerDomain(request, env, user, requestId) {
   return response(201, { domain: row, cnameTarget: ready.cnameTarget }, requestId);
 }
 
-async function refreshDomain(request, env, user, requestId) {
+async function refreshDomain(request, env, user, token, requestId) {
   const body = await request.json().catch(() => ({}));
   const domainId = String(body.domainId || "");
-  const rows = await adminJson(env, `site_domains?id=eq.${encodeURIComponent(domainId)}&select=${DOMAIN_SELECT}&limit=1`);
+  const rows = await userJson(env, token, `site_domains?id=eq.${encodeURIComponent(domainId)}&select=${DOMAIN_SELECT}&limit=1`);
   const domain = rows?.[0];
   if (!domain) return response(404, { error: "Domain tidak ditemukan." }, requestId);
-  await verifySiteManager(env, domain.site_id, user.id);
+  await verifySiteManager(env, token, domain.site_id, user.id);
   if (!domain.provider_hostname_id) return response(409, { error: "Domain belum memiliki ID Cloudflare." }, requestId);
   const provider = await cloudflareRequest(env, `/custom_hostnames/${encodeURIComponent(domain.provider_hostname_id)}`, { method: "GET" });
-  const saved = await saveProviderState(env, domain, provider);
+  const saved = await saveProviderState(env, token, domain, provider);
   return response(200, { domain: saved, cnameTarget: readiness(env).cnameTarget }, requestId);
 }
 
-async function removeDomain(request, env, user, requestId) {
+async function removeDomain(request, env, user, token, requestId) {
   const body = await request.json().catch(() => ({}));
   const domainId = String(body.domainId || "");
-  const rows = await adminJson(env, `site_domains?id=eq.${encodeURIComponent(domainId)}&select=${DOMAIN_SELECT}&limit=1`);
+  const rows = await userJson(env, token, `site_domains?id=eq.${encodeURIComponent(domainId)}&select=${DOMAIN_SELECT}&limit=1`);
   const domain = rows?.[0];
   if (!domain) return response(404, { error: "Domain tidak ditemukan." }, requestId);
-  await verifySiteManager(env, domain.site_id, user.id);
+  await verifySiteManager(env, token, domain.site_id, user.id);
   if (domain.provider_hostname_id && readiness(env).enabled) await cloudflareRequest(env, `/custom_hostnames/${encodeURIComponent(domain.provider_hostname_id)}`, { method: "DELETE" });
-  await adminJson(env, `site_domains?id=eq.${encodeURIComponent(domain.id)}`, { method: "DELETE", prefer: "return=minimal" });
-  await adminJson(env, `sites?id=eq.${encodeURIComponent(domain.site_id)}&custom_domain=eq.${encodeURIComponent(domain.hostname)}`, { method: "PATCH", prefer: "return=minimal", body: JSON.stringify({ custom_domain: null, updated_at: new Date().toISOString() }) });
+  await userJson(env, token, `site_domains?id=eq.${encodeURIComponent(domain.id)}`, { method: "DELETE", prefer: "return=minimal" });
+  await userJson(env, token, `sites?id=eq.${encodeURIComponent(domain.site_id)}&custom_domain=eq.${encodeURIComponent(domain.hostname)}`, { method: "PATCH", prefer: "return=minimal", body: JSON.stringify({ custom_domain: null, updated_at: new Date().toISOString() }) });
   return response(200, { removed: true }, requestId);
 }
 
 export async function handleDomainRequest(request, env, requestId = crypto.randomUUID()) {
   try {
     const url = new URL(request.url);
-    const { user } = await verifyUser(request, env);
+    const { user, token } = await verifyUser(request, env);
 
-    if (request.method === "GET" && url.pathname === "/api/domains/config") {
-      return response(200, readiness(env), requestId);
-    }
+    if (request.method === "GET" && url.pathname === "/api/domains/config") return response(200, readiness(env), requestId);
 
     if (request.method === "GET" && url.pathname === "/api/domains/list") {
       const siteId = String(url.searchParams.get("siteId") || "");
-      await verifySiteManager(env, siteId, user.id);
-      return response(200, { domains: await listDomains(env, siteId), ...readiness(env) }, requestId);
+      await verifySiteManager(env, token, siteId, user.id);
+      return response(200, { domains: await listDomains(env, token, siteId), ...readiness(env) }, requestId);
     }
 
-    if (request.method === "POST" && url.pathname === "/api/domains/register") return registerDomain(request, env, user, requestId);
-    if (request.method === "POST" && url.pathname === "/api/domains/refresh") return refreshDomain(request, env, user, requestId);
-    if (request.method === "POST" && url.pathname === "/api/domains/remove") return removeDomain(request, env, user, requestId);
+    if (request.method === "POST" && url.pathname === "/api/domains/register") return registerDomain(request, env, user, token, requestId);
+    if (request.method === "POST" && url.pathname === "/api/domains/refresh") return refreshDomain(request, env, user, token, requestId);
+    if (request.method === "POST" && url.pathname === "/api/domains/remove") return removeDomain(request, env, user, token, requestId);
 
     return response(404, { error: "Endpoint domain tidak ditemukan." }, requestId);
   } catch (error) {
