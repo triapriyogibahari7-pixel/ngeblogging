@@ -12,16 +12,18 @@ test("health exposes custom-domain runtime binding readiness without secret valu
   assert.doesNotMatch(worker, /customDomainBindings[\s\S]{0,500}CLOUDFLARE_API_TOKEN\s*:/);
 });
 
-test("Cloudflare workflow provisions and verifies all domain server bindings", async () => {
+test("Cloudflare workflow safely provisions available domain bindings and reports missing ones", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
   for (const marker of [
-    "Synchronize custom-domain runtime secrets",
-    "put_secret CLOUDFLARE_API_TOKEN",
-    "put_secret CLOUDFLARE_ZONE_ID",
-    "put_secret CLOUDFLARE_CUSTOM_HOSTNAME_TARGET",
-    "put_secret SUPABASE_SERVICE_ROLE_KEY",
+    "Synchronize available custom-domain runtime secrets",
+    "put_secret_if_present CLOUDFLARE_API_TOKEN",
+    "put_secret_if_present CLOUDFLARE_ZONE_ID",
+    "put_secret_if_present CLOUDFLARE_CUSTOM_HOSTNAME_TARGET",
+    "put_secret_if_present SUPABASE_SERVICE_ROLE_KEY",
+    "DOMAIN_RUNTIME_EXPECTED",
     "health.customDomains",
     "health.customDomainBindings",
     "service-worker-v39",
   ]) assert.ok(workflow.includes(marker), marker);
+  assert.match(workflow, /Custom domain tetap dikunci, fitur inti tetap dideploy/);
 });
