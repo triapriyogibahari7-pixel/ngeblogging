@@ -1,3 +1,5 @@
+import { fullZoneProviderReady } from "./cloudflare-full-zone-provider.mjs";
+
 const DOMAIN_SELECT = "id,site_id,hostname,status,verification_token,is_primary,verified_at,created_at,updated_at,provider,provider_hostname_id,provider_status,ssl_status,ownership_verification,ssl_validation,last_checked_at,error_message";
 const TERMINAL_FAILURES = new Set(["blocked", "deleted", "pending_deletion", "test_blocked", "test_failed"]);
 
@@ -35,17 +37,95 @@ function domainConfig(env) {
   };
 }
 
-function readiness(env) {
+function customDomainProvider(env) {
+  const provider = String(
+    env.CUSTOM_DOMAIN_PROVIDER || "",
+  ).trim().toLowerCase();
+
+  return provider === "cloudflare-full-zone"
+    ? "cloudflare-full-zone"
+    : "cloudflare-custom-hostnames";
+}
+
+function legacyReadiness(env) {
   const cf = domainConfig(env);
   const db = supabaseConfig(env);
   const missing = [];
+
   if (!cf.apiToken) missing.push("CLOUDFLARE_API_TOKEN");
   if (!cf.zoneId) missing.push("CLOUDFLARE_ZONE_ID");
-  if (!cf.cnameTarget) missing.push("CLOUDFLARE_CUSTOM_HOSTNAME_TARGET");
+  if (!cf.cnameTarget) {
+    missing.push("CLOUDFLARE_CUSTOM_HOSTNAME_TARGET");
+  }
   if (!db.url) missing.push("SUPABASE_URL");
-  if (!db.publishableKey) missing.push("SUPABASE_PUBLISHABLE_KEY");
-  if (!db.serviceKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
-  return { enabled: missing.length === 0, missing, cnameTarget: cf.cnameTarget };
+  if (!db.publishableKey) {
+    missing.push("SUPABASE_PUBLISHABLE_KEY");
+  }
+  if (!db.serviceKey) {
+    missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  }
+
+  return {
+    enabled: missing.length === 0,
+    missing,
+    cnameTarget: cf.cnameTarget,
+  };
+}
+
+function fullZoneReadiness(env) {
+  const db = supabaseConfig(env);
+  const apiToken = String(
+    env.CLOUDFLARE_API_TOKEN || "",
+  ).trim();
+  const accountId = String(
+    env.CLOUDFLARE_ACCOUNT_ID || "",
+  ).trim();
+  const workerService = String(
+    env.CLOUDFLARE_WORKER_SERVICE || "ngeblogging",
+  ).trim();
+
+  const missing = [];
+
+  if (!apiToken) {
+    missing.push("CLOUDFLARE_API_TOKEN");
+  }
+  if (!/^[0-9a-f]{32}$/i.test(accountId)) {
+    missing.push("CLOUDFLARE_ACCOUNT_ID");
+  }
+  if (!workerService) {
+    missing.push("CLOUDFLARE_WORKER_SERVICE");
+  }
+  if (!db.url) {
+    missing.push("SUPABASE_URL");
+  }
+  if (!db.publishableKey) {
+    missing.push("SUPABASE_PUBLISHABLE_KEY");
+  }
+  if (!db.serviceKey) {
+    missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  }
+
+  const providerReady = fullZoneProviderReady(env);
+
+  if (!providerReady && missing.length === 0) {
+    missing.push("CLOUDFLARE_FULL_ZONE_PROVIDER");
+  }
+
+  return {
+    enabled: missing.length === 0,
+    missing,
+    provider: "cloudflare-full-zone",
+    providerMode: "full-zone",
+    dnsMode: "nameserver",
+    workerService,
+    cnameTarget: null,
+  };
+}
+
+function readiness(env) {
+  return customDomainProvider(env) === "cloudflare-full-zone"
+    ? fullZoneReadiness(env)
+    : legacyReadiness(env);
 }
 
 async function verifyUser(request, env) {
@@ -187,6 +267,15 @@ async function listDomains(env, siteId) {
 async function registerDomain(request, env, user, requestId) {
   const ready = readiness(env);
   if (!ready.enabled) return response(503, { code: "CUSTOM_DOMAIN_NOT_CONFIGURED", error: "Custom domain belum dibuka karena konfigurasi produksi belum lengkap.", ...ready }, requestId);
+
+  if (ready.provider === "cloudflare-full-zone") {
+    return response(503, {
+      code: "FULL_ZONE_PROVIDER_NOT_WIRED",
+      error: "Provider full-zone sudah dikenali, tetapi proses registrasinya belum dihubungkan.",
+      ...ready,
+    }, requestId);
+  }
+
   const body = await request.json().catch(() => ({}));
   const siteId = String(body.siteId || "");
   await verifySiteManager(env, siteId, user.id);
