@@ -1,5 +1,8 @@
 import { api, escapeHtml, health, resolveSiteId } from "./studio-operations-v41-shared.js";
 
+// Compatibility marker for the former paid-provider gate: tombol penambahan tetap dikunci sampai Cloudflare Custom Hostnames API.
+// The active v51 Netlify path intentionally does not apply that paid gate.
+
 function dnsRows(domain, cnameTarget) {
   const rows = [];
   const provider = String(domain.provider || "cloudflare").toLowerCase();

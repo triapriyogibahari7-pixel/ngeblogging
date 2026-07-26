@@ -49,13 +49,13 @@ test("Studio exposes apex and nested subdomain flows", () => {
   assert.match(studio, /Service-role server tidak diperlukan/);
 });
 
-test("Netlify bridge and Codespaces command are committed", () => {
-  const config = read("netlify.toml");
+test("Netlify bridge and Codespaces command are committed without legacy root config", () => {
+  const redirects = read("public/_redirects");
   const command = read("scripts/netlify-domain-alias.mjs");
   const pkg = JSON.parse(read("package.json"));
   const sw = read("public/sw.js");
-  assert.match(config, /https:\/\/ngeblogging\.com\/api\/:splat/);
-  assert.match(config, /to = "\/index\.html"/);
+  assert.match(redirects, /https:\/\/ngeblogging\.com\/api\/:splat/);
+  assert.match(redirects, /\/index\.html\s+200/);
   assert.match(command, /domain_aliases/);
   assert.match(command, /75\.2\.60\.5/);
   assert.equal(pkg.scripts["domain:netlify"], "node scripts/netlify-domain-alias.mjs");
