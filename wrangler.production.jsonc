@@ -32,7 +32,7 @@
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-    "APP_RELEASE": "2026.07.26-responsive-v41",
+    "APP_RELEASE": "2026.07.26-responsive-v40",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
     "UI_V37_WORKER_COMPAT": "worker-v37.mjs",
     "UI_V35_RELEASE_COMPAT": "2026.07.25-studio-v35",
