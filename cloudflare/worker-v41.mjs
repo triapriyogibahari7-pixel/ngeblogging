@@ -11,6 +11,7 @@ function customDomainReadiness(env) {
       String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
       && String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim()
     ),
+    providerApi: String(env.CLOUDFLARE_CUSTOM_HOSTNAMES_READY || "").trim().toLowerCase() === "true",
   };
   return {
     bindings,
