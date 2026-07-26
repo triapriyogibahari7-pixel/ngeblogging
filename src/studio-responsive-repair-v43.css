@@ -1,0 +1,511 @@
+/* Ngeblogging Studio responsive repair v43.
+   Loaded after v40/v41. It is intentionally scoped away from Nara and the primary sidebar. */
+
+.lb39-layer,
+.lb39-layer *,
+.sn-main,
+.sn-main *,
+.sn-site-manager,
+.sn-site-manager * {
+  box-sizing: border-box;
+}
+
+/* Shared anti-clipping rules for every Studio page. */
+.sn-main,
+.sn-main > *,
+.sn-view-pad,
+.sn-view-pad > *,
+.sn-site-manager,
+.sn-site-manager > *,
+.sp37-active-site,
+.sp37-analytics-host,
+.sp37-members-host,
+.sp37-domain-host,
+.sn-settings-grid,
+.sn-settings-grid > * {
+  min-width: 0 !important;
+  max-width: 100%;
+}
+
+.sn-main,
+.sn-view-pad {
+  overflow-x: clip;
+}
+
+.sn-view-pad img,
+.sn-view-pad video,
+.sn-view-pad iframe,
+.sn-view-pad canvas,
+.sn-view-pad svg,
+.sn-view-pad table {
+  max-width: 100%;
+}
+
+.sn-view-pad input,
+.sn-view-pad textarea,
+.sn-view-pad select,
+.sn-view-pad button {
+  max-width: 100%;
+}
+
+/* Site manager: centered, fully visible and never hidden behind the viewport edge. */
+.sn-site-manager {
+  width: min(1180px, calc(100vw - 24px)) !important;
+  margin-inline: auto !important;
+  overflow-x: clip !important;
+  border-radius: clamp(16px, 2vw, 24px);
+}
+
+.sn-site-manager .sn-site-manager-body,
+.sn-site-manager .sn-site-list,
+.sn-site-manager .sn-create-site {
+  width: 100%;
+  min-width: 0;
+}
+
+.sn-site-manager .sn-create-site {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.sn-site-manager .sn-create-site > :is(h2, h3, p, .sq-banner, button, .sn-create-site-description) {
+  grid-column: 1 / -1;
+}
+
+.sn-site-manager .sn-create-site label,
+.sn-site-manager .sn-create-site input,
+.sn-site-manager .sn-create-site textarea,
+.sn-site-manager .sn-create-site select {
+  width: 100%;
+  min-width: 0;
+}
+
+.sn-site-manager .sn-create-site textarea {
+  resize: vertical;
+}
+
+.sq-banner {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.sq-banner > div,
+.sq-banner b,
+.sq-banner span,
+.sq-banner code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Active-site identity and actions. */
+.sp37-active-site {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+  gap: 18px;
+  align-items: start;
+  overflow: hidden;
+}
+
+.sp37-active-site > div,
+.sp37-active-site dl,
+.sp39-site-actions {
+  min-width: 0;
+}
+
+.sp37-active-site h2,
+.sp37-active-site p,
+.sp37-active-site dd {
+  overflow-wrap: anywhere;
+}
+
+.sp39-site-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sp39-site-actions button {
+  min-height: 44px;
+  flex: 1 1 190px;
+}
+
+/* Layout builder dialog: one scroll authority, no clipped left edge. */
+.lb39-layer {
+  overflow: hidden;
+}
+
+.lb39-dialog {
+  width: min(1320px, calc(100vw - 24px)) !important;
+  max-width: 100%;
+  height: min(940px, calc(100dvh - 24px)) !important;
+  max-height: 100dvh;
+}
+
+.lb39-head,
+.lb39-body,
+.lb39-foot,
+.lb39-canvas-wrap,
+.lb39-library,
+.lb39-canvas-host,
+.lb39-canvas {
+  min-width: 0 !important;
+  max-width: 100%;
+}
+
+.lb39-head h2,
+.lb39-head p,
+.lb39-section-title h3,
+.lb39-section-title p,
+.lb39-status {
+  overflow-wrap: anywhere;
+}
+
+.lb39-body {
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr) !important;
+  overflow-x: clip !important;
+}
+
+.lb39-canvas-host {
+  width: 100%;
+  overflow: hidden !important;
+}
+
+.lb39-canvas {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Desktop preview remains a desktop composition, but is proportionally fitted to a phone screen. */
+.lb39-layer[data-lb40-preview="desktop"] .lb39-canvas {
+  min-width: 0 !important;
+}
+
+.lb39-layer[data-lb40-preview="desktop"] .lb39-pair,
+.lb39-layer[data-lb40-preview="desktop"] .lb39-footer-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.lb39-layer[data-lb40-preview="desktop"] .lb39-content-row {
+  grid-template-columns: minmax(74px, .58fr) minmax(130px, 1.7fr) minmax(74px, .58fr) !important;
+  grid-template-areas: "left post right" !important;
+}
+
+/* Tablet preview: content first, paired sidebars below. */
+.lb39-layer[data-lb40-preview="tablet"] .lb39-canvas {
+  width: min(760px, 100%) !important;
+  min-width: 0 !important;
+  margin-inline: auto;
+}
+
+.lb39-layer[data-lb40-preview="tablet"] .lb39-content-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-areas: "post post" "left right" !important;
+}
+
+/* Mobile/PWA preview: a clean single reading column. */
+.lb39-layer[data-lb40-preview="mobile"] .lb39-canvas {
+  width: min(430px, 100%) !important;
+  min-width: 0 !important;
+  margin-inline: auto;
+}
+
+.lb39-layer[data-lb40-preview="mobile"] .lb39-pair,
+.lb39-layer[data-lb40-preview="mobile"] .lb39-footer-grid,
+.lb39-layer[data-lb40-preview="mobile"] .lb39-content-row {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.lb39-layer[data-lb40-preview="mobile"] .lb39-content-row {
+  grid-template-areas: "post" "left" "right" !important;
+}
+
+.lb39-zone,
+.lb39-post-preview,
+.lb39-widget,
+.lb39-widget-main,
+.lb39-code-settings,
+.lb39-copyright {
+  min-width: 0 !important;
+  overflow-wrap: anywhere;
+}
+
+.lb39-zone i {
+  max-width: 100%;
+}
+
+/* Production analytics: responsive cards, real empty-state chart and readable tables. */
+.sp37-analytics,
+.sp37-analytics * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.sp37-analytics-toolbar,
+.sp37-metrics,
+.sp37-chart-grid,
+.sp37-chart-grid-equal,
+.sp37-member-summary,
+.sp37-member-grid {
+  max-width: 100%;
+}
+
+.sp37-metrics,
+.sp37-member-summary {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)) !important;
+}
+
+.sp37-chart-grid,
+.sp37-chart-grid-equal,
+.sp37-member-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)) !important;
+}
+
+.sp37-chart-wide {
+  grid-column: 1 / -1;
+}
+
+.sp37-line-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sp37-content-table {
+  overflow: hidden;
+}
+
+.sp37-table-head,
+.sp37-table-row {
+  min-width: 680px;
+}
+
+.sp43-real-empty {
+  display: grid;
+  gap: 16px;
+  padding: clamp(16px, 3vw, 28px);
+  border: 1px solid #dce5ef;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.sp43-real-empty > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sp43-real-empty h2,
+.sp43-real-empty p {
+  margin: 0;
+}
+
+.sp43-real-empty p {
+  color: #718198;
+  line-height: 1.55;
+}
+
+.sp43-empty-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.sp43-empty-metrics article {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #e1e8f1;
+  border-radius: 14px;
+  background: #f8faff;
+}
+
+.sp43-empty-metrics small { color: #728198; }
+.sp43-empty-metrics b { color: #1e3552; font-size: 1.7rem; }
+
+.sp43-empty-chart {
+  min-height: 210px;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  border: 1px solid #e1e8f1;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #fbfdff, #f2f6fb);
+}
+
+.sp43-empty-chart svg {
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+}
+
+/* Settings, members and domain panels must wrap rather than overlap. */
+.sn-settings-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)) !important;
+  align-items: start;
+}
+
+.sp37-invite-form,
+.sp37-domain-panel > header,
+.sp37-domain-panel form,
+.sp37-domain-readiness {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sp37-domain-item,
+.sp37-domain-item code,
+.sp37-cname code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 980px) {
+  .lb39-layer {
+    padding: 0 !important;
+  }
+
+  .lb39-dialog {
+    width: 100% !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  .lb39-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 12px !important;
+  }
+
+  .sn-site-manager .sn-create-site,
+  .sp37-active-site {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .sn-view-pad {
+    padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)) !important;
+  }
+
+  .sn-site-manager {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .sq-banner {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sq-banner > i {
+    justify-self: start;
+  }
+
+  .lb39-head {
+    grid-template-columns: minmax(0, 1fr) 42px !important;
+    padding: 12px !important;
+  }
+
+  .lb39-head h2 {
+    font-size: clamp(25px, 8.5vw, 34px) !important;
+  }
+
+  .lb39-body {
+    padding: 8px !important;
+    gap: 10px !important;
+  }
+
+  .lb39-canvas-wrap,
+  .lb39-library {
+    padding: 9px !important;
+  }
+
+  .lb40-preview-panel {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .lb40-preview-switch {
+    width: 100%;
+  }
+
+  .lb40-preview-switch button {
+    min-height: 42px;
+    padding-inline: 5px;
+    white-space: normal;
+  }
+
+  .lb39-layer[data-lb40-preview="desktop"] .lb39-content-row {
+    grid-template-columns: minmax(54px, .5fr) minmax(104px, 1.65fr) minmax(54px, .5fr) !important;
+    gap: 5px !important;
+  }
+
+  .lb39-layer[data-lb40-preview="desktop"] .lb39-zone,
+  .lb39-layer[data-lb40-preview="desktop"] .lb39-post-preview {
+    padding: 6px !important;
+  }
+
+  .lb39-layer[data-lb40-preview="desktop"] .lb39-zone b {
+    font-size: 8px !important;
+  }
+
+  .lb39-layer[data-lb40-preview="tablet"] .lb39-content-row,
+  .lb39-layer[data-lb40-preview="mobile"] .lb39-content-row {
+    gap: 7px !important;
+  }
+
+  .lb39-foot {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .lb39-actions {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sp37-analytics-toolbar,
+  .sp37-domain-panel > header,
+  .sp37-invite-form,
+  .sp43-real-empty > header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sp37-table-head {
+    display: none !important;
+  }
+
+  .sp37-table-row {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    padding: 14px !important;
+  }
+
+  .sp37-table-row > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 390px) {
+  .lb39-layer[data-lb40-preview="desktop"] .lb39-content-row {
+    grid-template-columns: minmax(45px, .46fr) minmax(92px, 1.55fr) minmax(45px, .46fr) !important;
+  }
+
+  .lb39-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
