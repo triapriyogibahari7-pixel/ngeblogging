@@ -1,6 +1,6 @@
-const VERSION = "ngeblogging-app-v51-20260726";
+const VERSION = "ngeblogging-app-v52-20260726";
 // Compatibility markers retained for production validators:
-// ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
+// ngeblogging-app-v51-20260726, ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
