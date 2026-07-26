@@ -82,7 +82,7 @@ test("email code remains available but public signup is hidden until branded SMT
   assert.match(worker, /function brandedEmailReady\(env\)/);
   assert.match(worker, /sender\.endsWith\("@ngeblogging\.com"\)/);
   assert.match(authReadiness, /emailRegistrationReady/);
-  assert.match(authReadiness, /concealEmailRegistration/);
+  assert.match(authReadiness, /hideUnavailableEmailActions/);
   assert.match(index, /auth-readiness-bridge\.js/);
 });
 
@@ -97,5 +97,5 @@ test("service worker and PWA runtime keep cache rotation and update recovery", (
 test("production configuration keeps explicit Cloudflare routes", () => {
   assert.match(wrangler, /ngeblogging\.com/);
   assert.match(wrangler, /\*\.ngeblogging\.com/);
-  assert.match(wrangler, /custom_domains/);
+  assert.match(wrangler, /zone_name/);
 });
