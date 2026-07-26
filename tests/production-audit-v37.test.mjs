@@ -48,6 +48,7 @@ test("v37 never modifies the locked Studio navigation or Nara widget", async () 
 test("analytics is server collected through a rate-limited RPC with explicit simulation", async () => {
   const baseMigration = await read("supabase/migrations/20260725170000_real_analytics_and_member_quota.sql");
   const collectorMigration = await read("supabase/migrations/20260726013000_public_analytics_collector_v38.sql");
+  const dashboardFixMigration = await read("supabase/migrations/20260726015500_fix_analytics_dashboard_current_date_v38.sql");
   const handler = await read("server/analytics-handler.mjs");
   const runtime = await read("src/studio-production-audit-v37.js");
   assert.match(baseMigration, /create table if not exists public\.analytics_events/);
@@ -57,6 +58,8 @@ test("analytics is server collected through a rate-limited RPC with explicit sim
   assert.match(collectorMigration, /security definer/);
   assert.match(collectorMigration, /rate_limited/);
   assert.match(collectorMigration, /interval '3 seconds'/);
+  assert.match(dashboardFixMigration, /current_date - \(safe_days - 1\)/);
+  assert.doesNotMatch(dashboardFixMigration, /pg_catalog\.current_date/);
   assert.match(handler, /classification/);
   assert.match(handler, /visitorHash/);
   assert.match(handler, /rpc\/record_analytics_event/);
