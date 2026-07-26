@@ -3,7 +3,7 @@ import { analyticsReady, handleAnalyticsRequest } from "../server/analytics-hand
 import { handleMemberInviteRequest, memberInvitesReady } from "../server/member-invite-handler.mjs";
 import { resolveSeoSite } from "../server/seo-handler.mjs";
 
-const RELEASE = "2026.07.25-production-audit-v37";
+const RELEASE = "2026.07.26-responsive-capacity-v40";
 const TRACKER_MARKER = "data-ngeblogging-analytics-v37";
 
 function customDomainBindings(env) {
@@ -54,7 +54,8 @@ function enrichHealth(response, env) {
       memberLimitPerSite: 100,
       customDomains: domain.ready,
       customDomainBindings: domain.bindings,
-      siteLimits: { free: 12, maximum: 12 },
+      siteCapacity: { mode:"dynamic", defaultLimit:1000, perAccountOverrides:true },
+      siteLimits: { dynamic:true },
       independentSiteWorkspaces: true,
     }), { status: response.status, statusText: response.statusText, headers });
   }).catch(() => response);
