@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Public custom domains render the same hostname-aware React application.
+# API traffic is proxied to the authoritative Cloudflare Worker so analytics
+# and the production APIs remain centralized.
+[[redirects]]
+  from = "/api/*"
+  to = "https://ngeblogging.com/api/:splat"
+  status = 200
+  force = true
+
+# Vite/React SPA fallback. Existing files are served before this rewrite.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

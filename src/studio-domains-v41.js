@@ -2,13 +2,37 @@ import { api, escapeHtml, health, resolveSiteId } from "./studio-operations-v41-
 
 function dnsRows(domain, cnameTarget) {
   const rows = [];
-  if (cnameTarget) rows.push({ label:"1 · Arahkan trafik", type:"CNAME", name:domain.hostname, value:cnameTarget, note:"Gunakan @ bila panel DNS meminta nama host singkat untuk domain utama." });
+  const provider = String(domain.provider || "cloudflare").toLowerCase();
+  const validation = Array.isArray(domain.ssl_validation) ? domain.ssl_validation : [];
+  if (provider === "netlify") {
+    for (const record of validation) {
+      const name = record.txt_name || record.cname || record.name;
+      const value = record.txt_value || record.cname_target || record.value;
+      if (name && value) rows.push({
+        label:record.label || "1 · Arahkan trafik",
+        type:record.type || (record.cname ? "CNAME" : "TXT"),
+        name,
+        value,
+        note:record.note || "Record DNS untuk mengarahkan domain ke bridge gratis Ngeblogging.",
+      });
+    }
+  } else if (cnameTarget) {
+    rows.push({ label:"1 · Arahkan trafik", type:"CNAME", name:domain.hostname, value:cnameTarget, note:"Gunakan @ bila panel DNS meminta nama host singkat untuk domain utama." });
+  }
   const ownership = domain.ownership_verification || {};
-  if (ownership.name && ownership.value) rows.push({ label:"2 · Verifikasi kepemilikan", type:ownership.type || "TXT", name:ownership.name, value:ownership.value, note:"Catatan resmi untuk membuktikan kepemilikan domain." });
-  for (const record of Array.isArray(domain.ssl_validation) ? domain.ssl_validation : []) {
-    const name = record.txt_name || record.cname || record.name;
-    const value = record.txt_value || record.cname_target || record.value;
-    if (name && value) rows.push({ label:"Tambahan · Validasi HTTPS", type:record.type || (record.cname ? "CNAME" : "TXT"), name, value, note:"Hanya muncul bila sertifikat HTTPS memerlukan validasi tambahan." });
+  if (ownership.name && ownership.value) rows.push({
+    label:ownership.label || "2 · Verifikasi kepemilikan",
+    type:ownership.type || "TXT",
+    name:ownership.name,
+    value:ownership.value,
+    note:ownership.note || "Catatan resmi untuk membuktikan kepemilikan domain.",
+  });
+  if (provider !== "netlify") {
+    for (const record of validation) {
+      const name = record.txt_name || record.cname || record.name;
+      const value = record.txt_value || record.cname_target || record.value;
+      if (name && value) rows.push({ label:record.label || "Tambahan · Validasi HTTPS", type:record.type || (record.cname ? "CNAME" : "TXT"), name, value, note:record.note || "Hanya muncul bila sertifikat HTTPS memerlukan validasi tambahan." });
+    }
   }
   return rows;
 }
@@ -17,8 +41,11 @@ function domainItems(domains, cnameTarget) {
   if (!domains.length) return `<div class="op41-state"><b>Belum ada custom domain</b><span>Tambahkan domain utama, WWW, atau subdomain bertingkat seperti blog.domain.com dan cloud.console.domain.com melalui dua form di atas.</span></div>`;
   return domains.map((domain) => {
     const active = domain.status === "active" && domain.ssl_status === "active";
-    const rows = dnsRows(domain, cnameTarget).map((row) => `<div><span><b>${escapeHtml(row.label)}</b><small>${escapeHtml(row.note)}</small></span><code>${escapeHtml(row.type)}</code><code>${escapeHtml(row.name)}</code><code>${escapeHtml(row.value)}</code><button type="button" class="op41-button" data-copy="${escapeHtml(row.value)}">Salin</button></div>`).join("") || "<p>Cloudflare sedang menyiapkan catatan DNS.</p>";
-    return `<article class="op41-domain" data-domain-id="${escapeHtml(domain.id)}"><header><div><small class="op41-kicker">CUSTOM DOMAIN</small><h3>${escapeHtml(domain.hostname)}</h3></div><i class="op41-domain-status${active ? " active" : ""}">${active ? "Aktif" : "Perlu verifikasi"}</i></header><div class="op41-dns-wrap"><div class="op41-dns">${rows}</div></div><footer><a class="op41-button" href="https://${escapeHtml(domain.hostname)}" target="_blank" rel="noreferrer">Buka domain</a><button type="button" class="op41-button" data-domain-action="refresh">Periksa status</button><button type="button" class="op41-button" data-domain-action="remove">Hapus</button></footer></article>`;
+    const provider = String(domain.provider || "cloudflare").toLowerCase();
+    const providerLabel = provider === "netlify" ? "BRIDGE GRATIS NETLIFY" : "CLOUDFLARE CUSTOM HOSTNAME";
+    const rows = dnsRows(domain, cnameTarget).map((row) => `<div><span><b>${escapeHtml(row.label)}</b><small>${escapeHtml(row.note)}</small></span><code>${escapeHtml(row.type)}</code><code>${escapeHtml(row.name)}</code><code>${escapeHtml(row.value)}</code><button type="button" class="op41-button" data-copy="${escapeHtml(row.value)}">Salin</button></div>`).join("") || "<p>Catatan DNS sedang disiapkan.</p>";
+    const message = domain.error_message ? `<p class="op50-domain-pending">${escapeHtml(domain.error_message)}</p>` : "";
+    return `<article class="op41-domain" data-domain-id="${escapeHtml(domain.id)}"><header><div><small class="op41-kicker">${providerLabel}</small><h3>${escapeHtml(domain.hostname)}</h3></div><i class="op41-domain-status${active ? " active" : ""}">${active ? "Aktif" : "Perlu verifikasi"}</i></header><div class="op41-dns-wrap"><div class="op41-dns">${rows}</div></div>${message}<footer><a class="op41-button" href="https://${escapeHtml(domain.hostname)}" target="_blank" rel="noreferrer">Buka domain</a><button type="button" class="op41-button" data-domain-action="refresh">Periksa status</button><button type="button" class="op41-button" data-domain-action="remove">Hapus</button></footer></article>`;
   }).join("");
 }
 
@@ -57,13 +84,20 @@ function composeHostname(prefix, rootDomain) {
   return normalizeHostname(`${normalizePrefix(prefix)}.${normalizeHostname(rootDomain)}`);
 }
 
-function domainControlsMarkup({ ready, cnameTarget = "" }) {
+function domainControlsMarkup({ ready, cnameTarget = "", apexTarget = "", provider = "cloudflare", automation = true }) {
   const disabled = ready ? "" : " disabled aria-disabled=\"true\"";
-  const pending = ready ? "" : `<p class="op50-domain-pending">Kolom sudah tersedia, tetapi tombol penambahan tetap dikunci sampai Cloudflare Custom Hostnames API benar-benar memberi izin. Ini mencegah domain tersimpan setengah jadi.</p>`;
-  const target = cnameTarget ? `<div class="op50-domain-target"><b>Target CNAME resmi</b><code>${escapeHtml(cnameTarget)}</code></div>` : "";
-  return `<div class="op50-domain-controls" data-domain-ready="${ready}">
+  const isNetlify = provider === "netlify";
+  const pending = !ready
+    ? `<p class="op50-domain-pending">Kolom tersedia, tetapi koneksi penyedia domain belum lengkap.</p>`
+    : isNetlify && !automation
+      ? `<p class="op50-domain-pending"><b>Mode gratis tanpa pembayaran aktif.</b> Setelah menekan tombol, tambahkan hostname yang sama sebagai <b>Domain alias</b> pada project Netlify Ngeblogging. Dua record DNS akan langsung ditampilkan dan diperiksa otomatis.</p>`
+      : "";
+  const target = isNetlify
+    ? `<div class="op50-domain-target"><b>Target domain utama</b><code>A · ${escapeHtml(apexTarget || "75.2.60.5")}</code><b>Target WWW/subdomain</b><code>CNAME · ${escapeHtml(cnameTarget)}</code></div>`
+    : cnameTarget ? `<div class="op50-domain-target"><b>Target CNAME resmi</b><code>${escapeHtml(cnameTarget)}</code></div>` : "";
+  return `<div class="op50-domain-controls" data-domain-ready="${ready}" data-domain-provider="${escapeHtml(provider)}">
     <section class="op50-domain-card">
-      <header><small class="op41-kicker">DOMAIN UTAMA</small><h3>Tambahkan domain Anda</h3><p>Masukkan domain akar tanpa protokol dan tanpa path, misalnya domain.com, domain.id, my.id, atau web.id.</p></header>
+      <header><small class="op41-kicker">DOMAIN UTAMA</small><h3>Tambahkan domain Anda</h3><p>Masukkan domain akar tanpa protokol dan tanpa path, misalnya domain.com, domain.id, domain.my.id, atau domain.web.id.</p></header>
       <form class="op41-form op41-domain-form op50-domain-form op50-domain-root-form">
         <label>Domain utama<input name="hostname" required inputmode="url" autocomplete="off" spellcheck="false" placeholder="domain.com"></label>
         <button type="submit"${disabled}>Tambahkan domain</button>
@@ -85,18 +119,25 @@ function domainControlsMarkup({ ready, cnameTarget = "" }) {
 
 function readinessMarkup(state) {
   const bindings = state.customDomainBindings || {};
-  const rows = [
+  const provider = state.customDomainProvider || "cloudflare";
+  const isNetlify = provider === "netlify";
+  const rows = isNetlify ? [
+    ["NETLIFY BRIDGE HOSTNAME", bindings.bridgeHostname || bindings.cnameTarget],
+    ["SUPABASE JWT + ROW LEVEL SECURITY", bindings.databaseAccess],
+    ["NETLIFY API TOKEN (OPSIONAL)", bindings.apiToken],
+    ["NETLIFY SITE ID (OPSIONAL)", bindings.siteId],
+    ["OTOMATISASI DOMAIN ALIAS", bindings.providerApi],
+  ] : [
     ["CLOUDFLARE_API_TOKEN", bindings.apiToken],
     ["CLOUDFLARE_ZONE_ID", bindings.zoneId],
     ["CLOUDFLARE_CUSTOM_HOSTNAME_TARGET", bindings.cnameTarget],
     ["SUPABASE JWT + ROW LEVEL SECURITY", bindings.databaseAccess],
     ["CLOUDFLARE CUSTOM HOSTNAMES API", bindings.providerApi],
   ];
-  const permissionMissing = bindings.apiToken === true && bindings.zoneId === true && bindings.providerApi !== true;
-  const detail = permissionMissing
-    ? "Token Cloudflare terbaca, tetapi belum lolos izin SSL and Certificates Read/Write pada zone ngeblogging.com. Form tetap ditampilkan agar fiturnya tidak hilang, namun tombol dikunci sampai izin resmi tersebut aktif."
-    : "Form domain ditampilkan sekarang dan akan aktif otomatis setelah Cloudflare serta akses database berbasis sesi pengguna terbaca oleh Worker. Subdomain gratis tetap aktif; Service-role server tidak diperlukan.";
-  return `<section class="op41-panel"><div class="op41-toolbar"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Domain utama, WWW, dan subdomain</h2><p>Semua TLD valid didukung. Alamat bertingkat seperti cloud.console.domain.com juga dapat digunakan.</p></div><span>Menunggu verifikasi produksi</span></div>${domainControlsMarkup({ ready:false, cnameTarget:bindings.cnameTargetValue || "" })}<section class="op41-readiness"><div><small class="op41-kicker">STATUS KONEKSI</small><h2>Koneksi produksi sedang diverifikasi</h2><p>${escapeHtml(detail)}</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, ready]) => `<li data-ready="${ready === true}">${ready === true ? "✓" : "○"} ${escapeHtml(name)}</li>`).join("")}</ul></section></section>`;
+  const detail = isNetlify
+    ? "Alternatif gratis memakai Netlify Domain Alias. API token hanya diperlukan untuk otomatisasi; tanpa token, form tetap dapat menyimpan domain, menghasilkan dua record DNS, dan memverifikasi status setelah alias ditambahkan manual dari dashboard Netlify atau Codespaces."
+    : "Token Cloudflare terbaca, tetapi belum lolos izin SSL and Certificates Read/Write pada zone ngeblogging.com. Form tetap ditampilkan agar fiturnya tidak hilang. Service-role server tidak diperlukan.";
+  return `<section class="op41-panel"><div class="op41-toolbar"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Domain utama, WWW, dan subdomain</h2><p>Semua TLD valid didukung. Alamat bertingkat seperti cloud.console.domain.com juga dapat digunakan.</p></div><span>Menunggu verifikasi produksi</span></div>${domainControlsMarkup({ ready:false, cnameTarget:state.customHostnameTarget || "", apexTarget:state.customDomainApexTarget || "", provider, automation:Boolean(state.customDomainAutomation) })}<section class="op41-readiness"><div><small class="op41-kicker">STATUS KONEKSI</small><h2>Koneksi produksi sedang diverifikasi</h2><p>${escapeHtml(detail)}</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, value]) => `<li data-ready="${value === true}">${value === true ? "✓" : "○"} ${escapeHtml(name)}</li>`).join("")}</ul></section></section>`;
 }
 
 function reloadAfterMutation(view) {
@@ -120,13 +161,14 @@ function attachDomainControls(host, view, siteId, ready) {
   updatePreview();
   if (!ready) return;
 
-  const register = async (form, hostnameFactory, idleLabel) => {
+  const register = async (form, hostnameFactory, idleLabel, addressType) => {
     const button = form.querySelector("button[type=submit]");
     button.disabled = true;
     button.textContent = "Menambahkan…";
     try {
       const hostname = hostnameFactory(new FormData(form));
-      await api("/api/domains/register", { siteId, hostname });
+      const result = await api("/api/domains/register", { siteId, hostname, addressType });
+      if (result.manualActionRequired) window.alert(`Domain ${hostname} sudah disimpan. Tambahkan hostname tersebut sebagai Domain alias pada project Netlify Ngeblogging, lalu pasang dua record DNS yang ditampilkan dan tekan Periksa status.`);
       reloadAfterMutation(view);
     } catch (error) {
       button.disabled = false;
@@ -138,12 +180,12 @@ function attachDomainControls(host, view, siteId, ready) {
   const rootForm = host.querySelector(".op50-domain-root-form");
   rootForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    register(rootForm, (formData) => normalizeHostname(formData.get("hostname")), "Tambahkan domain");
+    register(rootForm, (formData) => normalizeHostname(formData.get("hostname")), "Tambahkan domain", "apex");
   });
 
   hostForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    register(hostForm, (formData) => composeHostname(formData.get("prefix"), formData.get("rootDomain")), "Tambahkan alamat");
+    register(hostForm, (formData) => composeHostname(formData.get("prefix"), formData.get("rootDomain")), "Tambahkan alamat", "subdomain");
   });
 }
 
@@ -161,7 +203,8 @@ function attachDomainItems(host, view) {
     if (action === "remove" && !window.confirm("Hapus custom domain ini?")) return;
     button.disabled = true;
     try {
-      await api(`/api/domains/${action === "remove" ? "remove" : "refresh"}`, { domainId });
+      const result = await api(`/api/domains/${action === "remove" ? "remove" : "refresh"}`, { domainId });
+      if (result.manualAliasRemovalRequired) window.alert("Data domain sudah dihapus dari Ngeblogging. Hapus juga Domain alias tersebut dari dashboard Netlify karena mode otomatis belum memakai token.");
       reloadAfterMutation(view);
     } catch (error) {
       button.disabled = false;
@@ -188,7 +231,10 @@ export async function loadDomains(view, forceHealth = false) {
       return;
     }
     const data = await api(`/api/domains/list?siteId=${encodeURIComponent(siteId)}`);
-    host.innerHTML = `<section class="op41-panel"><div class="op41-toolbar"><div><small class="op41-kicker">DOMAIN MILIK PENGGUNA</small><h2>Hubungkan custom domain</h2><p>Tambahkan domain utama, WWW, atau subdomain bertingkat. Sistem memberikan dua catatan DNS resmi dan validasi HTTPS tambahan hanya bila diperlukan.</p></div><span>Cloudflare aktif</span></div>${domainControlsMarkup({ ready:true, cnameTarget:data.cnameTarget || "" })}<div class="op41-domain-list">${domainItems(data.domains || [], data.cnameTarget || "")}</div></section>`;
+    const provider = data.provider || state.customDomainProvider || "cloudflare";
+    const automation = data.automation ?? state.customDomainAutomation ?? true;
+    const providerLabel = provider === "netlify" ? (automation ? "Netlify otomatis · gratis" : "Netlify manual · gratis") : "Cloudflare aktif";
+    host.innerHTML = `<section class="op41-panel"><div class="op41-toolbar"><div><small class="op41-kicker">DOMAIN MILIK PENGGUNA</small><h2>Hubungkan custom domain</h2><p>Tambahkan domain utama, WWW, atau subdomain bertingkat. Sistem memberikan dua catatan DNS: arah trafik dan verifikasi kepemilikan.</p></div><span>${escapeHtml(providerLabel)}</span></div>${domainControlsMarkup({ ready:true, cnameTarget:data.cnameTarget || state.customHostnameTarget || "", apexTarget:data.apexTarget || state.customDomainApexTarget || "", provider, automation })}<div class="op41-domain-list">${domainItems(data.domains || [], data.cnameTarget || "")}</div></section>`;
     attachDomainControls(host, view, siteId, true);
     attachDomainItems(host, view);
     view.dataset.op41DomainsSite = siteId;
