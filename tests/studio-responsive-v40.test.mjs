@@ -27,19 +27,18 @@ test("layout builder and published sites use different device geometry", async (
   assert.match(css, /overflow-x: clip !important/);
 });
 
-test("site creation uses dynamic server capacity and hides a fixed maximum", async () => {
+test("site creation uses a server-enforced twelve-site account capacity", async () => {
   const bridge = await read("src/site-quota-bridge.js");
-  const migration = await read("supabase/migrations/20260726091500_dynamic_site_capacity_v40.sql");
+  const migration = await read("supabase/migrations/20260726140500_enforce_twelve_site_capacity_v55.sql");
   const worker = await read("cloudflare/worker-v37.mjs");
-  assert.match(bridge, /KAPASITAS SITUS DINAMIS/);
-  assert.match(bridge, /capacityMode = "dynamic"/);
-  assert.doesNotMatch(bridge, /maksimum|maximum_limit|free_limit|\|\| 12/i);
-  assert.match(migration, /private\.account_site_capacity/);
+  assert.match(bridge, /MAX_SITES_PER_ACCOUNT = 12/);
+  assert.match(bridge, /KAPASITAS 12 SITUS PER AKUN/);
+  assert.match(bridge, /capacityMode = "twelve-sites"/);
+  assert.match(bridge, /createButton\.disabled = !canCreate/);
   assert.match(migration, /private\.site_limit_for_owner/);
-  assert.match(migration, /allowed_limit between 1 and 1000000/);
-  assert.match(migration, /select 1000/);
+  assert.match(migration, /select 12;/);
   assert.match(migration, /security invoker/);
-  assert.match(worker, /siteCapacity: \{ mode:"dynamic", defaultLimit:1000, perAccountOverrides:true \}/);
+  assert.match(worker, /siteCapacity: \{ mode: "fixed", defaultLimit: 12, perAccountOverrides: false \}/);
 });
 
 test("PWA cache rotates for v40 while retaining compatibility markers", async () => {
