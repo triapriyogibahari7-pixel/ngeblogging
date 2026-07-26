@@ -6,20 +6,6 @@
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
   "workers_dev": true,
-  "routes": [
-    {
-      "pattern": "ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    },
-    {
-      "pattern": "www.ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    },
-    {
-      "pattern": "*.ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    }
-  ],
   "assets": {
     "directory": "./dist/",
     "binding": "ASSETS",
