@@ -10,13 +10,14 @@ const execFileAsync = promisify(execFile);
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const requiredRoutes = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
-test("production workflow resolves one active zone and verifies route ownership", async () => {
+test("production workflow deploys with an optional Zone ID and verifies route ownership when readable", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
-  assert.match(workflow, /zones\?name=ngeblogging\.com&status=active&per_page=10/);
   assert.match(workflow, /RESOLVED_CLOUDFLARE_ZONE_ID/);
+  assert.match(workflow, /zone_name ngeblogging\.com/);
   assert.match(workflow, /wrangler\.production\.active-zone\.jsonc/);
   assert.match(workflow, /zones\/\$\{RESOLVED_CLOUDFLARE_ZONE_ID\}\/workers\/routes/);
   assert.match(workflow, /routes\.get\(pattern\) !== 'ngeblogging'/);
+  assert.match(workflow, /Route API dilewati karena token tidak memiliki Zone Read/);
   assert.match(workflow, /WORKERS_DEV_SMOKE_TEST_URL/);
 });
 
@@ -40,5 +41,33 @@ test("generated Wrangler configuration pins every official route to the resolved
   for (const route of generated.routes) {
     assert.equal(route.zone_id, "0123456789abcdef0123456789abcdef");
     assert.equal(route.zone_name, undefined);
+  }
+});
+
+test("generated Wrangler configuration falls back to official zone_name when Zone Read is unavailable", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "ngeblogging-zone-name-v55-"));
+  const input = join(directory, "input.jsonc");
+  const output = join(directory, "output.jsonc");
+  await writeFile(input, JSON.stringify({
+    name: "ngeblogging",
+    routes: requiredRoutes.map((pattern) => ({ pattern, zone_name: "ngeblogging.com" })),
+  }), "utf8");
+
+  await execFileAsync(process.execPath, [new URL("../scripts/build-active-zone-wrangler.mjs", import.meta.url).pathname, input, output], {
+    env: {
+      ...process.env,
+      CLOUDFLARE_ZONE_ID: "",
+      RESOLVED_CLOUDFLARE_ZONE_ID: "",
+      CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210",
+      RESOLVED_CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210",
+    },
+  });
+
+  const generated = JSON.parse(await readFile(output, "utf8"));
+  assert.equal(generated.account_id, "fedcba9876543210fedcba9876543210");
+  assert.deepEqual(generated.routes.map((route) => route.pattern), requiredRoutes);
+  for (const route of generated.routes) {
+    assert.equal(route.zone_name, "ngeblogging.com");
+    assert.equal(route.zone_id, undefined);
   }
 });
