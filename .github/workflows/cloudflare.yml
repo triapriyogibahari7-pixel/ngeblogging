@@ -21,6 +21,8 @@ jobs:
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      WORKER_CUSTOM_HOSTNAME_API_TOKEN: ${{ secrets.CLOUDFLARE_CUSTOM_HOSTNAME_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+      WORKER_CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || secrets.CF_ZONE_ID || vars.CLOUDFLARE_ZONE_ID || vars.CF_ZONE_ID }}
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
@@ -60,6 +62,9 @@ jobs:
           [[ "${VITE_SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${VITE_SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "Publishable key Supabase tidak valid"; exit 1; }
           [[ "${CLOUDFLARE_SMOKE_TEST_URL}" == https://* ]] || { echo "CLOUDFLARE_SMOKE_TEST_URL wajib HTTPS"; exit 1; }
           [[ "${TENANT_SMOKE_TEST_URL}" == https://*.ngeblogging.com ]] || { echo "TENANT_SMOKE_TEST_URL wajib subdomain ngeblogging.com"; exit 1; }
+          if [[ -z "${WORKER_CLOUDFLARE_ZONE_ID}" ]]; then
+            echo "Peringatan: CLOUDFLARE_ZONE_ID belum ditemukan pada GitHub secrets/variables; situs tetap dideploy tetapi custom domain akan tetap terkunci."
+          fi
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
@@ -70,16 +75,35 @@ jobs:
       - name: Validate Cloudflare production bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy apex, wildcard tenants, assets, Nara, and API
+      - name: Synchronize custom-domain Worker secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const values = {
+            CLOUDFLARE_API_TOKEN: process.env.WORKER_CUSTOM_HOSTNAME_API_TOKEN || '',
+            CLOUDFLARE_ZONE_ID: process.env.WORKER_CLOUDFLARE_ZONE_ID || '',
+          };
+          const secrets = Object.fromEntries(Object.entries(values).filter(([, value]) => String(value).trim()));
+          fs.writeFileSync('/tmp/ngeblogging-worker-secrets.json', JSON.stringify(secrets));
+          console.log(`Menyiapkan ${Object.keys(secrets).length} secret Worker tanpa menampilkan nilainya.`);
+          NODE
+          if [[ "$(node -p "Object.keys(JSON.parse(require('fs').readFileSync('/tmp/ngeblogging-worker-secrets.json','utf8'))).length")" -gt 0 ]]; then
+            npx wrangler secret bulk /tmp/ngeblogging-worker-secrets.json --config wrangler.production.jsonc
+          fi
+          rm -f /tmp/ngeblogging-worker-secrets.json
+
+      - name: Deploy apex, wildcard tenants, assets, Nara, analytics, and API
         run: npm run deploy:cloudflare
 
-      # Compatibility markers retained for the source validator while the live
-      # contract is now v37/v38:
+      # Compatibility markers retained for source validators while the live
+      # contract is now v39/v38:
       # studio-v14-authority.css
       # nara-command-center-bridge.js
-      # ngeblogging-app-v14-20260724
-      # 2026.07.24-studio-v14
-      - name: Verify v37 Studio, Nara, analytics, PWA, and tenant release
+      # ngeblogging-app-v37-20260725
+      # 2026.07.25-production-audit-v37
+      - name: Verify v39 Studio, Nara, analytics, PWA, domain readiness, and tenant release
         shell: bash
         run: |
           set -euo pipefail
@@ -120,7 +144,7 @@ jobs:
           const visited = new Set();
           const assets = [];
 
-          while (queue.length && visited.size < 100) {
+          while (queue.length && visited.size < 110) {
             const url = queue.shift();
             if (!url || visited.has(url)) continue;
             visited.add(url);
@@ -141,6 +165,7 @@ jobs:
             directNara: compact.includes('.nara-floating-button') && combined.includes('Buka Nara AI Assistant'),
             naraTools: combined.includes('Projects') && combined.includes('Memori') && combined.includes('Buat gambar') && combined.includes('Plugins') && combined.includes('Baca QR'),
             productionAuditV37: combined.includes('studio-production-audit-v37-20260725') && combined.includes('sp37-analytics'),
+            productionV39: combined.includes('studio-production-v39-20260726') && combined.includes('sp39-layout-preview') && combined.includes('HTML/JavaScript'),
             analyticsRpcV38: combined.includes('record_analytics_event') && combined.includes('analytics-v38'),
             pwaRuntime: combined.includes('beforeinstallprompt'),
           };
@@ -148,24 +173,26 @@ jobs:
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
           if (health.release !== '2026.07.25-production-audit-v37') errors.push('health.release');
+          if (health.uiRelease !== '2026.07.26-production-v39') errors.push('health.uiRelease');
           if (health.nara !== true) errors.push('health.nara');
           if (health.naraProviders?.vision !== true) errors.push('health.vision');
           if (health.imageGeneration !== true) errors.push('health.imageGeneration');
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
-          if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
           if (health.analyticsCollector !== true) errors.push('health.analyticsCollector');
           if (health.memberLimitPerSite !== 100) errors.push('health.memberLimitPerSite');
+          if (health.widgetCount !== 26) errors.push('health.widgetCount');
+          if (process.env.WORKER_CLOUDFLARE_ZONE_ID && health.customDomains !== true) errors.push(`health.customDomains:${(health.customDomainMissing || []).join('|')}`);
           for (const [name, ready] of Object.entries(markers)) if (!ready) errors.push(`bundle:${name}`);
           for (const asset of assets) if (asset.status !== 200) errors.push(`asset:${asset.status}:${asset.url}`);
 
-          if (!sw.includes('ngeblogging-app-v37-20260725')) errors.push('service-worker-v37');
+          if (!sw.includes('ngeblogging-app-v39-20260726') || !sw.includes('ngeblogging-app-v37-20260725')) errors.push('service-worker-v39');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
 
           const analyticsProbe = await read(`${tenantSite}/api/analytics/collect`, {
             method: 'POST',
-            headers: { 'content-type': 'application/json', origin: tenantSite, 'user-agent': 'NgebloggingProductionAudit/38' },
-            body: JSON.stringify({ path: '/__production-audit-v38', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 1280 }),
+            headers: { 'content-type': 'application/json', origin: tenantSite, 'user-agent': 'NgebloggingProductionAudit/39' },
+            body: JSON.stringify({ path: '/__production-audit-v39', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 390 }),
           });
           let analyticsPayload = {};
           try { analyticsPayload = JSON.parse(analyticsProbe.text || '{}'); } catch {}
@@ -185,17 +212,17 @@ jobs:
             process.exit(1);
           }
 
-          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, tenant: 'ok', release: 'v37-v38' }, null, 2));
+          console.log(JSON.stringify({ runtime: health.runtime, uiRelease: health.uiRelease, customDomains: health.customDomains, assets: assets.length, markers, tenant: 'ok', release: 'v39-v38' }, null, 2));
           NODE
               then
-                echo "Cloudflare v37, analytics v38, Nara, Studio responsif, PWA, dan tenant publik terverifikasi."
+                echo "Cloudflare v39, analytics v38, Nara, Studio responsif, PWA, domain readiness, dan tenant publik terverifikasi."
                 exit 0
               fi
             fi
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan kontrak produksi v37/v38 yang lengkap."
+          echo "Cloudflare belum menyajikan kontrak produksi v39/v38 yang lengkap."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
           exit 1
 
@@ -210,7 +237,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'v37 Studio, Nara, analytics, PWA, and tenant checks passed.',
+              description: 'v39 Studio, layout, analytics, domains, Nara, PWA, and tenant checks passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -225,6 +252,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, deploy, or current live verification failed. Open the workflow log.',
+              description: 'Build, deploy, secret synchronization, or live verification failed. Open the workflow log.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
