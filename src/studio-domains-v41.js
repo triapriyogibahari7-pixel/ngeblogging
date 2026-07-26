@@ -42,8 +42,9 @@ function readinessMarkup(state) {
     ["CLOUDFLARE_ZONE_ID", bindings.zoneId],
     ["CLOUDFLARE_CUSTOM_HOSTNAME_TARGET", bindings.cnameTarget],
     ["SUPABASE JWT + ROW LEVEL SECURITY", bindings.databaseAccess],
+    ["CLOUDFLARE CUSTOM HOSTNAMES API", bindings.customHostnamesApi],
   ];
-  return `<section class="op41-readiness"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Koneksi produksi sedang diverifikasi</h2><p>Form domain hanya dibuka setelah Cloudflare dan akses database berbasis sesi pengguna terbaca oleh Worker. Subdomain gratis tetap aktif. Service-role server tidak diperlukan pada alur ini.</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, ready]) => `<li data-ready="${ready === true}">${ready === true ? "✓" : "○"} ${name}</li>`).join("")}</ul></section>`;
+  return `<section class="op41-readiness"><div><small class="op41-kicker">CUSTOM DOMAIN</small><h2>Koneksi produksi sedang diverifikasi</h2><p>Form domain hanya dibuka setelah token, zone, target CNAME, database JWT/RLS, dan izin Cloudflare Custom Hostnames benar-benar lulus pemeriksaan produksi. Subdomain gratis tetap aktif. Service-role server tidak diperlukan pada alur ini.</p><button type="button" class="op41-button primary op41-domain-retry">Periksa ulang</button></div><ul>${rows.map(([name, ready]) => `<li data-ready="${ready === true}">${ready === true ? "✓" : "○"} ${name}</li>`).join("")}</ul></section>`;
 }
 
 function reloadAfterMutation(view) {
