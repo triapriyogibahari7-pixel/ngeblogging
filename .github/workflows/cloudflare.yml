@@ -97,6 +97,7 @@ jobs:
           import fs from 'node:fs';
 
           const site = process.env.CLOUDFLARE_SMOKE_TEST_URL.replace(/\/$/, '');
+          const tenantSite = process.env.TENANT_SMOKE_TEST_URL.replace(/\/$/, '');
           const health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8'));
           const index = fs.readFileSync('/tmp/index.html', 'utf8');
           const sw = fs.readFileSync('/tmp/sw.js', 'utf8');
@@ -161,9 +162,9 @@ jobs:
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
 
-          const analyticsProbe = await read(`${site}/api/analytics/collect`, {
+          const analyticsProbe = await read(`${tenantSite}/api/analytics/collect`, {
             method: 'POST',
-            headers: { 'content-type': 'application/json', origin: site, 'user-agent': 'NgebloggingProductionAudit/38' },
+            headers: { 'content-type': 'application/json', origin: tenantSite, 'user-agent': 'NgebloggingProductionAudit/38' },
             body: JSON.stringify({ path: '/__production-audit-v38', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 1280 }),
           });
           let analyticsPayload = {};
