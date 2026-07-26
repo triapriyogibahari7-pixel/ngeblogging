@@ -2,6 +2,10 @@ import baseWorker from "./worker-v37.mjs";
 
 const RELEASE = "2026.07.26-custom-domains-v41";
 
+function enabled(value) {
+  return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
+}
+
 function customDomainReadiness(env) {
   const bindings = {
     apiToken: Boolean(String(env.CLOUDFLARE_API_TOKEN || "").trim()),
@@ -11,6 +15,7 @@ function customDomainReadiness(env) {
       String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
       && String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim()
     ),
+    customHostnamesApi: enabled(env.CLOUDFLARE_CUSTOM_HOSTNAMES_READY),
   };
   return {
     bindings,
