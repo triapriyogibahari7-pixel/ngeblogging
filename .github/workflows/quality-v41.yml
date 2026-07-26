@@ -2,7 +2,7 @@ name: Studio v41 quality
 
 on:
   push:
-    branches: [fix/studio-responsive-operations-v41]
+    branches: [fix/studio-responsive-operations-v41-main]
   pull_request:
     branches: [main]
   workflow_dispatch:
