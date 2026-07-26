@@ -43,7 +43,7 @@ jobs:
               sha: context.sha,
               state: 'pending',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, tests, deploy, runtime bindings, and live verification are running.',
+              description: 'Build, tests, deploy, runtime readiness, and live verification are running.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -59,13 +59,19 @@ jobs:
           set -euo pipefail
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
-          test -n "${CLOUDFLARE_ZONE_ID}" || { echo "CLOUDFLARE_ZONE_ID belum diisi pada secret atau variable environment cloudflare-production"; exit 1; }
-          test -n "${CLOUDFLARE_CUSTOM_HOSTNAME_TARGET}" || { echo "CLOUDFLARE_CUSTOM_HOSTNAME_TARGET belum diisi pada secret atau variable environment cloudflare-production"; exit 1; }
-          test -n "${SUPABASE_SERVICE_ROLE_KEY}" || { echo "Secret SUPABASE_SERVICE_ROLE_KEY belum diisi"; exit 1; }
           [[ "${VITE_SUPABASE_URL}" == https://*.supabase.co ]] || { echo "VITE_SUPABASE_URL tidak valid"; exit 1; }
           [[ "${VITE_SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${VITE_SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "Publishable key Supabase tidak valid"; exit 1; }
           [[ "${CLOUDFLARE_SMOKE_TEST_URL}" == https://* ]] || { echo "CLOUDFLARE_SMOKE_TEST_URL wajib HTTPS"; exit 1; }
           [[ "${TENANT_SMOKE_TEST_URL}" == https://*.ngeblogging.com ]] || { echo "TENANT_SMOKE_TEST_URL wajib subdomain ngeblogging.com"; exit 1; }
+
+          domain_ready=true
+          for name in CLOUDFLARE_ZONE_ID CLOUDFLARE_CUSTOM_HOSTNAME_TARGET SUPABASE_SERVICE_ROLE_KEY; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::warning::${name} belum tersedia pada environment cloudflare-production. Custom domain tetap dikunci, fitur inti tetap dideploy."
+              domain_ready=false
+            fi
+          done
+          echo "DOMAIN_RUNTIME_EXPECTED=${domain_ready}" >> "${GITHUB_ENV}"
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
@@ -79,28 +85,32 @@ jobs:
       - name: Deploy apex, wildcard tenants, assets, Nara, and API
         run: npm run deploy:cloudflare
 
-      - name: Synchronize custom-domain runtime secrets
+      - name: Synchronize available custom-domain runtime secrets
         shell: bash
         run: |
           set -euo pipefail
-          put_secret() {
+          put_secret_if_present() {
             local name="$1"
             local value="$2"
+            if [[ -z "${value}" ]]; then
+              echo "::warning::Runtime binding ${name} dilewati karena GitHub Environment belum menyediakannya."
+              return 0
+            fi
             printf '%s' "${value}" | npx wrangler secret put "${name}" --config wrangler.production.jsonc >/dev/null
             echo "Runtime binding ${name} tersinkronisasi."
           }
-          put_secret CLOUDFLARE_API_TOKEN "${CLOUDFLARE_API_TOKEN}"
-          put_secret CLOUDFLARE_ZONE_ID "${CLOUDFLARE_ZONE_ID}"
-          put_secret CLOUDFLARE_CUSTOM_HOSTNAME_TARGET "${CLOUDFLARE_CUSTOM_HOSTNAME_TARGET}"
-          put_secret SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
+          put_secret_if_present CLOUDFLARE_API_TOKEN "${CLOUDFLARE_API_TOKEN}"
+          put_secret_if_present CLOUDFLARE_ZONE_ID "${CLOUDFLARE_ZONE_ID}"
+          put_secret_if_present CLOUDFLARE_CUSTOM_HOSTNAME_TARGET "${CLOUDFLARE_CUSTOM_HOSTNAME_TARGET}"
+          put_secret_if_present SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
 
       # Compatibility markers retained for the source validator while the live
-      # contract is now v37/v38/v39:
+      # contract is now v37/v38/v39/v40:
       # studio-v14-authority.css
       # nara-command-center-bridge.js
       # ngeblogging-app-v14-20260724
       # 2026.07.24-studio-v14
-      - name: Verify v39 Studio, domains, Nara, analytics, PWA, and tenant release
+      - name: Verify v39 Studio, domain readiness, Nara, analytics, PWA, and tenant release
         shell: bash
         run: |
           set -euo pipefail
@@ -125,6 +135,7 @@ jobs:
           const tenant = fs.readFileSync('/tmp/tenant.html', 'utf8');
           const stamp = Date.now();
           const errors = [];
+          const expectDomains = process.env.DOMAIN_RUNTIME_EXPECTED === 'true';
 
           async function read(url, options = {}) {
             const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}release=${stamp}`, {
@@ -174,8 +185,13 @@ jobs:
           if (health.naraProviders?.vision !== true) errors.push('health.vision');
           if (health.imageGeneration !== true) errors.push('health.imageGeneration');
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
-          if (health.customDomains !== true) errors.push('health.customDomains');
-          for (const [name, ready] of Object.entries(health.customDomainBindings || {})) if (ready !== true) errors.push(`health.domainBinding:${name}`);
+          if (typeof health.customDomains !== 'boolean') errors.push('health.customDomains.type');
+          const domainBindings = health.customDomainBindings || {};
+          for (const name of ['apiToken', 'zoneId', 'cnameTarget', 'serviceRole']) {
+            if (typeof domainBindings[name] !== 'boolean') errors.push(`health.domainBinding.type:${name}`);
+            if (expectDomains && domainBindings[name] !== true) errors.push(`health.domainBinding:${name}`);
+          }
+          if (expectDomains && health.customDomains !== true) errors.push('health.customDomains');
           if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
           if (health.analyticsCollector !== true) errors.push('health.analyticsCollector');
           if (health.memberLimitPerSite !== 100) errors.push('health.memberLimitPerSite');
@@ -209,10 +225,10 @@ jobs:
             process.exit(1);
           }
 
-          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domains: health.customDomainBindings, tenant: 'ok', release: 'v37-v40' }, null, 2));
+          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domainsExpected: expectDomains, domains: domainBindings, customDomains: health.customDomains, tenant: 'ok', release: 'v37-v40' }, null, 2));
           NODE
               then
-                echo "Cloudflare v39/v40, custom domain, analytics, Nara, PWA, dan tenant publik terverifikasi."
+                echo "Cloudflare v39/v40, kesiapan custom domain, analytics, Nara, PWA, dan tenant publik terverifikasi."
                 exit 0
               fi
             fi
@@ -234,7 +250,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'v39 Studio, custom domains, Nara, analytics, PWA, and tenant checks passed.',
+              description: 'v39 Studio, domain readiness, Nara, analytics, PWA, and tenant checks passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -249,6 +265,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, deploy, runtime binding, or current live verification failed. Open the workflow log.',
+              description: 'Build, deploy, runtime readiness, or current live verification failed. Open the workflow log.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
