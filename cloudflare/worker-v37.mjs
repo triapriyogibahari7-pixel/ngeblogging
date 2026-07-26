@@ -3,7 +3,7 @@ import { analyticsReady, handleAnalyticsRequest } from "../server/analytics-hand
 import { handleMemberInviteRequest, memberInvitesReady } from "../server/member-invite-handler.mjs";
 import { resolveSeoSite } from "../server/seo-handler.mjs";
 
-const RELEASE = "2026.07.25-production-audit-v37";
+const RELEASE = "2026.07.26-responsive-capacity-v40";
 const TRACKER_MARKER = "data-ngeblogging-analytics-v37";
 
 function trackerScript() {
@@ -34,6 +34,12 @@ function enrichHealth(response, env) {
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
+    const customDomainBindings = {
+      apiToken:Boolean(env.CLOUDFLARE_API_TOKEN),
+      zoneId:Boolean(env.CLOUDFLARE_ZONE_ID),
+      cnameTarget:Boolean(env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET),
+      serviceRole:Boolean(env.SUPABASE_SERVICE_ROLE_KEY),
+    };
     return new Response(JSON.stringify({
       ...payload,
       release: RELEASE,
@@ -41,7 +47,10 @@ function enrichHealth(response, env) {
       analyticsCollector: analyticsReady(env),
       memberInvites: memberInvitesReady(env),
       memberLimitPerSite: 100,
-      siteLimits: { free: 12, maximum: 12 },
+      siteCapacity: { mode:"dynamic", defaultLimit:1000, perAccountOverrides:true },
+      siteLimits: { dynamic:true },
+      customDomainBindings,
+      customDomains:Object.values(customDomainBindings).every(Boolean),
       independentSiteWorkspaces: true,
     }), { status: response.status, statusText: response.statusText, headers });
   }).catch(() => response);
