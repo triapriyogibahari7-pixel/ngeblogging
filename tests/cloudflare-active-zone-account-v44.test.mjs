@@ -4,16 +4,19 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("active-zone config resolves and exports the account that owns ngeblogging.com", async () => {
+test("active-zone config resolves the account visible to the authenticated Cloudflare token", async () => {
   const script = await read("scripts/build-active-zone-wrangler.mjs");
 
-  assert.match(script, /fetch\(`https:\/\/api\.cloudflare\.com\/client\/v4\/zones\/\$\{zoneId\}`/);
-  assert.match(script, /zone\?\.account\?\.id/);
+  assert.match(script, /cloudflareRequest\("\/accounts\?per_page=50"\)/);
+  assert.match(script, /resolveAuthenticatedAccount/);
+  assert.match(script, /accounts\.length === 1/);
+  assert.match(script, /accountContainsWorker/);
+  assert.match(script, /workers\/scripts/);
   assert.match(script, /zone\.name !== "ngeblogging\.com"/);
   assert.match(script, /config\.account_id = accountId/);
   assert.match(script, /CLOUDFLARE_ACCOUNT_ID=\$\{accountId\}/);
   assert.match(script, /RESOLVED_CLOUDFLARE_ACCOUNT_ID=\$\{accountId\}/);
-  assert.match(script, /berbeda dari pemilik zone aktif/);
+  assert.match(script, /account yang dikenali token/);
 });
 
 test("workflow builds the account-locked config before dry-run and deployment", async () => {
