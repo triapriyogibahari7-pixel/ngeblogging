@@ -16,10 +16,10 @@ test("domain storage uses authenticated user JWT and Supabase RLS", async () => 
   assert.doesNotMatch(handler, /SUPABASE_SERVICE_ROLE_KEY|adminHeaders|adminJson/);
 });
 
-test("production routes and post-deploy activation are preserved", async () => {
+test("production routes and authoritative post-deploy activation are preserved", async () => {
   const [wrangler, workflow, index, studio] = await Promise.all([read("wrangler.production.jsonc"), read(".github/workflows/custom-domains-v41.yml"), read("index.html"), read("src/studio-domain-v41.js")]);
   for (const marker of ['"main": "./cloudflare/worker-v41.mjs"', '"CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "ngeblogging.com"', '"CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls"', '"pattern": "ngeblogging.com/*"', '"pattern": "*.ngeblogging.com/*"']) assert.ok(wrangler.includes(marker), marker);
-  for (const marker of ["zones?name=ngeblogging.com&status=active", "/custom_hostnames?per_page=1", "wrangler secret bulk", "RESOLVED_ZONE_ID", "customDomainServiceRoleRequired", "Ngeblogging custom domains"]) assert.ok(workflow.includes(marker), marker);
+  for (const marker of ["zones?name=ngeblogging.com&status=active", "/custom_hostnames?per_page=5", "wrangler secret bulk", "wrangler.production.active-zone.jsonc", "build-active-zone-wrangler.mjs", "RESOLVED_ZONE_ID", "customDomainServiceRoleRequired", "Ngeblogging custom domains"]) assert.ok(workflow.includes(marker), marker);
   assert.ok(index.includes('/src/studio-layout-device-v40.js'));
   assert.ok(index.includes('/src/studio-domain-v41.js'));
   assert.ok(studio.includes("Penyimpanan JWT + RLS"));
