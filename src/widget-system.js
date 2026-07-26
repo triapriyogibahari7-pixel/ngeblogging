@@ -134,7 +134,7 @@ export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar", sett
     audio: `${heading}<audio controls></audio>`,
     "map-location": `${heading}<address>Jakarta, Indonesia · Buka peta</address>`,
     "event-calendar": `${heading}<time>23 Juli 2026 · 19.00 WIB</time><p>Acara komunitas Ngeblogging.</p>`,
-    "custom-html": `<iframe class="ng-custom-widget-frame" title="${escapeHtml(title || widget.name)}" loading="lazy" sandbox="allow-scripts" referrerpolicy="no-referrer" srcdoc="${escapeHtml(customWidgetDocument(settings))}"></iframe>`,
+    "custom-html": `<iframe class="ng-custom-widget-frame" title="${escapeHtml(title || widget.name)}" loading="lazy" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" srcdoc="${escapeHtml(customWidgetDocument(settings))}"></iframe>`,
   };
   return `<section class="ng-widget ng-widget-${escapeHtml(widgetId)}" data-widget-id="${escapeHtml(widgetId)}" data-layout-area="${escapeHtml(area)}">${samples[widgetId] || `${heading}<p>${escapeHtml(widget.description)}</p>`}</section>`;
 }
