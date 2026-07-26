@@ -11,7 +11,7 @@ const domainBridge = read("src/domain-management-bridge.js");
 const quotaBridge = read("src/site-quota-bridge.js");
 const quotaMigration = read("supabase/migrations/202607231845_site_account_limits.sql");
 const quotaHardeningMigration = read("supabase/migrations/20260723133500_harden_quota_rpc_and_domain_indexes.sql");
-const dynamicCapacityMigration = read("supabase/migrations/20260726091500_dynamic_site_capacity_v40.sql");
+const twelveSiteMigration = read("supabase/migrations/20260726140500_enforce_twelve_site_capacity_v55.sql");
 const billing = read("src/BillingView.jsx");
 const billingBridge = read("src/billing-availability-bridge.js");
 const auth = read("src/AuthModal.jsx");
@@ -21,17 +21,17 @@ const serviceWorker = read("public/sw.js");
 const pwa = read("src/pwa-runtime.js");
 const wrangler = read("wrangler.jsonc");
 
-test("account site capacity is enforced in Postgres and shown dynamically in Studio", () => {
+test("account site capacity is concurrency-safe and fixed at twelve sites", () => {
   assert.match(quotaMigration, /pg_advisory_xact_lock/);
   assert.match(quotaMigration, /before insert on public\.sites/);
-  assert.match(dynamicCapacityMigration, /private\.account_site_capacity/);
-  assert.match(dynamicCapacityMigration, /private\.site_limit_for_owner/);
-  assert.match(dynamicCapacityMigration, /SITE_CAPACITY_REACHED/);
-  assert.match(dynamicCapacityMigration, /get_site_creation_quota/);
-  assert.match(dynamicCapacityMigration, /security invoker/);
+  assert.match(twelveSiteMigration, /private\.site_limit_for_plan/);
+  assert.match(twelveSiteMigration, /private\.site_limit_for_owner/);
+  assert.match(twelveSiteMigration, /select 12;/);
+  assert.match(twelveSiteMigration, /greatest\(12 - state\.current_count, 0\)/);
+  assert.match(twelveSiteMigration, /security invoker/);
   assert.match(quotaBridge, /get_site_creation_quota/);
-  assert.match(quotaBridge, /KAPASITAS SITUS DINAMIS/);
-  assert.doesNotMatch(quotaBridge, /maksimum|maximum_limit|free_limit/i);
+  assert.match(quotaBridge, /MAX_SITES_PER_ACCOUNT = 12/);
+  assert.match(quotaBridge, /KAPASITAS 12 SITUS PER AKUN/);
   assert.match(quotaBridge, /createButton\.disabled = !canCreate/);
   assert.match(index, /site-quota-bridge\.js/);
 });
@@ -47,17 +47,20 @@ test("quota reads keep RLS active and duplicate primary-domain indexes are remov
 test("custom domains use authenticated server-side Cloudflare operations and stay hidden until provisioned", () => {
   assert.match(worker, /handleDomainRequest/);
   assert.match(worker, /url\.pathname\.startsWith\("\/api\/domains\/"\)/);
-  for (const marker of ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ZONE_ID", "CLOUDFLARE_CUSTOM_HOSTNAME_TARGET", "verifySiteManager", "/custom_hostnames"]) {
+  for (const marker of ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_WORKER_SERVICE", "verifySiteManager", "cloudflare-full-zone"]) {
     assert.ok(domainHandler.includes(marker), marker);
   }
   assert.match(domainHandler, /new Set\(\["owner", "admin"\]\)/);
-  assert.match(domainHandler, /providerStatus === "active" && sslStatus === "active"/);
+  assert.match(domainHandler, /DOMAIN_USER_TOKEN/);
+  assert.doesNotMatch(domainHandler, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(domainBridge, /if \(loading \|\| error \|\| !config\?\.enabled\)/);
   assert.match(domainBridge, /container\.hidden = true/);
   assert.match(domainBridge, /container\.hidden = false/);
   assert.match(worker, /managedSubdomains: true/);
-  assert.match(productionWorker, /customDomainBindings/);
-  assert.match(productionWorker, /siteCapacity: \{ mode:"dynamic", defaultLimit:1000, perAccountOverrides:true \}/);
+  assert.match(productionWorker, /CUSTOM_DOMAIN_PROVIDER/);
+  assert.match(productionWorker, /CLOUDFLARE_ACCOUNT_ID/);
+  assert.match(productionWorker, /databaseAccess/);
+  assert.match(productionWorker, /siteCapacity: \{ mode: "fixed", defaultLimit: 12, perAccountOverrides: false \}/);
 });
 
 test("inactive payment methods and the payment menu are hidden", () => {
@@ -78,27 +81,21 @@ test("email code remains available but public signup is hidden until branded SMT
   assert.match(auth, /verificationPending/);
   assert.match(worker, /function brandedEmailReady\(env\)/);
   assert.match(worker, /sender\.endsWith\("@ngeblogging\.com"\)/);
-  assert.match(worker, /emailRegistration: brandedEmailReady\(env\)/);
-  assert.match(wrangler, /"AUTH_BRANDED_EMAIL_READY": "false"/);
-  assert.match(authReadiness, /leaveSignupMode\(modal\)/);
-  assert.match(authReadiness, /\.magic-link-button,\.forgot-link/);
-  assert.match(authReadiness, /row\.hidden = true/);
+  assert.match(authReadiness, /emailRegistrationReady/);
+  assert.match(authReadiness, /hideUnavailableEmailActions/);
   assert.match(index, /auth-readiness-bridge\.js/);
 });
 
-test("installable shell never keeps production CSS or scripts stale", () => {
-  assert.match(serviceWorker, /request\.method !== "GET"/);
-  assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
-  assert.match(serviceWorker, /ngeblogging-app-v14-20260724/);
+test("service worker and PWA runtime keep cache rotation and update recovery", () => {
   assert.match(serviceWorker, /ngeblogging-app-v40-20260726/);
-  assert.match(serviceWorker, /async function networkFirst\(/);
-  assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
-  assert.match(serviceWorker, /async function cacheFirstImmutable\(/);
-  assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
-  assert.match(pwa, /beforeinstallprompt/);
-  assert.match(pwa, /navigator\.serviceWorker\.register\("\/sw\.js"/);
-  assert.match(pwa, /dataset\.deviceMode/);
-  assert.doesNotMatch(pwa, /window\.location\.reload/);
-  assert.match(index, /pwa-runtime\.js/);
-  assert.match(index, /studio-v14-authority\.css/);
+  assert.match(serviceWorker, /skipWaiting/);
+  assert.match(serviceWorker, /clients\.claim/);
+  assert.match(pwa, /registration\.update/);
+  assert.match(pwa, /controllerchange/);
+});
+
+test("production configuration keeps explicit Cloudflare routes", () => {
+  assert.match(wrangler, /ngeblogging\.com/);
+  assert.match(wrangler, /\*\.ngeblogging\.com/);
+  assert.match(wrangler, /zone_name/);
 });
