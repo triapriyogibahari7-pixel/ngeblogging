@@ -54,7 +54,9 @@ function enrichHealth(response, env) {
       memberLimitPerSite: 100,
       customDomains: domain.ready,
       customDomainBindings: domain.bindings,
+      siteCapacity: { mode:"dynamic", defaultLimit:1000, perAccountOverrides:true },
       siteLimits: { free: 12, maximum: 12 },
+      siteLimitsDeprecated: true,
       independentSiteWorkspaces: true,
     }), { status: response.status, statusText: response.statusText, headers });
   }).catch(() => response);
