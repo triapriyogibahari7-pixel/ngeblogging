@@ -3,17 +3,51 @@ import { analyticsReady, handleAnalyticsRequest } from "../server/analytics-hand
 import { handleMemberInviteRequest, memberInvitesReady } from "../server/member-invite-handler.mjs";
 import { resolveSeoSite } from "../server/seo-handler.mjs";
 
-const RELEASE = "2026.07.25-production-audit-v37";
+const RELEASE = "2026.07.26-full-zone-v55";
 const TRACKER_MARKER = "data-ngeblogging-analytics-v37";
 
 function customDomainBindings(env) {
+  const provider = String(env.CUSTOM_DOMAIN_PROVIDER || "").trim().toLowerCase();
+  const apiToken = Boolean(String(env.CLOUDFLARE_API_TOKEN || "").trim());
+  const databaseAccess = Boolean(
+    String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
+    && String(
+      env.SUPABASE_PUBLISHABLE_KEY
+      || env.VITE_SUPABASE_PUBLISHABLE_KEY
+      || env.VITE_SUPABASE_ANON_KEY
+      || "",
+    ).trim(),
+  );
+
+  if (provider === "cloudflare-full-zone") {
+    const bindings = {
+      provider: true,
+      apiToken,
+      accountId: /^[0-9a-f]{32}$/i.test(String(env.CLOUDFLARE_ACCOUNT_ID || "").trim()),
+      workerService: Boolean(String(env.CLOUDFLARE_WORKER_SERVICE || "ngeblogging").trim()),
+      databaseAccess,
+    };
+
+    return {
+      provider,
+      bindings,
+      ready: Object.values(bindings).every(Boolean),
+    };
+  }
+
   const bindings = {
-    apiToken: Boolean(String(env.CLOUDFLARE_API_TOKEN || "").trim()),
+    provider: provider === "cloudflare-custom-hostnames" || provider === "netlify",
+    apiToken,
     zoneId: Boolean(String(env.CLOUDFLARE_ZONE_ID || "").trim()),
     cnameTarget: Boolean(String(env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET || "").trim()),
-    serviceRole: Boolean(String(env.SUPABASE_SERVICE_ROLE_KEY || "").trim()),
+    databaseAccess,
   };
-  return { bindings, ready: Object.values(bindings).every(Boolean) };
+
+  return {
+    provider: provider || "legacy",
+    bindings,
+    ready: Object.values(bindings).every(Boolean),
+  };
 }
 
 function trackerScript() {
@@ -53,10 +87,11 @@ function enrichHealth(response, env) {
       memberInvites: memberInvitesReady(env),
       memberLimitPerSite: 100,
       customDomains: domain.ready,
+      customDomainProvider: domain.provider,
       customDomainBindings: domain.bindings,
-      siteCapacity: { mode:"dynamic", defaultLimit:1000, perAccountOverrides:true },
+      siteCapacity: { mode: "fixed", defaultLimit: 12, perAccountOverrides: false },
       siteLimits: { free: 12, maximum: 12 },
-      siteLimitsDeprecated: true,
+      siteLimitsDeprecated: false,
       independentSiteWorkspaces: true,
     }), { status: response.status, statusText: response.statusText, headers });
   }).catch(() => response);
