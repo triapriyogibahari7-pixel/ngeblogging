@@ -20,10 +20,11 @@ test("workflow builds the account-locked config before dry-run and deployment", 
   const workflow = await read(".github/workflows/cloudflare.yml");
   const build = workflow.indexOf("Build active-zone Wrangler configuration");
   const dryRun = workflow.indexOf("Validate Cloudflare production bundle");
-  const deploy = workflow.indexOf("Deploy apex, wildcard tenants, assets, Nara, and API");
+  const deploy = workflow.indexOf("Deploy apex, wildcard tenants, full-zone domains, assets, Nara, and API");
 
   assert.ok(build >= 0);
   assert.ok(dryRun > build);
   assert.ok(deploy > dryRun);
   assert.match(workflow, /wrangler\.production\.active-zone\.jsonc/);
+  assert.match(workflow, /CUSTOM_DOMAIN_PROVIDER: cloudflare-full-zone/);
 });
