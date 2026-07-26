@@ -1,0 +1,193 @@
+/* Ngeblogging Studio v41 — final responsive layout authority.
+   Scoped to the visual builder and generated public-site layout only. */
+
+html[data-studio-responsive-v41] .lb39-layer,
+html[data-studio-responsive-v41] .lb39-layer * {
+  box-sizing: border-box;
+}
+
+html[data-studio-responsive-v41] .lb39-layer {
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-responsive-v41] .lb39-dialog {
+  width: min(1360px, 100%) !important;
+  max-width: 100% !important;
+  height: min(960px, 100%) !important;
+  max-height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-responsive-v41] .lb39-head,
+html[data-studio-responsive-v41] .lb39-body,
+html[data-studio-responsive-v41] .lb39-foot,
+html[data-studio-responsive-v41] .lb39-canvas-wrap,
+html[data-studio-responsive-v41] .lb39-library,
+html[data-studio-responsive-v41] .lb39-canvas-host,
+html[data-studio-responsive-v41] .lb39-canvas {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-responsive-v41] .lb39-body {
+  overflow: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable both-edges;
+}
+
+html[data-studio-responsive-v41] .lb41-device-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #d9e3ef;
+  border-radius: 12px;
+  background: #f4f7fb;
+}
+
+html[data-studio-responsive-v41] .lb41-device-switch button {
+  min-width: 76px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 9px;
+  padding: 0 10px;
+  background: transparent;
+  color: #5b6e85;
+  font: 800 10px/1 "DM Sans", sans-serif;
+  cursor: pointer;
+}
+
+html[data-studio-responsive-v41] .lb41-device-switch button[aria-pressed="true"] {
+  background: #fff;
+  color: #245fbe;
+  box-shadow: 0 3px 12px rgba(24, 58, 104, .12);
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="desktop"] .lb39-canvas {
+  max-width: 980px;
+  margin-inline: auto;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="desktop"] .lb39-content-row {
+  grid-template-areas: "left center right";
+  grid-template-columns: minmax(132px, .56fr) minmax(260px, 1.7fr) minmax(132px, .56fr) !important;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="tablet"] .lb39-canvas {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="tablet"] .lb39-content-row {
+  grid-template-areas:
+    "center center"
+    "left right";
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="tablet"] .lb39-post-preview {
+  min-height: 190px;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-canvas {
+  width: min(420px, 100%);
+  margin-inline: auto;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-pair,
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-footer-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-content-row {
+  grid-template-areas:
+    "center"
+    "left"
+    "right";
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html[data-studio-responsive-v41] .lb39-left-stack { grid-area: left; }
+html[data-studio-responsive-v41] .lb39-post-preview { grid-area: center; }
+html[data-studio-responsive-v41] .lb39-right-stack { grid-area: right; }
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-left-stack,
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-right-stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html[data-studio-responsive-v41] .lb39-layer[data-preview-device="mobile"] .lb39-post-preview {
+  min-height: 160px;
+}
+
+html[data-studio-responsive-v41] .lb39-zone,
+html[data-studio-responsive-v41] .lb39-widget,
+html[data-studio-responsive-v41] .lb39-post-preview,
+html[data-studio-responsive-v41] .lb39-copyright {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-responsive-v41] .lb39-zone b,
+html[data-studio-responsive-v41] .lb39-zone small,
+html[data-studio-responsive-v41] .lb39-widget b,
+html[data-studio-responsive-v41] .lb39-widget small,
+html[data-studio-responsive-v41] .lb39-head h2,
+html[data-studio-responsive-v41] .lb39-head p {
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 980px) {
+  html[data-studio-responsive-v41] .lb39-layer { padding: 0 !important; }
+  html[data-studio-responsive-v41] .lb39-dialog {
+    width: 100% !important;
+    height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+  html[data-studio-responsive-v41] .lb39-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  html[data-studio-responsive-v41] .lb39-head {
+    grid-template-columns: minmax(0, 1fr) 42px !important;
+    padding: 12px !important;
+  }
+  html[data-studio-responsive-v41] .lb39-head h2 { font-size: clamp(24px, 8vw, 34px) !important; }
+  html[data-studio-responsive-v41] .lb39-body { padding: 8px !important; }
+  html[data-studio-responsive-v41] .lb39-canvas-wrap,
+  html[data-studio-responsive-v41] .lb39-library { padding: 9px !important; }
+  html[data-studio-responsive-v41] .lb39-section-title {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html[data-studio-responsive-v41] .lb41-device-switch {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  html[data-studio-responsive-v41] .lb41-device-switch button {
+    min-width: 0;
+    padding-inline: 5px;
+  }
+  html[data-studio-responsive-v41] .lb39-foot {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  html[data-studio-responsive-v41] .lb39-actions {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

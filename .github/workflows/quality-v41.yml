@@ -1,0 +1,44 @@
+name: Studio v41 quality
+
+on:
+  push:
+    branches: [fix/studio-responsive-operations-v41]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-v41-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run complete source tests
+        run: npm test
+
+      - name: Validate production contract
+        run: node scripts/validate-production-v41.mjs
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Validate Cloudflare production bundle
+        run: npm run cloudflare:dry-run

@@ -1,0 +1,132 @@
+name: Studio v41 live verification
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-studio-v41-live
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: cloudflare-production
+    env:
+      SITE_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
+      TENANT_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
+      EXPECT_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+      EXPECT_ZONE_ID: ${{ (secrets.CLOUDFLARE_ZONE_ID != '') || (vars.CLOUDFLARE_ZONE_ID != '') }}
+      EXPECT_CNAME_TARGET: ${{ (secrets.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET != '') || (vars.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET != '') }}
+      EXPECT_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
+    steps:
+      - name: Wait for v41 and verify the live contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            echo "Studio v41 live verification ${attempt}/30"
+            if node --input-type=module <<'NODE'
+          const site = process.env.SITE_URL.replace(/\/$/, '');
+          const tenant = process.env.TENANT_URL.replace(/\/$/, '');
+          const release = `${Date.now()}-${Math.random()}`;
+          const errors = [];
+
+          async function read(url, options = {}) {
+            try {
+              const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}release=${release}`, {
+                redirect: 'follow',
+                ...options,
+                headers: { 'cache-control':'no-cache', ...(options.headers || {}) },
+              });
+              return { status:response.status, text:await response.text() };
+            } catch (error) {
+              return { status:0, text:String(error) };
+            }
+          }
+
+          const [healthResult, indexResult, swResult, tenantResult] = await Promise.all([
+            read(`${site}/api/health`),
+            read(`${site}/`),
+            read(`${site}/sw.js`),
+            read(`${tenant}/`),
+          ]);
+          if (healthResult.status !== 200) errors.push(`health:${healthResult.status}`);
+          if (indexResult.status !== 200) errors.push(`index:${indexResult.status}`);
+          if (swResult.status !== 200) errors.push(`sw:${swResult.status}`);
+          if (tenantResult.status !== 200) errors.push(`tenant:${tenantResult.status}`);
+
+          let health = {};
+          try { health = JSON.parse(healthResult.text || '{}'); }
+          catch { errors.push('health-json'); }
+
+          const assetQueue = [...indexResult.text.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)]
+            .map((match) => new URL(match[1], site).href);
+          const visited = new Set();
+          const assets = [];
+          while (assetQueue.length && visited.size < 120) {
+            const url = assetQueue.shift();
+            if (!url || visited.has(url)) continue;
+            visited.add(url);
+            const result = await read(url);
+            assets.push({ url, ...result });
+            if (result.status !== 200 || !/\.js(?:\?|$)/i.test(url)) continue;
+            for (const match of result.text.matchAll(/["']((?:\/assets\/|\.\/)[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)) {
+              const child = new URL(match[1], url).href;
+              if (child.startsWith(`${site}/assets/`) && !visited.has(child)) assetQueue.push(child);
+            }
+          }
+          const combined = assets.map((asset) => asset.text).join('\n');
+          const required = {
+            layoutRelease: combined.includes('studio-responsive-v41-20260726'),
+            operationsRelease: combined.includes('studio-operations-v41-20260726'),
+            devicePreview: combined.includes('data-lb40-mode') && combined.includes('Ponsel / aplikasi'),
+            analytics: combined.includes('get_site_analytics_dashboard') && combined.includes('DATA PRODUKSI NYATA'),
+            members: combined.includes('get_site_member_quota') && combined.includes('/api/member-invitations/create'),
+            domains: combined.includes('customDomainBindings') && combined.includes('/api/domains/register'),
+            activeSite: combined.includes('SITUS YANG SEDANG DIKELOLA') && combined.includes('Beralih situs') && combined.includes('Tambah situs'),
+          };
+          for (const [name, ready] of Object.entries(required)) if (!ready) errors.push(`bundle:${name}`);
+          for (const asset of assets) if (asset.status !== 200) errors.push(`asset:${asset.status}:${asset.url}`);
+          if (!swResult.text.includes('ngeblogging-app-v41-20260726')) errors.push('service-worker-v41');
+          if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push('tenant-404');
+
+          const bindings = health.customDomainBindings || {};
+          for (const key of ['apiToken','zoneId','cnameTarget','serviceRole']) {
+            if (typeof bindings[key] !== 'boolean') errors.push(`domain-binding-type:${key}`);
+          }
+          const domainExpected = [process.env.EXPECT_API_TOKEN, process.env.EXPECT_ZONE_ID, process.env.EXPECT_CNAME_TARGET, process.env.EXPECT_SERVICE_ROLE]
+            .every((value) => value === 'true');
+          if (domainExpected) {
+            if (health.customDomains !== true) errors.push('custom-domains-not-ready');
+            for (const key of ['apiToken','zoneId','cnameTarget','serviceRole']) if (bindings[key] !== true) errors.push(`domain-binding:${key}`);
+          }
+
+          const analyticsProbe = await read(`${tenant}/api/analytics/collect`, {
+            method:'POST',
+            headers:{ 'content-type':'application/json', origin:tenant, 'user-agent':'NgebloggingProductionAudit/41' },
+            body:JSON.stringify({ path:'/__production-audit-v41', visitorId:`audit-${release}`, sessionId:`audit-${release}`, language:'id-ID', screenWidth:390 }),
+          });
+          let analyticsPayload = {};
+          try { analyticsPayload = JSON.parse(analyticsProbe.text || '{}'); } catch {}
+          if (analyticsProbe.status !== 202 || analyticsPayload.recorded !== true) errors.push(`analytics-collector:${analyticsProbe.status}`);
+
+          if (errors.length) {
+            console.error(errors.join(', '));
+            process.exit(1);
+          }
+          console.log(JSON.stringify({ release:'v41', assets:assets.length, required, domainExpected, customDomains:health.customDomains, bindings, tenant:'ok' }, null, 2));
+          NODE
+            then
+              echo "Studio v41, tata letak perangkat, analitik, anggota, domain, PWA, dan tenant terverifikasi di produksi."
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "Studio v41 belum lolos verifikasi produksi setelah 30 percobaan."
+          exit 1
