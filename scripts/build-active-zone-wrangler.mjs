@@ -6,32 +6,41 @@ const zoneId = String(
   process.env.RESOLVED_CLOUDFLARE_ZONE_ID || process.env.CLOUDFLARE_ZONE_ID || "",
 ).trim();
 const apiToken = String(process.env.CLOUDFLARE_API_TOKEN || "").trim();
+const fixtureMode = process.env.NODE_ENV === "test" && process.env.NGEBLOGGING_SKIP_CLOUDFLARE_ZONE_FETCH === "true";
+let accountId = String(process.env.RESOLVED_CLOUDFLARE_ACCOUNT_ID || "").trim();
 
 if (!/^[a-f0-9]{32}$/i.test(zoneId)) {
   throw new Error("RESOLVED_CLOUDFLARE_ZONE_ID wajib berupa Zone ID Cloudflare 32 karakter.");
 }
-if (!apiToken) {
-  throw new Error("CLOUDFLARE_API_TOKEN wajib tersedia untuk mengunci account aktif dari zone ngeblogging.com.");
-}
 
-const response = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}`, {
-  headers: {
-    authorization: `Bearer ${apiToken}`,
-    accept: "application/json",
-  },
-});
-const payload = await response.json().catch(() => ({}));
-const zone = payload?.result || {};
-const accountId = String(zone?.account?.id || "").trim();
+if (fixtureMode) {
+  if (!/^[a-f0-9]{32}$/i.test(accountId)) {
+    throw new Error("Fixture RESOLVED_CLOUDFLARE_ACCOUNT_ID wajib berupa Account ID 32 karakter.");
+  }
+} else {
+  if (!apiToken) {
+    throw new Error("CLOUDFLARE_API_TOKEN wajib tersedia untuk mengunci account aktif dari zone ngeblogging.com.");
+  }
 
-if (!response.ok || payload?.success !== true) {
-  throw new Error(`Cloudflare Zone API gagal saat mengunci account deployment (${response.status}).`);
-}
-if (zone.id !== zoneId || zone.name !== "ngeblogging.com" || zone.status !== "active") {
-  throw new Error("Zone yang ditemukan bukan zone aktif ngeblogging.com.");
-}
-if (!/^[a-f0-9]{32}$/i.test(accountId)) {
-  throw new Error("Account ID pemilik zone aktif ngeblogging.com tidak valid.");
+  const response = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}`, {
+    headers: {
+      authorization: `Bearer ${apiToken}`,
+      accept: "application/json",
+    },
+  });
+  const payload = await response.json().catch(() => ({}));
+  const zone = payload?.result || {};
+  accountId = String(zone?.account?.id || "").trim();
+
+  if (!response.ok || payload?.success !== true) {
+    throw new Error(`Cloudflare Zone API gagal saat mengunci account deployment (${response.status}).`);
+  }
+  if (zone.id !== zoneId || zone.name !== "ngeblogging.com" || zone.status !== "active") {
+    throw new Error("Zone yang ditemukan bukan zone aktif ngeblogging.com.");
+  }
+  if (!/^[a-f0-9]{32}$/i.test(accountId)) {
+    throw new Error("Account ID pemilik zone aktif ngeblogging.com tidak valid.");
+  }
 }
 
 const configuredAccountId = String(process.env.CLOUDFLARE_ACCOUNT_ID || "").trim();
