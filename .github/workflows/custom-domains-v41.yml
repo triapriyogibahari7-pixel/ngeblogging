@@ -1,0 +1,183 @@
+name: Ngeblogging custom domains v41
+
+on:
+  workflow_run:
+    workflows: ["Cloudflare Workers production"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-custom-domains-v41
+  cancel-in-progress: true
+
+jobs:
+  activate:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CONFIGURED_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
+      PUBLIC_SITE_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
+      PRODUCTION_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Checkout deployed revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.PRODUCTION_SHA }}
+
+      - name: Mark domain activation pending
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.PRODUCTION_SHA,
+              state: 'pending',
+              context: 'Ngeblogging custom domains',
+              description: 'Resolving Cloudflare zone, validating Custom Hostnames, and synchronizing Worker bindings.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate base credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
+          [[ "${PUBLIC_SITE_URL}" == https://* ]] || { echo "PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Resolve Ngeblogging zone and validate Custom Hostnames API
+        shell: bash
+        run: |
+          set -euo pipefail
+          zone_id="${CONFIGURED_ZONE_ID}"
+          if [[ -z "${zone_id}" ]]; then
+            curl -sS --fail-with-body \
+              -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "accept: application/json" \
+              "https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&status=active&per_page=5" \
+              -o /tmp/cloudflare-zones.json
+            zone_id="$(node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/cloudflare-zones.json', 'utf8'));
+          if (payload.success !== true) process.exit(2);
+          const exact = (payload.result || []).find((zone) => zone?.name === 'ngeblogging.com' && zone?.status === 'active');
+          if (!exact?.id) process.exit(3);
+          process.stdout.write(exact.id);
+          NODE
+            )" || { echo "API token tidak dapat menemukan zone aktif ngeblogging.com. Tambahkan izin Zone:Read atau isi CLOUDFLARE_ZONE_ID pada environment."; exit 1; }
+          fi
+          [[ "${zone_id}" =~ ^[a-f0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID hasil resolusi tidak valid"; exit 1; }
+          echo "::add-mask::${zone_id}"
+          echo "RESOLVED_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
+
+          curl -sS --fail-with-body \
+            -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "accept: application/json" \
+            "https://api.cloudflare.com/client/v4/zones/${zone_id}/custom_hostnames?per_page=1" \
+            -o /tmp/cloudflare-custom-hostnames.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/cloudflare-custom-hostnames.json', 'utf8'));
+          if (payload.success !== true) {
+            const codes = (payload.errors || []).map((error) => error?.code).filter(Boolean).join(',') || 'unknown';
+            console.error(`Cloudflare Custom Hostnames belum dapat dipakai oleh token/zone ini. Kode: ${codes}`);
+            process.exit(1);
+          }
+          console.log('Cloudflare Custom Hostnames API dapat diakses.');
+          NODE
+
+      - name: Synchronize domain secrets to Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          fs.writeFileSync('/tmp/ngeblogging-domain-secrets.json', JSON.stringify({
+            CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+            CLOUDFLARE_ZONE_ID: process.env.RESOLVED_ZONE_ID,
+          }));
+          NODE
+          npx wrangler secret bulk /tmp/ngeblogging-domain-secrets.json --config wrangler.production.jsonc
+          rm -f /tmp/ngeblogging-domain-secrets.json
+
+      - name: Verify live v41 domain readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            curl -sS -L --connect-timeout 10 --max-time 25 \
+              -H 'accept: application/json' -H 'cache-control: no-cache' \
+              "${PUBLIC_SITE_URL%/}/api/health?domain_release=v41-${attempt}-$(date +%s)" \
+              -o /tmp/domain-health.json || true
+            if node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          let health = {};
+          try { health = JSON.parse(fs.readFileSync('/tmp/domain-health.json', 'utf8')); } catch {}
+          const bindings = health.customDomainBindings || {};
+          const ready = health.customDomains === true
+            && health.domainRelease === '2026.07.26-custom-domains-v41'
+            && bindings.apiToken === true
+            && bindings.zoneId === true
+            && bindings.cnameTarget === true
+            && bindings.databaseAccess === true
+            && health.customDomainDatabaseMode === 'user-jwt-rls'
+            && health.customDomainServiceRoleRequired === false;
+          if (!ready) process.exit(1);
+          console.log(JSON.stringify({ customDomains: health.customDomains, bindings, databaseMode: health.customDomainDatabaseMode, target: health.customHostnameTarget }, null, 2));
+          NODE
+            then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Worker belum melaporkan custom domain v41 siap setelah sinkronisasi."
+          cat /tmp/domain-health.json 2>/dev/null || true
+          exit 1
+
+      - name: Mark domain activation successful
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.PRODUCTION_SHA,
+              state: 'success',
+              context: 'Ngeblogging custom domains',
+              description: 'Cloudflare Custom Hostnames, DNS verification, JWT/RLS storage, and Worker bindings are live.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Mark domain activation failed
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.PRODUCTION_SHA,
+              state: 'failure',
+              context: 'Ngeblogging custom domains',
+              description: 'Zone resolution, Custom Hostnames permission, secret synchronization, or live v41 readiness failed.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
