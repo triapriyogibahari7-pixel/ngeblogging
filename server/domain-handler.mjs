@@ -1,4 +1,9 @@
-import { fullZoneProviderReady } from "./cloudflare-full-zone-provider.mjs";
+import {
+  fullZoneProviderReady,
+  getOrCreateFullZone,
+  normalizeZoneName,
+  publicZoneState,
+} from "./cloudflare-full-zone-provider.mjs";
 
 const DOMAIN_SELECT = "id,site_id,hostname,status,verification_token,is_primary,verified_at,created_at,updated_at,provider,provider_hostname_id,provider_status,ssl_status,ownership_verification,ssl_validation,last_checked_at,error_message";
 const TERMINAL_FAILURES = new Set(["blocked", "deleted", "pending_deletion", "test_blocked", "test_failed"]);
@@ -264,19 +269,230 @@ async function listDomains(env, siteId) {
   return adminJson(env, `site_domains?site_id=eq.${encodeURIComponent(siteId)}&select=${DOMAIN_SELECT}&order=created_at.desc&limit=20`);
 }
 
+function fullZoneInstructions(zoneState) {
+  return {
+    dnsMode: "nameserver",
+    action: zoneState.active
+      ? "zone-active"
+      : "replace-nameservers",
+    zoneName: zoneState.name,
+    status: zoneState.status,
+    nameServers: zoneState.nameServers,
+    originalNameServers: zoneState.originalNameServers,
+    message: zoneState.active
+      ? "Zone Cloudflare sudah aktif."
+      : "Ganti nameserver domain dengan dua nameserver Cloudflare berikut.",
+  };
+}
+
+function fullZoneOwnership(zoneState) {
+  return {
+    method: "nameserver",
+    zone_name: zoneState.name,
+    required_name_servers: zoneState.nameServers,
+    original_name_servers: zoneState.originalNameServers,
+  };
+}
+
+async function registerFullZoneDomain(
+  body,
+  env,
+  user,
+  requestId,
+) {
+  const siteId = String(body.siteId || "");
+
+  await verifySiteManager(
+    env,
+    siteId,
+    user.id,
+  );
+
+  const hostname = normalizeZoneName(
+    body.hostname,
+  );
+
+  const existing = await adminJson(
+    env,
+    `site_domains?hostname=eq.${encodeURIComponent(hostname)}&select=${DOMAIN_SELECT}&limit=1`,
+  );
+
+  const existingDomain = existing?.[0] || null;
+
+  if (
+    existingDomain
+    && existingDomain.site_id !== siteId
+  ) {
+    return response(
+      409,
+      {
+        code: "DOMAIN_ALREADY_USED",
+        error: "Domain ini sudah terhubung ke situs lain.",
+      },
+      requestId,
+    );
+  }
+
+  if (
+    existingDomain?.provider_hostname_id
+    && existingDomain.provider
+    && existingDomain.provider !== "cloudflare-full-zone"
+  ) {
+    return response(
+      409,
+      {
+        code: "DOMAIN_PROVIDER_MISMATCH",
+        error: "Domain ini masih terhubung melalui provider lama.",
+      },
+      requestId,
+    );
+  }
+
+  const {
+    zone,
+    reused: zoneReused,
+  } = await getOrCreateFullZone(
+    env,
+    hostname,
+  );
+
+  const zoneState = publicZoneState(zone);
+
+  if (
+    !/^[0-9a-f]{32}$/i.test(zoneState.id)
+    || zoneState.name !== hostname
+  ) {
+    throw Object.assign(
+      new Error(
+        "Cloudflare tidak mengembalikan zone yang valid.",
+      ),
+      {
+        code: "INVALID_FULL_ZONE_RESPONSE",
+        status: 502,
+      },
+    );
+  }
+
+  if (
+    zoneState.nameServers.length < 2
+    && !zoneState.active
+  ) {
+    throw Object.assign(
+      new Error(
+        "Cloudflare belum memberikan nameserver untuk domain ini.",
+      ),
+      {
+        code: "FULL_ZONE_NAMESERVERS_UNAVAILABLE",
+        status: 502,
+      },
+    );
+  }
+
+  const now = new Date().toISOString();
+
+  const domainState = {
+    status: "verifying",
+    provider: "cloudflare-full-zone",
+    provider_hostname_id: zoneState.id,
+    provider_status: zoneState.status,
+    ssl_status: "pending",
+    ownership_verification:
+      fullZoneOwnership(zoneState),
+    ssl_validation: [],
+    last_checked_at: now,
+    error_message: null,
+    is_primary: false,
+    verified_at: null,
+    updated_at: now,
+  };
+
+  let row;
+
+  if (existingDomain) {
+    const rows = await adminJson(
+      env,
+      `site_domains?id=eq.${encodeURIComponent(existingDomain.id)}&select=${DOMAIN_SELECT}`,
+      {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: JSON.stringify(domainState),
+      },
+    );
+
+    row = rows?.[0] || {
+      ...existingDomain,
+      ...domainState,
+    };
+  } else {
+    const rows = await adminJson(
+      env,
+      `site_domains?select=${DOMAIN_SELECT}`,
+      {
+        method: "POST",
+        prefer: "return=representation",
+        body: JSON.stringify({
+          site_id: siteId,
+          hostname,
+          ...domainState,
+        }),
+      },
+    );
+
+    row = rows?.[0];
+  }
+
+  if (!row) {
+    throw Object.assign(
+      new Error(
+        "Data full-zone gagal disimpan.",
+      ),
+      {
+        code: "FULL_ZONE_STORAGE_FAILED",
+        status: 503,
+      },
+    );
+  }
+
+  return response(
+    existingDomain ? 200 : 201,
+    {
+      domain: row,
+      provider: "cloudflare-full-zone",
+      reused: Boolean(existingDomain) || zoneReused,
+      zone: zoneState,
+      instructions:
+        fullZoneInstructions(zoneState),
+      cnameTarget: null,
+    },
+    requestId,
+  );
+}
+
 async function registerDomain(request, env, user, requestId) {
   const ready = readiness(env);
-  if (!ready.enabled) return response(503, { code: "CUSTOM_DOMAIN_NOT_CONFIGURED", error: "Custom domain belum dibuka karena konfigurasi produksi belum lengkap.", ...ready }, requestId);
 
-  if (ready.provider === "cloudflare-full-zone") {
-    return response(503, {
-      code: "FULL_ZONE_PROVIDER_NOT_WIRED",
-      error: "Provider full-zone sudah dikenali, tetapi proses registrasinya belum dihubungkan.",
-      ...ready,
-    }, requestId);
+  if (!ready.enabled) {
+    return response(
+      503,
+      {
+        code: "CUSTOM_DOMAIN_NOT_CONFIGURED",
+        error: "Custom domain belum dibuka karena konfigurasi produksi belum lengkap.",
+        ...ready,
+      },
+      requestId,
+    );
   }
 
   const body = await request.json().catch(() => ({}));
+
+  if (ready.provider === "cloudflare-full-zone") {
+    return registerFullZoneDomain(
+      body,
+      env,
+      user,
+      requestId,
+    );
+  }
   const siteId = String(body.siteId || "");
   await verifySiteManager(env, siteId, user.id);
   const hostname = normalizeHostname(body.hostname);
@@ -324,6 +540,18 @@ async function refreshDomain(request, env, user, requestId) {
   const domain = rows?.[0];
   if (!domain) return response(404, { error: "Domain tidak ditemukan." }, requestId);
   await verifySiteManager(env, domain.site_id, user.id);
+
+  if (domain.provider === "cloudflare-full-zone") {
+    return response(
+      503,
+      {
+        code: "FULL_ZONE_REFRESH_NOT_WIRED",
+        error: "Pemeriksaan nameserver full-zone sedang disiapkan.",
+      },
+      requestId,
+    );
+  }
+
   if (!domain.provider_hostname_id) return response(409, { error: "Domain belum memiliki ID Cloudflare." }, requestId);
   const provider = await cloudflareRequest(env, `/custom_hostnames/${encodeURIComponent(domain.provider_hostname_id)}`, { method: "GET" });
   const saved = await saveProviderState(env, domain, provider);
@@ -337,6 +565,18 @@ async function removeDomain(request, env, user, requestId) {
   const domain = rows?.[0];
   if (!domain) return response(404, { error: "Domain tidak ditemukan." }, requestId);
   await verifySiteManager(env, domain.site_id, user.id);
+
+  if (domain.provider === "cloudflare-full-zone") {
+    return response(
+      503,
+      {
+        code: "FULL_ZONE_REMOVE_NOT_WIRED",
+        error: "Penghapusan full-zone sedang disiapkan agar DNS pelanggan tetap aman.",
+      },
+      requestId,
+    );
+  }
+
   if (domain.provider_hostname_id && readiness(env).enabled) await cloudflareRequest(env, `/custom_hostnames/${encodeURIComponent(domain.provider_hostname_id)}`, { method: "DELETE" });
   await adminJson(env, `site_domains?id=eq.${encodeURIComponent(domain.id)}`, { method: "DELETE", prefer: "return=minimal" });
   await adminJson(env, `sites?id=eq.${encodeURIComponent(domain.site_id)}&custom_domain=eq.${encodeURIComponent(domain.hostname)}`, { method: "PATCH", prefer: "return=minimal", body: JSON.stringify({ custom_domain: null, updated_at: new Date().toISOString() }) });
