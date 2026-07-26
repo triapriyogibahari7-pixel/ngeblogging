@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: cloudflare-token-diagnostic
@@ -79,6 +80,29 @@ jobs:
 
           cat /tmp/cloudflare-diagnostic.txt
           exit 0
+
+      - name: Publish sanitized permission result
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const text = fs.readFileSync('/tmp/cloudflare-diagnostic.txt', 'utf8');
+            const value = (key) => text.match(new RegExp(`^${key}=(.*)$`, 'm'))?.[1]?.trim() || 'unknown';
+            const token = value('token_status');
+            const scriptsHttp = value('workers_scripts_http');
+            const scriptsSuccess = value('workers_scripts_success');
+            const whoami = value('wrangler_whoami_exit');
+            const ready = token === 'active' && scriptsSuccess === 'true' && whoami === '0';
+            const description = `token=${token}; scripts=${scriptsSuccess}/${scriptsHttp}; whoami=${whoami}`.slice(0, 140);
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ready ? 'success' : 'failure',
+              context: 'Cloudflare token diagnostic',
+              description,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
 
       - name: Upload sanitized diagnostic
         uses: actions/upload-artifact@v4
