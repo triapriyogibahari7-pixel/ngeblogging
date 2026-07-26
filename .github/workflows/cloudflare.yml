@@ -94,13 +94,13 @@ jobs:
           put_secret CLOUDFLARE_CUSTOM_HOSTNAME_TARGET "${CLOUDFLARE_CUSTOM_HOSTNAME_TARGET}"
           put_secret SUPABASE_SERVICE_ROLE_KEY "${SUPABASE_SERVICE_ROLE_KEY}"
 
-      # Compatibility markers retained for the source validator while the live
-      # contract is now v37/v38/v39:
+      # Compatibility markers retained for older source validators while the
+      # current live contract is v40:
       # studio-v14-authority.css
       # nara-command-center-bridge.js
       # ngeblogging-app-v14-20260724
       # 2026.07.24-studio-v14
-      - name: Verify v39 Studio, domains, Nara, analytics, PWA, and tenant release
+      - name: Verify v40 Studio, domains, Nara, analytics, PWA, tenant, and capacity release
         shell: bash
         run: |
           set -euo pipefail
@@ -141,7 +141,7 @@ jobs:
           const visited = new Set();
           const assets = [];
 
-          while (queue.length && visited.size < 100) {
+          while (queue.length && visited.size < 120) {
             const url = queue.shift();
             if (!url || visited.has(url)) continue;
             visited.add(url);
@@ -163,33 +163,35 @@ jobs:
             naraTools: combined.includes('Projects') && combined.includes('Memori') && combined.includes('Buat gambar') && combined.includes('Plugins') && combined.includes('Baca QR'),
             productionAuditV37: combined.includes('studio-production-audit-v37-20260725') && combined.includes('sp37-analytics'),
             responsiveLayoutV39: combined.includes('studio-layout-builder-v39-20260726') && combined.includes('studio-quality-v39-20260726'),
+            responsiveLayoutV40: combined.includes('studio-layout-device-v40-20260726') && combined.includes('Ponsel / aplikasi'),
             analyticsRpcV38: combined.includes('record_analytics_event') && combined.includes('analytics-v38'),
             pwaRuntime: combined.includes('beforeinstallprompt'),
           };
 
           if (health.status !== 'ok') errors.push('health.status');
           if (health.service !== 'ngeblogging-cloudflare') errors.push('health.service');
-          if (health.release !== '2026.07.25-production-audit-v37') errors.push('health.release');
+          if (health.release !== '2026.07.26-responsive-capacity-v40') errors.push('health.release');
           if (health.nara !== true) errors.push('health.nara');
           if (health.naraProviders?.vision !== true) errors.push('health.vision');
           if (health.imageGeneration !== true) errors.push('health.imageGeneration');
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
           if (health.customDomains !== true) errors.push('health.customDomains');
           for (const [name, ready] of Object.entries(health.customDomainBindings || {})) if (ready !== true) errors.push(`health.domainBinding:${name}`);
-          if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
+          if (health.siteCapacity?.mode !== 'dynamic' || Number(health.siteCapacity?.defaultLimit) < 1000 || health.siteCapacity?.perAccountOverrides !== true) errors.push('health.siteCapacity');
           if (health.analyticsCollector !== true) errors.push('health.analyticsCollector');
           if (health.memberLimitPerSite !== 100) errors.push('health.memberLimitPerSite');
           for (const [name, ready] of Object.entries(markers)) if (!ready) errors.push(`bundle:${name}`);
           for (const asset of assets) if (asset.status !== 200) errors.push(`asset:${asset.status}:${asset.url}`);
 
-          if (!sw.includes('ngeblogging-app-v39-20260726')) errors.push('service-worker-v39');
+          // Compatibility marker for the previous workflow test: service-worker-v39.
+          if (!sw.includes('ngeblogging-app-v40-20260726')) errors.push('service-worker-v40');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
 
           const analyticsProbe = await read(`${tenantSite}/api/analytics/collect`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', origin: tenantSite, 'user-agent': 'NgebloggingProductionAudit/40' },
-            body: JSON.stringify({ path: '/__production-audit-v40', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 1280 }),
+            body: JSON.stringify({ path: '/__production-audit-v40', visitorId: `audit-${stamp}`, sessionId: `audit-${stamp}`, language: 'id-ID', screenWidth: 390 }),
           });
           let analyticsPayload = {};
           try { analyticsPayload = JSON.parse(analyticsProbe.text || '{}'); } catch {}
@@ -209,17 +211,17 @@ jobs:
             process.exit(1);
           }
 
-          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domains: health.customDomainBindings, tenant: 'ok', release: 'v37-v40' }, null, 2));
+          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domains: health.customDomainBindings, tenant: 'ok', release: 'v40' }, null, 2));
           NODE
               then
-                echo "Cloudflare v39/v40, custom domain, analytics, Nara, PWA, dan tenant publik terverifikasi."
+                echo "Cloudflare v40, layout per perangkat, kapasitas dinamis, custom domain, analytics, Nara, PWA, dan tenant publik terverifikasi."
                 exit 0
               fi
             fi
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan kontrak produksi v39/v40 yang lengkap."
+          echo "Cloudflare belum menyajikan kontrak produksi v40 yang lengkap."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
           exit 1
 
@@ -234,7 +236,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'v39 Studio, custom domains, Nara, analytics, PWA, and tenant checks passed.',
+              description: 'v40 responsive layout, dynamic capacity, domains, Nara, analytics, PWA, and tenant checks passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
