@@ -36,7 +36,7 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'pending', context: 'Ngeblogging custom domains', description: 'Resolving the authoritative Cloudflare zone and validating Custom Hostnames.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'pending', context: 'Ngeblogging custom domains', description: 'Validating the configured custom-domain provider and live DNS contract.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -44,16 +44,34 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Detect configured domain provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$(node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const source = fs.readFileSync('wrangler.production.jsonc', 'utf8');
+          const match = source.match(/"CUSTOM_DOMAIN_PROVIDER"\s*:\s*"([^"]+)"/);
+          process.stdout.write(String(match?.[1] || 'cloudflare').trim().toLowerCase());
+          NODE
+          )"
+          [[ "${provider}" == "netlify" || "${provider}" == "cloudflare" || "${provider}" == "auto" ]] || { echo "Provider domain tidak dikenal: ${provider}"; exit 1; }
+          echo "CUSTOM_DOMAIN_PROVIDER=${provider}" >> "${GITHUB_ENV}"
+          echo "Provider domain produksi: ${provider}"
+
       - name: Validate credentials and install dependencies
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
-          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
           [[ "${PUBLIC_SITE_URL}" == https://* ]] || { echo "PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
+          if [[ "${CUSTOM_DOMAIN_PROVIDER}" != "netlify" ]]; then
+            test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
+            test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
+          fi
           npm ci --ignore-scripts
 
       - name: Resolve zone and validate Custom Hostnames API
+        if: env.CUSTOM_DOMAIN_PROVIDER != 'netlify'
         shell: bash
         run: |
           set -euo pipefail
@@ -90,10 +108,9 @@ jobs:
 
           RESOLVED_CLOUDFLARE_ZONE_ID="${zone_id}" node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
 
-          # Tutup form terlebih dahulu. Hanya probe API yang sukses yang membukanya lagi.
+          # Tutup form Cloudflare terlebih dahulu. Hanya probe API yang sukses yang membukanya lagi.
           printf 'false' | npx wrangler secret put CLOUDFLARE_CUSTOM_HOSTNAMES_READY --config wrangler.production.active-zone.jsonc >/dev/null
 
-          # Cloudflare menetapkan per_page minimum 5 untuk endpoint Custom Hostnames.
           http_code="$(curl -sS -o /tmp/custom-hostnames.json -w '%{http_code}' -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "accept: application/json" "https://api.cloudflare.com/client/v4/zones/${zone_id}/custom_hostnames?per_page=5")"
           CUSTOM_HOSTNAMES_HTTP_CODE="${http_code}" node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -105,7 +122,8 @@ jobs:
           console.log('Cloudflare Custom Hostnames API dapat diakses pada zone otoritatif.');
           NODE
 
-      - name: Synchronize domain secrets to authoritative Worker
+      - name: Synchronize Cloudflare domain secrets to authoritative Worker
+        if: env.CUSTOM_DOMAIN_PROVIDER != 'netlify'
         shell: bash
         run: |
           set -euo pipefail
@@ -116,19 +134,40 @@ jobs:
           npx wrangler secret bulk /tmp/domain-secrets.json --config wrangler.production.active-zone.jsonc
           rm -f /tmp/domain-secrets.json
 
-      - name: Verify live v41 domain readiness
+      - name: Verify live selected-domain readiness
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            curl -sS -L --connect-timeout 10 --max-time 25 -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_release=v46-${attempt}-$(date +%s)" -o /tmp/health.json || true
-            if node --input-type=module <<'NODE'
+            curl -sS -L --connect-timeout 10 --max-time 25 -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_release=v51-${attempt}-$(date +%s)" -o /tmp/health.json || true
+            if EXPECTED_DOMAIN_PROVIDER="${CUSTOM_DOMAIN_PROVIDER}" node --input-type=module <<'NODE'
           import fs from 'node:fs';
           let health = {};
           try { health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8')); } catch {}
+          const expected = process.env.EXPECTED_DOMAIN_PROVIDER;
           const bindings = health.customDomainBindings || {};
-          if (!(health.customDomains === true && health.domainRelease === '2026.07.26-custom-domains-v41' && bindings.apiToken && bindings.zoneId && bindings.cnameTarget && bindings.databaseAccess && bindings.providerApi && health.customDomainDatabaseMode === 'user-jwt-rls' && health.customDomainServiceRoleRequired === false)) process.exit(1);
-          console.log(JSON.stringify({ customDomains: true, bindings, target: health.customHostnameTarget }, null, 2));
+          const common = health.customDomains === true
+            && health.domainRelease === '2026.07.26-custom-domains-v41'
+            && health.customDomainDatabaseMode === 'user-jwt-rls'
+            && health.customDomainServiceRoleRequired === false;
+          if (!common) process.exit(1);
+
+          if (expected === 'netlify') {
+            const valid = health.domainReleaseCurrent === '2026.07.26-free-domains-v51'
+              && health.customDomainProvider === 'netlify'
+              && ['netlify-manual', 'netlify-api'].includes(health.customDomainMode)
+              && bindings.databaseAccess === true
+              && bindings.bridgeHostname === true
+              && bindings.cnameTarget === true
+              && health.customHostnameTarget === 'ngeblogging.netlify.app'
+              && health.customDomainApexTarget === '75.2.60.5'
+              && health.customDomainPaidSaasRequired === false;
+            if (!valid) process.exit(1);
+          } else {
+            const valid = bindings.apiToken && bindings.zoneId && bindings.cnameTarget && bindings.databaseAccess && bindings.providerApi;
+            if (!valid) process.exit(1);
+          }
+          console.log(JSON.stringify({ customDomains: true, provider: health.customDomainProvider, mode: health.customDomainMode, bindings, target: health.customHostnameTarget, apexTarget: health.customDomainApexTarget }, null, 2));
           NODE
             then exit 0; fi
             sleep 10
@@ -136,7 +175,7 @@ jobs:
           cat /tmp/health.json 2>/dev/null || true
           exit 1
 
-      - name: Upload Custom Hostnames evidence
+      - name: Upload custom-domain evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -152,11 +191,11 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'success', context: 'Ngeblogging custom domains', description: 'Custom Hostnames API, DNS verification, JWT/RLS storage, and authoritative bindings are live.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'success', context: 'Ngeblogging custom domains', description: 'Selected domain provider, DNS targets, JWT/RLS storage, and live health contract passed.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
 
       - name: Mark domain activation failed
         if: failure()
         uses: actions/github-script@v8
         with:
           script: |
-            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'failure', context: 'Ngeblogging custom domains', description: 'Form ditutup aman: token belum lolos izin SSL and Certificates untuk Custom Hostnames.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
+            await github.rest.repos.createCommitStatus({ owner: context.repo.owner, repo: context.repo.repo, sha: process.env.PRODUCTION_SHA, state: 'failure', context: 'Ngeblogging custom domains', description: 'The selected custom-domain provider or live DNS contract did not pass validation.', target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}` });
