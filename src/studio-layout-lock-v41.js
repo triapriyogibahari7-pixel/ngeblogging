@@ -1,53 +1,26 @@
 const RELEASE = "studio-responsive-v41-20260726";
-const DEVICE_KEY = "ngeblogging-layout-preview-device-v41";
 const RESERVED_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com", "studio.ngeblogging.com", "api.ngeblogging.com"]);
+const attached = new WeakSet();
 let frame = 0;
 
-function preferredDevice() {
-  try {
-    const saved = localStorage.getItem(DEVICE_KEY);
-    if (["desktop", "tablet", "mobile"].includes(saved)) return saved;
-  } catch {
-    // Private browsing may block storage.
-  }
-  if (window.innerWidth <= 620) return "mobile";
-  if (window.innerWidth <= 980) return "tablet";
-  return "desktop";
-}
-
-function setDevice(layer, device) {
-  const selected = ["desktop", "tablet", "mobile"].includes(device) ? device : preferredDevice();
+function syncDevice(layer) {
+  const selected = ["desktop", "tablet", "mobile"].includes(layer.dataset.lb40Preview)
+    ? layer.dataset.lb40Preview
+    : window.innerWidth <= 620 ? "mobile" : window.innerWidth <= 980 ? "tablet" : "desktop";
   layer.dataset.previewDevice = selected;
-  layer.querySelectorAll(".lb41-device-switch button").forEach((button) => {
-    button.setAttribute("aria-pressed", String(button.dataset.device === selected));
-  });
-  try { localStorage.setItem(DEVICE_KEY, selected); } catch {}
 }
 
 function upgradeBuilder(layer) {
-  if (!(layer instanceof HTMLElement) || layer.dataset.lb41Upgraded === "true") return;
-  layer.dataset.lb41Upgraded = "true";
-  layer.dataset.previewDevice = preferredDevice();
+  if (!(layer instanceof HTMLElement)) return;
   layer.querySelectorAll(".lb36-layer").forEach((legacy) => legacy.remove());
-
-  const title = layer.querySelector(".lb39-canvas-wrap .lb39-section-title");
-  if (title && !title.querySelector(".lb41-device-switch")) {
-    const switcher = document.createElement("div");
-    switcher.className = "lb41-device-switch";
-    switcher.setAttribute("role", "group");
-    switcher.setAttribute("aria-label", "Pratinjau perangkat");
-    switcher.innerHTML = [
-      ["desktop", "Desktop"],
-      ["tablet", "Tablet"],
-      ["mobile", "Mobile"],
-    ].map(([device, label]) => `<button type="button" data-device="${device}" aria-pressed="false">${label}</button>`).join("");
-    title.append(switcher);
-    switcher.addEventListener("click", (event) => {
-      const button = event.target.closest("button[data-device]");
-      if (button) setDevice(layer, button.dataset.device);
-    });
-  }
-  setDevice(layer, layer.dataset.previewDevice);
+  syncDevice(layer);
+  if (attached.has(layer)) return;
+  attached.add(layer);
+  layer.dataset.lb41Upgraded = "true";
+  layer.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-lb40-mode]")) return;
+    requestAnimationFrame(() => syncDevice(layer));
+  });
 }
 
 function publicLayoutCss() {
@@ -113,9 +86,5 @@ new MutationObserver((mutations) => {
   if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule();
 }).observe(document.documentElement, { childList:true, subtree:true });
 
-window.addEventListener("resize", () => {
-  const layer = document.querySelector(".lb39-layer");
-  if (layer && !layer.querySelector('.lb41-device-switch button[aria-pressed="true"]')) setDevice(layer, preferredDevice());
-});
-
+window.addEventListener("resize", schedule);
 scan();
