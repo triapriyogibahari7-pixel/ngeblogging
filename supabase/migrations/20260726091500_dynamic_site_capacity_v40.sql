@@ -47,6 +47,7 @@ $function$;
 revoke all on function private.site_limit_for_owner(uuid,text) from public;
 revoke all on function private.site_limit_for_owner(uuid,text) from anon;
 revoke all on function private.site_limit_for_owner(uuid,text) from authenticated;
+grant execute on function private.site_limit_for_owner(uuid,text) to authenticated;
 grant execute on function private.site_limit_for_owner(uuid,text) to service_role;
 
 create or replace function private.enforce_owned_site_limit()
