@@ -6,7 +6,8 @@ const bridge = await readFile(new URL("../src/domain-full-zone-v54.js", import.m
 const styles = await readFile(new URL("../src/domain-full-zone-v54.css", import.meta.url), "utf8");
 const index = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const quotaBridge = await readFile(new URL("../src/site-quota-bridge.js", import.meta.url), "utf8");
-const quotaMigration = await readFile(new URL("../supabase/migrations/20260725150000_expand_all_accounts_to_12_sites.sql", import.meta.url), "utf8");
+const quotaMigration = await readFile(new URL("../supabase/migrations/20260726140500_enforce_twelve_site_capacity_v55.sql", import.meta.url), "utf8");
+const concurrencyMigration = await readFile(new URL("../supabase/migrations/202607231845_site_account_limits.sql", import.meta.url), "utf8");
 
 const requiredEndpoints = [
   "/api/domains/list",
@@ -42,8 +43,10 @@ test("tampilan memiliki mode desktop, tablet, mobile, perangkat sentuh, dan redu
 
 test("batas dua belas situs diterapkan di database dan ditampilkan di UI", () => {
   assert.match(quotaMigration, /select 12;/);
-  assert.match(quotaMigration, /owned_count >= allowed_limit/);
-  assert.match(quotaMigration, /pg_advisory_xact_lock/);
+  assert.match(quotaMigration, /greatest\(12 - state\.current_count, 0\)/);
+  assert.match(quotaMigration, /security invoker/);
+  assert.match(concurrencyMigration, /pg_advisory_xact_lock/);
+  assert.match(concurrencyMigration, /before insert on public\.sites/);
   assert.match(quotaBridge, /MAX_SITES_PER_ACCOUNT = 12/);
   assert.match(quotaBridge, /KAPASITAS 12 SITUS PER AKUN/);
   assert.match(quotaBridge, /Batas 12 situs tercapai/);
