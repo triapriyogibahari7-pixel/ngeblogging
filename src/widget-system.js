@@ -24,46 +24,74 @@ export const BUILT_IN_WIDGETS = [
   { id: "audio", name: "Audio & podcast", category: "Media", description: "Pemutar audio, episode, dan tautan berlangganan.", icon: "◉" },
   { id: "map-location", name: "Peta & lokasi", category: "Bisnis", description: "Alamat, koordinat, dan tautan peta tanpa pelacakan paksa.", icon: "⌖" },
   { id: "event-calendar", name: "Kalender acara", category: "Komunitas", description: "Daftar acara, tanggal, waktu, lokasi, dan CTA.", icon: "□" },
+  { id: "html-javascript", name: "HTML / JavaScript", category: "Kode", description: "Blok HTML dan JavaScript khusus yang tersimpan per situs dan dijalankan di sandbox tema.", icon: "</>" },
 ];
 
 export const LAYOUT_AREAS = [
   { id: "header-left", label: "Header kiri", group: "header" },
   { id: "header-right", label: "Header kanan", group: "header" },
   { id: "below-header", label: "Di bawah header", group: "header" },
-  { id: "sidebar-left", label: "Sidebar kiri", group: "content" },
   { id: "before-content", label: "Di atas postingan", group: "content" },
+  { id: "sidebar-left-top", label: "Sidebar kiri · kotak 1", group: "content" },
+  { id: "sidebar-left-bottom", label: "Sidebar kiri · kotak 2", group: "content" },
+  { id: "sidebar-right-top", label: "Sidebar kanan · kotak 1", group: "content" },
+  { id: "sidebar-right-bottom", label: "Sidebar kanan · kotak 2", group: "content" },
   { id: "after-content", label: "Di bawah postingan", group: "content" },
-  { id: "sidebar-right", label: "Sidebar kanan", group: "content" },
-  { id: "footer-left", label: "Footer kiri", group: "footer" },
-  { id: "footer-right", label: "Footer kanan", group: "footer" },
+  { id: "footer-left-top", label: "Footer kiri · kotak 1", group: "footer" },
+  { id: "footer-left-bottom", label: "Footer kiri · kotak 2", group: "footer" },
+  { id: "footer-right-top", label: "Footer kanan · kotak 1", group: "footer" },
+  { id: "footer-right-bottom", label: "Footer kanan · kotak 2", group: "footer" },
+  { id: "footer-wide", label: "Footer panjang", group: "footer" },
 ];
 
-const LEGACY_AREAS = ["sidebar", "after-content", "footer"];
-const VALID_AREAS = new Set([...LAYOUT_AREAS.map((area) => area.id), ...LEGACY_AREAS]);
-const RENDER_GROUPS = {
-  sidebar: new Set(["sidebar", "sidebar-left", "sidebar-right"]),
-  "after-content": new Set(["header-left", "header-right", "below-header", "before-content", "after-content"]),
-  footer: new Set(["footer", "footer-left", "footer-right"]),
+const AREA_MIGRATION = {
+  sidebar: "sidebar-right-top",
+  "sidebar-left": "sidebar-left-top",
+  "sidebar-right": "sidebar-right-top",
+  footer: "footer-left-top",
+  "footer-left": "footer-left-top",
+  "footer-right": "footer-right-top",
 };
+const VALID_AREAS = new Set(LAYOUT_AREAS.map((area) => area.id));
+const RENDER_GROUPS = {
+  sidebar: new Set(["sidebar-left-top", "sidebar-left-bottom", "sidebar-right-top", "sidebar-right-bottom"]),
+  "after-content": new Set(["header-left", "header-right", "below-header", "before-content", "after-content"]),
+  footer: new Set(["footer-left-top", "footer-left-bottom", "footer-right-top", "footer-right-bottom", "footer-wide"]),
+};
+
+export function normalizeLayoutArea(areaId, fallback = "after-content") {
+  const migrated = AREA_MIGRATION[String(areaId || "")] || String(areaId || "");
+  return VALID_AREAS.has(migrated) ? migrated : fallback;
+}
 
 export function getWidget(widgetId) {
   return BUILT_IN_WIDGETS.find((widget) => widget.id === widgetId) || null;
 }
 
 export function getLayoutArea(areaId) {
-  return LAYOUT_AREAS.find((area) => area.id === areaId) || null;
+  const normalized = normalizeLayoutArea(areaId, "");
+  return LAYOUT_AREAS.find((area) => area.id === normalized) || null;
 }
 
 export function createDefaultWidgetState(ids = ["search", "recent-posts", "categories", "newsletter"]) {
-  const defaults = ["sidebar", "sidebar", "sidebar", "footer"];
+  const defaults = ["sidebar-right-top", "sidebar-right-top", "footer-left-top", "footer-wide"];
   return ids.filter((id, index, all) => getWidget(id) && all.indexOf(id) === index).map((id, index) => ({
     id,
     enabled: true,
-    area: defaults[index] || "sidebar",
+    area: defaults[index] || "sidebar-right-top",
     order: index,
     title: getWidget(id)?.name || id,
     settings: {},
   }));
+}
+
+function normalizeSettings(widgetId, value) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  if (widgetId !== "html-javascript") return source;
+  return {
+    html: String(source.html || "").slice(0, 60_000),
+    javascript: String(source.javascript || "").slice(0, 40_000),
+  };
 }
 
 export function normalizeWidgetState(input, fallbackIds) {
@@ -75,14 +103,13 @@ export function normalizeWidgetState(input, fallbackIds) {
     const widget = getWidget(id);
     if (!widget || seen.has(id)) return [];
     seen.add(id);
-    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar";
     return [{
       id,
       enabled: entry?.enabled !== false,
-      area,
+      area: normalizeLayoutArea(entry?.area, "after-content"),
       order: Number.isFinite(Number(entry?.order)) ? Number(entry.order) : index,
       title: String(entry?.title || widget.name).slice(0, 100),
-      settings: entry?.settings && typeof entry.settings === "object" && !Array.isArray(entry.settings) ? entry.settings : {},
+      settings: normalizeSettings(id, entry?.settings),
     }];
   }).sort((a, b) => a.order - b.order);
   return normalized.length ? normalized : fallback;
@@ -92,7 +119,19 @@ function escapeHtml(value) {
   return String(value || "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
 }
 
-export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar") {
+function safeCustomHtml(value) {
+  return String(value || "")
+    .slice(0, 60_000)
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(?:href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, 'href="#"');
+}
+
+function safeCustomScript(value) {
+  return String(value || "").slice(0, 40_000).replace(/<\/script/gi, "<\\/script");
+}
+
+export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right-top", settings = {}) {
   const widget = getWidget(widgetId);
   if (!widget) return "";
   const heading = `<h3>${escapeHtml(title || widget.name)}</h3>`;
@@ -123,15 +162,25 @@ export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar") {
     "map-location": `${heading}<address>Jakarta, Indonesia · Buka peta</address>`,
     "event-calendar": `${heading}<time>23 Juli 2026 · 19.00 WIB</time><p>Acara komunitas Ngeblogging.</p>`,
   };
-  return `<section class="ng-widget ng-widget-${escapeHtml(widgetId)}" data-widget-id="${escapeHtml(widgetId)}" data-layout-area="${escapeHtml(area)}">${samples[widgetId] || `${heading}<p>${escapeHtml(widget.description)}</p>`}</section>`;
+  if (widgetId === "html-javascript") {
+    const html = safeCustomHtml(settings?.html);
+    const javascript = safeCustomScript(settings?.javascript);
+    const body = html || `${heading}<p>Masukkan HTML dan JavaScript melalui pengaturan widget.</p>`;
+    const script = javascript
+      ? `<script>(function(root){try{${javascript}}catch(error){console.error("Widget HTML/JavaScript gagal",error);}})(document.currentScript.parentElement);<\/script>`
+      : "";
+    return `<section class="ng-widget ng-widget-html-javascript" data-widget-id="html-javascript" data-layout-area="${escapeHtml(normalizeLayoutArea(area))}">${body}${script}</section>`;
+  }
+  return `<section class="ng-widget ng-widget-${escapeHtml(widgetId)}" data-widget-id="${escapeHtml(widgetId)}" data-layout-area="${escapeHtml(normalizeLayoutArea(area))}">${samples[widgetId] || `${heading}<p>${escapeHtml(widget.description)}</p>`}</section>`;
 }
 
 export function widgetsMarkup(state, renderGroup) {
-  const accepted = RENDER_GROUPS[renderGroup] || new Set([renderGroup]);
+  const accepted = RENDER_GROUPS[renderGroup] || new Set([normalizeLayoutArea(renderGroup)]);
   return normalizeWidgetState(state)
     .filter((widget) => widget.enabled && accepted.has(widget.area))
-    .map((widget) => widgetPreviewMarkup(widget.id, widget.title, widget.area))
+    .map((widget) => widgetPreviewMarkup(widget.id, widget.title, widget.area, widget.settings))
     .join("");
 }
 
 export const WIDGET_COUNT = BUILT_IN_WIDGETS.length;
+export const BUILT_IN_WIDGET_COUNT = BUILT_IN_WIDGETS.filter((widget) => widget.id !== "html-javascript").length;
