@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   attachDefaultWorkerDomains,
+  deleteFullZone,
+  detachWorkerDomain,
   fullZoneProviderReady,
   getOrCreateFullZone,
   normalizeZoneName,
@@ -288,4 +290,82 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
     assert.equal(request.body.zone_id, ZONE_ID);
     assert.equal(request.body.zone_name, "example.com");
   }
+});
+
+test("detachWorkerDomain melepaskan hostname dari Worker", async () => {
+  const WORKER_DOMAIN_ID =
+    "11111111-1111-4111-8111-111111111111";
+
+  const calls = [];
+
+  await withMockFetch(
+    async (url, options = {}) => {
+      calls.push({
+        url: String(url),
+        method: options.method || "GET",
+      });
+
+      return cloudflareResponse(null);
+    },
+    async () => {
+      const result =
+        await detachWorkerDomain(
+          ENV,
+          WORKER_DOMAIN_ID,
+        );
+
+      assert.equal(result, null);
+    },
+  );
+
+  assert.equal(calls.length, 1);
+  assert.equal(
+    calls[0].method,
+    "DELETE",
+  );
+
+  assert.equal(
+    calls[0].url,
+    `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/domains/${WORKER_DOMAIN_ID}`,
+  );
+});
+
+test("deleteFullZone menghapus zone melalui endpoint yang benar", async () => {
+  const calls = [];
+
+  await withMockFetch(
+    async (url, options = {}) => {
+      calls.push({
+        url: String(url),
+        method: options.method || "GET",
+      });
+
+      return cloudflareResponse({
+        id: ZONE_ID,
+      });
+    },
+    async () => {
+      const result =
+        await deleteFullZone(
+          ENV,
+          ZONE_ID,
+        );
+
+      assert.equal(
+        result.id,
+        ZONE_ID,
+      );
+    },
+  );
+
+  assert.equal(calls.length, 1);
+  assert.equal(
+    calls[0].method,
+    "DELETE",
+  );
+
+  assert.equal(
+    calls[0].url,
+    `https://api.cloudflare.com/client/v4/zones/${ZONE_ID}`,
+  );
 });

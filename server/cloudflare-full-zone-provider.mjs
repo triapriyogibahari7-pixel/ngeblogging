@@ -365,6 +365,80 @@ export async function attachDefaultWorkerDomains(env, zone) {
   };
 }
 
+function normalizeWorkerDomainId(input) {
+  const value = String(input || "").trim();
+
+  if (
+    !value
+    || value.length > 128
+    || !/^[a-z0-9_-]+$/i.test(value)
+  ) {
+    const error = new Error(
+      "Cloudflare Worker Domain ID tidak valid.",
+    );
+
+    error.code = "INVALID_WORKER_DOMAIN_ID";
+    error.status = 400;
+
+    throw error;
+  }
+
+  return value;
+}
+
+function normalizeZoneId(input) {
+  const value = String(input || "").trim();
+
+  if (!/^[0-9a-f]{32}$/i.test(value)) {
+    const error = new Error(
+      "Cloudflare Zone ID tidak valid.",
+    );
+
+    error.code = "INVALID_ZONE_ID";
+    error.status = 400;
+
+    throw error;
+  }
+
+  return value;
+}
+
+export async function detachWorkerDomain(
+  env,
+  domainId,
+) {
+  const normalizedDomainId =
+    normalizeWorkerDomainId(domainId);
+
+  const {
+    accountId,
+  } = providerConfig(env);
+
+  return cloudflareRequest(
+    env,
+    `/accounts/${accountId}/workers/domains/${encodeURIComponent(normalizedDomainId)}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+export async function deleteFullZone(
+  env,
+  zoneId,
+) {
+  const normalizedZoneId =
+    normalizeZoneId(zoneId);
+
+  return cloudflareRequest(
+    env,
+    `/zones/${encodeURIComponent(normalizedZoneId)}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
 export function fullZoneProviderReady(env) {
   try {
     providerConfig(env);
