@@ -21,6 +21,13 @@ test("v52 reconciles duplicate active-site cards before asynchronous rendering",
   assert.match(runtime, /const unique = new Map\(\)/);
 });
 
+test("legacy v39 and v41 observers stop mutating the v52 workspace authority", async () => {
+  const quality = await read("src/studio-quality-v39.js");
+  const operations = await read("src/studio-operations-v41.js");
+  assert.match(quality, /card\.classList\.contains\("sp52-site-switcher"\)/);
+  assert.match(operations, /querySelector\(":scope > \.sp52-site-switcher"\)/);
+});
+
 test("v52 exposes a professional active marker, searchable selector, and twelve-site limit", async () => {
   const runtime = await read("src/studio-site-switcher-v52.js");
   const css = await read("src/studio-site-switcher-v52.css");
