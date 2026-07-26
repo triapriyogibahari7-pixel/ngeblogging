@@ -23,7 +23,6 @@ jobs:
       EXPECT_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
       EXPECT_ZONE_ID: ${{ (secrets.CLOUDFLARE_ZONE_ID != '') || (vars.CLOUDFLARE_ZONE_ID != '') }}
       EXPECT_CNAME_TARGET: ${{ (secrets.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET != '') || (vars.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET != '') }}
-      EXPECT_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
     steps:
       - name: Wait for v41 and verify the live contract
         shell: bash
@@ -64,6 +63,9 @@ jobs:
           let health = {};
           try { health = JSON.parse(healthResult.text || '{}'); }
           catch { errors.push('health-json'); }
+          if (health.status !== 'ok') errors.push('health-status');
+          if (health.service !== 'ngeblogging-cloudflare') errors.push('health-service');
+          if (health.domainRelease !== '2026.07.26-custom-domains-v41') errors.push('health-domain-release');
 
           const assetQueue = [...indexResult.text.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)]
             .map((match) => new URL(match[1], site).href);
@@ -97,14 +99,14 @@ jobs:
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenantResult.text)) errors.push('tenant-404');
 
           const bindings = health.customDomainBindings || {};
-          for (const key of ['apiToken','zoneId','cnameTarget','serviceRole']) {
+          for (const key of ['apiToken','zoneId','cnameTarget','databaseAccess']) {
             if (typeof bindings[key] !== 'boolean') errors.push(`domain-binding-type:${key}`);
           }
-          const domainExpected = [process.env.EXPECT_API_TOKEN, process.env.EXPECT_ZONE_ID, process.env.EXPECT_CNAME_TARGET, process.env.EXPECT_SERVICE_ROLE]
+          const domainExpected = [process.env.EXPECT_API_TOKEN, process.env.EXPECT_ZONE_ID, process.env.EXPECT_CNAME_TARGET]
             .every((value) => value === 'true');
           if (domainExpected) {
             if (health.customDomains !== true) errors.push('custom-domains-not-ready');
-            for (const key of ['apiToken','zoneId','cnameTarget','serviceRole']) if (bindings[key] !== true) errors.push(`domain-binding:${key}`);
+            for (const key of ['apiToken','zoneId','cnameTarget','databaseAccess']) if (bindings[key] !== true) errors.push(`domain-binding:${key}`);
           }
 
           const analyticsProbe = await read(`${tenant}/api/analytics/collect`, {
