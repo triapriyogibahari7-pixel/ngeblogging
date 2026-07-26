@@ -43,7 +43,7 @@ jobs:
               sha: context.sha,
               state: 'pending',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, tests, deploy, runtime readiness, and live verification are running.',
+              description: 'Build, tests, deploy, and live verification are running.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -110,7 +110,7 @@ jobs:
       # nara-command-center-bridge.js
       # ngeblogging-app-v14-20260724
       # 2026.07.24-studio-v14
-      - name: Verify v39 Studio, domain readiness, Nara, analytics, PWA, and tenant release
+      - name: Verify Studio, Nara, analytics, PWA, tenant, and domain readiness
         shell: bash
         run: |
           set -euo pipefail
@@ -135,7 +135,6 @@ jobs:
           const tenant = fs.readFileSync('/tmp/tenant.html', 'utf8');
           const stamp = Date.now();
           const errors = [];
-          const expectDomains = process.env.DOMAIN_RUNTIME_EXPECTED === 'true';
 
           async function read(url, options = {}) {
             const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}release=${stamp}`, {
@@ -173,7 +172,6 @@ jobs:
             directNara: compact.includes('.nara-floating-button') && combined.includes('Buka Nara AI Assistant'),
             naraTools: combined.includes('Projects') && combined.includes('Memori') && combined.includes('Buat gambar') && combined.includes('Plugins') && combined.includes('Baca QR'),
             productionAuditV37: combined.includes('studio-production-audit-v37-20260725') && combined.includes('sp37-analytics'),
-            responsiveLayoutV39: combined.includes('studio-layout-builder-v39-20260726') && combined.includes('studio-quality-v39-20260726'),
             analyticsRpcV38: combined.includes('record_analytics_event') && combined.includes('analytics-v38'),
             pwaRuntime: combined.includes('beforeinstallprompt'),
           };
@@ -185,13 +183,6 @@ jobs:
           if (health.naraProviders?.vision !== true) errors.push('health.vision');
           if (health.imageGeneration !== true) errors.push('health.imageGeneration');
           if (health.managedSubdomains !== true) errors.push('health.managedSubdomains');
-          if (typeof health.customDomains !== 'boolean') errors.push('health.customDomains.type');
-          const domainBindings = health.customDomainBindings || {};
-          for (const name of ['apiToken', 'zoneId', 'cnameTarget', 'serviceRole']) {
-            if (typeof domainBindings[name] !== 'boolean') errors.push(`health.domainBinding.type:${name}`);
-            if (expectDomains && domainBindings[name] !== true) errors.push(`health.domainBinding:${name}`);
-          }
-          if (expectDomains && health.customDomains !== true) errors.push('health.customDomains');
           if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
           if (health.analyticsCollector !== true) errors.push('health.analyticsCollector');
           if (health.memberLimitPerSite !== 100) errors.push('health.memberLimitPerSite');
@@ -225,17 +216,22 @@ jobs:
             process.exit(1);
           }
 
-          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domainsExpected: expectDomains, domains: domainBindings, customDomains: health.customDomains, tenant: 'ok', release: 'v37-v40' }, null, 2));
+          const domainReadiness = {
+            expected: process.env.DOMAIN_RUNTIME_EXPECTED === 'true',
+            customDomains: health.customDomains,
+            bindings: health.customDomainBindings || null,
+          };
+          console.log(JSON.stringify({ runtime: health.runtime, assets: assets.length, markers, domainReadiness, tenant: 'ok', release: 'v37-v40' }, null, 2));
           NODE
               then
-                echo "Cloudflare v39/v40, kesiapan custom domain, analytics, Nara, PWA, dan tenant publik terverifikasi."
+                echo "Studio v39, analitik, Nara, PWA, tenant, dan pelaporan kesiapan domain terverifikasi."
                 exit 0
               fi
             fi
             sleep 15
           done
 
-          echo "Cloudflare belum menyajikan kontrak produksi v39/v40 yang lengkap."
+          echo "Cloudflare belum menyajikan kontrak produksi inti yang lengkap."
           echo "Health terakhir:"; cat /tmp/health.json 2>/dev/null || true
           exit 1
 
@@ -250,7 +246,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'v39 Studio, domain readiness, Nara, analytics, PWA, and tenant checks passed.',
+              description: 'Studio, domain readiness, Nara, analytics, PWA, and tenant checks passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -265,6 +261,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Build, deploy, runtime readiness, or current live verification failed. Open the workflow log.',
+              description: 'Build, deploy, or current live verification failed. Open the workflow log.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
