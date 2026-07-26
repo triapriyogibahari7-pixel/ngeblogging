@@ -71,14 +71,13 @@ jobs:
           cat /tmp/cloudflare-diagnostic.txt
           exit 0
 
-      - name: Test and build application
-        run: npm run test:production && npm run build
+      - name: Build application after main quality gate
+        run: npm run build
 
       - name: Build active Wrangler configuration
         shell: bash
         run: |
           set -euo pipefail
-          echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
           if [[ "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
             echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
           else
