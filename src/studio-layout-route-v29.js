@@ -1,6 +1,7 @@
 const RELEASE = "studio-layout-route-v29-20260725";
 const LAYOUT_BUILDER_EVENT = "ngeblogging:open-layout-builder-v36";
 const ROOT = document.getElementById("root") || document.documentElement;
+const SIDEBAR_ROUTE_ENABLED = false;
 let frame = 0;
 let ticket = 0;
 
@@ -33,10 +34,25 @@ function openCustomizer(currentTicket, attempt = 0) {
   return openLayoutBuilder(currentTicket, attempt);
 }
 
+function removeRetiredRoute(nav) {
+  nav?.querySelectorAll([
+    ':scope > button[data-layout-route-v29="true"]',
+    ':scope > button[data-layout-route-v23="true"]',
+    ':scope > button[class*="sn-layout-route"]',
+  ].join(",")).forEach((node) => node.remove());
+}
+
 function ensure(side) {
   const nav = side?.querySelector(":scope > nav");
+  if (!nav) return;
+
+  if (!SIDEBAR_ROUTE_ENABLED) {
+    removeRetiredRoute(nav);
+    return;
+  }
+
   const theme = findButton(side, "Tema");
-  if (!nav || !theme) return;
+  if (!theme) return;
 
   let layout = nav.querySelector(':scope > button[data-layout-route-v29="true"]');
   nav.querySelectorAll(':scope > button[data-layout-route-v23="true"], :scope > button[class*="sn-layout-route"]')
@@ -77,6 +93,7 @@ function ensure(side) {
 
 function scan() {
   document.documentElement.dataset.studioLayoutRouteV29 = RELEASE;
+  document.documentElement.dataset.studioLayoutSidebarRetired = "v48";
   document.querySelectorAll(".sn-shell > .sn-side").forEach(ensure);
 }
 
