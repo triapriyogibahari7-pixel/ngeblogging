@@ -40,18 +40,17 @@ jobs:
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
-      - name: Audit DNS authority and reconcile Worker domains
+      - name: Audit DNS authority and force Worker domain reconciliation
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import { resolveNs } from 'node:dns/promises';
 
           const token = process.env.CLOUDFLARE_API_TOKEN;
-          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+          const configuredAccountId = String(process.env.CLOUDFLARE_ACCOUNT_ID || '').trim();
           const base = 'https://api.cloudflare.com/client/v4';
           const headers = { authorization: `Bearer ${token}`, accept: 'application/json' };
 
@@ -70,8 +69,14 @@ jobs:
 
           const zones = await cf('/zones?name=ngeblogging.com&status=active&per_page=10');
           const matches = (zones || []).filter((zone) => zone?.name === 'ngeblogging.com' && zone?.status === 'active');
-          if (matches.length !== 1) throw new Error(`Ditemukan ${matches.length} zone aktif ngeblogging.com pada akun deployment; wajib tepat satu.`);
+          if (matches.length !== 1) throw new Error(`Ditemukan ${matches.length} zone aktif ngeblogging.com; wajib tepat satu.`);
           const zone = matches[0];
+          const accountId = String(zone?.account?.id || '').trim();
+          if (!/^[a-f0-9]{32}$/i.test(accountId)) throw new Error('Account ID pemilik zone aktif tidak valid.');
+          if (configuredAccountId && configuredAccountId !== accountId) {
+            console.warn('CLOUDFLARE_ACCOUNT_ID tersimpan berbeda; rekonsiliasi memakai account pemilik zone aktif.');
+          }
+
           const assignedNs = [...(zone.name_servers || [])].map((value) => String(value).toLowerCase().replace(/\.$/, '')).sort();
           const publicNs = [...await resolveNs('ngeblogging.com')].map((value) => String(value).toLowerCase().replace(/\.$/, '')).sort();
           const authorityMatches = assignedNs.length > 0 && assignedNs.join('|') === publicNs.join('|');
@@ -86,33 +91,37 @@ jobs:
           for (const hostname of ['ngeblogging.com', 'www.ngeblogging.com']) {
             const existing = await cf(`/accounts/${accountId}/workers/domains?hostname=${encodeURIComponent(hostname)}`);
             const exact = (existing || []).filter((item) => item?.hostname === hostname);
-            const before = exact.map((item) => ({ hostname: item.hostname, service: item.service, zone_id: item.zone_id, zone_name: item.zone_name }));
-            let repaired = false;
-            if (exact.length && exact.some((item) => item.service !== 'ngeblogging' || item.zone_id !== zone.id)) {
-              await cf(`/accounts/${accountId}/workers/domains`, {
-                method: 'PUT',
-                body: JSON.stringify({ hostname, service: 'ngeblogging', zone_id: zone.id, zone_name: 'ngeblogging.com' }),
-              });
-              repaired = true;
-            }
+            const before = exact.map((item) => ({ hostname:item.hostname, service:item.service, environment:item.environment || null, zone_id:item.zone_id, zone_name:item.zone_name }));
+
+            // PUT is an idempotent upsert. Run it every time so a stale custom-domain
+            // binding cannot override the freshly deployed Worker route/API.
+            await cf(`/accounts/${accountId}/workers/domains`, {
+              method: 'PUT',
+              body: JSON.stringify({ hostname, service:'ngeblogging', environment:'production', zone_id:zone.id, zone_name:'ngeblogging.com' }),
+            });
+
             const afterResult = await cf(`/accounts/${accountId}/workers/domains?hostname=${encodeURIComponent(hostname)}`);
-            const after = (afterResult || []).filter((item) => item?.hostname === hostname).map((item) => ({ hostname: item.hostname, service: item.service, zone_id: item.zone_id, zone_name: item.zone_name }));
-            domainAudit.push({ hostname, before, after, repaired });
+            const after = (afterResult || []).filter((item) => item?.hostname === hostname).map((item) => ({ hostname:item.hostname, service:item.service, environment:item.environment || null, zone_id:item.zone_id, zone_name:item.zone_name }));
+            if (!after.some((item) => item.service === 'ngeblogging' && item.zone_id === zone.id)) {
+              throw new Error(`Worker domain ${hostname} belum terikat ke service ngeblogging pada zone aktif.`);
+            }
+            domainAudit.push({ hostname, before, after, forced:true });
           }
 
           const audit = {
-            checkedAt: new Date().toISOString(),
-            zone: { id: zone.id, name: zone.name, status: zone.status, assignedNameServers: assignedNs },
-            publicNameServers: publicNs,
+            checkedAt:new Date().toISOString(),
+            account:{ id:accountId, configuredMismatch:Boolean(configuredAccountId && configuredAccountId !== accountId) },
+            zone:{ id:zone.id, name:zone.name, status:zone.status, assignedNameServers:assignedNs },
+            publicNameServers:publicNs,
             authorityMatches,
             routeOwnership,
             badRoutes,
-            workerDomains: domainAudit,
+            workerDomains:domainAudit,
           };
           fs.writeFileSync('/tmp/ngeblogging-authority-audit.json', `${JSON.stringify(audit, null, 2)}\n`);
           console.log(JSON.stringify(audit, null, 2));
 
-          if (!authorityMatches) throw new Error(`Nameserver publik tidak menunjuk ke zone yang dikelola token deployment. Publik=${publicNs.join(', ')}; akun=${assignedNs.join(', ')}`);
+          if (!authorityMatches) throw new Error(`Nameserver publik tidak menunjuk ke zone deployment. Publik=${publicNs.join(', ')}; akun=${assignedNs.join(', ')}`);
           if (badRoutes.length) throw new Error(`Route resmi bukan milik Worker ngeblogging: ${badRoutes.join(', ')}`);
           NODE
 
@@ -121,13 +130,15 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 30); do
-            stamp="v44-${attempt}-$(date +%s)"
+            stamp="v47-${attempt}-$(date +%s)"
             health_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?authority=${stamp}" || true)"
             sw_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-sw.js -w '%{http_code}' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/sw.js?authority=${stamp}" || true)"
-            index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-index.html -w '%{http_code}' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/?authority=${stamp}" || true)"
-            if [[ "${health_code}" == "200" && "${sw_code}" == "200" && "${index_code}" == "200" ]] && node --input-type=module <<'NODE'
+            index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-index.html -w '%{http_code}' -H 'cache-control:no-cache' "${PUBLIC_SITE_URL%/}/?authority=${stamp}" || true)"
+            analytics_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-analytics.json -w '%{http_code}' -X POST -H 'content-type:application/json' -H 'origin:https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent:NgebloggingAuthority/47' --data "{\"path\":\"/__authority-v47\",\"visitorId\":\"authority-${stamp}\",\"sessionId\":\"authority-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" "https://tri-apriyogi-bahari.ngeblogging.com/api/analytics/collect?authority=${stamp}" || true)"
+            if [[ "${health_code}" == "200" && "${sw_code}" == "200" && "${index_code}" == "200" && "${analytics_code}" == "202" ]] && node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const health = JSON.parse(fs.readFileSync('/tmp/authority-health.json', 'utf8'));
+          const analytics = JSON.parse(fs.readFileSync('/tmp/authority-analytics.json', 'utf8'));
           const sw = fs.readFileSync('/tmp/authority-sw.js', 'utf8');
           const index = fs.readFileSync('/tmp/authority-index.html', 'utf8');
           const ready = health.status === 'ok'
@@ -136,19 +147,21 @@ jobs:
             && health.domainRelease === '2026.07.26-custom-domains-v41'
             && health.siteCapacity?.mode === 'dynamic'
             && health.analyticsCollector === true
+            && analytics.recorded === true
             && sw.includes('ngeblogging-app-v43-20260726')
             && (index.includes('/src/studio-responsive-repair-v43.js') || index.includes('/assets/'));
           if (!ready) process.exit(1);
           NODE
             then
-              echo "Domain otoritatif telah menyajikan Studio responsif v43 dan API produksi terbaru."
+              echo "Domain otoritatif menyajikan Studio v43, API produksi, tenant, dan analitik terbaru."
               exit 0
             fi
             echo "Percobaan ${attempt}/30 belum konsisten; menunggu propagasi edge."
             sleep 10
           done
-          echo "Domain resmi masih belum menyajikan rilis v43 setelah rekonsiliasi."
+          echo "Domain resmi masih belum konsisten setelah rekonsiliasi paksa."
           echo "Health terakhir:"; cat /tmp/authority-health.json 2>/dev/null || true
+          echo "Analytics terakhir:"; cat /tmp/authority-analytics.json 2>/dev/null || true
           echo "Service worker marker terakhir:"; grep -o 'ngeblogging-app-v[0-9][0-9]*-[0-9]*' /tmp/authority-sw.js 2>/dev/null | head -n 5 || true
           exit 1
 
@@ -160,6 +173,7 @@ jobs:
           path: |
             /tmp/ngeblogging-authority-audit.json
             /tmp/authority-health.json
+            /tmp/authority-analytics.json
             /tmp/authority-sw.js
             /tmp/authority-index.html
           if-no-files-found: warn
@@ -171,13 +185,13 @@ jobs:
         with:
           script: |
             await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: process.env.PRODUCTION_SHA,
-              state: 'success',
-              context: 'Ngeblogging authoritative domain',
-              description: 'DNS authority, Worker domains, routes, and live v43 release are consistent.',
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              owner:context.repo.owner,
+              repo:context.repo.repo,
+              sha:process.env.PRODUCTION_SHA,
+              state:'success',
+              context:'Ngeblogging authoritative domain',
+              description:'DNS, forced Worker domains, routes, tenant analytics, and live v43 are consistent.',
+              target_url:`https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
       - name: Mark authoritative reconciliation failed
@@ -186,11 +200,11 @@ jobs:
         with:
           script: |
             await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: process.env.PRODUCTION_SHA,
-              state: 'failure',
-              context: 'Ngeblogging authoritative domain',
-              description: 'DNS authority, Worker domain mapping, route ownership, or live v43 verification failed.',
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              owner:context.repo.owner,
+              repo:context.repo.repo,
+              sha:process.env.PRODUCTION_SHA,
+              state:'failure',
+              context:'Ngeblogging authoritative domain',
+              description:'DNS, Worker-domain binding, routes, tenant analytics, or live v43 verification failed.',
+              target_url:`https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
