@@ -1,0 +1,64 @@
+name: Domain runtime diagnostics
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe production endpoints
+        shell: bash
+        run: |
+          set +e
+          mkdir -p diagnostics
+          probe() {
+            local name="$1"
+            local url="$2"
+            curl -sS -L --connect-timeout 10 --max-time 30 \
+              -D "diagnostics/${name}.headers.txt" \
+              -o "diagnostics/${name}.body.txt" \
+              -w '%{http_code}\n' "${url}" > "diagnostics/${name}.status.txt" 2> "diagnostics/${name}.curl-error.txt"
+          }
+          stamp="$(date +%s)"
+          probe apex-health "https://ngeblogging.com/api/health?diagnostic=${stamp}"
+          probe worker-health "https://ngeblogging.triapriyogibahari7.workers.dev/api/health?diagnostic=${stamp}"
+          probe apex-index "https://ngeblogging.com/?diagnostic=${stamp}"
+          probe apex-sw "https://ngeblogging.com/sw.js?diagnostic=${stamp}"
+          probe tenant-index "https://tri-apriyogi-bahari.ngeblogging.com/?diagnostic=${stamp}"
+          curl -sS --connect-timeout 10 --max-time 30 \
+            -D diagnostics/preflight.headers.txt \
+            -o diagnostics/preflight.body.txt \
+            -w '%{http_code}\n' \
+            -X OPTIONS \
+            -H 'origin: https://ngeblogging.netlify.app' \
+            -H 'access-control-request-method: POST' \
+            -H 'access-control-request-headers: authorization,content-type,cache-control' \
+            "https://ngeblogging.triapriyogibahari7.workers.dev/api/domains/register?diagnostic=${stamp}" \
+            > diagnostics/preflight.status.txt 2> diagnostics/preflight.curl-error.txt
+          {
+            echo '=== STATUS ==='
+            for file in diagnostics/*.status.txt; do echo "$(basename "$file"): $(cat "$file")"; done
+            echo '=== MARKERS ==='
+            grep -H -o 'api-origin-failover-v60.js\|domain-feedback-authority-v60.js\|domain-experience-authority-v59.js\|ngeblogging-app-v60-20260727' diagnostics/*.body.txt || true
+            echo '=== HEALTH ==='
+            cat diagnostics/apex-health.body.txt 2>/dev/null || true
+            echo
+            cat diagnostics/worker-health.body.txt 2>/dev/null || true
+            echo
+            echo '=== PREFLIGHT ==='
+            cat diagnostics/preflight.headers.txt 2>/dev/null || true
+          } | tee diagnostics/summary.txt
+
+      - name: Upload runtime diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-runtime-diagnostics-${{ github.run_id }}
+          path: diagnostics
+          retention-days: 3
