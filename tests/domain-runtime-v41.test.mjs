@@ -4,10 +4,10 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("v55 health reports safe full-zone readiness without service role", async () => {
+test("current health reports safe full-zone readiness without service role", async () => {
   const worker = await read("cloudflare/worker-v41.mjs");
   for (const marker of [
-    "2026.07.26-full-zone-domains-v55",
+    "2026.07.27-full-zone-domains-v65",
     "cloudflare-full-zone",
     "full-zone-nameserver",
     "apiToken",
@@ -17,6 +17,7 @@ test("v55 health reports safe full-zone readiness without service role", async (
     "serviceRoleRequired: false",
     'databaseMode: "user-jwt-rls"',
     "customDomainServiceRoleRequired",
+    "canonicalCustomDomain",
   ]) assert.ok(worker.includes(marker), marker);
   assert.doesNotMatch(worker, /SUPABASE_SERVICE_ROLE_KEY/);
 });
@@ -60,6 +61,7 @@ test("production routes and full-zone post-deploy audit are preserved", async ()
   assert.ok(index.includes('/src/studio-layout-device-v40.js'));
   assert.ok(index.includes('/src/studio-domain-v41.js'));
   assert.ok(index.includes('/src/domain-full-zone-v54.js'));
+  assert.ok(index.includes('/src/domain-operation-authority-v65.js'));
   assert.ok(studio.includes("Penyimpanan JWT + RLS"));
   assert.ok(studio.includes("service-role server tidak diperlukan"));
 });
