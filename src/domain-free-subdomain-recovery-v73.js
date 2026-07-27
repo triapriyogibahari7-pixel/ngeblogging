@@ -4,9 +4,14 @@ import {
   listUserSites,
 } from "./lib/studio-data.js";
 
-const RELEASE = "domain-free-subdomain-recovery-v73-20260727";
+const RELEASE = "domain-loading-recovery-v74-20260727";
+const LEGACY_RELEASE = "domain-free-subdomain-recovery-v73-20260727";
 const SITE_TIMEOUT_MS = 8_000;
+const DOMAIN_API_DEADLINE_MS = 12_000;
+const DOMAIN_SPINNER_DEADLINE_MS = 14_000;
 const CACHE_MS = 30_000;
+const previousFetch = window.fetch.bind(window);
+const spinnerDeadlines = new WeakMap();
 let frame = 0;
 let cachedSite = null;
 let cachedSiteId = "";
@@ -152,9 +157,104 @@ function showResolvingState(root) {
   }
 }
 
+function domainApiUrl(value) {
+  try {
+    const url = value instanceof Request ? new URL(value.url) : new URL(String(value), location.href);
+    return url.pathname.startsWith("/api/domains/") || url.pathname.startsWith("/api/domain-redirects/");
+  } catch {
+    return false;
+  }
+}
+
+function deadlineResponse() {
+  const payload = {
+    code: "DOMAIN_API_HARD_DEADLINE",
+    error: "Layanan domain melewati batas waktu. Subdomain gratis tetap aktif; tekan Coba lagi untuk memeriksa domain pribadi.",
+    release: RELEASE,
+  };
+  window.__ngebloggingLastDomainDiagnostic = payload;
+  window.dispatchEvent(new CustomEvent("ngeblogging:domain-api-diagnostic", { detail: payload }));
+  return new Response(JSON.stringify(payload), {
+    status: 408,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-ngeblogging-domain-deadline": RELEASE,
+    },
+  });
+}
+
+async function boundedDomainFetch(input, init) {
+  if (!domainApiUrl(input)) return previousFetch(input, init);
+  const request = input instanceof Request
+    ? new Request(input, init)
+    : new Request(new URL(String(input), location.href), init);
+  let finished = false;
+  let timer;
+  const attempt = previousFetch(request)
+    .then((response) => {
+      finished = true;
+      return response;
+    })
+    .catch((error) => {
+      finished = true;
+      throw error;
+    });
+  const deadline = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      if (finished) return;
+      resolve(deadlineResponse());
+    }, DOMAIN_API_DEADLINE_MS);
+  });
+  try {
+    return await Promise.race([attempt, deadline]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function recoveryMarkup() {
+  return `
+    <div class="dfz-inline-warning" data-domain-loading-recovery="${RELEASE}" role="status">
+      <span aria-hidden="true">⚠</span>
+      <div>
+        <b>Panel domain berhenti menunggu.</b>
+        <p>Subdomain gratis tetap aktif. Layanan domain pribadi belum memberi respons dan tidak akan dibiarkan berputar tanpa akhir.</p>
+      </div>
+      <button type="button" class="dfz-primary" data-action="reload">Coba lagi</button>
+    </div>
+  `;
+}
+
+function stopInfiniteSpinner(root, immediate = false) {
+  if (!root?.isConnected) return;
+  const spinner = root.querySelector(":scope .dfz-loading");
+  if (!spinner) {
+    const timer = spinnerDeadlines.get(root);
+    if (timer) clearTimeout(timer);
+    spinnerDeadlines.delete(root);
+    return;
+  }
+  if (immediate) {
+    spinner.outerHTML = recoveryMarkup();
+    root.dataset.domainLoadingStopped = RELEASE;
+    return;
+  }
+  if (spinnerDeadlines.has(root)) return;
+  const timer = setTimeout(() => {
+    spinnerDeadlines.delete(root);
+    const current = root.querySelector(":scope .dfz-loading");
+    if (!current) return;
+    current.outerHTML = recoveryMarkup();
+    root.dataset.domainLoadingStopped = RELEASE;
+  }, DOMAIN_SPINNER_DEADLINE_MS);
+  spinnerDeadlines.set(root, timer);
+}
+
 async function reconcile(force = false) {
   const root = document.querySelector(".dfz-root");
   if (!root?.isConnected) return;
+  stopInfiniteSpinner(root, false);
   const current = runtimeSite() || cachedSite;
   if (current) applySite(root, current);
   else showResolvingState(root);
@@ -165,6 +265,7 @@ async function reconcile(force = false) {
     showResolvingState(root);
     root.dataset.freeSubdomainRecoveryError = String(error?.code || "SITE_CONTEXT_UNAVAILABLE");
   }
+  stopInfiniteSpinner(root, false);
 }
 
 function schedule(force = false) {
@@ -172,11 +273,21 @@ function schedule(force = false) {
   frame = requestAnimationFrame(() => reconcile(force));
 }
 
+if (!window.__ngebloggingDomainDeadlineV74) {
+  window.__ngebloggingDomainDeadlineV74 = RELEASE;
+  window.__ngebloggingFreeSubdomainRecoveryV73 = LEGACY_RELEASE;
+  window.fetch = boundedDomainFetch;
+}
+
 new MutationObserver((mutations) => {
   if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule(false);
 }).observe(document.documentElement, { childList: true, subtree: true });
 
 window.addEventListener("pageshow", () => schedule(true));
+window.addEventListener("ngeblogging:domain-api-diagnostic", () => {
+  const root = document.querySelector(".dfz-root");
+  if (root) stopInfiniteSpinner(root, true);
+});
 window.addEventListener("ngeblogging:active-site-change", (event) => {
   const site = publishSite(event.detail);
   if (site) schedule(false);
