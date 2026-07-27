@@ -1,7 +1,7 @@
 import baseWorker from "./worker-v37.mjs";
 import { freeDomainReadiness, handleFreeDomainRequest } from "../server/free-domain-handler.mjs";
 
-const RELEASE = "2026.07.26-full-zone-domains-v55";
+const RELEASE = "2026.07.27-full-zone-domains-v62";
 const LEGACY_DOMAIN_RELEASE = "2026.07.26-custom-domains-v41";
 
 function databaseAccessReady(env) {
@@ -17,14 +17,21 @@ function databaseAccessReady(env) {
 }
 
 function fullZoneDomainReadiness(env) {
+  const dedicatedDomainToken = String(env.CLOUDFLARE_DOMAIN_API_TOKEN || "").trim();
+  const deploymentToken = String(env.CLOUDFLARE_API_TOKEN || "").trim();
+  const effectiveToken = dedicatedDomainToken || deploymentToken;
   const bindings = {
-    apiToken: Boolean(String(env.CLOUDFLARE_API_TOKEN || "").trim()),
+    apiToken: Boolean(effectiveToken),
+    domainApiToken: Boolean(dedicatedDomainToken),
     accountId: /^[0-9a-f]{32}$/i.test(String(env.CLOUDFLARE_ACCOUNT_ID || "").trim()),
     workerService: Boolean(String(env.CLOUDFLARE_WORKER_SERVICE || "ngeblogging").trim()),
     databaseAccess: databaseAccessReady(env),
   };
 
-  const ready = Object.values(bindings).every(Boolean);
+  const ready = bindings.apiToken
+    && bindings.accountId
+    && bindings.workerService
+    && bindings.databaseAccess;
 
   return {
     provider: "cloudflare-full-zone",
