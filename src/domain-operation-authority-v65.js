@@ -74,10 +74,6 @@ function repairNotice() {
   if (!node) return;
   const text = node.textContent || "";
 
-  /*
-   * Begitu server mengembalikan baris domain (verifying maupun active),
-   * banner kegagalan lama tidak lagi mencerminkan keadaan otoritatif.
-   */
   if (connectedDomain()?.hostname && !node.dataset.domainV65Diagnostic) {
     node.remove();
     lastDiagnostic = null;
@@ -100,19 +96,46 @@ function freeCard() {
   return root()?.querySelector(".dfz-free-card");
 }
 
+function ensureFreeFallbackLink(card, freeHostname, active) {
+  const actions = card.querySelector(".dfz-free-actions");
+  if (!actions) return;
+
+  let link = actions.querySelector("[data-domain-v65-free-preview]");
+  if (!active || !freeHostname.endsWith(".ngeblogging.com")) {
+    link?.remove();
+    return;
+  }
+
+  if (!link) {
+    link = document.createElement("a");
+    link.dataset.domainV65FreePreview = RELEASE;
+    link.className = "dfz-free-preview";
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = "Buka alamat cadangan";
+    actions.append(link);
+  }
+
+  link.href = `https://${freeHostname}/?ngeblogging-free-preview=1`;
+  link.setAttribute("aria-label", `Buka ${freeHostname} tanpa dialihkan`);
+}
+
 function syncCanonicalExperience() {
   const domain = connectedDomain();
   const card = freeCard();
   if (!card) return;
 
   const active = Boolean(domain?.hostname && domain.status.includes("aktif"));
+  const freeHostname = normalizeHostname(card.querySelector("h2")?.textContent);
   const eyebrow = card.querySelector("small");
   const description = card.querySelector("p");
   const preview = root()?.querySelector(".dfz-title > a");
 
+  ensureFreeFallbackLink(card, freeHostname, active);
+
   if (active) {
     if (eyebrow) eyebrow.textContent = "ALAMAT CADANGAN";
-    if (description) description.textContent = "Alamat gratis tetap tersedia sebagai cadangan dan otomatis mengarahkan pengunjung ke domain utama Anda.";
+    if (description) description.textContent = "Alamat gratis tetap tersedia sebagai cadangan. Secara normal pengunjung otomatis dialihkan ke domain utama Anda.";
     if (preview) {
       preview.href = `https://${domain.hostname}`;
       preview.lastChild && (preview.lastChild.textContent = "Buka domain utama");
