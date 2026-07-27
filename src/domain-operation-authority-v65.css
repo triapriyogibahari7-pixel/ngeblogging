@@ -17,6 +17,28 @@
   white-space: nowrap;
 }
 
+.dfz-root .dfz-free-actions .dfz-free-preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(31, 111, 235, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #2f5f9f;
+  font: 700 11px/1 "DM Sans", sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.dfz-root .dfz-free-actions .dfz-free-preview:hover {
+  transform: translateY(-1px);
+  border-color: rgba(31, 111, 235, 0.34);
+  box-shadow: 0 8px 22px rgba(31, 68, 120, 0.09);
+}
+
 .dfz-root [data-domain-v65-diagnostic] small {
   display: block;
   margin-top: 8px;
@@ -26,7 +48,7 @@
 }
 
 .dfz-root .dfz-root-state:not(:has(.dfz-nameservers)) .dfz-hostname-row + .dfz-actions::before {
-  content: "Cloudflare sedang menyiapkan nameserver. Pemeriksaan ulang berjalan otomatis; Anda juga dapat menekan Periksa koneksi.";
+  content: "Zone sudah diterima. Cloudflare sedang menyiapkan nameserver. Pemeriksaan ulang berjalan otomatis; Anda juga dapat menekan Periksa koneksi.";
   flex: 1 1 100%;
   padding: 12px 14px;
   border: 1px solid rgba(45, 110, 223, 0.16);
@@ -41,11 +63,16 @@
     order: 4;
     width: 100%;
   }
+
+  .dfz-root .dfz-free-actions .dfz-free-preview {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .dfz-root [data-domain-v65-diagnostic],
-  .dfz-root .dfz-free-card[data-canonical-domain] {
+  .dfz-root .dfz-free-card[data-canonical-domain],
+  .dfz-root .dfz-free-actions .dfz-free-preview {
     scroll-behavior: auto !important;
     transition: none !important;
   }
