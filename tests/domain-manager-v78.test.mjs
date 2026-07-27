@@ -43,10 +43,12 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.doesNotMatch(operations, /from "\.\/studio-domains-v41\.js"/);
   assert.doesNotMatch(legacy, /normalizeDomain|sn-domain-preview-row-v35/);
   assert.match(isolatedCss, /:host\{all:initial/);
-  assert.match(navigation, /sidebar-settings-v81-20260728/);
-  assert.match(navigation, /sn-side-footer-v81/);
+  assert.match(navigation, /sidebar-footer-v82-20260728/);
+  assert.match(navigation, /sn-side-footer-v82/);
   assert.match(navigation, /Buka Pengaturan/);
   assert.match(navigation, /Keluar dari Ngeblogging/);
+  assert.match(navigation, /position:absolute!important/);
+  assert.match(navigation, /font-size:15px!important/);
   assert.doesNotMatch(navigation, /footer\.append\(logout\)|appendChild\(logout\)/);
   assert.ok(archived.includes("domain-manager-v79-20260727"));
 });
