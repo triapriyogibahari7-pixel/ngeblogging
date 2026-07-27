@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-const requiredRoutes = ["*/*", "ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
+const requiredRoutes = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
 test("production workflow resolves the zone with the dedicated token and proves live routes", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
@@ -28,7 +28,7 @@ test("production workflow resolves the zone with the dedicated token and proves 
   assert.match(workflow, /x-ngeblogging-api-origin/);
 });
 
-test("generated Wrangler configuration pins every official and SaaS route to the resolved zone and account", async () => {
+test("generated Wrangler configuration pins the native zone routes to the resolved zone and account", async () => {
   const directory = await mkdtemp(join(tmpdir(), "ngeblogging-zone-v42-"));
   const input = join(directory, "input.jsonc");
   const output = join(directory, "output.jsonc");
