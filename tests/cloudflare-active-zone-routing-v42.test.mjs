@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-const requiredRoutes = ["api.ngeblogging.com/*", "ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
+const requiredRoutes = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
 test("production workflow deploys with an optional Zone ID and proves preserved routes through smoke tests", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
@@ -17,10 +17,11 @@ test("production workflow deploys with an optional Zone ID and proves preserved 
   assert.match(workflow, /zones\/\$\{RESOLVED_CLOUDFLARE_ZONE_ID\}\/workers\/routes/);
   assert.match(workflow, /routes\.get\(pattern\) !== 'ngeblogging'/);
   assert.match(workflow, /token tidak memiliki Zone Read/);
-  assert.match(workflow, /smoke test apex, tenant, dan API khusus/);
+  assert.match(workflow, /API cadangan dibuktikan melalui workers\.dev/);
   assert.match(workflow, /WORKERS_DEV_SMOKE_TEST_URL/);
   assert.match(workflow, /TENANT_SMOKE_TEST_URL/);
   assert.match(workflow, /API_SMOKE_TEST_URL/);
+  assert.match(workflow, /ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.match(workflow, /access-control-request-method: POST/);
   assert.match(workflow, /x-ngeblogging-api-origin/);
 });
