@@ -1,0 +1,69 @@
+/* Domain Mobile Precision v61 — one-line managed hostname and compact mobile card. */
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card{
+  grid-template-columns:48px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:14px!important;
+  min-width:0!important;
+}
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card>div:not(.dfz-free-actions){min-width:0!important;overflow:hidden!important}
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:5px 0!important;
+  color:#17253c!important;
+  font-family:"DM Sans",sans-serif!important;
+  font-size:clamp(12px,1.55vw,18px)!important;
+  font-weight:900!important;
+  line-height:1.22!important;
+  letter-spacing:-.025em!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  hyphens:none!important;
+}
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2[data-fit-hostname="true"]{font-size:var(--d61-hostname-size,14px)!important}
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions{min-width:max-content!important}
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions .dfz-primary{padding-inline:15px!important;white-space:nowrap!important}
+
+@media(max-width:760px){
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card{
+    grid-template-columns:36px minmax(0,1fr)!important;
+    gap:10px!important;
+    padding:14px!important;
+  }
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-icon{
+    width:36px!important;
+    height:36px!important;
+    border-radius:11px!important;
+  }
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-icon svg{width:22px!important;height:22px!important}
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2{
+    font-size:12px!important;
+    line-height:1.2!important;
+  }
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card p{font-size:9px!important}
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions{
+    grid-column:1/-1!important;
+    width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:9px!important;
+  }
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions .dfz-primary{
+    width:100%!important;
+    min-width:0!important;
+    padding-inline:12px!important;
+  }
+}
+
+@media(max-width:420px){
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2{font-size:10.5px!important;letter-spacing:-.035em!important}
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions{grid-template-columns:1fr!important}
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions>i{justify-self:start!important}
+}
