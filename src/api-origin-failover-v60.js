@@ -1,5 +1,5 @@
 const RELEASE = "api-origin-failover-v60-20260727";
-const API_ORIGIN = "https://api.ngeblogging.com";
+const API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
 const nativeFetch = window.fetch.bind(window);
 
 function isApiUrl(value) {
@@ -94,12 +94,12 @@ async function resilientFetch(input, init) {
   const status = secondaryResponse?.status || primaryResponse?.status || 502;
   const requestId = secondaryResponse?.headers.get("x-request-id") || primaryResponse?.headers.get("x-request-id") || "";
   const message = status === 404 || status === 405
-    ? "API domain belum terpasang pada deployment aktif. Sistem sudah mencoba jalur utama dan jalur API cadangan."
+    ? "API domain belum terpasang pada jalur situs aktif. Sistem juga sudah mencoba Worker API cadangan."
     : status === 401
       ? "Sesi masuk tidak diterima oleh layanan domain. Silakan masuk kembali."
       : status === 403
         ? "Layanan domain menolak permintaan ini. Periksa izin akun dan konfigurasi Cloudflare."
-        : "Layanan domain belum dapat dijangkau melalui jalur utama maupun jalur API cadangan.";
+        : "Layanan domain belum dapat dijangkau melalui jalur situs maupun Worker API cadangan.";
 
   return diagnosticResponse(message, status >= 400 && status <= 599 ? status : 502, "DOMAIN_API_ROUTE_UNAVAILABLE", {
     status,
