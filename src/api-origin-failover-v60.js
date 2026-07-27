@@ -16,10 +16,24 @@ function requestFor(input, init) {
   return new Request(new URL(String(input), location.href), init);
 }
 
-function backupRequest(request) {
+async function backupRequest(request) {
   const current = new URL(request.url);
   const backup = new URL(`${current.pathname}${current.search}`, API_ORIGIN);
-  return new Request(backup, request);
+  const hasBody = !["GET", "HEAD"].includes(request.method);
+  const body = hasBody ? await request.clone().arrayBuffer() : undefined;
+  return new Request(backup, {
+    method: request.method,
+    headers: new Headers(request.headers),
+    body,
+    mode: "cors",
+    credentials: "omit",
+    cache: "no-store",
+    redirect: request.redirect,
+    referrerPolicy: request.referrerPolicy,
+    integrity: request.integrity,
+    keepalive: request.keepalive,
+    signal: request.signal,
+  });
 }
 
 async function responseDetails(response) {
@@ -65,7 +79,7 @@ async function resilientFetch(input, init) {
   let secondaryResponse = null;
   let secondaryFailure = null;
   try {
-    secondaryResponse = await nativeFetch(backupRequest(primary.clone()));
+    secondaryResponse = await nativeFetch(await backupRequest(primary.clone()));
     const details = await responseDetails(secondaryResponse);
     if (details.json) {
       window.dispatchEvent(new CustomEvent("ngeblogging:api-failover", {
