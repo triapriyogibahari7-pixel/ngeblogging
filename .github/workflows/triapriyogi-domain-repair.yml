@@ -1,0 +1,132 @@
+name: Repair triapriyogi.com domain zone
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/triapriyogi-domain-repair.yml
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
+      TARGET_DOMAIN: triapriyogi.com
+    steps:
+      - name: Resolve authoritative Ngeblogging account
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum tersedia"; exit 1; }
+          curl -sS --fail-with-body \
+            -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+            -H 'accept: application/json' \
+            'https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&status=active&per_page=10' \
+            -o /tmp/authority.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/authority.json', 'utf8'));
+          const zones = (payload.result || []).filter((zone) => zone?.name === 'ngeblogging.com' && zone?.status === 'active');
+          if (payload.success !== true || zones.length !== 1) throw new Error(`Zone otoritatif ngeblogging.com tidak unik: ${zones.length}`);
+          const accountId = String(zones[0]?.account?.id || '');
+          if (!/^[0-9a-f]{32}$/i.test(accountId)) throw new Error('Account ID otoritatif tidak valid.');
+          fs.appendFileSync(process.env.GITHUB_ENV, `RESOLVED_ACCOUNT_ID=${accountId}\n`);
+          console.log('Account Cloudflare otoritatif ditemukan.');
+          NODE
+
+      - name: Find or create triapriyogi.com zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/triapriyogi-domain-repair
+          lookup() {
+            curl -sS \
+              -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+              -H 'accept: application/json' \
+              "https://api.cloudflare.com/client/v4/zones?name=${TARGET_DOMAIN}&account.id=${RESOLVED_ACCOUNT_ID}&per_page=50" \
+              -o /tmp/triapriyogi-domain-repair/lookup.json
+          }
+          lookup
+          existing_id="$(node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/triapriyogi-domain-repair/lookup.json', 'utf8'));
+          const domain = process.env.TARGET_DOMAIN;
+          const match = payload.success === true ? (payload.result || []).find((zone) => zone?.name === domain) : null;
+          process.stdout.write(String(match?.id || ''));
+          NODE
+          )"
+          if [[ "${existing_id}" =~ ^[0-9a-fA-F]{32}$ ]]; then
+            echo "Zone ${TARGET_DOMAIN} sudah ada dan akan digunakan kembali."
+          else
+            create_code="$(curl -sS -o /tmp/triapriyogi-domain-repair/create.json -w '%{http_code}' \
+              -X POST \
+              -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+              -H 'accept: application/json' \
+              -H 'content-type: application/json' \
+              --data "{\"account\":{\"id\":\"${RESOLVED_ACCOUNT_ID}\"},\"name\":\"${TARGET_DOMAIN}\",\"type\":\"full\"}" \
+              'https://api.cloudflare.com/client/v4/zones')"
+            CREATE_CODE="${create_code}" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/triapriyogi-domain-repair/create.json', 'utf8'));
+          console.log(JSON.stringify({ http:Number(process.env.CREATE_CODE), success:payload.success, errors:payload.errors, messages:payload.messages }, null, 2));
+          if (Number(process.env.CREATE_CODE) < 200 || Number(process.env.CREATE_CODE) >= 300 || payload.success !== true) {
+            throw new Error(`Cloudflare gagal membuat zone triapriyogi.com: ${(payload.errors || []).map((item) => item?.message).filter(Boolean).join(' | ') || 'respons tidak valid'}`);
+          }
+          NODE
+            sleep 2
+            lookup
+          fi
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/triapriyogi-domain-repair/lookup.json', 'utf8'));
+          const domain = process.env.TARGET_DOMAIN;
+          const zone = payload.success === true ? (payload.result || []).find((item) => item?.name === domain) : null;
+          if (!zone || !/^[0-9a-f]{32}$/i.test(String(zone.id || ''))) throw new Error('Zone triapriyogi.com belum ditemukan setelah proses create/reuse.');
+          const evidence = {
+            checkedAt: new Date().toISOString(),
+            hostname: zone.name,
+            status: zone.status,
+            type: zone.type,
+            nameServers: Array.isArray(zone.name_servers) ? zone.name_servers : [],
+            originalNameServers: Array.isArray(zone.original_name_servers) ? zone.original_name_servers : [],
+            zoneReady: Array.isArray(zone.name_servers) && zone.name_servers.length >= 2,
+          };
+          fs.writeFileSync('/tmp/triapriyogi-domain-repair/result.json', `${JSON.stringify(evidence, null, 2)}\n`);
+          console.log(JSON.stringify(evidence, null, 2));
+          if (!evidence.zoneReady) throw new Error('Cloudflare belum mengembalikan dua nameserver untuk triapriyogi.com.');
+          NODE
+
+      - name: Publish repair status
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('node:fs');
+            let result = {};
+            try { result = JSON.parse(fs.readFileSync('/tmp/triapriyogi-domain-repair/result.json', 'utf8')); } catch {}
+            const ok = result.hostname === 'triapriyogi.com' && result.zoneReady === true;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ok ? 'success' : 'failure',
+              context: 'Triapriyogi domain repair',
+              description: ok ? `Zone siap; ${result.status}; dua nameserver tersedia.` : 'Zone triapriyogi.com belum berhasil disiapkan.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Upload repair evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: triapriyogi-domain-repair-${{ github.run_id }}
+          path: /tmp/triapriyogi-domain-repair
+          if-no-files-found: warn
+          retention-days: 3
