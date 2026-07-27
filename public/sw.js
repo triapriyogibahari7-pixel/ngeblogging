@@ -1,24 +1,65 @@
-const VERSION = "ngeblogging-app-v76-20260727";
+const VERSION = "ngeblogging-app-v77-20260727";
 // Compatibility markers retained for production validators:
-// ngeblogging-app-v75-20260727, ngeblogging-app-v74-20260727, ngeblogging-app-v73-20260727, ngeblogging-app-v65-20260727, ngeblogging-app-v61-20260727, ngeblogging-app-v60-20260727, ngeblogging-app-v59-20260727, ngeblogging-app-v58-20260727, ngeblogging-app-v57-20260727, ngeblogging-app-v56-20260727, ngeblogging-app-v53-20260726, ngeblogging-app-v52-20260726, ngeblogging-app-v51-20260726, ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
+// ngeblogging-app-v76-20260727, ngeblogging-app-v75-20260727, ngeblogging-app-v74-20260727, ngeblogging-app-v73-20260727, ngeblogging-app-v65-20260727, ngeblogging-app-v61-20260727, ngeblogging-app-v60-20260727, ngeblogging-app-v59-20260727, ngeblogging-app-v58-20260727, ngeblogging-app-v57-20260727, ngeblogging-app-v56-20260727, ngeblogging-app-v53-20260726, ngeblogging-app-v52-20260726, ngeblogging-app-v51-20260726, ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
+const RECOVERY_QUERY = "ngeblogging_recovery";
+const RECOVERY_VALUE = "pwa-v77";
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(SHELL_CACHE)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting()),
+  );
 });
 
+function isSensitiveAuthCallback(url) {
+  return url.searchParams.has("code")
+    || url.searchParams.get("auth") === "callback"
+    || url.searchParams.get("auth") === "recovery";
+}
+
+async function recoverOpenWindows() {
+  const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  await Promise.all(windows.map(async (client) => {
+    try {
+      const url = new URL(client.url);
+      if (url.origin !== self.location.origin) return;
+      client.postMessage({
+        type: "NGE_BLOGGING_FORCE_RELOAD_V77",
+        version: VERSION,
+        reason: "service-worker-activated",
+      });
+      if (isSensitiveAuthCallback(url)) return;
+      if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
+      url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
+      await client.navigate(url.href);
+    } catch {
+      // One broken client must not block activation for every other window.
+    }
+  }));
+}
+
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => ![SHELL_CACHE, ASSET_CACHE].includes(key)).map((key) => caches.delete(key))))
-      .then(() => self.clients.claim()),
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((key) => ![SHELL_CACHE, ASSET_CACHE].includes(key))
+        .map((key) => caches.delete(key)),
+    );
+    await self.clients.claim();
+    await recoverOpenWindows();
+  })());
 });
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "GET_VERSION") {
+    event.source?.postMessage?.({ type: "NGE_BLOGGING_PWA_VERSION", version: VERSION });
+  }
 });
 
 async function networkFirst(request, fallback = null) {
@@ -27,11 +68,16 @@ async function networkFirst(request, fallback = null) {
     if (response.ok && response.type === "basic") {
       const cacheName = request.mode === "navigate" ? SHELL_CACHE : ASSET_CACHE;
       const cache = await caches.open(cacheName);
-      cache.put(request.mode === "navigate" ? "/" : request, response.clone());
+      await cache.put(request.mode === "navigate" ? "/" : request, response.clone());
     }
     return response;
   } catch {
-    return (await caches.match(request)) || (fallback ? await caches.match(fallback) : null) || new Response("Ngeblogging sedang offline.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
+    return (await caches.match(request))
+      || (fallback ? await caches.match(fallback) : null)
+      || new Response("Ngeblogging sedang offline.", {
+        status: 503,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
   }
 }
 
@@ -40,7 +86,7 @@ async function cacheFirstImmutable(request) {
   const cached = await cache.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (response.ok && response.type === "basic") cache.put(request, response.clone());
+  if (response.ok && response.type === "basic") await cache.put(request, response.clone());
   return response;
 }
 
