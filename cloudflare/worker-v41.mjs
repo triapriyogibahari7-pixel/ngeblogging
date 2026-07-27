@@ -1,8 +1,10 @@
 import baseWorker from "./worker-v37.mjs";
 import { freeDomainReadiness, handleFreeDomainRequest } from "../server/free-domain-handler.mjs";
+import { handleQuickDomainDetach } from "../server/quick-domain-detach-handler.mjs";
 
 const RELEASE = "2026.07.27-full-zone-domains-v62";
 const REGISTRATION_RECOVERY_RELEASE = "2026.07.27-domain-registration-recovery-v63";
+const REVERSIBLE_DETACH_RELEASE = "2026.07.27-reversible-domain-detach-v64";
 const LEGACY_FULL_ZONE_RELEASE = "2026.07.26-full-zone-domains-v55";
 const LEGACY_DOMAIN_RELEASE = "2026.07.26-custom-domains-v41";
 
@@ -103,6 +105,7 @@ async function enrichHealth(response, env) {
       domainRelease: RELEASE,
       domainReleaseCurrent: RELEASE,
       domainRegistrationRecovery: REGISTRATION_RECOVERY_RELEASE,
+      reversibleDomainDetach: REVERSIBLE_DETACH_RELEASE,
       domainReleaseCompatibility: [LEGACY_FULL_ZONE_RELEASE, LEGACY_DOMAIN_RELEASE],
       customDomains: Boolean(domain.ready || domain.enabled),
       customDomainProvider: domain.provider,
@@ -129,6 +132,13 @@ const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mill
 function isFullZoneRegistration(request, url, domain) {
   return request.method === "POST"
     && url.pathname === "/api/domains/register"
+    && domain.provider === "cloudflare-full-zone"
+    && domain.enabled;
+}
+
+function isFullZoneRemoval(request, url, domain) {
+  return request.method === "POST"
+    && url.pathname === "/api/domains/remove"
     && domain.provider === "cloudflare-full-zone"
     && domain.enabled;
 }
@@ -165,14 +175,84 @@ async function registrationFailureDetails(response) {
   };
 }
 
-function markRecovered(response) {
+function withReleaseHeader(response, name, value) {
   const headers = new Headers(response.headers);
-  headers.set("x-ngeblogging-domain-registration-recovery", REGISTRATION_RECOVERY_RELEASE);
+  headers.set(name, value);
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
   });
+}
+
+async function activateRegistrationWhenZoneIsAlreadyActive(
+  response,
+  originalRequest,
+  env,
+  context,
+) {
+  if (!response.ok) return response;
+
+  let payload = null;
+  try {
+    payload = await response.clone().json();
+  } catch {
+    return response;
+  }
+
+  const domainId = String(payload?.domain?.id || "").trim();
+  const zoneActive = payload?.zone?.active === true
+    || String(payload?.zone?.status || "").toLowerCase() === "active";
+
+  if (!zoneActive || !/^[0-9a-f-]{36}$/i.test(domainId)) return response;
+
+  const headers = new Headers(originalRequest.headers);
+  headers.set("content-type", "application/json");
+  headers.set("accept", "application/json");
+
+  const refreshRequest = new Request(
+    new URL("/api/domains/refresh", originalRequest.url),
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ domainId }),
+    },
+  );
+
+  try {
+    const refreshed = await baseWorker.fetch(refreshRequest, env, context);
+    if (!refreshed.ok) return response;
+    return withReleaseHeader(
+      refreshed,
+      "x-ngeblogging-domain-reattach",
+      REVERSIBLE_DETACH_RELEASE,
+    );
+  } catch {
+    return response;
+  }
+}
+
+async function finalizeRegistrationResponse(
+  response,
+  request,
+  env,
+  context,
+  recovered = false,
+) {
+  const activated = await activateRegistrationWhenZoneIsAlreadyActive(
+    response,
+    request,
+    env,
+    context,
+  );
+
+  return recovered
+    ? withReleaseHeader(
+        activated,
+        "x-ngeblogging-domain-registration-recovery",
+        REGISTRATION_RECOVERY_RELEASE,
+      )
+    : activated;
 }
 
 async function runRegistrationWithRecovery(request, env, context) {
@@ -184,10 +264,13 @@ async function runRegistrationWithRecovery(request, env, context) {
     firstResponse = await baseWorker.fetch(firstRequest, env, context);
   } catch {
     await wait(2800);
-    return markRecovered(await baseWorker.fetch(retryRequest, env, context));
+    const retryResponse = await baseWorker.fetch(retryRequest, env, context);
+    return finalizeRegistrationResponse(retryResponse, request, env, context, true);
   }
 
-  if (firstResponse.ok) return firstResponse;
+  if (firstResponse.ok) {
+    return finalizeRegistrationResponse(firstResponse, request, env, context, false);
+  }
 
   const details = await registrationFailureDetails(firstResponse);
   if (!details.retry) return firstResponse;
@@ -199,7 +282,7 @@ async function runRegistrationWithRecovery(request, env, context) {
    */
   await wait(2800);
   const retryResponse = await baseWorker.fetch(retryRequest, env, context);
-  return markRecovered(retryResponse);
+  return finalizeRegistrationResponse(retryResponse, request, env, context, true);
 }
 
 export default {
@@ -213,6 +296,21 @@ export default {
       && domain.enabled
     ) {
       return handleFreeDomainRequest(request, env, crypto.randomUUID());
+    }
+
+    if (isFullZoneRemoval(request, url, domain)) {
+      const detached = await handleQuickDomainDetach(
+        request.clone(),
+        env,
+        crypto.randomUUID(),
+      );
+      if (detached) {
+        return withReleaseHeader(
+          detached,
+          "x-ngeblogging-reversible-domain-detach",
+          REVERSIBLE_DETACH_RELEASE,
+        );
+      }
     }
 
     const response = isFullZoneRegistration(request, url, domain)
