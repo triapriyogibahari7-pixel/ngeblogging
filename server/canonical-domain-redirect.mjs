@@ -62,6 +62,7 @@ export async function canonicalDomainRedirect(request, env) {
   const slug = managedSlug(url.hostname);
   if (!slug) return null;
 
+  /* Emergency/direct preview keeps the free address usable without a loop. */
   if (url.searchParams.get("ngeblogging-free-preview") === "1") return null;
 
   const sites = await rest(
@@ -74,10 +75,16 @@ export async function canonicalDomainRedirect(request, env) {
 
   const domains = await rest(
     env,
-    `site_domains?select=id,hostname,status,provider_status,ssl_status&site_id=eq.${encodeURIComponent(site.id)}&hostname=eq.${encodeURIComponent(customHostname)}&status=eq.active&limit=1`,
+    `site_domains?select=id,hostname,status,provider_status,ssl_status,is_primary&site_id=eq.${encodeURIComponent(site.id)}&hostname=eq.${encodeURIComponent(customHostname)}&status=eq.active&is_primary=eq.true&limit=1`,
   );
   const domain = domains?.[0] || null;
-  if (!domain || validCustomHostname(domain.hostname) !== customHostname) return null;
+  const fullyActive = domain
+    && validCustomHostname(domain.hostname) === customHostname
+    && String(domain.provider_status || "").toLowerCase() === "active"
+    && String(domain.ssl_status || "").toLowerCase() === "active"
+    && domain.is_primary === true;
+
+  if (!fullyActive) return null;
 
   const target = new URL(request.url);
   target.protocol = "https:";
@@ -89,6 +96,7 @@ export async function canonicalDomainRedirect(request, env) {
     location: target.toString(),
     "cache-control": "public, max-age=60, s-maxage=300",
     "x-ngeblogging-canonical-domain": customHostname,
+    "x-ngeblogging-free-domain-fallback": "available-with-preview-parameter",
     "x-content-type-options": "nosniff",
   });
 
