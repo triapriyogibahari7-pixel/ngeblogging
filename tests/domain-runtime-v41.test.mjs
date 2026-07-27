@@ -28,17 +28,22 @@ test("domain storage uses authenticated user JWT and Supabase RLS", async () => 
   assert.doesNotMatch(handler, /SUPABASE_SERVICE_ROLE_KEY|adminHeaders|adminJson/);
 });
 
-test("production routes and full-zone post-deploy audit are preserved", async () => {
-  const [wrangler, workflow, index, studio] = await Promise.all([
+test("production routes and v67 two-DNS wrapper preserve the v41 post-deploy audit", async () => {
+  const [wrangler, workflow, index, studio, workerV67, handlerV67, dnsUiV67] = await Promise.all([
     read("wrangler.production.jsonc"),
     read(".github/workflows/custom-domains-v41.yml"),
     read("index.html"),
     read("src/studio-domain-v41.js"),
+    read("cloudflare/worker-v67.mjs"),
+    read("server/domain-dns-v67-handler.mjs"),
+    read("src/domain-dns-v67.js"),
   ]);
 
   for (const marker of [
-    '"main": "./cloudflare/worker-v41.mjs"',
+    '"main": "./cloudflare/worker-v67.mjs"',
     '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"',
+    '"CUSTOM_DOMAIN_DNS_V67": "true"',
+    '"CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "connect.ngeblogging.com"',
     '"CLOUDFLARE_WORKER_SERVICE": "ngeblogging"',
     '"CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls"',
     '"pattern": "ngeblogging.com/*"',
@@ -57,11 +62,35 @@ test("production routes and full-zone post-deploy audit are preserved", async ()
     "siteCapacity",
   ]) assert.ok(workflow.includes(marker), marker);
 
+  for (const marker of [
+    'import baseWorker from "./worker-v41.mjs"',
+    "CUSTOM_DOMAIN_DNS_V67",
+    "handleDomainDnsV67Request",
+    "customDomainDnsV67",
+  ]) assert.ok(workerV67.includes(marker), marker);
+
+  for (const marker of [
+    "connect.ngeblogging.com",
+    "cloudflare-custom-hostnames",
+    "user-jwt-rls",
+    "verifyDnsContract",
+    "findOrCreateProvider",
+    'method: "http"',
+    "status: state.status",
+  ]) assert.ok(handlerV67.includes(marker), marker);
+  assert.doesNotMatch(handlerV67, /SUPABASE_SERVICE_ROLE_KEY|service_role/);
+
+  for (const marker of ["2 RECORD DNS WAJIB", "Host:", "DNS only / proxy nonaktif", "Salin 2 record"]) {
+    assert.ok(dnsUiV67.includes(marker), marker);
+  }
+
   assert.doesNotMatch(workflow, /custom_hostnames\?per_page|CLOUDFLARE_CUSTOM_HOSTNAMES_READY|wrangler secret bulk/);
   assert.ok(index.includes('/src/studio-layout-device-v40.js'));
   assert.ok(index.includes('/src/studio-domain-v41.js'));
   assert.ok(index.includes('/src/domain-full-zone-v54.js'));
   assert.ok(index.includes('/src/domain-operation-authority-v65.js'));
+  assert.ok(index.includes('/src/domain-dns-v67.js'));
+  assert.ok(index.includes('/src/domain-dns-v67.css'));
   assert.ok(studio.includes("Penyimpanan JWT + RLS"));
   assert.ok(studio.includes("service-role server tidak diperlukan"));
 });

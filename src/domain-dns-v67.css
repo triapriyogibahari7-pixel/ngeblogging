@@ -1,0 +1,71 @@
+.dfz-root[data-domain-dns-v67] .dfz-nameservers {
+  border: 1px solid color-mix(in srgb, #2d6edf 26%, transparent);
+  background: linear-gradient(145deg, color-mix(in srgb, #2d6edf 7%, white), white 58%);
+  box-shadow: 0 14px 34px rgba(24, 53, 99, .08);
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-nameservers > div {
+  align-items: center;
+  min-height: 70px;
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-nameservers > div > span {
+  display: grid;
+  gap: 3px;
+  min-width: min(230px, 35%);
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-nameservers > div > span b {
+  width: max-content;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: color-mix(in srgb, #2d6edf 12%, white);
+  color: #1e55b6;
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-nameservers > div > span small {
+  overflow-wrap: anywhere;
+  color: #526072;
+  font-size: 12px;
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-nameservers code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 13px;
+  color: #14294a;
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-nameservers [data-domain-dns-purpose="ownership"] {
+  background: color-mix(in srgb, #16a36a 5%, white);
+}
+
+.dfz-root[data-domain-dns-v67] .dfz-domain-dns-note {
+  margin: 10px 0 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, #f6a700 11%, white);
+  color: #674a08;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .dfz-root[data-domain-dns-v67] .dfz-nameservers > div {
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+  }
+
+  .dfz-root[data-domain-dns-v67] .dfz-nameservers > div > span,
+  .dfz-root[data-domain-dns-v67] .dfz-nameservers code {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  .dfz-root[data-domain-dns-v67] .dfz-nameservers > div > button {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
