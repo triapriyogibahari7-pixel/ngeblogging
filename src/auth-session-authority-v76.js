@@ -7,6 +7,7 @@ import {
 } from "./lib/auth-session-v76.js";
 
 const REDIRECT_GUARD = "ngeblogging-session-reauth-v76";
+const nativeFetch = window.fetch.bind(window);
 let redirecting = false;
 
 function callbackInProgress() {
@@ -32,6 +33,38 @@ async function redirectToSignIn(message) {
   window.location.replace(`${url.pathname}${url.search}${url.hash}`);
 }
 
+function announceInvalidSession(error) {
+  window.dispatchEvent(new CustomEvent("ngeblogging:session-invalid", {
+    detail: {
+      code: SESSION_REAUTH_REQUIRED,
+      message: error?.message || error?.error || "Sesi sudah berakhir. Silakan masuk kembali.",
+      release: AUTH_SESSION_RELEASE,
+    },
+  }));
+}
+
+function requestUrl(input) {
+  try {
+    return new URL(input instanceof Request ? input.url : String(input), window.location.href);
+  } catch {
+    return null;
+  }
+}
+
+window.fetch = async function sessionAwareFetch(input, init) {
+  const response = await nativeFetch(input, init);
+  if (![401, 403].includes(response.status)) return response;
+  const url = requestUrl(input);
+  if (!url || !url.pathname.startsWith("/api/domains/") && !url.pathname.startsWith("/api/domain-redirects/")) return response;
+  const payload = await response.clone().json().catch(() => ({}));
+  const error = Object.assign(new Error(payload.error || "Sesi sudah berakhir. Silakan masuk kembali."), {
+    code: payload.code || "INVALID_SESSION",
+    status: response.status,
+  });
+  if (isSessionReauthError(error)) announceInvalidSession(error);
+  return response;
+};
+
 async function verifyBrowserSession() {
   if (callbackInProgress()) return;
   try {
@@ -39,9 +72,7 @@ async function verifyBrowserSession() {
     document.documentElement.dataset.authSessionAuthorityV76 = AUTH_SESSION_RELEASE;
   } catch (error) {
     if (isSessionReauthError(error)) {
-      window.dispatchEvent(new CustomEvent("ngeblogging:session-invalid", {
-        detail: { code: SESSION_REAUTH_REQUIRED, message: error.message, release: AUTH_SESSION_RELEASE },
-      }));
+      announceInvalidSession(error);
       await redirectToSignIn(error.message);
     }
   }
