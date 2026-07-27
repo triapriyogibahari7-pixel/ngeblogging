@@ -136,7 +136,7 @@ jobs:
               && analyticsCode === '202'
               && naraCode === '401'
               && operations === 'true'
-              && health.release === '2026.07.27-domain-api-v60'
+              && health.release === '2026.07.26-full-zone-v55'
               && health.domainRelease === '2026.07.27-full-zone-domains-v62'
               && health.customDomains === true
               && health.customDomainProvider === 'cloudflare-full-zone'
