@@ -30,7 +30,7 @@ jobs:
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
       CLOUDFLARE_SMOKE_TEST_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
-      API_SMOKE_TEST_URL: ${{ vars.API_SMOKE_TEST_URL || 'https://api.ngeblogging.com' }}
+      API_SMOKE_TEST_URL: ${{ vars.API_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
       WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
 
@@ -69,9 +69,9 @@ jobs:
           test -n "${CLOUDFLARE_WORKER_SERVICE}" || { echo "CLOUDFLARE_WORKER_SERVICE belum diisi"; exit 1; }
           [[ "${SUPABASE_URL}" == https://*.supabase.co ]] || { echo "SUPABASE_URL tidak valid"; exit 1; }
           [[ "${SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "SUPABASE_PUBLISHABLE_KEY tidak valid"; exit 1; }
-          [[ "${API_SMOKE_TEST_URL}" == https://api.ngeblogging.com ]] || { echo "API_SMOKE_TEST_URL harus memakai api.ngeblogging.com"; exit 1; }
+          [[ "${API_SMOKE_TEST_URL}" == https://*.workers.dev ]] || { echo "API_SMOKE_TEST_URL harus memakai Worker resmi yang dapat diverifikasi"; exit 1; }
           echo "DOMAIN_RUNTIME_EXPECTED=true" >> "${GITHUB_ENV}"
-          echo "Provider cloudflare-full-zone, API khusus, dan database JWT + RLS siap divalidasi."
+          echo "Provider cloudflare-full-zone, Worker API cadangan, dan database JWT + RLS siap divalidasi."
 
       - name: Resolve the active ngeblogging.com zone
         shell: bash
@@ -129,7 +129,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ ! "${RESOLVED_CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            echo "Route API Cloudflare dilewati karena token tidak memiliki Zone Read; route akan dibuktikan oleh smoke test apex, tenant, dan API khusus."
+            echo "Route API Cloudflare dilewati karena token tidak memiliki Zone Read; route akan dibuktikan oleh smoke test apex dan tenant, sedangkan API cadangan dibuktikan melalui workers.dev."
             exit 0
           fi
           curl -sS --fail-with-body \
@@ -141,7 +141,7 @@ jobs:
           import fs from 'node:fs';
           const payload = JSON.parse(fs.readFileSync('/tmp/routes.json', 'utf8'));
           if (payload.success !== true) throw new Error('Cloudflare route API tidak berhasil.');
-          const required = ['api.ngeblogging.com/*', 'ngeblogging.com/*', 'www.ngeblogging.com/*', '*.ngeblogging.com/*'];
+          const required = ['ngeblogging.com/*', 'www.ngeblogging.com/*', '*.ngeblogging.com/*'];
           const routes = new Map((payload.result || []).map((route) => [route.pattern, route.script || null]));
           const errors = required.filter((pattern) => routes.get(pattern) !== 'ngeblogging');
           if (errors.length) throw new Error(`Route resmi belum dimiliki Worker ngeblogging: ${errors.join(', ')}`);
@@ -164,7 +164,7 @@ jobs:
             && health.customDomainMode === 'full-zone-nameserver'
             && health.customDomainDatabaseMode === 'user-jwt-rls'
             && health.customDomainServiceRoleRequired === false
-            && health.domainApiOrigin === 'https://api.ngeblogging.com'
+            && health.domainApiOrigin === 'https://ngeblogging.triapriyogibahari7.workers.dev'
             && health.siteCapacity?.mode === 'fixed'
             && health.siteCapacity?.defaultLimit === 12
             && health.siteLimits?.maximum === 12;
@@ -189,7 +189,7 @@ jobs:
       # 2026.07.24-studio-v14
       # service-worker-v40
       # tenant-404
-      # api.ngeblogging.com
+      # ngeblogging.triapriyogibahari7.workers.dev
       # 2026.07.27-domain-api-v60
       - name: Verify Studio, Nara, PWA, tenant, full-zone, and domain API readiness
         shell: bash
@@ -224,7 +224,7 @@ jobs:
           if (health.customDomainBindings?.databaseAccess !== true) errors.push('health.customDomainBindings.databaseAccess');
           if (health.siteCapacity?.mode !== 'fixed' || health.siteCapacity?.defaultLimit !== 12) errors.push('health.siteCapacity');
           if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
-          if (apiHealth.status !== 'ok' || apiHealth.domainApiOrigin !== 'https://api.ngeblogging.com') errors.push('domain-api-health');
+          if (apiHealth.status !== 'ok' || apiHealth.domainApiOrigin !== 'https://ngeblogging.triapriyogibahari7.workers.dev') errors.push('domain-api-health');
           if (!apiHeaders.includes('x-ngeblogging-api-origin: cloudflare-worker-v60')) errors.push('domain-api-header');
           if (!preflightHeaders.includes('access-control-allow-origin: https://ngeblogging.netlify.app')) errors.push('domain-api-cors-origin');
           if (!preflightHeaders.includes('access-control-allow-headers: content-type, authorization, cache-control')) errors.push('domain-api-cors-headers');
@@ -241,7 +241,7 @@ jobs:
           }
           NODE
               then
-                echo "Studio, full-zone, API domain v60, CORS, PWA, dan tenant aktif terverifikasi."
+                echo "Studio, full-zone, Worker API domain v60, CORS, PWA, dan tenant aktif terverifikasi."
                 exit 0
               fi
             fi
@@ -264,7 +264,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone, dedicated domain API, CORS, UI, and live routes passed.',
+              description: 'Full-zone, Worker API fallback, CORS, UI, and live routes passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -279,6 +279,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone or dedicated domain API production verification failed.',
+              description: 'Full-zone or Worker API fallback production verification failed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
