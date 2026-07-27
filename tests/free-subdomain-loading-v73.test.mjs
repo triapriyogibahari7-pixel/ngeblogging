@@ -41,8 +41,10 @@ test("recovery loads before the full-zone domain authority and invalidates stale
     read("index.html"),
     read("public/sw.js"),
   ]);
-  const recovery = index.indexOf('/src/domain-free-subdomain-recovery-v73.js');
-  const fullZone = index.indexOf('/src/domain-full-zone-v54.js');
+  const recoveryTag = '<script type="module" src="/src/domain-free-subdomain-recovery-v73.js"></script>';
+  const fullZoneTag = '<script type="module" src="/src/domain-full-zone-v54.js"></script>';
+  const recovery = index.indexOf(recoveryTag);
+  const fullZone = index.indexOf(fullZoneTag);
   assert.ok(recovery > 0, "recovery runtime missing");
   assert.ok(fullZone > recovery, "recovery must load before full-zone UI");
   assert.ok(index.includes('name="ngeblogging-free-subdomain-runtime"'));
