@@ -2,6 +2,7 @@ import baseWorker from "./worker-v37.mjs";
 import { freeDomainReadiness, handleFreeDomainRequest } from "../server/free-domain-handler.mjs";
 
 const RELEASE = "2026.07.27-full-zone-domains-v62";
+const LEGACY_FULL_ZONE_RELEASE = "2026.07.26-full-zone-domains-v55";
 const LEGACY_DOMAIN_RELEASE = "2026.07.26-custom-domains-v41";
 
 function databaseAccessReady(env) {
@@ -100,7 +101,7 @@ async function enrichHealth(response, env) {
       ...payload,
       domainRelease: RELEASE,
       domainReleaseCurrent: RELEASE,
-      domainReleaseCompatibility: LEGACY_DOMAIN_RELEASE,
+      domainReleaseCompatibility: [LEGACY_FULL_ZONE_RELEASE, LEGACY_DOMAIN_RELEASE],
       customDomains: Boolean(domain.ready || domain.enabled),
       customDomainProvider: domain.provider,
       customDomainMode: domain.mode,
