@@ -1,33 +1,7 @@
 const RELEASE = "studio-domain-backup-v35-20260725";
-const VIEW_SELECTOR = ".sn-main > .sn-view-pad";
+const DOMAIN_OWNER = "domain-manager-v78-20260727";
 const BACKUP_SELECTOR = "#ngeblogging-backup-center";
 let frame = 0;
-
-function normalizeDomain(view) {
-  if (!(view instanceof Element)) return;
-  const title = view.querySelector(":scope > .sn-page-title");
-  const heading = title?.querySelector("h1");
-  if (!title || !heading || heading.textContent.trim() !== "Domain & publikasi") return;
-
-  view.classList.add("sn-domain-view-v35");
-  title.classList.add("sn-domain-title-v35");
-
-  const card = view.querySelector(":scope > .sn-domain-card");
-  const action = title.querySelector(":scope > .sn-secondary-link, :scope > a, :scope > button");
-  let row = view.querySelector(":scope > .sn-domain-preview-row-v35");
-
-  if (!row) {
-    row = document.createElement("div");
-    row.className = "sn-domain-preview-row-v35";
-    row.setAttribute("role", "group");
-    row.setAttribute("aria-label", "Pratinjau situs publik");
-    title.insertAdjacentElement("afterend", row);
-  }
-
-  if (action && action.parentElement !== row) row.append(action);
-  if (card && row.nextElementSibling !== card) row.insertAdjacentElement("afterend", card);
-  card?.classList.add("sn-domain-card-v35");
-}
 
 function normalizeBackup(section) {
   if (!(section instanceof Element)) return;
@@ -44,7 +18,8 @@ function normalizeBackup(section) {
 
 function scan() {
   document.documentElement.dataset.studioDomainBackupV35 = RELEASE;
-  document.querySelectorAll(VIEW_SELECTOR).forEach(normalizeDomain);
+  document.documentElement.dataset.domainLayoutOwner = DOMAIN_OWNER;
+  // Halaman Domain tidak lagi diubah oleh runtime v35. Domain Manager v78 memiliki satu root terisolasi.
   const backup = document.querySelector(BACKUP_SELECTOR);
   if (backup) normalizeBackup(backup);
 }
