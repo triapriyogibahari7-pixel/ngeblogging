@@ -73,6 +73,18 @@ function repairNotice() {
   const node = notice();
   if (!node) return;
   const text = node.textContent || "";
+
+  /*
+   * Begitu server mengembalikan baris domain (verifying maupun active),
+   * banner kegagalan lama tidak lagi mencerminkan keadaan otoritatif.
+   */
+  if (connectedDomain()?.hostname && !node.dataset.domainV65Diagnostic) {
+    node.remove();
+    lastDiagnostic = null;
+    window.__ngebloggingLastDomainDiagnostic = null;
+    return;
+  }
+
   if (!/Permintaan domain belum berhasil|Permintaan domain tidak selesai/i.test(text)) return;
 
   const data = lastDiagnostic || window.__ngebloggingLastDomainDiagnostic;
