@@ -4,8 +4,9 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-const [worker, canonical, failover, operation, index, serviceWorker] = await Promise.all([
+const [worker, pending, canonical, failover, operation, index, serviceWorker] = await Promise.all([
   read("cloudflare/worker-v41.mjs"),
+  read("server/pending-full-zone-registration.mjs"),
   read("server/canonical-domain-redirect.mjs"),
   read("src/api-origin-failover-v60.js"),
   read("src/domain-operation-authority-v65.js"),
@@ -21,6 +22,17 @@ test("v65 retries transient full-zone registration and never emits an empty doma
   assert.match(worker, /FULL_ZONE_NAMESERVERS_UNAVAILABLE/);
 });
 
+test("a created Cloudflare zone is accepted even while nameservers are still provisioning", () => {
+  assert.match(worker, /recoverPendingFullZoneRegistration/);
+  assert.match(worker, /pendingZoneAcceptance: true/);
+  assert.match(pending, /status: "verifying"/);
+  assert.match(pending, /provisioning_state/);
+  assert.match(pending, /awaiting-nameservers/);
+  assert.match(pending, /automatic_refresh: true/);
+  assert.match(pending, /status,\n    headers/);
+  assert.match(pending, /zoneState\.nameServers\.length >= 2 \? \(existing \? 200 : 201\) : 202/);
+});
+
 test("browser failover retries empty 4xx and 5xx responses through the Worker origin", () => {
   assert.match(failover, /api-origin-failover-v65-20260727/);
   assert.match(failover, /!response\.ok && \(!validJson \|\| !usefulError \|\| retryableStatus\)/);
@@ -30,8 +42,11 @@ test("browser failover retries empty 4xx and 5xx responses through the Worker or
 });
 
 test("active custom domain becomes canonical while the free subdomain stays a fallback", () => {
-  assert.match(canonical, /site_domains\?select=id,hostname,status,provider_status,ssl_status/);
+  assert.match(canonical, /site_domains\?select=id,hostname,status,provider_status,ssl_status,is_primary/);
   assert.match(canonical, /status=eq\.active/);
+  assert.match(canonical, /is_primary=eq\.true/);
+  assert.match(canonical, /provider_status \|\| ""\)\.toLowerCase\(\) === "active"/);
+  assert.match(canonical, /ssl_status \|\| ""\)\.toLowerCase\(\) === "active"/);
   assert.match(canonical, /status: 308/);
   assert.match(canonical, /x-ngeblogging-canonical-domain/);
   assert.match(canonical, /ngeblogging-free-preview/);
@@ -44,6 +59,8 @@ test("Studio shows exact diagnostics, auto-checks propagation, and promotes the 
   assert.match(operation, /Pemasangan domain belum selesai/);
   assert.match(operation, /Buka domain utama/);
   assert.match(operation, /ALAMAT CADANGAN/);
+  assert.match(operation, /Buka alamat cadangan/);
+  assert.match(operation, /ngeblogging-free-preview=1/);
   assert.match(operation, /button\.click\(\)/);
 });
 
