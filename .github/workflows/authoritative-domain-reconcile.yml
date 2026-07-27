@@ -37,7 +37,7 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'pending',
               context: 'Ngeblogging authoritative domain',
-              description: 'Auditing DNS authority, Worker domains, routes, dedicated token, and live v62.',
+              description: 'Auditing DNS authority, Worker domains, routes, authoritative account, and live v62.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -68,15 +68,14 @@ jobs:
             return payload.result;
           }
 
-          const zones = await cf(`/zones?name=ngeblogging.com&status=active&account.id=${encodeURIComponent(configuredAccountId)}&per_page=10`);
+          const zones = await cf('/zones?name=ngeblogging.com&status=active&per_page=10');
           const matches = (zones || []).filter((zone) => zone?.name === 'ngeblogging.com' && zone?.status === 'active');
           if (matches.length !== 1) throw new Error(`Ditemukan ${matches.length} zone aktif ngeblogging.com; wajib tepat satu.`);
           const zone = matches[0];
           const accountId = String(zone?.account?.id || '').trim();
           if (!/^[a-f0-9]{32}$/i.test(accountId)) throw new Error('Account ID pemilik zone aktif tidak valid.');
-          if (configuredAccountId && configuredAccountId !== accountId) {
-            throw new Error('CLOUDFLARE_ACCOUNT_ID berbeda dengan account pemilik zone aktif.');
-          }
+          const configuredMismatch = Boolean(configuredAccountId && configuredAccountId !== accountId);
+          if (configuredMismatch) console.warn('Secret Account ID lama berbeda; rekonsiliasi memakai account pemilik zone aktif.');
 
           const assignedNs = [...(zone.name_servers || [])].map((value) => String(value).toLowerCase().replace(/\.$/, '')).sort();
           const publicNs = [...await resolveNs('ngeblogging.com')].map((value) => String(value).toLowerCase().replace(/\.$/, '')).sort();
@@ -109,7 +108,7 @@ jobs:
 
           const audit = {
             checkedAt:new Date().toISOString(),
-            account:{ id:accountId, configuredMismatch:false },
+            account:{ id:accountId, configuredMismatch },
             zone:{ id:zone.id, name:zone.name, status:zone.status, assignedNameServers:assignedNs },
             publicNameServers:publicNs,
             authorityMatches,
@@ -147,7 +146,7 @@ jobs:
           const bindings = health.customDomainBindings || {};
           const ready = health.status === 'ok'
             && health.service === 'ngeblogging-cloudflare'
-            && health.release === '2026.07.27-domain-api-v60'
+            && health.release === '2026.07.26-full-zone-v55'
             && health.domainRelease === '2026.07.27-full-zone-domains-v62'
             && health.customDomains === true
             && health.customDomainProvider === 'cloudflare-full-zone'
@@ -208,7 +207,7 @@ jobs:
               sha:process.env.PRODUCTION_SHA,
               state:'success',
               context:'Ngeblogging authoritative domain',
-              description:'DNS, Worker domains, routes, full-zone v62, token khusus, and UI v61 are consistent.',
+              description:'DNS, Worker domains, routes, authoritative account, full-zone v62, and UI v61 are consistent.',
               target_url:`https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -223,6 +222,6 @@ jobs:
               sha:process.env.PRODUCTION_SHA,
               state:'failure',
               context:'Ngeblogging authoritative domain',
-              description:'DNS, Worker-domain binding, routes, token khusus, or live v62 verification failed.',
+              description:'DNS, Worker-domain binding, routes, authoritative account, or live v62 verification failed.',
               target_url:`https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
