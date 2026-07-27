@@ -50,6 +50,6 @@ test("Studio shows exact diagnostics, auto-checks propagation, and promotes the 
 test("v65 is loaded last and rotates the PWA cache", () => {
   assert.match(index, /domain-operation-authority-v65\.css/);
   assert.match(index, /domain-operation-authority-v65\.js/);
-  assert.ok(index.indexOf("domain-operation-authority-v65.js") > index.indexOf("domain-feedback-authority-v60.js"));
+  assert.ok(index.lastIndexOf("domain-operation-authority-v65.js") > index.lastIndexOf("domain-feedback-authority-v60.js"));
   assert.match(serviceWorker, /ngeblogging-app-v65-20260727/);
 });
