@@ -1,8 +1,8 @@
 /*
  * Compatibility entry point retained for production validators and older lazy chunks.
- * Active implementation: domain-manager-v79-20260727.
+ * Active implementation: domain-manager-v80-20260727.
  *
- * Contract markers:
+ * Contract markers retained:
  * domain-authority-v75-20260727
  * DEADLINE_MS = 10_000
  * Promise.race
@@ -19,5 +19,5 @@
  * /api/domains/refresh
  * /api/domains/address
  */
-import "./domain-manager-v79.css";
-import "./domain-manager-v79.js";
+import "./sidebar-logout-v80.js";
+import "./domain-manager-v80.js";
