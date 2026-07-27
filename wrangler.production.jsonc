@@ -8,6 +8,10 @@
   "workers_dev": true,
   "routes": [
     {
+      "pattern": "*/*",
+      "zone_name": "ngeblogging.com"
+    },
+    {
       "pattern": "ngeblogging.com/*",
       "zone_name": "ngeblogging.com"
     },
@@ -44,7 +48,7 @@
     "CLOUDFLARE_CUSTOM_HOSTNAMES_READY": "true",
     "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",
     "CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "connect.ngeblogging.com",
-    "CLOUDFLARE_CUSTOM_ORIGIN": "ngeblogging.com",
+    "CLOUDFLARE_CUSTOM_ORIGIN": "connect.ngeblogging.com",
     "CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls",
     "NETLIFY_SITE_HOSTNAME": "ngeblogging.netlify.app",
     "QWEN_REGION": "singapore",

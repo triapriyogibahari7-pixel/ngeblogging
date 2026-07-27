@@ -129,6 +129,7 @@ if (configuredAccountId && configuredAccountId !== accountId) {
 const source = await readFile(inputPath, "utf8");
 const config = JSON.parse(source);
 const requiredPatterns = [
+  "*/*",
   "ngeblogging.com/*",
   "www.ngeblogging.com/*",
   "*.ngeblogging.com/*",
@@ -138,15 +139,15 @@ config.account_id = accountId;
 
 if (validCloudflareId(zoneId)) {
   config.routes = requiredPatterns.map((pattern) => ({ pattern, zone_id: zoneId }));
-  console.log("Route produksi resmi dikunci memakai Zone ID aktif.");
+  console.log("Route produksi resmi dan route catch-all SaaS dikunci memakai Zone ID aktif.");
 } else {
   /*
    * Token produksi dapat mengelola Worker dan Worker Domains, tetapi mungkin
    * tidak memiliki Zone Read. Jangan meminta Wrangler menyelesaikan zone_name
    * karena itu juga membutuhkan Zone Read. Menghapus routes dari konfigurasi
-   * upload hanya memperbarui kode/aset Worker; route apex, www, dan wildcard
-   * yang sudah aktif tetap dipertahankan di Cloudflare. Jalur API cadangan
-   * dibuktikan langsung melalui hostname workers.dev resmi.
+   * upload hanya memperbarui kode/aset Worker; route yang sudah aktif tetap
+   * dipertahankan di Cloudflare. Jalur API cadangan dibuktikan langsung melalui
+   * hostname workers.dev resmi.
    */
   delete config.routes;
   console.warn("Zone ID tidak tersedia; upload Worker tidak menulis ulang route yang sudah aktif.");
