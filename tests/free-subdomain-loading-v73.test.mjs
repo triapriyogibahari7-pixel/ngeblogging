@@ -7,6 +7,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("persistent free subdomain is recovered independently from custom-domain API", async () => {
   const runtime = await read("src/domain-free-subdomain-recovery-v73.js");
   for (const marker of [
+    "domain-loading-recovery-v74-20260727",
     "domain-free-subdomain-recovery-v73-20260727",
     "ACTIVE_SITE_STORAGE_KEY",
     "listUserSites",
@@ -19,6 +20,25 @@ test("persistent free subdomain is recovered independently from custom-domain AP
     "SITE_CONTEXT_TIMEOUT",
   ]) assert.ok(runtime.includes(marker), marker);
   assert.doesNotMatch(runtime, /SUPABASE_SERVICE_ROLE_KEY|service_role/);
+});
+
+test("domain loading has a hard API deadline and cannot spin forever", async () => {
+  const runtime = await read("src/domain-free-subdomain-recovery-v73.js");
+  for (const marker of [
+    "DOMAIN_API_DEADLINE_MS = 12_000",
+    "DOMAIN_SPINNER_DEADLINE_MS = 14_000",
+    "boundedDomainFetch",
+    "DOMAIN_API_HARD_DEADLINE",
+    "deadlineResponse",
+    "stopInfiniteSpinner",
+    "Panel domain berhenti menunggu.",
+    "data-action=\"reload\"",
+    "Subdomain gratis tetap aktif",
+    "ngeblogging:domain-api-diagnostic",
+  ]) assert.ok(runtime.includes(marker), marker);
+  assert.ok(runtime.includes('url.pathname.startsWith("/api/domains/")'));
+  assert.ok(runtime.includes('url.pathname.startsWith("/api/domain-redirects/")'));
+  assert.ok(runtime.includes("window.fetch = boundedDomainFetch"));
 });
 
 test("domain API failover has bounded primary and backup latency", async () => {
@@ -48,6 +68,7 @@ test("recovery loads before the full-zone domain authority and invalidates stale
   assert.ok(recovery > 0, "recovery runtime missing");
   assert.ok(fullZone > recovery, "recovery must load before full-zone UI");
   assert.ok(index.includes('name="ngeblogging-free-subdomain-runtime"'));
-  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v73-20260727"'));
+  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v74-20260727"'));
+  assert.ok(worker.includes("ngeblogging-app-v73-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v65-20260727"));
 });
