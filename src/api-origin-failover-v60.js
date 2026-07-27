@@ -1,5 +1,6 @@
 const RELEASE = "api-origin-failover-v65-20260727";
-// Compatibility markers: api-origin-failover-v61-20260727, api-origin-failover-v60-20260727
+const LEGACY_V61_RELEASE = "api-origin-failover-v61-20260727";
+const LEGACY_V60_RELEASE = "api-origin-failover-v60-20260727";
 const API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
 const nativeFetch = window.fetch.bind(window);
 
@@ -192,8 +193,8 @@ async function resilientFetch(input, init) {
 
 if (!window.__ngebloggingApiOriginFailoverV65) {
   window.__ngebloggingApiOriginFailoverV65 = RELEASE;
-  window.__ngebloggingApiOriginFailoverV61 = RELEASE;
-  window.__ngebloggingApiOriginFailoverV60 = RELEASE;
+  window.__ngebloggingApiOriginFailoverV61 = LEGACY_V61_RELEASE;
+  window.__ngebloggingApiOriginFailoverV60 = LEGACY_V60_RELEASE;
   window.fetch = resilientFetch;
   document.documentElement.dataset.apiOriginFailoverV65 = RELEASE;
 }
