@@ -1,1 +1,1 @@
-export { default } from "./StudioSecure.jsx";
+export { default } from "./StudioOnboardingGate.jsx";
