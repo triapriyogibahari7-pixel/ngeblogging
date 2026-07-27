@@ -3,11 +3,14 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 
 const studio = readFileSync(new URL("../src/Studio.jsx",import.meta.url),"utf8");
+const gate = readFileSync(new URL("../src/StudioOnboardingGate.jsx",import.meta.url),"utf8");
 const secure = readFileSync(new URL("../src/StudioSecure.jsx",import.meta.url),"utf8");
 const center = readFileSync(new URL("../src/BackupCenter.jsx",import.meta.url),"utf8");
 
-test("Studio routes through the secure wrapper",()=>{
-  assert.match(studio,/StudioSecure\.jsx/);
+test("Studio routes through onboarding and the secure wrapper",()=>{
+  assert.match(studio,/StudioOnboardingGate\.jsx/);
+  assert.match(gate,/StudioSecure\.jsx/);
+  assert.match(gate,/<StudioSecure \{\.\.\.props\}\/>/);
   assert.match(secure,/\.sn-save-settings/);
   assert.match(secure,/ngeblogging-settings-extras/);
   assert.match(secure,/saveButton\.insertAdjacentElement\("afterend", extras\)/);
