@@ -68,7 +68,8 @@ test("recovery loads before the full-zone domain authority and invalidates stale
   assert.ok(recovery > 0, "recovery runtime missing");
   assert.ok(fullZone > recovery, "recovery must load before full-zone UI");
   assert.ok(index.includes('name="ngeblogging-free-subdomain-runtime"'));
-  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v74-20260727"'));
+  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v75-20260727"'));
+  assert.ok(worker.includes("ngeblogging-app-v74-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v73-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v65-20260727"));
 });
