@@ -1,1 +1,171 @@
-x
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ArrowRight, BookHeart, BriefcaseBusiness, Building2, Check, FileText, Globe2,
+  LayoutTemplate, LoaderCircle, LogOut, MessageCircle, Newspaper, PenLine,
+  RefreshCw, Sparkles, Users,
+} from "lucide-react";
+import StudioSecure from "./StudioSecure.jsx";
+import { supabase, supabaseConfigured } from "./lib/supabase.js";
+import {
+  ACTIVE_SITE_STORAGE_KEY, createUserSite, listUserSites, setActiveSiteId,
+} from "./lib/studio-data.js";
+import "./site-onboarding-v75.css";
+import "./domain-authority-v75.css";
+import "./domain-authority-v75.js";
+
+const RELEASE = "first-site-onboarding-v75-20260727";
+const CHECK_TIMEOUT_MS = 10_000;
+const SITE_TYPES = [
+  { value: "blog", label: "Blog", description: "Tulisan, cerita, opini, dan publikasi pribadi.", icon: PenLine },
+  { value: "website", label: "Website", description: "Situs profesional untuk organisasi atau usaha.", icon: Building2 },
+  { value: "news", label: "Portal berita", description: "Redaksi, kategori, berita terbaru, dan halaman khusus.", icon: Newspaper },
+  { value: "forum", label: "Forum", description: "Diskusi bertopik, anggota, dan percakapan komunitas.", icon: MessageCircle },
+  { value: "community", label: "Komunitas", description: "Ruang anggota, pengumuman, kegiatan, dan kolaborasi.", icon: Users },
+  { value: "landing", label: "Landing page", description: "Halaman promosi, peluncuran, produk, atau kampanye.", icon: LayoutTemplate },
+  { value: "diary", label: "Diary", description: "Catatan harian dan perjalanan pribadi yang teratur.", icon: BookHeart },
+  { value: "portfolio", label: "Portofolio", description: "Karya, layanan, pengalaman, dan profil profesional.", icon: BriefcaseBusiness },
+  { value: "profile", label: "Profil", description: "Identitas digital, biodata, tautan, dan halaman personal.", icon: FileText },
+  { value: "knowledge", label: "Pusat pengetahuan", description: "Dokumentasi, panduan, FAQ, dan basis pengetahuan.", icon: Globe2 },
+];
+
+function normalizeSlug(value) {
+  return String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 63);
+}
+
+function withDeadline(promise, milliseconds, message) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = window.setTimeout(() => reject(Object.assign(new Error(message), { code: "ONBOARDING_TIMEOUT" })), milliseconds);
+    }),
+  ]).finally(() => window.clearTimeout(timer));
+}
+
+function preferredSite(sites) {
+  let preferredId = "";
+  try { preferredId = localStorage.getItem(ACTIVE_SITE_STORAGE_KEY) || ""; } catch { preferredId = ""; }
+  return sites.find((site) => site.id === preferredId) || sites[0] || null;
+}
+
+function publishActiveSite(site) {
+  if (!site?.id || !site?.slug) return;
+  setActiveSiteId(site.id);
+  window.__ngebloggingActiveSite = site;
+  document.documentElement.dataset.activeSiteId = site.id;
+  document.documentElement.dataset.activeSiteSlug = site.slug;
+  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-ready", { detail: site }));
+  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: site }));
+}
+
+function StartupState({ error, onRetry, onExit }) {
+  return <main className="so75-startup" data-release={RELEASE}>
+    <header><a href="/" aria-label="Ngeblogging">ngeblogging<span>.</span></a><button onClick={onExit}><LogOut/>Keluar</button></header>
+    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi akun belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Memeriksa situs Anda…</h1><p>Proses ini memiliki batas waktu. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
+  </main>;
+}
+
+function FirstSiteOnboarding({ user, onCreated, onExit }) {
+  const [draft, setDraft] = useState({ name: "", slug: "", description: "", blueprint: "blog" });
+  const [creating, setCreating] = useState(false);
+  const [message, setMessage] = useState("");
+  const [availability, setAvailability] = useState({ state: "idle", message: "Pilih subdomain unik Anda." });
+  const normalizedSlug = useMemo(() => normalizeSlug(draft.slug || draft.name), [draft.slug, draft.name]);
+
+  useEffect(() => {
+    if (normalizedSlug.length < 3 || !supabaseConfigured || !supabase) {
+      setAvailability({ state: "idle", message: "Subdomain minimal 3 karakter." });
+      return undefined;
+    }
+    let cancelled = false;
+    setAvailability({ state: "checking", message: "Memeriksa ketersediaan…" });
+    const timer = window.setTimeout(async () => {
+      try {
+        const { data, error } = await withDeadline(
+          supabase.rpc("is_site_slug_available", { candidate: normalizedSlug, excluding_site: null }),
+          7_000, "Pemeriksaan subdomain melewati batas waktu.",
+        );
+        if (cancelled) return;
+        if (error) throw error;
+        setAvailability(data === true
+          ? { state: "available", message: `${normalizedSlug}.ngeblogging.com tersedia.` }
+          : { state: "unavailable", message: "Subdomain sudah digunakan atau termasuk nama sistem." });
+      } catch (error) {
+        if (!cancelled) setAvailability({ state: "error", message: error.message || "Ketersediaan belum dapat diperiksa." });
+      }
+    }, 420);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [normalizedSlug]);
+
+  const updateName = (name) => setDraft((current) => ({
+    ...current,
+    name,
+    slug: current.slug && current.slug !== normalizeSlug(current.name) ? current.slug : normalizeSlug(name),
+  }));
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setMessage("");
+    const name = draft.name.trim();
+    const slug = normalizeSlug(draft.slug || draft.name);
+    if (name.length < 2) return setMessage("Nama situs minimal 2 karakter.");
+    if (slug.length < 3) return setMessage("Subdomain minimal 3 karakter.");
+    if (availability.state === "unavailable") return setMessage("Pilih subdomain lain yang masih tersedia.");
+    setCreating(true);
+    try {
+      const site = await withDeadline(createUserSite({
+        userId: user.id, name, slug, description: draft.description, blueprint: draft.blueprint,
+      }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
+      publishActiveSite(site);
+      onCreated(site);
+    } catch (error) {
+      setMessage(error.message || "Situs belum dapat dibuat.");
+    } finally { setCreating(false); }
+  };
+
+  return <main className="so75-shell" data-release={RELEASE}>
+    <header className="so75-topbar"><a className="so75-brand" href="/">ngeblogging<span>.</span></a><div><span>LANGKAH PERTAMA</span><button onClick={onExit}><LogOut/>Keluar</button></div></header>
+    <section className="so75-hero">
+      <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Beri nama pada<br/><em>tempat pertama Anda.</em></h1><p>Nama situs dan subdomain tidak diambil dari email. Anda menentukan sendiri identitas, tujuan, dan alamat gratisnya.</p><div className="so75-promise"><Check/><span>Subdomain gratis tetap tersedia</span><Check/><span>Domain pribadi dapat dipasang kemudian</span><Check/><span>Tidak diterbitkan tanpa persetujuan</span></div></div>
+      <form className="so75-form" onSubmit={submit}>
+        <div className="so75-progress"><span className="active">1</span><i/><span>2</span><i/><span>3</span><b>Identitas situs</b></div>
+        <fieldset><legend>Pilih jenis situs</legend><div className="so75-types">{SITE_TYPES.map(({ value, label, description, icon: Icon }) => <button key={value} type="button" className={draft.blueprint === value ? "active" : ""} onClick={() => setDraft((current) => ({ ...current, blueprint: value }))}><Icon/><span><b>{label}</b><small>{description}</small></span>{draft.blueprint === value ? <Check/> : null}</button>)}</div></fieldset>
+        <div className="so75-fields"><label><span>Nama situs</span><input value={draft.name} onChange={(event) => updateName(event.target.value)} placeholder="Contoh: Catatan Budi" autoFocus maxLength={100}/></label><label><span>Subdomain gratis</span><div className="so75-domain-input"><input value={draft.slug} onChange={(event) => setDraft((current) => ({ ...current, slug: normalizeSlug(event.target.value) }))} placeholder="catatan-budi" maxLength={63}/><strong>.ngeblogging.com</strong></div><small className={`so75-availability ${availability.state}`}>{availability.message}</small></label><label className="wide"><span>Deskripsi singkat <em>opsional</em></span><textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Jelaskan isi dan tujuan situs Anda." maxLength={1000}/></label></div>
+        <div className="so75-preview"><Globe2/><div><small>ALAMAT GRATIS ANDA</small><b>{normalizedSlug || "nama-situs"}.ngeblogging.com</b></div><i>Draf</i></div>
+        {message ? <p className="so75-error" role="alert">{message}</p> : null}
+        <button className="so75-primary so75-submit" disabled={creating || availability.state === "unavailable"} type="submit">{creating ? <><LoaderCircle/>Membuat ruang kerja…</> : <>Buat situs dan lanjutkan<ArrowRight/></>}</button>
+        <p className="so75-footnote">Situs dibuat sebagai draf. Anda dapat memilih tema, menulis konten, dan menerbitkannya saat sudah siap.</p>
+      </form>
+    </section>
+  </main>;
+}
+
+export default function StudioOnboardingGate(props) {
+  const [phase, setPhase] = useState("checking");
+  const [error, setError] = useState("");
+  const [run, setRun] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      setPhase("checking"); setError("");
+      if (!props.user?.id) { setError("Sesi pengguna tidak ditemukan. Silakan masuk kembali."); setPhase("error"); return; }
+      if (!supabaseConfigured || !supabase) { setError("Penyimpanan cloud belum dikonfigurasi."); setPhase("error"); return; }
+      try {
+        const sites = await withDeadline(listUserSites(props.user.id), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu. Tidak ada situs yang dibuat otomatis.");
+        if (cancelled) return;
+        const site = preferredSite(sites);
+        if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding");
+      } catch (nextError) {
+        if (!cancelled) { setError(nextError.message || "Daftar situs belum dapat dimuat."); setPhase("error"); }
+      }
+    };
+    check();
+    return () => { cancelled = true; };
+  }, [props.user?.id, run]);
+
+  if (phase === "ready") return <StudioSecure {...props}/>;
+  if (phase === "onboarding") return <FirstSiteOnboarding user={props.user} onExit={props.onExit} onCreated={() => setPhase("ready")}/>;
+  return <StartupState error={phase === "error" ? error : ""} onRetry={() => setRun((value) => value + 1)} onExit={props.onExit}/>;
+}
