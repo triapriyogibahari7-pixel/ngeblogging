@@ -99,15 +99,22 @@ test("revoked Supabase sessions refresh once, clear stale storage, and return to
   assert.ok(index.indexOf("auth-session-authority-v76.js") < index.indexOf("/src/main.jsx"));
 });
 
-test("v76 invalidates stale PWA caches while retaining v75 compatibility", async () => {
-  const [gate, worker] = await Promise.all([
+test("v77 force-recovers stale PWA windows while retaining v76 compatibility", async () => {
+  const [gate, worker, runtime] = await Promise.all([
     read("src/StudioOnboardingGate.jsx"),
     read("public/sw.js"),
+    read("src/pwa-runtime.js"),
   ]);
   assert.ok(gate.includes('import "./domain-authority-v75.js"'));
   assert.ok(gate.includes('import "./domain-authority-v75.css"'));
   assert.ok(gate.includes('import "./site-onboarding-v75.css"'));
-  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v76-20260727"'));
-  assert.ok(worker.includes("ngeblogging-app-v75-20260727"));
-  assert.ok(worker.includes("ngeblogging-app-v74-20260727"));
+  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v77-20260727"'));
+  assert.ok(worker.includes("self.clients.matchAll({ type: \"window\", includeUncontrolled: true })"));
+  assert.ok(worker.includes("await client.navigate(url.href)"));
+  assert.ok(worker.includes("NGE_BLOGGING_FORCE_RELOAD_V77"));
+  assert.ok(worker.includes("ngeblogging-app-v76-20260727"));
+  assert.ok(runtime.includes('const RELEASE = "ngeblogging-pwa-v77-20260727"'));
+  assert.ok(runtime.includes('navigator.serviceWorker.addEventListener("controllerchange"'));
+  assert.ok(runtime.includes("window.location.replace(url.href)"));
+  assert.ok(runtime.includes("ngeblogging-pwa-controller-v77"));
 });

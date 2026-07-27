@@ -32,7 +32,7 @@ const LEGACY_UI = [
   "nara-launcher-v20.js",
 ];
 
-test("main favicon and PWA v29 install without interaction-cancelling reloads", () => {
+test("main favicon and PWA install with a guarded one-time v77 recovery", () => {
   assert.match(index, /rel="icon" href="\/favicon\.svg"/);
   assert.match(index, /rel="manifest" href="\/site\.webmanifest"/);
   assert.match(index, /apple-mobile-web-app-title/);
@@ -42,14 +42,18 @@ test("main favicon and PWA v29 install without interaction-cancelling reloads", 
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.icons[0].src, "/favicon.svg");
   assert.match(manifest.icons[0].purpose, /maskable/);
-  assert.match(serviceWorker, /ngeblogging-app-v29-20260725/);
+  assert.match(serviceWorker, /ngeblogging-app-v77-20260727/);
   assert.match(serviceWorker, /async function networkFirst\(/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
-  assert.match(pwa, /ngeblogging-pwa-v23-20260725/);
+  assert.match(serviceWorker, /includeUncontrolled: true/);
+  assert.match(serviceWorker, /client\.navigate\(url\.href\)/);
+  assert.match(pwa, /ngeblogging-pwa-v77-20260727/);
   assert.match(pwa, /beforeinstallprompt/);
   assert.match(pwa, /navigator\.serviceWorker\.register\("\/sw\.js"/);
-  assert.match(pwa, /Never reload during a click, login, upload, edit, or Nara request/);
+  assert.match(pwa, /navigator\.serviceWorker\.addEventListener\("controllerchange"/);
+  assert.match(pwa, /sessionStorage\.setItem\(CONTROLLER_GUARD, RECOVERY_VALUE\)/);
+  assert.match(pwa, /window\.location\.replace\(url\.href\)/);
   assert.doesNotMatch(pwa, /window\.location\.reload/);
 });
 
