@@ -44,9 +44,11 @@ test("v61 keeps managed subdomains on one responsive line", () => {
 });
 
 test("v61 assets load last and rotate the PWA cache", () => {
-  assert.match(index, /domain-mobile-precision-v61\.css/);
-  assert.match(index, /domain-mobile-precision-v61\.js/);
-  assert.ok(index.indexOf("domain-mobile-precision-v61.css") > index.indexOf("domain-experience-authority-v59.css"));
-  assert.ok(index.indexOf("domain-mobile-precision-v61.js") > index.indexOf("domain-feedback-authority-v60.js"));
+  const precisionCss = '<link href="/src/domain-mobile-precision-v61.css" rel="stylesheet"/>';
+  const experienceCss = '<link href="/src/domain-experience-authority-v59.css" rel="stylesheet"/>';
+  const precisionScript = '<script type="module" src="/src/domain-mobile-precision-v61.js"></script>';
+  const feedbackScript = '<script type="module" src="/src/domain-feedback-authority-v60.js"></script>';
+  assert.ok(index.indexOf(precisionCss) > index.indexOf(experienceCss));
+  assert.ok(index.indexOf(precisionScript) > index.indexOf(feedbackScript));
   assert.match(sw, /ngeblogging-app-v61-20260727/);
 });
