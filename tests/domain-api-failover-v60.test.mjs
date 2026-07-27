@@ -15,8 +15,8 @@ const [failover, feedback, feedbackCss, worker, wrangler, index, netlify, sw] = 
   read("public/sw.js"),
 ]);
 
-test("v60 retries non-JSON domain API failures through the dedicated API hostname", () => {
-  assert.match(failover, /https:\/\/api\.ngeblogging\.com/);
+test("v60 retries non-JSON domain API failures through the verified Worker hostname", () => {
+  assert.match(failover, /https:\/\/ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.match(failover, /window\.fetch = resilientFetch/);
   assert.match(failover, /responseDetails/);
   assert.match(failover, /DOMAIN_API_ROUTE_UNAVAILABLE/);
@@ -32,11 +32,12 @@ test("v60 Cloudflare worker accepts authenticated cross-origin preflight", () =>
   assert.match(worker, /2026\.07\.27-domain-api-v60/);
 });
 
-test("v60 uses a dedicated API route and removes the recursive Netlify proxy", () => {
-  assert.match(wrangler, /api\.ngeblogging\.com\/\*/);
+test("v60 uses a deployable Worker API fallback and removes the recursive Netlify proxy", () => {
+  assert.doesNotMatch(wrangler, /api\.ngeblogging\.com\/\*/);
   assert.match(wrangler, /PUBLIC_API_ORIGIN/);
+  assert.match(wrangler, /ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.match(wrangler, /ngeblogging\.netlify\.app/);
-  assert.match(netlify, /https:\/\/api\.ngeblogging\.com/);
+  assert.match(netlify, /https:\/\/ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.doesNotMatch(netlify, /"\/api\/\*\s+https:\/\/ngeblogging\.com\/api\/:splat/);
 });
 
@@ -56,5 +57,6 @@ test("v60 loads before the domain runtime and rotates the PWA cache", () => {
   assert.ok(failoverPosition > 0 && failoverPosition < domainPosition);
   assert.ok(feedbackPosition > v59Position);
   assert.match(index, /domain-feedback-authority-v60\.css/);
+  assert.match(index, /ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.match(sw, /ngeblogging-app-v60-20260727/);
 });
