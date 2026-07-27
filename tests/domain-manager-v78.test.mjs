@@ -5,8 +5,9 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("domain manager v80 is the only active domain DOM writer and follows the global workspace", async () => {
-  const [entry, manager, archived, operations, legacy, isolatedCss, navigation] = await Promise.all([
+  const [entry, secure, manager, archived, operations, legacy, isolatedCss, navigation] = await Promise.all([
     read("src/domain-authority-v75.js"),
+    read("src/StudioSecure.jsx"),
     read("src/domain-manager-v80.js"),
     read("src/domain-manager-v79.js"),
     read("src/studio-operations-v41.js"),
@@ -16,7 +17,9 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   ]);
 
   assert.ok(entry.includes('import "./domain-manager-v80.js"'));
-  assert.ok(entry.includes('import "./sidebar-logout-v80.js"'));
+  assert.doesNotMatch(entry, /sidebar-logout-v80\.js/);
+  assert.ok(secure.includes('import "./sidebar-logout-v80.js"'));
+  assert.ok(secure.includes("sidebar-global-v83-20260728"));
   assert.doesNotMatch(entry, /domain-manager-v79\.js|domain-manager-v79\.css/);
   for (const marker of [
     "domain-manager-v80-20260727",
