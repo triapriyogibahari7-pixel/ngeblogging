@@ -10,12 +10,14 @@ test("v35 loads after v34 and its runtime is last among the v35 pair", async () 
   assert.ok(html.indexOf("studio-domain-backup-v35.js") > html.indexOf("studio-content-flow-v34.js"));
 });
 
-test("domain preview is moved into an independent row before the hostname card", async () => {
+test("legacy v35 no longer moves domain preview or hostname cards", async () => {
   const runtime = await read("src/studio-domain-backup-v35.js");
-  assert.match(runtime, /Domain & publikasi/);
-  assert.match(runtime, /sn-domain-preview-row-v35/);
-  assert.match(runtime, /row\.append\(action\)/);
-  assert.match(runtime, /row\.insertAdjacentElement\("afterend", card\)/);
+  assert.match(runtime, /domain-manager-v78-20260727/);
+  assert.match(runtime, /Halaman Domain tidak lagi diubah/);
+  assert.doesNotMatch(runtime, /normalizeDomain/);
+  assert.doesNotMatch(runtime, /sn-domain-preview-row-v35/);
+  assert.doesNotMatch(runtime, /row\.append\(action\)/);
+  assert.doesNotMatch(runtime, /insertAdjacentElement\("afterend", card\)/);
 });
 
 test("backup cards and headings have explicit mobile-safe normal flow", async () => {
