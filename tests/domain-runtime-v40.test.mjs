@@ -24,9 +24,12 @@ test("health exposes full-zone runtime binding readiness without secret values",
 test("Cloudflare workflow safely provisions full-zone bindings and reports missing ones", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
   for (const marker of [
-    "Resolve the active ngeblogging.com zone",
+    "Resolve authoritative Cloudflare zone and account",
+    "Verify dedicated custom-domain token permissions",
+    "RESOLVED_CLOUDFLARE_ACCOUNT_ID",
     "Build active-zone Wrangler configuration",
     "Synchronize available custom-domain runtime secrets",
+    "put_secret_if_present CLOUDFLARE_DOMAIN_API_TOKEN",
     "put_secret_if_present CLOUDFLARE_API_TOKEN",
     "CLOUDFLARE_ACCOUNT_ID",
     "CUSTOM_DOMAIN_PROVIDER",
