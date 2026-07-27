@@ -1,57 +1,28 @@
-name: Cloudflare for SaaS custom-domain origin
+name: Cloudflare for SaaS optional manual audit
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  statuses: write
 
 concurrency:
-  group: ngeblogging-custom-domain-saas-origin
+  group: ngeblogging-optional-saas-audit
   cancel-in-progress: true
 
 jobs:
-  provision:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     environment: cloudflare-production
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
       SAAS_ZONE_NAME: ngeblogging.com
-      SAAS_CNAME_TARGET: connect.ngeblogging.com
-      SAAS_WORKER_SERVICE: ngeblogging
       SAAS_HEALTH_URL: https://ngeblogging.com/api/health
 
     steps:
-      - name: Mark SaaS origin audit pending
-        uses: actions/github-script@v8
-        with:
-          script: |
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: 'pending',
-              context: 'Ngeblogging SaaS origin v69',
-              description: 'Provisioning the managed target, API-managed catch-all route, fallback origin, and Custom Hostnames access.',
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-            });
-
-      - name: Validate required Cloudflare credentials
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum tersedia"; exit 1; }
-          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum tersedia"; exit 1; }
-          [[ "${SAAS_ZONE_NAME}" == "ngeblogging.com" ]]
-          [[ "${SAAS_CNAME_TARGET}" == "connect.ngeblogging.com" ]]
-          [[ "${SAAS_WORKER_SERVICE}" == "ngeblogging" ]]
-
-      - name: Provision and verify Cloudflare for SaaS origin
+      - name: Read-only Cloudflare for SaaS capability audit
         shell: bash
         run: |
           set -euo pipefail
@@ -59,238 +30,98 @@ jobs:
           import fs from 'node:fs';
 
           const apiBase = 'https://api.cloudflare.com/client/v4';
-          const deployToken = String(process.env.CLOUDFLARE_API_TOKEN || '');
-          const domainToken = String(process.env.CLOUDFLARE_DOMAIN_API_TOKEN || '');
           const zoneName = String(process.env.SAAS_ZONE_NAME || '');
-          const target = String(process.env.SAAS_CNAME_TARGET || '');
-          const workerService = String(process.env.SAAS_WORKER_SERVICE || '');
           const healthUrl = String(process.env.SAAS_HEALTH_URL || '');
-          const evidencePath = '/tmp/ngeblogging-saas-origin-v69.json';
-          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+          const candidates = [
+            { source: 'domain', token: String(process.env.CLOUDFLARE_DOMAIN_API_TOKEN || '') },
+            { source: 'deploy', token: String(process.env.CLOUDFLARE_API_TOKEN || '') },
+          ].filter((candidate) => candidate.token);
+          const evidencePath = '/tmp/ngeblogging-optional-saas-v72.json';
           const evidence = {
             checkedAt: new Date().toISOString(),
-            release: '2026.07.27-saas-origin-v69',
+            release: '2026.07.27-optional-saas-audit-v72',
+            mode: 'manual-read-only',
+            productionProvider: 'cloudflare-full-zone',
+            requiredForProduction: false,
             zoneName,
-            target,
-            workerService,
             customHostnamesApi: false,
             customHostnamesTokenSource: null,
             customHostnamesTokenProbes: [],
-            dnsTarget: null,
-            fallbackOrigin: null,
-            catchAllWorkerRoute: false,
             health: null,
-            publicDns: null,
             error: null,
           };
 
-          async function raw(path, { token, method = 'GET', body } = {}) {
+          async function raw(path, token) {
             const response = await fetch(`${apiBase}${path}`, {
-              method,
-              headers: {
-                authorization: `Bearer ${token}`,
-                accept: 'application/json',
-                ...(body === undefined ? {} : { 'content-type': 'application/json' }),
-              },
-              ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+              headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
             });
             const payload = await response.json().catch(() => ({}));
             return { response, payload };
           }
 
-          async function required(path, { token, method = 'GET', body } = {}) {
-            const { response, payload } = await raw(path, { token, method, body });
-            if (!response.ok || payload?.success !== true) {
-              const messages = (payload?.errors || []).map((item) => `${item?.code || ''} ${item?.message || ''}`.trim()).join(' | ');
-              const error = new Error(`${method} ${path} gagal (HTTP ${response.status}): ${messages || 'respons Cloudflare tidak berhasil'}`);
-              error.httpStatus = response.status;
-              error.cloudflareErrors = payload?.errors || [];
-              throw error;
-            }
-            return payload.result;
-          }
-
-          let fatal = null;
           try {
-            const zones = await required(`/zones?name=${encodeURIComponent(zoneName)}&status=active&per_page=10`, { token: domainToken });
-            const matches = Array.isArray(zones) ? zones.filter((zone) => zone?.name === zoneName && zone?.status === 'active') : [];
-            if (matches.length !== 1) throw new Error(`Zone aktif ${zoneName} harus tepat satu, ditemukan ${matches.length}.`);
-            const zoneId = String(matches[0]?.id || '');
-            if (!/^[a-f0-9]{32}$/i.test(zoneId)) throw new Error('Zone ID Cloudflare tidak valid.');
-            evidence.zoneIdVerified = true;
-
-            const exactRecords = await required(`/zones/${zoneId}/dns_records?name=${encodeURIComponent(target)}&per_page=100`, { token: domainToken });
-            let record = Array.isArray(exactRecords) ? exactRecords.find((item) => item?.name === target) : null;
-            const conflicts = Array.isArray(exactRecords) ? exactRecords.filter((item) => item?.name === target && item?.id !== record?.id) : [];
-            if (conflicts.length) throw new Error(`${target} memiliki lebih dari satu record eksplisit; rapikan record sebelum aktivasi SaaS.`);
-
-            const desiredRecord = {
-              type: 'AAAA',
-              name: target,
-              content: '100::',
-              ttl: 1,
-              proxied: true,
-              comment: 'Ngeblogging Cloudflare for SaaS originless target v69',
-            };
-            if (!record) {
-              record = await required(`/zones/${zoneId}/dns_records`, { token: domainToken, method: 'POST', body: desiredRecord });
-            } else if (record.type !== 'AAAA') {
-              throw new Error(`${target} sudah memiliki record ${record.type}; diperlukan AAAA originless yang diproksi.`);
-            } else if (record.content !== '100::' || record.proxied !== true) {
-              record = await required(`/zones/${zoneId}/dns_records/${encodeURIComponent(record.id)}`, { token: domainToken, method: 'PATCH', body: desiredRecord });
+            if (!candidates.length) throw new Error('Token Cloudflare audit belum tersedia.');
+            let zoneId = '';
+            for (const candidate of candidates) {
+              const zones = await raw(`/zones?name=${encodeURIComponent(zoneName)}&status=active&per_page=10`, candidate.token);
+              const zone = Array.isArray(zones.payload?.result)
+                ? zones.payload.result.find((item) => item?.name === zoneName && item?.status === 'active')
+                : null;
+              if (zones.response.ok && zones.payload?.success === true && zone?.id) {
+                zoneId = String(zone.id);
+                break;
+              }
             }
-            if (record?.type !== 'AAAA' || record?.name !== target || record?.proxied !== true) {
-              throw new Error('Managed CNAME target belum menjadi record AAAA originless yang diproksi.');
-            }
-            evidence.dnsTarget = { type: record.type, name: record.name, proxied: record.proxied, originless: record.content === '100::' };
+            if (!/^[a-f0-9]{32}$/i.test(zoneId)) throw new Error(`Zone aktif ${zoneName} belum dapat dibaca oleh token audit.`);
 
-            let routes = await required(`/zones/${zoneId}/workers/routes`, { token: deployToken });
-            let catchAll = Array.isArray(routes) ? routes.find((route) => route?.pattern === '*/*') : null;
-            if (!catchAll) {
-              catchAll = await required(`/zones/${zoneId}/workers/routes`, {
-                token: deployToken,
-                method: 'POST',
-                body: { pattern: '*/*', script: workerService },
+            for (const candidate of candidates) {
+              const probe = await raw(`/zones/${zoneId}/custom_hostnames?per_page=5`, candidate.token);
+              const allowed = probe.response.ok
+                && probe.payload?.success === true
+                && Array.isArray(probe.payload?.result);
+              evidence.customHostnamesTokenProbes.push({
+                source: candidate.source,
+                httpStatus: probe.response.status,
+                allowed,
+                errors: probe.payload?.errors || [],
               });
-            } else if (catchAll?.script !== workerService) {
-              catchAll = await required(`/zones/${zoneId}/workers/routes/${encodeURIComponent(catchAll.id)}`, {
-                token: deployToken,
-                method: 'PUT',
-                body: { pattern: '*/*', script: workerService },
-              });
-            }
-            routes = await required(`/zones/${zoneId}/workers/routes`, { token: deployToken });
-            evidence.catchAllWorkerRoute = Array.isArray(routes)
-              && routes.some((route) => route?.pattern === '*/*' && route?.script === workerService);
-            if (!evidence.catchAllWorkerRoute) throw new Error('Route */* belum dimiliki Worker ngeblogging setelah provisioning API.');
-
-            let saasToken = null;
-            for (const candidate of [
-              { source: 'domain', token: domainToken },
-              { source: 'deploy', token: deployToken },
-            ]) {
-              const probe = await raw(`/zones/${zoneId}/custom_hostnames?per_page=5`, { token: candidate.token });
-              const messages = (probe.payload?.errors || []).map((item) => ({ code: item?.code, message: item?.message }));
-              const allowed = probe.response.ok && probe.payload?.success === true && Array.isArray(probe.payload?.result);
-              evidence.customHostnamesTokenProbes.push({ source: candidate.source, httpStatus: probe.response.status, allowed, errors: messages });
-              if (allowed && !saasToken) {
-                saasToken = candidate.token;
+              if (allowed && !evidence.customHostnamesTokenSource) {
                 evidence.customHostnamesTokenSource = candidate.source;
-                evidence.existingCustomHostnameCountSample = probe.payload.result.length;
+                evidence.customHostnamesApi = true;
               }
             }
-            if (!saasToken) {
-              throw new Error('Tidak ada token Cloudflare yang memiliki akses Custom Hostnames/SSL Certificates pada zone ngeblogging.com.');
-            }
-            evidence.customHostnamesApi = true;
 
-            let fallback = null;
-            const currentFallback = await raw(`/zones/${zoneId}/custom_hostnames/fallback_origin`, { token: saasToken });
-            if (currentFallback.response.ok && currentFallback.payload?.success === true) fallback = currentFallback.payload.result;
-            if (fallback?.origin !== target || fallback?.status !== 'active') {
-              await required(`/zones/${zoneId}/custom_hostnames/fallback_origin`, {
-                token: saasToken,
-                method: 'PUT',
-                body: { origin: target },
-              });
-            }
-
-            for (let attempt = 1; attempt <= 36; attempt += 1) {
-              fallback = await required(`/zones/${zoneId}/custom_hostnames/fallback_origin`, { token: saasToken });
-              if (fallback?.origin === target && fallback?.status === 'active') break;
-              if (['deployment_timed_out', 'deletion_timed_out'].includes(String(fallback?.status || ''))) {
-                throw new Error(`Fallback origin gagal aktif: ${fallback?.status}`);
-              }
-              await sleep(5_000);
-            }
-            if (fallback?.origin !== target || fallback?.status !== 'active') {
-              throw new Error(`Fallback origin ${target} belum aktif setelah pemeriksaan berulang.`);
-            }
-            evidence.fallbackOrigin = { origin: fallback.origin, status: fallback.status };
-
-            for (let attempt = 1; attempt <= 24; attempt += 1) {
-              const response = await fetch(`${healthUrl}?saas_origin_v69=${Date.now()}-${attempt}`, {
-                headers: { accept: 'application/json', 'cache-control': 'no-cache' },
-              }).catch(() => null);
-              if (response?.ok) {
-                const health = await response.json().catch(() => null);
-                const v67 = health?.customDomainDnsV67;
-                if (health?.status === 'ok' && v67?.enabled === true && v67?.activationReady === true && v67?.dnsMode === 'two-cname' && v67?.cnameTarget === target) {
-                  evidence.health = {
-                    status: health.status,
-                    engine: v67.release,
-                    activationReady: v67.activationReady,
-                    dnsMode: v67.dnsMode,
-                    cnameTarget: v67.cnameTarget,
-                  };
-                  break;
-                }
-              }
-              await sleep(5_000);
-            }
-            if (!evidence.health) throw new Error('Health produksi belum melaporkan mesin two-CNAME v67 siap.');
-
-            const dnsResults = [];
-            for (const type of ['A', 'AAAA']) {
-              const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(target)}&type=${type}`, {
-                headers: { accept: 'application/dns-json' },
-              });
-              const payload = await response.json();
-              dnsResults.push({ type, status: payload?.Status, answerCount: Array.isArray(payload?.Answer) ? payload.Answer.length : 0 });
-            }
-            if (!dnsResults.some((item) => item.status === 0 && item.answerCount > 0)) {
-              throw new Error(`${target} belum dapat di-resolve melalui DNS publik.`);
-            }
-            evidence.publicDns = dnsResults;
-          } catch (error) {
-            fatal = error;
-            evidence.error = {
-              message: String(error?.message || error),
-              httpStatus: error?.httpStatus || null,
-              cloudflareErrors: error?.cloudflareErrors || [],
+            const healthResponse = await fetch(`${healthUrl}?optional_saas_audit=${Date.now()}`, {
+              headers: { accept: 'application/json', 'cache-control': 'no-cache' },
+            });
+            const health = await healthResponse.json().catch(() => ({}));
+            evidence.health = {
+              httpStatus: healthResponse.status,
+              status: health?.status || null,
+              productionProvider: health?.customDomainProvider || null,
+              paidSaasRequired: health?.customDomainPaidSaasRequired ?? null,
+              freeSubdomainPersistent: health?.customDomainArchitecture?.freeSubdomainPersistent ?? null,
             };
+
+            if (health?.customDomainProvider !== 'cloudflare-full-zone') {
+              throw new Error('Produksi tidak melaporkan provider Full Zone gratis.');
+            }
+            if (health?.customDomainPaidSaasRequired !== false) {
+              throw new Error('Produksi belum menegaskan bahwa SaaS berbayar tidak diperlukan.');
+            }
+          } catch (error) {
+            evidence.error = { message: String(error?.message || error) };
           } finally {
             fs.writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
             console.log(JSON.stringify(evidence, null, 2));
           }
-          if (fatal) throw fatal;
           NODE
 
-      - name: Upload SaaS origin evidence
+      - name: Upload optional SaaS audit evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-saas-origin-v69-${{ github.run_id }}
-          path: /tmp/ngeblogging-saas-origin-v69.json
+          name: ngeblogging-optional-saas-v72-${{ github.run_id }}
+          path: /tmp/ngeblogging-optional-saas-v72.json
           if-no-files-found: error
           retention-days: 3
-
-      - name: Mark SaaS origin audit successful
-        if: success()
-        uses: actions/github-script@v8
-        with:
-          script: |
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: 'success',
-              context: 'Ngeblogging SaaS origin v69',
-              description: 'Custom Hostnames access, originless target, active fallback, API-managed catch-all route, health, and DNS passed.',
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-            });
-
-      - name: Mark SaaS origin audit failed
-        if: failure()
-        uses: actions/github-script@v8
-        with:
-          script: |
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: 'failure',
-              context: 'Ngeblogging SaaS origin v69',
-              description: 'Cloudflare for SaaS provisioning failed; inspect the uploaded evidence for the exact account or token blocker.',
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-            });

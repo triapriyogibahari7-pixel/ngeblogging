@@ -23,31 +23,25 @@ test("Wrangler keeps native routes and production disables the optional SaaS eng
   assert.ok(!builder.includes('"*/*",'));
 });
 
-test("the optional deployment workflow still audits the complete SaaS origin chain", async () => {
+test("the paid SaaS audit is manual, optional, and read-only", async () => {
   const workflow = await read(".github/workflows/custom-domain-saas-v68.yml");
 
   for (const marker of [
-    "Ngeblogging SaaS origin v69",
+    "Cloudflare for SaaS optional manual audit",
+    "workflow_dispatch:",
+    "manual-read-only",
+    "productionProvider: 'cloudflare-full-zone'",
+    "requiredForProduction: false",
     "/custom_hostnames?per_page=5",
-    "/custom_hostnames/fallback_origin",
-    "connect.ngeblogging.com",
-    "100::",
-    "proxied: true",
-    "body: { pattern: '*/*', script: workerService }",
-    "workers/routes/${encodeURIComponent(catchAll.id)}",
     "customHostnamesTokenProbes",
     "source: 'domain'",
     "source: 'deploy'",
-    "customDomainDnsV67",
-    "activationReady === true",
-    "dnsMode === 'two-cname'",
-    "dns.google/resolve",
-    "catchAllWorkerRoute",
-    "fallbackOrigin",
-    "publicDns",
+    "customDomainPaidSaasRequired",
+    "freeSubdomainPersistent",
     "fs.writeFileSync(evidencePath",
-    "cloudflareErrors",
+    "Upload optional SaaS audit evidence",
   ]) assert.ok(workflow.includes(marker), marker);
 
+  assert.doesNotMatch(workflow, /branches:\s*\[main\]|createCommitStatus|method:\s*'POST'|method:\s*'PUT'|workers\/routes|fallback_origin|100::|proxied:\s*true/);
   assert.doesNotMatch(workflow, /SUPABASE_SERVICE_ROLE_KEY|service_role/);
 });
