@@ -1,6 +1,7 @@
 /*
  * Compatibility entry point retained for production validators and older lazy chunks.
  * Active implementation: domain-manager-v80-20260727.
+ * Account footer is loaded globally by StudioSecure (sidebar-global-v83-20260728).
  *
  * Contract markers retained:
  * domain-authority-v75-20260727
@@ -19,5 +20,4 @@
  * /api/domains/refresh
  * /api/domains/address
  */
-import "./sidebar-logout-v80.js";
 import "./domain-manager-v80.js";
