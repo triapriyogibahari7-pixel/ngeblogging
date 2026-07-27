@@ -28,7 +28,7 @@ test("domain storage uses authenticated user JWT and Supabase RLS", async () => 
   assert.doesNotMatch(handler, /SUPABASE_SERVICE_ROLE_KEY|adminHeaders|adminJson/);
 });
 
-test("production routes and v67 two-DNS wrapper preserve the v41 post-deploy audit", async () => {
+test("production routes preserve the v41 full-zone audit while SaaS remains optional", async () => {
   const [wrangler, workflow, index, studio, workerV67, handlerV67, dnsUiV67] = await Promise.all([
     read("wrangler.production.jsonc"),
     read(".github/workflows/custom-domains-v41.yml"),
@@ -42,8 +42,10 @@ test("production routes and v67 two-DNS wrapper preserve the v41 post-deploy aud
   for (const marker of [
     '"main": "./cloudflare/worker-v67.mjs"',
     '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"',
-    '"CUSTOM_DOMAIN_DNS_V67": "true"',
-    '"CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "connect.ngeblogging.com"',
+    '"CUSTOM_DOMAIN_DNS_V67": "false"',
+    '"CLOUDFLARE_SAAS_ENABLED": "false"',
+    '"FREE_SUBDOMAIN_MODE": "persistent"',
+    '"CUSTOM_DOMAIN_REDIRECT_MODE": "canonical-308"',
     '"CLOUDFLARE_WORKER_SERVICE": "ngeblogging"',
     '"CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls"',
     '"pattern": "ngeblogging.com/*"',
@@ -64,9 +66,12 @@ test("production routes and v67 two-DNS wrapper preserve the v41 post-deploy aud
 
   for (const marker of [
     'import baseWorker from "./worker-v41.mjs"',
-    "CUSTOM_DOMAIN_DNS_V67",
+    "shouldUseSaasDomainEngine",
+    "state.active",
     "handleDomainDnsV67Request",
-    "customDomainDnsV67",
+    "freeSubdomainPersistent: true",
+    "freeSubdomainDeletedOnCustomDomain: false",
+    "customDomainPaidSaasRequired: false",
   ]) assert.ok(workerV67.includes(marker), marker);
 
   for (const marker of [
@@ -89,8 +94,8 @@ test("production routes and v67 two-DNS wrapper preserve the v41 post-deploy aud
   assert.ok(index.includes('/src/studio-domain-v41.js'));
   assert.ok(index.includes('/src/domain-full-zone-v54.js'));
   assert.ok(index.includes('/src/domain-operation-authority-v65.js'));
-  assert.ok(index.includes('/src/domain-dns-v67.js'));
-  assert.ok(index.includes('/src/domain-dns-v67.css'));
+  assert.ok(index.includes('src="/src/domain-dns-v67.js" data-disabled-authority="full-zone-free-v71"'));
+  assert.ok(index.includes('href="/src/domain-dns-v67.css" rel="stylesheet" media="not all"'));
   assert.ok(studio.includes("Penyimpanan JWT + RLS"));
   assert.ok(studio.includes("service-role server tidak diperlukan"));
 });

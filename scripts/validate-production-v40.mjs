@@ -14,7 +14,7 @@ const replacements = [
   ],
   [
     'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || productionWrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");',
-    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.27-domain-api-v60") throw new Error("Release upload produksi belum domain API v60.");',
+    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.27-free-subdomains-full-zone-v71") throw new Error("Release upload produksi belum Full Zone gratis v71.");',
   ],
   [
     'for (const marker of ["handleNaraImage", "imageGenerationReady", "workersVisionReady", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/", "2026.07.24-studio-v14"]) {',

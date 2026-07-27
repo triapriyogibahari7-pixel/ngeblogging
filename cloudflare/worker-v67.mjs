@@ -4,47 +4,59 @@ import {
   handleDomainDnsV67Request,
 } from "../server/domain-dns-v67-handler.mjs";
 
-const RELEASE = "2026.07.27-two-dns-custom-domains-v70";
+const RELEASE = "2026.07.27-free-subdomains-full-zone-v71";
+const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
+const SAAS_PROVIDERS = new Set(["cloudflare", "cloudflare-custom-hostnames"]);
 
 function enabled(value) {
   return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
 }
 
+function selectedProvider(env) {
+  return String(env.CUSTOM_DOMAIN_PROVIDER || FULL_ZONE_PROVIDER).trim().toLowerCase();
+}
+
 function saasAccountState(env) {
+  const requested = SAAS_PROVIDERS.has(selectedProvider(env));
+  const engineEnabled = enabled(env.CUSTOM_DOMAIN_DNS_V67);
   const saasEnabled = enabled(env.CLOUDFLARE_SAAS_ENABLED);
   return {
+    requested,
+    engineEnabled,
     saasEnabled,
-    accountActionRequired: !saasEnabled,
-    providerBlocker: saasEnabled ? null : {
+    active: requested && engineEnabled && saasEnabled,
+    accountActionRequired: requested && !saasEnabled,
+    providerBlocker: requested && !saasEnabled ? {
       code: "CLOUDFLARE_SAAS_NOT_ENABLED",
-      message: "Cloudflare for SaaS belum diaktifkan pada zone ngeblogging.com. Aktifkan dari halaman Custom Hostnames Cloudflare, lalu jalankan ulang deployment.",
+      message: "Cloudflare for SaaS belum diaktifkan. Produksi Ngeblogging memakai mode Full Zone gratis sehingga fitur berbayar ini tidak diperlukan.",
       cloudflareCode: 100327,
-    },
+    } : null,
   };
 }
 
-function overrideReadiness(payload, env) {
-  const account = saasAccountState(env);
-  const missing = Array.isArray(payload?.missing) ? [...payload.missing] : [];
-  if (!account.saasEnabled && !missing.includes("saasEnablement")) missing.push("saasEnablement");
-  return {
-    ...payload,
-    activationReady: Boolean(payload?.activationReady && account.saasEnabled),
-    ready: Boolean(payload?.ready && account.saasEnabled),
-    bindings: { ...(payload?.bindings || {}), saasEnabled: account.saasEnabled },
-    missing,
-    ...account,
-  };
+function shouldUseSaasDomainEngine(url, env) {
+  const state = saasAccountState(env);
+  return url.pathname.startsWith("/api/domains/") && state.active;
 }
 
-async function enrichDomainResponse(response, env) {
+async function enrichSaasDomainResponse(response, env) {
   try {
     const payload = await response.clone().json();
+    const readiness = domainDnsV67Readiness(env);
+    const state = saasAccountState(env);
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
     headers.set("x-ngeblogging-domain-engine", RELEASE);
-    return new Response(JSON.stringify(overrideReadiness(payload, env)), {
+    return new Response(JSON.stringify({
+      ...payload,
+      activationReady: Boolean(readiness.activationReady && state.active),
+      ready: Boolean(readiness.ready && state.active),
+      saasEnabled: state.saasEnabled,
+      accountActionRequired: state.accountActionRequired,
+      providerBlocker: state.providerBlocker,
+      release: RELEASE,
+    }), {
       status: response.status,
       statusText: response.statusText,
       headers,
@@ -58,31 +70,44 @@ async function enrichHealth(response, env) {
   if (!response.ok) return response;
   try {
     const payload = await response.clone().json();
-    const readiness = overrideReadiness(domainDnsV67Readiness(env), env);
+    const provider = selectedProvider(env);
+    const state = saasAccountState(env);
+    const fullZone = provider === FULL_ZONE_PROVIDER;
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
     headers.set("x-ngeblogging-domain-engine", RELEASE);
     return new Response(JSON.stringify({
       ...payload,
-      customDomainDnsV67: {
-        enabled: enabled(env.CUSTOM_DOMAIN_DNS_V67),
-        release: RELEASE,
-        provider: readiness.provider,
-        mode: readiness.providerMode,
-        dnsMode: readiness.dnsMode,
-        activationReady: readiness.activationReady,
-        ready: readiness.ready,
-        bindings: readiness.bindings,
-        missing: readiness.missing,
-        cnameTarget: readiness.cnameTarget,
-        saasEnabled: readiness.saasEnabled,
-        accountActionRequired: readiness.accountActionRequired,
-        providerBlocker: readiness.providerBlocker,
-        durableRegistration: true,
-        idempotentActivation: true,
+      domainReleaseCurrent: RELEASE,
+      customDomainProvider: payload.customDomainProvider || provider,
+      customDomainMode: payload.customDomainMode || (fullZone ? "full-zone-nameserver" : "cloudflare-for-saas"),
+      customDomainPaidSaasRequired: false,
+      customDomainArchitecture: {
+        provider: fullZone ? FULL_ZONE_PROVIDER : provider,
+        mode: fullZone ? "full-zone-nameserver" : "cloudflare-for-saas",
+        freeSubdomainPersistent: true,
+        freeSubdomainDeletedOnCustomDomain: false,
         canonicalRedirect: true,
-        freeSubdomainFallback: true,
+        redirectStatus: 308,
+        pathAndQueryPreserved: true,
+        emergencyFreePreview: true,
+        automaticHttps: true,
+        paidSaasRequired: false,
+      },
+      cloudflareForSaasOptional: {
+        requested: state.requested,
+        enabled: state.saasEnabled,
+        active: state.active,
+        accountActionRequired: state.accountActionRequired,
+        providerBlocker: state.providerBlocker,
+      },
+      customDomainDnsV67: {
+        enabled: state.active,
+        optional: true,
+        release: RELEASE,
+        provider: "cloudflare-custom-hostnames",
+        mode: "cloudflare-for-saas",
       },
     }), { status: response.status, statusText: response.statusText, headers });
   } catch {
@@ -93,14 +118,14 @@ async function enrichHealth(response, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
-    if (
-      request.method !== "OPTIONS"
-      && url.pathname.startsWith("/api/domains/")
-      && enabled(env.CUSTOM_DOMAIN_DNS_V67)
-    ) {
+
+    // Full Zone is the production default. Never let the optional SaaS engine
+    // intercept its /api/domains/* registration, nameserver, refresh, or remove flow.
+    if (request.method !== "OPTIONS" && shouldUseSaasDomainEngine(url, env)) {
       const response = await handleDomainDnsV67Request(request, env, crypto.randomUUID());
-      return enrichDomainResponse(response, env);
+      return enrichSaasDomainResponse(response, env);
     }
+
     const response = await baseWorker.fetch(request, env, context);
     if (request.method !== "HEAD" && url.pathname === "/api/health") {
       return enrichHealth(response, env);
