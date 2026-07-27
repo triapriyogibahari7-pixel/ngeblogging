@@ -9,11 +9,12 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import {
   ACTIVE_SITE_STORAGE_KEY, createUserSite, listUserSites, setActiveSiteId,
 } from "./lib/studio-data.js";
+import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76.js";
 import "./site-onboarding-v75.css";
 import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
-const RELEASE = "first-site-onboarding-v75-20260727";
+const RELEASE = "first-site-onboarding-v76-20260727";
 const CHECK_TIMEOUT_MS = 10_000;
 const SITE_TYPES = [
   { value: "blog", label: "Blog", description: "Tulisan, cerita, opini, dan publikasi pribadi.", icon: PenLine },
@@ -57,6 +58,16 @@ function publishActiveSite(site) {
   document.documentElement.dataset.activeSiteSlug = site.slug;
   window.dispatchEvent(new CustomEvent("ngeblogging:active-site-ready", { detail: site }));
   window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: site }));
+}
+
+function requestReauthentication(error) {
+  window.dispatchEvent(new CustomEvent("ngeblogging:session-invalid", {
+    detail: {
+      code: "SESSION_REAUTH_REQUIRED",
+      message: error?.message || "Sesi sudah berakhir. Silakan masuk kembali.",
+      release: RELEASE,
+    },
+  }));
 }
 
 function StartupState({ error, onRetry, onExit }) {
@@ -114,12 +125,16 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
     if (availability.state === "unavailable") return setMessage("Pilih subdomain lain yang masih tersedia.");
     setCreating(true);
     try {
+      const verified = await withDeadline(getVerifiedSession(), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
+      const userId = verified?.user?.id || user?.id;
+      if (!userId) throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
       const site = await withDeadline(createUserSite({
-        userId: user.id, name, slug, description: draft.description, blueprint: draft.blueprint,
+        userId, name, slug, description: draft.description, blueprint: draft.blueprint,
       }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
       publishActiveSite(site);
       onCreated(site);
     } catch (error) {
+      if (isSessionReauthError(error)) requestReauthentication(error);
       setMessage(error.message || "Situs belum dapat dibuat.");
     } finally { setCreating(false); }
   };
@@ -153,11 +168,14 @@ export default function StudioOnboardingGate(props) {
       if (!props.user?.id) { setError("Sesi pengguna tidak ditemukan. Silakan masuk kembali."); setPhase("error"); return; }
       if (!supabaseConfigured || !supabase) { setError("Penyimpanan cloud belum dikonfigurasi."); setPhase("error"); return; }
       try {
-        const sites = await withDeadline(listUserSites(props.user.id), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu. Tidak ada situs yang dibuat otomatis.");
+        const verified = await withDeadline(getVerifiedSession({ force: true }), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
+        if (!verified?.user?.id) throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
+        const sites = await withDeadline(listUserSites(verified.user.id), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu. Tidak ada situs yang dibuat otomatis.");
         if (cancelled) return;
         const site = preferredSite(sites);
         if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding");
       } catch (nextError) {
+        if (isSessionReauthError(nextError)) requestReauthentication(nextError);
         if (!cancelled) { setError(nextError.message || "Daftar situs belum dapat dimuat."); setPhase("error"); }
       }
     };
