@@ -7,8 +7,20 @@ import {
 } from "./lib/auth-session-v76.js";
 
 const REDIRECT_GUARD = "ngeblogging-session-reauth-v76";
+const LIVE_BROWSER_CONTRACT = Object.freeze({
+  onboarding: "first-site-onboarding-v76-20260727",
+  domain: "domain-authority-v75-20260727",
+  session: AUTH_SESSION_RELEASE,
+});
 const nativeFetch = window.fetch.bind(window);
 let redirecting = false;
+
+document.documentElement.dataset.ngebloggingBrowserContractV76 = [
+  LIVE_BROWSER_CONTRACT.session,
+  LIVE_BROWSER_CONTRACT.onboarding,
+  LIVE_BROWSER_CONTRACT.domain,
+].join("|");
+window.__ngebloggingBrowserContractV76 = LIVE_BROWSER_CONTRACT;
 
 function callbackInProgress() {
   const params = new URLSearchParams(window.location.search);
