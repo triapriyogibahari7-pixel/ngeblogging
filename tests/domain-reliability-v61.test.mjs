@@ -34,7 +34,7 @@ test("v61 failover validates JSON bodies instead of trusting content-type", () =
   assert.match(failover, /api-origin-failover-v61-20260727/);
 });
 
-test("v61 keeps managed subdomains on one responsive line", () => {
+test("v61 archived precision source keeps managed subdomains on one responsive line", () => {
   assert.match(css, /white-space:nowrap!important/);
   assert.match(css, /text-overflow:ellipsis!important/);
   assert.match(css, /overflow-wrap:normal!important/);
@@ -43,12 +43,11 @@ test("v61 keeps managed subdomains on one responsive line", () => {
   assert.match(precision, /--d61-hostname-size/);
 });
 
-test("v61 assets load last and rotate the PWA cache", () => {
-  const precisionCss = '<link href="/src/domain-mobile-precision-v61.css" rel="stylesheet"/>';
-  const experienceCss = '<link href="/src/domain-experience-authority-v59.css" rel="stylesheet"/>';
-  const precisionScript = '<script type="module" src="/src/domain-mobile-precision-v61.js"></script>';
-  const feedbackScript = '<script type="module" src="/src/domain-feedback-authority-v60.js"></script>';
-  assert.ok(index.indexOf(precisionCss) > index.indexOf(experienceCss));
-  assert.ok(index.indexOf(precisionScript) > index.indexOf(feedbackScript));
+test("v61 UI assets are archived while v76 owns production and rotates cache", () => {
+  assert.match(index, /domain-mobile-precision-v61\.css[^>]*media="not all"[^>]*data-disabled-authority="domain-v76"/);
+  assert.match(index, /type="application\/x-disabled" src="\/src\/domain-mobile-precision-v61\.js" data-disabled-authority="domain-v76"/);
+  assert.doesNotMatch(index, /type="module" src="\/src\/domain-mobile-precision-v61\.js"/);
+  assert.match(index, /ngeblogging-domain-authority" content="single-domain-authority-v76"/);
+  assert.match(sw, /ngeblogging-app-v76-20260727/);
   assert.match(sw, /ngeblogging-app-v61-20260727/);
 });
