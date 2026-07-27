@@ -58,7 +58,7 @@ test("domain API failover has bounded primary and backup latency", async () => {
   assert.ok(source.includes("timedNativeFetch(secondaryRequest, BACKUP_TIMEOUT_MS"));
 });
 
-test("single v75 domain authority replaces every active legacy owner and PWA moves to v76", async () => {
+test("single v75 domain authority remains active while PWA advances to hard recovery v77", async () => {
   const [index, worker] = await Promise.all([
     read("index.html"),
     read("public/sw.js"),
@@ -73,9 +73,12 @@ test("single v75 domain authority replaces every active legacy owner and PWA mov
     "domain-mobile-precision-v61.js",
     "domain-operation-authority-v65.js",
   ]) assert.ok(index.includes(`type="application/x-disabled" src="/src/${legacy}"`), legacy);
-  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v76-20260727"'));
+  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v77-20260727"'));
+  assert.ok(worker.includes("ngeblogging-app-v76-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v75-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v74-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v73-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v65-20260727"));
+  assert.ok(worker.includes("NGE_BLOGGING_FORCE_RELOAD_V77"));
+  assert.ok(worker.includes("client.navigate(url.href)"));
 });
