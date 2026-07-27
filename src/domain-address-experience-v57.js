@@ -118,7 +118,7 @@ function createForm({ mode, domain, active, busy }) {
   `;
 }
 
-function lockedWorkspace(panel) {
+function lockedWorkspace() {
   const domain = connectedDomainName();
   const www = {
     host: "www",
@@ -198,8 +198,9 @@ function enhance(panel) {
   if (description) description.textContent = "Susun alamat publik untuk akses www, bagian khusus, dan struktur bertingkat dalam satu domain.";
 
   const active = !panel.classList.contains("disabled") && Boolean(panel.querySelector(".dfz-address-form"));
+  const markup = active ? activeWorkspace(panel) : lockedWorkspace();
   [...panel.children].filter((child) => child !== header).forEach((child) => child.remove());
-  panel.insertAdjacentHTML("beforeend", active ? activeWorkspace(panel) : lockedWorkspace(panel));
+  panel.insertAdjacentHTML("beforeend", markup);
   panel.classList.toggle("dfz-address-ready", active);
 }
 
