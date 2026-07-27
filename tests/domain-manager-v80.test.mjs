@@ -32,24 +32,32 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("desktop logout is moved to a dedicated sidebar footer", async () => {
-  const [entry, logout] = await Promise.all([
+test("settings and logout stay in a dedicated footer on mobile, PWA, tablet, and desktop", async () => {
+  const [entry, navigation, studio] = await Promise.all([
     read("src/domain-authority-v75.js"),
     read("src/sidebar-logout-v80.js"),
+    read("src/StudioNext.jsx"),
   ]);
   assert.match(entry, /sidebar-logout-v80\.js/);
   for (const marker of [
-    "sidebar-logout-v80-20260727",
-    "sn-side-footer-v80",
+    "sidebar-settings-v81-20260728",
+    "sn-side-footer-v81",
+    "Buka Pengaturan",
     "Keluar dari Ngeblogging",
-    "footer.append(logout)",
-    "@media (min-width:901px)",
-  ]) assert.ok(logout.includes(marker), marker);
+    "sourceButton(currentSide, \"Pengaturan\")",
+    "document.querySelector(\".sn-avatar\")?.click()",
+    "@media(max-width:760px)",
+    "data-layout-mode=\"tablet\"",
+  ]) assert.ok(navigation.includes(marker), marker);
+  assert.doesNotMatch(navigation, /footer\.append\(logout\)|appendChild\(logout\)/);
+  assert.match(studio, />Pengaturan<\/span>/);
+  assert.match(studio, />Keluar<\/span>/);
 });
 
-test("PWA cache rotates for the isolated domain release", async () => {
+test("PWA cache rotates for restored settings navigation", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /domain-manager-v80-20260727/);
-  assert.match(worker, /pwa-v80/);
-  assert.match(worker, /service-worker-activated-domain-manager-v80/);
+  assert.match(worker, /sidebar-settings-v81-20260728/);
+  assert.match(worker, /pwa-v81/);
+  assert.match(worker, /service-worker-activated-sidebar-settings-v81/);
+  assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
