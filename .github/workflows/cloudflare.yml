@@ -21,6 +21,7 @@ jobs:
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
       CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
       CUSTOM_DOMAIN_PROVIDER: cloudflare-full-zone
       CLOUDFLARE_WORKER_SERVICE: ngeblogging
@@ -48,7 +49,7 @@ jobs:
               sha: context.sha,
               state: 'pending',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone build, domain API deployment, and live verification are running.',
+              description: 'Full-zone build, dedicated domain token, deployment, and live verification are running.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -64,6 +65,7 @@ jobs:
           set -euo pipefail
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
+          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "Secret CLOUDFLARE_DOMAIN_API_TOKEN belum diisi pada environment cloudflare-production"; exit 1; }
           [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID tidak valid"; exit 1; }
           [[ "${CUSTOM_DOMAIN_PROVIDER}" == "cloudflare-full-zone" ]] || { echo "CUSTOM_DOMAIN_PROVIDER harus cloudflare-full-zone"; exit 1; }
           test -n "${CLOUDFLARE_WORKER_SERVICE}" || { echo "CLOUDFLARE_WORKER_SERVICE belum diisi"; exit 1; }
@@ -71,22 +73,74 @@ jobs:
           [[ "${SUPABASE_PUBLISHABLE_KEY}" == sb_publishable_* || "${SUPABASE_PUBLISHABLE_KEY}" == eyJ* ]] || { echo "SUPABASE_PUBLISHABLE_KEY tidak valid"; exit 1; }
           [[ "${API_SMOKE_TEST_URL}" == https://*.workers.dev ]] || { echo "API_SMOKE_TEST_URL harus memakai Worker resmi yang dapat diverifikasi"; exit 1; }
           echo "DOMAIN_RUNTIME_EXPECTED=true" >> "${GITHUB_ENV}"
-          echo "Provider cloudflare-full-zone, Worker API cadangan, dan database JWT + RLS siap divalidasi."
+          echo "Token deployment dan token domain khusus tersedia untuk divalidasi."
+
+      - name: Verify dedicated custom-domain token permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/domain-token-diagnostics
+
+          zones_code="$(curl -sS -o /tmp/domain-token-diagnostics/zones.json -w '%{http_code}' \
+            -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+            -H 'accept: application/json' \
+            "https://api.cloudflare.com/client/v4/zones?account.id=${CLOUDFLARE_ACCOUNT_ID}&per_page=1")"
+
+          create_probe_code="$(curl -sS -o /tmp/domain-token-diagnostics/create-probe.json -w '%{http_code}' \
+            -X POST \
+            -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+            -H 'accept: application/json' \
+            -H 'content-type: application/json' \
+            --data "{\"account\":{\"id\":\"${CLOUDFLARE_ACCOUNT_ID}\"},\"name\":\"invalid\",\"type\":\"full\"}" \
+            'https://api.cloudflare.com/client/v4/zones')"
+
+          ZONES_CODE="${zones_code}" CREATE_CODE="${create_probe_code}" node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const read = (path) => {
+            try { return JSON.parse(fs.readFileSync(path, 'utf8')); } catch { return {}; }
+          };
+          const zones = read('/tmp/domain-token-diagnostics/zones.json');
+          const create = read('/tmp/domain-token-diagnostics/create-probe.json');
+          const messages = (create.errors || []).map((item) => String(item?.message || '')).join(' | ');
+          const zoneReadAllowed = Number(process.env.ZONES_CODE) === 200 && zones.success === true;
+          const createDenied = /requires permission|account\.zone\.create|authentication error|invalid api token/i.test(messages)
+            || [401, 403].includes(Number(process.env.CREATE_CODE)) && /permission|authentication|token/i.test(messages);
+          const createEndpointAuthorized = !createDenied;
+          console.log(JSON.stringify({
+            zoneReadHttp: Number(process.env.ZONES_CODE),
+            zoneReadAllowed,
+            zoneCreateProbeHttp: Number(process.env.CREATE_CODE),
+            zoneCreateEndpointAuthorized: createEndpointAuthorized,
+            zoneCreateProbeErrors: (create.errors || []).map((item) => ({ code: item.code, message: item.message })),
+          }, null, 2));
+          if (!zoneReadAllowed) throw new Error('Token domain belum dapat membaca seluruh zone pada akun Cloudflare yang dipilih.');
+          if (!createEndpointAuthorized) throw new Error('Token domain belum memiliki izin Zone → Zone → Edit/Create untuk membuat zone baru.');
+          NODE
 
       - name: Resolve the active ngeblogging.com zone
         shell: bash
         run: |
           set -euo pipefail
           zone_id="${CLOUDFLARE_ZONE_ID:-}"
-          if [[ "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            echo "::add-mask::${zone_id}"
-            echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
-            echo "Zone ID GitHub Environment tersedia."
-          else
-            echo "RESOLVED_CLOUDFLARE_ZONE_ID=" >> "${GITHUB_ENV}"
-            echo "::warning::Zone Read tidak tersedia bagi token Actions; deployment memakai Account ID resmi dan mempertahankan route yang sudah aktif."
+          if [[ ! "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            curl -sS --fail-with-body \
+              -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+              -H 'accept: application/json' \
+              "https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&account.id=${CLOUDFLARE_ACCOUNT_ID}&per_page=1" \
+              -o /tmp/ngeblogging-zone.json
+            zone_id="$(node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/ngeblogging-zone.json', 'utf8'));
+          const id = payload.success === true ? String(payload.result?.[0]?.id || '') : '';
+          process.stdout.write(id);
+          NODE
+            )"
           fi
+          [[ "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "Zone ngeblogging.com tidak dapat ditemukan menggunakan token domain khusus."; exit 1; }
+          echo "::add-mask::${zone_id}"
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
           echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
+          echo "Zone ngeblogging.com berhasil ditemukan melalui token domain khusus."
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
@@ -117,6 +171,7 @@ jobs:
             printf '%s' "${value}" | npx wrangler secret put "${name}" --config wrangler.production.active-zone.jsonc >/dev/null
             echo "Runtime binding ${name} tersinkronisasi."
           }
+          put_secret_if_present CLOUDFLARE_DOMAIN_API_TOKEN "${CLOUDFLARE_DOMAIN_API_TOKEN}"
           put_secret_if_present CLOUDFLARE_API_TOKEN "${CLOUDFLARE_API_TOKEN}"
           put_secret_if_present CLOUDFLARE_ACCOUNT_ID "${CLOUDFLARE_ACCOUNT_ID}"
           put_secret_if_present CLOUDFLARE_ZONE_ID "${RESOLVED_CLOUDFLARE_ZONE_ID:-}"
@@ -128,15 +183,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! "${RESOLVED_CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            echo "Route API Cloudflare dilewati karena token tidak memiliki Zone Read; route akan dibuktikan oleh smoke test apex dan tenant, sedangkan API cadangan dibuktikan melalui workers.dev."
+          route_code="$(curl -sS -o /tmp/routes.json -w '%{http_code}' \
+            -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H 'accept: application/json' \
+            "https://api.cloudflare.com/client/v4/zones/${RESOLVED_CLOUDFLARE_ZONE_ID}/workers/routes" || true)"
+          if [[ "${route_code}" != "200" ]]; then
+            echo "::warning::Token deployment tidak dapat membaca route API (HTTP ${route_code}); kepemilikan route akan diverifikasi melalui apex dan tenant live."
             exit 0
           fi
-          curl -sS --fail-with-body \
-            -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "accept: application/json" \
-            "https://api.cloudflare.com/client/v4/zones/${RESOLVED_CLOUDFLARE_ZONE_ID}/workers/routes" \
-            -o /tmp/routes.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const payload = JSON.parse(fs.readFileSync('/tmp/routes.json', 'utf8'));
@@ -151,17 +205,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 20); do
-            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/api/health?worker_release=v60-${attempt}-$(date +%s)" || true)"
+          for attempt in $(seq 1 24); do
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/api/health?worker_release=v62-${attempt}-$(date +%s)" || true)"
             if [[ "${code}" == "200" ]] && node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const health = JSON.parse(fs.readFileSync('/tmp/worker-health.json', 'utf8'));
           const ok = health.status === 'ok'
             && health.service === 'ngeblogging-cloudflare'
-            && health.domainRelease === '2026.07.26-full-zone-domains-v55'
+            && health.domainRelease === '2026.07.27-full-zone-domains-v62'
             && health.customDomains === true
             && health.customDomainProvider === 'cloudflare-full-zone'
             && health.customDomainMode === 'full-zone-nameserver'
+            && health.customDomainBindings?.apiToken === true
+            && health.customDomainBindings?.domainApiToken === true
+            && health.customDomainBindings?.accountId === true
+            && health.customDomainBindings?.workerService === true
+            && health.customDomainBindings?.databaseAccess === true
             && health.customDomainDatabaseMode === 'user-jwt-rls'
             && health.customDomainServiceRoleRequired === false
             && health.domainApiOrigin === 'https://ngeblogging.triapriyogibahari7.workers.dev'
@@ -171,11 +230,11 @@ jobs:
           if (!ok) process.exit(1);
           NODE
             then
-              echo "Worker full-zone dan API v60 terverifikasi melalui workers.dev."
+              echo "Worker full-zone v62 dan token domain khusus terverifikasi melalui workers.dev."
               break
             fi
-            if [[ "${attempt}" == "20" ]]; then
-              echo "Worker full-zone v60 belum aktif di workers.dev."
+            if [[ "${attempt}" == "24" ]]; then
+              echo "Worker full-zone v62 atau token domain khusus belum aktif di workers.dev."
               cat /tmp/worker-health.json 2>/dev/null || true
               exit 1
             fi
@@ -227,9 +286,11 @@ jobs:
           const tenant = fs.readFileSync('/tmp/tenant.html', 'utf8');
           const errors = [];
           if (health.status !== 'ok') errors.push('health.status');
+          if (health.domainRelease !== '2026.07.27-full-zone-domains-v62') errors.push('health.domainRelease');
           if (health.customDomains !== true) errors.push('health.customDomains');
           if (health.customDomainProvider !== 'cloudflare-full-zone') errors.push('health.customDomainProvider');
           if (health.customDomainBindings?.apiToken !== true) errors.push('health.customDomainBindings.apiToken');
+          if (health.customDomainBindings?.domainApiToken !== true) errors.push('health.customDomainBindings.domainApiToken');
           if (health.customDomainBindings?.accountId !== true) errors.push('health.customDomainBindings.accountId');
           if (health.customDomainBindings?.workerService !== true) errors.push('health.customDomainBindings.workerService');
           if (health.customDomainBindings?.databaseAccess !== true) errors.push('health.customDomainBindings.databaseAccess');
@@ -245,10 +306,11 @@ jobs:
           if (!index.includes('name="ngeblogging-domain-runtime" content="/src/domain-full-zone-v54.js"')) errors.push('domain-ui-contract');
           if (!index.includes('name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"')) errors.push('domain-api-origin-meta');
           if (!index.includes('/assets/index-')) errors.push('production-app-bundle');
-          if (!bundle.includes('api-origin-failover-v60-20260727')) errors.push('domain-api-failover-bundle');
+          if (!bundle.includes('api-origin-failover-v61-20260727')) errors.push('domain-api-failover-v61-bundle');
           if (!bundle.includes('domain-feedback-authority-v60-20260727')) errors.push('domain-feedback-bundle');
           if (!bundle.includes('domain-experience-authority-v59-20260727')) errors.push('domain-experience-v59-bundle');
-          if (!sw.includes('ngeblogging-app-v60-20260727')) errors.push('service-worker-v60');
+          if (!bundle.includes('domain-mobile-precision-v61-20260727')) errors.push('domain-mobile-precision-v61-bundle');
+          if (!sw.includes('ngeblogging-app-v61-20260727')) errors.push('service-worker-v61');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/assets/index-')) errors.push('tenant-app-shell');
           if (errors.length) {
@@ -257,20 +319,34 @@ jobs:
           }
           NODE
               then
-                echo "Studio, bundled domain UI v59-v60, CSP, API JSON routes, CORS, PWA, full-zone, dan tenant aktif terverifikasi."
+                echo "Studio, domain UI v59-v61, token domain khusus, CSP, API JSON routes, CORS, PWA, full-zone, dan tenant aktif terverifikasi."
                 exit 0
               fi
             fi
             sleep 15
           done
-          echo "Cloudflare belum menyajikan kontrak produksi domain API v60 yang lengkap."
+          echo "Cloudflare belum menyajikan kontrak produksi domain v62 dan UI v61 yang lengkap."
           printf 'health=%s api=%s apex-domain=%s worker-domain=%s preflight=%s index=%s bundle=%s sw=%s tenant=%s\n' "${health_code:-}" "${api_code:-}" "${apex_domain_code:-}" "${worker_domain_code:-}" "${preflight_code:-}" "${index_code:-}" "${bundle_code:-}" "${sw_code:-}" "${tenant_code:-}"
+          mkdir -p /tmp/ngeblogging-production-diagnostics
+          cp /tmp/health.json /tmp/api-health.json /tmp/apex-domain.json /tmp/worker-domain.json /tmp/preflight-headers.txt /tmp/index-headers.txt /tmp/index.html /tmp/app-bundle.js /tmp/sw.js /tmp/tenant.html /tmp/ngeblogging-production-diagnostics/ 2>/dev/null || true
           cat /tmp/health.json 2>/dev/null || true
           cat /tmp/api-health.json 2>/dev/null || true
           cat /tmp/apex-domain.json 2>/dev/null || true
           cat /tmp/worker-domain.json 2>/dev/null || true
           cat /tmp/preflight-headers.txt 2>/dev/null || true
           exit 1
+
+      - name: Upload production diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-production-diagnostics-${{ github.run_id }}
+          path: |
+            /tmp/ngeblogging-production-diagnostics
+            /tmp/domain-token-diagnostics
+            /tmp/worker-health.json
+          retention-days: 3
+          if-no-files-found: warn
 
       - name: Mark production deployment successful
         if: success()
@@ -283,7 +359,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone, bundled UI, Worker API fallback, CSP, CORS, and live routes passed.',
+              description: 'Dedicated domain token, full-zone, UI v61, API, CSP, CORS, PWA, and live routes passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -298,6 +374,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone or domain runtime production verification failed.',
+              description: 'Dedicated domain token, full-zone, or production verification failed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
