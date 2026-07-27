@@ -35,6 +35,7 @@ function copy(value, message = "Record DNS disalin.") {
 function enhanceRecords(root) {
   const section = root.querySelector(".dfz-nameservers");
   if (!section) return false;
+  if (section.dataset.domainDnsV67 === RELEASE) return true;
   const rows = [...section.querySelectorAll(":scope > div")];
   let enhanced = false;
   for (const row of rows) {
