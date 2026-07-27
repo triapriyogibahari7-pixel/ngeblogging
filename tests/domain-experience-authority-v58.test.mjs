@@ -19,7 +19,7 @@ test("v58 menjelaskan domain utama, propagasi, nameserver, HTTPS, dan wildcard",
     "Ganti nameserver lama dengan nameserver Ngeblogging",
     "HTTPS & wildcard",
     "Periksa koneksi",
-  ]) assert.match(runtime, new RegExp(marker.replaceAll("&", "\\&")));
+  ]) assert.ok(runtime.includes(marker), `marker v58 tidak ditemukan: ${marker}`);
 });
 
 test("v58 menggunakan satu kolom alamat opsional untuk www, subdomain, dan subdomain bertingkat", () => {
@@ -30,9 +30,9 @@ test("v58 menggunakan satu kolom alamat opsional untuk www, subdomain, dan subdo
     "www, blog, toko, app, atau docs.tim",
     "Routing wildcard dan HTTPS dikelola otomatis",
     "Tambahkan",
-  ]) assert.match(runtime, new RegExp(marker.replaceAll(".", "\\.")));
+  ]) assert.ok(runtime.includes(marker), `marker v58 tidak ditemukan: ${marker}`);
 
-  assert.match(runtime, /data-action=\\?"refresh-root/);
+  assert.match(runtime, /data-action=\?"refresh-root/);
   assert.doesNotMatch(runtime, /createForm\(\{ mode: "single"/);
   assert.doesNotMatch(runtime, /createForm\(\{ mode: "nested"/);
 });
@@ -47,11 +47,11 @@ test("v58 mencegah header bertumpuk dan menjaga field domain dalam satu baris", 
   assert.match(styles, /prefers-reduced-motion/);
 });
 
-test("v58 menjadi otoritas terakhir dan v57 dinonaktifkan", () => {
-  const v56Css = index.indexOf("domain-layout-authority-v56.css");
-  const v58Css = index.indexOf("domain-experience-authority-v58.css");
-  const v56Js = index.indexOf("domain-layout-authority-v56.js");
-  const v58Js = index.indexOf("domain-experience-authority-v58.js");
+test("v58 tetap tersedia sebagai kompatibilitas dan v57 dinonaktifkan", () => {
+  const v56Css = index.indexOf('<link href="/src/domain-layout-authority-v56.css"');
+  const v58Css = index.indexOf('<link href="/src/domain-experience-authority-v58.css"');
+  const v56Js = index.indexOf('<script type="module" src="/src/domain-layout-authority-v56.js"');
+  const v58Js = index.indexOf('src="/src/domain-experience-authority-v58.js"');
 
   assert.ok(v58Css > v56Css);
   assert.ok(v58Js > v56Js);
