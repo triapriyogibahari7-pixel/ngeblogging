@@ -21,7 +21,7 @@ test("health exposes full-zone runtime binding readiness without secret values",
   assert.doesNotMatch(worker, /serviceRole/);
 });
 
-test("Cloudflare workflow safely provisions full-zone bindings and reports missing ones", async () => {
+test("Cloudflare workflow provisions full-zone bindings and verifies the v76 browser contract", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
   for (const marker of [
     "Resolve authoritative Cloudflare zone and account",
@@ -35,10 +35,14 @@ test("Cloudflare workflow safely provisions full-zone bindings and reports missi
     "CUSTOM_DOMAIN_PROVIDER",
     "CLOUDFLARE_WORKER_SERVICE",
     "SUPABASE_PUBLISHABLE_KEY",
-    "DOMAIN_RUNTIME_EXPECTED",
     "health.customDomains",
     "health.customDomainBindings",
-    "service-worker-v40",
+    "single-domain-authority-v76",
+    "auth-session-authority-v76",
+    "domain-authority-v75",
+    "ngeblogging-app-v76-20260727",
+    "legacy-active",
   ]) assert.ok(workflow.includes(marker), marker);
   assert.match(workflow, /cloudflare-full-zone/);
+  assert.doesNotMatch(workflow, /DOMAIN_RUNTIME_EXPECTED=true/);
 });

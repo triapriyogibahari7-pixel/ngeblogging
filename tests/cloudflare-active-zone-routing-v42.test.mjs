@@ -10,7 +10,7 @@ const execFileAsync = promisify(execFile);
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const requiredRoutes = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
-test("production workflow resolves the zone with the dedicated token and proves live routes", async () => {
+test("production workflow resolves the zone, proves permissions, and verifies v76 live routes", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
   assert.match(workflow, /CLOUDFLARE_DOMAIN_API_TOKEN/);
   assert.match(workflow, /RESOLVED_CLOUDFLARE_ZONE_ID/);
@@ -18,14 +18,17 @@ test("production workflow resolves the zone with the dedicated token and proves 
   assert.match(workflow, /zones\/\$\{RESOLVED_CLOUDFLARE_ZONE_ID\}\/workers\/routes/);
   assert.match(workflow, /routes\.get\(pattern\) !== 'ngeblogging'/);
   assert.match(workflow, /Verify dedicated custom-domain token permissions/);
-  assert.match(workflow, /zoneCreateEndpointAuthorized/);
-  assert.match(workflow, /Worker full-zone v62 dan token domain khusus/);
+  assert.match(workflow, /const createDenied/);
+  assert.match(workflow, /Token domain belum dapat membuat zone full-zone baru/);
+  assert.match(workflow, /Worker full-zone, RLS JWT, dan token domain khusus terverifikasi/);
   assert.match(workflow, /WORKERS_DEV_SMOKE_TEST_URL/);
   assert.match(workflow, /TENANT_SMOKE_TEST_URL/);
   assert.match(workflow, /API_SMOKE_TEST_URL/);
   assert.match(workflow, /ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.match(workflow, /access-control-request-method: POST/);
   assert.match(workflow, /x-ngeblogging-api-origin/);
+  assert.match(workflow, /single-domain-authority-v76/);
+  assert.match(workflow, /ngeblogging-app-v76-20260727/);
 });
 
 test("generated Wrangler configuration pins the native zone routes to the resolved zone and account", async () => {
