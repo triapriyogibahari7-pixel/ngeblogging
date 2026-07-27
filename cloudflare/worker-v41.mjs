@@ -2,6 +2,7 @@ import baseWorker from "./worker-v37.mjs";
 import { freeDomainReadiness, handleFreeDomainRequest } from "../server/free-domain-handler.mjs";
 import { handleQuickDomainDetach } from "../server/quick-domain-detach-handler.mjs";
 import { canonicalDomainRedirect } from "../server/canonical-domain-redirect.mjs";
+import { recoverPendingFullZoneRegistration } from "../server/pending-full-zone-registration.mjs";
 
 const RELEASE = "2026.07.27-full-zone-domains-v65";
 const REGISTRATION_RECOVERY_RELEASE = "2026.07.27-domain-registration-recovery-v65";
@@ -125,6 +126,7 @@ async function enrichHealth(response, env) {
         testedTarget: 100,
         canonicalRedirect: true,
         freeSubdomainFallback: true,
+        pendingZoneAcceptance: true,
       },
     }), {
       status: response.status,
@@ -334,13 +336,28 @@ async function runRegistrationWithRecovery(request, env, context) {
       }
 
       const details = await registrationFailureDetails(response);
-      if (!details.retry || index === attempts.length - 1) {
+      if (!details.retry) {
         return finalizeRegistrationResponse(response, request, env, context, index > 0);
       }
+      if (index === attempts.length - 1) break;
     } catch (error) {
       lastError = error;
       if (index === attempts.length - 1) break;
     }
+  }
+
+  const accepted = await recoverPendingFullZoneRegistration(
+    request.clone(),
+    env,
+    lastResponse,
+  ).catch(() => null);
+
+  if (accepted) {
+    return withReleaseHeader(
+      accepted,
+      "x-ngeblogging-domain-registration-recovery",
+      REGISTRATION_RECOVERY_RELEASE,
+    );
   }
 
   if (lastResponse) return finalizeRegistrationResponse(lastResponse, request, env, context, true);
