@@ -55,7 +55,7 @@ test("Netlify bridge redirects are generated only by Netlify builds and never pr
   const pkg = JSON.parse(read("package.json"));
   const sw = read("public/sw.js");
   assert.match(redirectWriter, /process\.env\.NETLIFY/);
-  assert.match(redirectWriter, /https:\/\/api\.ngeblogging\.com/);
+  assert.match(redirectWriter, /https:\/\/ngeblogging\.triapriyogibahari7\.workers\.dev/);
   assert.match(redirectWriter, /NGEBLOGGING_API_ORIGIN/);
   assert.doesNotMatch(redirectWriter, /"\/api\/\*\s+https:\/\/ngeblogging\.com\/api\/:splat/);
   assert.match(redirectWriter, /dist, "_redirects"/);
