@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-const requiredRoutes = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
+const requiredRoutes = ["api.ngeblogging.com/*", "ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
 test("production workflow deploys with an optional Zone ID and proves preserved routes through smoke tests", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
@@ -16,10 +16,13 @@ test("production workflow deploys with an optional Zone ID and proves preserved 
   assert.match(workflow, /wrangler\.production\.active-zone\.jsonc/);
   assert.match(workflow, /zones\/\$\{RESOLVED_CLOUDFLARE_ZONE_ID\}\/workers\/routes/);
   assert.match(workflow, /routes\.get\(pattern\) !== 'ngeblogging'/);
-  assert.match(workflow, /Route API dilewati karena token tidak memiliki Zone Read/);
-  assert.match(workflow, /route akan dibuktikan oleh smoke test apex dan tenant/);
+  assert.match(workflow, /token tidak memiliki Zone Read/);
+  assert.match(workflow, /smoke test apex, tenant, dan API khusus/);
   assert.match(workflow, /WORKERS_DEV_SMOKE_TEST_URL/);
   assert.match(workflow, /TENANT_SMOKE_TEST_URL/);
+  assert.match(workflow, /API_SMOKE_TEST_URL/);
+  assert.match(workflow, /access-control-request-method: POST/);
+  assert.match(workflow, /x-ngeblogging-api-origin/);
 });
 
 test("generated Wrangler configuration pins every official route to the resolved zone and account", async () => {
@@ -47,7 +50,7 @@ test("generated Wrangler configuration pins every official route to the resolved
 });
 
 test("generated Wrangler upload preserves existing routes when Zone Read is unavailable", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "ngeblogging-preserve-routes-v55-"));
+  const directory = await mkdtemp(join(tmpdir(), "ngeblogging-preserve-routes-v60-"));
   const input = join(directory, "input.jsonc");
   const output = join(directory, "output.jsonc");
   await writeFile(input, JSON.stringify({
