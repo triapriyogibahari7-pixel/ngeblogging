@@ -1,7 +1,10 @@
-const RELEASE = "api-origin-failover-v65-20260727";
+const RELEASE = "api-origin-failover-v73-20260727";
+const LEGACY_V65_RELEASE = "api-origin-failover-v65-20260727";
 const LEGACY_V61_RELEASE = "api-origin-failover-v61-20260727";
 const LEGACY_V60_RELEASE = "api-origin-failover-v60-20260727";
 const API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
+const PRIMARY_TIMEOUT_MS = 8_000;
+const BACKUP_TIMEOUT_MS = 10_000;
 const nativeFetch = window.fetch.bind(window);
 
 function isApiUrl(value) {
@@ -16,6 +19,30 @@ function isApiUrl(value) {
 function requestFor(input, init) {
   if (input instanceof Request) return new Request(input, init);
   return new Request(new URL(String(input), location.href), init);
+}
+
+function timeoutReason(label, milliseconds) {
+  const message = `${label} tidak merespons dalam ${Math.round(milliseconds / 1000)} detik.`;
+  try {
+    return new DOMException(message, "TimeoutError");
+  } catch {
+    return Object.assign(new Error(message), { name: "TimeoutError" });
+  }
+}
+
+async function timedNativeFetch(request, milliseconds, label) {
+  const controller = new AbortController();
+  const sourceSignal = request.signal;
+  const relayAbort = () => controller.abort(sourceSignal?.reason);
+  if (sourceSignal?.aborted) relayAbort();
+  else sourceSignal?.addEventListener("abort", relayAbort, { once: true });
+  const timer = setTimeout(() => controller.abort(timeoutReason(label, milliseconds)), milliseconds);
+  try {
+    return await nativeFetch(new Request(request, { signal: controller.signal }));
+  } finally {
+    clearTimeout(timer);
+    sourceSignal?.removeEventListener("abort", relayAbort);
+  }
 }
 
 async function backupRequest(request) {
@@ -99,6 +126,7 @@ function statusMessage(status) {
   if (status === 401) return "Sesi masuk tidak diterima oleh layanan domain. Silakan masuk kembali.";
   if (status === 403) return "Layanan domain menolak izin permintaan pada jalur aktif.";
   if (status === 404 || status === 405) return "API domain belum terpasang pada jalur situs aktif maupun Worker cadangan.";
+  if (status === 408) return "API domain melewati batas waktu. Coba kembali; subdomain gratis tetap tersedia.";
   if (status === 409) return "Permintaan domain berbenturan dengan status domain yang sudah tersimpan.";
   if (status === 429) return "Layanan domain sedang membatasi permintaan. Coba kembali beberapa saat lagi.";
   return "Layanan domain belum dapat memberikan respons yang dapat diproses.";
@@ -115,7 +143,7 @@ async function resilientFetch(input, init) {
   let primaryFailure = null;
 
   try {
-    primaryResponse = await nativeFetch(primary.clone());
+    primaryResponse = await timedNativeFetch(primary.clone(), PRIMARY_TIMEOUT_MS, "API utama Ngeblogging");
     primaryDetails = await responseDetails(primaryResponse);
 
     if (primaryResponse.ok) return primaryResponse;
@@ -140,11 +168,11 @@ async function resilientFetch(input, init) {
     primaryFailure = error;
     if (alreadyBackup) {
       return diagnosticResponse(
-        "Worker API domain tidak dapat dijangkau.",
-        502,
-        "DOMAIN_API_NETWORK_ERROR",
+        error?.name === "TimeoutError" ? "Worker API domain melewati batas waktu." : "Worker API domain tidak dapat dijangkau.",
+        error?.name === "TimeoutError" ? 408 : 502,
+        error?.name === "TimeoutError" ? "DOMAIN_API_TIMEOUT" : "DOMAIN_API_NETWORK_ERROR",
         {
-          status: 502,
+          status: error?.name === "TimeoutError" ? 408 : 502,
           requestId: null,
           primaryOrigin: primaryUrl.origin,
           backupOrigin: API_ORIGIN,
@@ -158,7 +186,8 @@ async function resilientFetch(input, init) {
   let secondaryDetails = null;
   let secondaryFailure = null;
   try {
-    secondaryResponse = await nativeFetch(await backupRequest(primary.clone()));
+    const secondaryRequest = await backupRequest(primary.clone());
+    secondaryResponse = await timedNativeFetch(secondaryRequest, BACKUP_TIMEOUT_MS, "Worker cadangan Ngeblogging");
     secondaryDetails = await responseDetails(secondaryResponse);
 
     if (secondaryResponse.ok || secondaryDetails.usefulError) {
@@ -169,15 +198,16 @@ async function resilientFetch(input, init) {
     secondaryFailure = error;
   }
 
-  const status = secondaryResponse?.status || primaryResponse?.status || 502;
+  const timedOut = primaryFailure?.name === "TimeoutError" || secondaryFailure?.name === "TimeoutError";
+  const status = timedOut ? 408 : secondaryResponse?.status || primaryResponse?.status || 502;
   const requestId = secondaryResponse?.headers.get("x-request-id")
     || primaryResponse?.headers.get("x-request-id")
     || "";
 
   return diagnosticResponse(
-    statusMessage(status),
+    timedOut ? "API domain melewati batas waktu pada jalur utama dan cadangan. Subdomain gratis tetap dapat digunakan." : statusMessage(status),
     status >= 400 && status <= 599 ? status : 502,
-    "DOMAIN_API_ROUTE_UNAVAILABLE",
+    timedOut ? "DOMAIN_API_TIMEOUT" : "DOMAIN_API_ROUTE_UNAVAILABLE",
     {
       status,
       requestId: requestId || null,
@@ -191,10 +221,11 @@ async function resilientFetch(input, init) {
   );
 }
 
-if (!window.__ngebloggingApiOriginFailoverV65) {
-  window.__ngebloggingApiOriginFailoverV65 = RELEASE;
+if (!window.__ngebloggingApiOriginFailoverV73) {
+  window.__ngebloggingApiOriginFailoverV73 = RELEASE;
+  window.__ngebloggingApiOriginFailoverV65 = LEGACY_V65_RELEASE;
   window.__ngebloggingApiOriginFailoverV61 = LEGACY_V61_RELEASE;
   window.__ngebloggingApiOriginFailoverV60 = LEGACY_V60_RELEASE;
   window.fetch = resilientFetch;
-  document.documentElement.dataset.apiOriginFailoverV65 = RELEASE;
+  document.documentElement.dataset.apiOriginFailoverV73 = RELEASE;
 }
