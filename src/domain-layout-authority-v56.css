@@ -1,0 +1,397 @@
+/*
+ * Ngeblogging Domain layout authority v56.
+ * The full-zone surface is the only visible direct child of the Domain route.
+ * Loaded after every legacy Studio stylesheet so old !important rules cannot
+ * place hidden headings, readiness panels, or domain cards over the new UI.
+ */
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: block !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  isolation: isolate !important;
+}
+
+/*
+ * v37, v39, v41, React hydration, and old domain bridges may append their
+ * elements again after v54 mounts. This structural selector hides every old
+ * direct child immediately, including nodes added later by MutationObserver.
+ */
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] > :not(.dfz-root) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: static !important;
+  inset: auto !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] > .dfz-root {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  contain: layout style !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] > .dfz-root[hidden],
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] > .dfz-root [hidden] {
+  display: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root * {
+  box-sizing: border-box !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 28px 32px 76px !important;
+  overflow: visible !important;
+  color: #17253c !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title > div {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 780px !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title small {
+  position: static !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #2d6edf !important;
+  font: 900 9px/1.35 "DM Sans", sans-serif !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+  white-space: normal !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title h1 {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 7px 0 7px !important;
+  padding: 0 !important;
+  color: #17253c !important;
+  font: 600 clamp(31px, 4vw, 46px)/1.06 "Playfair Display", serif !important;
+  letter-spacing: -.025em !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title p {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: auto !important;
+  max-width: 760px !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #748196 !important;
+  font: 400 12px/1.58 "DM Sans", sans-serif !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title > a {
+  position: static !important;
+  inset: auto !important;
+  flex: 0 0 auto !important;
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  border: 1px solid #dce4ee !important;
+  border-radius: 10px !important;
+  padding: 0 14px !important;
+  background: #fff !important;
+  color: #52647c !important;
+  font: 900 10px/1 "DM Sans", sans-serif !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] :is(
+  .dfz-free-card,
+  .dfz-grid,
+  .dfz-panel,
+  .dfz-panel > header,
+  .dfz-root-state,
+  .dfz-hostname-row,
+  .dfz-nameservers,
+  .dfz-address-list,
+  .dfz-address-list > article,
+  .dfz-notice,
+  .dfz-actions,
+  .dfz-root-form,
+  .dfz-address-form
+) {
+  position: relative !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card {
+  display: grid !important;
+  grid-template-columns: 52px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin: 0 !important;
+  border: 1px solid #dfe6ef !important;
+  border-radius: 17px !important;
+  padding: 19px 20px !important;
+  background: #fff !important;
+  overflow: hidden !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel h2,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers h3 {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  color: #17253c !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2 {
+  margin: 5px 0 !important;
+  font: 600 clamp(21px, 2.8vw, 28px)/1.12 "Playfair Display", serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header h2 {
+  margin: 6px 0 !important;
+  font: 600 23px/1.14 "Playfair Display", serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header p,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card p {
+  position: static !important;
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #748196 !important;
+  font: 400 10px/1.55 "DM Sans", sans-serif !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin: 14px 0 0 !important;
+  padding: 0 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel {
+  display: block !important;
+  margin: 0 !important;
+  border: 1px solid #dfe6ef !important;
+  border-radius: 17px !important;
+  padding: 20px !important;
+  background: #fff !important;
+  overflow: hidden !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header {
+  min-height: 112px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 13px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid #edf0f4 !important;
+  padding: 0 0 16px !important;
+  overflow: visible !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header > div {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root :is(input, select, textarea, button, a) {
+  font-family: "DM Sans", sans-serif !important;
+}
+
+@media (max-width: 1100px) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+    padding: 24px 22px 70px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header {
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+    padding: 18px 14px calc(72px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title h1 {
+    font-size: clamp(28px, 9vw, 38px) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title > a {
+    justify-self: start !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    padding: 16px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-actions {
+    grid-column: 1 / -1 !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel {
+    padding: 16px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+    padding-inline: 10px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title h1 {
+    font-size: 30px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel {
+    padding: 14px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root,
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
