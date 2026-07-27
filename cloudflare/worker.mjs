@@ -177,6 +177,13 @@ async function protectedJsonEndpoint(request, env, requestId, handler) {
   return new Response(result.body, { status: result.status, headers });
 }
 
+function redirectStorageReady(env) {
+  return Boolean(
+    String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
+    && String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim(),
+  );
+}
+
 function withSecurity(response, requestId) {
   const headers = new Headers(response.headers);
   for (const [name, value] of securityHeaders(requestId).entries()) {
@@ -215,7 +222,7 @@ export default {
           imageGeneration,
           imageProviders: { qwen: Boolean(qwenKey(env) && String(env.QWEN_WORKSPACE_ID || "").trim()), workersAi: workersAiReady(env) },
           customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ACCOUNT_ID && env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY),
-          domainRedirects: Boolean((env.SUPABASE_URL || env.VITE_SUPABASE_URL) && (env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY)),
+          domainRedirects: redirectStorageReady(env),
           domainApiOrigin: String(env.PUBLIC_API_ORIGIN || "https://api.ngeblogging.com"),
           emailRegistration: brandedEmailReady(env),
           managedSubdomains: true,
@@ -236,8 +243,10 @@ export default {
       if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
       if (url.pathname.startsWith("/api/")) return jsonResponse(404, { code: "API_ENDPOINT_NOT_FOUND", error: "Endpoint tidak ditemukan." }, requestId, request.method, request.headers.get("origin") || "");
 
-      const domainRedirect = await resolveDomainRedirect(request, env, context);
-      if (domainRedirect) return withSecurity(domainRedirect, requestId);
+      if (redirectStorageReady(env)) {
+        const domainRedirect = await resolveDomainRedirect(request, env, context);
+        if (domainRedirect) return withSecurity(domainRedirect, requestId);
+      }
 
       const discovery = await seoEndpoint(request, env);
       if (discovery) return withSecurity(discovery, requestId);
