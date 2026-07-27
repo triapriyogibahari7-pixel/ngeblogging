@@ -8,10 +8,6 @@
   "workers_dev": true,
   "routes": [
     {
-      "pattern": "api.ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    },
-    {
       "pattern": "ngeblogging.com/*",
       "zone_name": "ngeblogging.com"
     },
@@ -35,7 +31,7 @@
   },
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
-    "PUBLIC_API_ORIGIN": "https://api.ngeblogging.com",
+    "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
     "APP_RELEASE": "2026.07.27-domain-api-v60",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
