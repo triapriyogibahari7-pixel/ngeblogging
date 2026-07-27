@@ -3,6 +3,7 @@ import { handleBillingRequest } from "../server/billing-handler.mjs";
 import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
 import { handleNaraImage, imageGenerationReady } from "../server/nara-image-handler.mjs";
 import { handleDomainRequest } from "../server/domain-handler.mjs";
+import { handleDomainRedirectRequest, resolveDomainRedirect } from "../server/domain-redirect-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
 import { handleWorkersAiNara, workersAiReady, workersVisionReady } from "../server/workers-ai-nara.mjs";
 
@@ -171,7 +172,7 @@ function withSecurity(response, requestId) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, context) {
     const requestId = crypto.randomUUID();
     const url = new URL(request.url);
     try {
@@ -186,7 +187,7 @@ export default {
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          release: "2026.07.24-studio-v14",
+          release: "2026.07.27-domain-redirect-v59",
           runtime: env.NARA_RUNTIME || "cloudflare-worker-v14",
           hostname: url.hostname,
           billing: paypal || localBilling,
@@ -196,6 +197,7 @@ export default {
           imageGeneration,
           imageProviders: { qwen: Boolean(qwenKey(env) && String(env.QWEN_WORKSPACE_ID || "").trim()), workersAi: workersAiReady(env) },
           customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
+          domainRedirects: Boolean((env.SUPABASE_URL || env.VITE_SUPABASE_URL) && (env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY)),
           emailRegistration: brandedEmailReady(env),
           managedSubdomains: true,
           siteLimits: { free: 5, maximum: 12 },
@@ -209,10 +211,14 @@ export default {
         if (!naraImageReady(env)) return jsonResponse(503, { code: "NARA_IMAGE_NOT_CONFIGURED", error: "Generator gambar belum terhubung ke penyedia AI." }, requestId, request.method, request.headers.get("origin") || "");
         return protectedJsonEndpoint(request, env, requestId, handleNaraImage);
       }
+      if (url.pathname.startsWith("/api/domain-redirects/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRedirectRequest);
       if (url.pathname.startsWith("/api/domains/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRequest);
       if (url.pathname === "/api/billing/paypal/webhook") return protectedJsonEndpoint(request, env, requestId, handlePayPalWebhook);
       if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
       if (url.pathname.startsWith("/api/")) return jsonResponse(404, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
+
+      const domainRedirect = await resolveDomainRedirect(request, env, context);
+      if (domainRedirect) return withSecurity(domainRedirect, requestId);
 
       const discovery = await seoEndpoint(request, env);
       if (discovery) return withSecurity(discovery, requestId);
