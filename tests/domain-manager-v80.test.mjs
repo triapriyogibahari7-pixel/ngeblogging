@@ -32,7 +32,7 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout stay in a dedicated footer on mobile, PWA, tablet, and desktop", async () => {
+test("settings and logout are proportionate, fixed and functional in every sidebar layout", async () => {
   const [entry, navigation, studio] = await Promise.all([
     read("src/domain-authority-v75.js"),
     read("src/sidebar-logout-v80.js"),
@@ -40,13 +40,18 @@ test("settings and logout stay in a dedicated footer on mobile, PWA, tablet, and
   ]);
   assert.match(entry, /sidebar-logout-v80\.js/);
   for (const marker of [
-    "sidebar-settings-v81-20260728",
-    "sn-side-footer-v81",
+    "sidebar-footer-v82-20260728",
+    "sn-side-footer-v82",
+    "sn-footer-action-v82",
     "Buka Pengaturan",
     "Keluar dari Ngeblogging",
     "sourceButton(currentSide, \"Pengaturan\")",
     "document.querySelector(\".sn-avatar\")?.click()",
-    "@media(max-width:760px)",
+    "position:absolute!important",
+    "--sn-footer-v82-height:158px",
+    "font-size:15px!important",
+    "min-height:58px!important",
+    "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
   ]) assert.ok(navigation.includes(marker), marker);
   assert.doesNotMatch(navigation, /footer\.append\(logout\)|appendChild\(logout\)/);
@@ -54,10 +59,10 @@ test("settings and logout stay in a dedicated footer on mobile, PWA, tablet, and
   assert.match(studio, />Keluar<\/span>/);
 });
 
-test("PWA cache rotates for restored settings navigation", async () => {
+test("PWA cache rotates for proportional sidebar footer", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-settings-v81-20260728/);
-  assert.match(worker, /pwa-v81/);
-  assert.match(worker, /service-worker-activated-sidebar-settings-v81/);
+  assert.match(worker, /sidebar-footer-v82-20260728/);
+  assert.match(worker, /pwa-v82/);
+  assert.match(worker, /service-worker-activated-sidebar-footer-v82/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
