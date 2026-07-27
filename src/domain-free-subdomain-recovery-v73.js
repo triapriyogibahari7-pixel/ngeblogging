@@ -75,7 +75,7 @@ async function resolveSite(force = false) {
   const preferredId = activeSiteId();
   const current = runtimeSite();
   if (current && !force) return publishSite(current);
-  if (!force && cachedSite && cachedSiteId === preferredId && Date.now() < cacheExpiresAt) return cachedSite;
+  if (!force && cachedSite && (!preferredId || cachedSiteId === preferredId) && Date.now() < cacheExpiresAt) return cachedSite;
   if (pendingSite && !force) return pendingSite;
   if (!supabaseConfigured || !supabase) throw new Error("Penyimpanan cloud belum dikonfigurasi.");
 
@@ -98,6 +98,10 @@ function freeHostname(site) {
   return `${site.slug}.ngeblogging.com`;
 }
 
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
 function ensurePreviewLink(root, site) {
   const header = root.querySelector(":scope .dfz-title");
   if (!header) return;
@@ -110,7 +114,8 @@ function ensurePreviewLink(root, site) {
     link.textContent = "Preview situs";
     header.append(link);
   }
-  link.href = `https://${freeHostname(site)}?ngeblogging-free-preview=1`;
+  const href = `https://${freeHostname(site)}?ngeblogging-free-preview=1`;
+  if (link.href !== href) link.href = href;
 }
 
 function applySite(root, site) {
@@ -122,16 +127,16 @@ function applySite(root, site) {
   const heading = card.querySelector("h2");
   const description = card.querySelector("p");
   const badge = card.querySelector(".dfz-free-actions > i");
-  if (heading && heading.textContent !== hostname) heading.textContent = hostname;
-  if (description) {
-    description.textContent = safe.is_public && safe.status === "active"
-      ? "Subdomain gratis aktif permanen dan tetap tersedia meskipun domain pribadi dipasang."
-      : "Subdomain gratis sudah tersedia. Terbitkan situs agar dapat dibuka oleh pengunjung.";
-  }
+  const published = safe.is_public && safe.status === "active";
+  const descriptionText = published
+    ? "Subdomain gratis aktif permanen dan tetap tersedia meskipun domain pribadi dipasang."
+    : "Subdomain gratis sudah tersedia. Terbitkan situs agar dapat dibuka oleh pengunjung.";
+  setText(heading, hostname);
+  setText(description, descriptionText);
   if (badge) {
-    const published = safe.is_public && safe.status === "active";
-    badge.textContent = published ? "Aktif" : "Draf";
-    badge.className = published ? "active" : "draft";
+    setText(badge, published ? "Aktif" : "Draf");
+    const className = published ? "active" : "draft";
+    if (badge.className !== className) badge.className = className;
   }
   card.dataset.freeSubdomainPersistent = RELEASE;
   card.dataset.siteId = safe.id;
