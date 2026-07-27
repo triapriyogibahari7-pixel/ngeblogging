@@ -197,21 +197,32 @@ jobs:
           set -euo pipefail
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            health_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/api/health?release=${stamp}" || true)"
+            health_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D /tmp/apex-health-headers.txt -o /tmp/health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/api/health?release=${stamp}" || true)"
             api_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D /tmp/api-headers.txt -o /tmp/api-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${API_SMOKE_TEST_URL%/}/api/health?release=${stamp}" || true)"
+            apex_domain_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D /tmp/apex-domain-headers.txt -o /tmp/apex-domain.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/api/domains/config?release=${stamp}" || true)"
+            worker_domain_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D /tmp/worker-domain-headers.txt -o /tmp/worker-domain.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${API_SMOKE_TEST_URL%/}/api/domains/config?release=${stamp}" || true)"
             preflight_code="$(curl -sS --connect-timeout 10 --max-time 25 -D /tmp/preflight-headers.txt -o /dev/null -w '%{http_code}' -X OPTIONS -H 'origin: https://ngeblogging.netlify.app' -H 'access-control-request-method: POST' -H 'access-control-request-headers: authorization,content-type,cache-control' "${API_SMOKE_TEST_URL%/}/api/domains/register?release=${stamp}" || true)"
-            index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/index.html -w '%{http_code}' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/?release=${stamp}" || true)"
+            index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D /tmp/index-headers.txt -o /tmp/index.html -w '%{http_code}' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/?release=${stamp}" || true)"
             sw_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/sw.js -w '%{http_code}' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}/sw.js?release=${stamp}" || true)"
             tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?release=${stamp}" || true)"
+            bundle_path="$(grep -oE 'src="/assets/index-[^"]+\.js"' /tmp/index.html 2>/dev/null | head -n1 | sed -E 's/^src="([^"]+)"$/\1/' || true)"
+            bundle_code="000"
+            if [[ -n "${bundle_path}" ]]; then
+              bundle_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/app-bundle.js -w '%{http_code}' -H 'cache-control: no-cache' "${CLOUDFLARE_SMOKE_TEST_URL%/}${bundle_path}?release=${stamp}" || true)"
+            fi
 
-            if [[ "${health_code}" == "200" && "${api_code}" == "200" && "${preflight_code}" == "204" && "${index_code}" == "200" && "${sw_code}" == "200" && "${tenant_code}" == "200" ]]; then
+            if [[ "${health_code}" == "200" && "${api_code}" == "200" && "${apex_domain_code}" == "401" && "${worker_domain_code}" == "401" && "${preflight_code}" == "204" && "${index_code}" == "200" && "${bundle_code}" == "200" && "${sw_code}" == "200" && "${tenant_code}" == "200" ]]; then
               if node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const health = JSON.parse(fs.readFileSync('/tmp/health.json', 'utf8'));
           const apiHealth = JSON.parse(fs.readFileSync('/tmp/api-health.json', 'utf8'));
+          const apexDomain = JSON.parse(fs.readFileSync('/tmp/apex-domain.json', 'utf8'));
+          const workerDomain = JSON.parse(fs.readFileSync('/tmp/worker-domain.json', 'utf8'));
           const apiHeaders = fs.readFileSync('/tmp/api-headers.txt', 'utf8').toLowerCase();
           const preflightHeaders = fs.readFileSync('/tmp/preflight-headers.txt', 'utf8').toLowerCase();
+          const indexHeaders = fs.readFileSync('/tmp/index-headers.txt', 'utf8').toLowerCase();
           const index = fs.readFileSync('/tmp/index.html', 'utf8');
+          const bundle = fs.readFileSync('/tmp/app-bundle.js', 'utf8');
           const sw = fs.readFileSync('/tmp/sw.js', 'utf8');
           const tenant = fs.readFileSync('/tmp/tenant.html', 'utf8');
           const errors = [];
@@ -226,30 +237,38 @@ jobs:
           if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push('health.siteLimits');
           if (apiHealth.status !== 'ok' || apiHealth.domainApiOrigin !== 'https://ngeblogging.triapriyogibahari7.workers.dev') errors.push('domain-api-health');
           if (!apiHeaders.includes('x-ngeblogging-api-origin: cloudflare-worker-v60')) errors.push('domain-api-header');
+          if (apexDomain.code !== 'AUTH_REQUIRED') errors.push('apex-domain-json-route');
+          if (workerDomain.code !== 'AUTH_REQUIRED') errors.push('worker-domain-json-route');
           if (!preflightHeaders.includes('access-control-allow-origin: https://ngeblogging.netlify.app')) errors.push('domain-api-cors-origin');
           if (!preflightHeaders.includes('access-control-allow-headers: content-type, authorization, cache-control')) errors.push('domain-api-cors-headers');
-          if (!index.includes('/src/domain-full-zone-v54.js')) errors.push('domain-ui-js');
-          if (!index.includes('/src/domain-full-zone-v54.css')) errors.push('domain-ui-css');
-          if (!index.includes('/src/api-origin-failover-v60.js')) errors.push('domain-api-failover-js');
-          if (!index.includes('/src/domain-feedback-authority-v60.js')) errors.push('domain-feedback-v60-js');
+          if (!indexHeaders.includes('https://*.workers.dev')) errors.push('domain-api-csp');
+          if (!index.includes('name="ngeblogging-domain-runtime" content="/src/domain-full-zone-v54.js"')) errors.push('domain-ui-contract');
+          if (!index.includes('name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"')) errors.push('domain-api-origin-meta');
+          if (!index.includes('/assets/index-')) errors.push('production-app-bundle');
+          if (!bundle.includes('api-origin-failover-v60-20260727')) errors.push('domain-api-failover-bundle');
+          if (!bundle.includes('domain-feedback-authority-v60-20260727')) errors.push('domain-feedback-bundle');
+          if (!bundle.includes('domain-experience-authority-v59-20260727')) errors.push('domain-experience-v59-bundle');
           if (!sw.includes('ngeblogging-app-v60-20260727')) errors.push('service-worker-v60');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
-          if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-app-shell');
+          if (!tenant.includes('/assets/index-')) errors.push('tenant-app-shell');
           if (errors.length) {
             console.error(`Release belum siap: ${errors.join(', ')}`);
             process.exit(1);
           }
           NODE
               then
-                echo "Studio, full-zone, Worker API domain v60, CORS, PWA, dan tenant aktif terverifikasi."
+                echo "Studio, bundled domain UI v59-v60, CSP, API JSON routes, CORS, PWA, full-zone, dan tenant aktif terverifikasi."
                 exit 0
               fi
             fi
             sleep 15
           done
           echo "Cloudflare belum menyajikan kontrak produksi domain API v60 yang lengkap."
+          printf 'health=%s api=%s apex-domain=%s worker-domain=%s preflight=%s index=%s bundle=%s sw=%s tenant=%s\n' "${health_code:-}" "${api_code:-}" "${apex_domain_code:-}" "${worker_domain_code:-}" "${preflight_code:-}" "${index_code:-}" "${bundle_code:-}" "${sw_code:-}" "${tenant_code:-}"
           cat /tmp/health.json 2>/dev/null || true
           cat /tmp/api-health.json 2>/dev/null || true
+          cat /tmp/apex-domain.json 2>/dev/null || true
+          cat /tmp/worker-domain.json 2>/dev/null || true
           cat /tmp/preflight-headers.txt 2>/dev/null || true
           exit 1
 
@@ -264,7 +283,7 @@ jobs:
               sha: context.sha,
               state: 'success',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone, Worker API fallback, CORS, UI, and live routes passed.',
+              description: 'Full-zone, bundled UI, Worker API fallback, CSP, CORS, and live routes passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -279,6 +298,6 @@ jobs:
               sha: context.sha,
               state: 'failure',
               context: 'Ngeblogging Cloudflare production',
-              description: 'Full-zone or Worker API fallback production verification failed.',
+              description: 'Full-zone or domain runtime production verification failed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
