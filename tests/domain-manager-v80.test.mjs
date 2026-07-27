@@ -32,13 +32,16 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout are proportionate, fixed and functional in every sidebar layout", async () => {
-  const [entry, navigation, studio] = await Promise.all([
+test("settings and logout load globally before any domain page is opened", async () => {
+  const [entry, secure, navigation, studio] = await Promise.all([
     read("src/domain-authority-v75.js"),
+    read("src/StudioSecure.jsx"),
     read("src/sidebar-logout-v80.js"),
     read("src/StudioNext.jsx"),
   ]);
-  assert.match(entry, /sidebar-logout-v80\.js/);
+  assert.doesNotMatch(entry, /sidebar-logout-v80\.js/);
+  assert.match(secure, /import "\.\/sidebar-logout-v80\.js"/);
+  assert.match(secure, /sidebar-global-v83-20260728/);
   for (const marker of [
     "sidebar-footer-v82-20260728",
     "sn-side-footer-v82",
@@ -59,10 +62,10 @@ test("settings and logout are proportionate, fixed and functional in every sideb
   assert.match(studio, />Keluar<\/span>/);
 });
 
-test("PWA cache rotates for proportional sidebar footer", async () => {
+test("PWA cache rotates for globally loaded sidebar footer", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-footer-v82-20260728/);
-  assert.match(worker, /pwa-v82/);
-  assert.match(worker, /service-worker-activated-sidebar-footer-v82/);
+  assert.match(worker, /sidebar-global-v83-20260728/);
+  assert.match(worker, /pwa-v83/);
+  assert.match(worker, /service-worker-activated-sidebar-global-v83/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
