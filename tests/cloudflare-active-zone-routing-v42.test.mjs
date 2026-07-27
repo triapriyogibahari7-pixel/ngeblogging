@@ -10,14 +10,16 @@ const execFileAsync = promisify(execFile);
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const requiredRoutes = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
-test("production workflow deploys with an optional Zone ID and proves preserved routes through smoke tests", async () => {
+test("production workflow resolves the zone with the dedicated token and proves live routes", async () => {
   const workflow = await read(".github/workflows/cloudflare.yml");
+  assert.match(workflow, /CLOUDFLARE_DOMAIN_API_TOKEN/);
   assert.match(workflow, /RESOLVED_CLOUDFLARE_ZONE_ID/);
   assert.match(workflow, /wrangler\.production\.active-zone\.jsonc/);
   assert.match(workflow, /zones\/\$\{RESOLVED_CLOUDFLARE_ZONE_ID\}\/workers\/routes/);
   assert.match(workflow, /routes\.get\(pattern\) !== 'ngeblogging'/);
-  assert.match(workflow, /token tidak memiliki Zone Read/);
-  assert.match(workflow, /API cadangan dibuktikan melalui workers\.dev/);
+  assert.match(workflow, /Verify dedicated custom-domain token permissions/);
+  assert.match(workflow, /zoneCreateEndpointAuthorized/);
+  assert.match(workflow, /Worker full-zone v62 dan token domain khusus/);
   assert.match(workflow, /WORKERS_DEV_SMOKE_TEST_URL/);
   assert.match(workflow, /TENANT_SMOKE_TEST_URL/);
   assert.match(workflow, /API_SMOKE_TEST_URL/);
