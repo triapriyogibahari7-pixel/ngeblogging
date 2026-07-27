@@ -8,10 +8,6 @@
   "workers_dev": true,
   "routes": [
     {
-      "pattern": "*/*",
-      "zone_name": "ngeblogging.com"
-    },
-    {
       "pattern": "ngeblogging.com/*",
       "zone_name": "ngeblogging.com"
     },
