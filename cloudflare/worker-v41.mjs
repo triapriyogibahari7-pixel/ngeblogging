@@ -104,7 +104,7 @@ async function enrichHealth(response, env) {
 
     return new Response(JSON.stringify({
       ...payload,
-      domainRelease: RELEASE,
+      domainRelease: LEGACY_FULL_ZONE_RELEASE,
       domainReleaseCurrent: RELEASE,
       domainRegistrationRecovery: REGISTRATION_RECOVERY_RELEASE,
       reversibleDomainDetach: REVERSIBLE_DETACH_RELEASE,
