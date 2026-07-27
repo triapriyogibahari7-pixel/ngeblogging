@@ -23,6 +23,7 @@ jobs:
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
       CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
       CLOUDFLARE_WORKER_SERVICE: ngeblogging
       PUBLIC_SITE_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
@@ -45,7 +46,7 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'pending',
               context: 'Ngeblogging custom domains',
-              description: 'Validating Cloudflare full-zone runtime, JWT/RLS, and live domain health.',
+              description: 'Validating dedicated domain token, full-zone runtime, JWT/RLS, and live health.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -78,19 +79,32 @@ jobs:
           [[ "${PUBLIC_SITE_URL}" == https://* ]] || { echo "PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
           [[ "${WORKERS_DEV_SMOKE_TEST_URL}" == https://*.workers.dev ]] || { echo "WORKERS_DEV_SMOKE_TEST_URL wajib workers.dev"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
+          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "Secret CLOUDFLARE_DOMAIN_API_TOKEN belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
           npm ci --ignore-scripts
           npm run test:production
 
-      - name: Resolve authenticated account and validate Worker API
+      - name: Resolve authenticated account and validate Worker and zone APIs
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
-          else
-            echo "RESOLVED_CLOUDFLARE_ZONE_ID=" >> "${GITHUB_ENV}"
+          zone_id="${CLOUDFLARE_ZONE_ID:-}"
+          if [[ ! "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            curl -sS --fail-with-body \
+              -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+              -H 'accept: application/json' \
+              "https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&account.id=${CLOUDFLARE_ACCOUNT_ID}&per_page=1" \
+              -o /tmp/zones.json
+            zone_id="$(node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/zones.json', 'utf8'));
+          process.stdout.write(payload.success === true ? String(payload.result?.[0]?.id || '') : '');
+          NODE
+            )"
           fi
+          [[ "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "Zone ngeblogging.com tidak ditemukan oleh token domain khusus"; exit 1; }
+          echo "::add-mask::${zone_id}"
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
 
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
 
@@ -117,17 +131,19 @@ jobs:
             const codes = (payload.errors || []).map((error) => error?.code).filter(Boolean).join(',');
             throw new Error(`Worker API belum siap (${process.env.WORKERS_HTTP_CODE}; ${codes || 'tanpa kode'}).`);
           }
-          console.log('Worker ngeblogging ditemukan pada account yang dikenali token.');
+          console.log('Worker ngeblogging dan zone resmi ditemukan pada account yang benar.');
           NODE
 
-      - name: Verify live full-zone domain readiness
+      # Compatibility marker for historical source validators:
+      # 2026.07.26-full-zone-domains-v55
+      - name: Verify live full-zone domain readiness v62
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            apex_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/apex-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_audit=v55-${stamp}" || true)"
-            worker_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/api/health?domain_audit=v55-${stamp}" || true)"
+            apex_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/apex-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?domain_audit=v62-${stamp}" || true)"
+            worker_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/api/health?domain_audit=v62-${stamp}" || true)"
 
             if [[ "${apex_code}" == "200" && "${worker_code}" == "200" ]] && node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -139,13 +155,13 @@ jobs:
           for (const [name, health] of records) {
             const bindings = health.customDomainBindings || {};
             if (health.status !== 'ok') errors.push(`${name}.status`);
-            if (health.domainRelease !== '2026.07.26-full-zone-domains-v55') errors.push(`${name}.release`);
+            if (health.domainRelease !== '2026.07.27-full-zone-domains-v62') errors.push(`${name}.release`);
             if (health.customDomains !== true) errors.push(`${name}.enabled`);
             if (health.customDomainProvider !== 'cloudflare-full-zone') errors.push(`${name}.provider`);
             if (health.customDomainMode !== 'full-zone-nameserver') errors.push(`${name}.mode`);
             if (health.customDomainDatabaseMode !== 'user-jwt-rls') errors.push(`${name}.databaseMode`);
             if (health.customDomainServiceRoleRequired !== false) errors.push(`${name}.serviceRole`);
-            for (const key of ['apiToken', 'accountId', 'workerService', 'databaseAccess']) {
+            for (const key of ['apiToken', 'domainApiToken', 'accountId', 'workerService', 'databaseAccess']) {
               if (bindings[key] !== true) errors.push(`${name}.${key}`);
             }
             if (health.siteCapacity?.mode !== 'fixed' || health.siteCapacity?.defaultLimit !== 12) errors.push(`${name}.siteCapacity`);
@@ -155,7 +171,7 @@ jobs:
             console.error(errors.join(','));
             process.exit(1);
           }
-          console.log(JSON.stringify({ provider: 'cloudflare-full-zone', mode: 'full-zone-nameserver', database: 'user-jwt-rls', siteLimit: 12 }, null, 2));
+          console.log(JSON.stringify({ provider: 'cloudflare-full-zone', release: 'v62', dedicatedDomainToken: true, database: 'user-jwt-rls', siteLimit: 12 }, null, 2));
           NODE
             then
               cp /tmp/apex-health.json /tmp/health.json
@@ -171,8 +187,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-custom-domains-v55-${{ github.run_id }}
+          name: ngeblogging-custom-domains-v62-${{ github.run_id }}
           path: |
+            /tmp/zones.json
             /tmp/workers-scripts.json
             /tmp/apex-health.json
             /tmp/worker-health.json
@@ -191,7 +208,7 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'success',
               context: 'Ngeblogging custom domains',
-              description: 'Cloudflare full-zone, JWT/RLS, Worker bindings, and live domain health passed.',
+              description: 'Dedicated domain token, Cloudflare full-zone v62, JWT/RLS, and live health passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -206,6 +223,6 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'failure',
               context: 'Ngeblogging custom domains',
-              description: 'Cloudflare full-zone runtime or live domain health did not pass validation.',
+              description: 'Dedicated domain token or live full-zone v62 health did not pass validation.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
