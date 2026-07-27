@@ -33,7 +33,7 @@
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
-    "APP_RELEASE": "2026.07.27-two-dns-custom-domains-v67",
+    "APP_RELEASE": "2026.07.27-domain-api-v60",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
     "UI_V37_WORKER_COMPAT": "worker-v37.mjs",
     "UI_V35_RELEASE_COMPAT": "2026.07.25-studio-v35",
