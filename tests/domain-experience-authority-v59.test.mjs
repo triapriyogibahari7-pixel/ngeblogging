@@ -14,7 +14,7 @@ const [runtime, styles, index, serviceWorker, worker, redirectHandler, migration
   read("supabase/migrations/20260727093000_add_site_domain_redirects_v59.sql"),
 ]);
 
-test("v59 menampilkan tiga panel domain yang berbeda dan tidak menduplikasi kolom alamat", () => {
+test("v59 archived source retains three distinct domain panels", () => {
   for (const marker of [
     "1. Hubungkan domain",
     "2. Alamat lanjutan",
@@ -29,7 +29,7 @@ test("v59 menampilkan tiga panel domain yang berbeda dan tidak menduplikasi kolo
   assert.match(runtime, /placeholder = "www, blog, toko, cloud, atau docs\.tim"/);
 });
 
-test("v59 redirect benar-benar terhubung ke API, Worker Domain, toggle, lock, dan edge redirect", () => {
+test("v59 redirect remains connected to API, Worker Domain, toggle, lock, and edge redirect", () => {
   for (const endpoint of [
     "/api/domain-redirects/list",
     "/api/domain-redirects/upsert",
@@ -49,7 +49,7 @@ test("v59 redirect benar-benar terhubung ke API, Worker Domain, toggle, lock, da
   assert.match(worker, /domainRedirect[\s\S]*seoEndpoint/);
 });
 
-test("v59 memiliki penyimpanan terindeks, RLS, dan pembacaan publik hanya untuk redirect aktif", () => {
+test("v59 storage keeps indexes, RLS, and active-only public reads", () => {
   assert.match(migration, /create table if not exists public\.site_domain_redirects/);
   assert.match(migration, /unique \(source_hostname\)/);
   assert.match(migration, /site_domain_redirects_active_source_idx/);
@@ -59,21 +59,18 @@ test("v59 memiliki penyimpanan terindeks, RLS, dan pembacaan publik hanya untuk 
   assert.match(migration, /target_url ~ '\^https:\/\//);
 });
 
-test("v59 menjadi otoritas aktif terakhir dan v57-v58 tetap dinonaktifkan", () => {
-  const v56Css = index.indexOf('<link href="/src/domain-layout-authority-v56.css"');
-  const v59Css = index.indexOf('<link href="/src/domain-experience-authority-v59.css"');
-  const v56Js = index.indexOf('<script type="module" src="/src/domain-layout-authority-v56.js"');
-  const v59Js = index.indexOf('<script type="module" src="/src/domain-experience-authority-v59.js"');
-  assert.ok(v59Css > v56Css);
-  assert.ok(v59Js > v56Js);
-  assert.match(index, /domain-experience-authority-v58\.css[^>]*media="not all"/);
-  assert.match(index, /type="application\/x-disabled" src="\/src\/domain-experience-authority-v58\.js"/);
-  assert.match(index, /ngeblogging-domain-address-ui" content="\/src\/domain-experience-authority-v59\.js"/);
+test("v59 is archived and cannot become the visible domain authority again", () => {
+  assert.match(index, /domain-experience-authority-v59\.css[^>]*media="not all"[^>]*data-disabled-authority="domain-v76"/);
+  assert.match(index, /type="application\/x-disabled" src="\/src\/domain-experience-authority-v59\.js" data-disabled-authority="domain-v76"/);
+  assert.doesNotMatch(index, /type="module" src="\/src\/domain-experience-authority-v59\.js"/);
+  assert.match(index, /ngeblogging-domain-runtime" content="\/src\/domain-authority-v75\.js"/);
+  assert.match(index, /ngeblogging-domain-authority" content="single-domain-authority-v76"/);
+  assert.match(serviceWorker, /ngeblogging-app-v76-20260727/);
   assert.match(serviceWorker, /ngeblogging-app-v59-20260727/);
   assert.match(serviceWorker, /ngeblogging-app-v58-20260727/);
 });
 
-test("v59 responsif untuk desktop, mobile, sentuh, dan reduced motion", () => {
+test("v59 archived styles remain responsive for compatibility", () => {
   assert.match(styles, /grid-template-columns:minmax\(0,1fr\)!important/);
   assert.match(styles, /d59-connect-guide/);
   assert.match(styles, /d59-redirect-table/);
