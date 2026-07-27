@@ -90,9 +90,10 @@ test("revoked Supabase sessions refresh once, clear stale storage, and return to
   ]) assert.ok(helper.includes(marker), marker);
   for (const marker of [
     "ngeblogging:session-invalid",
-    "auth=session-expired",
+    'url.searchParams.set("auth", "session-expired")',
     "window.location.replace",
     "clearInvalidLocalSession",
+    "sessionAwareFetch",
   ]) assert.ok(authority.includes(marker), marker);
   assert.ok(index.includes('<script type="module" src="/src/auth-session-authority-v76.js"></script>'));
   assert.ok(index.indexOf("auth-session-authority-v76.js") < index.indexOf("/src/main.jsx"));
