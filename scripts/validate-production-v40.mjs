@@ -14,11 +14,11 @@ const replacements = [
   ],
   [
     'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || productionWrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");',
-    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.26-responsive-v40") throw new Error("Release upload produksi belum v40.");',
+    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.27-domain-api-v60") throw new Error("Release upload produksi belum domain API v60.");',
   ],
   [
     'for (const marker of ["npm run deploy:cloudflare", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "2026.07.24-studio-v14", "health.naraProviders?.vision", "health.imageGeneration", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {',
-    'for (const marker of ["npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars", "Resolve the active ngeblogging.com zone", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "2026.07.24-studio-v14", "TENANT_SMOKE_TEST_URL", "tenant-404", "health.customDomainProvider", "cloudflare-full-zone", "domain-full-zone-v54.js"]) {',
+    'for (const marker of ["npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars", "Resolve the active ngeblogging.com zone", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "2026.07.24-studio-v14", "TENANT_SMOKE_TEST_URL", "tenant-404", "health.customDomainProvider", "cloudflare-full-zone", "domain-full-zone-v54.js", "api.ngeblogging.com", "2026.07.27-domain-api-v60"]) {',
   ],
 ];
 
