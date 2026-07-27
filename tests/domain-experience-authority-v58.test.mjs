@@ -32,7 +32,7 @@ test("v58 menggunakan satu kolom alamat opsional untuk www, subdomain, dan subdo
     "Tambahkan",
   ]) assert.ok(runtime.includes(marker), `marker v58 tidak ditemukan: ${marker}`);
 
-  assert.match(runtime, /data-action=\?"refresh-root/);
+  assert.ok(runtime.includes('[data-action="refresh-root"]'));
   assert.doesNotMatch(runtime, /createForm\(\{ mode: "single"/);
   assert.doesNotMatch(runtime, /createForm\(\{ mode: "nested"/);
 });
