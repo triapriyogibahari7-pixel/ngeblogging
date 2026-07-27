@@ -1,5 +1,5 @@
-const RELEASE = "api-origin-failover-v61-20260727";
-// Compatibility marker: api-origin-failover-v60-20260727
+const RELEASE = "api-origin-failover-v65-20260727";
+// Compatibility markers: api-origin-failover-v61-20260727, api-origin-failover-v60-20260727
 const API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
 const nativeFetch = window.fetch.bind(window);
 
@@ -44,41 +44,63 @@ async function responseDetails(response) {
   let bodyPreview = "";
   try {
     const text = await response.clone().text();
-    bodyPreview = text.slice(0, 240);
+    bodyPreview = text.slice(0, 320);
     payload = text ? JSON.parse(text) : null;
   } catch {
     payload = null;
   }
-  const validJson = Boolean(payload && typeof payload === "object");
-  const retryableStatus = [404, 405, 502, 503, 504].includes(response.status);
+  const validJson = Boolean(payload && typeof payload === "object" && !Array.isArray(payload));
+  const usefulError = Boolean(validJson && (payload.error || payload.code || payload.message));
+  const retryableStatus = [404, 405, 408, 425, 429, 500, 502, 503, 504].includes(response.status);
   return {
     claimsJson,
     validJson,
+    usefulError,
     payload,
     bodyPreview,
-    retryable: !validJson || retryableStatus,
+    retryable: !response.ok && (!validJson || !usefulError || retryableStatus),
   };
 }
 
 function diagnosticResponse(message, status = 502, code = "DOMAIN_API_UNAVAILABLE", details = {}) {
-  return new Response(JSON.stringify({
+  const payload = {
     code,
     error: message,
     release: RELEASE,
     ...details,
-  }), {
+  };
+  window.__ngebloggingLastDomainDiagnostic = payload;
+  window.dispatchEvent(new CustomEvent("ngeblogging:domain-api-diagnostic", { detail: payload }));
+  return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
       "x-ngeblogging-api-failover": RELEASE,
+      ...(details.requestId ? { "x-request-id": String(details.requestId) } : {}),
     },
   });
 }
 
-function usefulErrorPayload(details) {
-  const payload = details?.payload;
-  return Boolean(payload && (payload.error || payload.code));
+function dispatchFailover(primaryUrl, secondaryResponse) {
+  window.dispatchEvent(new CustomEvent("ngeblogging:api-failover", {
+    detail: {
+      path: primaryUrl.pathname,
+      from: primaryUrl.origin,
+      to: API_ORIGIN,
+      status: secondaryResponse.status,
+    },
+  }));
+}
+
+function statusMessage(status) {
+  if (status === 400) return "Data domain ditolak karena format permintaan tidak valid.";
+  if (status === 401) return "Sesi masuk tidak diterima oleh layanan domain. Silakan masuk kembali.";
+  if (status === 403) return "Layanan domain menolak izin permintaan pada jalur aktif.";
+  if (status === 404 || status === 405) return "API domain belum terpasang pada jalur situs aktif maupun Worker cadangan.";
+  if (status === 409) return "Permintaan domain berbenturan dengan status domain yang sudah tersimpan.";
+  if (status === 429) return "Layanan domain sedang membatasi permintaan. Coba kembali beberapa saat lagi.";
+  return "Layanan domain belum dapat memberikan respons yang dapat diproses.";
 }
 
 async function resilientFetch(input, init) {
@@ -94,12 +116,41 @@ async function resilientFetch(input, init) {
   try {
     primaryResponse = await nativeFetch(primary.clone());
     primaryDetails = await responseDetails(primaryResponse);
-    if (!primaryDetails.retryable || alreadyBackup || usefulErrorPayload(primaryDetails)) {
-      return primaryResponse;
+
+    if (primaryResponse.ok) return primaryResponse;
+    if (primaryDetails.usefulError) return primaryResponse;
+
+    if (alreadyBackup) {
+      const requestId = primaryResponse.headers.get("x-request-id") || "";
+      return diagnosticResponse(
+        statusMessage(primaryResponse.status),
+        primaryResponse.status >= 400 && primaryResponse.status <= 599 ? primaryResponse.status : 502,
+        "DOMAIN_API_EMPTY_ERROR",
+        {
+          status: primaryResponse.status,
+          requestId: requestId || null,
+          primaryOrigin: primaryUrl.origin,
+          backupOrigin: API_ORIGIN,
+          primaryBodyPreview: primaryDetails.bodyPreview || null,
+        },
+      );
     }
   } catch (error) {
     primaryFailure = error;
-    if (alreadyBackup) throw error;
+    if (alreadyBackup) {
+      return diagnosticResponse(
+        "Worker API domain tidak dapat dijangkau.",
+        502,
+        "DOMAIN_API_NETWORK_ERROR",
+        {
+          status: 502,
+          requestId: null,
+          primaryOrigin: primaryUrl.origin,
+          backupOrigin: API_ORIGIN,
+          primaryFailure: error?.message || null,
+        },
+      );
+    }
   }
 
   let secondaryResponse = null;
@@ -108,15 +159,9 @@ async function resilientFetch(input, init) {
   try {
     secondaryResponse = await nativeFetch(await backupRequest(primary.clone()));
     secondaryDetails = await responseDetails(secondaryResponse);
-    if (secondaryDetails.validJson) {
-      window.dispatchEvent(new CustomEvent("ngeblogging:api-failover", {
-        detail: {
-          path: primaryUrl.pathname,
-          from: primaryUrl.origin,
-          to: API_ORIGIN,
-          status: secondaryResponse.status,
-        },
-      }));
+
+    if (secondaryResponse.ok || secondaryDetails.usefulError) {
+      dispatchFailover(primaryUrl, secondaryResponse);
       return secondaryResponse;
     }
   } catch (error) {
@@ -127,16 +172,9 @@ async function resilientFetch(input, init) {
   const requestId = secondaryResponse?.headers.get("x-request-id")
     || primaryResponse?.headers.get("x-request-id")
     || "";
-  const message = status === 404 || status === 405
-    ? "API domain belum terpasang pada jalur situs aktif maupun Worker cadangan."
-    : status === 401
-      ? "Sesi masuk tidak diterima oleh layanan domain. Silakan masuk kembali."
-      : status === 403
-        ? "Layanan domain menolak permintaan. Sistem akan menampilkan izin Cloudflare yang diperlukan setelah respons JSON tersedia."
-        : "Layanan domain belum dapat dijangkau melalui jalur situs maupun Worker API cadangan.";
 
   return diagnosticResponse(
-    message,
+    statusMessage(status),
     status >= 400 && status <= 599 ? status : 502,
     "DOMAIN_API_ROUTE_UNAVAILABLE",
     {
@@ -152,9 +190,10 @@ async function resilientFetch(input, init) {
   );
 }
 
-if (!window.__ngebloggingApiOriginFailoverV61) {
+if (!window.__ngebloggingApiOriginFailoverV65) {
+  window.__ngebloggingApiOriginFailoverV65 = RELEASE;
   window.__ngebloggingApiOriginFailoverV61 = RELEASE;
   window.__ngebloggingApiOriginFailoverV60 = RELEASE;
   window.fetch = resilientFetch;
-  document.documentElement.dataset.apiOriginFailoverV61 = RELEASE;
+  document.documentElement.dataset.apiOriginFailoverV65 = RELEASE;
 }
