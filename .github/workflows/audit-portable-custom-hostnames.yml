@@ -1,0 +1,110 @@
+name: Audit portable custom hostnames
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/audit-portable-custom-hostnames.yml
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
+    steps:
+      - name: Resolve SaaS zone
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/portable-audit
+          curl -sS --fail-with-body \
+            -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+            -H 'accept: application/json' \
+            'https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&status=active&per_page=10' \
+            -o /tmp/portable-audit/zone.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const payload = JSON.parse(fs.readFileSync('/tmp/portable-audit/zone.json','utf8'));
+          const zones = (payload.result || []).filter((z) => z?.name === 'ngeblogging.com' && z?.status === 'active');
+          if (payload.success !== true || zones.length !== 1) throw new Error(`Zone aktif tidak unik: ${zones.length}`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `SAAS_ZONE_ID=${zones[0].id}\n`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `SAAS_ACCOUNT_ID=${zones[0].account.id}\n`);
+          NODE
+
+      - name: Audit Custom Hostnames API and fallback origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe() {
+            local token_name="$1"
+            local token_value="$2"
+            local endpoint="$3"
+            local output="$4"
+            local code
+            code="$(curl -sS -o "${output}" -w '%{http_code}' \
+              -H "authorization: Bearer ${token_value}" \
+              -H 'accept: application/json' \
+              "https://api.cloudflare.com/client/v4/zones/${SAAS_ZONE_ID}${endpoint}")"
+            echo "${token_name}:${code}:${output}" >> /tmp/portable-audit/codes.txt
+          }
+          probe deployment "${CLOUDFLARE_API_TOKEN}" '/custom_hostnames?per_page=1' /tmp/portable-audit/deployment-custom-hostnames.json
+          probe domain "${CLOUDFLARE_DOMAIN_API_TOKEN}" '/custom_hostnames?per_page=1' /tmp/portable-audit/domain-custom-hostnames.json
+          probe deployment "${CLOUDFLARE_API_TOKEN}" '/custom_hostnames/fallback_origin' /tmp/portable-audit/deployment-fallback.json
+          probe domain "${CLOUDFLARE_DOMAIN_API_TOKEN}" '/custom_hostnames/fallback_origin' /tmp/portable-audit/domain-fallback.json
+          curl -sS \
+            -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+            -H 'accept: application/json' \
+            "https://api.cloudflare.com/client/v4/zones/${SAAS_ZONE_ID}/dns_records?per_page=100" \
+            -o /tmp/portable-audit/dns.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const codes = fs.readFileSync('/tmp/portable-audit/codes.txt','utf8').trim().split(/\n+/).map((line) => {
+            const [token,http,path] = line.split(':');
+            let payload = {};
+            try { payload = JSON.parse(fs.readFileSync(path,'utf8')); } catch {}
+            return { token, http:Number(http), success:payload.success === true, errors:payload.errors || [], result:payload.result || null };
+          });
+          const dnsPayload = JSON.parse(fs.readFileSync('/tmp/portable-audit/dns.json','utf8'));
+          const records = (dnsPayload.result || []).filter((r) => ['origin.ngeblogging.com','connect.ngeblogging.com','*.connect.ngeblogging.com'].includes(r.name)).map((r) => ({ id:r.id, type:r.type, name:r.name, content:r.content, proxied:r.proxied }));
+          const customApi = codes.filter((x) => x.result_info || x.token).filter((x) => Array.isArray(x.result));
+          const listAccess = codes.filter((x) => Array.isArray(x.result)).map((x) => ({ token:x.token, http:x.http, success:x.success }));
+          const fallback = codes.filter((x) => x.result && !Array.isArray(x.result)).map((x) => ({ token:x.token, http:x.http, success:x.success, result:x.result, errors:x.errors }));
+          const evidence = { checkedAt:new Date().toISOString(), zoneId:process.env.SAAS_ZONE_ID, accountId:process.env.SAAS_ACCOUNT_ID, listAccess, fallback, records, rawCodes:codes.map((x) => ({ token:x.token, http:x.http, success:x.success, errors:x.errors })) };
+          fs.writeFileSync('/tmp/portable-audit/result.json', JSON.stringify(evidence,null,2));
+          console.log(JSON.stringify(evidence,null,2));
+          NODE
+
+      - name: Mark audit result
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('node:fs');
+            let result = {};
+            try { result = JSON.parse(fs.readFileSync('/tmp/portable-audit/result.json','utf8')); } catch {}
+            const apiReady = Array.isArray(result.listAccess) && result.listAccess.some((x) => x.http === 200 && x.success === true);
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: apiReady ? 'success' : 'failure',
+              context: 'Portable custom hostname audit',
+              description: apiReady ? 'Custom Hostnames API dapat diakses; pemeriksaan fallback tersimpan.' : 'Custom Hostnames API belum dapat diakses oleh token produksi.',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Upload portable audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-custom-hostname-audit-${{ github.run_id }}
+          path: /tmp/portable-audit
+          if-no-files-found: warn
+          retention-days: 3
