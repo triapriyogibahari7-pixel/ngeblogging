@@ -20,12 +20,13 @@ test("pengaturan www, subdomain, dan subdomain bertingkat selalu terlihat", () =
     "Pengaturan siap digunakan",
     "Aktif",
     "Nonaktif",
-  ]) assert.match(runtime, new RegExp(marker));
+    "bagian.nama",
+  ]) assert.match(runtime, new RegExp(marker.replace(".", "\\.")));
 
   assert.match(runtime, /data-action="toggle-address"/);
   assert.match(runtime, /data-action="add-address"/);
   assert.match(runtime, /data-action="remove-address"/);
-  assert.match(runtime, /placeholder="bagian\.nama"/);
+  assert.match(runtime, /const placeholder = nested/);
   assert.doesNotMatch(runtime, /cloud\.console/i);
 });
 
