@@ -6,8 +6,8 @@ import {
 
 const RELEASE = "2026.07.27-two-dns-custom-domains-v67";
 
-function selectedProvider(env) {
-  return String(env.CUSTOM_DOMAIN_PROVIDER || "").trim().toLowerCase();
+function enabled(value) {
+  return ["1", "true", "yes", "on", "enabled"].includes(String(value || "").trim().toLowerCase());
 }
 
 async function enrichHealth(response, env) {
@@ -21,26 +21,19 @@ async function enrichHealth(response, env) {
     headers.set("x-ngeblogging-domain-engine", RELEASE);
     return new Response(JSON.stringify({
       ...payload,
-      domainRelease: RELEASE,
-      domainReleaseCurrent: RELEASE,
-      customDomains: readiness.activationReady,
-      customDomainProvider: readiness.provider,
-      customDomainMode: readiness.providerMode,
-      customDomainDnsMode: readiness.dnsMode,
-      customDomainAutomation: true,
-      customDomainBindings: readiness.bindings,
-      customDomainDatabaseMode: readiness.databaseMode,
-      customDomainServiceRoleRequired: false,
-      customHostnameTarget: readiness.cnameTarget,
-      customDomainPaidSaasRequired: false,
-      customDomainCapacity: {
-        architecture: "shared-cloudflare-for-saas-edge",
-        dnsRecordsPerHostname: 2,
+      customDomainDnsV67: {
+        enabled: enabled(env.CUSTOM_DOMAIN_DNS_V67),
+        release: RELEASE,
+        provider: readiness.provider,
+        mode: readiness.providerMode,
+        dnsMode: readiness.dnsMode,
+        activationReady: readiness.activationReady,
+        bindings: readiness.bindings,
+        cnameTarget: readiness.cnameTarget,
         durableRegistration: true,
         idempotentActivation: true,
         canonicalRedirect: true,
         freeSubdomainFallback: true,
-        sslActivationRequired: true,
       },
     }), { status: response.status, statusText: response.statusText, headers });
   } catch {
@@ -52,8 +45,9 @@ export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
     if (
-      url.pathname.startsWith("/api/domains/")
-      && selectedProvider(env) === "cloudflare-custom-hostnames"
+      request.method !== "OPTIONS"
+      && url.pathname.startsWith("/api/domains/")
+      && enabled(env.CUSTOM_DOMAIN_DNS_V67)
     ) {
       return handleDomainDnsV67Request(request, env, crypto.randomUUID());
     }
