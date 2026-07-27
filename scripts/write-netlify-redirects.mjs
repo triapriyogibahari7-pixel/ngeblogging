@@ -6,7 +6,7 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   const apiOrigin = String(
     process.env.NGEBLOGGING_API_ORIGIN
     || process.env.VITE_NGEBLOGGING_API_ORIGIN
-    || "https://api.ngeblogging.com",
+    || "https://ngeblogging.triapriyogibahari7.workers.dev",
   ).trim().replace(/\/$/, "");
 
   if (!/^https:\/\//i.test(apiOrigin)) {
