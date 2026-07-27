@@ -1,6 +1,5 @@
 import { loadAnalytics } from "./studio-analytics-v41.js";
 import { loadMembers } from "./studio-members-v41.js";
-import { loadDomains } from "./studio-domains-v41.js";
 import {
   clearHealthCache,
   currentSiteId,
@@ -12,6 +11,7 @@ import {
   supabase,
 } from "./studio-operations-v41-shared.js";
 
+const DOMAIN_OWNER = "domain-manager-v78-20260727";
 let scanFrame = 0;
 let lastSiteId = currentSiteId();
 
@@ -22,10 +22,10 @@ async function enhanceSiteIdentity() {
   try {
     const siteId = await resolveSiteId();
     if (!siteId || !supabase) return;
-    const { data:site, error } = await supabase
+    const { data: site, error } = await supabase
       .from("sites")
       .select("id,name,slug,status,is_public,blueprint,description,custom_domain")
-      .eq("id",siteId)
+      .eq("id", siteId)
       .maybeSingle();
     if (error) throw error;
     if (!site || !welcome.isConnected) return;
@@ -56,6 +56,7 @@ function updateDescriptions() {
 
 async function scan() {
   document.documentElement.dataset.studioOperationsV41 = RELEASE;
+  document.documentElement.dataset.domainOperationsOwner = DOMAIN_OWNER;
   updateDescriptions();
   enhanceSiteIdentity();
   const siteId = currentSiteId();
@@ -63,8 +64,7 @@ async function scan() {
   if (analytics && analytics.dataset.op41AnalyticsSite !== siteId && analytics.dataset.op41AnalyticsBusy !== "true") loadAnalytics(analytics, 30, false);
   const members = pageView("Anggota & tim");
   if (members && members.dataset.op41MembersSite !== siteId && members.dataset.op41MembersBusy !== "true") loadMembers(members);
-  const domains = pageView("Domain & publikasi");
-  if (domains && domains.dataset.op41DomainsSite !== siteId && domains.dataset.op41DomainsBusy !== "true") loadDomains(domains);
+  // Domain sengaja tidak disentuh. Domain Manager v78 adalah satu-satunya pemilik DOM halaman Domain.
 }
 
 function schedule() {
@@ -74,16 +74,15 @@ function schedule() {
 
 new MutationObserver((mutations) => {
   if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "characterData")) schedule();
-}).observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+}).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 
 window.setInterval(() => {
   const siteId = currentSiteId();
   if (siteId === lastSiteId) return;
   lastSiteId = siteId;
-  document.querySelectorAll("[data-op41-analytics-site],[data-op41-members-site],[data-op41-domains-site]").forEach((view) => {
+  document.querySelectorAll("[data-op41-analytics-site],[data-op41-members-site]").forEach((view) => {
     delete view.dataset.op41AnalyticsSite;
     delete view.dataset.op41MembersSite;
-    delete view.dataset.op41DomainsSite;
   });
   clearHealthCache();
   schedule();
