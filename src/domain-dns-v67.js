@@ -7,6 +7,10 @@ function parseRecord(value) {
   return record.type === "CNAME" && record.name && record.value ? record : null;
 }
 
+function recordHost(record) {
+  return record.name.startsWith("_ngeblogging.") ? "_ngeblogging" : "@";
+}
+
 function domainRoot() {
   return document.querySelector(".dfz-root");
 }
@@ -43,7 +47,7 @@ function enhanceRecords(root) {
     code.textContent = record.value;
     const label = row.querySelector(":scope > span");
     if (label) {
-      label.innerHTML = `<b>${record.type}</b><small>${record.name}</small>`;
+      label.innerHTML = `<b>${record.type}</b><small>Host: ${recordHost(record)} · ${record.name}</small>`;
     }
     const button = row.querySelector('[data-action="copy-ns"]');
     if (button) {
@@ -60,6 +64,13 @@ function enhanceRecords(root) {
   if (small) small.textContent = "2 RECORD DNS WAJIB";
   if (title) title.textContent = "Tambahkan dua CNAME di pengelola DNS domain";
   if (all) all.lastChild && (all.lastChild.textContent = "Salin 2 record");
+  if (!section.querySelector("[data-domain-dns-v67-note]")) {
+    const note = document.createElement("p");
+    note.dataset.domainDnsV67Note = "true";
+    note.className = "dfz-domain-dns-note";
+    note.textContent = "Gunakan mode DNS only / proxy nonaktif untuk kedua record selama verifikasi dan penerbitan HTTPS.";
+    section.append(note);
+  }
   section.dataset.domainDnsV67 = RELEASE;
   return true;
 }
@@ -103,7 +114,7 @@ document.addEventListener("click", (event) => {
   if (!records.length) return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  const value = records.map((record) => `${record.type}\t${record.name}\t${record.value}`).join("\n");
+  const value = records.map((record) => `${record.type}\t${recordHost(record)}\t${record.value}`).join("\n");
   copy(value, "Dua record DNS disalin.");
 }, true);
 
