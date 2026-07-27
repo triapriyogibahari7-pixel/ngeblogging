@@ -24,7 +24,6 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
-      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
       CLOUDFLARE_WORKER_SERVICE: ngeblogging
       PUBLIC_SITE_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
       WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
@@ -46,7 +45,7 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'pending',
               context: 'Ngeblogging custom domains',
-              description: 'Validating dedicated domain token, full-zone runtime, JWT/RLS, and live health.',
+              description: 'Validating the authoritative account, dedicated token, full-zone v62, and live domain health.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -66,10 +65,7 @@ jobs:
           process.stdout.write(String(config.vars?.CUSTOM_DOMAIN_PROVIDER || '').trim().toLowerCase());
           NODE
           )"
-          [[ "${provider}" == "cloudflare-full-zone" ]] || {
-            echo "Provider produksi wajib cloudflare-full-zone, ditemukan: ${provider:-kosong}"
-            exit 1
-          }
+          [[ "${provider}" == "cloudflare-full-zone" ]] || { echo "Provider produksi wajib cloudflare-full-zone, ditemukan: ${provider:-kosong}"; exit 1; }
           echo "CUSTOM_DOMAIN_PROVIDER=${provider}" >> "${GITHUB_ENV}"
 
       - name: Validate credentials and production source
@@ -80,43 +76,42 @@ jobs:
           [[ "${WORKERS_DEV_SMOKE_TEST_URL}" == https://*.workers.dev ]] || { echo "WORKERS_DEV_SMOKE_TEST_URL wajib workers.dev"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "Secret CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "Secret CLOUDFLARE_DOMAIN_API_TOKEN belum diisi"; exit 1; }
-          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "Secret CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
           npm ci --ignore-scripts
           npm run test:production
 
-      - name: Resolve authenticated account and validate Worker and zone APIs
+      - name: Resolve authoritative account and validate Worker and zone APIs
         shell: bash
         run: |
           set -euo pipefail
-          zone_id="${CLOUDFLARE_ZONE_ID:-}"
-          if [[ ! "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            curl -sS --fail-with-body \
-              -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
-              -H 'accept: application/json' \
-              "https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&account.id=${CLOUDFLARE_ACCOUNT_ID}&per_page=1" \
-              -o /tmp/zones.json
-            zone_id="$(node --input-type=module <<'NODE'
+          curl -sS --fail-with-body \
+            -H "authorization: Bearer ${CLOUDFLARE_DOMAIN_API_TOKEN}" \
+            -H 'accept: application/json' \
+            'https://api.cloudflare.com/client/v4/zones?name=ngeblogging.com&status=active&per_page=10' \
+            -o /tmp/zones.json
+
+          resolved="$(node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const payload = JSON.parse(fs.readFileSync('/tmp/zones.json', 'utf8'));
-          process.stdout.write(payload.success === true ? String(payload.result?.[0]?.id || '') : '');
-          NODE
-            )"
-          fi
-          [[ "${zone_id}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "Zone ngeblogging.com tidak ditemukan oleh token domain khusus"; exit 1; }
-          echo "::add-mask::${zone_id}"
-          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
-
-          node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-
-          account_id="$(node --input-type=module <<'NODE'
-          import fs from 'node:fs';
-          const config = JSON.parse(fs.readFileSync('wrangler.production.active-zone.jsonc', 'utf8'));
-          process.stdout.write(String(config.account_id || ''));
+          const matches = payload.success === true
+            ? (payload.result || []).filter((zone) => zone?.name === 'ngeblogging.com' && zone?.status === 'active')
+            : [];
+          if (matches.length !== 1) throw new Error(`Ditemukan ${matches.length} zone aktif ngeblogging.com; wajib tepat satu.`);
+          const zoneId = String(matches[0]?.id || '');
+          const accountId = String(matches[0]?.account?.id || '');
+          if (!/^[a-f0-9]{32}$/i.test(zoneId) || !/^[a-f0-9]{32}$/i.test(accountId)) throw new Error('Zone atau Account ID otoritatif tidak valid.');
+          process.stdout.write(`${zoneId} ${accountId}`);
           NODE
           )"
-          [[ "${account_id}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "Account ID terautentikasi tidak valid"; exit 1; }
+          read -r zone_id account_id <<< "${resolved}"
+          echo "::add-mask::${zone_id}"
           echo "::add-mask::${account_id}"
+          if [[ -n "${CLOUDFLARE_ACCOUNT_ID:-}" && "${CLOUDFLARE_ACCOUNT_ID}" != "${account_id}" ]]; then
+            echo "::warning::Secret Account ID lama berbeda; audit memakai account pemilik zone aktif."
+          fi
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${zone_id}" >> "${GITHUB_ENV}"
           echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${account_id}" >> "${GITHUB_ENV}"
+
+          node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
 
           http_code="$(curl -sS -o /tmp/workers-scripts.json -w '%{http_code}' \
             -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -131,11 +126,13 @@ jobs:
             const codes = (payload.errors || []).map((error) => error?.code).filter(Boolean).join(',');
             throw new Error(`Worker API belum siap (${process.env.WORKERS_HTTP_CODE}; ${codes || 'tanpa kode'}).`);
           }
-          console.log('Worker ngeblogging dan zone resmi ditemukan pada account yang benar.');
+          console.log('Worker ngeblogging ditemukan pada account otoritatif.');
           NODE
 
       # Compatibility marker for historical source validators:
       # 2026.07.26-full-zone-domains-v55
+      # customDomainServiceRoleRequired
+      # siteCapacity
       - name: Verify live full-zone domain readiness v62
         shell: bash
         run: |
@@ -208,7 +205,7 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'success',
               context: 'Ngeblogging custom domains',
-              description: 'Dedicated domain token, Cloudflare full-zone v62, JWT/RLS, and live health passed.',
+              description: 'Authoritative account, dedicated domain token, Cloudflare full-zone v62, and live health passed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -223,6 +220,6 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'failure',
               context: 'Ngeblogging custom domains',
-              description: 'Dedicated domain token or live full-zone v62 health did not pass validation.',
+              description: 'Authoritative account, dedicated token, or live full-zone v62 health failed.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
