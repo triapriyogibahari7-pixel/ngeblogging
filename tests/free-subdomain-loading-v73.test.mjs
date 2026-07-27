@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("persistent free subdomain is recovered independently from custom-domain API", async () => {
+test("legacy recovery source preserves the permanent free-subdomain contract", async () => {
   const runtime = await read("src/domain-free-subdomain-recovery-v73.js");
   for (const marker of [
     "domain-loading-recovery-v74-20260727",
@@ -22,8 +22,11 @@ test("persistent free subdomain is recovered independently from custom-domain AP
   assert.doesNotMatch(runtime, /SUPABASE_SERVICE_ROLE_KEY|service_role/);
 });
 
-test("domain loading has a hard API deadline and cannot spin forever", async () => {
-  const runtime = await read("src/domain-free-subdomain-recovery-v73.js");
+test("legacy recovery source has bounded latency but is quarantined from production ownership", async () => {
+  const [runtime, index] = await Promise.all([
+    read("src/domain-free-subdomain-recovery-v73.js"),
+    read("index.html"),
+  ]);
   for (const marker of [
     "DOMAIN_API_DEADLINE_MS = 12_000",
     "DOMAIN_SPINNER_DEADLINE_MS = 14_000",
@@ -36,9 +39,8 @@ test("domain loading has a hard API deadline and cannot spin forever", async () 
     "Subdomain gratis tetap aktif",
     "ngeblogging:domain-api-diagnostic",
   ]) assert.ok(runtime.includes(marker), marker);
-  assert.ok(runtime.includes('url.pathname.startsWith("/api/domains/")'));
-  assert.ok(runtime.includes('url.pathname.startsWith("/api/domain-redirects/")'));
-  assert.ok(runtime.includes("window.fetch = boundedDomainFetch"));
+  assert.ok(index.includes('type="application/x-disabled" src="/src/domain-free-subdomain-recovery-v73.js" data-disabled-authority="domain-v76"'));
+  assert.ok(!index.includes('<script type="module" src="/src/domain-free-subdomain-recovery-v73.js"></script>'));
 });
 
 test("domain API failover has bounded primary and backup latency", async () => {
@@ -56,19 +58,23 @@ test("domain API failover has bounded primary and backup latency", async () => {
   assert.ok(source.includes("timedNativeFetch(secondaryRequest, BACKUP_TIMEOUT_MS"));
 });
 
-test("recovery loads before the full-zone domain authority and invalidates stale PWA caches", async () => {
+test("single v75 domain authority replaces every active legacy owner and PWA moves to v76", async () => {
   const [index, worker] = await Promise.all([
     read("index.html"),
     read("public/sw.js"),
   ]);
-  const recoveryTag = '<script type="module" src="/src/domain-free-subdomain-recovery-v73.js"></script>';
-  const fullZoneTag = '<script type="module" src="/src/domain-full-zone-v54.js"></script>';
-  const recovery = index.indexOf(recoveryTag);
-  const fullZone = index.indexOf(fullZoneTag);
-  assert.ok(recovery > 0, "recovery runtime missing");
-  assert.ok(fullZone > recovery, "recovery must load before full-zone UI");
-  assert.ok(index.includes('name="ngeblogging-free-subdomain-runtime"'));
-  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v75-20260727"'));
+  assert.ok(index.includes('name="ngeblogging-free-subdomain-runtime" content="/src/domain-authority-v75.js"'));
+  assert.ok(index.includes('name="ngeblogging-domain-authority" content="single-domain-authority-v76"'));
+  for (const legacy of [
+    "domain-full-zone-v54.js",
+    "domain-layout-authority-v56.js",
+    "domain-experience-authority-v59.js",
+    "domain-feedback-authority-v60.js",
+    "domain-mobile-precision-v61.js",
+    "domain-operation-authority-v65.js",
+  ]) assert.ok(index.includes(`type="application/x-disabled" src="/src/${legacy}"`), legacy);
+  assert.ok(worker.includes('const VERSION = "ngeblogging-app-v76-20260727"'));
+  assert.ok(worker.includes("ngeblogging-app-v75-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v74-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v73-20260727"));
   assert.ok(worker.includes("ngeblogging-app-v65-20260727"));
