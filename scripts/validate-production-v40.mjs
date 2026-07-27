@@ -22,7 +22,7 @@ const replacements = [
   ],
   [
     'for (const marker of ["npm run deploy:cloudflare", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "2026.07.24-studio-v14", "health.naraProviders?.vision", "health.imageGeneration", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {',
-    'for (const marker of ["npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars", "Resolve the active ngeblogging.com zone", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "TENANT_SMOKE_TEST_URL", "tenant-404", "health.customDomainProvider", "cloudflare-full-zone", "domain-full-zone-v54.js", "ngeblogging.triapriyogibahari7.workers.dev", "2026.07.27-domain-api-v60"]) {',
+    'for (const marker of ["npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars", "Resolve authoritative Cloudflare zone and account", "RESOLVED_CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_DOMAIN_API_TOKEN", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "TENANT_SMOKE_TEST_URL", "tenant-404", "health.customDomainProvider", "cloudflare-full-zone", "domain-full-zone-v54.js", "ngeblogging.triapriyogibahari7.workers.dev", "2026.07.27-domain-api-v60"]) {',
   ],
 ];
 
