@@ -49,17 +49,19 @@ test("Studio exposes apex and nested subdomain flows", () => {
   assert.match(studio, /Service-role server tidak diperlukan/);
 });
 
-test("Netlify bridge redirects are generated only by Netlify builds", () => {
+test("Netlify bridge redirects are generated only by Netlify builds and never proxy back to itself", () => {
   const redirectWriter = read("scripts/write-netlify-redirects.mjs");
   const command = read("scripts/netlify-domain-alias.mjs");
   const pkg = JSON.parse(read("package.json"));
   const sw = read("public/sw.js");
   assert.match(redirectWriter, /process\.env\.NETLIFY/);
-  assert.match(redirectWriter, /https:\/\/ngeblogging\.com\/api\/:splat/);
+  assert.match(redirectWriter, /https:\/\/api\.ngeblogging\.com/);
+  assert.match(redirectWriter, /NGEBLOGGING_API_ORIGIN/);
+  assert.doesNotMatch(redirectWriter, /"\/api\/\*\s+https:\/\/ngeblogging\.com\/api\/:splat/);
   assert.match(redirectWriter, /dist, "_redirects"/);
   assert.match(command, /domain_aliases/);
   assert.match(command, /75\.2\.60\.5/);
   assert.equal(pkg.scripts.build, "vite build && node scripts/write-netlify-redirects.mjs");
   assert.equal(pkg.scripts["domain:netlify"], "node scripts/netlify-domain-alias.mjs");
-  assert.match(sw, /ngeblogging-app-v51-20260726/);
+  assert.match(sw, /ngeblogging-app-v60-20260727/);
 });
