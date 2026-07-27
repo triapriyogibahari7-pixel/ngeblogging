@@ -1,10 +1,14 @@
-const RELEASE = "ngeblogging-pwa-v23-20260725";
-const VALIDATOR_COMPATIBILITY = "ngeblogging-pwa-v21-20260725";
-// Historical audit marker: ngeblogging-pwa-v14-20260724.
+const RELEASE = "ngeblogging-pwa-v77-20260727";
+const VALIDATOR_COMPATIBILITY = "ngeblogging-pwa-v23-20260725";
+// Historical audit markers: ngeblogging-pwa-v21-20260725, ngeblogging-pwa-v14-20260724.
 const ROOT = document.getElementById("root") || document.documentElement;
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v77";
+const RECOVERY_QUERY = "ngeblogging_recovery";
+const RECOVERY_VALUE = "pwa-v77";
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
+let controllerRecoveryStarted = false;
 
 function viewportProfile() {
   const layoutWidth = Math.max(1, Number(window.innerWidth) || 1);
@@ -75,6 +79,29 @@ function productionHost() {
     || hostname === "127.0.0.1";
 }
 
+function sensitiveAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  return params.has("code")
+    || params.get("auth") === "callback"
+    || params.get("auth") === "recovery";
+}
+
+function reloadForNewController(reason = "controllerchange") {
+  if (controllerRecoveryStarted || sensitiveAuthCallback()) return;
+  const url = new URL(window.location.href);
+  if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
+  try {
+    if (sessionStorage.getItem(CONTROLLER_GUARD) === RECOVERY_VALUE) return;
+    sessionStorage.setItem(CONTROLLER_GUARD, RECOVERY_VALUE);
+  } catch {
+    // Storage may be unavailable; the query guard still prevents a loop.
+  }
+  controllerRecoveryStarted = true;
+  url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
+  url.searchParams.set("recovery_reason", reason);
+  window.location.replace(url.href);
+}
+
 function removeInstallButton() {
   installButton?.remove();
   installButton = null;
@@ -133,8 +160,13 @@ async function registerServiceWorker() {
       });
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      // Never reload during a click, login, upload, edit, or Nara request.
       document.documentElement.dataset.appUpdate = "applied";
+      reloadForNewController("controllerchange");
+    });
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data?.type === "NGE_BLOGGING_FORCE_RELOAD_V77") {
+        reloadForNewController(event.data.reason || "service-worker-message");
+      }
     });
   } catch (error) {
     console.warn("PWA registration failed", error);
