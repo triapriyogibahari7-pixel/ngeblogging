@@ -41,22 +41,24 @@ test("v60 uses a deployable Worker API fallback and removes the recursive Netlif
   assert.doesNotMatch(netlify, /"\/api\/\*\s+https:\/\/ngeblogging\.com\/api\/:splat/);
 });
 
-test("v60 never paints a failed domain request as success", () => {
+test("v60 archived feedback never paints a failed domain request as success", () => {
   assert.match(feedback, /FAILURE_PATTERN/);
   assert.match(feedback, /classList\.toggle\("danger"/);
   assert.match(feedback, /Permintaan domain tidak selesai/);
   assert.match(feedbackCss, /\.dfz-toast\.danger/);
   assert.match(feedbackCss, /\.d60-operation-error/);
+  assert.match(index, /domain-feedback-authority-v60\.css[^>]*media="not all"[^>]*data-disabled-authority="domain-v76"/);
+  assert.match(index, /type="application\/x-disabled" src="\/src\/domain-feedback-authority-v60\.js" data-disabled-authority="domain-v76"/);
 });
 
-test("v60 loads before the domain runtime and rotates the PWA cache", () => {
+test("API failover loads before the application while legacy feedback stays quarantined", () => {
   const failoverPosition = index.indexOf('<script type="module" src="/src/api-origin-failover-v60.js"');
-  const domainPosition = index.indexOf('<script type="module" src="/src/domain-full-zone-v54.js"');
-  const feedbackPosition = index.indexOf('<script type="module" src="/src/domain-feedback-authority-v60.js"');
-  const v59Position = index.indexOf('<script type="module" src="/src/domain-experience-authority-v59.js"');
-  assert.ok(failoverPosition > 0 && failoverPosition < domainPosition);
-  assert.ok(feedbackPosition > v59Position);
-  assert.match(index, /domain-feedback-authority-v60\.css/);
+  const mainPosition = index.indexOf('<script type="module" src="/src/main.jsx"');
+  const authPosition = index.indexOf('<script type="module" src="/src/auth-session-authority-v76.js"');
+  assert.ok(authPosition > 0 && authPosition < failoverPosition);
+  assert.ok(failoverPosition > 0 && failoverPosition < mainPosition);
+  assert.doesNotMatch(index, /type="module" src="\/src\/domain-feedback-authority-v60\.js"/);
   assert.match(index, /ngeblogging\.triapriyogibahari7\.workers\.dev/);
+  assert.match(sw, /ngeblogging-app-v76-20260727/);
   assert.match(sw, /ngeblogging-app-v60-20260727/);
 });

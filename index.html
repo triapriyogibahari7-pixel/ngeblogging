@@ -8,14 +8,12 @@
     <meta name="theme-color" content="#2d6edf"/>
     <meta name="color-scheme" content="light"/>
     <meta name="application-name" content="Ngeblogging"/>
-    <meta name="ngeblogging-domain-runtime" content="/src/domain-full-zone-v54.js"/>
-    <meta name="ngeblogging-domain-styles" content="/src/domain-full-zone-v54.css"/>
-    <meta name="ngeblogging-domain-address-ui" content="/src/domain-experience-authority-v59.js"/>
-    <meta name="ngeblogging-domain-precision" content="/src/domain-mobile-precision-v61.js"/>
-    <meta name="ngeblogging-domain-operation" content="/src/domain-operation-authority-v65.js"/>
-    <meta name="ngeblogging-domain-authority" content="cloudflare-full-zone-free-v71"/>
+    <meta name="ngeblogging-domain-runtime" content="/src/domain-authority-v75.js"/>
+    <meta name="ngeblogging-domain-styles" content="/src/domain-authority-v75.css"/>
+    <meta name="ngeblogging-domain-authority" content="single-domain-authority-v76"/>
+    <meta name="ngeblogging-auth-session-runtime" content="/src/auth-session-authority-v76.js"/>
     <meta name="ngeblogging-free-subdomain" content="persistent"/>
-    <meta name="ngeblogging-free-subdomain-runtime" content="/src/domain-free-subdomain-recovery-v73.js"/>
+    <meta name="ngeblogging-free-subdomain-runtime" content="/src/domain-authority-v75.js"/>
     <meta name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"/>
     <meta name="mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -40,8 +38,8 @@
     <link href="/src/nara-v9-readiness.css" rel="stylesheet"/>
     <link href="/src/nara-command-center.css" rel="stylesheet"/>
     <link href="/src/domain-management-bridge.css" rel="stylesheet" media="not all" data-disabled-authority="legacy-domain-v49"/>
-    <link href="/src/domain-full-zone-v54.css" rel="stylesheet"/>
-    <link href="/src/domain-address-experience-v57.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v59"/>
+    <link href="/src/domain-full-zone-v54.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-address-experience-v57.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
     <link href="/src/site-quota-bridge.css" rel="stylesheet"/>
     <link href="/src/auth-readiness-bridge.css" rel="stylesheet"/>
     <link href="/src/theme-device-modes.css" rel="stylesheet"/>
@@ -76,12 +74,12 @@
     <link href="/src/studio-theme-domain-v50.css" rel="stylesheet"/>
     <link href="/src/studio-site-switcher-v52.css" rel="stylesheet"/>
     <link href="/src/studio-site-switcher-stability-v53.css" rel="stylesheet"/>
-    <link href="/src/domain-layout-authority-v56.css" rel="stylesheet"/>
-    <link href="/src/domain-experience-authority-v58.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v59"/>
-    <link href="/src/domain-experience-authority-v59.css" rel="stylesheet"/>
-    <link href="/src/domain-feedback-authority-v60.css" rel="stylesheet"/>
-    <link href="/src/domain-mobile-precision-v61.css" rel="stylesheet"/>
-    <link href="/src/domain-operation-authority-v65.css" rel="stylesheet"/>
+    <link href="/src/domain-layout-authority-v56.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-experience-authority-v58.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-experience-authority-v59.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-feedback-authority-v60.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-mobile-precision-v61.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-operation-authority-v65.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
     <link href="/src/domain-dns-v67.css" rel="stylesheet" media="not all" data-disabled-authority="full-zone-free-v71"/>
     <title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
@@ -89,15 +87,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/pwa-runtime.js"></script>
+    <script type="module" src="/src/auth-session-authority-v76.js"></script>
     <script type="module" src="/src/api-origin-failover-v60.js"></script>
     <script type="module" src="/src/main.jsx"></script>
-    <script type="module" src="/src/domain-free-subdomain-recovery-v73.js"></script>
+    <script type="application/x-disabled" src="/src/domain-free-subdomain-recovery-v73.js" data-disabled-authority="domain-v76"></script>
     <script type="module" src="/src/studio-interaction-v49.js"></script>
     <script type="application/x-disabled" src="/src/studio-runtime-v23.js" data-disabled-authority="v23"></script>
     <script type="module" src="/src/site-favicon-bridge.js"></script>
     <script type="application/x-disabled" src="/src/domain-management-bridge.js" data-disabled-authority="legacy-domain-v49"></script>
-    <script type="module" src="/src/domain-full-zone-v54.js"></script>
-    <script type="application/x-disabled" src="/src/domain-address-experience-v57.js" data-disabled-authority="domain-v59"></script>
+    <script type="application/x-disabled" src="/src/domain-full-zone-v54.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-address-experience-v57.js" data-disabled-authority="domain-v76"></script>
     <script type="module" src="/src/site-quota-bridge.js"></script>
     <script type="module" src="/src/billing-availability-bridge.js"></script>
     <script type="module" src="/src/auth-readiness-bridge.js"></script>
@@ -117,18 +116,18 @@
     <script type="module" src="/src/studio-layout-builder-v39.js"></script>
     <script type="module" src="/src/studio-quality-v39.js"></script>
     <script type="module" src="/src/studio-layout-device-v40.js"></script>
-    <script type="module" src="/src/studio-domain-v41.js"></script>
+    <script type="application/x-disabled" src="/src/studio-domain-v41.js" data-disabled-authority="domain-v76"></script>
     <script type="module" src="/src/studio-responsive-repair-v43.js"></script>
     <script type="module" src="/src/studio-operations-v41.js"></script>
     <script type="module" src="/src/studio-reflow-v48.js"></script>
     <script type="module" src="/src/studio-theme-domain-v50.js"></script>
     <script type="module" src="/src/studio-site-switcher-v52.js"></script>
-    <script type="module" src="/src/domain-layout-authority-v56.js"></script>
-    <script type="application/x-disabled" src="/src/domain-experience-authority-v58.js" data-disabled-authority="domain-v59"></script>
-    <script type="module" src="/src/domain-experience-authority-v59.js"></script>
-    <script type="module" src="/src/domain-feedback-authority-v60.js"></script>
-    <script type="module" src="/src/domain-mobile-precision-v61.js"></script>
-    <script type="module" src="/src/domain-operation-authority-v65.js"></script>
+    <script type="application/x-disabled" src="/src/domain-layout-authority-v56.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-experience-authority-v58.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-experience-authority-v59.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-feedback-authority-v60.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-mobile-precision-v61.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-operation-authority-v65.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-dns-v67.js" data-disabled-authority="full-zone-free-v71"></script>
   </body>
 </html>

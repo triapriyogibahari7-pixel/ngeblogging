@@ -40,8 +40,9 @@ test("kontrol alamat aktif pada desktop, mobile, sentuh, dan reduced motion", ()
   assert.match(styles, /\.dfz-state-button\.active/);
 });
 
-test("rilis v57 dimuat setelah otoritas full-zone", () => {
-  assert.match(index, /domain-address-experience-v57\.css/);
-  assert.match(index, /domain-full-zone-v54\.js[\s\S]*domain-address-experience-v57\.js/);
-  assert.match(index, /ngeblogging-domain-address-ui/);
+test("v57 remains archived but cannot override the single v76 domain authority", () => {
+  assert.match(index, /domain-address-experience-v57\.css[^>]*media="not all"[^>]*data-disabled-authority="domain-v76"/);
+  assert.match(index, /type="application\/x-disabled" src="\/src\/domain-address-experience-v57\.js" data-disabled-authority="domain-v76"/);
+  assert.doesNotMatch(index, /type="module" src="\/src\/domain-address-experience-v57\.js"/);
+  assert.match(index, /ngeblogging-domain-authority" content="single-domain-authority-v76"/);
 });
