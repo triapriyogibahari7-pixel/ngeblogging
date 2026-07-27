@@ -1,0 +1,668 @@
+/* Ngeblogging Domain Experience Authority v58
+ * Loaded after every Studio and legacy domain stylesheet.
+ * This file owns the visual flow of the authoritative .dfz-root surface.
+ */
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root * {
+  box-sizing: border-box !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root :is(
+  header,
+  section,
+  article,
+  form,
+  label,
+  div,
+  ol,
+  li,
+  h1,
+  h2,
+  h3,
+  p,
+  small,
+  span,
+  strong,
+  b,
+  em,
+  i,
+  code
+) {
+  inset: auto !important;
+  translate: none !important;
+  scale: none !important;
+  transform: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root :is(header, section, article, form, label, div, ol, li) {
+  position: relative !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root :is(h1, h2, h3, p, small, span, strong, b, em, i, code) {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+  padding: 32px 32px 88px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title {
+  margin-bottom: 22px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title small,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card small,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header small,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-hostname-row small,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers small,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-summary small,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-onboarding-copy small {
+  display: block !important;
+  color: #2d6edf !important;
+  font: 800 10px/1.35 "DM Sans", sans-serif !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title h1 {
+  margin: 8px 0 !important;
+  font: 600 clamp(34px, 4vw, 48px)/1.05 "Playfair Display", serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title p {
+  color: #66758a !important;
+  font: 400 14px/1.65 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: start !important;
+  gap: 20px !important;
+  margin-top: 20px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel {
+  min-width: 0 !important;
+  border: 1px solid #dbe4ef !important;
+  border-radius: 22px !important;
+  padding: 24px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+  box-shadow: 0 18px 54px rgba(24, 48, 86, .08) !important;
+  overflow: hidden !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header {
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid #e8edf4 !important;
+  padding: 0 0 20px !important;
+  overflow: visible !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header > div {
+  min-width: 0 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header h2 {
+  margin: 7px 0 8px !important;
+  color: #17253c !important;
+  font: 600 clamp(24px, 2.4vw, 32px)/1.12 "Playfair Display", serif !important;
+  letter-spacing: -.02em !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header p,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card p {
+  margin: 0 !important;
+  color: #6c7b90 !important;
+  font: 400 13px/1.65 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card {
+  border-radius: 20px !important;
+  padding: 22px !important;
+  box-shadow: 0 14px 44px rgba(24, 48, 86, .07) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-free-card h2 {
+  font-size: clamp(24px, 2.6vw, 31px) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root :is(input, button, a) {
+  font-family: "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-form,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: end !important;
+  gap: 12px !important;
+  padding-top: 22px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-form label,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label {
+  display: grid !important;
+  gap: 9px !important;
+  min-width: 0 !important;
+  color: #40536e !important;
+  font: 800 12px/1.3 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-form input,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form input {
+  min-height: 52px !important;
+  border: 1px solid #cfdbe9 !important;
+  border-radius: 14px !important;
+  padding: 0 16px !important;
+  background: #fff !important;
+  color: #17253c !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-form input:focus,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form input:focus {
+  border-color: #6f9bea !important;
+  box-shadow: 0 0 0 4px rgba(45, 110, 223, .12) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-primary {
+  min-height: 52px !important;
+  border-radius: 14px !important;
+  padding: 0 20px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 12px 28px rgba(45, 110, 223, .24) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-form > .dfz-primary,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form > .dfz-primary {
+  justify-self: stretch !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label > div {
+  display: flex !important;
+  align-items: stretch !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #cfdbe9 !important;
+  border-radius: 14px !important;
+  background: #f4f7fb !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label > div:focus-within {
+  border-color: #6f9bea !important;
+  box-shadow: 0 0 0 4px rgba(45, 110, 223, .12) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label > div input {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label > div em {
+  max-width: 46% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  flex: 0 1 auto !important;
+  border: 0 !important;
+  border-left: 1px solid #d7e0eb !important;
+  padding: 0 14px !important;
+  color: #52647d !important;
+  font: 700 12px/1.25 "DM Sans", sans-serif !important;
+  text-overflow: ellipsis !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form > p {
+  grid-column: 1 / -1 !important;
+  margin: 0 !important;
+  color: #6f7f95 !important;
+  font: 400 12px/1.6 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-onboarding,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board {
+  display: grid !important;
+  gap: 18px !important;
+  margin-top: 18px !important;
+  border: 1px solid #dbe6f5 !important;
+  border-radius: 18px !important;
+  padding: 18px !important;
+  background: linear-gradient(145deg, #f7faff, #ffffff) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board.active {
+  border-color: #cde7d9 !important;
+  background: linear-gradient(145deg, #f0fbf5, #ffffff) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board.danger {
+  border-color: #efccd2 !important;
+  background: linear-gradient(145deg, #fff4f5, #ffffff) !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-onboarding-copy,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-summary {
+  display: grid !important;
+  grid-template-columns: 46px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 13px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-icon {
+  width: 46px !important;
+  height: 46px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  background: #e9f1ff !important;
+  color: #2d6edf !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board.active .d58-icon {
+  background: #e4f5ec !important;
+  color: #237552 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board.danger .d58-icon {
+  background: #ffe9ec !important;
+  color: #a74250 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-onboarding h3,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board h3 {
+  margin: 5px 0 6px !important;
+  color: #1d304b !important;
+  font: 800 16px/1.35 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-onboarding p,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-board p {
+  margin: 0 !important;
+  color: #62738a !important;
+  font: 400 12px/1.65 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 9px !important;
+  border: 1px solid #e0e7f0 !important;
+  border-radius: 13px !important;
+  padding: 11px !important;
+  background: #fff !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li.current {
+  border-color: #a9c4f4 !important;
+  background: #f3f7ff !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li.done {
+  border-color: #cfe7da !important;
+  background: #f5fcf8 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li.current.danger {
+  border-color: #efccd2 !important;
+  background: #fff4f5 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li > i {
+  width: 30px !important;
+  height: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  background: #e9eef5 !important;
+  color: #52647d !important;
+  font: 800 11px/1 "DM Sans", sans-serif !important;
+  font-style: normal !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li.current > i {
+  background: #2d6edf !important;
+  color: #fff !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li.done > i {
+  background: #237552 !important;
+  color: #fff !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li.current.danger > i {
+  background: #a74250 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps li > i svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps b,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps span {
+  display: block !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps b {
+  color: #263b59 !important;
+  font: 800 11px/1.35 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps span {
+  margin-top: 3px !important;
+  color: #77869a !important;
+  font: 400 10px/1.45 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-state {
+  gap: 16px !important;
+  padding-top: 22px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-hostname-row {
+  grid-template-columns: 48px minmax(0, 1fr) auto !important;
+  gap: 14px !important;
+  border: 1px solid #dde6f0 !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+  background: #fff !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-host-icon {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-hostname-row strong {
+  margin-top: 4px !important;
+  color: #1c304c !important;
+  font: 800 16px/1.35 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-hostname-row > div > span {
+  margin-top: 4px !important;
+  color: #718096 !important;
+  font: 400 11px/1.45 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-status {
+  padding: 8px 11px !important;
+  font-size: 10px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers {
+  border-radius: 16px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers > header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 16px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers h3 {
+  margin: 5px 0 0 !important;
+  color: #213650 !important;
+  font: 800 14px/1.4 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-ns-help {
+  max-width: 620px !important;
+  margin: 8px 0 0 !important;
+  color: #64758b !important;
+  font: 400 11px/1.6 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers > div {
+  grid-template-columns: 110px minmax(0, 1fr) 38px !important;
+  padding: 13px 16px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers > div > span,
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers code {
+  font-size: 11px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-actions {
+  gap: 9px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-actions :is(a, button) {
+  min-height: 44px !important;
+  border-radius: 11px !important;
+  padding: 0 13px !important;
+  font-size: 11px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-optional-intro {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 18px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-optional-intro > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: 1px solid #dce5f0 !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  background: #f6f9fd !important;
+  color: #49617f !important;
+  font: 800 10px/1 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-optional-intro > span svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: #2d6edf !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-optional-intro > p {
+  flex: 1 1 100% !important;
+  margin: 2px 0 0 !important;
+  color: #6d7d92 !important;
+  font: 400 11px/1.55 "DM Sans", sans-serif !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-locked {
+  min-height: 210px !important;
+  margin-top: 16px !important;
+  border: 1px dashed #d7e1ed !important;
+  border-radius: 16px !important;
+  background: #f7f9fc !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-locked b {
+  font-size: 13px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-locked p {
+  margin-top: 7px !important;
+  font-size: 11px !important;
+  line-height: 1.6 !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-list {
+  gap: 10px !important;
+  margin-top: 18px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-list > article {
+  align-items: center !important;
+  border-radius: 14px !important;
+  padding: 13px !important;
+  background: #fff !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-name strong {
+  color: #243a58 !important;
+  font-size: 12px !important;
+}
+
+.sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-name small {
+  margin-top: 4px !important;
+  color: #728198 !important;
+  font-size: 10px !important;
+}
+
+@media (max-width: 1180px) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-steps {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+    padding: 20px 14px calc(84px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel {
+    border-radius: 18px !important;
+    padding: 18px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header {
+    display: block !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root-form,
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-primary {
+    width: 100% !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-onboarding-copy,
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-status-summary {
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .d58-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-hostname-row {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-hostname-row > .dfz-status {
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers > header {
+    flex-direction: column !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers > div {
+    grid-template-columns: minmax(0, 1fr) 38px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-nameservers > div > span {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-shell {
+    padding-inline: 10px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel {
+    padding: 15px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-title h1 {
+    font-size: 30px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-panel > header h2 {
+    font-size: 25px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label > div {
+    display: flex !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-form label > div em {
+    max-width: 43% !important;
+    min-height: 52px !important;
+    border-top: 0 !important;
+    border-left: 1px solid #d7e0eb !important;
+    padding-inline: 10px !important;
+    font-size: 10px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-list > article {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-address-controls {
+    justify-content: flex-end !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root :is(button, a, input) {
+    min-height: 48px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-main > .sn-view-pad[data-domain-full-zone-authority] .dfz-root * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
