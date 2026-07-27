@@ -49,10 +49,10 @@ test("v60 never paints a failed domain request as success", () => {
 });
 
 test("v60 loads before the domain runtime and rotates the PWA cache", () => {
-  const failoverPosition = index.indexOf("api-origin-failover-v60.js");
-  const domainPosition = index.indexOf("domain-full-zone-v54.js");
-  const feedbackPosition = index.indexOf("domain-feedback-authority-v60.js");
-  const v59Position = index.indexOf("domain-experience-authority-v59.js");
+  const failoverPosition = index.indexOf('<script type="module" src="/src/api-origin-failover-v60.js"');
+  const domainPosition = index.indexOf('<script type="module" src="/src/domain-full-zone-v54.js"');
+  const feedbackPosition = index.indexOf('<script type="module" src="/src/domain-feedback-authority-v60.js"');
+  const v59Position = index.indexOf('<script type="module" src="/src/domain-experience-authority-v59.js"');
   assert.ok(failoverPosition > 0 && failoverPosition < domainPosition);
   assert.ok(feedbackPosition > v59Position);
   assert.match(index, /domain-feedback-authority-v60\.css/);
