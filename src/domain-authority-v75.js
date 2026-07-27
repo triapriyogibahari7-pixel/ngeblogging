@@ -13,4 +13,5 @@
  * /api/domains/refresh
  * /api/domains/address
  */
+import "./domain-manager-v79.css";
 import "./domain-manager-v79.js";
