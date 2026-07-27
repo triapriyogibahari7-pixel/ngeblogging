@@ -25,7 +25,9 @@ test("new users choose site identity instead of receiving an email-derived site"
     "Tidak ada situs yang dibuat otomatis",
   ]) assert.ok(gate.includes(marker), marker);
   assert.doesNotMatch(gate, /email\?\.split|email\.split|Studio`|Studio"/);
-  assert.ok(gate.indexOf("listUserSites") < gate.indexOf("createUserSite"));
+  assert.ok(gate.includes('if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding")'));
+  assert.ok(gate.includes('if (phase === "ready") return <StudioSecure'));
+  assert.ok(gate.includes('if (phase === "onboarding") return <FirstSiteOnboarding'));
 });
 
 test("domain authority v75 owns the visible page and never renders the legacy infinite spinner", async () => {
@@ -44,7 +46,7 @@ test("domain authority v75 owns the visible page and never renders the legacy in
     "/api/domains/refresh",
     "/api/domains/address",
   ]) assert.ok(source.toLowerCase().includes(marker.toLowerCase()), marker);
-  assert.doesNotMatch(source, /Memuat domain situs…|class=\"dfz-loading\"/);
+  assert.doesNotMatch(source, /Memuat domain situs…|class="dfz-loading"/);
   assert.ok(source.includes("Promise.race"));
   assert.ok(source.includes("child.hidden = true"));
   assert.ok(source.includes("controller.root.hidden = false"));
