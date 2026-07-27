@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Wrangler keeps native routes while SaaS catch-all is managed independently", async () => {
+test("Wrangler keeps native routes and production disables the optional SaaS engine", async () => {
   const [wranglerSource, builder] = await Promise.all([
     read("wrangler.production.jsonc"),
     read("scripts/build-active-zone-wrangler.mjs"),
@@ -15,14 +15,15 @@ test("Wrangler keeps native routes while SaaS catch-all is managed independently
     "www.ngeblogging.com/*",
     "*.ngeblogging.com/*",
   ]);
-  assert.equal(wrangler.vars.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET, "connect.ngeblogging.com");
-  assert.equal(wrangler.vars.CLOUDFLARE_CUSTOM_ORIGIN, "connect.ngeblogging.com");
-  assert.equal(wrangler.vars.CUSTOM_DOMAIN_DNS_V67, "true");
+  assert.equal(wrangler.vars.CUSTOM_DOMAIN_PROVIDER, "cloudflare-full-zone");
+  assert.equal(wrangler.vars.CUSTOM_DOMAIN_DNS_V67, "false");
+  assert.equal(wrangler.vars.CLOUDFLARE_SAAS_ENABLED, "false");
+  assert.equal(wrangler.vars.FREE_SUBDOMAIN_MODE, "persistent");
   assert.ok(builder.includes("route SaaS catch-all dikelola terpisah melalui API"));
   assert.ok(!builder.includes('"*/*",'));
 });
 
-test("deployment provisions and audits the complete SaaS origin chain", async () => {
+test("the optional deployment workflow still audits the complete SaaS origin chain", async () => {
   const workflow = await read(".github/workflows/custom-domain-saas-v68.yml");
 
   for (const marker of [
