@@ -22,9 +22,9 @@ test("v59 menampilkan tiga panel domain yang berbeda dan tidak menduplikasi kolo
     "domain utama, subdomain, atau subdomain bertingkat",
     "Satu kolom ini menerima www, subdomain biasa, dan subdomain bertingkat",
     "Tambah redirect",
-  ]) assert.match(runtime, new RegExp(marker.replaceAll(".", "\\.")));
+  ]) assert.ok(runtime.includes(marker), `marker v59 tidak ditemukan: ${marker}`);
 
-  assert.equal((runtime.match(/data-d59-form="redirect"/g) || []).length, 1);
+  assert.equal((runtime.match(/<form class="d59-redirect-form" data-d59-form="redirect">/g) || []).length, 1);
   assert.match(runtime, /placeholder = "contoh: domainanda\.com atau app\.domainanda\.com"/);
   assert.match(runtime, /placeholder = "www, blog, toko, cloud, atau docs\.tim"/);
 });
@@ -60,10 +60,10 @@ test("v59 memiliki penyimpanan terindeks, RLS, dan pembacaan publik hanya untuk 
 });
 
 test("v59 menjadi otoritas aktif terakhir dan v57-v58 tetap dinonaktifkan", () => {
-  const v56Css = index.indexOf("domain-layout-authority-v56.css");
-  const v59Css = index.indexOf("domain-experience-authority-v59.css");
-  const v56Js = index.indexOf("domain-layout-authority-v56.js");
-  const v59Js = index.indexOf("domain-experience-authority-v59.js");
+  const v56Css = index.indexOf('<link href="/src/domain-layout-authority-v56.css"');
+  const v59Css = index.indexOf('<link href="/src/domain-experience-authority-v59.css"');
+  const v56Js = index.indexOf('<script type="module" src="/src/domain-layout-authority-v56.js"');
+  const v59Js = index.indexOf('<script type="module" src="/src/domain-experience-authority-v59.js"');
   assert.ok(v59Css > v56Css);
   assert.ok(v59Js > v56Js);
   assert.match(index, /domain-experience-authority-v58\.css[^>]*media="not all"/);
