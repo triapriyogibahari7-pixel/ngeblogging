@@ -23,6 +23,16 @@ function icon(name) {
   return icons[name] || "";
 }
 
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
+function setButton(node, key, markup) {
+  if (!node || node.querySelector(".dfz-spinner") || node.dataset.domainV58Button === key) return;
+  node.innerHTML = markup;
+  node.dataset.domainV58Button = key;
+}
+
 function rootElement() {
   return document.querySelector(".sn-main > .sn-view-pad[data-domain-full-zone-authority] > .dfz-root")
     || document.querySelector(".dfz-root");
@@ -35,12 +45,9 @@ function panels(root) {
 function setPanelHeader(panel, eyebrow, title, description) {
   const header = panel?.querySelector(":scope > header");
   if (!header) return;
-  const small = header.querySelector("small");
-  const heading = header.querySelector("h2");
-  const paragraph = header.querySelector("p");
-  if (small) small.textContent = eyebrow;
-  if (heading) heading.textContent = title;
-  if (paragraph) paragraph.textContent = description;
+  setText(header.querySelector("small"), eyebrow);
+  setText(header.querySelector("h2"), title);
+  setText(header.querySelector("p"), description);
 }
 
 function onboardingMarkup() {
@@ -72,9 +79,10 @@ function statusState(panel) {
 
 function statusMarkup(state, hostname) {
   const safeHostname = escapeHtml(hostname || "domain Anda");
+  const hostAttribute = escapeHtml(hostname || "domain-anda");
   if (state === "active") {
     return `
-      <section class="d58-status-board active" data-domain-v58-status="active">
+      <section class="d58-status-board active" data-domain-v58-status="active" data-domain-v58-host="${hostAttribute}">
         <div class="d58-status-summary">
           <span class="d58-icon">${icon("check")}</span>
           <div><small>KONEKSI SELESAI</small><h3>${safeHostname} aktif dan siap digunakan</h3><p>Nameserver, HTTPS, dan routing wildcard telah siap. Alamat www atau subdomain tetap bersifat opsional.</p></div>
@@ -90,7 +98,7 @@ function statusMarkup(state, hostname) {
 
   if (state === "danger") {
     return `
-      <section class="d58-status-board danger" data-domain-v58-status="danger">
+      <section class="d58-status-board danger" data-domain-v58-status="danger" data-domain-v58-host="${hostAttribute}">
         <div class="d58-status-summary">
           <span class="d58-icon">${icon("warning")}</span>
           <div><small>PERLU DIPERBAIKI</small><h3>Koneksi ${safeHostname} belum berhasil</h3><p>Pastikan seluruh nameserver lama sudah diganti dengan nameserver Ngeblogging, tidak ada salah ketik, lalu simpan perubahan dan jalankan pemeriksaan kembali.</p></div>
@@ -105,7 +113,7 @@ function statusMarkup(state, hostname) {
   }
 
   return `
-    <section class="d58-status-board pending" data-domain-v58-status="pending">
+    <section class="d58-status-board pending" data-domain-v58-status="pending" data-domain-v58-host="${hostAttribute}">
       <div class="d58-status-summary">
         <span class="d58-icon">${icon("clock")}</span>
         <div><small>SEDANG DALAM PROPAGASI</small><h3>Menunggu nameserver ${safeHostname} terverifikasi</h3><p>Pasang nameserver di registrar domain, lalu tunggu pembaruan DNS. Status diperbarui saat halaman dibuka dan ketika tombol <b>Periksa koneksi</b> ditekan.</p></div>
@@ -117,6 +125,13 @@ function statusMarkup(state, hostname) {
       </ol>
     </section>
   `;
+}
+
+function ensureStatusBoard(panel, hostname, state) {
+  const current = panel.querySelector("[data-domain-v58-status]");
+  if (current?.dataset.domainV58Status === state && current.dataset.domainV58Host === hostname) return;
+  current?.remove();
+  panel.querySelector(".dfz-hostname-row")?.insertAdjacentHTML("afterend", statusMarkup(state, hostname));
 }
 
 function decorateRootPanel(panel) {
@@ -132,15 +147,15 @@ function decorateRootPanel(panel) {
     const label = form.querySelector("label > span");
     const input = form.querySelector('input[name="hostname"]');
     const button = form.querySelector('button[type="submit"]');
-    if (label) label.textContent = "Domain utama";
+    setText(label, "Domain utama");
     if (input) {
-      input.placeholder = "contoh: domainanda.com";
-      input.setAttribute("aria-describedby", "d58-domain-help");
+      if (input.placeholder !== "contoh: domainanda.com") input.placeholder = "contoh: domainanda.com";
+      if (input.getAttribute("aria-describedby") !== "d58-domain-help") input.setAttribute("aria-describedby", "d58-domain-help");
     }
-    if (button && !button.querySelector(".dfz-spinner")) button.innerHTML = `${icon("arrow")}Hubungkan domain`;
+    setButton(button, "connect", `${icon("arrow")}Hubungkan domain`);
     if (!panel.querySelector("[data-domain-v58-onboarding]")) form.insertAdjacentHTML("afterend", onboardingMarkup());
     const helper = panel.querySelector("[data-domain-v58-onboarding] p");
-    if (helper) helper.id = "d58-domain-help";
+    if (helper && helper.id !== "d58-domain-help") helper.id = "d58-domain-help";
     return;
   }
 
@@ -151,22 +166,21 @@ function decorateRootPanel(panel) {
   const state = statusState(panel);
   const status = hostnameRow.querySelector(".dfz-status");
   if (status) {
-    status.textContent = state === "active" ? "Aktif" : state === "danger" ? "Perlu diperbaiki" : "Sedang propagasi";
+    setText(status, state === "active" ? "Aktif" : state === "danger" ? "Perlu diperbaiki" : "Sedang propagasi");
     status.classList.toggle("pending", state === "pending");
     status.classList.toggle("danger", state === "danger");
     status.classList.toggle("active", state === "active");
   }
 
-  panel.querySelector("[data-domain-v58-status]")?.remove();
-  hostnameRow.insertAdjacentHTML("afterend", statusMarkup(state, hostname));
+  ensureStatusBoard(panel, hostname, state);
 
   const nameservers = panel.querySelector(".dfz-nameservers");
   if (nameservers) {
     const small = nameservers.querySelector("header small");
     const heading = nameservers.querySelector("header h3");
     const copy = nameservers.querySelector("header > div");
-    if (small) small.textContent = "LANGKAH WAJIB DI TEMPAT DOMAIN DIBELI";
-    if (heading) heading.textContent = "Ganti nameserver lama dengan nameserver Ngeblogging";
+    setText(small, "LANGKAH WAJIB DI TEMPAT DOMAIN DIBELI");
+    setText(heading, "Ganti nameserver lama dengan nameserver Ngeblogging");
     if (copy && !copy.querySelector(".d58-ns-help")) {
       copy.insertAdjacentHTML(
         "beforeend",
@@ -176,7 +190,10 @@ function decorateRootPanel(panel) {
   }
 
   const refresh = panel.querySelector('[data-action="refresh-root"]');
-  if (refresh && !refresh.querySelector(".dfz-spinner")) refresh.lastChild.textContent = " Periksa koneksi";
+  if (refresh && !refresh.querySelector(".dfz-spinner")) {
+    const text = refresh.lastChild;
+    if (text?.nodeType === Node.TEXT_NODE && text.textContent !== " Periksa koneksi") text.textContent = " Periksa koneksi";
+  }
 }
 
 function addressKind(host) {
@@ -192,7 +209,7 @@ function decorateAddressRows(panel) {
     const meta = row.querySelector(".dfz-address-name small");
     if (!meta || !host) return;
     const enabled = toggle?.dataset.enabled === "true";
-    meta.textContent = `${addressKind(host)} · ${enabled ? "Aktif dan menerima trafik" : "Nonaktif"}`;
+    setText(meta, `${addressKind(host)} · ${enabled ? "Aktif dan menerima trafik" : "Nonaktif"}`);
   });
 }
 
@@ -220,10 +237,8 @@ function decorateAddressPanel(panel) {
 
   const locked = panel.querySelector(".dfz-locked");
   if (locked) {
-    const title = locked.querySelector("b");
-    const description = locked.querySelector("p");
-    if (title) title.textContent = "Opsional — tersedia setelah domain utama aktif";
-    if (description) description.textContent = "Selesaikan verifikasi domain utama untuk membuka www, subdomain, dan subdomain bertingkat. Anda tidak wajib menggunakan fitur ini.";
+    setText(locked.querySelector("b"), "Opsional — tersedia setelah domain utama aktif");
+    setText(locked.querySelector("p"), "Selesaikan verifikasi domain utama untuk membuka www, subdomain, dan subdomain bertingkat. Anda tidak wajib menggunakan fitur ini.");
     return;
   }
 
@@ -233,10 +248,10 @@ function decorateAddressPanel(panel) {
     const input = form.querySelector('input[name="host"]');
     const helper = form.querySelector(":scope > p");
     const button = form.querySelector('button[type="submit"]');
-    if (label) label.textContent = "Alamat tambahan (opsional)";
-    if (input) input.placeholder = "www, blog, toko, app, atau docs.tim";
-    if (helper) helper.textContent = "Contoh hasil: www.domainanda.com, blog.domainanda.com, atau docs.tim.domainanda.com. Routing wildcard dan HTTPS dikelola otomatis setelah domain utama aktif.";
-    if (button && !button.querySelector(".dfz-spinner")) button.innerHTML = `${icon("plus")}Tambahkan`;
+    setText(label, "Alamat tambahan (opsional)");
+    if (input?.placeholder !== "www, blog, toko, app, atau docs.tim") input.placeholder = "www, blog, toko, app, atau docs.tim";
+    setText(helper, "Contoh hasil: www.domainanda.com, blog.domainanda.com, atau docs.tim.domainanda.com. Routing wildcard dan HTTPS dikelola otomatis setelah domain utama aktif.");
+    setButton(button, "add-address", `${icon("plus")}Tambahkan`);
   }
 
   decorateAddressRows(panel);
@@ -262,8 +277,8 @@ function schedule() {
 }
 
 new MutationObserver((mutations) => {
-  if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "characterData")) schedule();
-}).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule();
+}).observe(document.documentElement, { childList: true, subtree: true });
 
 window.addEventListener("pageshow", schedule);
 window.addEventListener("resize", schedule, { passive: true });
