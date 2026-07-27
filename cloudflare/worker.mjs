@@ -99,8 +99,9 @@ function securityHeaders(requestId, corsOrigin = "") {
   });
   if (corsOrigin) {
     headers.set("access-control-allow-origin", corsOrigin);
-    headers.set("access-control-allow-headers", "content-type, authorization");
+    headers.set("access-control-allow-headers", "content-type, authorization, cache-control");
     headers.set("access-control-allow-methods", "GET, HEAD, POST, OPTIONS");
+    headers.set("access-control-expose-headers", "x-request-id, x-ngeblogging-domain-redirect, x-ngeblogging-api-origin");
     headers.set("access-control-max-age", "86400");
     headers.set("vary", "Origin");
   }
@@ -111,7 +112,18 @@ function jsonResponse(status, body, requestId, method = "GET", corsOrigin = "") 
   const payload = JSON.stringify(body);
   const headers = securityHeaders(requestId, corsOrigin);
   headers.set("content-type", "application/json; charset=utf-8");
+  headers.set("x-ngeblogging-api-origin", "cloudflare-worker-v60");
   return new Response(method === "HEAD" ? null : payload, { status, headers });
+}
+
+function preflightResponse(request, env, requestId) {
+  const origin = request.headers.get("origin") || "";
+  if (!isAllowedOrigin(origin, env)) {
+    return jsonResponse(403, { code: "ORIGIN_NOT_ALLOWED", error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
+  }
+  const headers = securityHeaders(requestId, origin);
+  headers.set("x-ngeblogging-api-origin", "cloudflare-worker-v60");
+  return new Response(null, { status: 204, headers });
 }
 
 function clientAddress(request) {
@@ -151,15 +163,17 @@ async function naraResponse(request, env, requestId) {
   const result = await handleRequest({ httpMethod: request.method, headers, body }, env);
   const responseHeaders = new Headers(result.headers || {});
   for (const [name, value] of securityHeaders(requestId, origin).entries()) responseHeaders.set(name, value);
+  responseHeaders.set("x-ngeblogging-api-origin", "cloudflare-worker-v60");
   return new Response(request.method === "HEAD" ? null : result.body || null, { status: result.statusCode, headers: responseHeaders });
 }
 
 async function protectedJsonEndpoint(request, env, requestId, handler) {
   const origin = request.headers.get("origin") || "";
-  if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
+  if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { code: "ORIGIN_NOT_ALLOWED", error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
   const result = await handler(request, env, requestId);
   const headers = new Headers(result.headers);
   for (const [name, value] of securityHeaders(requestId, origin).entries()) headers.set(name, value);
+  headers.set("x-ngeblogging-api-origin", "cloudflare-worker-v60");
   return new Response(result.body, { status: result.status, headers });
 }
 
@@ -176,6 +190,10 @@ export default {
     const requestId = crypto.randomUUID();
     const url = new URL(request.url);
     try {
+      if (request.method === "OPTIONS" && url.pathname.startsWith("/api/")) {
+        return preflightResponse(request, env, requestId);
+      }
+
       if (url.pathname === "/api/health") {
         const origin = request.headers.get("origin") || "";
         if (!isAllowedOrigin(origin, env)) return jsonResponse(403, { error: "Origin permintaan tidak diizinkan." }, requestId, request.method);
@@ -187,8 +205,8 @@ export default {
         return jsonResponse(200, {
           status: "ok",
           service: "ngeblogging-cloudflare",
-          release: "2026.07.27-domain-redirect-v59",
-          runtime: env.NARA_RUNTIME || "cloudflare-worker-v14",
+          release: "2026.07.27-domain-api-v60",
+          runtime: env.NARA_RUNTIME || "cloudflare-worker-v60",
           hostname: url.hostname,
           billing: paypal || localBilling,
           billingProviders: { paypal, local: localBilling },
@@ -196,8 +214,9 @@ export default {
           naraProviders: { qwen: qwenTextReady(env), workersAi: workersAiReady(env), vision: workersVisionReady(env) },
           imageGeneration,
           imageProviders: { qwen: Boolean(qwenKey(env) && String(env.QWEN_WORKSPACE_ID || "").trim()), workersAi: workersAiReady(env) },
-          customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET && env.SUPABASE_SERVICE_ROLE_KEY),
+          customDomains: Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ACCOUNT_ID && env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY),
           domainRedirects: Boolean((env.SUPABASE_URL || env.VITE_SUPABASE_URL) && (env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY)),
+          domainApiOrigin: String(env.PUBLIC_API_ORIGIN || "https://api.ngeblogging.com"),
           emailRegistration: brandedEmailReady(env),
           managedSubdomains: true,
           siteLimits: { free: 5, maximum: 12 },
@@ -215,7 +234,7 @@ export default {
       if (url.pathname.startsWith("/api/domains/")) return protectedJsonEndpoint(request, env, requestId, handleDomainRequest);
       if (url.pathname === "/api/billing/paypal/webhook") return protectedJsonEndpoint(request, env, requestId, handlePayPalWebhook);
       if (url.pathname.startsWith("/api/billing/")) return protectedJsonEndpoint(request, env, requestId, handleBillingRequest);
-      if (url.pathname.startsWith("/api/")) return jsonResponse(404, { error: "Endpoint tidak ditemukan." }, requestId, request.method);
+      if (url.pathname.startsWith("/api/")) return jsonResponse(404, { code: "API_ENDPOINT_NOT_FOUND", error: "Endpoint tidak ditemukan." }, requestId, request.method, request.headers.get("origin") || "");
 
       const domainRedirect = await resolveDomainRedirect(request, env, context);
       if (domainRedirect) return withSecurity(domainRedirect, requestId);
@@ -232,8 +251,9 @@ export default {
         path: url.pathname,
         ray: request.headers.get("cf-ray") || "",
         name: error?.name || "Error",
+        code: error?.code || "",
       });
-      return jsonResponse(500, { code: "WORKER_INTERNAL_ERROR", error: "Terjadi gangguan sementara pada layanan." }, requestId, request.method);
+      return jsonResponse(500, { code: error?.code || "WORKER_INTERNAL_ERROR", error: error?.message || "Terjadi gangguan sementara pada layanan." }, requestId, request.method, request.headers.get("origin") || "");
     }
   },
 };
