@@ -2,6 +2,7 @@ import baseWorker from "./worker-v37.mjs";
 import { freeDomainReadiness, handleFreeDomainRequest } from "../server/free-domain-handler.mjs";
 
 const RELEASE = "2026.07.27-full-zone-domains-v62";
+const REGISTRATION_RECOVERY_RELEASE = "2026.07.27-domain-registration-recovery-v63";
 const LEGACY_FULL_ZONE_RELEASE = "2026.07.26-full-zone-domains-v55";
 const LEGACY_DOMAIN_RELEASE = "2026.07.26-custom-domains-v41";
 
@@ -101,6 +102,7 @@ async function enrichHealth(response, env) {
       ...payload,
       domainRelease: RELEASE,
       domainReleaseCurrent: RELEASE,
+      domainRegistrationRecovery: REGISTRATION_RECOVERY_RELEASE,
       domainReleaseCompatibility: [LEGACY_FULL_ZONE_RELEASE, LEGACY_DOMAIN_RELEASE],
       customDomains: Boolean(domain.ready || domain.enabled),
       customDomainProvider: domain.provider,
@@ -122,6 +124,84 @@ async function enrichHealth(response, env) {
   }
 }
 
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+function isFullZoneRegistration(request, url, domain) {
+  return request.method === "POST"
+    && url.pathname === "/api/domains/register"
+    && domain.provider === "cloudflare-full-zone"
+    && domain.enabled;
+}
+
+async function registrationFailureDetails(response) {
+  let payload = null;
+  try {
+    payload = await response.clone().json();
+  } catch {
+    payload = null;
+  }
+
+  const code = String(payload?.code || "");
+  const retryableCode = new Set([
+    "FULL_ZONE_NAMESERVERS_UNAVAILABLE",
+    "INVALID_CLOUDFLARE_RESPONSE",
+    "DOMAIN_ERROR",
+    "WORKER_INTERNAL_ERROR",
+  ]).has(code);
+
+  const permissionFailure = new Set([
+    "CLOUDFLARE_ZONE_CREATE_PERMISSION_REQUIRED",
+    "CLOUDFLARE_DOMAIN_TOKEN_INVALID",
+    "CUSTOM_DOMAIN_NOT_CONFIGURED",
+    "AUTH_REQUIRED",
+    "INVALID_SESSION",
+    "SITE_MANAGER_REQUIRED",
+    "DOMAIN_ALREADY_USED",
+  ]).has(code);
+
+  return {
+    payload,
+    retry: !permissionFailure && (retryableCode || [500, 502, 503, 504].includes(response.status) || !payload),
+  };
+}
+
+function markRecovered(response) {
+  const headers = new Headers(response.headers);
+  headers.set("x-ngeblogging-domain-registration-recovery", REGISTRATION_RECOVERY_RELEASE);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+async function runRegistrationWithRecovery(request, env, context) {
+  const firstRequest = request.clone();
+  const retryRequest = request.clone();
+  let firstResponse;
+
+  try {
+    firstResponse = await baseWorker.fetch(firstRequest, env, context);
+  } catch {
+    await wait(2800);
+    return markRecovered(await baseWorker.fetch(retryRequest, env, context));
+  }
+
+  if (firstResponse.ok) return firstResponse;
+
+  const details = await registrationFailureDetails(firstResponse);
+  if (!details.retry) return firstResponse;
+
+  /*
+   * Cloudflare dapat membuat zone lebih dahulu lalu baru menerbitkan dua
+   * nameserver beberapa detik sesudahnya. Percobaan kedua aman karena
+   * getOrCreateFullZone menggunakan kembali zone yang sudah dibuat.
+   */
+  await wait(2800);
+  const retryResponse = await baseWorker.fetch(retryRequest, env, context);
+  return markRecovered(retryResponse);
+}
+
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
@@ -135,7 +215,9 @@ export default {
       return handleFreeDomainRequest(request, env, crypto.randomUUID());
     }
 
-    const response = await baseWorker.fetch(request, env, context);
+    const response = isFullZoneRegistration(request, url, domain)
+      ? await runRegistrationWithRecovery(request, env, context)
+      : await baseWorker.fetch(request, env, context);
 
     if (request.method !== "HEAD" && url.pathname === "/api/health") {
       return enrichHealth(response, env);
