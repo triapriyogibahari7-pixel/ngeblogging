@@ -1,17 +1,10 @@
 name: Domain provider capability
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  statuses: write
-
-concurrency:
-  group: ngeblogging-domain-provider-capability
-  cancel-in-progress: true
 
 jobs:
   diagnose:
@@ -20,10 +13,9 @@ jobs:
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - name: Probe Cloudflare zone capabilities without creating a zone
-        id: probe
         shell: bash
         run: |
           set -euo pipefail
@@ -31,18 +23,12 @@ jobs:
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo 'Token tidak tersedia.'; exit 1; }
           [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo 'Account ID tidak valid.'; exit 1; }
 
-          token_code="$(curl -sS -o diagnostics/token.json -w '%{http_code}' \
-            -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H 'accept: application/json' \
-            'https://api.cloudflare.com/client/v4/user/tokens/verify')"
-
           zones_code="$(curl -sS -o diagnostics/zones.json -w '%{http_code}' \
             -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H 'accept: application/json' \
             "https://api.cloudflare.com/client/v4/zones?account.id=${CLOUDFLARE_ACCOUNT_ID}&per_page=1")"
 
-          # Nama satu label sengaja tidak valid sebagai zone. Respons validasi membuktikan
-          # endpoint create dapat dijangkau tanpa benar-benar membuat domain apa pun.
+          # Nama satu label sengaja tidak valid sehingga tidak ada zone sungguhan yang dibuat.
           create_probe_code="$(curl -sS -o diagnostics/create-probe.json -w '%{http_code}' \
             -X POST \
             -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -51,46 +37,25 @@ jobs:
             --data "{\"account\":{\"id\":\"${CLOUDFLARE_ACCOUNT_ID}\"},\"name\":\"invalid\",\"type\":\"full\"}" \
             'https://api.cloudflare.com/client/v4/zones')"
 
-          TOKEN_CODE="${token_code}" ZONES_CODE="${zones_code}" CREATE_CODE="${create_probe_code}" node --input-type=module <<'NODE' | tee diagnostics/summary.txt
+          ZONES_CODE="${zones_code}" CREATE_CODE="${create_probe_code}" node --input-type=module <<'NODE' | tee diagnostics/summary.txt
           import fs from 'node:fs';
           const read = (path) => JSON.parse(fs.readFileSync(path, 'utf8'));
-          const token = read('diagnostics/token.json');
           const zones = read('diagnostics/zones.json');
           const create = read('diagnostics/create-probe.json');
           const errors = (payload) => (payload.errors || []).map((item) => ({ code: item.code, message: item.message }));
+          const createMessage = String(create.errors?.[0]?.message || '');
           const result = {
-            tokenHttp: Number(process.env.TOKEN_CODE),
-            tokenValid: token.success === true,
             zoneReadHttp: Number(process.env.ZONES_CODE),
             zoneReadAllowed: zones.success === true,
             zoneReadErrors: errors(zones),
             zoneCreateProbeHttp: Number(process.env.CREATE_CODE),
-            zoneCreateEndpointAuthorized: create.success === true || ![10000, 9109, 9103].includes(Number(create.errors?.[0]?.code)),
+            zoneCreateAllowed: !/account\.zone\.create|requires permission.*create zones/i.test(createMessage),
             zoneCreateProbeErrors: errors(create),
           };
           console.log(JSON.stringify(result, null, 2));
           fs.writeFileSync('diagnostics/result.json', JSON.stringify(result, null, 2));
-          if (!result.tokenValid || !result.zoneReadAllowed || !result.zoneCreateEndpointAuthorized) process.exit(1);
+          if (!result.zoneReadAllowed || !result.zoneCreateAllowed) process.exit(1);
           NODE
-
-      - name: Publish capability status
-        if: always()
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const fs = require('fs');
-            let result = {};
-            try { result = JSON.parse(fs.readFileSync('diagnostics/result.json', 'utf8')); } catch {}
-            const ok = result.tokenValid === true && result.zoneReadAllowed === true && result.zoneCreateEndpointAuthorized === true;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: ok ? 'success' : 'failure',
-              context: 'Ngeblogging domain provider capability',
-              description: `token=${result.tokenValid ?? 'unknown'}; read=${result.zoneReadAllowed ?? 'unknown'}; create=${result.zoneCreateEndpointAuthorized ?? 'unknown'}`.slice(0, 140),
-              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-            });
 
       - name: Upload sanitized capability report
         if: always()
