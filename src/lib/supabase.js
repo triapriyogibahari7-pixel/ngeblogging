@@ -6,10 +6,87 @@ const url = browserEnv.VITE_SUPABASE_URL;
 const key =
   browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
   browserEnv.VITE_SUPABASE_ANON_KEY;
+const nativeFetch = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
+const AUTH_GATEWAY_RELEASE = "same-origin-auth-gateway-v108-20260728";
+
+function ngebloggingOrigin() {
+  if (typeof window === "undefined") return "";
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com")) {
+    return window.location.origin;
+  }
+  return "";
+}
+
+function authTarget(value) {
+  try {
+    const target = new URL(value instanceof Request ? value.url : String(value));
+    const project = new URL(String(url || ""));
+    return target.origin === project.origin && target.pathname.startsWith("/auth/v1/") ? target : null;
+  } catch {
+    return null;
+  }
+}
+
+async function copyRequest(input, init, nextUrl = "") {
+  const source = input instanceof Request ? new Request(input, init) : new Request(input, init);
+  if (!nextUrl) return source;
+  const headers = new Headers(source.headers);
+  const hasBody = !["GET", "HEAD"].includes(source.method);
+  const body = hasBody ? await source.clone().arrayBuffer() : undefined;
+  return new Request(nextUrl, {
+    method: source.method,
+    headers,
+    body,
+    cache: "no-store",
+    credentials: "same-origin",
+    redirect: "follow",
+    signal: source.signal,
+  });
+}
+
+async function resilientAuthFetch(input, init) {
+  if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada perangkat ini.");
+  const source = await copyRequest(input, init);
+  const target = authTarget(source);
+  const origin = ngebloggingOrigin();
+  if (!target || !origin) return nativeFetch(source);
+
+  const gateway = new URL(`/api/auth-proxy${target.pathname}${target.search}`, origin);
+  try {
+    const response = await nativeFetch(await copyRequest(source.clone(), undefined, gateway.href));
+    if (![502, 503, 504].includes(response.status)) {
+      if (typeof document !== "undefined") {
+        document.documentElement.dataset.authTransportV108 = "same-origin";
+      }
+      return response;
+    }
+  } catch (gatewayError) {
+    if (typeof window !== "undefined") window.__ngebloggingAuthGatewayErrorV108 = gatewayError;
+  }
+
+  try {
+    const response = await nativeFetch(source.clone());
+    if (typeof document !== "undefined") {
+      document.documentElement.dataset.authTransportV108 = "direct-fallback";
+    }
+    return response;
+  } catch (directError) {
+    const error = new Error("Layanan login belum dapat dijangkau. Sesi yang sudah tersimpan tetap dipertahankan; coba kembali saat jaringan stabil.");
+    error.name = "AuthTransportError";
+    error.code = "AUTH_NETWORK_UNAVAILABLE";
+    error.cause = directError;
+    error.gatewayRelease = AUTH_GATEWAY_RELEASE;
+    throw error;
+  }
+}
 
 export const supabaseConfigured = Boolean(url && key);
 export const supabase = supabaseConfigured
   ? createClient(url, key, {
+      global: {
+        fetch: resilientAuthFetch,
+      },
       auth: {
         flowType: "pkce",
         persistSession: true,
