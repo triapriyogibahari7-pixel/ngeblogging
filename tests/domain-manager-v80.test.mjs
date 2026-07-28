@@ -33,7 +33,7 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("final v91 authority keeps Domain after Anggota and repairs the mobile create button", async () => {
+test("final v91 authority keeps Domain normal, removes the logo dot, and restores the blue mobile create button", async () => {
   const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
@@ -78,8 +78,14 @@ test("final v91 authority keeps Domain after Anggota and repairs the mobile crea
     '.sn-side > nav > button[data-sidebar-domain-v91="true"]',
     "justify-content: flex-start !important",
     "margin-top: 0 !important",
+    "Domain is a normal workspace item",
+    "color: #64738a !important",
+    "background: #eaf2ff !important",
+    ".sn-logo > .sn-logo-mark",
+    "background: transparent !important",
     ".sn-logo-mark > i",
-    "background: #ffffff !important",
+    "background: #2d6edf !important",
+    "linear-gradient(135deg, #2d6edf, #4c83e9)",
     "margin: 14px 14px 14px !important",
     "min-height: 58px !important",
   ]) assert.ok(finalCss.includes(marker), marker);
@@ -91,11 +97,15 @@ test("final v91 authority keeps Domain after Anggota and repairs the mobile crea
     'domain.dataset.sidebarDomainV91 = "true"',
     'setImportant(nav, "justify-content", "flex-start")',
     '"margin-top": "0"',
-    'for (const [property, value] of Object.entries',
-    '.sn-logo-mark > i, .sn-logo > i',
-    'setImportant(dot, "display", "none")',
+    "normalizeDomain",
+    "normalizeLogo",
+    "normalizeMobileCreate",
+    '.sn-logo-mark > i, .sn-logo > i, .sn-logo > span:not(.sn-logo-mark)',
+    'setImportant(dot, property, value)',
     'createButton.dataset.mobileCreateV91 = "true"',
-    'background: "#ffffff"',
+    'background: "linear-gradient(135deg, #2d6edf, #4c83e9)"',
+    'color: "#ffffff"',
+    'attributeFilter: ["class", "style", "hidden", "aria-hidden"]',
   ]) assert.ok(finalRuntime.includes(marker), marker);
   assert.doesNotMatch(finalRuntime, /\.remove\(\)|insertAdjacentElement|appendChild|prepend/);
 
