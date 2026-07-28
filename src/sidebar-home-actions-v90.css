@@ -1,0 +1,83 @@
+/*
+ * Sidebar and Ringkasan action geometry v90.
+ *
+ * - Domain stays directly after Anggota in the workspace navigation.
+ * - Pengaturan/Keluar remain in the dedicated account footer.
+ * - Ringkasan actions wrap inside the available content width on a phone using
+ *   browser Desktop-site mode instead of overflowing beyond the right edge.
+ */
+
+.sn-side > nav > button,
+.sn-side > nav > button:last-child {
+  position: static !important;
+  inset: auto !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  order: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-top: 0 !important;
+  border-radius: 9px !important;
+  transform: none !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome {
+  flex-wrap: wrap !important;
+  overflow: visible !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:first-child {
+  flex: 1 1 420px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child {
+  flex: 1 1 320px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  overflow: visible !important;
+}
+
+html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child > * {
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+
+/*
+ * Desktop-site Android commonly exposes a CSS viewport around 800–1000px.
+ * Use a two-column action grid there so every action remains fully visible.
+ */
+@media (max-width: 1100px) {
+  html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    justify-content: stretch !important;
+  }
+
+  html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 560px) {
+  html[data-desktop-layout-requested="true"] .sn-welcome > div:last-child {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
