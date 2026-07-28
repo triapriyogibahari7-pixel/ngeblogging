@@ -3,8 +3,13 @@ import {
   domainDnsV67Readiness,
   handleDomainDnsV67Request,
 } from "../server/domain-dns-v67-handler.mjs";
+import {
+  commentsReady,
+  handleCommentsRequest,
+  injectPublicComments,
+} from "../server/comments-handler-v93.mjs";
 
-const RELEASE = "2026.07.27-free-subdomains-full-zone-v71";
+const RELEASE = "2026.07.28-comments-sidebar-v93";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
 const SAAS_PROVIDERS = new Set(["cloudflare", "cloudflare-custom-hostnames"]);
 
@@ -73,13 +78,25 @@ async function enrichHealth(response, env) {
     const provider = selectedProvider(env);
     const state = saasAccountState(env);
     const fullZone = provider === FULL_ZONE_PROVIDER;
+    const comments = commentsReady(env);
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
     headers.set("x-ngeblogging-domain-engine", RELEASE);
+    headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
     return new Response(JSON.stringify({
       ...payload,
       domainReleaseCurrent: RELEASE,
+      comments,
+      commentsRelease: "comments-v93-20260728",
+      commentsArchitecture: {
+        database: "supabase-postgres-rls",
+        publicSubmission: true,
+        moderationDashboard: true,
+        threadedAdminReplies: true,
+        emojiAndReactions: true,
+        perContentToggle: true,
+      },
       customDomainProvider: payload.customDomainProvider || provider,
       customDomainMode: payload.customDomainMode || (fullZone ? "full-zone-nameserver" : "cloudflare-for-saas"),
       customDomainPaidSaasRequired: false,
@@ -119,6 +136,10 @@ export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
 
+    if (url.pathname.startsWith("/api/comments/")) {
+      return handleCommentsRequest(request, env, crypto.randomUUID());
+    }
+
     // Full Zone is the production default. Never let the optional SaaS engine
     // intercept its /api/domains/* registration, nameserver, refresh, or remove flow.
     if (request.method !== "OPTIONS" && shouldUseSaasDomainEngine(url, env)) {
@@ -130,6 +151,7 @@ export default {
     if (request.method !== "HEAD" && url.pathname === "/api/health") {
       return enrichHealth(response, env);
     }
-    return response;
+    if (request.method === "HEAD") return response;
+    return injectPublicComments(request, response, env);
   },
 };
