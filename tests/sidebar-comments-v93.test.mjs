@@ -5,9 +5,8 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("desktop sidebar centers open rows and collapsed icons in CSS and final runtime", async () => {
-  const [css, centerRuntime, finalRuntime] = await Promise.all([
+  const [css, finalRuntime] = await Promise.all([
     read("src/comments-studio-v93.css"),
-    read("src/sidebar-center-v93.js"),
     read("src/sidebar-final-v91.js"),
   ]);
   for (const marker of [
@@ -20,19 +19,16 @@ test("desktop sidebar centers open rows and collapsed icons in CSS and final run
     ".sn-side.collapsed>.sn-account-footer>button",
   ]) assert.ok(css.includes(marker), marker);
   for (const marker of [
-    '"grid-template-columns": "24px minmax(0, 112px)"',
-    '"place-items": "center"',
-    'width: "48px"',
-    '"align-items": "center"',
-    '.sn-comments-nav-host-v93 > button',
-    ':scope > .sn-account-footer',
-  ]) assert.ok(centerRuntime.includes(marker), marker);
-  for (const marker of [
     "sidebar-comments-v94-20260728",
     "desktopLayoutRequested",
     "normalizeDesktopRow",
+    "normalizeDesktopSidebar",
+    '"grid-template-columns": "24px minmax(0, 112px)"',
     '"grid-template-columns": "1fr"',
     '"justify-items": "center"',
+    '"align-items": "center"',
+    'width: "48px"',
+    ':scope > .sn-account-footer',
   ]) assert.ok(finalRuntime.includes(marker), marker);
   assert.doesNotMatch(css, /\.sn-side\.collapsed[^}]+text-align:left/);
 });
@@ -78,7 +74,7 @@ test("public comments use validated Worker routes, ten visible reactions and saf
   assert.match(widget, /const REACTIONS = \["😀","😊","😍","😂","😮","😢","😡","👍","❤️","🎉"\]/);
   assert.match(widget, /10 emoji utama tersedia langsung di bawah Post\/Page/);
   assert.match(widget, /if \(state\.data\?\.allowGuests\) state\.root\.append\(commentForm\(\)\)/);
-  assert.match(reactionsSql, /'😀','😊','😍','🤩','😂','😮','😢','😡','👍','❤️','🎉'/);
+  assert.match(reactionsSql, /'😀','😊','😍','😂','😮','😢','😡','👍','❤️','🎉'/);
   assert.doesNotMatch(widget, /innerHTML\s*=/);
   assert.doesNotMatch(widget, /insertAdjacentHTML|dangerouslySetInnerHTML/);
   assert.match(worker, /handleCommentsRequest/);
