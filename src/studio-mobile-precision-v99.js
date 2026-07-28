@@ -1,6 +1,17 @@
-const RELEASE = "studio-responsive-precision-v102-20260728";
+const RELEASE = "studio-responsive-precision-v103-20260728";
 const LEGACY_RELEASE = "studio-mobile-precision-v99-20260728";
 const COARSE_QUERY = "(pointer: coarse) and (max-device-width: 1024px)";
+const FINAL_STYLE_ID = "studio-final-v103-style";
+
+function ensureFinalStyle() {
+  if (document.getElementById(FINAL_STYLE_ID)) return;
+  const link = document.createElement("link");
+  link.id = FINAL_STYLE_ID;
+  link.rel = "stylesheet";
+  link.href = "/src/studio-final-v103.css?v=103";
+  link.dataset.studioFinalAuthority = "v103";
+  document.head.append(link);
+}
 
 function physicalMobile() {
   return navigator.userAgentData?.mobile === true
@@ -12,33 +23,38 @@ function setDeviceContract() {
   document.documentElement.dataset.physicalMobileV99 = String(physicalMobile());
   document.documentElement.dataset.studioResponsivePrecision = RELEASE;
   document.documentElement.dataset.studioMobilePrecision = LEGACY_RELEASE;
+  document.documentElement.dataset.studioFinalAuthority = "v103";
 }
 
-function sidebarOffset() {
+function sidebarGeometry() {
   const shell = document.querySelector(".sn-shell");
   const side = shell?.querySelector(":scope > .sn-side");
-  if (!(side instanceof HTMLElement)) return 0;
+  if (!(side instanceof HTMLElement)) return { side: null, offset: 0, open: false };
+
+  const styles = getComputedStyle(side);
+  const rect = side.getBoundingClientRect();
+  const visible = styles.display !== "none"
+    && styles.visibility !== "hidden"
+    && Number(styles.opacity || 1) > 0
+    && rect.right > 0
+    && rect.left < window.innerWidth;
+  const open = visible && rect.width >= 140;
 
   const desktopRequested = document.documentElement.dataset.desktopLayoutRequested === "true";
   const desktopViewport = window.innerWidth > 760 || desktopRequested;
-  if (!desktopViewport) return 0;
-
-  const styles = getComputedStyle(side);
-  if (styles.display === "none" || styles.visibility === "hidden" || Number(styles.opacity) === 0) return 0;
-  const rect = side.getBoundingClientRect();
-  if (rect.right <= 0 || rect.left >= window.innerWidth || rect.width < 40) return 0;
-  return Math.max(0, Math.min(360, Math.round(rect.width)));
+  const offset = visible && desktopViewport ? Math.max(0, Math.min(380, Math.round(rect.width))) : 0;
+  return { side, offset, open };
 }
 
-function syncSidebarOffset() {
-  const offset = `${sidebarOffset()}px`;
-  document.documentElement.style.setProperty("--studio-side-offset-v102", offset);
-  document.documentElement.style.setProperty("--studio-side-offset-v99", offset);
+function syncSidebarGeometry() {
+  const { side, offset, open } = sidebarGeometry();
+  document.documentElement.style.setProperty("--studio-side-offset-v102", `${offset}px`);
+  document.documentElement.style.setProperty("--studio-side-offset-v99", `${offset}px`);
+  if (side) side.dataset.commentsVisualOpenV103 = String(open);
 }
 
 function clearTransientStyle(node) {
-  if (!(node instanceof HTMLElement || node instanceof SVGElement)) return;
-  node.removeAttribute("style");
+  if (node instanceof HTMLElement || node instanceof SVGElement) node.removeAttribute("style");
 }
 
 function stabilizeCommentsRow() {
@@ -49,6 +65,9 @@ function stabilizeCommentsRow() {
       clearTransientStyle(button.querySelector("span"));
       button.dataset.nativeRowV99 = "true";
       button.dataset.stableRowV102 = "true";
+      button.dataset.stableRowV103 = "true";
+      const label = button.querySelector("span");
+      if (label && !label.textContent?.trim()) label.textContent = "Komentar";
     });
 }
 
@@ -56,6 +75,16 @@ function activeTextarea(workspace) {
   const fields = [...workspace.querySelectorAll(".tn-code-pane textarea")]
     .filter((field) => field instanceof HTMLTextAreaElement);
   return fields.find((field) => !field.hidden && getComputedStyle(field).display !== "none") || fields[0] || null;
+}
+
+function feedback(button, message, success = true, restore = "") {
+  const original = restore || button.dataset.originalLabel || button.textContent || "";
+  button.classList.toggle("success", success);
+  button.textContent = message;
+  window.setTimeout(() => {
+    button.classList.remove("success");
+    button.textContent = original;
+  }, 1700);
 }
 
 async function copyCode(workspace, button) {
@@ -70,39 +99,48 @@ async function copyCode(workspace, button) {
       textarea.focus({ preventScroll: true });
       textarea.select();
       copied = document.execCommand("copy");
-    } catch {
-      copied = false;
-    }
+    } catch { copied = false; }
   }
-
-  const original = button.dataset.originalLabel || "Salin kode";
-  button.classList.toggle("success", copied);
-  button.textContent = copied ? "Tersalin ✓" : "Salin gagal";
-  window.setTimeout(() => {
-    button.classList.remove("success");
-    button.textContent = original;
-  }, 1500);
+  feedback(button, copied ? "Tersalin ✓" : "Salin gagal", copied, "Salin kode");
 }
 
 function refreshPreview(workspace, button) {
   const frame = workspace.querySelector(".tn-frame-shell iframe");
   if (!(frame instanceof HTMLIFrameElement)) return;
-
   workspace.dataset.previewOpenV99 = "true";
   workspace.dataset.previewOpenV98 = "true";
   workspace.dataset.splitPreviewV102 = "true";
-
-  const current = frame.srcdoc;
+  workspace.dataset.splitPreviewV103 = "true";
+  const current = frame.srcdoc || frame.getAttribute("srcdoc") || "";
   frame.srcdoc = "";
   requestAnimationFrame(() => {
     frame.srcdoc = current;
-    button.classList.add("success");
-    button.textContent = "Preview diperbarui ✓";
-    window.setTimeout(() => {
-      button.classList.remove("success");
-      button.textContent = "Perbarui preview";
-    }, 1500);
+    feedback(button, "Preview diperbarui ✓", true, "Perbarui preview");
   });
+}
+
+function openExternalDraftPreview(workspace, button) {
+  const frame = workspace.querySelector(".tn-frame-shell iframe");
+  if (!(frame instanceof HTMLIFrameElement)) return;
+  let html = frame.srcdoc || frame.getAttribute("srcdoc") || "";
+  if (!html.trim()) {
+    feedback(button, "Preview belum siap", false, "Preview tab baru");
+    return;
+  }
+  const marker = '<meta name="robots" content="noindex,nofollow,noarchive">';
+  html = /<head[^>]*>/i.test(html) ? html.replace(/<head([^>]*)>/i, `<head$1>${marker}`) : `${marker}${html}`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.dataset.draftPreviewV103 = "true";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 120_000);
+  feedback(button, "Draf dibuka ✓", true, "Preview tab baru");
 }
 
 function installThemeTools(layer) {
@@ -114,33 +152,44 @@ function installThemeTools(layer) {
   workspace.dataset.previewOpenV99 = "true";
   workspace.dataset.previewOpenV98 = "true";
   workspace.dataset.splitPreviewV102 = "true";
+  workspace.dataset.splitPreviewV103 = "true";
 
-  layer.querySelectorAll(".tn-v98-tools, .tn-v99-tools-inline").forEach((legacy) => legacy.remove());
+  layer.querySelectorAll(".tn-v96-tool,.tn-v97-tool,.tn-v98-tool,.tn-v100-tool,.tn-v98-tools,.tn-v99-tools-inline,.tn-v102-tools-inline")
+    .forEach((legacy) => legacy.remove());
+  workspace.classList.remove("tn-v100-previewing");
 
-  let tools = status.querySelector(":scope > .tn-v102-tools-inline");
+  let tools = status.querySelector(":scope > .tn-v103-tools-inline");
   if (!(tools instanceof HTMLElement)) {
     tools = document.createElement("div");
-    tools.className = "tn-v102-tools-inline";
+    tools.className = "tn-v103-tools-inline";
 
     const copy = document.createElement("button");
     copy.type = "button";
-    copy.className = "tn-v102-tool";
+    copy.className = "tn-v103-tool";
     copy.dataset.originalLabel = "Salin kode";
     copy.textContent = "Salin kode";
     copy.addEventListener("click", () => copyCode(workspace, copy));
 
-    const preview = document.createElement("button");
-    preview.type = "button";
-    preview.className = "tn-v102-tool";
-    preview.textContent = "Perbarui preview";
-    preview.addEventListener("click", () => refreshPreview(workspace, preview));
+    const refresh = document.createElement("button");
+    refresh.type = "button";
+    refresh.className = "tn-v103-tool";
+    refresh.dataset.originalLabel = "Perbarui preview";
+    refresh.textContent = "Perbarui preview";
+    refresh.addEventListener("click", () => refreshPreview(workspace, refresh));
 
-    tools.append(copy, preview);
+    const external = document.createElement("button");
+    external.type = "button";
+    external.className = "tn-v103-tool";
+    external.dataset.originalLabel = "Preview tab baru";
+    external.textContent = "Preview tab baru";
+    external.title = "Buka draf tema di tab baru tanpa menerbitkan situs";
+    external.addEventListener("click", () => openExternalDraftPreview(workspace, external));
+
+    tools.append(copy, refresh, external);
     const counter = status.querySelector(":scope > small");
     status.insertBefore(tools, counter || null);
   }
-
-  layer.dataset.toolsV102 = "true";
+  layer.dataset.toolsV103 = "true";
 }
 
 function syncThemeTools() {
@@ -150,13 +199,15 @@ function syncThemeTools() {
 function markLayoutBuilder() {
   document.querySelectorAll(".lb39-layer").forEach((layer) => {
     layer.dataset.structuredMapV102 = "true";
-    layer.querySelector(".lb39-dialog")?.setAttribute("data-layout-map-authority", "v102");
+    layer.dataset.structuredMapV103 = "true";
+    layer.querySelector(".lb39-dialog")?.setAttribute("data-layout-map-authority", "v103");
   });
 }
 
 function sync() {
+  ensureFinalStyle();
   setDeviceContract();
-  syncSidebarOffset();
+  syncSidebarGeometry();
   stabilizeCommentsRow();
   syncThemeTools();
   markLayoutBuilder();
@@ -170,9 +221,9 @@ function schedule() {
 
 function start() {
   const observer = new MutationObserver((mutations) => {
-    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule();
+    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.attributeName === "class" || mutation.attributeName === "style")) schedule();
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
 
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("orientationchange", schedule, { passive: true });
@@ -186,5 +237,5 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 else start();
 
 /* Historical source-validator compatibility only:
-   data-preview-open-v99, tn-v99-tools-inline, copyComputed, syncCommentsRow,
-   studio-mobile-theme-layout-v101-20260728 */
+   data-preview-open-v99, tn-v99-tools-inline, tn-v102-tools-inline,
+   copyComputed, syncCommentsRow, studio-mobile-theme-layout-v101-20260728 */
