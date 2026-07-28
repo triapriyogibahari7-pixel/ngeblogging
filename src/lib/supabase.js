@@ -7,8 +7,9 @@ const key =
   browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
   browserEnv.VITE_SUPABASE_ANON_KEY;
 const nativeFetch = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
-const AUTH_GATEWAY_RELEASE = "same-origin-auth-gateway-v108-20260728";
-const DATA_GATEWAY_RELEASE = "same-origin-data-gateway-v110-20260728";
+const AUTH_GATEWAY_RELEASE = "login-data-gateway-v114-20260729";
+const DATA_GATEWAY_RELEASE = "login-data-gateway-v114-20260729";
+const DEFAULT_API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
 
 function ngebloggingOrigin() {
   if (typeof window === "undefined") return "";
@@ -17,6 +18,28 @@ function ngebloggingOrigin() {
     return window.location.origin;
   }
   return "";
+}
+
+function configuredApiOrigin() {
+  if (typeof window === "undefined") return "";
+  const metaOrigin = document.querySelector('meta[name="ngeblogging-api-origin"]')?.getAttribute("content") || "";
+  const candidate = String(
+    browserEnv.VITE_NGEBLOGGING_API_ORIGIN
+    || browserEnv.VITE_API_ORIGIN
+    || metaOrigin
+    || DEFAULT_API_ORIGIN,
+  ).trim().replace(/\/$/, "");
+  try {
+    const parsed = new URL(candidate);
+    return parsed.protocol === "https:" ? parsed.origin : "";
+  } catch {
+    return "";
+  }
+}
+
+function gatewayOrigins() {
+  const values = [ngebloggingOrigin(), configuredApiOrigin()].filter(Boolean);
+  return [...new Set(values)];
 }
 
 function supabaseTarget(value) {
@@ -30,6 +53,7 @@ function supabaseTarget(value) {
         service: "auth",
         gatewayPrefix: "/api/auth-proxy",
         release: AUTH_GATEWAY_RELEASE,
+        marker: "x-ngeblogging-auth-gateway",
       };
     }
     if (target.pathname.startsWith("/rest/v1/") || target.pathname.startsWith("/storage/v1/")) {
@@ -38,6 +62,7 @@ function supabaseTarget(value) {
         service: "data",
         gatewayPrefix: "/api/data-proxy",
         release: DATA_GATEWAY_RELEASE,
+        marker: "x-ngeblogging-data-gateway",
       };
     }
     return null;
@@ -65,14 +90,14 @@ async function copyRequest(input, init, nextUrl = "") {
 
 function markTransport(service, value) {
   if (typeof document === "undefined") return;
-  if (service === "auth") document.documentElement.dataset.authTransportV108 = value;
-  else document.documentElement.dataset.dataTransportV110 = value;
+  if (service === "auth") document.documentElement.dataset.authTransportV114 = value;
+  else document.documentElement.dataset.dataTransportV114 = value;
 }
 
 function rememberGatewayError(service, error) {
   if (typeof window === "undefined") return;
-  if (service === "auth") window.__ngebloggingAuthGatewayErrorV108 = error;
-  else window.__ngebloggingDataGatewayErrorV110 = error;
+  if (service === "auth") window.__ngebloggingAuthGatewayErrorV114 = error;
+  else window.__ngebloggingDataGatewayErrorV114 = error;
 }
 
 function networkUnavailableError(service, cause, release) {
@@ -87,34 +112,55 @@ function networkUnavailableError(service, cause, release) {
   return error;
 }
 
+function gatewayResponseAccepted(response, descriptor) {
+  if (!(response instanceof Response)) return false;
+  const marker = response.headers.get(descriptor.marker) || "";
+  if (!marker) return false;
+  return ![502, 503, 504].includes(response.status);
+}
+
+function gatewayMismatchError(response, descriptor, gatewayUrl) {
+  const contentType = response?.headers?.get("content-type") || "";
+  const error = new Error(
+    `Jalur ${descriptor.service} tidak mengembalikan respons gateway Ngeblogging yang sah.`,
+  );
+  error.name = "GatewayResponseMismatchError";
+  error.code = "GATEWAY_RESPONSE_MISMATCH";
+  error.status = Number(response?.status || 0);
+  error.contentType = contentType;
+  error.gatewayUrl = gatewayUrl;
+  return error;
+}
+
 async function resilientSupabaseFetch(input, init) {
   if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada perangkat ini.");
   const source = await copyRequest(input, init);
   const descriptor = supabaseTarget(source);
-  const origin = ngebloggingOrigin();
-  if (!descriptor || !origin) return nativeFetch(source);
+  if (!descriptor || typeof window === "undefined") return nativeFetch(source);
 
-  const { target, service, gatewayPrefix, release } = descriptor;
-  const gateway = new URL(`${gatewayPrefix}${target.pathname}${target.search}`, origin);
-  try {
-    const response = await nativeFetch(await copyRequest(source.clone(), undefined, gateway.href));
-    if (![502, 503, 504].includes(response.status)) {
-      markTransport(service, "same-origin");
-      return response;
+  let lastGatewayError = null;
+  for (const origin of gatewayOrigins()) {
+    const gateway = new URL(`${descriptor.gatewayPrefix}${descriptor.target.pathname}${descriptor.target.search}`, origin);
+    try {
+      const response = await nativeFetch(await copyRequest(source.clone(), undefined, gateway.href));
+      if (gatewayResponseAccepted(response, descriptor)) {
+        markTransport(descriptor.service, origin === window.location.origin ? "same-origin" : "api-worker");
+        return response;
+      }
+      lastGatewayError = gatewayMismatchError(response, descriptor, gateway.href);
+      rememberGatewayError(descriptor.service, lastGatewayError);
+    } catch (gatewayError) {
+      lastGatewayError = gatewayError;
+      rememberGatewayError(descriptor.service, gatewayError);
     }
-    rememberGatewayError(service, Object.assign(new Error(`Gateway ${service} mengembalikan ${response.status}.`), {
-      status: response.status,
-    }));
-  } catch (gatewayError) {
-    rememberGatewayError(service, gatewayError);
   }
 
   try {
     const response = await nativeFetch(source.clone());
-    markTransport(service, "direct-fallback");
+    markTransport(descriptor.service, "direct-fallback");
     return response;
   } catch (directError) {
-    throw networkUnavailableError(service, directError, release);
+    throw networkUnavailableError(descriptor.service, directError || lastGatewayError, descriptor.release);
   }
 }
 

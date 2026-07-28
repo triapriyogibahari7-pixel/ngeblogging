@@ -1,4 +1,4 @@
-export const AUTH_GATEWAY_RELEASE = "2026.07.28-auth-gateway-v108";
+export const AUTH_GATEWAY_RELEASE = "2026.07.29-auth-gateway-v114";
 const PREFIX = "/api/auth-proxy";
 const MAX_AUTH_BODY_BYTES = 128 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]);
@@ -23,15 +23,26 @@ function allowedOrigin(origin) {
   }
 }
 
-function json(status, payload, requestId) {
+function corsHeaders(origin, requestId) {
+  return {
+    "access-control-allow-origin": origin || "https://ngeblogging.com",
+    "access-control-allow-headers": "authorization, apikey, content-type, x-client-info, x-supabase-api-version",
+    "access-control-allow-methods": "GET, HEAD, POST, PUT, DELETE, OPTIONS",
+    "access-control-expose-headers": "location, www-authenticate, x-request-id, x-ngeblogging-auth-gateway",
+    "access-control-max-age": "86400",
+    "cache-control": "no-store",
+    "x-ngeblogging-auth-gateway": AUTH_GATEWAY_RELEASE,
+    "x-request-id": requestId,
+  };
+}
+
+function json(status, payload, requestId, origin = "") {
   return new Response(JSON.stringify({ ...payload, release: AUTH_GATEWAY_RELEASE, requestId }), {
     status,
     headers: {
+      ...corsHeaders(origin, requestId),
       "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store",
       "x-content-type-options": "nosniff",
-      "x-ngeblogging-auth-gateway": AUTH_GATEWAY_RELEASE,
-      "x-request-id": requestId,
     },
   });
 }
@@ -48,24 +59,13 @@ export function isAuthGatewayRequest(url) {
 export async function handleAuthGatewayRequest(request, env, requestId) {
   const origin = request.headers.get("origin") || "";
   if (!allowedOrigin(origin)) {
-    return json(403, { code: "AUTH_ORIGIN_NOT_ALLOWED", error: "Origin autentikasi tidak diizinkan." }, requestId);
+    return json(403, { code: "AUTH_ORIGIN_NOT_ALLOWED", error: "Origin autentikasi tidak diizinkan." }, requestId, origin);
   }
   if (!ALLOWED_METHODS.has(request.method)) {
-    return json(405, { code: "AUTH_METHOD_NOT_ALLOWED", error: "Metode autentikasi tidak didukung." }, requestId);
+    return json(405, { code: "AUTH_METHOD_NOT_ALLOWED", error: "Metode autentikasi tidak didukung." }, requestId, origin);
   }
   if (request.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        "access-control-allow-origin": origin || "https://ngeblogging.com",
-        "access-control-allow-headers": "authorization, apikey, content-type, x-client-info, x-supabase-api-version",
-        "access-control-allow-methods": "GET, HEAD, POST, PUT, DELETE, OPTIONS",
-        "access-control-max-age": "86400",
-        "cache-control": "no-store",
-        "x-ngeblogging-auth-gateway": AUTH_GATEWAY_RELEASE,
-        "x-request-id": requestId,
-      },
-    });
+    return new Response(null, { status: 204, headers: corsHeaders(origin, requestId) });
   }
 
   const supabaseUrl = String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
@@ -78,12 +78,12 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
   const sourceUrl = new URL(request.url);
   const path = targetPath(sourceUrl);
   if (!supabaseUrl || !publishableKey || !path) {
-    return json(503, { code: "AUTH_GATEWAY_NOT_READY", error: "Gateway autentikasi belum siap." }, requestId);
+    return json(503, { code: "AUTH_GATEWAY_NOT_READY", error: "Gateway autentikasi belum siap." }, requestId, origin);
   }
 
   const length = Number(request.headers.get("content-length") || 0);
   if (Number.isFinite(length) && length > MAX_AUTH_BODY_BYTES) {
-    return json(413, { code: "AUTH_PAYLOAD_TOO_LARGE", error: "Payload autentikasi terlalu besar." }, requestId);
+    return json(413, { code: "AUTH_PAYLOAD_TOO_LARGE", error: "Payload autentikasi terlalu besar." }, requestId, origin);
   }
 
   const target = new URL(`${path}${sourceUrl.search}`, `${supabaseUrl}/`);
@@ -97,7 +97,7 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
   const hasBody = !["GET", "HEAD"].includes(request.method);
   const body = hasBody ? await request.arrayBuffer() : undefined;
   if (body && body.byteLength > MAX_AUTH_BODY_BYTES) {
-    return json(413, { code: "AUTH_PAYLOAD_TOO_LARGE", error: "Payload autentikasi terlalu besar." }, requestId);
+    return json(413, { code: "AUTH_PAYLOAD_TOO_LARGE", error: "Payload autentikasi terlalu besar." }, requestId, origin);
   }
 
   try {
@@ -107,15 +107,13 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
       body,
       redirect: "manual",
     });
-    const responseHeaders = new Headers();
+    const responseHeaders = new Headers(corsHeaders(origin, requestId));
     for (const name of ["content-type", "content-language", "location", "www-authenticate", "x-supabase-api-version"]) {
       const value = upstream.headers.get(name);
       if (value) responseHeaders.set(name, value);
     }
-    responseHeaders.set("cache-control", "no-store");
     responseHeaders.set("x-content-type-options", "nosniff");
     responseHeaders.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
-    responseHeaders.set("x-request-id", requestId);
     return new Response(request.method === "HEAD" ? null : upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
@@ -126,6 +124,6 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
       code: "AUTH_UPSTREAM_UNREACHABLE",
       error: "Layanan autentikasi belum dapat dijangkau. Sesi lokal tidak dihapus; coba kembali.",
       detail: error?.name || "NetworkError",
-    }, requestId);
+    }, requestId, origin);
   }
 }
