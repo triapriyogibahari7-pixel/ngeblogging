@@ -2,9 +2,10 @@
   if (window.__ngebloggingCommentsV93) return;
   window.__ngebloggingCommentsV93 = true;
 
-  const RELEASE = "comments-widget-v93-20260728";
-  const MOODS = ["😀","😃","😄","😁","😊","😍","🥰","😎","🤩","😂","😅","😉","🤗","🤔","😮","😢","😭","😡"];
-  const REACTIONS = ["😀","😍","🤩","😂","😮","😢","😡","👍","❤️","🎉"];
+  const RELEASE = "comments-widget-v94-20260728";
+  const PRIMARY_MOODS = ["😀","😃","😄","😁","😊","😍","🥰","😎","🤩","😂"];
+  const MORE_MOODS = ["😅","😉","🤗","🤔","😮","😢","😭","😡"];
+  const REACTIONS = ["😀","😊","😍","😂","😮","😢","😡","👍","❤️","🎉"];
   const state = { data: null, root: null, loading: false, error: "", notice: "" };
 
   function element(tag, className = "", text = "") {
@@ -94,20 +95,37 @@
     return article;
   }
 
-  function moodPicker(textarea, hiddenMood) {
-    const picker = element("div", "ngc-moods");
-    picker.append(element("span", "", "Suasana:"));
-    MOODS.forEach((emoji) => {
-      const button = element("button", "", emoji);
-      button.type = "button";
-      button.title = `Pilih ${emoji}`;
-      button.addEventListener("click", () => {
-        hiddenMood.value = emoji;
-        picker.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
-        textarea.focus();
-      });
-      picker.append(button);
+  function moodButton(emoji, picker, textarea, hiddenMood) {
+    const button = element("button", "", emoji);
+    button.type = "button";
+    button.dataset.mood = emoji;
+    button.title = `Pilih suasana ${emoji}`;
+    button.addEventListener("click", () => {
+      hiddenMood.value = emoji;
+      picker.querySelectorAll("button[data-mood]").forEach((item) => item.classList.toggle("active", item === button));
+      textarea.focus();
     });
+    return button;
+  }
+
+  function moodPicker(textarea, hiddenMood) {
+    const picker = element("section", "ngc-mood-picker");
+    const heading = element("div", "ngc-mood-heading");
+    heading.append(element("b", "", "Suasana komentar"));
+    heading.append(element("span", "", "10 emoji utama tersedia langsung di bawah Post/Page."));
+    picker.append(heading);
+
+    const primary = element("div", "ngc-moods ngc-moods-primary");
+    primary.setAttribute("aria-label", "10 emoji utama");
+    PRIMARY_MOODS.forEach((emoji) => primary.append(moodButton(emoji, picker, textarea, hiddenMood)));
+    picker.append(primary);
+
+    const more = element("details", "ngc-more-moods");
+    const summary = element("summary", "", "Emoji lainnya");
+    const extra = element("div", "ngc-moods ngc-moods-extra");
+    MORE_MOODS.forEach((emoji) => extra.append(moodButton(emoji, picker, textarea, hiddenMood)));
+    more.append(summary, extra);
+    picker.append(more);
     return picker;
   }
 
@@ -147,12 +165,12 @@
     body.placeholder = "Tulis komentar…";
     body.maxLength = 4000;
     body.required = true;
-    form.append(body);
     const mood = element("input");
     mood.type = "hidden";
     mood.name = "mood";
     form.append(mood);
     if (state.data.emojiEnabled) form.append(moodPicker(body, mood));
+    form.append(body);
 
     const footer = element("footer");
     const counter = element("small", "", "0 / 4000");
@@ -188,6 +206,9 @@
       } catch (error) {
         state.error = error.message;
         render();
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "Kirim komentar";
       }
     });
     return form;
@@ -210,6 +231,7 @@
 
     if (state.error) state.root.append(element("div", "ngc-message error", state.error));
     if (state.notice) state.root.append(element("div", "ngc-message success", state.notice));
+    if (state.data?.allowGuests) state.root.append(commentForm());
 
     const list = element("div", "ngc-list");
     if (!roots.length) list.append(element("div", "ngc-empty", "Belum ada komentar. Jadilah yang pertama membuka diskusi."));
@@ -218,7 +240,6 @@
       list.append(commentCard(root, replies));
     }
     state.root.append(list);
-    if (state.data?.allowGuests) state.root.append(commentForm());
   }
 
   function attach() {
