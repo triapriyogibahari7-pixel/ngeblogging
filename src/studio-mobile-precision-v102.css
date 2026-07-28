@@ -1,0 +1,28 @@
+/* Final v102 ownership: only the tools in .tn-code-status are visible. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-v96-tool,
+.tn-modal-layer:has(.tn-code-workspace) .tn-v97-tool,
+.tn-modal-layer:has(.tn-code-workspace) .tn-v98-tool,
+.tn-modal-layer:has(.tn-code-workspace) .tn-v100-tool,
+.tn-modal-layer:has(.tn-code-workspace) .tn-v98-tools {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-status > .tn-v99-tools-inline {
+  display: inline-flex !important;
+  width: auto !important;
+  min-width: max-content !important;
+  height: auto !important;
+  min-height: 0 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
