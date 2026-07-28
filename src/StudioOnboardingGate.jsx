@@ -9,13 +9,18 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import {
   ACTIVE_SITE_STORAGE_KEY, createUserSite, listUserSites, setActiveSiteId,
 } from "./lib/studio-data.js";
-import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76.js";
+import {
+  getVerifiedSession,
+  isSessionReauthError,
+  isTransientSessionError,
+} from "./lib/auth-session-v76.js";
 import "./site-onboarding-v75.css";
 import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
-const RELEASE = "first-site-onboarding-v76-20260727";
-const CHECK_TIMEOUT_MS = 10_000;
+const RELEASE = "first-site-onboarding-v110-20260728";
+const CHECK_TIMEOUT_MS = 12_000;
+const STARTUP_RETRY_DELAYS = [450, 900, 1_800];
 const SITE_TYPES = [
   { value: "blog", label: "Blog", description: "Tulisan, cerita, opini, dan publikasi pribadi.", icon: PenLine },
   { value: "website", label: "Website", description: "Situs profesional untuk organisasi atau usaha.", icon: Building2 },
@@ -42,6 +47,58 @@ function withDeadline(promise, milliseconds, message) {
       timer = window.setTimeout(() => reject(Object.assign(new Error(message), { code: "ONBOARDING_TIMEOUT" })), milliseconds);
     }),
   ]).finally(() => window.clearTimeout(timer));
+}
+
+function sleep(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+function isTransientStudioError(error) {
+  const code = String(error?.code || "").toLowerCase();
+  const name = String(error?.name || "").toLowerCase();
+  const message = String(error?.message || error || "").toLowerCase();
+  return isTransientSessionError(error)
+    || name === "datatransporterror"
+    || name === "typeerror"
+    || code === "data_network_unavailable"
+    || code === "onboarding_timeout"
+    || /failed to fetch|network|jaringan|timeout|time out|sementara|unreachable|belum dapat dijangkau/.test(message);
+}
+
+async function loadStudioMembership(userId) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= STARTUP_RETRY_DELAYS.length; attempt += 1) {
+    try {
+      const verified = await withDeadline(
+        getVerifiedSession({ force: attempt === 0 }),
+        CHECK_TIMEOUT_MS,
+        "Verifikasi sesi melewati batas waktu.",
+      );
+      if (!verified?.user?.id) {
+        throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), {
+          code: "SESSION_REAUTH_REQUIRED",
+          status: 401,
+        });
+      }
+      const sites = await withDeadline(
+        listUserSites(verified.user.id || userId),
+        CHECK_TIMEOUT_MS,
+        "Pemeriksaan situs melewati batas waktu.",
+      );
+      return { verified, sites };
+    } catch (error) {
+      if (isSessionReauthError(error) || !isTransientStudioError(error)) throw error;
+      lastError = error;
+      if (attempt < STARTUP_RETRY_DELAYS.length) await sleep(STARTUP_RETRY_DELAYS[attempt]);
+    }
+  }
+  throw Object.assign(new Error(
+    "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan dan sistem tidak mengeluarkan akun. Tekan Coba lagi setelah jaringan tersambung.",
+  ), {
+    name: "DataTransportError",
+    code: "DATA_NETWORK_UNAVAILABLE",
+    cause: lastError,
+  });
 }
 
 function preferredSite(sites) {
@@ -73,7 +130,7 @@ function requestReauthentication(error) {
 function StartupState({ error, onRetry, onExit }) {
   return <main className="so75-startup" data-release={RELEASE}>
     <header><a href="/" aria-label="Ngeblogging">ngeblogging<span>.</span></a><button onClick={onExit}><LogOut/>Keluar</button></header>
-    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi akun belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Memeriksa situs Anda…</h1><p>Proses ini memiliki batas waktu. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
+    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi data belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging.</p></>}</section>
   </main>;
 }
 
@@ -168,15 +225,19 @@ export default function StudioOnboardingGate(props) {
       if (!props.user?.id) { setError("Sesi pengguna tidak ditemukan. Silakan masuk kembali."); setPhase("error"); return; }
       if (!supabaseConfigured || !supabase) { setError("Penyimpanan cloud belum dikonfigurasi."); setPhase("error"); return; }
       try {
-        const verified = await withDeadline(getVerifiedSession({ force: true }), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
-        if (!verified?.user?.id) throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
-        const sites = await withDeadline(listUserSites(verified.user.id), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu. Tidak ada situs yang dibuat otomatis.");
+        const { sites } = await loadStudioMembership(props.user.id);
         if (cancelled) return;
         const site = preferredSite(sites);
         if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding");
       } catch (nextError) {
         if (isSessionReauthError(nextError)) requestReauthentication(nextError);
-        if (!cancelled) { setError(nextError.message || "Daftar situs belum dapat dimuat."); setPhase("error"); }
+        if (!cancelled) {
+          const message = isTransientStudioError(nextError)
+            ? "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan. Tekan Coba lagi setelah jaringan tersambung."
+            : nextError.message || "Daftar situs belum dapat dimuat.";
+          setError(message);
+          setPhase("error");
+        }
       }
     };
     check();
