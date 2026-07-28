@@ -1,4 +1,4 @@
-const RELEASE = "sidebar-final-v91-20260728";
+const RELEASE = "sidebar-polish-v92-20260728";
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
