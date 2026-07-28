@@ -32,7 +32,7 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout use semantic identities instead of fragile DOM order", async () => {
+test("settings and logout use semantic identities while React navigation nodes stay mounted", async () => {
   const [secure, styles, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
@@ -41,7 +41,7 @@ test("settings and logout use semantic identities instead of fragile DOM order",
   ]);
   assert.match(secure, /sidebar-account-footer-v85\.css/);
   assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
-  assert.match(secure, /sidebar-account-footer-v85-20260728/);
+  assert.match(secure, /sidebar-react-stability-v86-20260728/);
   for (const marker of [
     "syncAccountFooter",
     "sn-account-settings-v85",
@@ -51,7 +51,12 @@ test("settings and logout use semantic identities instead of fragile DOM order",
     'button.hidden = false',
     'button.disabled = false',
     'button.removeAttribute("aria-hidden")',
+    "hideNaraRouteWithoutRemovingReactNodes",
+    'button.dataset.reactNodePreserved = "true"',
+    'button.style.setProperty("display", "none", "important")',
+    'attributeFilter: ["hidden", "disabled", "aria-hidden", "class", "style"]',
   ]) assert.ok(secure.includes(marker), marker);
+  assert.doesNotMatch(secure, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
   for (const marker of [
     ".sn-account-settings-v85",
     ".sn-account-logout-v85",
@@ -70,10 +75,10 @@ test("settings and logout use semantic identities instead of fragile DOM order",
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
-test("PWA cache rotates for semantic settings footer", async () => {
+test("PWA cache rotates for React navigation stability", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-account-footer-v85-20260728/);
-  assert.match(worker, /pwa-v85/);
-  assert.match(worker, /service-worker-activated-sidebar-account-footer-v85/);
+  assert.match(worker, /sidebar-react-stability-v86-20260728/);
+  assert.match(worker, /pwa-v86/);
+  assert.match(worker, /service-worker-activated-sidebar-react-stability-v86/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
