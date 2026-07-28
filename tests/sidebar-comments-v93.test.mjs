@@ -19,6 +19,7 @@ test("desktop sidebar centers open rows and collapsed icons in CSS and final run
     ".sn-side.collapsed>.sn-account-footer>button",
   ]) assert.ok(css.includes(marker), marker);
   for (const marker of [
+    "sidebar-stability-v95-20260728",
     "sidebar-comments-v94-20260728",
     "desktopLayoutRequested",
     "normalizeDesktopRow",
@@ -29,7 +30,9 @@ test("desktop sidebar centers open rows and collapsed icons in CSS and final run
     '"align-items": "center"',
     'width: "48px"',
     ':scope > .sn-account-footer',
+    "hideNaraSidebar",
   ]) assert.ok(finalRuntime.includes(marker), marker);
+  assert.doesNotMatch(finalRuntime, /attributeFilter:\s*\[[^\]]*"style"/);
   assert.doesNotMatch(css, /\.sn-side\.collapsed[^}]+text-align:left/);
 });
 
@@ -105,10 +108,12 @@ test("Supabase comments schema is RLS-backed and emails are private", async () =
   assert.doesNotMatch(publicFunction, /'authorEmail'/);
 });
 
-test("PWA rotates to v94 and preloads public comment assets", async () => {
+test("PWA rotates to v95 and preloads public comment and Studio stability assets", async () => {
   const sw = await read("public/sw.js");
-  assert.match(sw, /sidebar-comments-v94-20260728/);
-  assert.match(sw, /pwa-v94/);
+  assert.match(sw, /studio-ui-stability-v95-20260728/);
+  assert.match(sw, /pwa-v95/);
   assert.match(sw, /comments-v93\.css/);
   assert.match(sw, /comments-v93\.js/);
+  assert.match(sw, /studio-ui-stability-v95\.css/);
+  assert.match(sw, /studio-ui-stability-v95\.js/);
 });
