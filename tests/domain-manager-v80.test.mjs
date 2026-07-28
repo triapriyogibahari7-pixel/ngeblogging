@@ -54,8 +54,8 @@ test("settings and logout use semantic identities while React navigation nodes s
     "hideNaraRouteWithoutRemovingReactNodes",
     'button.dataset.reactNodePreserved = "true"',
     'button.style.setProperty("display", "none", "important")',
-    'attributeFilter: ["hidden", "disabled", "aria-hidden", "class", "style"]',
   ]) assert.ok(secure.includes(marker), marker);
+  assert.doesNotMatch(secure, /attributeFilter:/);
   assert.doesNotMatch(secure, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
   for (const marker of [
     ".sn-account-settings-v85",
