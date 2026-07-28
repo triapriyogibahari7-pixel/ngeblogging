@@ -1,0 +1,132 @@
+/* Sidebar account footer alignment authority v117.
+   The runtime measures a stable workspace row and publishes its real horizontal
+   axis as CSS variables. Pengaturan and Keluar therefore follow the exact icon
+   and label positions used by the navigation in every responsive mode. */
+:root{--sidebar-account-footer-alignment-v117:1}
+
+.sn-shell>.sn-side>.sn-account-footer{
+  --af117-row-left:8px;
+  --af117-row-width:calc(100% - 16px);
+  --af117-icon-center:19.5px;
+  --af117-label-left:38px;
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  gap:6px!important;
+  margin:0!important;
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom))!important;
+  border-top:1px solid #e2e7ee!important;
+  background:#fff!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+}
+
+.sn-shell>.sn-side>.sn-account-footer>button{
+  position:relative!important;
+  inset:auto!important;
+  width:var(--af117-row-width)!important;
+  min-width:var(--af117-row-width)!important;
+  max-width:var(--af117-row-width)!important;
+  min-height:48px!important;
+  height:auto!important;
+  display:block!important;
+  margin:0 0 0 var(--af117-row-left)!important;
+  padding:0!important;
+  border-radius:12px!important;
+  box-sizing:border-box!important;
+  text-align:left!important;
+  transform:none!important;
+}
+
+.sn-shell>.sn-side>.sn-account-footer>button>svg{
+  position:absolute!important;
+  left:var(--af117-icon-center)!important;
+  top:50%!important;
+  width:22px!important;
+  min-width:22px!important;
+  max-width:22px!important;
+  height:22px!important;
+  min-height:22px!important;
+  max-height:22px!important;
+  margin:0!important;
+  padding:0!important;
+  flex:none!important;
+  transform:translate(-50%,-50%)!important;
+}
+
+.sn-shell>.sn-side>.sn-account-footer>button>span{
+  position:static!important;
+  display:block!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:calc(100% - var(--af117-label-left) - 10px)!important;
+  margin:0 10px 0 var(--af117-label-left)!important;
+  padding:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  text-align:left!important;
+  line-height:48px!important;
+  transform:none!important;
+}
+
+/* Collapsed desktop and browser Desktop-site mode: labels disappear and the
+   measured workspace icon center remains the only horizontal authority. */
+html.studio-v30-desktop .sn-side.collapsed>.sn-account-footer>button,
+html.studio-v30-laptop .sn-side.collapsed>.sn-account-footer>button,
+html.studio-v30-desktop-phone .sn-side.collapsed>.sn-account-footer>button,
+html[data-desktop-layout-requested="true"] .sn-side.collapsed>.sn-account-footer>button{
+  height:50px!important;
+  min-height:50px!important;
+  max-height:50px!important;
+}
+
+html.studio-v30-desktop .sn-side.collapsed>.sn-account-footer>button>span,
+html.studio-v30-laptop .sn-side.collapsed>.sn-account-footer>button>span,
+html.studio-v30-desktop-phone .sn-side.collapsed>.sn-account-footer>button>span,
+html[data-desktop-layout-requested="true"] .sn-side.collapsed>.sn-account-footer>button>span{
+  display:none!important;
+  visibility:hidden!important;
+  width:0!important;
+  height:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+
+/* Compact mobile/app/tablet fallback values match Studio shell v30 before the
+   first measurement frame; the runtime then replaces them with live values. */
+html.studio-v30-compact:not([data-desktop-layout-requested="true"]) .sn-side>.sn-account-footer{
+  --af117-row-left:14px;
+  --af117-row-width:calc(100% - 28px);
+  --af117-icon-center:29px;
+  --af117-label-left:56px;
+  gap:10px!important;
+  padding-top:12px!important;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom))!important;
+}
+
+html.studio-v30-compact:not([data-desktop-layout-requested="true"]) .sn-side>.sn-account-footer>button{
+  min-height:58px!important;
+  border-radius:14px!important;
+  font-size:15px!important;
+}
+
+html.studio-v30-compact:not([data-desktop-layout-requested="true"]) .sn-side>.sn-account-footer>button>svg{
+  width:23px!important;
+  min-width:23px!important;
+  max-width:23px!important;
+  height:23px!important;
+  min-height:23px!important;
+  max-height:23px!important;
+}
+
+html.studio-v30-compact:not([data-desktop-layout-requested="true"]) .sn-side>.sn-account-footer>button>span{
+  line-height:58px!important;
+}
