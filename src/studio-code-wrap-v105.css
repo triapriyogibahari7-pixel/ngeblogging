@@ -1,0 +1,21 @@
+/* Final code wrapping authority for the v105 theme editor. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane textarea,
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane textarea[data-code-wrap-v105="soft"]{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-wrap:break-word!important;
+  word-break:break-word!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  tab-size:2!important;
+  -moz-tab-size:2!important;
+}
+/* Marker: multiline-code-wrap-v105 no-horizontal-code-cutoff-v105 */
