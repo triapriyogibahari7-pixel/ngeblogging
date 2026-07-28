@@ -17,7 +17,7 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$OUT_DIR" "$PROJECT_DIR"
-rm -f "$ARCHIVE"
+rm -f "$ARCHIVE" "$ARCHIVE.sha256"
 
 # Export every tracked source file at the exact commit. This excludes .git,
 # node_modules, dist, Wrangler state, local caches, and untracked credentials.
@@ -111,5 +111,8 @@ EOF
   zip -q -r -9 "$ARCHIVE" "$(basename "$PROJECT_DIR")"
 )
 
-sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
+(
+  cd "$OUT_DIR"
+  sha256sum "$(basename "$ARCHIVE")" > "$(basename "$ARCHIVE").sha256"
+)
 printf 'Recovery bundle created: %s\n' "$ARCHIVE"
