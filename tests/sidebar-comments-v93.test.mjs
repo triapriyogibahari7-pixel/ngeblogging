@@ -19,7 +19,7 @@ test("desktop sidebar centers open rows and collapsed icons", async () => {
 });
 
 test("comments workspace has real moderation states, replies, settings and emoji", async () => {
-  const source = await read("src/comments-studio-v93.jsx");
+  const source = await read("src/comments-studio-runtime-v93.jsx");
   for (const marker of [
     "Komentar & diskusi",
     "get_site_comment_dashboard",
@@ -35,6 +35,8 @@ test("comments workspace has real moderation states, replies, settings and emoji
     "Email privat",
     "sn-comments-nav-button-v93",
   ]) assert.ok(source.includes(marker), marker);
+  assert.match(source, /createPortal.*from "react-dom"/);
+  assert.match(source, /createRoot.*from "react-dom\/client"/);
 });
 
 test("public comments use validated Worker routes and safe rendering", async () => {
