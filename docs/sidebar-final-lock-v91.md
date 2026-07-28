@@ -1,5 +1,7 @@
 # Sidebar visual authority v92
 
+Quality gate: PR #154.
+
 ## Backup
 
 Kondisi produksi sebelum koreksi v92 disimpan pada branch:
