@@ -1,0 +1,233 @@
+/* Ngeblogging Studio final authority v106.
+   One editor authority: desktop preview+publish, mobile publish, 50/50 panes, soft-wrapped code. */
+
+:root{--studio-final-v106:1}
+
+/* Older injected editor controls are disabled; v106 owns the header. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-draft-preview-v104,
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-header-actions-v105{
+  display:none!important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto auto!important;
+  align-items:center!important;
+  gap:9px!important;
+  min-width:0!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child h2{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.tn-code-header-actions-v106{
+  position:relative!important;
+  z-index:5!important;
+  display:inline-flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  flex:0 0 auto!important;
+}
+.tn-code-header-actions-v106>button{
+  display:inline-flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  min-height:40px!important;
+  padding:0 13px!important;
+  border:1px solid #cbd7e8!important;
+  border-radius:11px!important;
+  font:800 12px/1 "DM Sans",sans-serif!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+}
+.tn-code-header-actions-v106>button:disabled{opacity:.62!important;cursor:wait!important}
+.tn-code-header-actions-v106 svg{
+  width:17px!important;
+  height:17px!important;
+  flex:0 0 17px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:2!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.tn-code-preview-v106{
+  background:#eef5ff!important;
+  color:#245fc9!important;
+}
+.tn-code-preview-v106:hover{background:#e1edff!important;border-color:#8eb3ef!important}
+.tn-code-publish-v106{
+  border-color:#2d6edf!important;
+  background:linear-gradient(135deg,#2d6edf,#4c83eb)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(45,110,223,.22)!important;
+}
+.tn-code-publish-v106:hover{filter:brightness(1.04)!important}
+
+/* Code and preview always share one modal in equal columns. */
+.tn-code-workspace[data-editor-split-v106="true"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:#0f1929!important;
+}
+.tn-code-workspace[data-editor-split-v106="true"]>.tn-code-pane,
+.tn-code-workspace[data-editor-split-v106="true"]>.tn-frame-shell{
+  min-width:0!important;
+  min-height:0!important;
+  width:100%!important;
+  height:100%!important;
+}
+.tn-code-workspace[data-editor-split-v106="true"]>.tn-code-pane{
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr)!important;
+  overflow:hidden!important;
+  background:#0f1929!important;
+}
+.tn-code-workspace[data-editor-split-v106="true"]>.tn-frame-shell,
+.tn-code-workspace[data-editor-split-v106="true"][data-preview-open-v99="false"]>.tn-frame-shell,
+.tn-code-workspace[data-editor-split-v106="true"][data-preview-open-v98="false"]>.tn-frame-shell{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:6px!important;
+  margin:0!important;
+  border:0!important;
+  border-left:1px solid #d8e1ed!important;
+  overflow:hidden!important;
+  pointer-events:auto!important;
+  background:#e8edf4!important;
+}
+.tn-code-workspace[data-editor-split-v106="true"]>.tn-frame-shell iframe{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:#fff!important;
+}
+.tn-code-workspace[data-editor-split-v106="true"] .tn-code-pane>nav,
+.tn-code-workspace[data-editor-split-v106="true"] .tn-code-status{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+/* Long HTML/CSS/JavaScript lines must flow downward inside the editor. */
+.tn-code-workspace[data-editor-split-v106="true"] .tn-code-pane textarea,
+.tn-code-workspace[data-editor-split-v106="true"] .tn-code-pane textarea[data-code-wrap-authority="v106"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:14px!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  resize:none!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  background:#0f1929!important;
+  color:#e8eef8!important;
+  caret-color:#7eabff!important;
+  tab-size:2!important;
+}
+.tn-code-workspace[data-editor-split-v106="true"] .tn-code-pane textarea:focus{
+  outline:0!important;
+  box-shadow:inset 0 0 0 1px #447fe0!important;
+  background:#0f1929!important;
+}
+
+/* The v103 inline tools are redundant; header v106 contains the required actions. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-v103-tools-inline{display:none!important}
+
+/* Native comments remains a direct nav row and cannot drift horizontally. */
+.sn-side>nav>.sn-comments-nav-host-v93{display:none!important}
+.sn-side>nav>#ngeblogging-comments-native-v106{
+  position:relative!important;
+  transform:none!important;
+  inset:auto!important;
+}
+.sn-side>nav>#ngeblogging-comments-native-v106>span{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  white-space:nowrap!important;
+}
+
+@media(max-width:760px){
+  .tn-code-preview-v106{display:none!important}
+  .tn-code-header-actions-v106{gap:5px!important}
+  .tn-code-header-actions-v106>button{
+    min-height:38px!important;
+    padding:0 10px!important;
+    border-radius:10px!important;
+    font-size:11px!important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal>header{
+    grid-template-columns:minmax(0,1fr) auto auto!important;
+    gap:6px!important;
+    padding-left:14px!important;
+    padding-right:10px!important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child h2{
+    max-width:46vw!important;
+  }
+  .tn-code-workspace[data-editor-split-v106="true"]{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    overflow:hidden!important;
+  }
+  .tn-code-workspace[data-editor-split-v106="true"]>.tn-frame-shell{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    padding:3px!important;
+    border-left:1px solid #d8e1ed!important;
+  }
+  .tn-code-workspace[data-editor-split-v106="true"] .tn-code-pane textarea{
+    padding:10px!important;
+    font-size:11px!important;
+    line-height:1.5!important;
+  }
+}
+
+/* Marker contract: session-gated-dashboard-v106 desktop-preview-publish-v106 mobile-publish-v106 split-mobile-editor-v106 soft-wrap-v106 */
