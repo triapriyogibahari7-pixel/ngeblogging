@@ -26,22 +26,28 @@ Domain wajib memiliki hasil akhir:
 - `margin-bottom: 0`;
 - `order: 0`;
 - `flex: 0 0 auto`;
+- warna normal sama seperti menu workspace lain;
+- warna biru hanya ketika menu Domain aktif;
+- tidak pernah memakai warna merah/destruktif;
 - tidak memiliki koordinat `bottom` atau spacer otomatis.
 
 ## Kontrak logo
 
-Logo mobile menampilkan huruf `n` tanpa titik. Elemen titik kompatibilitas harus disembunyikan dan seluruh pseudo-element logo harus menghasilkan `content:none`.
+Logo mobile menampilkan huruf `n` tanpa titik. Elemen titik kompatibilitas harus dikosongkan, disembunyikan, dan seluruh pseudo-element logo harus menghasilkan `content:none`. Elemen mark utama harus dinetralkan dari ukuran, posisi, latar, border, dan transformasi legacy.
 
 ## Kontrak tombol Buat Post mobile
 
 Pada mobile/PWA/perangkat kecil dan bukan mode situs desktop:
 
-- latar putih bersih;
-- warna teks gelap;
-- border netral;
+- latar biru gradasi resmi Ngeblogging;
+- warna teks dan ikon putih;
 - tinggi minimum 58 px;
 - margin 14 px pada semua sisi;
 - tidak terpotong, tidak memakai posisi negatif, dan tidak menggunakan overflow untuk menyembunyikan bagian tombol.
+
+## Pengawasan runtime
+
+Runtime v91 memantau perubahan `class`, `style`, `hidden`, dan `aria-hidden`. Penulisan style harus idempoten agar observer tidak menciptakan loop. Bila stylesheet atau runtime lama mencoba mengubah Domain, logo, atau tombol Buat Post, authority v91 wajib memulihkan kontrak di atas.
 
 ## PWA
 
