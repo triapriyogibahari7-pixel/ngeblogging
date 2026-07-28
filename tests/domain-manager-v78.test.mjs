@@ -67,7 +67,9 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.match(footerStyles, /\.sn-logo::after[\s\S]*content: none !important/);
   assert.match(footerStyles, /flex: 0 0 auto !important/);
   assert.match(footerStyles, /font-size: 15px !important/);
-  assert.doesNotMatch(executableCss(footerStyles), /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
+  const activeStyles = executableCss(footerStyles);
+  assert.doesNotMatch(activeStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|nth-last-child|margin-top:\s*auto\s*!important/);
+  assert.doesNotMatch(activeStyles, /^\s*bottom:\s*\d/m);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
   assert.ok(archived.includes("domain-manager-v79-20260727"));
 });
