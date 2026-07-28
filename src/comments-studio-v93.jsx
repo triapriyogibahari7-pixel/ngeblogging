@@ -1,6 +1,4 @@
-// Compatibility module retained for the v93 sidebar authority.
-// Load the final centering authority after the legacy sidebar module finishes
-// registering its observer, so v93 always wins the inline !important cascade.
-queueMicrotask(() => import("./sidebar-center-v93.js"));
-
-export const COMMENTS_STUDIO_COMPAT_V93 = "comments-studio-runtime-v93";
+// Compatibility module retained for the sidebar authority import graph.
+// The active comments workspace is loaded from index.html, while
+// sidebar-final-v91.js is the only runtime allowed to center desktop rows.
+export const COMMENTS_STUDIO_COMPAT_V93 = "comments-studio-runtime-v94";
