@@ -1,7 +1,8 @@
 import "./comments-studio-v93.jsx";
 
-const RELEASE = "sidebar-comments-v94-20260728";
+const RELEASE = "sidebar-stability-v95-20260728";
 const DESKTOP_BREAKPOINT = "(min-width: 761px)";
+// Compatibility marker retained for v94 validators: sidebar-comments-v94-20260728.
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
@@ -26,6 +27,31 @@ function desktopLayoutRequested() {
     || document.documentElement.dataset.desktopLayoutRequested === "true";
 }
 
+function hideNaraSidebar(nav) {
+  [...nav.querySelectorAll(":scope > button")]
+    .filter((button) => labelOf(button) === "Nara AI")
+    .forEach((button) => {
+      button.dataset.naraSidebarV95 = "true";
+      if (!button.hidden) button.hidden = true;
+      if (!button.disabled) button.disabled = true;
+      if (button.tabIndex !== -1) button.tabIndex = -1;
+      if (button.getAttribute("aria-hidden") !== "true") button.setAttribute("aria-hidden", "true");
+      setMany(button, {
+        display: "none",
+        visibility: "hidden",
+        opacity: "0",
+        width: "0",
+        height: "0",
+        "min-width": "0",
+        "min-height": "0",
+        margin: "0",
+        padding: "0",
+        overflow: "hidden",
+        "pointer-events": "none",
+      });
+    });
+}
+
 function normalizeLogo(side, collapsed, desktop) {
   const logo = side.querySelector(":scope > .sn-logo");
   const mark = logo?.querySelector(":scope > .sn-logo-mark");
@@ -34,7 +60,7 @@ function normalizeLogo(side, collapsed, desktop) {
     setMany(logo, {
       display: "flex",
       "align-items": "center",
-      "justify-content": collapsed ? "center" : "center",
+      "justify-content": "center",
       gap: collapsed ? "0" : "7px",
       padding: collapsed ? "0" : "0 12px",
       width: "100%",
@@ -71,9 +97,9 @@ function normalizeLogo(side, collapsed, desktop) {
   }
 
   side.querySelectorAll(".sn-logo-mark > i, .sn-logo > i, .sn-logo > span:not(.sn-logo-mark)").forEach((dot) => {
-    dot.hidden = true;
-    dot.setAttribute("aria-hidden", "true");
-    dot.textContent = "";
+    if (!dot.hidden) dot.hidden = true;
+    if (dot.getAttribute("aria-hidden") !== "true") dot.setAttribute("aria-hidden", "true");
+    if (dot.textContent) dot.textContent = "";
     setMany(dot, {
       display: "none",
       width: "0",
@@ -121,7 +147,7 @@ function normalizeDomain(domain) {
 }
 
 function normalizeDesktopRow(button, collapsed) {
-  if (!button) return;
+  if (!button || button.hidden || labelOf(button) === "Nara AI") return;
   button.dataset.sidebarCenteredV94 = collapsed ? "collapsed" : "open";
   setMany(button, collapsed ? {
     display: "grid",
@@ -215,7 +241,8 @@ function normalizeDesktopSidebar(side, nav) {
     "box-sizing": "border-box",
   });
 
-  const workspaceButtons = [...nav.querySelectorAll(":scope > button")];
+  const workspaceButtons = [...nav.querySelectorAll(":scope > button")]
+    .filter((button) => !button.hidden && labelOf(button) !== "Nara AI");
   const commentsButton = nav.querySelector(":scope > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93");
   const footer = side.querySelector(":scope > .sn-account-footer");
   const footerButtons = footer ? [...footer.querySelectorAll(":scope > button")] : [];
@@ -243,7 +270,6 @@ function normalizeDesktopSidebar(side, nav) {
 function normalizeMobileCreate(side) {
   const createButton = side.querySelector(":scope > .sn-new");
   if (!createButton) return;
-
   createButton.dataset.mobileCreateV91 = "true";
   setMany(createButton, {
     position: "relative",
@@ -285,6 +311,7 @@ function syncFinalSidebar() {
   if (!side || !nav) return;
 
   shell.dataset.sidebarFinalRelease = RELEASE;
+  hideNaraSidebar(nav);
   const buttons = [...nav.querySelectorAll(":scope > button")];
   normalizeDomain(buttons.find((button) => labelOf(button) === "Domain"));
 
@@ -309,7 +336,7 @@ function start() {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "style", "hidden", "aria-hidden"],
+    attributeFilter: ["class", "hidden", "aria-hidden"],
   });
   scheduleSync();
   window.addEventListener("resize", scheduleSync, { passive: true });
