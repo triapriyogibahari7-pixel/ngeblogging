@@ -8,6 +8,7 @@ const key =
   browserEnv.VITE_SUPABASE_ANON_KEY;
 const nativeFetch = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
 const AUTH_GATEWAY_RELEASE = "same-origin-auth-gateway-v108-20260728";
+const DATA_GATEWAY_RELEASE = "same-origin-data-gateway-v110-20260728";
 
 function ngebloggingOrigin() {
   if (typeof window === "undefined") return "";
@@ -18,11 +19,28 @@ function ngebloggingOrigin() {
   return "";
 }
 
-function authTarget(value) {
+function supabaseTarget(value) {
   try {
     const target = new URL(value instanceof Request ? value.url : String(value));
     const project = new URL(String(url || ""));
-    return target.origin === project.origin && target.pathname.startsWith("/auth/v1/") ? target : null;
+    if (target.origin !== project.origin) return null;
+    if (target.pathname.startsWith("/auth/v1/")) {
+      return {
+        target,
+        service: "auth",
+        gatewayPrefix: "/api/auth-proxy",
+        release: AUTH_GATEWAY_RELEASE,
+      };
+    }
+    if (target.pathname.startsWith("/rest/v1/") || target.pathname.startsWith("/storage/v1/")) {
+      return {
+        target,
+        service: "data",
+        gatewayPrefix: "/api/data-proxy",
+        release: DATA_GATEWAY_RELEASE,
+      };
+    }
+    return null;
   } catch {
     return null;
   }
@@ -45,39 +63,58 @@ async function copyRequest(input, init, nextUrl = "") {
   });
 }
 
-async function resilientAuthFetch(input, init) {
+function markTransport(service, value) {
+  if (typeof document === "undefined") return;
+  if (service === "auth") document.documentElement.dataset.authTransportV108 = value;
+  else document.documentElement.dataset.dataTransportV110 = value;
+}
+
+function rememberGatewayError(service, error) {
+  if (typeof window === "undefined") return;
+  if (service === "auth") window.__ngebloggingAuthGatewayErrorV108 = error;
+  else window.__ngebloggingDataGatewayErrorV110 = error;
+}
+
+function networkUnavailableError(service, cause, release) {
+  const dataService = service === "data";
+  const error = new Error(dataService
+    ? "Data Studio belum dapat dijangkau. Sesi akun tetap tersimpan; coba kembali saat jaringan stabil."
+    : "Layanan login belum dapat dijangkau. Sesi yang sudah tersimpan tetap dipertahankan; coba kembali saat jaringan stabil.");
+  error.name = dataService ? "DataTransportError" : "AuthTransportError";
+  error.code = dataService ? "DATA_NETWORK_UNAVAILABLE" : "AUTH_NETWORK_UNAVAILABLE";
+  error.cause = cause;
+  error.gatewayRelease = release;
+  return error;
+}
+
+async function resilientSupabaseFetch(input, init) {
   if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada perangkat ini.");
   const source = await copyRequest(input, init);
-  const target = authTarget(source);
+  const descriptor = supabaseTarget(source);
   const origin = ngebloggingOrigin();
-  if (!target || !origin) return nativeFetch(source);
+  if (!descriptor || !origin) return nativeFetch(source);
 
-  const gateway = new URL(`/api/auth-proxy${target.pathname}${target.search}`, origin);
+  const { target, service, gatewayPrefix, release } = descriptor;
+  const gateway = new URL(`${gatewayPrefix}${target.pathname}${target.search}`, origin);
   try {
     const response = await nativeFetch(await copyRequest(source.clone(), undefined, gateway.href));
     if (![502, 503, 504].includes(response.status)) {
-      if (typeof document !== "undefined") {
-        document.documentElement.dataset.authTransportV108 = "same-origin";
-      }
+      markTransport(service, "same-origin");
       return response;
     }
+    rememberGatewayError(service, Object.assign(new Error(`Gateway ${service} mengembalikan ${response.status}.`), {
+      status: response.status,
+    }));
   } catch (gatewayError) {
-    if (typeof window !== "undefined") window.__ngebloggingAuthGatewayErrorV108 = gatewayError;
+    rememberGatewayError(service, gatewayError);
   }
 
   try {
     const response = await nativeFetch(source.clone());
-    if (typeof document !== "undefined") {
-      document.documentElement.dataset.authTransportV108 = "direct-fallback";
-    }
+    markTransport(service, "direct-fallback");
     return response;
   } catch (directError) {
-    const error = new Error("Layanan login belum dapat dijangkau. Sesi yang sudah tersimpan tetap dipertahankan; coba kembali saat jaringan stabil.");
-    error.name = "AuthTransportError";
-    error.code = "AUTH_NETWORK_UNAVAILABLE";
-    error.cause = directError;
-    error.gatewayRelease = AUTH_GATEWAY_RELEASE;
-    throw error;
+    throw networkUnavailableError(service, directError, release);
   }
 }
 
@@ -85,7 +122,7 @@ export const supabaseConfigured = Boolean(url && key);
 export const supabase = supabaseConfigured
   ? createClient(url, key, {
       global: {
-        fetch: resilientAuthFetch,
+        fetch: resilientSupabaseFetch,
       },
       auth: {
         flowType: "pkce",
