@@ -1,5 +1,7 @@
 import "./sidebar-domain-alignment-v115.css";
 import "./sidebar-domain-alignment-v115.js";
+import "./sidebar-comments-collapse-v116.css";
+import "./sidebar-comments-collapse-v116.js";
 
 const RELEASE = "studio-domain-single-authority-v112-20260728";
 const LEGACY_SELECTORS = [
