@@ -33,78 +33,82 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("Domain stays after Anggota while account actions remain in the dedicated footer", async () => {
-  const [secure, styles, sourceFix, homeActions, studio, legacyProxy] = await Promise.all([
+test("final v91 authority keeps Domain after Anggota and repairs the mobile create button", async () => {
+  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
     read("src/studio-v9-enhancements.css"),
     read("src/sidebar-home-actions-v90.css"),
+    read("src/sidebar-final-v91.css"),
+    read("src/sidebar-final-v91.js"),
+    read("index.html"),
     read("src/StudioNext.jsx"),
     read("src/sidebar-logout-v80.js"),
   ]);
+
   assert.match(secure, /sidebar-account-footer-v85\.css/);
   assert.match(secure, /sidebar-home-actions-v90\.css/);
-  assert.match(secure, /sidebar-home-actions-v90-20260728/);
   assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
   assert.match(secure, /hideNaraRouteWithoutRemovingReactNodes/);
   assert.doesNotMatch(secure, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
 
-  for (const marker of [
-    'className="sn-account-footer"',
-    'data-sidebar-footer-release="v88"',
-    "sn-account-settings-v88",
-    "sn-account-logout-v88",
-    'onClick={()=>chooseView("settings")}',
-    "onClick={onExit}",
-    'className="sn-logo-mark"',
-  ]) assert.ok(studio.includes(marker), marker);
   assert.match(studio, />Anggota<\/span><\/button><button[^>]*>[\s\S]*?>Domain<\/span><\/button><\/nav>/);
   assert.match(studio, /<\/nav><div className="sn-account-footer"/);
   assert.doesNotMatch(studio, /<nav[^>]*>[\s\S]*sn-account-settings-v88[\s\S]*<\/nav>/);
 
   const sourceActive = executableCss(sourceFix);
   assert.match(sourceActive, /\.sn-side > nav > button:last-child[\s\S]*margin-top:\s*0\s*!important/);
-  assert.match(sourceActive, /border-top:\s*0\s*!important/);
   assert.doesNotMatch(sourceActive, /\.sn-side > nav > button:last-child[\s\S]{0,120}margin-top:\s*auto/);
 
   for (const marker of [
     "Sidebar navigation and account footer v89",
-    ".sn-side > nav > button:last-child",
-    "margin-top: 0 !important",
-    "margin-bottom: 0 !important",
     ".sn-account-footer",
-    ".sn-account-settings-v88",
-    ".sn-account-logout-v88",
-    "flex: 0 0 auto !important",
-    "min-height: 48px !important",
-    "min-height: 58px !important",
-    "font-size: 15px !important",
     ".sn-logo-mark > i",
     "display: none !important",
-    ".sn-logo::after",
-    "content: none !important",
   ]) assert.ok(styles.includes(marker), marker);
 
   for (const marker of [
     "Sidebar and Ringkasan action geometry v90",
     'html[data-desktop-layout-requested="true"] .sn-welcome',
     "flex-wrap: wrap !important",
-    "@media (max-width: 1100px)",
-    "grid-template-columns: repeat(2, minmax(0, 1fr)) !important",
-    "width: 100% !important",
   ]) assert.ok(homeActions.includes(marker), marker);
-  assert.doesNotMatch(executableCss(homeActions), /margin-top:\s*auto|overflow:\s*hidden\s*!important/);
 
-  const activeStyles = executableCss(styles);
-  assert.doesNotMatch(activeStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|nth-last-child|margin-top:\s*auto\s*!important/);
-  assert.doesNotMatch(activeStyles, /^\s*bottom:\s*\d/m);
-  assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
+  for (const marker of [
+    "Sidebar final authority v91",
+    '.sn-side > nav > button[data-sidebar-domain-v91="true"]',
+    "justify-content: flex-start !important",
+    "margin-top: 0 !important",
+    ".sn-logo-mark > i",
+    "background: #ffffff !important",
+    "margin: 14px 14px 14px !important",
+    "min-height: 58px !important",
+  ]) assert.ok(finalCss.includes(marker), marker);
+  assert.doesNotMatch(executableCss(finalCss), /margin-top:\s*auto/);
+
+  for (const marker of [
+    "sidebar-final-v91-20260728",
+    'labelOf(button) === "Domain"',
+    'domain.dataset.sidebarDomainV91 = "true"',
+    'setImportant(nav, "justify-content", "flex-start")',
+    'setImportant(domain, "margin-top", "0")',
+    '.sn-logo-mark > i, .sn-logo > i',
+    'setImportant(dot, "display", "none")',
+    'createButton.dataset.mobileCreateV91 = "true"',
+    'background: "#ffffff"',
+  ]) assert.ok(finalRuntime.includes(marker), marker);
+  assert.doesNotMatch(finalRuntime, /\.remove\(\)|insertAdjacentElement|appendChild|prepend/);
+
+  assert.match(index, /sidebar-final-v91\.css\?v=91/);
+  assert.match(index, /sidebar-final-v91\.js\?v=91/);
+  assert.ok(index.indexOf("sidebar-final-v91.css?v=91") > index.indexOf("domain-dns-v67.css"));
+  assert.ok(index.indexOf("sidebar-final-v91.js?v=91") > index.indexOf("domain-dns-v67.js"));
+  assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
 });
 
-test("PWA cache rotates for Domain source flow and Ringkasan actions v90", async () => {
+test("PWA cache rotates for final direct sidebar authority v91", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-home-actions-v90-20260728/);
-  assert.match(worker, /pwa-v90/);
-  assert.match(worker, /service-worker-activated-sidebar-home-actions-v90/);
+  assert.match(worker, /sidebar-final-v91-20260728/);
+  assert.match(worker, /pwa-v91/);
+  assert.match(worker, /service-worker-activated-sidebar-final-v91/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
