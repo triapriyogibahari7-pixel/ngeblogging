@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -48,7 +48,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup QEMU for ARM64
         uses: docker/setup-qemu-action@v3
@@ -113,7 +113,7 @@ jobs:
           [[ "${VITE_PUBLIC_SITE_URL}" == https://* ]] || { echo "VITE_PUBLIC_SITE_URL wajib HTTPS"; exit 1; }
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup QEMU for ARM64
         uses: docker/setup-qemu-action@v3
@@ -183,7 +183,7 @@ jobs:
       ACME_EMAIL: ${{ vars.ACME_EMAIL || 'admin@ngeblogging.com' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Deploy standby and verify health
         env:
@@ -217,7 +217,7 @@ jobs:
       ACME_EMAIL: ${{ vars.ACME_EMAIL || 'admin@ngeblogging.com' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Deploy primary and verify health
         env:
