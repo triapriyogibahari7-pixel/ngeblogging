@@ -18,7 +18,8 @@ import "./site-onboarding-v75.css";
 import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
-const RELEASE = "first-site-onboarding-v110-20260728";
+const RELEASE = "first-site-onboarding-v76-20260727";
+const STARTUP_RELEASE = "first-site-onboarding-v110-20260728";
 const CHECK_TIMEOUT_MS = 12_000;
 const STARTUP_RETRY_DELAYS = [450, 900, 1_800];
 const SITE_TYPES = [
@@ -70,7 +71,7 @@ async function loadStudioMembership(userId) {
   for (let attempt = 0; attempt <= STARTUP_RETRY_DELAYS.length; attempt += 1) {
     try {
       const verified = await withDeadline(
-        getVerifiedSession({ force: attempt === 0 }),
+        getVerifiedSession({ force: true }),
         CHECK_TIMEOUT_MS,
         "Verifikasi sesi melewati batas waktu.",
       );
@@ -122,15 +123,16 @@ function requestReauthentication(error) {
     detail: {
       code: "SESSION_REAUTH_REQUIRED",
       message: error?.message || "Sesi sudah berakhir. Silakan masuk kembali.",
-      release: RELEASE,
+      release: STARTUP_RELEASE,
+      compatibility: RELEASE,
     },
   }));
 }
 
 function StartupState({ error, onRetry, onExit }) {
-  return <main className="so75-startup" data-release={RELEASE}>
+  return <main className="so75-startup" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
     <header><a href="/" aria-label="Ngeblogging">ngeblogging<span>.</span></a><button onClick={onExit}><LogOut/>Keluar</button></header>
-    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi data belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging.</p></>}</section>
+    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi data belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
   </main>;
 }
 
@@ -196,7 +198,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
     } finally { setCreating(false); }
   };
 
-  return <main className="so75-shell" data-release={RELEASE}>
+  return <main className="so75-shell" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
     <header className="so75-topbar"><a className="so75-brand" href="/">ngeblogging<span>.</span></a><div><span>LANGKAH PERTAMA</span><button onClick={onExit}><LogOut/>Keluar</button></div></header>
     <section className="so75-hero">
       <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Beri nama pada<br/><em>tempat pertama Anda.</em></h1><p>Nama situs dan subdomain tidak diambil dari email. Anda menentukan sendiri identitas, tujuan, dan alamat gratisnya.</p><div className="so75-promise"><Check/><span>Subdomain gratis tetap tersedia</span><Check/><span>Domain pribadi dapat dipasang kemudian</span><Check/><span>Tidak diterbitkan tanpa persetujuan</span></div></div>
