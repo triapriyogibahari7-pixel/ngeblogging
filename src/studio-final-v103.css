@@ -1,0 +1,163 @@
+/* Ngeblogging Studio final responsive authority v103.
+   One stable owner for Comments geometry and the theme-editor split preview. */
+
+:root{--studio-final-v103:1}
+
+/* --------------------------------------------------------------------------
+   COMMENTS — FOLLOW THE REAL VISUAL SIDEBAR, NOT THE REACT collapsed CLASS
+   -------------------------------------------------------------------------- */
+.sn-side>nav>.sn-comments-nav-host-v93{display:contents!important}
+.sn-side>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93{
+  position:relative!important;inset:auto!important;transform:none!important;
+  box-sizing:border-box!important;border:0!important;box-shadow:none!important;
+  background:transparent!important;color:#69788d!important;font-family:inherit!important;
+  letter-spacing:normal!important;cursor:pointer!important
+}
+.sn-side>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>svg,
+.sn-side>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{
+  margin:0!important;padding:0!important;transform:none!important
+}
+.sn-side>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{
+  min-width:0!important;color:inherit!important;font:inherit!important;line-height:inherit!important;
+  text-align:left!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important
+}
+.sn-side>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93.active{
+  background:#eaf2ff!important;color:#245fc9!important;font-weight:800!important
+}
+
+/* Open desktop/laptop sidebar. */
+.sn-side[data-comments-visual-open-v103="true"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93{
+  display:grid!important;grid-template-columns:24px minmax(0,112px)!important;
+  align-items:center!important;justify-content:center!important;column-gap:12px!important;
+  width:calc(100% - 16px)!important;min-width:0!important;max-width:none!important;
+  height:44px!important;min-height:44px!important;margin:0 auto!important;padding:0 12px!important;
+  border-radius:10px!important;text-align:left!important;font-size:inherit!important;
+  font-weight:inherit!important;line-height:inherit!important
+}
+.sn-side[data-comments-visual-open-v103="true"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>svg{
+  width:20px!important;height:20px!important;min-width:20px!important;justify-self:center!important
+}
+.sn-side[data-comments-visual-open-v103="true"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{
+  display:block!important
+}
+
+/* Physical phone/app drawer, including browser “desktop site” mode. */
+html[data-physical-mobile-v99="true"] .sn-side[data-comments-visual-open-v103="true"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93{
+  display:grid!important;grid-template-columns:25px minmax(0,1fr)!important;
+  align-items:center!important;justify-content:stretch!important;column-gap:18px!important;
+  width:100%!important;min-width:0!important;max-width:none!important;
+  height:58px!important;min-height:58px!important;margin:0!important;padding:0 26px!important;
+  border-radius:14px!important;text-align:left!important;font-size:17px!important;
+  font-weight:500!important;line-height:1.2!important
+}
+html[data-physical-mobile-v99="true"] .sn-side[data-comments-visual-open-v103="true"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>svg{
+  width:25px!important;height:25px!important;min-width:25px!important;justify-self:center!important
+}
+html[data-physical-mobile-v99="true"] .sn-side[data-comments-visual-open-v103="true"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{
+  display:block!important;font-size:17px!important;font-weight:inherit!important;line-height:1.2!important
+}
+
+/* Truly collapsed sidebar only. */
+.sn-side[data-comments-visual-open-v103="false"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93{
+  display:grid!important;place-items:center!important;width:48px!important;min-width:48px!important;
+  height:44px!important;min-height:44px!important;margin:2px auto!important;padding:0!important;
+  border-radius:10px!important
+}
+.sn-side[data-comments-visual-open-v103="false"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{display:none!important}
+.sn-side[data-comments-visual-open-v103="false"]>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>svg{
+  width:20px!important;height:20px!important;min-width:20px!important
+}
+
+/* --------------------------------------------------------------------------
+   THEME EDITOR — TWO REAL PANELS + TWO PREVIEW MODES
+   -------------------------------------------------------------------------- */
+.tn-v100-tool,.tn-v96-tool,.tn-v97-tool,.tn-v98-tool{display:none!important}
+.tn-code-workspace.tn-v100-previewing>.tn-code-pane{display:grid!important;visibility:visible!important;opacity:1!important}
+
+.tn-code-workspace{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;overflow:hidden!important;background:#0f1929!important
+}
+.tn-code-pane{
+  display:grid!important;grid-template-rows:auto auto minmax(0,1fr)!important;
+  min-width:0!important;min-height:0!important;overflow:hidden!important;background:#0f1929!important
+}
+.tn-code-pane>nav{min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;background:#0f1929!important}
+.tn-code-status{
+  min-width:0!important;min-height:48px!important;display:flex!important;align-items:center!important;
+  gap:8px!important;padding:6px 9px!important;overflow-x:auto!important;overflow-y:hidden!important;
+  white-space:nowrap!important;background:#101b2c!important
+}
+.tn-code-status>small{margin-left:auto!important;flex:0 0 auto!important}
+.tn-v103-tools-inline{display:inline-flex!important;align-items:center!important;gap:7px!important;flex:0 0 auto!important}
+.tn-v103-tool{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-height:34px!important;padding:0 10px!important;border:1px solid #42546f!important;
+  border-radius:9px!important;background:#172338!important;color:#dce8f8!important;
+  font:700 11px/1 "DM Sans",sans-serif!important;white-space:nowrap!important;cursor:pointer!important
+}
+.tn-v103-tool:hover,.tn-v103-tool.active{border-color:#6da0ff!important;background:#203a64!important;color:#fff!important}
+.tn-v103-tool.success{border-color:#4fbf91!important;background:#174a3c!important;color:#c9f5e4!important}
+
+.tn-code-pane textarea{
+  display:block!important;position:relative!important;inset:auto!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;max-height:none!important;margin:0!important;padding:14px!important;
+  border:0!important;border-radius:0!important;outline:0!important;resize:none!important;overflow:auto!important;
+  background:#0f1929!important;color:#e8eef8!important;caret-color:#7eabff!important;
+  font:500 13px/1.58 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;
+  white-space:pre!important;tab-size:2!important;-webkit-overflow-scrolling:touch!important
+}
+.tn-code-pane textarea:focus{box-shadow:inset 0 0 0 1px #447fe0!important}
+
+.tn-code-workspace>.tn-frame-shell,
+.tn-code-workspace[data-preview-open-v99="false"]>.tn-frame-shell,
+.tn-code-workspace[data-preview-open-v98="false"]>.tn-frame-shell{
+  display:block!important;position:relative!important;inset:auto!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;margin:0!important;padding:7px!important;border:0!important;
+  border-left:1px solid #dce4ef!important;border-top:0!important;border-radius:0!important;
+  overflow:hidden!important;background:#e8edf4!important;visibility:visible!important;opacity:1!important
+}
+.tn-code-workspace>.tn-frame-shell iframe{
+  display:block!important;position:relative!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;margin:0!important;border:0!important;
+  border-radius:10px!important;background:#fff!important
+}
+
+/* Footer contains only the native Batal and Simpan buttons. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>footer{
+  min-width:0!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  gap:8px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important
+}
+
+@media(max-width:760px){
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal.fullscreen{
+    width:calc(100vw - 12px)!important;height:min(88dvh,760px)!important;max-height:calc(100dvh - 12px)!important;
+    border-radius:18px!important;overflow:hidden!important
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal-body{overflow:hidden!important}
+  .tn-code-workspace{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;overflow:hidden!important
+  }
+  .tn-code-status{min-height:46px!important;padding:5px 6px!important}
+  .tn-code-status>span,.tn-code-status>small{display:none!important}
+  .tn-v103-tools-inline{width:max-content!important;min-width:100%!important}
+  .tn-v103-tool{min-height:36px!important;padding:0 8px!important;font-size:10px!important}
+  .tn-code-pane textarea{padding:10px!important;font-size:11px!important;line-height:1.5!important}
+  .tn-code-workspace>.tn-frame-shell,
+  .tn-code-workspace[data-preview-open-v99="false"]>.tn-frame-shell,
+  .tn-code-workspace[data-preview-open-v98="false"]>.tn-frame-shell{
+    min-height:0!important;height:100%!important;padding:5px!important;border-left:1px solid #dce4ef!important;border-top:0!important
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal>footer{padding:7px!important;justify-content:flex-start!important}
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal>footer>span{display:none!important}
+}
+
+/* Narrow phones keep the two panels but permit horizontal inspection instead of overlaying them. */
+@media(max-width:420px){
+  .tn-code-workspace{grid-template-columns:minmax(180px,1fr) minmax(180px,1fr)!important;overflow-x:auto!important;overflow-y:hidden!important}
+  .tn-code-pane,.tn-code-workspace>.tn-frame-shell{min-width:180px!important}
+}
+
+/* Marker contract: stable-comments-v103 dual-preview-v103 external-draft-preview-v103 */
