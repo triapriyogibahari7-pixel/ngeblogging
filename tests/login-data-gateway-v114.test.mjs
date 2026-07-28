@@ -5,8 +5,9 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("login and Studio data reject false HTML gateway success and continue through safe fallbacks", async () => {
-  const [supabase, index, worker] = await Promise.all([
+  const [supabase, authGateway, index, worker] = await Promise.all([
     read("src/lib/supabase.js"),
+    read("server/auth-gateway-v108.mjs"),
     read("index.html"),
     read("public/sw.js"),
   ]);
@@ -25,6 +26,12 @@ test("login and Studio data reject false HTML gateway success and continue throu
   assert.match(supabase, /nativeFetch\(source\.clone\(\)\)/);
   assert.match(supabase, /"direct-fallback"/);
   assert.match(supabase, /GATEWAY_RESPONSE_MISMATCH/);
+
+  assert.match(authGateway, /2026\.07\.29-auth-gateway-v114/);
+  assert.match(authGateway, /access-control-allow-origin/);
+  assert.match(authGateway, /access-control-expose-headers/);
+  assert.match(authGateway, /x-ngeblogging-auth-gateway/);
+  assert.match(authGateway, /new Headers\(corsHeaders\(origin, requestId\)\)/);
 
   assert.match(worker, /ngeblogging-app-v114-20260729/);
   assert.match(worker, /login-data-gateway-v114-20260729/);
