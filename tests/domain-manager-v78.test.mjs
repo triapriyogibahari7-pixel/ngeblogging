@@ -21,10 +21,13 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.doesNotMatch(entry, /sidebar-logout-v80\.js/);
   assert.ok(secure.includes('import "./sidebar-account-footer-v85.css"'));
   assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
-  assert.ok(secure.includes("sidebar-account-footer-v85-20260728"));
+  assert.ok(secure.includes("sidebar-react-stability-v86-20260728"));
   assert.ok(secure.includes("syncAccountFooter"));
   assert.ok(secure.includes("sn-account-settings-v85"));
   assert.ok(secure.includes("sn-account-logout-v85"));
+  assert.ok(secure.includes("hideNaraRouteWithoutRemovingReactNodes"));
+  assert.ok(secure.includes('button.dataset.reactNodePreserved = "true"'));
+  assert.doesNotMatch(secure, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
   assert.doesNotMatch(entry, /domain-manager-v79\.js|domain-manager-v79\.css/);
   for (const marker of [
     "domain-manager-v80-20260727",
