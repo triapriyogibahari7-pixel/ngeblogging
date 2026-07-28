@@ -1,5 +1,16 @@
-const RELEASE = "studio-ui-stability-v95-20260728";
+const RELEASE = "studio-ui-stability-v96-20260728";
 const PHONE_QUERY = "(max-width: 760px)";
+
+function loadPrecisionV96() {
+  if (!document.querySelector('link[data-studio-mobile-precision="v96"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/src/studio-mobile-precision-v96.css?v=96";
+    link.dataset.studioMobilePrecision = "v96";
+    document.head.appendChild(link);
+  }
+  import("./studio-mobile-precision-v96.js?v=96").catch((error) => console.error("Mobile precision v96 failed", error));
+}
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
@@ -26,7 +37,7 @@ function syncCommentsGeometry(shell) {
   const computed = getComputedStyle(reference);
   const geometry = [
     "min-height", "padding-top", "padding-right", "padding-bottom", "padding-left",
-    "gap", "border-radius", "font-size", "line-height", "text-align",
+    "gap", "border-radius", "font-size", "line-height", "text-align", "font-weight",
   ];
   for (const property of geometry) {
     const value = computed.getPropertyValue(property);
@@ -36,7 +47,8 @@ function syncCommentsGeometry(shell) {
   comments.style.setProperty("margin", "0", "important");
   comments.style.setProperty("justify-content", "flex-start", "important");
   comments.style.setProperty("align-items", "center", "important");
-  comments.dataset.mobileAlignedV95 = "true";
+  comments.style.setProperty("transform", "none", "important");
+  comments.dataset.mobileAlignedV96 = "true";
 }
 
 function sync() {
@@ -53,6 +65,7 @@ function schedule() {
 }
 
 function start() {
+  loadPrecisionV96();
   document.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return;
