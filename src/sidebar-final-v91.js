@@ -1,4 +1,7 @@
-const RELEASE = "sidebar-polish-v92-20260728";
+import "./comments-studio-v93.jsx";
+
+const RELEASE = "sidebar-comments-v94-20260728";
+const DESKTOP_BREAKPOINT = "(min-width: 761px)";
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
@@ -13,10 +16,34 @@ function setImportant(node, property, value) {
   node.style.setProperty(property, value, "important");
 }
 
-function normalizeLogo(side) {
-  const mark = side.querySelector(":scope .sn-logo > .sn-logo-mark");
+function setMany(node, values) {
+  if (!node) return;
+  for (const [property, value] of Object.entries(values)) setImportant(node, property, value);
+}
+
+function desktopLayoutRequested() {
+  return window.matchMedia(DESKTOP_BREAKPOINT).matches
+    || document.documentElement.dataset.desktopLayoutRequested === "true";
+}
+
+function normalizeLogo(side, collapsed, desktop) {
+  const logo = side.querySelector(":scope > .sn-logo");
+  const mark = logo?.querySelector(":scope > .sn-logo-mark");
+
+  if (desktop && logo) {
+    setMany(logo, {
+      display: "flex",
+      "align-items": "center",
+      "justify-content": collapsed ? "center" : "center",
+      gap: collapsed ? "0" : "7px",
+      padding: collapsed ? "0" : "0 12px",
+      width: "100%",
+      "box-sizing": "border-box",
+    });
+  }
+
   if (mark) {
-    for (const [property, value] of Object.entries({
+    setMany(mark, {
       position: "static",
       inset: "auto",
       display: "inline-flex",
@@ -40,14 +67,14 @@ function normalizeLogo(side) {
       visibility: "visible",
       opacity: "1",
       transform: "none",
-    })) setImportant(mark, property, value);
+    });
   }
 
   side.querySelectorAll(".sn-logo-mark > i, .sn-logo > i, .sn-logo > span:not(.sn-logo-mark)").forEach((dot) => {
     dot.hidden = true;
     dot.setAttribute("aria-hidden", "true");
     dot.textContent = "";
-    for (const [property, value] of Object.entries({
+    setMany(dot, {
       display: "none",
       width: "0",
       height: "0",
@@ -61,7 +88,7 @@ function normalizeLogo(side) {
       visibility: "hidden",
       opacity: "0",
       transform: "none",
-    })) setImportant(dot, property, value);
+    });
   });
 }
 
@@ -69,16 +96,14 @@ function normalizeDomain(domain) {
   if (!domain) return;
   domain.dataset.sidebarDomainV91 = "true";
   const active = domain.classList.contains("active");
-  for (const [property, value] of Object.entries({
+  setMany(domain, {
     position: "static",
     inset: "auto",
     top: "auto",
     right: "auto",
     bottom: "auto",
     left: "auto",
-    display: "flex",
     flex: "0 0 auto",
-    "align-self": "stretch",
     order: "0",
     "margin-top": "0",
     "margin-right": "0",
@@ -92,17 +117,135 @@ function normalizeDomain(domain) {
     "font-weight": active ? "900" : "500",
     "box-shadow": "none",
     transform: "none",
-  })) setImportant(domain, property, value);
+  });
+}
+
+function normalizeDesktopRow(button, collapsed) {
+  if (!button) return;
+  button.dataset.sidebarCenteredV94 = collapsed ? "collapsed" : "open";
+  setMany(button, collapsed ? {
+    display: "grid",
+    "grid-template-columns": "1fr",
+    "grid-auto-flow": "row",
+    "align-items": "center",
+    "align-content": "center",
+    "justify-items": "center",
+    "justify-content": "center",
+    width: "48px",
+    "min-width": "48px",
+    "max-width": "48px",
+    height: "44px",
+    "min-height": "44px",
+    margin: "2px auto",
+    padding: "0",
+    gap: "0",
+    "box-sizing": "border-box",
+    "text-align": "center",
+    transform: "none",
+  } : {
+    display: "grid",
+    "grid-template-columns": "24px minmax(0, 112px)",
+    "grid-auto-flow": "column",
+    "align-items": "center",
+    "align-content": "center",
+    "justify-items": "start",
+    "justify-content": "center",
+    width: "calc(100% - 16px)",
+    "min-width": "0",
+    "max-width": "calc(100% - 16px)",
+    height: "44px",
+    "min-height": "44px",
+    margin: "2px auto",
+    padding: "0 12px",
+    gap: "12px",
+    "box-sizing": "border-box",
+    "text-align": "left",
+    transform: "none",
+  });
+
+  const icon = button.querySelector(":scope > svg");
+  if (icon) {
+    setMany(icon, {
+      width: "20px",
+      height: "20px",
+      margin: "0",
+      padding: "0",
+      "justify-self": "center",
+      "align-self": "center",
+      transform: "none",
+    });
+  }
+
+  const label = button.querySelector(":scope > span");
+  if (label) {
+    setMany(label, collapsed ? {
+      display: "none",
+      width: "0",
+      height: "0",
+      margin: "0",
+      padding: "0",
+      overflow: "hidden",
+      visibility: "hidden",
+    } : {
+      display: "block",
+      width: "auto",
+      "min-width": "0",
+      height: "auto",
+      margin: "0",
+      padding: "0",
+      overflow: "hidden",
+      visibility: "visible",
+      "text-align": "left",
+      "text-overflow": "ellipsis",
+      "white-space": "nowrap",
+    });
+  }
+}
+
+function normalizeDesktopSidebar(side, nav) {
+  const collapsed = side.classList.contains("collapsed");
+  setMany(nav, {
+    display: "flex",
+    "flex-direction": "column",
+    "justify-content": "flex-start",
+    "align-content": "center",
+    "align-items": "center",
+    gap: "2px",
+    padding: collapsed ? "0" : "0 8px",
+    "box-sizing": "border-box",
+  });
+
+  const workspaceButtons = [...nav.querySelectorAll(":scope > button")];
+  const commentsButton = nav.querySelector(":scope > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93");
+  const footer = side.querySelector(":scope > .sn-account-footer");
+  const footerButtons = footer ? [...footer.querySelectorAll(":scope > button")] : [];
+  const createButton = side.querySelector(":scope > .sn-new");
+
+  if (footer) {
+    setMany(footer, {
+      display: "grid",
+      "grid-template-columns": "1fr",
+      "justify-items": "center",
+      "align-items": "center",
+      gap: "4px",
+      padding: collapsed ? "8px 0" : "8px",
+      "box-sizing": "border-box",
+    });
+  }
+
+  workspaceButtons.forEach((button) => normalizeDesktopRow(button, collapsed));
+  normalizeDesktopRow(commentsButton, collapsed);
+  footerButtons.forEach((button) => normalizeDesktopRow(button, collapsed));
+  normalizeDesktopRow(createButton, collapsed);
+  normalizeLogo(side, collapsed, true);
 }
 
 function normalizeMobileCreate(side) {
-  const desktopRequested = document.documentElement.dataset.desktopLayoutRequested === "true";
-  const physicalMobile = window.matchMedia("(max-width: 760px)").matches;
   const createButton = side.querySelector(":scope > .sn-new");
-  if (!createButton || !physicalMobile || desktopRequested) return;
+  if (!createButton) return;
 
   createButton.dataset.mobileCreateV91 = "true";
-  for (const [property, value] of Object.entries({
+  setMany(createButton, {
     position: "relative",
     inset: "auto",
     "z-index": "1",
@@ -120,7 +263,19 @@ function normalizeMobileCreate(side) {
     "box-shadow": "0 9px 22px #2d6edf2c",
     overflow: "visible",
     transform: "none",
-  })) setImportant(createButton, property, value);
+  });
+}
+
+function normalizeMobileSidebar(side, nav) {
+  setMany(nav, {
+    display: "flex",
+    "flex-direction": "column",
+    "justify-content": "flex-start",
+    "align-content": "stretch",
+    "align-items": "stretch",
+  });
+  normalizeMobileCreate(side);
+  normalizeLogo(side, false, false);
 }
 
 function syncFinalSidebar() {
@@ -130,16 +285,11 @@ function syncFinalSidebar() {
   if (!side || !nav) return;
 
   shell.dataset.sidebarFinalRelease = RELEASE;
-  setImportant(nav, "display", "flex");
-  setImportant(nav, "flex-direction", "column");
-  setImportant(nav, "justify-content", "flex-start");
-  setImportant(nav, "align-content", "flex-start");
-  setImportant(nav, "align-items", "stretch");
-
   const buttons = [...nav.querySelectorAll(":scope > button")];
   normalizeDomain(buttons.find((button) => labelOf(button) === "Domain"));
-  normalizeLogo(side);
-  normalizeMobileCreate(side);
+
+  if (desktopLayoutRequested()) normalizeDesktopSidebar(side, nav);
+  else normalizeMobileSidebar(side, nav);
 }
 
 let frame = 0;
