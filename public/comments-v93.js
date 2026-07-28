@@ -4,7 +4,7 @@
 
   const RELEASE = "comments-widget-v93-20260728";
   const MOODS = ["😀","😃","😄","😁","😊","😍","🥰","😎","🤩","😂","😅","😉","🤗","🤔","😮","😢","😭","😡"];
-  const REACTIONS = ["😀","😍","😂","😮","😢","😡","👍","❤️","🎉"];
+  const REACTIONS = ["😀","😍","🤩","😂","😮","😢","😡","👍","❤️","🎉"];
   const state = { data: null, root: null, loading: false, error: "", notice: "" };
 
   function element(tag, className = "", text = "") {
@@ -41,6 +41,7 @@
 
   function reactionBar(comment) {
     const bar = element("div", "ngc-reactions");
+    bar.setAttribute("aria-label", "10 pilihan reaksi komentar");
     for (const emoji of REACTIONS) {
       const count = Number(comment.reactions?.[emoji] || 0);
       const button = element("button", "", `${emoji}${count ? ` ${count}` : ""}`);
