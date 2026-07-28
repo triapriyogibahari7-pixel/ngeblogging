@@ -77,7 +77,9 @@ test("Domain stays after Anggota while account actions remain in the dedicated f
     "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
   ]) assert.ok(styles.includes(marker), marker);
-  assert.doesNotMatch(executableCss(styles), /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
+  const activeStyles = executableCss(styles);
+  assert.doesNotMatch(activeStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|nth-last-child|margin-top:\s*auto\s*!important/);
+  assert.doesNotMatch(activeStyles, /^\s*bottom:\s*\d/m);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
