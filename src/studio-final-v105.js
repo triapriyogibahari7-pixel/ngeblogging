@@ -74,6 +74,18 @@ function buttonMarkup(kind) {
   return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16.5V20h16v-3.5"/><path d="M12 3v13"/><path d="m7.5 8 4.5-5 4.5 5"/></svg><span>Publish</span>';
 }
 
+function enforceWrappedEditors(workspace) {
+  workspace.querySelectorAll(".tn-code-pane textarea").forEach((textarea) => {
+    textarea.setAttribute("wrap", "soft");
+    textarea.setAttribute("data-code-wrap-v105", "soft");
+    textarea.style.setProperty("white-space", "pre-wrap", "important");
+    textarea.style.setProperty("overflow-wrap", "anywhere", "important");
+    textarea.style.setProperty("word-break", "break-word", "important");
+    textarea.style.setProperty("overflow-x", "hidden", "important");
+    textarea.style.setProperty("max-width", "100%", "important");
+  });
+}
+
 function installActions(layer) {
   if (!(layer instanceof HTMLElement)) return;
   const modal = layer.querySelector(":scope > .tn-modal");
@@ -124,6 +136,7 @@ function installActions(layer) {
   workspace.dataset.editorSplitV105 = "true";
   workspace.dataset.previewOpenV99 = "true";
   workspace.dataset.previewOpenV98 = "true";
+  enforceWrappedEditors(workspace);
   layer.dataset.codeHeaderActionsV105 = "true";
 }
 
@@ -140,9 +153,9 @@ function schedule() {
 
 function start() {
   const observer = new MutationObserver((mutations) => {
-    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule();
+    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "attributes")) schedule();
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "wrap"] });
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("orientationchange", schedule, { passive: true });
   window.addEventListener("pageshow", schedule, { passive: true });
