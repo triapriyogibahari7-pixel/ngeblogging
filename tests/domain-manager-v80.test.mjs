@@ -33,8 +33,8 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, and restores the blue mobile create button", async () => {
-  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, commentsCss, index, studio, legacyProxy] = await Promise.all([
+test("v95 keeps Domain normal, permanently hides sidebar Nara, and centers stable desktop rows", async () => {
+  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, commentsCss, stabilityCss, stabilityRuntime, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
     read("src/studio-v9-enhancements.css"),
@@ -42,6 +42,8 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
     read("src/sidebar-final-v91.css"),
     read("src/sidebar-final-v91.js"),
     read("src/comments-studio-v93.css"),
+    read("src/studio-ui-stability-v95.css"),
+    read("src/studio-ui-stability-v95.js"),
     read("index.html"),
     read("src/StudioNext.jsx"),
     read("src/sidebar-logout-v80.js"),
@@ -90,7 +92,12 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
   assert.doesNotMatch(executableCss(finalCss), /margin-top:\s*auto/);
 
   for (const marker of [
+    "sidebar-stability-v95-20260728",
     "sidebar-comments-v94-20260728",
+    "hideNaraSidebar",
+    'labelOf(button) === "Nara AI"',
+    'button.dataset.naraSidebarV95 = "true"',
+    'display: "none"',
     'labelOf(button) === "Domain"',
     'domain.dataset.sidebarDomainV91 = "true"',
     "desktopLayoutRequested",
@@ -108,9 +115,10 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
     'createButton.dataset.mobileCreateV91 = "true"',
     'background: "linear-gradient(135deg, #2d6edf, #4c83e9)"',
     'color: "#ffffff"',
-    'attributeFilter: ["class", "style", "hidden", "aria-hidden"]',
+    'attributeFilter: ["class", "hidden", "aria-hidden"]',
     'import "./comments-studio-v93.jsx"',
   ]) assert.ok(finalRuntime.includes(marker), marker);
+  assert.doesNotMatch(finalRuntime, /attributeFilter:\s*\[[^\]]*"style"/);
   assert.doesNotMatch(finalRuntime, /insertAdjacentElement|appendChild|prepend/);
 
   for (const marker of [
@@ -120,21 +128,42 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
     "place-items:center!important",
   ]) assert.ok(commentsCss.includes(marker), marker);
 
+  for (const marker of [
+    "Ngeblogging Studio UI stability authority v95",
+    '.sn-side > nav > button[data-nara-sidebar-v95="true"]',
+    ".csm-inbox-v93 nav",
+    ".sn-media-tools > nav",
+    ".tn-modal.fullscreen",
+    ".tn-code-workspace",
+  ]) assert.ok(stabilityCss.includes(marker), marker);
+
+  for (const marker of [
+    "studio-ui-stability-v95-20260728",
+    "closeMobileDrawer",
+    ".sn-comments-nav-button-v93",
+    ".sn-account-settings-v88, .sn-account-settings-v85",
+    "syncCommentsGeometry",
+  ]) assert.ok(stabilityRuntime.includes(marker), marker);
+
   assert.match(index, /sidebar-final-v91\.css\?v=92/);
   assert.match(index, /comments-studio-v93\.css\?v=94/);
-  assert.match(index, /sidebar-final-v91\.js\?v=94/);
-  assert.match(index, /comments-studio-runtime-v93\.jsx\?v=94/);
-  assert.match(index, /data-sidebar-final-authority="v94"/);
-  assert.match(index, /data-sidebar-comments-authority="v94"/);
-  assert.ok(index.indexOf("comments-studio-v93.css?v=94") > index.indexOf("sidebar-final-v91.css?v=92"));
-  assert.ok(index.indexOf("sidebar-final-v91.js?v=94") > index.indexOf("domain-dns-v67.js"));
+  assert.match(index, /studio-ui-stability-v95\.css\?v=95/);
+  assert.match(index, /sidebar-final-v91\.js\?v=95/);
+  assert.match(index, /comments-studio-runtime-v93\.jsx\?v=95/);
+  assert.match(index, /studio-ui-stability-v95\.js\?v=95/);
+  assert.match(index, /data-sidebar-final-authority="v95"/);
+  assert.match(index, /data-studio-ui-stability="v95"/);
+  assert.ok(index.indexOf("studio-ui-stability-v95.css?v=95") > index.indexOf("comments-studio-v93.css?v=94"));
+  assert.ok(index.indexOf("studio-ui-stability-v95.js?v=95") > index.indexOf("sidebar-final-v91.js?v=95"));
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
 });
 
-test("PWA cache rotates for sidebar and comments v94", async () => {
+test("PWA cache rotates for Studio stability v95", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-comments-v94-20260728/);
-  assert.match(worker, /pwa-v94/);
-  assert.match(worker, /service-worker-activated-sidebar-comments-v94/);
+  assert.match(worker, /studio-ui-stability-v95-20260728/);
+  assert.match(worker, /pwa-v95/);
+  assert.match(worker, /service-worker-activated-studio-ui-stability-v95/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
+  assert.match(worker, /studio-ui-stability-v95\.css/);
+  assert.match(worker, /studio-ui-stability-v95\.js/);
 });
