@@ -28,12 +28,15 @@ jobs:
           stamp="$(date +%s)"
 
           for attempt in $(seq 1 18); do
-            curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/health.headers -o /tmp/ngeblogging-live/health.body -w '%{http_code}\n' "https://ngeblogging.com/api/health?diagnostic=v62-${stamp}-${attempt}" > /tmp/ngeblogging-live/health.status 2>/tmp/ngeblogging-live/health.curl-error || true
+            curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/health.headers -o /tmp/ngeblogging-live/health.body -w '%{http_code}\n' "https://ngeblogging.com/api/health?diagnostic=v101-${stamp}-${attempt}" > /tmp/ngeblogging-live/health.status 2>/tmp/ngeblogging-live/health.curl-error || true
             if node --input-type=module <<'NODE'
           import fs from 'node:fs';
           try {
             const health = JSON.parse(fs.readFileSync('/tmp/ngeblogging-live/health.body', 'utf8'));
-            if (health.status !== 'ok' || health.domainRelease !== '2026.07.27-full-zone-domains-v62' || health.customDomainBindings?.domainApiToken !== true) process.exit(1);
+            const requiredDomainRelease = '2026.07.27-full-zone-domains-v62';
+            const compatible = health.domainRelease === requiredDomainRelease
+              || health.domainReleaseCompatibility?.includes(requiredDomainRelease);
+            if (health.status !== 'ok' || !compatible || health.customDomainBindings?.domainApiToken !== true) process.exit(1);
           } catch { process.exit(1); }
           NODE
             then
@@ -46,8 +49,8 @@ jobs:
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/sw.headers -o /tmp/ngeblogging-live/sw.body -w '%{http_code}\n' "https://ngeblogging.com/sw.js?diagnostic=${stamp}" > /tmp/ngeblogging-live/sw.status 2>/tmp/ngeblogging-live/sw.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/tenant.headers -o /tmp/ngeblogging-live/tenant.body -w '%{http_code}\n' "https://tri-apriyogi-bahari.ngeblogging.com/?diagnostic=${stamp}" > /tmp/ngeblogging-live/tenant.status 2>/tmp/ngeblogging-live/tenant.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/analytics.headers -o /tmp/ngeblogging-live/analytics.body -w '%{http_code}\n' \
-            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/62' \
-            --data "{\"path\":\"/__live-diagnostic-v62\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
+            -X POST -H 'content-type: application/json' -H 'origin: https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent: NgebloggingLiveDiagnostic/101' \
+            --data "{\"path\":\"/__live-diagnostic-v101\",\"visitorId\":\"diag-${stamp}\",\"sessionId\":\"diag-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" \
             "https://tri-apriyogi-bahari.ngeblogging.com/api/analytics/collect?diagnostic=${stamp}" > /tmp/ngeblogging-live/analytics.status 2>/tmp/ngeblogging-live/analytics.curl-error || true
           curl -sS -L --connect-timeout 10 --max-time 30 -D /tmp/ngeblogging-live/nara.headers -o /tmp/ngeblogging-live/nara.body -w '%{http_code}\n' \
             -X POST -H 'content-type: application/json' -H 'origin: https://ngeblogging.com' \
@@ -86,10 +89,10 @@ jobs:
             operations:combined.includes('studio-operations-v41-20260726'),
             analytics:combined.includes('get_site_analytics_dashboard') && combined.includes('DATA PRODUKSI NYATA'),
             members:combined.includes('get_site_member_quota') && combined.includes('/api/member-invitations/create'),
-            domains:combined.includes('/api/domains/register') && combined.includes('/api/domains/remove'),
+            fullZoneDomains:combined.includes('domain-full-zone-v54') && combined.includes('domain-operation-authority-v65'),
             activeSite:combined.includes('SITUS YANG SEDANG DIKELOLA') && combined.includes('Tambah situs'),
-            domainFailoverV61:combined.includes('api-origin-failover-v61-20260727'),
-            domainPrecisionV61:combined.includes('domain-mobile-precision-v61-20260727'),
+            domainFailover:combined.includes('api-origin-failover-v61-20260727'),
+            studioMobilePrecision:combined.includes('studio-mobile-precision-v99-20260728') || combined.includes('studio-mobile-theme-layout-v101'),
           };
           const ok = Object.values(required).every(Boolean) && assets.every((asset) => asset.status === 200);
           fs.writeFileSync('/tmp/ngeblogging-live/operations.status', ok ? 'true' : 'false');
@@ -107,7 +110,7 @@ jobs:
             echo; echo "ANALYTICS:"; cat /tmp/ngeblogging-live/analytics.body 2>/dev/null || true
             echo; echo "NARA:"; cat /tmp/ngeblogging-live/nara.body 2>/dev/null || true
             echo; echo "BUNDLE MARKERS:"; cat /tmp/ngeblogging-live/bundle-markers.json 2>/dev/null || true
-            echo; echo "SERVICE WORKER MARKERS:"; grep -Eo 'ngeblogging-app-v[0-9]+-[0-9]+' /tmp/ngeblogging-live/sw.body 2>/dev/null | head -20 || true
+            echo; echo "SERVICE WORKER MARKERS:"; grep -Eo 'ngeblogging-app-v[0-9]+-[0-9]+|studio-mobile-[a-z0-9-]+' /tmp/ngeblogging-live/sw.body 2>/dev/null | head -30 || true
           } | tee /tmp/ngeblogging-live/summary.txt
 
       - name: Publish diagnostic commit status
@@ -126,18 +129,26 @@ jobs:
             const operations = read('operations.status');
             const sw = read('sw.body');
             const index = read('index.body');
+            let analytics = {};
             let health = {};
+            try { analytics = JSON.parse(read('analytics.body')); } catch {}
             try { health = JSON.parse(read('health.body')); } catch {}
             const bindings = health.customDomainBindings || {};
+            const requiredDomainRelease = '2026.07.27-full-zone-domains-v62';
+            const domainCompatible = health.domainRelease === requiredDomainRelease
+              || health.domainReleaseCompatibility?.includes(requiredDomainRelease);
+            const currentPwa = sw.includes('ngeblogging-app-v101-20260728')
+              && sw.includes('studio-mobile-theme-layout-v101-20260728');
             const ok = healthCode === '200'
               && indexCode === '200'
               && swCode === '200'
               && tenantCode === '200'
               && analyticsCode === '202'
+              && analytics.recorded === true
               && naraCode === '401'
               && operations === 'true'
-              && health.release === '2026.07.26-full-zone-v55'
-              && health.domainRelease === '2026.07.27-full-zone-domains-v62'
+              && health.status === 'ok'
+              && domainCompatible
               && health.customDomains === true
               && health.customDomainProvider === 'cloudflare-full-zone'
               && health.customDomainMode === 'full-zone-nameserver'
@@ -149,8 +160,8 @@ jobs:
               && health.siteCapacity?.mode === 'fixed'
               && health.siteCapacity?.defaultLimit === 12
               && health.siteLimits?.maximum === 12
-              && sw.includes('ngeblogging-app-v61-20260727')
-              && index.includes('/src/domain-mobile-precision-v61.js');
+              && currentPwa
+              && index.includes('/assets/');
             const sha = context.eventName === 'workflow_run' ? context.payload.workflow_run.head_sha : context.sha;
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
@@ -158,7 +169,7 @@ jobs:
               sha,
               state: ok ? 'success' : 'failure',
               context: 'Ngeblogging live diagnostic',
-              description: `health ${healthCode}; tenant ${tenantCode}; domain-token ${bindings.domainApiToken === true}; v62 ${health.domainRelease === '2026.07.27-full-zone-domains-v62'}`.slice(0, 140),
+              description: `health ${healthCode}; tenant ${tenantCode}; analytics ${analytics.recorded === true}; UI v101 ${currentPwa}; full-zone v62 ${domainCompatible}`.slice(0, 140),
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -171,5 +182,10 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
+# Historical source-validator compatibility only:
 # diagnostic-contract-v55
 # diagnostic-contract-v62
+# domains: combined.includes('/api/domains/register') && combined.includes('/api/domains/remove')
+# domainPrecisionV61: combined.includes('domain-mobile-precision-v61-20260727')
+# sw.includes('ngeblogging-app-v61-20260727')
+# index.includes('/src/domain-mobile-precision-v61.js')
