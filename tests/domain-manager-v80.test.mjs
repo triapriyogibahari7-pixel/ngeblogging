@@ -33,14 +33,15 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("v92 keeps Domain normal, removes the logo dot, and restores the blue mobile create button", async () => {
-  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, index, studio, legacyProxy] = await Promise.all([
+test("v93 keeps Domain normal, removes the logo dot, centers desktop rows, and restores the blue mobile create button", async () => {
+  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, commentsCss, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
     read("src/studio-v9-enhancements.css"),
     read("src/sidebar-home-actions-v90.css"),
     read("src/sidebar-final-v91.css"),
     read("src/sidebar-final-v91.js"),
+    read("src/comments-studio-v93.css"),
     read("index.html"),
     read("src/StudioNext.jsx"),
     read("src/sidebar-logout-v80.js"),
@@ -91,7 +92,7 @@ test("v92 keeps Domain normal, removes the logo dot, and restores the blue mobil
   assert.doesNotMatch(executableCss(finalCss), /margin-top:\s*auto/);
 
   for (const marker of [
-    "sidebar-polish-v92-20260728",
+    "sidebar-comments-v93-20260728",
     'labelOf(button) === "Domain"',
     'domain.dataset.sidebarDomainV91 = "true"',
     'setImportant(nav, "justify-content", "flex-start")',
@@ -105,8 +106,16 @@ test("v92 keeps Domain normal, removes the logo dot, and restores the blue mobil
     'background: "linear-gradient(135deg, #2d6edf, #4c83e9)"',
     'color: "#ffffff"',
     'attributeFilter: ["class", "style", "hidden", "aria-hidden"]',
+    'import "./comments-studio-v93.jsx"',
   ]) assert.ok(finalRuntime.includes(marker), marker);
   assert.doesNotMatch(finalRuntime, /\.remove\(\)|insertAdjacentElement|appendChild|prepend/);
+
+  for (const marker of [
+    ".sn-side:not(.collapsed)>nav>button",
+    "grid-template-columns:24px minmax(0,112px)!important",
+    ".sn-side.collapsed>nav>button",
+    "place-items:center!important",
+  ]) assert.ok(commentsCss.includes(marker), marker);
 
   assert.match(index, /sidebar-final-v91\.css\?v=92/);
   assert.match(index, /sidebar-final-v91\.js\?v=92/);
@@ -116,10 +125,10 @@ test("v92 keeps Domain normal, removes the logo dot, and restores the blue mobil
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
 });
 
-test("PWA cache rotates for sidebar visual authority v92", async () => {
+test("PWA cache rotates for sidebar and comments v93", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-polish-v92-20260728/);
-  assert.match(worker, /pwa-v92/);
-  assert.match(worker, /service-worker-activated-sidebar-polish-v92/);
+  assert.match(worker, /sidebar-comments-v93-20260728/);
+  assert.match(worker, /pwa-v93/);
+  assert.match(worker, /service-worker-activated-sidebar-comments-v93/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
