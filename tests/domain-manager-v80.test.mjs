@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const executableCss = (source) => source.replace(/\/\*[\s\S]*?\*\//g, "");
 
 test("domain manager v80 uses a Shadow DOM as the only visible domain surface", async () => {
   const [entry, manager, styles, legacy] = await Promise.all([
@@ -76,7 +77,7 @@ test("Domain stays after Anggota while account actions remain in the dedicated f
     "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
   ]) assert.ok(styles.includes(marker), marker);
-  assert.doesNotMatch(styles, /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
+  assert.doesNotMatch(executableCss(styles), /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
