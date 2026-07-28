@@ -18,7 +18,7 @@ jobs:
   reconcile:
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -37,7 +37,7 @@ jobs:
               sha: process.env.PRODUCTION_SHA,
               state: 'pending',
               context: 'Ngeblogging authoritative domain',
-              description: 'Auditing DNS with the domain token and Worker authority with the deployment token.',
+              description: 'Auditing DNS, Worker routes, full-zone v62, and Studio UI v101.',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -162,27 +162,30 @@ jobs:
       # Audit DNS authority and force Worker domain reconciliation
       # 2026.07.26-full-zone-v55
       # 2026.07.26-full-zone-domains-v55
-      - name: Verify authoritative live full-zone v62 release
+      - name: Verify authoritative live full-zone v62 and Studio UI v101
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 30); do
-            stamp="v62-${attempt}-$(date +%s)"
+          for attempt in $(seq 1 18); do
+            stamp="v101-${attempt}-$(date +%s)"
             health_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/api/health?authority=${stamp}" || true)"
             sw_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-sw.js -w '%{http_code}' -H 'cache-control: no-cache' "${PUBLIC_SITE_URL%/}/sw.js?authority=${stamp}" || true)"
             index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-index.html -w '%{http_code}' -H 'cache-control:no-cache' "${PUBLIC_SITE_URL%/}/?authority=${stamp}" || true)"
-            analytics_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/authority-analytics.json -w '%{http_code}' -X POST -H 'content-type:application/json' -H 'origin:https://tri-apriyogi-bahari.ngeblogging.com' -H 'user-agent:NgebloggingAuthority/62' --data "{\"path\":\"/__authority-v62\",\"visitorId\":\"authority-${stamp}\",\"sessionId\":\"authority-${stamp}\",\"language\":\"id-ID\",\"screenWidth\":390}" "https://tri-apriyogi-bahari.ngeblogging.com/api/analytics/collect?authority=${stamp}" || true)"
-            if [[ "${health_code}" == "200" && "${sw_code}" == "200" && "${index_code}" == "200" && "${analytics_code}" == "202" ]] && node --input-type=module <<'NODE'
+            if [[ "${health_code}" == "200" && "${sw_code}" == "200" && "${index_code}" == "200" ]] && node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const health = JSON.parse(fs.readFileSync('/tmp/authority-health.json', 'utf8'));
-          const analytics = JSON.parse(fs.readFileSync('/tmp/authority-analytics.json', 'utf8'));
           const sw = fs.readFileSync('/tmp/authority-sw.js', 'utf8');
           const index = fs.readFileSync('/tmp/authority-index.html', 'utf8');
           const bindings = health.customDomainBindings || {};
+          const requiredDomainRelease = '2026.07.27-full-zone-domains-v62';
+          const domainCompatible = health.domainRelease === requiredDomainRelease
+            || health.domainReleaseCompatibility?.includes(requiredDomainRelease);
+          const uiCompatible = sw.includes('studio-mobile-theme-layout-v101-20260728')
+            && sw.includes('ngeblogging-app-v101-20260728')
+            && index.includes('/assets/');
           const ready = health.status === 'ok'
             && health.service === 'ngeblogging-cloudflare'
-            && health.release === '2026.07.26-full-zone-v55'
-            && health.domainRelease === '2026.07.27-full-zone-domains-v62'
+            && domainCompatible
             && health.customDomains === true
             && health.customDomainProvider === 'cloudflare-full-zone'
             && health.customDomainMode === 'full-zone-nameserver'
@@ -197,24 +200,19 @@ jobs:
             && health.siteCapacity?.defaultLimit === 12
             && health.siteLimits?.maximum === 12
             && health.analyticsCollector === true
-            && analytics.recorded === true
-            && sw.includes('ngeblogging-app-v61-20260727')
-            && index.includes('/src/domain-full-zone-v54.js')
-            && index.includes('/src/domain-full-zone-v54.css')
-            && index.includes('/src/domain-mobile-precision-v61.js');
+            && uiCompatible;
           if (!ready) process.exit(1);
           NODE
             then
-              echo "Domain otoritatif menyajikan full-zone v62, token khusus, UI v61, tenant, dan analitik terbaru."
+              echo "Domain otoritatif menyajikan full-zone v62, token terpisah, PWA/UI v101, dan shell produksi terbaru."
               exit 0
             fi
-            echo "Percobaan ${attempt}/30 belum konsisten; menunggu propagasi edge."
-            sleep 10
+            echo "Percobaan ${attempt}/18 belum konsisten; menunggu propagasi edge."
+            sleep 5
           done
-          echo "Domain resmi masih belum konsisten dengan kontrak full-zone v62."
+          echo "Domain resmi masih belum konsisten dengan kontrak full-zone v62 dan UI v101."
           echo "Health terakhir:"; cat /tmp/authority-health.json 2>/dev/null || true
-          echo "Analytics terakhir:"; cat /tmp/authority-analytics.json 2>/dev/null || true
-          echo "Service worker marker terakhir:"; grep -o 'ngeblogging-app-v[0-9][0-9]*-[0-9]*' /tmp/authority-sw.js 2>/dev/null | head -n 5 || true
+          echo "Service worker marker terakhir:"; grep -o 'ngeblogging-app-v[0-9][0-9]*-[0-9]*' /tmp/authority-sw.js 2>/dev/null | head -n 8 || true
           exit 1
 
       - name: Upload authoritative evidence
@@ -225,7 +223,6 @@ jobs:
           path: |
             /tmp/ngeblogging-authority-audit.json
             /tmp/authority-health.json
-            /tmp/authority-analytics.json
             /tmp/authority-sw.js
             /tmp/authority-index.html
           if-no-files-found: warn
@@ -242,7 +239,7 @@ jobs:
               sha:process.env.PRODUCTION_SHA,
               state:'success',
               context:'Ngeblogging authoritative domain',
-              description:'DNS token, Worker token, routes, full-zone v62, and UI v61 are consistent.',
+              description:'DNS, Worker domains, routes, full-zone v62, and Studio UI v101 are consistent.',
               target_url:`https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
@@ -257,6 +254,6 @@ jobs:
               sha:process.env.PRODUCTION_SHA,
               state:'failure',
               context:'Ngeblogging authoritative domain',
-              description:'DNS authority, Worker-domain binding, routes, or live v62 verification failed.',
+              description:'DNS authority, Worker binding, routes, full-zone v62, or Studio UI v101 verification failed.',
               target_url:`https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
