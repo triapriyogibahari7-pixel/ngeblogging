@@ -32,7 +32,7 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout are semantic React items with two locked non-overlapping layouts", async () => {
+test("settings and logout are a dedicated React footer outside scrollable navigation", async () => {
   const [secure, styles, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
@@ -41,46 +41,44 @@ test("settings and logout are semantic React items with two locked non-overlappi
   ]);
   assert.match(secure, /sidebar-account-footer-v85\.css/);
   assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
-  assert.match(secure, /sidebar-react-stability-v86-20260728/);
-  for (const marker of [
-    "syncAccountFooter",
-    "sn-account-settings-v85",
-    "sn-account-logout-v85",
-    'buttonLabel(button) === "Pengaturan"',
-    'buttonLabel(button) === "Keluar"',
-    'button.hidden = false',
-    'button.disabled = false',
-    'button.removeAttribute("aria-hidden")',
-    "hideNaraRouteWithoutRemovingReactNodes",
-    'button.dataset.reactNodePreserved = "true"',
-  ]) assert.ok(secure.includes(marker), marker);
+  assert.match(secure, /hideNaraRouteWithoutRemovingReactNodes/);
   assert.doesNotMatch(secure, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
+
   for (const marker of [
-    "Sidebar layout lock v87",
-    "Contract A — desktop/laptop/large screens",
-    "Contract B — mobile/PWA/small screens",
-    ".sn-account-settings-v85",
-    ".sn-account-logout-v85",
-    "position: static !important",
-    "order: 1000 !important",
-    "order: 1001 !important",
-    "margin-top: auto !important",
+    'className="sn-account-footer"',
+    'data-sidebar-footer-release="v88"',
+    "sn-account-settings-v88",
+    "sn-account-logout-v88",
+    'onClick={()=>chooseView("settings")}',
+    "onClick={onExit}",
+    'className="sn-logo-mark"',
+    "<strong>n</strong><i>.</i>",
+  ]) assert.ok(studio.includes(marker), marker);
+  assert.match(studio, /<\/nav><div className="sn-account-footer"/);
+  assert.doesNotMatch(studio, /<nav[^>]*>[\s\S]*sn-account-settings-v88[\s\S]*<\/nav>/);
+
+  for (const marker of [
+    "Sidebar React footer v88",
+    ".sn-account-footer",
+    ".sn-account-settings-v88",
+    ".sn-account-logout-v88",
+    "flex: 0 0 auto !important",
+    "min-height: 48px !important",
     "min-height: 58px !important",
     "font-size: 15px !important",
+    ".sn-logo-mark",
+    "align-items: baseline !important",
     "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
   ]) assert.ok(styles.includes(marker), marker);
-  assert.doesNotMatch(styles, /position:\s*absolute\s*!important|bottom:\s*\d|nth-last-child/);
-  assert.match(studio, />Pengaturan<\/span>/);
-  assert.match(studio, />Keluar<\/span>/);
-  assert.match(studio, /onClick=\{onExit\}/);
+  assert.doesNotMatch(styles, /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
-test("PWA cache rotates for locked two-layout sidebar", async () => {
+test("PWA cache rotates for dedicated React sidebar footer", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-two-layouts-v87-20260728/);
-  assert.match(worker, /pwa-v87/);
-  assert.match(worker, /service-worker-activated-sidebar-two-layouts-v87/);
+  assert.match(worker, /sidebar-react-footer-v88-20260728/);
+  assert.match(worker, /pwa-v88/);
+  assert.match(worker, /service-worker-activated-sidebar-react-footer-v88/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
