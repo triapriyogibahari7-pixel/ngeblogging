@@ -32,40 +32,37 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout load globally before any domain page is opened", async () => {
-  const [entry, secure, navigation, studio] = await Promise.all([
-    read("src/domain-authority-v75.js"),
+test("settings and logout are real React buttons pinned in every sidebar layout", async () => {
+  const [secure, styles, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
-    read("src/sidebar-logout-v80.js"),
+    read("src/sidebar-react-footer-v84.css"),
     read("src/StudioNext.jsx"),
+    read("src/sidebar-logout-v80.js"),
   ]);
-  assert.doesNotMatch(entry, /sidebar-logout-v80\.js/);
-  assert.match(secure, /import "\.\/sidebar-logout-v80\.js"/);
-  assert.match(secure, /sidebar-global-v83-20260728/);
+  assert.match(secure, /sidebar-react-footer-v84\.css/);
+  assert.doesNotMatch(secure, /sidebar-logout-v80\.js/);
+  assert.match(secure, /sidebar-react-footer-v84-20260728/);
   for (const marker of [
-    "sidebar-footer-v82-20260728",
-    "sn-side-footer-v82",
-    "sn-footer-action-v82",
-    "Buka Pengaturan",
-    "Keluar dari Ngeblogging",
-    "sourceButton(currentSide, \"Pengaturan\")",
-    "document.querySelector(\".sn-avatar\")?.click()",
-    "position:absolute!important",
-    "--sn-footer-v82-height:158px",
-    "font-size:15px!important",
-    "min-height:58px!important",
+    ".sn-side > nav > button:nth-last-child(2)",
+    ".sn-side > nav > button:last-child",
+    "position: absolute !important",
+    "bottom: 66px !important",
+    "bottom: 10px !important",
+    "min-height: 58px !important",
+    "font-size: 15px !important",
     "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
-  ]) assert.ok(navigation.includes(marker), marker);
-  assert.doesNotMatch(navigation, /footer\.append\(logout\)|appendChild\(logout\)/);
+  ]) assert.ok(styles.includes(marker), marker);
   assert.match(studio, />Pengaturan<\/span>/);
   assert.match(studio, />Keluar<\/span>/);
+  assert.match(studio, /onClick=\{onExit\}/);
+  assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
-test("PWA cache rotates for globally loaded sidebar footer", async () => {
+test("PWA cache rotates for React-owned sidebar footer", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-global-v83-20260728/);
-  assert.match(worker, /pwa-v83/);
-  assert.match(worker, /service-worker-activated-sidebar-global-v83/);
+  assert.match(worker, /sidebar-react-footer-v84-20260728/);
+  assert.match(worker, /pwa-v84/);
+  assert.match(worker, /service-worker-activated-sidebar-react-footer-v84/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });

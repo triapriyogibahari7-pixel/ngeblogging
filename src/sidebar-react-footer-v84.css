@@ -1,0 +1,169 @@
+/*
+ * Sidebar account footer v84.
+ * The React-owned Pengaturan and Keluar buttons remain inside StudioNext <nav>.
+ * This stylesheet pins those two real buttons to the bottom of every sidebar layout.
+ */
+
+.sn-side {
+  --sn-react-footer-height: 132px;
+  overflow: hidden !important;
+}
+
+.sn-side > nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-bottom: calc(var(--sn-react-footer-height) + 12px) !important;
+  overscroll-behavior: contain !important;
+}
+
+.sn-side > nav > button:nth-last-child(2),
+.sn-side > nav > button:last-child {
+  position: absolute !important;
+  left: 8px !important;
+  right: 8px !important;
+  z-index: 220 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+.sn-side > nav > button:nth-last-child(2) {
+  bottom: 66px !important;
+  background: #f7f9fc !important;
+  color: #52647c !important;
+}
+
+.sn-side > nav > button:nth-last-child(2):hover,
+.sn-side > nav > button:nth-last-child(2):focus-visible,
+.sn-side > nav > button:nth-last-child(2).active {
+  border-color: #cfe0fb !important;
+  background: #eaf2ff !important;
+  color: #245fc9 !important;
+  outline: none !important;
+}
+
+.sn-side > nav > button:last-child {
+  bottom: 10px !important;
+  border-color: #f2d9de !important;
+  background: #fff2f3 !important;
+  color: #a23c49 !important;
+}
+
+.sn-side > nav > button:last-child:hover,
+.sn-side > nav > button:last-child:focus-visible {
+  border-color: #efc8cf !important;
+  background: #ffe7ea !important;
+  outline: none !important;
+}
+
+.sn-side > nav > button:nth-last-child(2) svg,
+.sn-side > nav > button:last-child svg {
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+}
+
+.sn-side.collapsed {
+  --sn-react-footer-height: 128px;
+}
+
+.sn-side.collapsed > nav > button:nth-last-child(2),
+.sn-side.collapsed > nav > button:last-child {
+  left: 10px !important;
+  right: 10px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.sn-side.collapsed > nav > button:nth-last-child(2) span,
+.sn-side.collapsed > nav > button:last-child span {
+  display: none !important;
+}
+
+html[data-layout-mode="tablet"] .sn-side {
+  --sn-react-footer-height: 132px;
+}
+
+html[data-layout-mode="tablet"] .sn-side > nav > button:nth-last-child(2),
+html[data-layout-mode="tablet"] .sn-side > nav > button:last-child {
+  left: 10px !important;
+  right: 10px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+html[data-layout-mode="tablet"] .sn-side > nav > button:nth-last-child(2) span,
+html[data-layout-mode="tablet"] .sn-side > nav > button:last-child span {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  html:not([data-desktop-layout-requested="true"]) .sn-side {
+    --sn-react-footer-height: 164px;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav {
+    padding-bottom: calc(var(--sn-react-footer-height) + 16px) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:nth-last-child(2),
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:last-child {
+    left: 14px !important;
+    right: 14px !important;
+    min-height: 58px !important;
+    border-radius: 14px !important;
+    padding: 0 18px !important;
+    gap: 15px !important;
+    font-size: 15px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:nth-last-child(2) {
+    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:last-child {
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:nth-last-child(2) svg,
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:last-child svg {
+    width: 23px !important;
+    min-width: 23px !important;
+    height: 23px !important;
+    flex-basis: 23px !important;
+  }
+}

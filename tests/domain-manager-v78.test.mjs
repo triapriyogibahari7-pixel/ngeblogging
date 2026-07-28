@@ -5,7 +5,7 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("domain manager v80 is the only active domain DOM writer and follows the global workspace", async () => {
-  const [entry, secure, manager, archived, operations, legacy, isolatedCss, navigation] = await Promise.all([
+  const [entry, secure, manager, archived, operations, legacy, isolatedCss, footerStyles, legacyProxy] = await Promise.all([
     read("src/domain-authority-v75.js"),
     read("src/StudioSecure.jsx"),
     read("src/domain-manager-v80.js"),
@@ -13,13 +13,15 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
     read("src/studio-operations-v41.js"),
     read("src/studio-domain-backup-v35.js"),
     read("src/domain-manager-v80.css.js"),
+    read("src/sidebar-react-footer-v84.css"),
     read("src/sidebar-logout-v80.js"),
   ]);
 
   assert.ok(entry.includes('import "./domain-manager-v80.js"'));
   assert.doesNotMatch(entry, /sidebar-logout-v80\.js/);
-  assert.ok(secure.includes('import "./sidebar-logout-v80.js"'));
-  assert.ok(secure.includes("sidebar-global-v83-20260728"));
+  assert.ok(secure.includes('import "./sidebar-react-footer-v84.css"'));
+  assert.doesNotMatch(secure, /sidebar-logout-v80\.js/);
+  assert.ok(secure.includes("sidebar-react-footer-v84-20260728"));
   assert.doesNotMatch(entry, /domain-manager-v79\.js|domain-manager-v79\.css/);
   for (const marker of [
     "domain-manager-v80-20260727",
@@ -46,12 +48,10 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.doesNotMatch(operations, /from "\.\/studio-domains-v41\.js"/);
   assert.doesNotMatch(legacy, /normalizeDomain|sn-domain-preview-row-v35/);
   assert.match(isolatedCss, /:host\{all:initial/);
-  assert.match(navigation, /sidebar-footer-v82-20260728/);
-  assert.match(navigation, /sn-side-footer-v82/);
-  assert.match(navigation, /Buka Pengaturan/);
-  assert.match(navigation, /Keluar dari Ngeblogging/);
-  assert.match(navigation, /position:absolute!important/);
-  assert.match(navigation, /font-size:15px!important/);
-  assert.doesNotMatch(navigation, /footer\.append\(logout\)|appendChild\(logout\)/);
+  assert.match(footerStyles, /nth-last-child\(2\)/);
+  assert.match(footerStyles, /button:last-child/);
+  assert.match(footerStyles, /position: absolute !important/);
+  assert.match(footerStyles, /font-size: 15px !important/);
+  assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
   assert.ok(archived.includes("domain-manager-v79-20260727"));
 });
