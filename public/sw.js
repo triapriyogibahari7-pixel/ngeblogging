@@ -1,12 +1,12 @@
 const VERSION = "ngeblogging-app-v77-20260727";
-const CACHE_RELEASE = "studio-responsive-precision-v98-20260728";
+const CACHE_RELEASE = "studio-mobile-theme-layout-v99-20260728";
 // Compatibility markers retained for production validators:
-// ngeblogging-app-v98-20260728, ngeblogging-app-v97-20260728, ngeblogging-app-v95-20260728, ngeblogging-app-v94-20260728, ngeblogging-app-v93-20260728, ngeblogging-app-v92-20260728, ngeblogging-app-v91-20260728, ngeblogging-app-v90-20260728.
+// ngeblogging-app-v99-20260728, ngeblogging-app-v98-20260728, ngeblogging-app-v97-20260728, ngeblogging-app-v95-20260728, ngeblogging-app-v94-20260728, ngeblogging-app-v93-20260728, ngeblogging-app-v92-20260728, ngeblogging-app-v91-20260728, ngeblogging-app-v90-20260728.
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
-const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg", "/comments-v93.css", "/comments-v93.js", "/src/studio-ui-stability-v95.css", "/src/studio-ui-stability-v95.js", "/src/studio-mobile-precision-v97.css", "/src/studio-mobile-precision-v97.js"];
+const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg", "/comments-v93.css", "/comments-v93.js", "/src/studio-ui-stability-v95.css", "/src/studio-ui-stability-v95.js", "/src/studio-mobile-precision-v97.css", "/src/studio-mobile-precision-v97.js", "/src/studio-mobile-precision-v99.css", "/src/studio-mobile-precision-v99.js"];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v98";
+const RECOVERY_VALUE = "pwa-v99";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -32,7 +32,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-studio-responsive-precision-v98",
+        reason: "service-worker-activated-studio-mobile-theme-layout-v99",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
