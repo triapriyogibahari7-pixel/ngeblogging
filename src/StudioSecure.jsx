@@ -4,12 +4,12 @@ import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
 import "./studio-responsive-v23.css";
-import "./sidebar-logout-v80.js";
+import "./sidebar-react-footer-v84.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v33-20260725";
-const ACCOUNT_FOOTER_RELEASE = "sidebar-global-v83-20260728";
+const ACCOUNT_FOOTER_RELEASE = "sidebar-react-footer-v84-20260728";
 // Archived validator markers only; these are comments and do not restore the removed Nara route:
 // studio-source-navigation-v29-20260725
 // naraRoute.dataset.naraWorkspaceRoute = "true";
