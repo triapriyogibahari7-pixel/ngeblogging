@@ -1,7 +1,6 @@
 const RELEASE = "sidebar-comments-collapse-v116-20260729";
 const COMMENTS_ID = "ngeblogging-comments-native-v106";
 const PATCH_KEY = Symbol.for("ngeblogging.sidebarCommentsCollapseV116.setPropertyPatch");
-const REGISTRY_KEY = Symbol.for("ngeblogging.sidebarCommentsCollapseV116");
 const BLOCKED_WHEN_COLLAPSED = new Set([
   "display", "visibility", "opacity",
   "width", "min-width", "max-width",
@@ -9,16 +8,15 @@ const BLOCKED_WHEN_COLLAPSED = new Set([
   "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
 ]);
 
-const registry = globalThis[REGISTRY_KEY] || {
-  protectedLabels: new WeakSet(),
-};
-globalThis[REGISTRY_KEY] = registry;
-
 function desktopSidebarMode(side) {
   return side.classList.contains("collapsed") && (
     window.matchMedia("(min-width: 761px)").matches
     || document.documentElement.dataset.desktopLayoutRequested === "true"
   );
+}
+
+function currentCommentsLabel() {
+  return document.querySelector(`.sn-shell > .sn-side > nav > #${COMMENTS_ID} > span`);
 }
 
 function installSetPropertyGuard() {
@@ -32,10 +30,13 @@ function installSetPropertyGuard() {
     value(property, value, priority = "") {
       const normalized = String(property || "").trim().toLowerCase();
       const important = String(priority || "").trim().toLowerCase() === "important";
-      if (important && registry.protectedLabels.has(this) && BLOCKED_WHEN_COLLAPSED.has(normalized)) {
-        const label = document.querySelector(`#${COMMENTS_ID} > span`);
+      if (important && BLOCKED_WHEN_COLLAPSED.has(normalized)) {
+        const label = currentCommentsLabel();
         const side = label?.closest?.(".sn-side");
-        if (label instanceof HTMLElement && label.style === this && side instanceof HTMLElement && desktopSidebarMode(side)) {
+        if (label instanceof HTMLElement
+          && label.style === this
+          && side instanceof HTMLElement
+          && desktopSidebarMode(side)) {
           return undefined;
         }
       }
@@ -55,21 +56,15 @@ function syncCommentsCollapse() {
   const label = button?.querySelector(":scope > span");
   if (!(side instanceof HTMLElement) || !(button instanceof HTMLButtonElement) || !(label instanceof HTMLElement)) return;
 
-  registry.protectedLabels.add(label.style);
   const collapsed = desktopSidebarMode(side);
   button.dataset.commentsCollapseV116 = collapsed ? "collapsed" : "expanded";
   side.dataset.sidebarCommentsCollapseRelease = RELEASE;
   document.documentElement.dataset.sidebarCommentsCollapseV116 = RELEASE;
 
-  if (collapsed) {
-    clearInlineLabelGeometry(label);
-    label.hidden = true;
-    label.setAttribute("aria-hidden", "true");
-  } else {
-    label.hidden = false;
-    label.removeAttribute("aria-hidden");
-    clearInlineLabelGeometry(label);
-  }
+  clearInlineLabelGeometry(label);
+  label.hidden = collapsed;
+  if (collapsed) label.setAttribute("aria-hidden", "true");
+  else label.removeAttribute("aria-hidden");
 }
 
 let frame = 0;
