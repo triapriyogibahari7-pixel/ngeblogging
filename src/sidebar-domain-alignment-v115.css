@@ -1,0 +1,66 @@
+/* Sidebar Domain alignment v115.
+   The Domain row must use the same grid, spacing and collapsed center as every
+   other direct workspace navigation button. Runtime v115 mirrors the computed
+   geometry of a stable sibling to defeat older inline last-child declarations. */
+:root{--sidebar-domain-alignment-v115:1}
+
+.sn-side>nav>button[data-sidebar-domain-alignment-v115="true"]{
+  box-sizing:border-box!important;
+  transform:none!important;
+}
+
+@media(min-width:761px){
+  .sn-side:not(.collapsed)>nav>button[data-sidebar-domain-alignment-v115="true"]{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:24px minmax(0,112px)!important;
+    align-items:center!important;
+    justify-content:center!important;
+    column-gap:12px!important;
+    width:calc(100% - 16px)!important;
+    min-width:0!important;
+    min-height:44px!important;
+    margin:2px auto!important;
+    padding:0 12px!important;
+    text-align:left!important;
+  }
+  .sn-side.collapsed>nav>button[data-sidebar-domain-alignment-v115="true"]{
+    position:relative!important;
+    display:grid!important;
+    place-items:center!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:44px!important;
+    min-height:44px!important;
+    margin:2px auto!important;
+    padding:0!important;
+  }
+}
+
+html[data-desktop-layout-requested="true"] .sn-side:not(.collapsed)>nav>button[data-sidebar-domain-alignment-v115="true"]{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:24px minmax(0,112px)!important;
+  align-items:center!important;
+  justify-content:center!important;
+  column-gap:12px!important;
+  width:calc(100% - 16px)!important;
+  min-width:0!important;
+  min-height:44px!important;
+  margin:2px auto!important;
+  padding:0 12px!important;
+  text-align:left!important;
+}
+html[data-desktop-layout-requested="true"] .sn-side.collapsed>nav>button[data-sidebar-domain-alignment-v115="true"]{
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+  width:48px!important;
+  min-width:48px!important;
+  max-width:48px!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:2px auto!important;
+  padding:0!important;
+}
