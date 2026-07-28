@@ -1,12 +1,12 @@
 const VERSION = "ngeblogging-app-v77-20260727";
-const CACHE_RELEASE = "sidebar-final-v91-20260728";
+const CACHE_RELEASE = "sidebar-polish-v92-20260728";
 // Compatibility markers retained for production validators:
-// ngeblogging-app-v91-20260728, ngeblogging-app-v90-20260728, ngeblogging-app-v89-20260728, ngeblogging-app-v88-20260728, ngeblogging-app-v87-20260728, ngeblogging-app-v86-20260728, ngeblogging-app-v85-20260728, ngeblogging-app-v84-20260728, ngeblogging-app-v83-20260728, ngeblogging-app-v82-20260728, ngeblogging-app-v81-20260728, ngeblogging-app-v80-20260727, ngeblogging-app-v79-20260727, ngeblogging-app-v76-20260727, ngeblogging-app-v75-20260727, ngeblogging-app-v74-20260727, ngeblogging-app-v73-20260727, ngeblogging-app-v65-20260727, ngeblogging-app-v61-20260727, ngeblogging-app-v60-20260727, ngeblogging-app-v59-20260727, ngeblogging-app-v58-20260727, ngeblogging-app-v57-20260727, ngeblogging-app-v56-20260727, ngeblogging-app-v53-20260726, ngeblogging-app-v52-20260726, ngeblogging-app-v51-20260726, ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
+// ngeblogging-app-v92-20260728, ngeblogging-app-v91-20260728, ngeblogging-app-v90-20260728, ngeblogging-app-v89-20260728, ngeblogging-app-v88-20260728, ngeblogging-app-v87-20260728, ngeblogging-app-v86-20260728, ngeblogging-app-v85-20260728, ngeblogging-app-v84-20260728, ngeblogging-app-v83-20260728, ngeblogging-app-v82-20260728, ngeblogging-app-v81-20260728, ngeblogging-app-v80-20260727, ngeblogging-app-v79-20260727, ngeblogging-app-v76-20260727, ngeblogging-app-v75-20260727, ngeblogging-app-v74-20260727, ngeblogging-app-v73-20260727, ngeblogging-app-v65-20260727, ngeblogging-app-v61-20260727, ngeblogging-app-v60-20260727, ngeblogging-app-v59-20260727, ngeblogging-app-v58-20260727, ngeblogging-app-v57-20260727, ngeblogging-app-v56-20260727, ngeblogging-app-v53-20260726, ngeblogging-app-v52-20260726, ngeblogging-app-v51-20260726, ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v91";
+const RECOVERY_VALUE = "pwa-v92";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -32,7 +32,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-sidebar-final-v91",
+        reason: "service-worker-activated-sidebar-polish-v92",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
