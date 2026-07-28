@@ -6,21 +6,26 @@ import {
   isSessionReauthError,
 } from "./lib/auth-session-v76.js";
 
+const LEGACY_SESSION_COMPATIBILITY = "auth-session-authority-v76-20260727";
 const REDIRECT_GUARD = "ngeblogging-session-reauth-v76";
 const LIVE_BROWSER_CONTRACT = Object.freeze({
   onboarding: "first-site-onboarding-v76-20260727",
   domain: "domain-authority-v75-20260727",
   session: AUTH_SESSION_RELEASE,
+  sessionCompatibility: LEGACY_SESSION_COMPATIBILITY,
 });
 const nativeFetch = window.fetch.bind(window);
 let redirecting = false;
 
 document.documentElement.dataset.ngebloggingBrowserContractV76 = [
   LIVE_BROWSER_CONTRACT.session,
+  LIVE_BROWSER_CONTRACT.sessionCompatibility,
   LIVE_BROWSER_CONTRACT.onboarding,
   LIVE_BROWSER_CONTRACT.domain,
 ].join("|");
+document.documentElement.dataset.authSessionCompatibilityV76 = LEGACY_SESSION_COMPATIBILITY;
 window.__ngebloggingBrowserContractV76 = LIVE_BROWSER_CONTRACT;
+window.__ngebloggingAuthSessionCompatibilityV76 = LEGACY_SESSION_COMPATIBILITY;
 
 function callbackInProgress() {
   const params = new URLSearchParams(window.location.search);
