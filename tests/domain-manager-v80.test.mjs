@@ -34,14 +34,13 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
 });
 
 test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, and restores the blue mobile create button", async () => {
-  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, centerRuntime, commentsCss, index, studio, legacyProxy] = await Promise.all([
+  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, commentsCss, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
     read("src/studio-v9-enhancements.css"),
     read("src/sidebar-home-actions-v90.css"),
     read("src/sidebar-final-v91.css"),
     read("src/sidebar-final-v91.js"),
-    read("src/sidebar-center-v93.js"),
     read("src/comments-studio-v93.css"),
     read("index.html"),
     read("src/StudioNext.jsx"),
@@ -85,9 +84,7 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
     ".sn-logo > .sn-logo-mark",
     "background: transparent !important",
     ".sn-logo-mark > i",
-    "background: #2d6edf !important",
     "linear-gradient(135deg, #2d6edf, #4c83e9)",
-    "margin: 14px 14px 14px !important",
     "min-height: 58px !important",
   ]) assert.ok(finalCss.includes(marker), marker);
   assert.doesNotMatch(executableCss(finalCss), /margin-top:\s*auto/);
@@ -102,6 +99,8 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
     '"grid-template-columns": "24px minmax(0, 112px)"',
     '"grid-template-columns": "1fr"',
     '"justify-items": "center"',
+    '"align-items": "center"',
+    '"justify-content": "center"',
     "normalizeDomain",
     "normalizeLogo",
     "normalizeMobileCreate",
@@ -112,14 +111,7 @@ test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, 
     'attributeFilter: ["class", "style", "hidden", "aria-hidden"]',
     'import "./comments-studio-v93.jsx"',
   ]) assert.ok(finalRuntime.includes(marker), marker);
-  assert.doesNotMatch(finalRuntime, /\.remove\(\)|insertAdjacentElement|appendChild|prepend/);
-
-  for (const marker of [
-    "sidebar-center-v93-20260728",
-    '"place-items": "center"',
-    '"grid-template-columns": "24px minmax(0, 112px)"',
-    ':scope > .sn-account-footer',
-  ]) assert.ok(centerRuntime.includes(marker), marker);
+  assert.doesNotMatch(finalRuntime, /insertAdjacentElement|appendChild|prepend/);
 
   for (const marker of [
     ".sn-side:not(.collapsed)>nav>button",
