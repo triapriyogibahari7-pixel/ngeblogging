@@ -1,6 +1,6 @@
 const RELEASE = "studio-surface-authority-v100-20260728";
 const PHONE_QUERY = "(max-width: 760px)";
-// Inert live-validator compatibility marker: studio-domain-v41-20260726.
+const LIVE_DOMAIN_COMPATIBILITY = "studio-domain-v41-20260726";
 
 function textOf(node) {
   return (node?.textContent || "").replace(/\s+/g, " ").trim();
@@ -157,6 +157,7 @@ function closeMobileDrawer(shell) {
 
 function sync() {
   document.documentElement.dataset.studioSurfaceAuthority = RELEASE;
+  document.documentElement.dataset.studioDomainCompatibility = LIVE_DOMAIN_COMPATIBILITY;
   alignComments();
   installAllEditorTools();
   markLayout();
