@@ -13,15 +13,18 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
     read("src/studio-operations-v41.js"),
     read("src/studio-domain-backup-v35.js"),
     read("src/domain-manager-v80.css.js"),
-    read("src/sidebar-react-footer-v84.css"),
+    read("src/sidebar-account-footer-v85.css"),
     read("src/sidebar-logout-v80.js"),
   ]);
 
   assert.ok(entry.includes('import "./domain-manager-v80.js"'));
   assert.doesNotMatch(entry, /sidebar-logout-v80\.js/);
-  assert.ok(secure.includes('import "./sidebar-react-footer-v84.css"'));
-  assert.doesNotMatch(secure, /sidebar-logout-v80\.js/);
-  assert.ok(secure.includes("sidebar-react-footer-v84-20260728"));
+  assert.ok(secure.includes('import "./sidebar-account-footer-v85.css"'));
+  assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
+  assert.ok(secure.includes("sidebar-account-footer-v85-20260728"));
+  assert.ok(secure.includes("syncAccountFooter"));
+  assert.ok(secure.includes("sn-account-settings-v85"));
+  assert.ok(secure.includes("sn-account-logout-v85"));
   assert.doesNotMatch(entry, /domain-manager-v79\.js|domain-manager-v79\.css/);
   for (const marker of [
     "domain-manager-v80-20260727",
@@ -48,8 +51,9 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.doesNotMatch(operations, /from "\.\/studio-domains-v41\.js"/);
   assert.doesNotMatch(legacy, /normalizeDomain|sn-domain-preview-row-v35/);
   assert.match(isolatedCss, /:host\{all:initial/);
-  assert.match(footerStyles, /nth-last-child\(2\)/);
-  assert.match(footerStyles, /button:last-child/);
+  assert.match(footerStyles, /\.sn-account-settings-v85/);
+  assert.match(footerStyles, /\.sn-account-logout-v85/);
+  assert.doesNotMatch(footerStyles, /nth-last-child/);
   assert.match(footerStyles, /position: absolute !important/);
   assert.match(footerStyles, /font-size: 15px !important/);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
