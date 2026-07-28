@@ -1,21 +1,16 @@
 /*
- * Sidebar layout lock v87.
+ * Sidebar React footer v88.
  *
- * Contract A — desktop/laptop/large screens:
- *   - Pengaturan and Keluar are normal React navigation items.
- *   - They stay after all workspace menus and never use absolute positioning.
- *
- * Contract B — mobile/PWA/small screens:
- *   - Pengaturan and Keluar remain after Anggota and Domain.
- *   - They never cover, overlap, or remove another navigation item.
- *
- * The semantic classes are assigned by StudioSecure. Their v85 names are kept
- * only for compatibility; this stylesheet is the authoritative v87 layout.
+ * The workspace navigation and account actions are separate React regions:
+ * - nav is the only scrollable region;
+ * - .sn-account-footer always remains visible at the bottom;
+ * - no absolute/fixed/sticky positioning is used for account actions.
  */
 
 .sn-side {
-  --sn-account-gap: 6px;
   overflow: hidden !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
 }
 
 .sn-side > nav {
@@ -26,18 +21,28 @@
   min-height: 0 !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  padding: 0 8px calc(10px + env(safe-area-inset-bottom)) !important;
+  padding: 0 8px 10px !important;
   overscroll-behavior: contain !important;
   scrollbar-gutter: stable;
 }
 
-.sn-side > nav > .sn-account-settings-v85,
-.sn-side > nav > .sn-account-logout-v85 {
+.sn-account-footer {
+  position: static !important;
+  flex: 0 0 auto !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 6px !important;
+  width: 100% !important;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) !important;
+  border-top: 1px solid #e2e7ee !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+  z-index: auto !important;
+}
+
+.sn-account-footer > button {
   position: static !important;
   inset: auto !important;
-  z-index: auto !important;
-  order: 1000 !important;
-  flex: 0 0 auto !important;
   width: 100% !important;
   min-width: 0 !important;
   min-height: 48px !important;
@@ -61,77 +66,110 @@
   transform: none !important;
 }
 
-.sn-side > nav > .sn-account-settings-v85 {
-  order: 1000 !important;
-  margin-top: auto !important;
+.sn-account-settings-v88 {
   background: #f7f9fc !important;
   color: #52647c !important;
 }
 
-.sn-side > nav > .sn-account-settings-v85:hover,
-.sn-side > nav > .sn-account-settings-v85:focus-visible,
-.sn-side > nav > .sn-account-settings-v85.active {
+.sn-account-settings-v88:hover,
+.sn-account-settings-v88:focus-visible,
+.sn-account-settings-v88.active {
   border-color: #cfe0fb !important;
   background: #eaf2ff !important;
   color: #245fc9 !important;
   outline: none !important;
 }
 
-.sn-side > nav > .sn-account-logout-v85 {
-  order: 1001 !important;
-  margin-top: var(--sn-account-gap) !important;
+.sn-account-logout-v88 {
   border-color: #f2d9de !important;
   background: #fff2f3 !important;
   color: #a23c49 !important;
 }
 
-.sn-side > nav > .sn-account-logout-v85:hover,
-.sn-side > nav > .sn-account-logout-v85:focus-visible {
+.sn-account-logout-v88:hover,
+.sn-account-logout-v88:focus-visible {
   border-color: #efc8cf !important;
   background: #ffe7ea !important;
   outline: none !important;
 }
 
-.sn-side > nav > .sn-account-settings-v85 svg,
-.sn-side > nav > .sn-account-logout-v85 svg {
+.sn-account-footer svg {
   width: 20px !important;
   min-width: 20px !important;
   height: 20px !important;
   flex: 0 0 20px !important;
 }
 
-/* Collapsed desktop/tablet: two explicit icon buttons remain visible. */
-.sn-side.collapsed > nav > .sn-account-settings-v85,
-.sn-side.collapsed > nav > .sn-account-logout-v85,
-html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-settings-v85,
-html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-logout-v85 {
+/* The n and dot are a single baseline-aligned mark. */
+.sn-logo-mark {
+  display: inline-flex !important;
+  align-items: baseline !important;
+  flex: 0 0 auto !important;
+  gap: 0 !important;
+  white-space: nowrap !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  color: inherit !important;
+}
+
+.sn-logo-mark > strong,
+.sn-logo-mark > i {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+  line-height: 1 !important;
+}
+
+.sn-logo-mark > strong {
+  color: #17253c !important;
+  font-weight: 900 !important;
+}
+
+.sn-logo-mark > i {
+  color: var(--sn-blue, #2d6edf) !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+}
+
+/* Collapsed desktop/tablet: keep both account actions visible as icons. */
+.sn-side.collapsed .sn-account-footer,
+html[data-layout-mode="tablet"] .sn-account-footer {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+.sn-side.collapsed .sn-account-footer > button,
+html[data-layout-mode="tablet"] .sn-account-footer > button {
   width: 50px !important;
   min-width: 50px !important;
   max-width: 50px !important;
   height: 50px !important;
   min-height: 50px !important;
   max-height: 50px !important;
-  align-self: center !important;
+  justify-self: center !important;
   padding: 0 !important;
   display: grid !important;
   place-items: center !important;
 }
 
-.sn-side.collapsed > nav > .sn-account-settings-v85 span,
-.sn-side.collapsed > nav > .sn-account-logout-v85 span,
-html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-settings-v85 span,
-html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-logout-v85 span {
+.sn-side.collapsed .sn-account-footer > button span,
+html[data-layout-mode="tablet"] .sn-account-footer > button span {
   display: none !important;
 }
 
-/* Mobile/PWA: footer participates in normal flow and cannot cover menu items. */
+/* Mobile/PWA: footer remains below navigation and never overlays menu items. */
 @media (max-width: 760px) {
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav {
-    padding: 0 14px calc(14px + env(safe-area-inset-bottom)) !important;
+    padding: 0 14px 12px !important;
   }
 
-  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-settings-v85,
-  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-logout-v85 {
+  html:not([data-desktop-layout-requested="true"]) .sn-account-footer {
+    gap: 10px !important;
+    padding: 12px 14px calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-account-footer > button {
     width: 100% !important;
     min-height: 58px !important;
     border-radius: 14px !important;
@@ -140,19 +178,14 @@ html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-logout-v85 span {
     font-size: 15px !important;
   }
 
-  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-settings-v85 {
-    margin-top: 18px !important;
-  }
-
-  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-logout-v85 {
-    margin-top: 10px !important;
-  }
-
-  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-settings-v85 svg,
-  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-logout-v85 svg {
+  html:not([data-desktop-layout-requested="true"]) .sn-account-footer svg {
     width: 23px !important;
     min-width: 23px !important;
     height: 23px !important;
     flex-basis: 23px !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-logo-mark {
+    font-size: 34px !important;
   }
 }
