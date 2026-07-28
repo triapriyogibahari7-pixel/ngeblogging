@@ -1,8 +1,9 @@
 import { supabase, supabaseConfigured } from "./supabase.js";
 
-export const AUTH_SESSION_RELEASE = "auth-session-authority-v76-20260727";
+export const AUTH_SESSION_RELEASE = "auth-session-authority-v108-20260728";
 export const SESSION_REAUTH_REQUIRED = "SESSION_REAUTH_REQUIRED";
-const VERIFY_TIMEOUT_MS = 8_000;
+// Historical compatibility marker: auth-session-authority-v76-20260727
+const VERIFY_TIMEOUT_MS = 10_000;
 let verificationPromise = null;
 
 function withDeadline(promise, milliseconds, message) {
@@ -11,6 +12,7 @@ function withDeadline(promise, milliseconds, message) {
     promise,
     new Promise((_, reject) => {
       timer = globalThis.setTimeout(() => reject(Object.assign(new Error(message), {
+        name: "TimeoutError",
         code: "AUTH_SESSION_TIMEOUT",
       })), milliseconds);
     }),
@@ -51,15 +53,58 @@ export async function clearInvalidLocalSession() {
         "Pembersihan sesi lokal melewati batas waktu.",
       );
     } catch {
-      // Always remove the stale browser token even when the remote session is gone.
+      // Always remove a definitively invalid browser token even when remote auth is unavailable.
     }
   }
   clearPersistedAuthStorage();
   window.__ngebloggingVerifiedSession = null;
 }
 
+function normalizedError(error) {
+  return {
+    code: String(error?.code || error?.error_code || "").toLowerCase(),
+    message: String(error?.message || error?.error || "").toLowerCase(),
+    name: String(error?.name || "").toLowerCase(),
+    status: Number(error?.status || 0),
+  };
+}
+
+export function isTransientSessionError(error) {
+  const { code, message, name, status } = normalizedError(error);
+  return Boolean(
+    name === "typeerror"
+    || name === "aborterror"
+    || name === "timeouterror"
+    || name === "authtransporterror"
+    || code === "auth_network_unavailable"
+    || code === "auth_session_timeout"
+    || code === "network_error"
+    || status >= 500
+    || /failed to fetch|network|jaringan|timeout|time out|temporarily|sementara|unreachable|tidak dapat dijangkau/.test(message)
+  );
+}
+
+function definitiveInvalidSession(error) {
+  const { code, message, status } = normalizedError(error);
+  const invalidCodes = new Set([
+    "invalid_session",
+    "session_not_found",
+    "refresh_token_not_found",
+    "refresh_token_already_used",
+    "bad_jwt",
+    "invalid_jwt",
+    "jwt_expired",
+    "token_expired",
+    "invalid_token",
+  ]);
+  return Boolean(
+    invalidCodes.has(code)
+    || ((status === 401 || status === 403) && /session|token|jwt|refresh|not found|expired|revoked/.test(message))
+  );
+}
+
 function reauthError(cause = null) {
-  const error = new Error("Sesi Anda sudah berakhir atau telah dicabut. Silakan masuk kembali.");
+  const error = new Error("Sesi Anda dinyatakan tidak berlaku oleh server. Silakan autentikasi ulang.");
   error.name = "SessionReauthError";
   error.code = SESSION_REAUTH_REQUIRED;
   error.status = 401;
@@ -68,15 +113,41 @@ function reauthError(cause = null) {
   return error;
 }
 
+function retainSessionDuringNetworkFailure(session, cause, phase) {
+  const retained = {
+    session,
+    user: session?.user || null,
+    verification: "deferred",
+    retainedDuringNetworkFailure: true,
+    phase,
+    cause: cause?.message || "Gangguan jaringan sementara",
+  };
+  window.__ngebloggingVerifiedSession = retained;
+  window.dispatchEvent(new CustomEvent("ngeblogging:session-retained", {
+    detail: {
+      release: AUTH_SESSION_RELEASE,
+      phase,
+      userId: session?.user?.id || "",
+      message: "Sesi lokal dipertahankan selama layanan autentikasi belum dapat dijangkau.",
+    },
+  }));
+  return retained;
+}
+
 async function authenticateSession(session) {
   if (!session?.access_token) return null;
-  const { data, error } = await withDeadline(
-    supabase.auth.getUser(session.access_token),
-    VERIFY_TIMEOUT_MS,
-    "Verifikasi sesi melewati batas waktu.",
-  );
-  if (error || !data?.user) throw error || reauthError();
-  return { session, user: data.user };
+  try {
+    const { data, error } = await withDeadline(
+      supabase.auth.getUser(session.access_token),
+      VERIFY_TIMEOUT_MS,
+      "Verifikasi sesi melewati batas waktu.",
+    );
+    if (error || !data?.user) throw error || Object.assign(new Error("Pengguna sesi tidak ditemukan."), { status: 401, code: "session_not_found" });
+    return { session, user: data.user, verification: "verified" };
+  } catch (error) {
+    if (definitiveInvalidSession(error)) throw error;
+    return retainSessionDuringNetworkFailure(session, error, "verify-user");
+  }
 }
 
 async function verifyInternal() {
@@ -87,12 +158,22 @@ async function verifyInternal() {
     });
   }
 
-  const { data, error } = await withDeadline(
-    supabase.auth.getSession(),
-    VERIFY_TIMEOUT_MS,
-    "Pembacaan sesi melewati batas waktu.",
-  );
-  if (error) throw error;
+  let data;
+  try {
+    const result = await withDeadline(
+      supabase.auth.getSession(),
+      VERIFY_TIMEOUT_MS,
+      "Pembacaan sesi melewati batas waktu.",
+    );
+    if (result.error) throw result.error;
+    data = result.data;
+  } catch (error) {
+    if (window.__ngebloggingVerifiedSession?.session?.access_token && isTransientSessionError(error)) {
+      return window.__ngebloggingVerifiedSession;
+    }
+    throw error;
+  }
+
   if (!data?.session) return null;
 
   try {
@@ -100,6 +181,10 @@ async function verifyInternal() {
     window.__ngebloggingVerifiedSession = verified;
     return verified;
   } catch (initialError) {
+    if (!definitiveInvalidSession(initialError)) {
+      return retainSessionDuringNetworkFailure(data.session, initialError, "verify-session");
+    }
+
     try {
       const refreshed = await withDeadline(
         supabase.auth.refreshSession(data.session),
@@ -110,10 +195,13 @@ async function verifyInternal() {
       const verified = await authenticateSession(refreshed.data.session);
       window.__ngebloggingVerifiedSession = verified;
       window.dispatchEvent(new CustomEvent("ngeblogging:session-refreshed", {
-        detail: { release: AUTH_SESSION_RELEASE, userId: verified.user.id },
+        detail: { release: AUTH_SESSION_RELEASE, userId: verified.user?.id || "" },
       }));
       return verified;
     } catch (refreshError) {
+      if (!definitiveInvalidSession(refreshError) || isTransientSessionError(refreshError)) {
+        return retainSessionDuringNetworkFailure(data.session, refreshError, "refresh-session");
+      }
       await clearInvalidLocalSession();
       throw reauthError(refreshError || initialError);
     }
@@ -135,15 +223,11 @@ export function getVerifiedSession({ force = false } = {}) {
 }
 
 export function isSessionReauthError(error) {
+  if (isTransientSessionError(error)) return false;
   const code = String(error?.code || error?.error_code || "").toLowerCase();
-  const message = String(error?.message || error?.error || "").toLowerCase();
   return Boolean(
     error?.requiresReauth
     || code === SESSION_REAUTH_REQUIRED.toLowerCase()
-    || code === "invalid_session"
-    || code === "session_not_found"
-    || code === "refresh_token_not_found"
-    || code === "refresh_token_already_used"
-    || ((error?.status === 401 || error?.status === 403) && /session|token|jwt|masuk kembali/.test(message))
+    || definitiveInvalidSession(error)
   );
 }
