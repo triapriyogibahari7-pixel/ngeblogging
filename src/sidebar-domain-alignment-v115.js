@@ -1,30 +1,58 @@
 const RELEASE = "sidebar-domain-alignment-v115-20260729";
 const DOMAIN_LABEL = "Domain";
-const REFERENCE_LABELS = ["Anggota", "Analitik", "Media", "Tema", "Pages", "Posts", "Ringkasan"];
-const BUTTON_GEOMETRY = [
+const REGISTRY_KEY = Symbol.for("ngeblogging.sidebarDomainAlignmentV115");
+const PATCH_KEY = Symbol.for("ngeblogging.sidebarDomainAlignmentV115.setPropertyPatch");
+
+/* Properties written inline by sidebar-domain-order-v113. Those declarations
+   overrode the shared desktop nav grid—especially margin-left/right:0—and made
+   Domain drift left in both expanded and collapsed states. */
+const BLOCKED_LEGACY_GEOMETRY = new Set([
   "position", "inset", "top", "right", "bottom", "left",
-  "display", "flex", "flex-basis", "align-self", "justify-self",
-  "align-items", "justify-content", "place-items",
-  "grid-template-columns", "grid-template-rows",
+  "flex", "flex-basis", "order",
+  "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+  "border-top", "transform", "box-shadow",
+]);
+
+/* Also remove geometry copied by an earlier v115 draft, so the final authority
+   is the same CSS grid used by every direct workspace navigation sibling. */
+const CLEANUP_GEOMETRY = new Set([
+  ...BLOCKED_LEGACY_GEOMETRY,
+  "display", "align-self", "justify-self", "align-items", "justify-content",
+  "place-items", "grid-template-columns", "grid-template-rows",
   "gap", "column-gap", "row-gap",
-  "width", "min-width", "max-width",
-  "height", "min-height", "max-height",
-  "margin-top", "margin-right", "margin-bottom", "margin-left",
-  "padding-top", "padding-right", "padding-bottom", "padding-left",
+  "width", "min-width", "max-width", "height", "min-height", "max-height",
+  "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
   "border-radius", "box-sizing", "text-align",
-];
-const ICON_GEOMETRY = [
-  "display", "width", "min-width", "max-width",
-  "height", "min-height", "max-height", "flex", "flex-basis",
-  "margin-top", "margin-right", "margin-bottom", "margin-left",
-  "justify-self", "align-self",
-];
-const LABEL_GEOMETRY = [
-  "display", "visibility", "opacity",
-  "width", "min-width", "max-width",
-  "margin-top", "margin-right", "margin-bottom", "margin-left",
-  "justify-self", "align-self", "text-align", "white-space",
-];
+]);
+
+const registry = globalThis[REGISTRY_KEY] || {
+  protectedStyles: new WeakSet(),
+  originalSetProperty: null,
+};
+globalThis[REGISTRY_KEY] = registry;
+
+function installSetPropertyGuard() {
+  const prototype = globalThis.CSSStyleDeclaration?.prototype;
+  if (!prototype || prototype[PATCH_KEY]) return;
+  const original = prototype.setProperty;
+  registry.originalSetProperty = original;
+
+  Object.defineProperty(prototype, "setProperty", {
+    configurable: true,
+    writable: true,
+    value(property, value, priority = "") {
+      const normalizedProperty = String(property || "").trim().toLowerCase();
+      const important = String(priority || "").trim().toLowerCase() === "important";
+      if (important
+        && registry.protectedStyles.has(this)
+        && BLOCKED_LEGACY_GEOMETRY.has(normalizedProperty)) {
+        return undefined;
+      }
+      return original.call(this, property, value, priority);
+    },
+  });
+  Object.defineProperty(prototype, PATCH_KEY, { value: RELEASE, configurable: false });
+}
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
@@ -32,23 +60,9 @@ function labelOf(button) {
     || "";
 }
 
-function setImportant(node, property, value) {
-  if (!(node instanceof HTMLElement) && !(node instanceof SVGElement)) return;
-  const normalized = String(value || "").trim();
-  if (!normalized) return;
-  if (node.style.getPropertyValue(property) === normalized
-    && node.style.getPropertyPriority(property) === "important") return;
-  node.style.setProperty(property, normalized, "important");
-}
-
-function copyGeometry(source, target, properties) {
-  if (!(source instanceof Element) || !(target instanceof Element)) return;
-  const computed = getComputedStyle(source);
-  for (const property of properties) setImportant(target, property, computed.getPropertyValue(property));
-}
-
-function directButtons(nav) {
-  return [...nav.querySelectorAll(":scope > button")];
+function cleanLegacyInlineGeometry(domain) {
+  registry.protectedStyles.add(domain.style);
+  for (const property of CLEANUP_GEOMETRY) domain.style.removeProperty(property);
 }
 
 function syncDomainAlignment() {
@@ -56,21 +70,13 @@ function syncDomainAlignment() {
   const nav = side?.querySelector(":scope > nav");
   if (!(side instanceof HTMLElement) || !(nav instanceof HTMLElement)) return;
 
-  const buttons = directButtons(nav);
-  const domain = buttons.find((button) => labelOf(button) === DOMAIN_LABEL);
+  const domain = [...nav.querySelectorAll(":scope > button")]
+    .find((button) => labelOf(button) === DOMAIN_LABEL);
   if (!(domain instanceof HTMLButtonElement)) return;
 
-  const reference = REFERENCE_LABELS
-    .map((label) => buttons.find((button) => labelOf(button) === label))
-    .find((button) => button instanceof HTMLButtonElement && !button.hidden);
-  if (!(reference instanceof HTMLButtonElement)) return;
-
-  copyGeometry(reference, domain, BUTTON_GEOMETRY);
-  copyGeometry(reference.querySelector("svg"), domain.querySelector("svg"), ICON_GEOMETRY);
-  copyGeometry(reference.querySelector("span"), domain.querySelector("span"), LABEL_GEOMETRY);
-
   domain.dataset.sidebarDomainAlignmentV115 = "true";
-  domain.dataset.sidebarDomainAlignmentReference = labelOf(reference);
+  cleanLegacyInlineGeometry(domain);
+
   side.dataset.sidebarDomainAlignmentRelease = RELEASE;
   document.documentElement.dataset.sidebarDomainAlignmentV115 = RELEASE;
 }
@@ -82,17 +88,17 @@ function schedule() {
 }
 
 function start() {
+  installSetPropertyGuard();
   const observer = new MutationObserver((mutations) => {
     if (mutations.some((mutation) => mutation.addedNodes.length
       || mutation.removedNodes.length
-      || mutation.attributeName === "class"
-      || mutation.attributeName === "style")) schedule();
+      || mutation.attributeName === "class")) schedule();
   });
   observer.observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "style"],
+    attributeFilter: ["class"],
   });
 
   window.addEventListener("resize", schedule, { passive: true });
