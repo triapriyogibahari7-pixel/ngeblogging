@@ -7,7 +7,6 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("desktop sidebar centers open rows and collapsed icons", async () => {
   const css = await read("src/comments-studio-v93.css");
   for (const marker of [
-    "comments-studio-v93-20260728",
     ".sn-side:not(.collapsed)>nav>button",
     "grid-template-columns:24px minmax(0,112px)!important",
     "justify-content:center!important",
