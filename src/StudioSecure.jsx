@@ -133,14 +133,9 @@ export default function StudioSecure(props) {
     };
 
     const observer = new MutationObserver((mutations) => {
-      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "attributes")) sync();
+      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) sync();
     });
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["hidden", "disabled", "aria-hidden", "class", "style"],
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
     syncReadinessChrome();
 
     return () => {
