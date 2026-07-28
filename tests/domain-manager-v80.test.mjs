@@ -32,19 +32,29 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout are real React buttons pinned in every sidebar layout", async () => {
+test("settings and logout use semantic identities instead of fragile DOM order", async () => {
   const [secure, styles, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
-    read("src/sidebar-react-footer-v84.css"),
+    read("src/sidebar-account-footer-v85.css"),
     read("src/StudioNext.jsx"),
     read("src/sidebar-logout-v80.js"),
   ]);
-  assert.match(secure, /sidebar-react-footer-v84\.css/);
-  assert.doesNotMatch(secure, /sidebar-logout-v80\.js/);
-  assert.match(secure, /sidebar-react-footer-v84-20260728/);
+  assert.match(secure, /sidebar-account-footer-v85\.css/);
+  assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
+  assert.match(secure, /sidebar-account-footer-v85-20260728/);
   for (const marker of [
-    ".sn-side > nav > button:nth-last-child(2)",
-    ".sn-side > nav > button:last-child",
+    "syncAccountFooter",
+    "sn-account-settings-v85",
+    "sn-account-logout-v85",
+    'buttonLabel(button) === "Pengaturan"',
+    'buttonLabel(button) === "Keluar"',
+    'button.hidden = false',
+    'button.disabled = false',
+    'button.removeAttribute("aria-hidden")',
+  ]) assert.ok(secure.includes(marker), marker);
+  for (const marker of [
+    ".sn-account-settings-v85",
+    ".sn-account-logout-v85",
     "position: absolute !important",
     "bottom: 66px !important",
     "bottom: 10px !important",
@@ -53,16 +63,17 @@ test("settings and logout are real React buttons pinned in every sidebar layout"
     "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
   ]) assert.ok(styles.includes(marker), marker);
+  assert.doesNotMatch(styles, /nth-last-child/);
   assert.match(studio, />Pengaturan<\/span>/);
   assert.match(studio, />Keluar<\/span>/);
   assert.match(studio, /onClick=\{onExit\}/);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
-test("PWA cache rotates for React-owned sidebar footer", async () => {
+test("PWA cache rotates for semantic settings footer", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-react-footer-v84-20260728/);
-  assert.match(worker, /pwa-v84/);
-  assert.match(worker, /service-worker-activated-sidebar-react-footer-v84/);
+  assert.match(worker, /sidebar-account-footer-v85-20260728/);
+  assert.match(worker, /pwa-v85/);
+  assert.match(worker, /service-worker-activated-sidebar-account-footer-v85/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
