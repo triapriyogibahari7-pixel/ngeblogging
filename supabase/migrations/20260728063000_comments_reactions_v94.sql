@@ -1,7 +1,7 @@
 alter table public.site_comment_reactions drop constraint if exists site_comment_reactions_emoji_check;
 alter table public.site_comment_reactions
   add constraint site_comment_reactions_emoji_check
-  check (emoji in ('😀','😊','😍','🤩','😂','😮','😢','😡','👍','❤️','🎉'));
+  check (emoji in ('😀','😊','😍','😂','😮','😢','😡','👍','❤️','🎉'));
 
 create or replace function public.react_to_site_comment(target_comment uuid, reaction_emoji text, visitor_token text)
 returns jsonb
@@ -17,7 +17,7 @@ begin
   if char_length(visitor_token) < 16 or char_length(visitor_token) > 128 then
     raise exception 'COMMENT_VISITOR_INVALID' using errcode = '22023';
   end if;
-  if reaction_emoji not in ('😀','😊','😍','🤩','😂','😮','😢','😡','👍','❤️','🎉') then
+  if reaction_emoji not in ('😀','😊','😍','😂','😮','😢','😡','👍','❤️','🎉') then
     raise exception 'COMMENT_REACTION_INVALID' using errcode = '22023';
   end if;
 
