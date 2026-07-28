@@ -34,13 +34,17 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
 });
 
 test("Domain stays after Anggota while account actions remain in the dedicated footer", async () => {
-  const [secure, styles, studio, legacyProxy] = await Promise.all([
+  const [secure, styles, sourceFix, homeActions, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
+    read("src/studio-v9-enhancements.css"),
+    read("src/sidebar-home-actions-v90.css"),
     read("src/StudioNext.jsx"),
     read("src/sidebar-logout-v80.js"),
   ]);
   assert.match(secure, /sidebar-account-footer-v85\.css/);
+  assert.match(secure, /sidebar-home-actions-v90\.css/);
+  assert.match(secure, /sidebar-home-actions-v90-20260728/);
   assert.doesNotMatch(secure, /sidebar-logout-v80\.js|sidebar-react-footer-v84\.css/);
   assert.match(secure, /hideNaraRouteWithoutRemovingReactNodes/);
   assert.doesNotMatch(secure, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
@@ -58,6 +62,11 @@ test("Domain stays after Anggota while account actions remain in the dedicated f
   assert.match(studio, /<\/nav><div className="sn-account-footer"/);
   assert.doesNotMatch(studio, /<nav[^>]*>[\s\S]*sn-account-settings-v88[\s\S]*<\/nav>/);
 
+  const sourceActive = executableCss(sourceFix);
+  assert.match(sourceActive, /\.sn-side > nav > button:last-child[\s\S]*margin-top:\s*0\s*!important/);
+  assert.match(sourceActive, /border-top:\s*0\s*!important/);
+  assert.doesNotMatch(sourceActive, /\.sn-side > nav > button:last-child[\s\S]{0,120}margin-top:\s*auto/);
+
   for (const marker of [
     "Sidebar navigation and account footer v89",
     ".sn-side > nav > button:last-child",
@@ -74,19 +83,28 @@ test("Domain stays after Anggota while account actions remain in the dedicated f
     "display: none !important",
     ".sn-logo::after",
     "content: none !important",
-    "data-desktop-layout-requested",
-    "data-layout-mode=\"tablet\"",
   ]) assert.ok(styles.includes(marker), marker);
+
+  for (const marker of [
+    "Sidebar and Ringkasan action geometry v90",
+    'html[data-desktop-layout-requested="true"] .sn-welcome',
+    "flex-wrap: wrap !important",
+    "@media (max-width: 1100px)",
+    "grid-template-columns: repeat(2, minmax(0, 1fr)) !important",
+    "width: 100% !important",
+  ]) assert.ok(homeActions.includes(marker), marker);
+  assert.doesNotMatch(executableCss(homeActions), /margin-top:\s*auto|overflow:\s*hidden\s*!important/);
+
   const activeStyles = executableCss(styles);
   assert.doesNotMatch(activeStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|nth-last-child|margin-top:\s*auto\s*!important/);
   assert.doesNotMatch(activeStyles, /^\s*bottom:\s*\d/m);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
-test("PWA cache rotates for fixed Domain order and dot-free logo", async () => {
+test("PWA cache rotates for Domain source flow and Ringkasan actions v90", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-nav-logo-v89-20260728/);
-  assert.match(worker, /pwa-v89/);
-  assert.match(worker, /service-worker-activated-sidebar-nav-logo-v89/);
+  assert.match(worker, /sidebar-home-actions-v90-20260728/);
+  assert.match(worker, /pwa-v90/);
+  assert.match(worker, /service-worker-activated-sidebar-home-actions-v90/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
