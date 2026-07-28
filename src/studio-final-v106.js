@@ -1,4 +1,5 @@
-const RELEASE = "studio-final-v106-20260728";
+const RELEASE = "studio-final-v113-20260729";
+const DOMAIN_ORDER_RELEASE = "sidebar-domain-order-v113-20260729";
 const ACTIONS_CLASS = "tn-code-header-actions-v106";
 const COMMENTS_ID = "ngeblogging-comments-native-v106";
 const MOBILE_QUERY = "(max-width: 760px)";
@@ -64,6 +65,64 @@ function syncNativeCommentsButton() {
 
   important(legacyHost, "display", "none");
   legacyHost.setAttribute("aria-hidden", "true");
+}
+
+function syncDomainMenuOrder() {
+  const side = document.querySelector(".sn-shell > .sn-side");
+  const nav = side?.querySelector(":scope > nav");
+  if (!(side instanceof HTMLElement) || !(nav instanceof HTMLElement)) return;
+
+  const domainCandidates = [...side.querySelectorAll("button")]
+    .filter((button) => labelOf(button) === "Domain");
+  const domain = domainCandidates.find((button) => button.parentElement === nav)
+    || domainCandidates[0]
+    || null;
+  if (!(domain instanceof HTMLButtonElement)) return;
+
+  const nativeComments = nav.querySelector(`#${COMMENTS_ID}`);
+  const legacyComments = nav.querySelector(":scope > .sn-comments-nav-host-v93");
+  const members = [...nav.querySelectorAll(":scope > button")]
+    .find((button) => labelOf(button) === "Anggota") || null;
+  const anchor = nativeComments instanceof HTMLElement
+    ? nativeComments
+    : legacyComments instanceof HTMLElement
+      ? legacyComments
+      : members;
+
+  if (domain.parentElement !== nav) nav.append(domain);
+  if (anchor instanceof HTMLElement && domain.previousElementSibling !== anchor) {
+    nav.insertBefore(domain, anchor.nextElementSibling);
+  }
+
+  domain.dataset.sidebarDomainOrderV113 = "true";
+  side.dataset.sidebarDomainOrderRelease = DOMAIN_ORDER_RELEASE;
+  important(nav, "justify-content", "flex-start");
+  important(domain, "position", "static");
+  important(domain, "inset", "auto");
+  important(domain, "top", "auto");
+  important(domain, "right", "auto");
+  important(domain, "bottom", "auto");
+  important(domain, "left", "auto");
+  important(domain, "flex", "0 0 auto");
+  important(domain, "order", "0");
+  important(domain, "margin-top", "0");
+  important(domain, "margin-right", "0");
+  important(domain, "margin-bottom", "0");
+  important(domain, "margin-left", "0");
+  important(domain, "border-top", "0");
+  important(domain, "transform", "none");
+  important(domain, "box-shadow", "none");
+
+  const active = domain.classList.contains("active");
+  important(domain, "background", active ? "#eaf2ff" : "transparent");
+  important(domain, "background-image", "none");
+  important(domain, "color", active ? "#245fc9" : "#69788d");
+  important(domain, "font-weight", active ? "800" : "500");
+
+  const footer = side.querySelector(":scope > .sn-account-footer");
+  footer?.querySelectorAll(":scope > button").forEach((button) => {
+    if (labelOf(button) === "Domain" && button !== domain) button.remove();
+  });
 }
 
 function draftHtml(layer) {
@@ -299,6 +358,7 @@ function syncEditorLayer(layer) {
 function sync() {
   document.documentElement.dataset.studioFinalAuthority = RELEASE;
   syncNativeCommentsButton();
+  syncDomainMenuOrder();
   document.querySelectorAll(".tn-modal-layer").forEach(syncEditorLayer);
 }
 
@@ -326,4 +386,4 @@ function start() {
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
 else start();
 
-/* Marker contract: dashboard-session-v106 native-comments-v106 desktop-draft-preview-v106 mobile-publish-v106 split-editor-v106 wrapped-code-v106 */
+/* Marker contract: dashboard-session-v106 native-comments-v106 sidebar-domain-order-v113 desktop-draft-preview-v106 mobile-publish-v106 split-editor-v106 wrapped-code-v106 */
