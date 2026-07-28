@@ -1,4 +1,6 @@
-const RELEASE = "sidebar-polish-v92-20260728";
+import "./comments-studio-v93.jsx";
+
+const RELEASE = "sidebar-comments-v93-20260728";
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
