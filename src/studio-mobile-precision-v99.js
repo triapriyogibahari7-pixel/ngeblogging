@@ -1,5 +1,6 @@
-const RELEASE = "studio-mobile-precision-v99-20260728";
+const RELEASE = "studio-mobile-precision-v102-20260728";
 const COARSE_QUERY = "(pointer: coarse) and (max-device-width: 1024px)";
+const LEGACY_TOOL_SELECTOR = ".tn-v96-tool,.tn-v97-tool,.tn-v98-tool,.tn-v100-tool,.tn-v98-tools";
 
 function labelOf(button) {
   return button?.querySelector("span")?.textContent?.trim()
@@ -116,13 +117,17 @@ function setPreview(workspace, button, open) {
   button.textContent = open ? "Kembali ke kode" : "Lihat pratinjau";
 }
 
+function removeLegacyTools(layer) {
+  layer.querySelectorAll(LEGACY_TOOL_SELECTOR).forEach((legacy) => legacy.remove());
+}
+
 function installThemeTools(layer) {
   if (!(layer instanceof HTMLElement)) return;
   const workspace = layer.querySelector(".tn-code-workspace");
   const status = layer.querySelector(".tn-code-status");
   if (!(workspace instanceof HTMLElement) || !(status instanceof HTMLElement)) return;
 
-  layer.querySelectorAll(".tn-v98-tools").forEach((legacy) => legacy.remove());
+  removeLegacyTools(layer);
   let tools = status.querySelector(":scope > .tn-v99-tools-inline");
   if (!(tools instanceof HTMLElement)) {
     tools = document.createElement("div");
@@ -151,6 +156,7 @@ function installThemeTools(layer) {
 
   if (!workspace.dataset.previewOpenV99) setPreview(workspace, tools.querySelectorAll("button")[1], false);
   layer.dataset.toolsV99 = "true";
+  layer.dataset.toolsAuthority = "v102";
 }
 
 function syncThemeTools() {
