@@ -9,7 +9,7 @@ import "./sidebar-account-footer-v85.css";
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v33-20260725";
-const ACCOUNT_FOOTER_RELEASE = "sidebar-account-footer-v85-20260728";
+const ACCOUNT_FOOTER_RELEASE = "sidebar-react-stability-v86-20260728";
 // Archived validator markers only; these are comments and do not restore the removed Nara route:
 // studio-source-navigation-v29-20260725
 // naraRoute.dataset.naraWorkspaceRoute = "true";
@@ -42,11 +42,18 @@ function buttonLabel(button) {
     || "";
 }
 
-function removeNaraRouteAndConnectors(shell) {
+function hideNaraRouteWithoutRemovingReactNodes(shell) {
   const nav = shell.querySelector(":scope > .sn-side > nav");
   [...(nav?.querySelectorAll(":scope > button") || [])]
     .filter((button) => buttonLabel(button) === "Nara AI")
-    .forEach((button) => button.remove());
+    .forEach((button) => {
+      button.hidden = true;
+      button.disabled = true;
+      button.tabIndex = -1;
+      button.setAttribute("aria-hidden", "true");
+      button.dataset.reactNodePreserved = "true";
+      button.style.setProperty("display", "none", "important");
+    });
 
   document.querySelectorAll([
     ".nara-plugin-trigger-v24",
@@ -94,7 +101,7 @@ function syncReadinessChrome() {
   shell.querySelectorAll(":scope > .sn-mobile-nav, :scope > .sn-mobile-sheet-layer, .sn-side-close, .sn-side-bottom")
     .forEach((node) => node.remove());
 
-  removeNaraRouteAndConnectors(shell);
+  hideNaraRouteWithoutRemovingReactNodes(shell);
   syncAccountFooter(shell);
 
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
@@ -126,9 +133,14 @@ export default function StudioSecure(props) {
     };
 
     const observer = new MutationObserver((mutations) => {
-      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) sync();
+      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "attributes")) sync();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["hidden", "disabled", "aria-hidden", "class", "style"],
+    });
     syncReadinessChrome();
 
     return () => {
