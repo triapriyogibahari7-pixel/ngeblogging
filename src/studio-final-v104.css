@@ -1,0 +1,150 @@
+/* Ngeblogging Studio final authority v104.
+   Native Comments row, desktop-only draft preview action, and clean mobile code editor. */
+
+:root{--studio-final-v104:1}
+
+/* The legacy portal button remains as the data/state owner, but is never laid out. */
+.sn-side>nav>.sn-comments-nav-host-v93{display:none!important}
+
+/* The v104 clone is a real direct child of nav, so all native sidebar rules apply. */
+.sn-side>nav>#ngeblogging-comments-native-v104{
+  position:relative!important;
+  transform:none!important;
+  inset:auto!important;
+}
+.sn-side>nav>#ngeblogging-comments-native-v104>span{
+  visibility:visible!important;
+  opacity:1!important;
+  white-space:nowrap!important;
+}
+
+/* Draft preview action lives immediately before the native close button. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child{
+  min-width:0!important;
+  margin-right:auto!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child h2{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.tn-draft-preview-v104{
+  flex:0 0 auto!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  min-height:42px!important;
+  padding:0 15px!important;
+  border:1px solid #cfd9e8!important;
+  border-radius:12px!important;
+  background:#eef5ff!important;
+  color:#245fc9!important;
+  font:800 13px/1 "DM Sans",sans-serif!important;
+  cursor:pointer!important;
+  white-space:nowrap!important;
+}
+.tn-draft-preview-v104:hover{
+  border-color:#8fb5f5!important;
+  background:#e2eeff!important;
+}
+.tn-draft-preview-v104 svg{
+  width:18px!important;
+  height:18px!important;
+  stroke:currentColor!important;
+  fill:none!important;
+  stroke-width:2!important;
+}
+
+/* Desktop/laptop keeps the real split: code left, preview right. */
+@media(min-width:761px){
+  .tn-code-workspace{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    overflow:hidden!important;
+  }
+  .tn-code-workspace>.tn-frame-shell{
+    display:block!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:100%!important;
+  }
+}
+
+/* Mobile/app: preview panel is removed completely. The code editor owns the full body. */
+@media(max-width:760px){
+  .tn-draft-preview-v104{display:none!important}
+  .tn-code-workspace{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    background:#0f1929!important;
+  }
+  .tn-code-workspace>.tn-frame-shell,
+  .tn-code-workspace[data-preview-open-v99="true"]>.tn-frame-shell,
+  .tn-code-workspace[data-preview-open-v98="true"]>.tn-frame-shell{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    width:0!important;
+    min-width:0!important;
+    height:0!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+  }
+  .tn-code-pane{
+    display:grid!important;
+    grid-template-rows:auto auto minmax(0,1fr)!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    background:#0f1929!important;
+  }
+  .tn-code-pane textarea{
+    display:block!important;
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:12px!important;
+    border:0!important;
+    border-radius:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+    resize:none!important;
+    overflow:auto!important;
+    background:#0f1929!important;
+    color:#e8eef8!important;
+    caret-color:#7eabff!important;
+    -webkit-appearance:none!important;
+    appearance:none!important;
+  }
+  .tn-code-pane textarea:focus{
+    outline:0!important;
+    box-shadow:none!important;
+    background:#0f1929!important;
+  }
+  .tn-v103-tools-inline{display:none!important}
+}
+
+/* Marker contract: native-comments-v104 header-draft-preview-v104 mobile-code-only-v104 */
