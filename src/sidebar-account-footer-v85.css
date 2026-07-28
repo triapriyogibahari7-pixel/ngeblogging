@@ -1,10 +1,11 @@
 /*
- * Sidebar React footer v88.
+ * Sidebar navigation and account footer v89.
  *
- * The workspace navigation and account actions are separate React regions:
- * - nav is the only scrollable region;
- * - .sn-account-footer always remains visible at the bottom;
- * - no absolute/fixed/sticky positioning is used for account actions.
+ * Locked structure:
+ * - workspace navigation is the only scrollable region;
+ * - Domain remains directly after Anggota inside navigation;
+ * - account actions remain in the dedicated React footer;
+ * - legacy last-child and logo-dot rules are neutralized.
  */
 
 .sn-side {
@@ -18,12 +19,35 @@
   display: flex !important;
   flex: 1 1 auto !important;
   flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
   min-height: 0 !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   padding: 0 8px 10px !important;
   overscroll-behavior: contain !important;
   scrollbar-gutter: stable;
+}
+
+/*
+ * Old Studio CSS treated the final nav button as the account action and pushed
+ * it down with margin:auto. Domain is now the final workspace item, so every
+ * workspace button is explicitly reset to the normal navigation flow.
+ */
+.sn-side > nav > button,
+.sn-side > nav > button:last-child {
+  position: static !important;
+  inset: auto !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  order: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  transform: none !important;
+}
+
+.sn-side > nav > button[hidden] {
+  display: none !important;
 }
 
 .sn-account-footer {
@@ -100,36 +124,66 @@
   flex: 0 0 20px !important;
 }
 
-/* The n and dot are a single baseline-aligned mark. */
-.sn-logo-mark {
+/*
+ * The user selected the clean "n" mark. The old child-span selector and old
+ * pseudo-elements are neutralized so no blue dot can appear below the letter.
+ */
+.sn-side .sn-logo > span.sn-logo-mark {
+  position: static !important;
+  inset: auto !important;
   display: inline-flex !important;
-  align-items: baseline !important;
+  align-items: center !important;
+  justify-content: center !important;
   flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
   gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
   white-space: nowrap !important;
   letter-spacing: 0 !important;
   line-height: 1 !important;
-  color: inherit !important;
+  color: #17253c !important;
 }
 
-.sn-logo-mark > strong,
-.sn-logo-mark > i {
+.sn-side .sn-logo > span.sn-logo-mark > strong {
   display: inline !important;
   margin: 0 !important;
   padding: 0 !important;
+  color: #17253c !important;
   font: inherit !important;
+  font-weight: 900 !important;
   line-height: 1 !important;
 }
 
-.sn-logo-mark > strong {
-  color: #17253c !important;
-  font-weight: 900 !important;
+.sn-side .sn-logo > span.sn-logo-mark > i {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
-.sn-logo-mark > i {
-  color: var(--sn-blue, #2d6edf) !important;
-  font-style: normal !important;
-  font-weight: 900 !important;
+.sn-side .sn-logo::before,
+.sn-side .sn-logo::after,
+.sn-side .sn-logo-mark::before,
+.sn-side .sn-logo-mark::after,
+.sn-side .sn-logo-mark > strong::before,
+.sn-side .sn-logo-mark > strong::after,
+.sn-side .sn-logo-mark > i::before,
+.sn-side .sn-logo-mark > i::after {
+  content: none !important;
+  display: none !important;
 }
 
 /* Collapsed desktop/tablet: keep both account actions visible as icons. */
@@ -164,6 +218,13 @@ html[data-layout-mode="tablet"] .sn-account-footer > button span {
     padding: 0 14px 12px !important;
   }
 
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button,
+  html:not([data-desktop-layout-requested="true"]) .sn-side > nav > button:last-child {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    order: 0 !important;
+  }
+
   html:not([data-desktop-layout-requested="true"]) .sn-account-footer {
     gap: 10px !important;
     padding: 12px 14px calc(14px + env(safe-area-inset-bottom)) !important;
@@ -185,7 +246,7 @@ html[data-layout-mode="tablet"] .sn-account-footer > button span {
     flex-basis: 23px !important;
   }
 
-  html:not([data-desktop-layout-requested="true"]) .sn-logo-mark {
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-logo > span.sn-logo-mark {
     font-size: 34px !important;
   }
 }
