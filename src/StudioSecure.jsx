@@ -4,12 +4,12 @@ import StudioNext from "./StudioNext.jsx";
 import BackupCenter from "./BackupCenter.jsx";
 import "./studio-v9-enhancements.css";
 import "./studio-responsive-v23.css";
-import "./sidebar-react-footer-v84.css";
+import "./sidebar-account-footer-v85.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v33-20260725";
-const ACCOUNT_FOOTER_RELEASE = "sidebar-react-footer-v84-20260728";
+const ACCOUNT_FOOTER_RELEASE = "sidebar-account-footer-v85-20260728";
 // Archived validator markers only; these are comments and do not restore the removed Nara route:
 // studio-source-navigation-v29-20260725
 // naraRoute.dataset.naraWorkspaceRoute = "true";
@@ -56,6 +56,35 @@ function removeNaraRouteAndConnectors(shell) {
   ].join(",")).forEach((node) => node.remove());
 }
 
+function revealAccountButton(button, className, actionName) {
+  if (!button) return false;
+  button.classList.add(className);
+  button.dataset.accountAction = actionName;
+  button.hidden = false;
+  button.disabled = false;
+  button.tabIndex = 0;
+  button.removeAttribute("aria-hidden");
+  button.removeAttribute("inert");
+  button.style.removeProperty("display");
+  button.style.removeProperty("visibility");
+  button.style.removeProperty("opacity");
+  return true;
+}
+
+function syncAccountFooter(shell) {
+  const nav = shell.querySelector(":scope > .sn-side > nav");
+  if (!nav) return;
+
+  const buttons = [...nav.querySelectorAll(":scope > button")];
+  const settingsButton = buttons.find((button) => buttonLabel(button) === "Pengaturan");
+  const logoutButton = buttons.find((button) => buttonLabel(button) === "Keluar");
+
+  const settingsReady = revealAccountButton(settingsButton, "sn-account-settings-v85", "settings");
+  const logoutReady = revealAccountButton(logoutButton, "sn-account-logout-v85", "logout");
+  shell.dataset.accountSettingsReady = String(settingsReady);
+  shell.dataset.accountLogoutReady = String(logoutReady);
+}
+
 function syncReadinessChrome() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
@@ -66,6 +95,7 @@ function syncReadinessChrome() {
     .forEach((node) => node.remove());
 
   removeNaraRouteAndConnectors(shell);
+  syncAccountFooter(shell);
 
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
