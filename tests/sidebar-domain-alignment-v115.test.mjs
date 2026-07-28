@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Domain copies exact desktop sidebar geometry from a stable workspace sibling", async () => {
+test("Domain rejects legacy inline offsets and uses the shared desktop navigation grid", async () => {
   const [runtime, styles, authority] = await Promise.all([
     read("src/sidebar-domain-alignment-v115.js"),
     read("src/sidebar-domain-alignment-v115.css"),
@@ -12,11 +12,13 @@ test("Domain copies exact desktop sidebar geometry from a stable workspace sibli
   ]);
 
   assert.match(runtime, /sidebar-domain-alignment-v115-20260729/);
-  assert.match(runtime, /REFERENCE_LABELS = \["Anggota", "Analitik"/);
-  assert.match(runtime, /copyGeometry\(reference, domain, BUTTON_GEOMETRY\)/);
-  assert.match(runtime, /copyGeometry\(reference\.querySelector\("svg"\), domain\.querySelector\("svg"\), ICON_GEOMETRY\)/);
-  assert.match(runtime, /copyGeometry\(reference\.querySelector\("span"\), domain\.querySelector\("span"\), LABEL_GEOMETRY\)/);
-  assert.match(runtime, /mutation\.attributeName === "style"/);
+  assert.match(runtime, /BLOCKED_LEGACY_GEOMETRY = new Set/);
+  assert.match(runtime, /"margin-left", "border-top", "transform", "box-shadow"/);
+  assert.match(runtime, /CSSStyleDeclaration\?\.prototype/);
+  assert.match(runtime, /registry\.protectedStyles\.has\(this\)/);
+  assert.match(runtime, /cleanLegacyInlineGeometry\(domain\)/);
+  assert.match(runtime, /domain\.style\.removeProperty\(property\)/);
+  assert.doesNotMatch(runtime, /attributeFilter: \["class", "style"\]/);
   assert.match(runtime, /window\.visualViewport\?\.addEventListener\("resize"/);
 
   assert.match(styles, /data-sidebar-domain-alignment-v115/);
