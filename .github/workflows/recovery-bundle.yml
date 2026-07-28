@@ -1,0 +1,57 @@
+name: Ngeblogging recovery bundle
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-recovery-bundle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recovery-bundle:
+    name: Build complete recovery ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Build versioned source recovery package
+        run: bash scripts/create-recovery-bundle.sh v111-${GITHUB_SHA::12}
+
+      - name: Upload complete recovery package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngeblogging-recovery-v111-${{ github.sha }}
+          path: |
+            recovery/Ngeblogging-Recovery-v111-*.zip
+            recovery/Ngeblogging-Recovery-v111-*.zip.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+
+      - name: Publish recovery status
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const state = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state,
+              context: 'Ngeblogging recovery bundle',
+              description: state === 'success'
+                ? 'ZIP pemulihan source v111 berhasil dibuat'
+                : 'Pembuatan ZIP pemulihan v111 gagal',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
