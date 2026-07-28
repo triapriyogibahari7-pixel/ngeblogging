@@ -4,8 +4,11 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("desktop sidebar centers open rows and collapsed icons", async () => {
-  const css = await read("src/comments-studio-v93.css");
+test("desktop sidebar centers open rows and collapsed icons in CSS and final runtime", async () => {
+  const [css, runtime] = await Promise.all([
+    read("src/comments-studio-v93.css"),
+    read("src/sidebar-center-v93.js"),
+  ]);
   for (const marker of [
     ".sn-side:not(.collapsed)>nav>button",
     "grid-template-columns:24px minmax(0,112px)!important",
@@ -15,6 +18,14 @@ test("desktop sidebar centers open rows and collapsed icons", async () => {
     "width:48px!important",
     ".sn-side.collapsed>.sn-account-footer>button",
   ]) assert.ok(css.includes(marker), marker);
+  for (const marker of [
+    '"grid-template-columns": "24px minmax(0, 112px)"',
+    '"place-items": "center"',
+    'width: "48px"',
+    '"align-items": "center"',
+    '.sn-comments-nav-host-v93 > button',
+    ':scope > .sn-account-footer',
+  ]) assert.ok(runtime.includes(marker), marker);
   assert.doesNotMatch(css, /\.sn-side\.collapsed[^}]+text-align:left/);
 });
 
@@ -39,11 +50,12 @@ test("comments workspace has real moderation states, replies, settings and emoji
   assert.match(source, /createRoot.*from "react-dom\/client"/);
 });
 
-test("public comments use validated Worker routes and safe rendering", async () => {
-  const [handler, widget, worker] = await Promise.all([
+test("public comments use validated Worker routes, ten reactions and safe rendering", async () => {
+  const [handler, widget, worker, reactionsSql] = await Promise.all([
     read("server/comments-handler-v93.mjs"),
     read("public/comments-v93.js"),
     read("cloudflare/worker-v67.mjs"),
+    read("supabase/migrations/20260728062000_comments_ten_reactions_v93.sql"),
   ]);
   for (const marker of [
     "/api/comments/public",
@@ -54,6 +66,9 @@ test("public comments use validated Worker routes and safe rendering", async () 
     "COMMENT_RATE_LIMITED",
     "injectPublicComments",
   ]) assert.ok(handler.includes(marker), marker);
+  assert.match(widget, /const REACTIONS = \["😀","😍","🤩","😂","😮","😢","😡","👍","❤️","🎉"\]/);
+  assert.match(widget, /10 pilihan reaksi komentar/);
+  assert.match(reactionsSql, /'😀','😍','🤩','😂','😮','😢','😡','👍','❤️','🎉'/);
   assert.doesNotMatch(widget, /innerHTML\s*=/);
   assert.doesNotMatch(widget, /insertAdjacentHTML|dangerouslySetInnerHTML/);
   assert.match(worker, /handleCommentsRequest/);
