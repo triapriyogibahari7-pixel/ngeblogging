@@ -54,11 +54,14 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.doesNotMatch(operations, /from "\.\/studio-domains-v41\.js"/);
   assert.doesNotMatch(legacy, /normalizeDomain|sn-domain-preview-row-v35/);
   assert.match(isolatedCss, /:host\{all:initial/);
+  assert.match(footerStyles, /Sidebar layout lock v87/);
   assert.match(footerStyles, /\.sn-account-settings-v85/);
   assert.match(footerStyles, /\.sn-account-logout-v85/);
-  assert.doesNotMatch(footerStyles, /nth-last-child/);
-  assert.match(footerStyles, /position: absolute !important/);
+  assert.match(footerStyles, /position: static !important/);
+  assert.match(footerStyles, /order: 1000 !important/);
+  assert.match(footerStyles, /order: 1001 !important/);
   assert.match(footerStyles, /font-size: 15px !important/);
+  assert.doesNotMatch(footerStyles, /position:\s*absolute\s*!important|bottom:\s*\d|nth-last-child/);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
   assert.ok(archived.includes("domain-manager-v79-20260727"));
 });
