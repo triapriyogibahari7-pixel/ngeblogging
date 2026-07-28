@@ -1,13 +1,22 @@
+/* Studio source fixes v90: workspace navigation items stay together. */
 .sn-side > nav {
   flex: 1 1 auto;
   min-height: 0;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
+/*
+ * Pengaturan dan Keluar now live in .sn-account-footer. The final nav button is
+ * Domain, so it must never inherit the old account-action spacer treatment.
+ */
+.sn-side > nav > button,
 .sn-side > nav > button:last-child {
-  margin-top: auto;
-  border-top: 1px solid #e2e7ee;
-  border-radius: 0 0 9px 9px;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-top: 0 !important;
+  border-radius: 9px !important;
+  order: 0 !important;
+  flex: 0 0 auto !important;
 }
 
 .sn-view-site {
@@ -44,9 +53,13 @@
     overscroll-behavior: contain;
   }
 
+  .sn-side > nav > button,
   .sn-side > nav > button:last-child {
-    margin-top: 8px !important;
-    border-top: 1px solid #e2e7ee !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-top: 0 !important;
+    border-radius: 9px !important;
+    order: 0 !important;
   }
 
   .sn-view-site {
