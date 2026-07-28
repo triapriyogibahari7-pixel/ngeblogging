@@ -68,17 +68,17 @@ test("theme and layout panels keep safe mobile margins instead of full-screen ta
   assert.doesNotMatch(css, /\.lb39-canvas[^}]*min-width:\s*640px/);
 });
 
-test("v99 authority loads after v97 and PWA rotates cache", async () => {
+test("v99 precision loads after v100 and PWA rotates to release v101", async () => {
   const [html, sw] = await Promise.all([read("index.html"), read("public/sw.js")]);
-  const oldCss = html.indexOf("studio-mobile-precision-v97.css");
+  const oldCss = html.indexOf("studio-surface-authority-v100.css");
   const newCss = html.indexOf("studio-mobile-precision-v99.css");
-  const oldJs = html.indexOf("studio-mobile-precision-v97.js");
+  const oldJs = html.indexOf("studio-surface-authority-v100.js");
   const newJs = html.indexOf("studio-mobile-precision-v99.js");
-  assert.ok(oldCss >= 0 && newCss > oldCss, "v99 CSS must load after v97");
-  assert.ok(oldJs >= 0 && newJs > oldJs, "v99 JS must load after v97");
-  assert.match(sw, /studio-mobile-theme-layout-v99-20260728/);
-  assert.match(sw, /ngeblogging-app-v99-20260728/);
-  assert.match(sw, /pwa-v99/);
+  assert.ok(oldCss >= 0 && newCss > oldCss, "precision CSS must load after v100");
+  assert.ok(oldJs >= 0 && newJs > oldJs, "precision JS must load after v100");
+  assert.match(sw, /studio-mobile-theme-layout-v101-20260728/);
+  assert.match(sw, /ngeblogging-app-v101-20260728/);
+  assert.match(sw, /pwa-v101/);
   assert.match(sw, /studio-mobile-precision-v99\.css/);
   assert.match(sw, /studio-mobile-precision-v99\.js/);
 });
