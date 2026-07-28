@@ -1,30 +1,44 @@
 /*
- * Sidebar account footer v85.
- * Buttons are identified by their semantic label in StudioSecure, not by DOM order.
- * This keeps Pengaturan visible even when optional navigation items are removed.
+ * Sidebar layout lock v87.
+ *
+ * Contract A — desktop/laptop/large screens:
+ *   - Pengaturan and Keluar are normal React navigation items.
+ *   - They stay after all workspace menus and never use absolute positioning.
+ *
+ * Contract B — mobile/PWA/small screens:
+ *   - Pengaturan and Keluar remain after Anggota and Domain.
+ *   - They never cover, overlap, or remove another navigation item.
+ *
+ * The semantic classes are assigned by StudioSecure. Their v85 names are kept
+ * only for compatibility; this stylesheet is the authoritative v87 layout.
  */
 
 .sn-side {
-  --sn-account-footer-height: 132px;
+  --sn-account-gap: 6px;
   overflow: hidden !important;
 }
 
 .sn-side > nav {
+  position: static !important;
+  display: flex !important;
   flex: 1 1 auto !important;
+  flex-direction: column !important;
   min-height: 0 !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  padding-bottom: calc(var(--sn-account-footer-height) + 12px) !important;
+  padding: 0 8px calc(10px + env(safe-area-inset-bottom)) !important;
   overscroll-behavior: contain !important;
+  scrollbar-gutter: stable;
 }
 
 .sn-side > nav > .sn-account-settings-v85,
 .sn-side > nav > .sn-account-logout-v85 {
-  position: absolute !important;
-  left: 8px !important;
-  right: 8px !important;
-  z-index: 240 !important;
-  width: auto !important;
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  order: 1000 !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
   min-width: 0 !important;
   min-height: 48px !important;
   display: flex !important;
@@ -44,10 +58,12 @@
   text-align: left !important;
   box-sizing: border-box !important;
   box-shadow: none !important;
+  transform: none !important;
 }
 
 .sn-side > nav > .sn-account-settings-v85 {
-  bottom: 66px !important;
+  order: 1000 !important;
+  margin-top: auto !important;
   background: #f7f9fc !important;
   color: #52647c !important;
 }
@@ -62,7 +78,8 @@
 }
 
 .sn-side > nav > .sn-account-logout-v85 {
-  bottom: 10px !important;
+  order: 1001 !important;
+  margin-top: var(--sn-account-gap) !important;
   border-color: #f2d9de !important;
   background: #fff2f3 !important;
   color: #a23c49 !important;
@@ -83,22 +100,18 @@
   flex: 0 0 20px !important;
 }
 
-.sn-side.collapsed {
-  --sn-account-footer-height: 128px;
-}
-
+/* Collapsed desktop/tablet: two explicit icon buttons remain visible. */
 .sn-side.collapsed > nav > .sn-account-settings-v85,
 .sn-side.collapsed > nav > .sn-account-logout-v85,
 html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-settings-v85,
 html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-logout-v85 {
-  left: 10px !important;
-  right: 10px !important;
   width: 50px !important;
   min-width: 50px !important;
   max-width: 50px !important;
   height: 50px !important;
   min-height: 50px !important;
   max-height: 50px !important;
+  align-self: center !important;
   padding: 0 !important;
   display: grid !important;
   place-items: center !important;
@@ -111,23 +124,15 @@ html[data-layout-mode="tablet"] .sn-side > nav > .sn-account-logout-v85 span {
   display: none !important;
 }
 
-html[data-layout-mode="tablet"] .sn-side {
-  --sn-account-footer-height: 132px;
-}
-
+/* Mobile/PWA: footer participates in normal flow and cannot cover menu items. */
 @media (max-width: 760px) {
-  html:not([data-desktop-layout-requested="true"]) .sn-side {
-    --sn-account-footer-height: 164px;
-  }
-
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav {
-    padding-bottom: calc(var(--sn-account-footer-height) + 16px) !important;
+    padding: 0 14px calc(14px + env(safe-area-inset-bottom)) !important;
   }
 
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-settings-v85,
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-logout-v85 {
-    left: 14px !important;
-    right: 14px !important;
+    width: 100% !important;
     min-height: 58px !important;
     border-radius: 14px !important;
     padding: 0 18px !important;
@@ -136,11 +141,11 @@ html[data-layout-mode="tablet"] .sn-side {
   }
 
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-settings-v85 {
-    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+    margin-top: 18px !important;
   }
 
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-logout-v85 {
-    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    margin-top: 10px !important;
   }
 
   html:not([data-desktop-layout-requested="true"]) .sn-side > nav > .sn-account-settings-v85 svg,
