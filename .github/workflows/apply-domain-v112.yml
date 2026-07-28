@@ -1,5 +1,6 @@
 name: Apply Domain single authority v112
 
+# Trigger revision 2: workflow now existed before this push.
 on:
   push:
     branches: [main]
