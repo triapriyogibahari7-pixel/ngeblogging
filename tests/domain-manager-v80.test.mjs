@@ -33,7 +33,7 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("final v91 authority keeps Domain normal, removes the logo dot, and restores the blue mobile create button", async () => {
+test("v92 keeps Domain normal, removes the logo dot, and restores the blue mobile create button", async () => {
   const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
@@ -92,7 +92,7 @@ test("final v91 authority keeps Domain normal, removes the logo dot, and restore
   assert.doesNotMatch(executableCss(finalCss), /margin-top:\s*auto/);
 
   for (const marker of [
-    "sidebar-final-v91-20260728",
+    "sidebar-polish-v92-20260728",
     'labelOf(button) === "Domain"',
     'domain.dataset.sidebarDomainV91 = "true"',
     'setImportant(nav, "justify-content", "flex-start")',
@@ -109,17 +109,18 @@ test("final v91 authority keeps Domain normal, removes the logo dot, and restore
   ]) assert.ok(finalRuntime.includes(marker), marker);
   assert.doesNotMatch(finalRuntime, /\.remove\(\)|insertAdjacentElement|appendChild|prepend/);
 
-  assert.match(index, /sidebar-final-v91\.css\?v=91/);
-  assert.match(index, /sidebar-final-v91\.js\?v=91/);
-  assert.ok(index.indexOf("sidebar-final-v91.css?v=91") > index.indexOf("domain-dns-v67.css"));
-  assert.ok(index.indexOf("sidebar-final-v91.js?v=91") > index.indexOf("domain-dns-v67.js"));
+  assert.match(index, /sidebar-final-v91\.css\?v=92/);
+  assert.match(index, /sidebar-final-v91\.js\?v=92/);
+  assert.match(index, /data-sidebar-final-authority="v92"/);
+  assert.ok(index.indexOf("sidebar-final-v91.css?v=92") > index.indexOf("domain-dns-v67.css"));
+  assert.ok(index.indexOf("sidebar-final-v91.js?v=92") > index.indexOf("domain-dns-v67.js"));
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
 });
 
-test("PWA cache rotates for final direct sidebar authority v91", async () => {
+test("PWA cache rotates for sidebar visual authority v92", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-final-v91-20260728/);
-  assert.match(worker, /pwa-v91/);
-  assert.match(worker, /service-worker-activated-sidebar-final-v91/);
+  assert.match(worker, /sidebar-polish-v92-20260728/);
+  assert.match(worker, /pwa-v92/);
+  assert.match(worker, /service-worker-activated-sidebar-polish-v92/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
