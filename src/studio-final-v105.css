@@ -1,0 +1,196 @@
+/* Ngeblogging Studio final authority v105.
+   Desktop: draft preview + publish. Mobile: publish only, split editor retained. */
+
+:root{--studio-final-v105:1}
+
+/* v104 preview injection is superseded by the v105 action group. */
+.tn-modal-layer:has(.tn-code-workspace) .tn-draft-preview-v104{display:none!important}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  min-width:0!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  margin:0!important;
+}
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child h2{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.tn-code-header-actions-v105{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  flex:0 0 auto!important;
+  min-width:0!important;
+}
+.tn-code-header-actions-v105>button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  min-height:40px!important;
+  padding:0 13px!important;
+  border:1px solid #cbd7e8!important;
+  border-radius:11px!important;
+  font:800 12px/1 "DM Sans",sans-serif!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+}
+.tn-code-header-actions-v105>button:disabled{opacity:.62!important;cursor:wait!important}
+.tn-code-header-actions-v105 svg{
+  width:17px!important;
+  height:17px!important;
+  flex:0 0 17px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:2!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.tn-code-preview-v105{
+  background:#eef5ff!important;
+  color:#245fc9!important;
+}
+.tn-code-preview-v105:hover{background:#e1edff!important;border-color:#8eb3ef!important}
+.tn-code-publish-v105{
+  border-color:#2d6edf!important;
+  background:linear-gradient(135deg,#2d6edf,#4c83eb)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(45,110,223,.22)!important;
+}
+.tn-code-publish-v105:hover{filter:brightness(1.04)!important}
+
+/* The editor remains a true code/preview split on large screens. */
+.tn-code-workspace[data-editor-split-v105="true"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:#0f1929!important;
+}
+.tn-code-workspace[data-editor-split-v105="true"]>.tn-code-pane,
+.tn-code-workspace[data-editor-split-v105="true"]>.tn-frame-shell{
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+}
+.tn-code-workspace[data-editor-split-v105="true"]>.tn-frame-shell,
+.tn-code-workspace[data-editor-split-v105="true"][data-preview-open-v99="false"]>.tn-frame-shell,
+.tn-code-workspace[data-editor-split-v105="true"][data-preview-open-v98="false"]>.tn-frame-shell{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:6px!important;
+  margin:0!important;
+  border:0!important;
+  border-left:1px solid #d8e1ed!important;
+  overflow:hidden!important;
+  pointer-events:auto!important;
+  background:#e8edf4!important;
+}
+.tn-code-workspace[data-editor-split-v105="true"]>.tn-frame-shell iframe{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:#fff!important;
+}
+.tn-code-workspace[data-editor-split-v105="true"] .tn-code-pane>nav{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.tn-code-workspace[data-editor-split-v105="true"] .tn-code-status{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.tn-code-workspace[data-editor-split-v105="true"] .tn-code-pane textarea{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  resize:none!important;
+  overflow:auto!important;
+  background:#0f1929!important;
+  color:#e8eef8!important;
+  caret-color:#7eabff!important;
+}
+
+/* Physical mobile/app: same split editor, but no external draft-preview button. */
+@media(max-width:760px){
+  .tn-code-preview-v105{display:none!important}
+  .tn-code-header-actions-v105{gap:5px!important}
+  .tn-code-header-actions-v105>button{
+    min-height:38px!important;
+    padding:0 10px!important;
+    border-radius:10px!important;
+    font-size:11px!important;
+  }
+  .tn-code-header-actions-v105>button span{display:inline!important}
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal>header{
+    gap:6px!important;
+    padding-left:14px!important;
+    padding-right:10px!important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal>header>div:first-child h2{
+    max-width:44vw!important;
+  }
+  .tn-code-workspace[data-editor-split-v105="true"]{
+    grid-template-columns:minmax(180px,1fr) minmax(180px,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    overscroll-behavior-x:contain!important;
+    scroll-snap-type:x proximity!important;
+  }
+  .tn-code-workspace[data-editor-split-v105="true"]>.tn-code-pane,
+  .tn-code-workspace[data-editor-split-v105="true"]>.tn-frame-shell{
+    min-width:180px!important;
+    scroll-snap-align:start!important;
+  }
+  .tn-code-workspace[data-editor-split-v105="true"]>.tn-frame-shell{
+    padding:4px!important;
+    border-left:1px solid #d8e1ed!important;
+  }
+  .tn-code-workspace[data-editor-split-v105="true"] .tn-code-pane textarea{
+    padding:10px!important;
+    font-size:11px!important;
+    line-height:1.5!important;
+    box-shadow:none!important;
+    -webkit-appearance:none!important;
+    appearance:none!important;
+  }
+  .tn-code-workspace[data-editor-split-v105="true"] .tn-code-pane textarea:focus{
+    background:#0f1929!important;
+    box-shadow:inset 0 0 0 1px #447fe0!important;
+  }
+}
+
+/* Marker contract: theme-code-actions-v105 desktop-draft-preview-v105 mobile-publish-v105 split-editor-v105 */
