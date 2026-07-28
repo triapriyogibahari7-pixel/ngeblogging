@@ -1,3 +1,4 @@
+import "./auth-callback-authority-v107.js";
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
 
 const RELEASE = "auth-studio-bootstrap-v106-20260728";
