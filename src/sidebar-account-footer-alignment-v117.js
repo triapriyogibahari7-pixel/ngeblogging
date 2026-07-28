@@ -21,14 +21,55 @@ function labelOf(button) {
     || "";
 }
 
+function visibleWorkspaceButton(nav) {
+  const buttons = [...nav.querySelectorAll(":scope > button")];
+  return buttons.find((button) => labelOf(button) === "Ringkasan" && button.getClientRects().length)
+    || buttons.find((button) => !button.hidden && button.getClientRects().length)
+    || null;
+}
+
+function finite(value, fallback) {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function px(value) {
+  return `${Math.max(0, finite(value, 0)).toFixed(3)}px`;
+}
+
+function publishWorkspaceAxis(side, footer, source) {
+  const sideRect = side.getBoundingClientRect();
+  const rowRect = source.getBoundingClientRect();
+  const icon = source.querySelector(":scope > svg");
+  const label = source.querySelector(":scope > span");
+  const iconRect = icon?.getBoundingClientRect();
+  const labelRect = label?.getBoundingClientRect();
+  if (!sideRect.width || !rowRect.width || !iconRect?.width) return false;
+
+  const rowLeft = finite(rowRect.left - sideRect.left, 8);
+  const rowWidth = Math.min(finite(rowRect.width, sideRect.width - rowLeft), sideRect.width - rowLeft);
+  const iconCenter = finite(iconRect.left + (iconRect.width / 2) - rowRect.left, 20);
+  const labelLeft = labelRect?.width
+    ? finite(labelRect.left - rowRect.left, iconCenter + (iconRect.width / 2) + 10)
+    : iconCenter + (iconRect.width / 2) + 10;
+
+  footer.style.setProperty("--af117-row-left", px(rowLeft));
+  footer.style.setProperty("--af117-row-width", px(rowWidth));
+  footer.style.setProperty("--af117-icon-center", px(iconCenter));
+  footer.style.setProperty("--af117-label-left", px(labelLeft));
+  footer.dataset.accountFooterMeasuredFrom = labelOf(source) || "workspace";
+  return true;
+}
+
 function syncAccountFooterAlignment() {
   const side = document.querySelector(".sn-shell > .sn-side");
+  const nav = side?.querySelector(":scope > nav");
   const footer = side?.querySelector(":scope > .sn-account-footer");
-  if (!(side instanceof HTMLElement) || !(footer instanceof HTMLElement)) return;
+  if (!(side instanceof HTMLElement) || !(nav instanceof HTMLElement) || !(footer instanceof HTMLElement)) return;
 
   const buttons = [...footer.querySelectorAll(":scope > button")]
     .filter((button) => ["Pengaturan", "Keluar"].includes(labelOf(button)));
-  if (buttons.length !== 2) return;
+  const source = visibleWorkspaceButton(nav);
+  if (buttons.length !== 2 || !(source instanceof HTMLButtonElement)) return;
 
   clearGeometry(footer);
   for (const button of buttons) {
@@ -38,7 +79,9 @@ function syncAccountFooterAlignment() {
     button.dataset.accountFooterAlignmentV117 = "true";
   }
 
+  publishWorkspaceAxis(side, footer, source);
   footer.dataset.accountFooterAlignmentV117 = "true";
+  footer.dataset.accountFooterCollapsed = String(side.classList.contains("collapsed"));
   side.dataset.accountFooterAlignmentRelease = RELEASE;
   document.documentElement.dataset.sidebarAccountFooterAlignmentV117 = RELEASE;
 }
@@ -53,14 +96,13 @@ function start() {
   const observer = new MutationObserver((mutations) => {
     if (mutations.some((mutation) => mutation.addedNodes.length
       || mutation.removedNodes.length
-      || mutation.attributeName === "class"
-      || mutation.attributeName === "style")) schedule();
+      || mutation.attributeName === "class")) schedule();
   });
   observer.observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "style"],
+    attributeFilter: ["class"],
   });
 
   window.addEventListener("resize", schedule, { passive: true });
