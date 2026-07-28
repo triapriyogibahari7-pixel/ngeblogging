@@ -10,10 +10,15 @@ test("v33 is loaded after v32 and cleanup-only connector compatibility is loaded
   assert.match(html, /<script[^>]+nara-connectors-v29\.js/);
 });
 
-test("Studio removes the Nara AI navigation route", async () => {
+test("Studio hides the Nara AI navigation route without removing the React node", async () => {
   const source = await read("src/StudioSecure.jsx");
   assert.match(source, /buttonLabel\(button\) === "Nara AI"/);
-  assert.match(source, /forEach\(\(button\) => button\.remove\(\)\)/);
+  assert.match(source, /hideNaraRouteWithoutRemovingReactNodes/);
+  assert.match(source, /button\.hidden = true/);
+  assert.match(source, /button\.disabled = true/);
+  assert.match(source, /button\.dataset\.reactNodePreserved = "true"/);
+  assert.match(source, /button\.style\.setProperty\("display", "none", "important"\)/);
+  assert.doesNotMatch(source, /filter\(\(button\) => buttonLabel\(button\) === "Nara AI"\)[\s\S]{0,140}button\.remove\(\)/);
 });
 
 test("connector runtime is cleanup-only and performs no connection action", async () => {
