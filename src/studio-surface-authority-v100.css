@@ -1,0 +1,682 @@
+/* Ngeblogging Studio surface authority v100
+   One final contract for Comments, Theme Editor, and Layout Builder. */
+
+/* --------------------------------------------------------------------------
+   COMMENTS — exactly the same row contract as native Studio navigation
+   -------------------------------------------------------------------------- */
+.sn-side > nav > .sn-comments-nav-host-v93 {
+  display: contents !important;
+}
+
+@media (max-width: 760px) {
+  .sn-side > nav > button,
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    padding: 0 26px !important;
+    gap: 18px !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    color: #69788d !important;
+    box-shadow: none !important;
+    transform: none !important;
+    font-family: inherit !important;
+    font-size: 17px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+  }
+
+  .sn-side > nav > button > svg,
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > svg {
+    width: 25px !important;
+    height: 25px !important;
+    flex: 0 0 25px !important;
+    margin: 0 !important;
+  }
+
+  .sn-side > nav > button > span,
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > span {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    font: inherit !important;
+    line-height: inherit !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+
+  .sn-side > nav > button.active,
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93.active {
+    background: #eaf2ff !important;
+    color: #245fc9 !important;
+    font-weight: 800 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .sn-side:not(.collapsed) > nav > button,
+  .sn-side:not(.collapsed) > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 {
+    position: relative !important;
+    inset: auto !important;
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 112px) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    column-gap: 12px !important;
+    width: calc(100% - 16px) !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    margin: 2px auto !important;
+    padding: 0 12px !important;
+    transform: none !important;
+    text-align: left !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
+
+  .sn-side:not(.collapsed) > nav > button > svg,
+  .sn-side:not(.collapsed) > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > svg {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+    justify-self: center !important;
+  }
+
+  .sn-side:not(.collapsed) > nav > button > span,
+  .sn-side:not(.collapsed) > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > span {
+    display: block !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    font: inherit !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+
+  .sn-side.collapsed > nav > button,
+  .sn-side.collapsed > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 {
+    position: relative !important;
+    inset: auto !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    margin: 2px auto !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    transform: none !important;
+  }
+
+  .sn-side.collapsed > nav > button > svg,
+  .sn-side.collapsed > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > svg {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+  }
+
+  .sn-side.collapsed > nav > button > span,
+  .sn-side.collapsed > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > span {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   THEME CODE EDITOR — bounded, centred, keyboard-safe, previewable
+   -------------------------------------------------------------------------- */
+.tn-modal-layer:has(.tn-code-workspace) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(7, 19, 35, .72) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal.fullscreen {
+  position: relative !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  width: min(1180px, 100%) !important;
+  max-width: 1180px !important;
+  height: min(820px, calc(100dvh - 28px)) !important;
+  max-height: calc(100dvh - 28px) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #dce4ee !important;
+  border-radius: 22px !important;
+  background: #fff !important;
+  box-shadow: 0 36px 110px rgba(0, 0, 0, .42) !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > header {
+  position: relative !important;
+  z-index: 3 !important;
+  min-width: 0 !important;
+  min-height: 68px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 11px 18px !important;
+  overflow: hidden !important;
+  border-bottom: 1px solid #e1e7ef !important;
+  background: #fff !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > header > div {
+  min-width: 0 !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > header small {
+  display: block !important;
+  overflow: hidden !important;
+  color: #2869df !important;
+  font-size: 9px !important;
+  font-weight: 900 !important;
+  letter-spacing: .13em !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > header h2 {
+  max-width: 100% !important;
+  margin: 4px 0 0 !important;
+  overflow: hidden !important;
+  color: #17253c !important;
+  font: 600 clamp(18px, 2.7vw, 25px)/1.14 "Playfair Display", Georgia, serif !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > header > button {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: #eef2f7 !important;
+  color: #607087 !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal-body {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-workspace {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
+  overflow: hidden !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  overflow: hidden !important;
+  border-right: 1px solid #263247 !important;
+  background: #101827 !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane > nav {
+  min-width: 0 !important;
+  height: 52px !important;
+  display: flex !important;
+  align-items: end !important;
+  padding: 0 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border-bottom: 1px solid rgba(255,255,255,.09) !important;
+  scrollbar-width: none !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane > nav::-webkit-scrollbar {
+  display: none !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-status {
+  min-width: 0 !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  padding: 0 14px !important;
+  overflow: hidden !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-pane textarea {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  resize: none !important;
+  overflow: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: #101827 !important;
+  color: #dce8f8 !important;
+  caret-color: #8ab4ff !important;
+  box-shadow: none !important;
+  font: 500 13px/1.62 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  tab-size: 2 !important;
+  white-space: pre !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-workspace > .tn-frame-shell {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  place-items: stretch !important;
+  padding: 12px !important;
+  overflow: auto !important;
+  background: #e8edf4 !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-code-workspace > .tn-frame-shell iframe {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 420px !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer {
+  position: relative !important;
+  z-index: 4 !important;
+  min-width: 0 !important;
+  min-height: 68px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  padding: 10px 14px max(10px, env(safe-area-inset-bottom)) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border-top: 1px solid #e1e7ef !important;
+  background: #fff !important;
+  white-space: nowrap !important;
+  scrollbar-width: none !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer::-webkit-scrollbar {
+  display: none !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer > span {
+  min-width: 0 !important;
+  margin-right: auto !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer button,
+.tn-v100-tool {
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 14px !important;
+  border: 1px solid #d8e1ee !important;
+  border-radius: 11px !important;
+  background: #fff !important;
+  color: #40516a !important;
+  font: 800 11px/1 "DM Sans", system-ui, sans-serif !important;
+}
+
+.tn-v100-tool.active {
+  border-color: #2869df !important;
+  background: #eaf2ff !important;
+  color: #245fc9 !important;
+}
+
+.tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer button.primary {
+  border-color: #2869df !important;
+  background: linear-gradient(135deg,#2869df,#4382ee) !important;
+  color: #fff !important;
+}
+
+.tn-v96-tool,
+.tn-v97-tool,
+.tn-v98-tool {
+  display: none !important;
+}
+
+/* Preview button focuses the live iframe built from the unsaved draft. */
+.tn-code-workspace.tn-v100-previewing > .tn-code-pane {
+  display: none !important;
+}
+
+.tn-code-workspace.tn-v100-previewing {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Desktop and laptop: modal belongs to the content area, never over the sidebar. */
+@media (min-width: 761px) {
+  .sn-side:not(.collapsed) + .sn-main .tn-modal-layer:has(.tn-code-workspace) {
+    left: 220px !important;
+    right: 0 !important;
+    width: calc(100vw - 220px) !important;
+  }
+
+  .sn-side.collapsed + .sn-main .tn-modal-layer:has(.tn-code-workspace) {
+    left: 70px !important;
+    right: 0 !important;
+    width: calc(100vw - 70px) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .tn-modal-layer:has(.tn-code-workspace) .tn-code-workspace {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-code-workspace > .tn-frame-shell {
+    display: none !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-code-workspace.tn-v100-previewing > .tn-frame-shell {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .tn-modal-layer:has(.tn-code-workspace) {
+    align-items: center !important;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal.fullscreen {
+    width: 100% !important;
+    height: min(88dvh, 760px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 20px !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > header {
+    min-height: 62px !important;
+    padding: 9px 12px !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > header h2 {
+    font-size: 18px !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer {
+    justify-content: flex-start !important;
+    min-height: 64px !important;
+    padding: 9px 10px max(9px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer > span {
+    display: none !important;
+  }
+
+  .tn-modal-layer:has(.tn-code-workspace) .tn-code-pane textarea {
+    font-size: 12.5px !important;
+    line-height: 1.58 !important;
+    padding: 14px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   LAYOUT BUILDER — same bounded modal contract, fully reflowed on phones
+   -------------------------------------------------------------------------- */
+.lb39-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147482900 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)) !important;
+  overflow: hidden !important;
+  background: rgba(8, 22, 42, .64) !important;
+  backdrop-filter: blur(9px) !important;
+  box-sizing: border-box !important;
+}
+
+.lb39-dialog {
+  width: min(1220px, 100%) !important;
+  max-width: 1220px !important;
+  height: min(820px, calc(100dvh - 28px)) !important;
+  max-height: calc(100dvh - 28px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #d9e3ef !important;
+  border-radius: 22px !important;
+  background: #f6f8fc !important;
+  box-shadow: 0 34px 105px rgba(5,24,53,.38) !important;
+}
+
+.lb39-head {
+  position: relative !important;
+  z-index: 3 !important;
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) 44px !important;
+  padding: 14px 18px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+
+.lb39-head > div {
+  min-width: 0 !important;
+}
+
+.lb39-head h2 {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  font-size: clamp(22px, 3vw, 34px) !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.lb39-head p {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.lb39-body {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr) !important;
+  align-items: start !important;
+  gap: 14px !important;
+  padding: 14px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.lb39-canvas-wrap,
+.lb39-library,
+.lb39-canvas-host,
+.lb39-canvas,
+.lb39-pair,
+.lb39-footer-grid,
+.lb39-content-row,
+.lb39-stack,
+.lb39-zone,
+.lb39-post-preview {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.lb39-canvas-host,
+.lb39-canvas {
+  width: 100% !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+}
+
+.lb39-foot {
+  position: relative !important;
+  z-index: 3 !important;
+  min-width: 0 !important;
+  min-height: 66px !important;
+  padding: 10px 14px max(10px, env(safe-area-inset-bottom)) !important;
+  background: #fff !important;
+}
+
+@media (min-width: 761px) {
+  .sn-side:not(.collapsed) + .sn-main .lb39-layer {
+    left: 220px !important;
+    right: 0 !important;
+    width: calc(100vw - 220px) !important;
+  }
+
+  .sn-side.collapsed + .sn-main .lb39-layer {
+    left: 70px !important;
+    right: 0 !important;
+    width: calc(100vw - 70px) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .lb39-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .lb39-layer {
+    align-items: center !important;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .lb39-dialog {
+    width: 100% !important;
+    height: min(88dvh, 780px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border: 1px solid #d9e3ef !important;
+    border-radius: 20px !important;
+  }
+
+  .lb39-head {
+    grid-template-columns: minmax(0, 1fr) 42px !important;
+    padding: 11px 12px !important;
+  }
+
+  .lb39-head h2 {
+    font-size: 21px !important;
+  }
+
+  .lb39-head p {
+    display: block !important;
+    font-size: 10px !important;
+  }
+
+  .lb39-body {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 9px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .lb39-canvas-wrap,
+  .lb39-library {
+    padding: 10px !important;
+    border-radius: 14px !important;
+  }
+
+  .lb39-pair,
+  .lb39-footer-grid,
+  .lb39-content-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .lb39-zone {
+    min-height: 68px !important;
+  }
+
+  .lb39-post-preview {
+    min-height: 150px !important;
+  }
+
+  .lb39-foot {
+    min-height: 64px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 9px 10px max(9px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .lb39-status {
+    display: none !important;
+  }
+
+  .lb39-actions {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .lb39-actions button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
