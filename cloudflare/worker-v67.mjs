@@ -8,6 +8,11 @@ import {
   handleCommentsRequest,
   injectPublicComments,
 } from "../server/comments-handler-v93.mjs";
+import {
+  AUTH_GATEWAY_RELEASE,
+  handleAuthGatewayRequest,
+  isAuthGatewayRequest,
+} from "../server/auth-gateway-v108.mjs";
 
 const RELEASE = "2026.07.28-comments-sidebar-v93";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
@@ -84,11 +89,14 @@ async function enrichHealth(response, env) {
     headers.set("cache-control", "no-store");
     headers.set("x-ngeblogging-domain-engine", RELEASE);
     headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
+    headers.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
     return new Response(JSON.stringify({
       ...payload,
       domainReleaseCurrent: RELEASE,
       comments,
       commentsRelease: "comments-v93-20260728",
+      authGateway: true,
+      authGatewayRelease: AUTH_GATEWAY_RELEASE,
       commentsArchitecture: {
         database: "supabase-postgres-rls",
         publicSubmission: true,
@@ -135,6 +143,10 @@ async function enrichHealth(response, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+
+    if (isAuthGatewayRequest(url)) {
+      return handleAuthGatewayRequest(request, env, crypto.randomUUID());
+    }
 
     if (url.pathname.startsWith("/api/comments/")) {
       return handleCommentsRequest(request, env, crypto.randomUUID());
