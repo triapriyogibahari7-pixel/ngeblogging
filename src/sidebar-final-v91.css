@@ -1,0 +1,114 @@
+/*
+ * Sidebar final authority v91.
+ * Loaded directly from index.html after every legacy Studio stylesheet.
+ */
+
+.sn-side > nav {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.sn-side > nav > button,
+.sn-side > nav > button:last-child,
+.sn-side > nav > button[data-sidebar-domain-v91="true"] {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  order: 0 !important;
+  margin-top: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+  border-top: 0 !important;
+  border-radius: 9px !important;
+  transform: none !important;
+}
+
+.sn-side > nav > button[hidden] {
+  display: none !important;
+}
+
+/* The clean logo mark is only the letter n. */
+.sn-side .sn-logo-mark > i,
+.sn-side .sn-logo > i,
+.sn-side .sn-logo > span:not(.sn-logo-mark):empty {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.sn-side .sn-logo::before,
+.sn-side .sn-logo::after,
+.sn-side .sn-logo-mark::before,
+.sn-side .sn-logo-mark::after,
+.sn-side .sn-logo-mark > strong::before,
+.sn-side .sn-logo-mark > strong::after,
+.sn-side .sn-logo-mark > i::before,
+.sn-side .sn-logo-mark > i::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Mobile/PWA: the create button belongs to the white menu surface. */
+@media (max-width: 760px) {
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-logo {
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new {
+    position: relative !important;
+    inset: auto !important;
+    z-index: 1 !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 28px) !important;
+    min-height: 58px !important;
+    margin: 14px 14px 14px !important;
+    padding: 0 18px !important;
+    border: 1px solid #dfe6ef !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #17253c !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new:hover,
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new:focus-visible,
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new:active {
+    border-color: #c9d9ef !important;
+    background: #f7f9fc !important;
+    color: #245fc9 !important;
+    outline: none !important;
+  }
+
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new::before,
+  html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new::after {
+    content: none !important;
+    display: none !important;
+  }
+}
