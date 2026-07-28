@@ -8,6 +8,8 @@ import "./sidebar-account-footer-v85.css";
 import "./sidebar-home-actions-v90.css";
 import "./studio-flow-integrity-v111.css";
 import "./studio-flow-integrity-v111.js";
+import "./studio-domain-single-authority-v112.css";
+import "./studio-domain-single-authority-v112.js";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";

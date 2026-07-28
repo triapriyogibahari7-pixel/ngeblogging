@@ -1,11 +1,12 @@
 import { ACTIVE_SITE_STORAGE_KEY, listUserSites, setSitePublication } from "./lib/studio-data.js";
 import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76.js";
 import { DOMAIN_MANAGER_V80_CSS } from "./domain-manager-v80.css.js";
+import { MAX_ACCOUNT_SITES, canonicalDomainsForSite, selectActiveSite } from "./lib/domain-scope-v112.js";
 
-const RELEASE = "domain-manager-v80-20260727";
+const RELEASE = "domain-manager-v112-20260728";
+// Compatibility marker: domain-manager-v80-20260727 · MAX_ACCOUNT_SITES = 12
 const DEADLINE_MS = 10_000;
 const PUBLIC_PROBE_MS = 8_000;
-const MAX_ACCOUNT_SITES = 12;
 let controller = null;
 let frame = 0;
 
@@ -49,7 +50,7 @@ async function accountState() {
   const sites = await withDeadline(listUserSites(verified.user.id), 8_000, "Daftar situs terlalu lama dimuat.");
   const preferred = activeSiteId();
   const published = validSite(window.__ngebloggingActiveSite);
-  const site = sites.find((item) => item.id === preferred) || sites.find((item) => item.id === published?.id) || sites[0] || null;
+  const site = selectActiveSite(sites, preferred, published);
   if (!site) throw new Error("Buat situs terlebih dahulu untuk memperoleh subdomain gratis.");
   return { token: verified.session.access_token, user: verified.user, site, sites: sites.slice(0, MAX_ACCOUNT_SITES) };
 }
@@ -71,6 +72,8 @@ async function api(path, token, body = null) {
 }
 
 function domainView() {
+  const direct = document.querySelector(".sn-main > .sn-view-pad[data-domain-manager-host-v112='true']");
+  if (direct?.isConnected) return direct;
   const views = [...document.querySelectorAll(".sn-main > .sn-view-pad")].filter((view) => {
     const title = view.querySelector(":scope > .sn-page-title h1")?.textContent?.trim();
     return title === "Domain & publikasi" || view.dataset.domainManagerV80 || view.dataset.domainManagerV79 || view.dataset.domainFullZoneAuthority;
@@ -144,7 +147,10 @@ function domainPanel(state) {
 }
 
 function auditPanel(state) {
-  return `<section class="card"><header class="audit-head"><div><small class="eyebrow">Pemeriksaan publik</small><h2>Periksa alamat situs aktif</h2><p>Menguji subdomain gratis, domain utama, www, dan alamat tambahan aktif.</p></div><button class="btn secondary" data-d80-action="audit" ${state.busy ? "disabled" : ""}>${state.busy === "audit" ? "Memeriksa…" : `${icon("pulse")}Periksa alamat`}</button></header>${state.auditResults.length ? `<div class="audit-results">${state.auditResults.map((item) => `<article class="audit-row"><span class="${item.reachable ? "ok" : ""}">${item.reachable ? icon("check") : icon("shield")}</span><div><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.address)}</small></div><i>${item.reachable ? "Dapat dijangkau" : "Belum terjangkau"}</i></article>`).join("")}</div>` : ""}</section>`;
+  const summary = state.auditSummary?.total
+    ? `<div class="audit-summary ${state.auditSummary.allReachable ? "ok" : ""}"><b>${state.auditSummary.passed}/${state.auditSummary.total} alamat lolos audit HTTPS</b><span>${state.auditSummary.allReachable ? "Semua alamat situs aktif dapat dibuka." : "Buka rincian di bawah dan periksa DNS/HTTPS yang belum lolos."}</span></div>`
+    : "";
+  return `<section class="card"><header class="audit-head"><div><small class="eyebrow">Audit publik server-side</small><h2>Periksa alamat situs aktif</h2><p>Menyegarkan status Cloudflare lalu menguji HTTPS, status HTTP, HTML publik, redirect, dan waktu respons dari jaringan Worker.</p></div><button class="btn secondary" data-d80-action="audit" ${state.busy ? "disabled" : ""}>${state.busy === "audit" ? "Memeriksa…" : `${icon("pulse")}Audit alamat`}</button></header>${summary}${state.auditResults.length ? `<div class="audit-results">${state.auditResults.map((item) => `<article class="audit-row"><span class="${item.reachable ? "ok" : ""}">${item.reachable ? icon("check") : icon("shield")}</span><div><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.address)} · ${item.httpStatus ? `HTTP ${item.httpStatus}` : "tanpa respons"} · ${Number(item.latencyMs || 0)} ms</small><small>${escapeHtml(item.check || "")}</small></div><i>${item.reachable ? "Lolos" : "Perlu diperiksa"}</i></article>`).join("")}</div>` : ""}</section>`;
 }
 
 function render(state) {
@@ -163,7 +169,10 @@ function showToast(state, message, danger = false) {
 async function load(state) {
   const run = ++state.run;
   state.error = "";
+  state.config = null;
   state.domains = [];
+  const announced = validSite(window.__ngebloggingActiveSite);
+  if (announced?.id && announced.id !== state.site?.id) state.site = announced;
   render(state);
   try {
     const account = await accountState();
@@ -177,7 +186,7 @@ async function load(state) {
     const payload = await api(`/api/domains/list?siteId=${encodeURIComponent(account.site.id)}`, account.token);
     if (run !== state.run) return;
     state.config = payload;
-    state.domains = Array.isArray(payload.domains) ? payload.domains : [];
+    state.domains = canonicalDomainsForSite(payload.domains, account.site.id);
   } catch (error) {
     if (run !== state.run) return;
     state.error = error.message || "Data domain belum dapat dimuat.";
@@ -197,7 +206,7 @@ async function mutate(state, key, operation, success) {
     if (success) showToast(state, success);
     const payload = await api(`/api/domains/list?siteId=${encodeURIComponent(state.site.id)}`, state.token);
     state.config = payload;
-    state.domains = Array.isArray(payload.domains) ? payload.domains : [];
+    state.domains = canonicalDomainsForSite(payload.domains, state.site.id);
   } catch (error) {
     state.error = error.message || "Perubahan belum berhasil.";
     showToast(state, state.error, true);
@@ -212,23 +221,27 @@ async function copy(state, value) {
   catch { showToast(state, "Nilai belum dapat disalin pada perangkat ini.", true); }
 }
 
-async function probe(url) {
-  try { await withDeadline(fetch(url, { method: "HEAD", mode: "no-cors", cache: "no-store" }), PUBLIC_PROBE_MS, "Pemeriksaan publik melewati batas waktu."); return true; }
-  catch { return false; }
-}
-
 async function audit(state) {
-  if (state.busy || !state.site?.slug) return;
+  if (state.busy || !state.site?.id) return;
   state.busy = "audit";
   state.auditResults = [];
+  state.auditSummary = null;
   render(state);
   try {
-    const targets = [{ label: "Subdomain gratis", url: `https://${state.site.slug}.ngeblogging.com?ngeblogging-free-preview=1` }];
-    for (const domain of sortedDomains(state.domains).filter(activeDomain)) {
-      targets.push({ label: "Domain utama", url: `https://${domain.hostname}` });
-      for (const item of addresses(domain).filter((entry) => entry.enabled)) targets.push({ label: item.host === "www" ? "Alamat www" : "Alamat tambahan", url: `https://${item.hostname}` });
+    const domain = state.domains[0];
+    if (domain?.id) {
+      try { await api("/api/domains/refresh", state.token, { domainId: domain.id }); }
+      catch { /* Audit tetap berjalan dan akan menjelaskan alamat yang belum lolos. */ }
+      const refreshed = await api(`/api/domains/list?siteId=${encodeURIComponent(state.site.id)}`, state.token);
+      state.config = refreshed;
+      state.domains = canonicalDomainsForSite(refreshed.domains, state.site.id);
     }
-    for (const target of targets) state.auditResults.push({ ...target, address: target.url.replace(/^https:\/\//, ""), reachable: await probe(target.url) });
+    const payload = await api("/api/domains/audit", state.token, { siteId: state.site.id });
+    state.auditResults = Array.isArray(payload.results) ? payload.results : [];
+    state.auditSummary = { passed:Number(payload.passed || 0), total:Number(payload.total || 0), allReachable:payload.allReachable === true, checkedAt:payload.checkedAt || "" };
+  } catch (error) {
+    state.error = error.message || "Audit alamat belum dapat dijalankan.";
+    showToast(state, state.error, true);
   } finally { state.busy = ""; render(state); }
 }
 
@@ -314,13 +327,14 @@ function mount(view) {
   host.hidden = false;
   host.style.cssText = "display:block!important;position:relative!important;width:100%!important;min-width:0!important;max-width:100%!important;overflow:visible!important;isolation:isolate!important;";
   view.dataset.domainManagerV80 = RELEASE;
+  view.dataset.domainManagerHostV112 = "true";
   view.dataset.domainAuthority = RELEASE;
   view.style.setProperty("display", "block", "important");
   view.style.setProperty("position", "relative", "important");
   view.style.setProperty("padding", "0", "important");
   view.style.setProperty("overflow", "visible", "important");
   if (controller?.view === view && controller.host === host) { controller.root = root; return controller; }
-  controller = { view, host, shadow, root, token: "", user: null, site: validSite(window.__ngebloggingActiveSite), sites: [], config: null, domains: [], error: "", busy: "", run: 0, auditResults: [], toast: "", toastDanger: false, toastTimer: 0 };
+  controller = { view, host, shadow, root, token: "", user: null, site: validSite(window.__ngebloggingActiveSite), sites: [], config: null, domains: [], error: "", busy: "", run: 0, auditResults: [], auditSummary: null, toast: "", toastDanger: false, toastTimer: 0 };
   shadow.addEventListener("submit", (event) => submit(controller, event));
   shadow.addEventListener("click", (event) => click(controller, event));
   load(controller);
@@ -340,6 +354,18 @@ function schedule() { cancelAnimationFrame(frame); frame = requestAnimationFrame
 new MutationObserver((mutations) => { if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.type === "attributes")) schedule(); })
   .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden"] });
 window.addEventListener("pageshow", schedule);
-window.addEventListener("ngeblogging:active-site-change", () => controller && load(controller));
-window.addEventListener("ngeblogging:active-site-ready", () => controller && load(controller));
+function handleActiveSite(event) {
+  if (!controller) return;
+  const next = validSite(event?.detail);
+  if (next) {
+    controller.site = next;
+    controller.config = null;
+    controller.domains = [];
+    controller.error = "";
+    render(controller);
+  }
+  load(controller);
+}
+window.addEventListener("ngeblogging:active-site-change", handleActiveSite);
+window.addEventListener("ngeblogging:active-site-ready", handleActiveSite);
 scan();

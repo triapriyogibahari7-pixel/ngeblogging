@@ -2,7 +2,7 @@ import { handleRequest } from "../server/nara-runtime.mjs";
 import { handleBillingRequest } from "../server/billing-handler.mjs";
 import { handlePayPalWebhook } from "../server/paypal-webhook-handler.mjs";
 import { handleNaraImage, imageGenerationReady } from "../server/nara-image-handler.mjs";
-import { handleDomainRequest } from "../server/domain-handler.mjs";
+import { handleDomainRequest } from "../server/domain-handler-v112.mjs";
 import { handleDomainRedirectRequest, resolveDomainRedirect } from "../server/domain-redirect-handler.mjs";
 import { injectTenantSeo, seoEndpoint } from "../server/seo-handler.mjs";
 import { handleWorkersAiNara, workersAiReady, workersVisionReady } from "../server/workers-ai-nara.mjs";

@@ -1,7 +1,7 @@
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 
-const RELEASE = "studio-production-audit-v37-20260725";
+const RELEASE = "studio-production-audit-v112-20260728";
 let frame = 0;
 let healthPromise = null;
 
@@ -305,11 +305,18 @@ async function loadDomains(view) {
   }
 }
 
+function disableLegacyDomain(view) {
+  if (!(view instanceof HTMLElement)) return;
+  view.dataset.sp37DomainDisabled = "domain-manager-v112-20260728";
+  view.classList.remove("sp37-domain-view");
+  delete view.dataset.sp37Domain;
+  view.querySelectorAll(":scope > .sp37-domain-host, :scope > .op41-host[data-surface='domains'], :scope > .dm-root, :scope > .dm-panel, :scope > .dfz-root")
+    .forEach((node) => node.remove());
+}
+
 async function enhanceDomain(view) {
-  if (view.dataset.sp37Domain === "true") return;
-  view.dataset.sp37Domain = "true";
-  view.classList.add("sp37-domain-view");
-  await loadDomains(view);
+  // Compatibility stub only. The isolated Domain Manager v112 is the sole owner.
+  disableLegacyDomain(view);
 }
 
 function normalizeAffectedLayouts() {
@@ -340,7 +347,9 @@ function scan() {
   enhanceHome();
   const analytics = pageViewByTitle("Analitik"); if (analytics) enhanceAnalytics(analytics);
   const members = pageViewByTitle("Anggota & tim"); if (members) enhanceMembers(members);
-  const domain = pageViewByTitle("Domain & publikasi"); if (domain) enhanceDomain(domain);
+  const domain = pageViewByTitle("Domain & publikasi")
+    || document.querySelector(".sn-main > .sn-view-pad[data-domain-manager-host-v112='true']");
+  if (domain) disableLegacyDomain(domain);
 }
 
 function schedule() {
