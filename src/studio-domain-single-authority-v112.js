@@ -1,3 +1,6 @@
+import "./sidebar-domain-alignment-v115.css";
+import "./sidebar-domain-alignment-v115.js";
+
 const RELEASE = "studio-domain-single-authority-v112-20260728";
 const LEGACY_SELECTORS = [
   ":scope > .sp37-domain-host",
