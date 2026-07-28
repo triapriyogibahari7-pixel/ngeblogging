@@ -33,14 +33,15 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("v93 keeps Domain normal, removes the logo dot, centers desktop rows, and restores the blue mobile create button", async () => {
-  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, commentsCss, index, studio, legacyProxy] = await Promise.all([
+test("v94 keeps Domain normal, removes the logo dot, centers every desktop row, and restores the blue mobile create button", async () => {
+  const [secure, styles, sourceFix, homeActions, finalCss, finalRuntime, centerRuntime, commentsCss, index, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
     read("src/studio-v9-enhancements.css"),
     read("src/sidebar-home-actions-v90.css"),
     read("src/sidebar-final-v91.css"),
     read("src/sidebar-final-v91.js"),
+    read("src/sidebar-center-v93.js"),
     read("src/comments-studio-v93.css"),
     read("index.html"),
     read("src/StudioNext.jsx"),
@@ -92,16 +93,19 @@ test("v93 keeps Domain normal, removes the logo dot, centers desktop rows, and r
   assert.doesNotMatch(executableCss(finalCss), /margin-top:\s*auto/);
 
   for (const marker of [
-    "sidebar-comments-v93-20260728",
+    "sidebar-comments-v94-20260728",
     'labelOf(button) === "Domain"',
     'domain.dataset.sidebarDomainV91 = "true"',
-    'setImportant(nav, "justify-content", "flex-start")',
-    '"margin-top": "0"',
+    "desktopLayoutRequested",
+    "normalizeDesktopRow",
+    "normalizeDesktopSidebar",
+    '"grid-template-columns": "24px minmax(0, 112px)"',
+    '"grid-template-columns": "1fr"',
+    '"justify-items": "center"',
     "normalizeDomain",
     "normalizeLogo",
     "normalizeMobileCreate",
     '.sn-logo-mark > i, .sn-logo > i, .sn-logo > span:not(.sn-logo-mark)',
-    'setImportant(dot, property, value)',
     'createButton.dataset.mobileCreateV91 = "true"',
     'background: "linear-gradient(135deg, #2d6edf, #4c83e9)"',
     'color: "#ffffff"',
@@ -111,6 +115,13 @@ test("v93 keeps Domain normal, removes the logo dot, centers desktop rows, and r
   assert.doesNotMatch(finalRuntime, /\.remove\(\)|insertAdjacentElement|appendChild|prepend/);
 
   for (const marker of [
+    "sidebar-center-v93-20260728",
+    '"place-items": "center"',
+    '"grid-template-columns": "24px minmax(0, 112px)"',
+    ':scope > .sn-account-footer',
+  ]) assert.ok(centerRuntime.includes(marker), marker);
+
+  for (const marker of [
     ".sn-side:not(.collapsed)>nav>button",
     "grid-template-columns:24px minmax(0,112px)!important",
     ".sn-side.collapsed>nav>button",
@@ -118,17 +129,20 @@ test("v93 keeps Domain normal, removes the logo dot, centers desktop rows, and r
   ]) assert.ok(commentsCss.includes(marker), marker);
 
   assert.match(index, /sidebar-final-v91\.css\?v=92/);
-  assert.match(index, /sidebar-final-v91\.js\?v=92/);
-  assert.match(index, /data-sidebar-final-authority="v92"/);
-  assert.ok(index.indexOf("sidebar-final-v91.css?v=92") > index.indexOf("domain-dns-v67.css"));
-  assert.ok(index.indexOf("sidebar-final-v91.js?v=92") > index.indexOf("domain-dns-v67.js"));
+  assert.match(index, /comments-studio-v93\.css\?v=94/);
+  assert.match(index, /sidebar-final-v91\.js\?v=94/);
+  assert.match(index, /comments-studio-runtime-v93\.jsx\?v=94/);
+  assert.match(index, /data-sidebar-final-authority="v94"/);
+  assert.match(index, /data-sidebar-comments-authority="v94"/);
+  assert.ok(index.indexOf("comments-studio-v93.css?v=94") > index.indexOf("sidebar-final-v91.css?v=92"));
+  assert.ok(index.indexOf("sidebar-final-v91.js?v=94") > index.indexOf("domain-dns-v67.js"));
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
 });
 
-test("PWA cache rotates for sidebar and comments v93", async () => {
+test("PWA cache rotates for sidebar and comments v94", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-comments-v93-20260728/);
-  assert.match(worker, /pwa-v93/);
-  assert.match(worker, /service-worker-activated-sidebar-comments-v93/);
+  assert.match(worker, /sidebar-comments-v94-20260728/);
+  assert.match(worker, /pwa-v94/);
+  assert.match(worker, /service-worker-activated-sidebar-comments-v94/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });
