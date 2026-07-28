@@ -1,5 +1,5 @@
 /*
- * Sidebar final authority v91.
+ * Sidebar final authority v93.
  * Loaded directly from index.html after every legacy Studio stylesheet.
  */
 
@@ -13,6 +13,7 @@
   min-height: 0 !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
+  box-sizing: border-box !important;
 }
 
 .sn-side > nav > button,
@@ -35,6 +36,7 @@
   border-top: 0 !important;
   border-radius: 9px !important;
   transform: none !important;
+  box-sizing: border-box !important;
 }
 
 .sn-side > nav > button[data-sidebar-domain-v91="true"] {
@@ -131,6 +133,150 @@
 .sn-side .sn-logo-mark > i::after {
   content: none !important;
   display: none !important;
+}
+
+/*
+ * Desktop/laptop expanded geometry.
+ * Every workspace item shares one left edge with the create button and footer.
+ */
+@media (min-width: 761px) {
+  .sn-side:not(.collapsed) > nav {
+    align-items: stretch !important;
+    padding: 0 12px 10px !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  .sn-side:not(.collapsed) > nav > button,
+  .sn-side:not(.collapsed) > nav > button:last-child,
+  .sn-side:not(.collapsed) > nav > button[data-sidebar-domain-v91="true"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 44px !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 0 14px !important;
+    text-align: left !important;
+  }
+
+  .sn-side:not(.collapsed) > nav > button svg {
+    margin: 0 !important;
+  }
+
+  .sn-side:not(.collapsed) .sn-account-footer {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .sn-side:not(.collapsed) .sn-account-footer > button {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+/*
+ * Collapsed rail geometry.
+ * The button box, icon and footer actions share the exact sidebar centre line.
+ */
+.sn-side.collapsed > nav,
+html[data-layout-mode="tablet"] .sn-side > nav {
+  align-items: center !important;
+  padding: 0 10px 10px !important;
+  scrollbar-gutter: auto !important;
+}
+
+.sn-side.collapsed > nav > button,
+.sn-side.collapsed > nav > button:last-child,
+.sn-side.collapsed > nav > button[data-sidebar-domain-v91="true"],
+html[data-layout-mode="tablet"] .sn-side > nav > button,
+html[data-layout-mode="tablet"] .sn-side > nav > button:last-child,
+html[data-layout-mode="tablet"] .sn-side > nav > button[data-sidebar-domain-v91="true"] {
+  align-self: center !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+.sn-side.collapsed > nav > button svg,
+html[data-layout-mode="tablet"] .sn-side > nav > button svg {
+  width: 18px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.sn-side.collapsed > nav > button span,
+html[data-layout-mode="tablet"] .sn-side > nav > button span {
+  display: none !important;
+}
+
+.sn-side.collapsed .sn-new,
+html[data-layout-mode="tablet"] .sn-side .sn-new {
+  align-self: center !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+
+.sn-side.collapsed .sn-new svg,
+html[data-layout-mode="tablet"] .sn-side .sn-new svg {
+  margin: 0 !important;
+}
+
+.sn-side.collapsed .sn-new span,
+html[data-layout-mode="tablet"] .sn-side .sn-new span {
+  display: none !important;
+}
+
+.sn-side.collapsed .sn-logo,
+html[data-layout-mode="tablet"] .sn-side .sn-logo {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.sn-side.collapsed .sn-account-footer,
+html[data-layout-mode="tablet"] .sn-account-footer {
+  justify-items: center !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+.sn-side.collapsed .sn-account-footer > button,
+html[data-layout-mode="tablet"] .sn-account-footer > button {
+  justify-self: center !important;
+  align-self: center !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.sn-side.collapsed .sn-account-footer > button svg,
+html[data-layout-mode="tablet"] .sn-account-footer > button svg {
+  margin: 0 !important;
 }
 
 @media (max-width: 760px) {
