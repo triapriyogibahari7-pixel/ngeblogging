@@ -1,0 +1,212 @@
+/* Ngeblogging mobile precision authority v96 */
+
+/* Comments must be visually identical to the native mobile menu rows. */
+@media (max-width: 760px) {
+  .sn-side > nav > .sn-comments-nav-host-v93 {
+    display: contents !important;
+  }
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    padding: 0 26px !important;
+    gap: 18px !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    color: #69788d !important;
+    box-shadow: none !important;
+    transform: none !important;
+    font: inherit !important;
+    font-size: 17px !important;
+    line-height: 1.2 !important;
+    font-weight: 500 !important;
+    text-align: left !important;
+  }
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > svg {
+    width: 25px !important;
+    height: 25px !important;
+    flex: 0 0 25px !important;
+    margin: 0 !important;
+  }
+  .sn-side > nav > .sn-comments-nav-host-v93 > .sn-comments-nav-button-v93 > span {
+    display: block !important;
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+
+  /* Theme editor: compact app-like sheet, never taller or wider than the phone. */
+  .tn-modal-layer:has(.tn-code-workspace) {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10050 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+    overflow: hidden !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal.fullscreen {
+    position: relative !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    width: 100% !important;
+    max-width: 680px !important;
+    height: min(88dvh, 760px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 14px 14px !important;
+    overflow: hidden !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > header {
+    min-height: 62px !important;
+    padding: 12px 14px !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > header h2 {
+    margin: 2px 0 0 !important;
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal-body {
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  .tn-code-workspace {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+  .tn-code-pane {
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0, 1fr) !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+  .tn-code-pane > nav {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+  }
+  .tn-code-pane > nav::-webkit-scrollbar { display: none !important; }
+  .tn-code-pane textarea {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 220px !important;
+    max-height: none !important;
+    padding: 14px !important;
+    resize: none !important;
+    overflow: auto !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+    tab-size: 2 !important;
+  }
+  .tn-code-workspace > .tn-frame-shell {
+    display: none !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 4 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+  }
+  .tn-code-workspace[data-mobile-preview-v96="true"] > .tn-frame-shell {
+    display: block !important;
+  }
+  .tn-code-workspace[data-mobile-preview-v96="true"] > .tn-code-pane {
+    visibility: hidden !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer > span {
+    display: none !important;
+  }
+  .tn-modal-layer:has(.tn-code-workspace) .tn-modal > footer button {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+  }
+  .tn-v96-tool {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+    padding: 0 14px !important;
+    border: 1px solid #d9e2ee !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    color: #30445f !important;
+    font: inherit !important;
+    font-weight: 700 !important;
+  }
+  .tn-v96-tool.active {
+    border-color: #2d6edf !important;
+    background: #eaf2ff !important;
+    color: #245fc9 !important;
+  }
+
+  /* Layout builder: use the same bounded app sheet instead of covering the whole Studio. */
+  .sn-layout-precision-v96 {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10040 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+    overflow: hidden !important;
+    background: rgba(15, 29, 48, .32) !important;
+  }
+  .sn-layout-precision-v96 > .sn-layout-panel-v96 {
+    width: 100% !important;
+    max-width: 680px !important;
+    height: min(88dvh, 780px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 14px 14px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background: #fff !important;
+    box-shadow: 0 24px 70px rgba(15, 29, 48, .25) !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .sn-layout-panel-v96 * { min-width: 0 !important; box-sizing: border-box !important; }
+}
+
+@media (min-width: 761px) {
+  /* Desktop layout and code dialogs remain inside the content area beside the sidebar. */
+  .sn-side:not(.collapsed) + .sn-main .sn-layout-precision-v96,
+  .sn-side:not(.collapsed) + .sn-main .tn-modal-layer:has(.tn-code-workspace) {
+    left: 220px !important;
+    width: calc(100vw - 220px) !important;
+  }
+  .sn-side.collapsed + .sn-main .sn-layout-precision-v96,
+  .sn-side.collapsed + .sn-main .tn-modal-layer:has(.tn-code-workspace) {
+    left: 70px !important;
+    width: calc(100vw - 70px) !important;
+  }
+}
