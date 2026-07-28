@@ -13,6 +13,11 @@ import {
   handleAuthGatewayRequest,
   isAuthGatewayRequest,
 } from "../server/auth-gateway-v108.mjs";
+import {
+  DATA_GATEWAY_RELEASE,
+  handleDataGatewayRequest,
+  isDataGatewayRequest,
+} from "../server/data-gateway-v110.mjs";
 
 const RELEASE = "2026.07.28-comments-sidebar-v93";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
@@ -90,6 +95,7 @@ async function enrichHealth(response, env) {
     headers.set("x-ngeblogging-domain-engine", RELEASE);
     headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
     headers.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
+    headers.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
     return new Response(JSON.stringify({
       ...payload,
       domainReleaseCurrent: RELEASE,
@@ -97,6 +103,9 @@ async function enrichHealth(response, env) {
       commentsRelease: "comments-v93-20260728",
       authGateway: true,
       authGatewayRelease: AUTH_GATEWAY_RELEASE,
+      dataGateway: true,
+      dataGatewayRelease: DATA_GATEWAY_RELEASE,
+      dataGatewayServices: ["rest", "storage"],
       commentsArchitecture: {
         database: "supabase-postgres-rls",
         publicSubmission: true,
@@ -146,6 +155,10 @@ export default {
 
     if (isAuthGatewayRequest(url)) {
       return handleAuthGatewayRequest(request, env, crypto.randomUUID());
+    }
+
+    if (isDataGatewayRequest(url)) {
+      return handleDataGatewayRequest(request, env, crypto.randomUUID());
     }
 
     if (url.pathname.startsWith("/api/comments/")) {
