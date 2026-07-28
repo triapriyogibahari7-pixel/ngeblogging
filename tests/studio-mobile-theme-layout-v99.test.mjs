@@ -4,13 +4,12 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("mobile Comments row matches native menu icon and text geometry", async () => {
+test("Comments row uses deterministic native geometry without transient computed-style copying", async () => {
   const [css, runtime] = await Promise.all([
     read("src/studio-mobile-precision-v99.css"),
     read("src/studio-mobile-precision-v99.js"),
   ]);
   for (const marker of [
-    'data-native-row-v99="true"',
     "grid-template-columns: 25px minmax(0, 1fr)",
     "min-height: 58px",
     "padding: 0 26px",
@@ -18,67 +17,75 @@ test("mobile Comments row matches native menu icon and text geometry", async () 
     "font-size: 17px",
     "width: 25px",
     "height: 25px",
+    "grid-template-columns: 24px minmax(0, 112px)",
   ]) assert.ok(css.includes(marker), marker);
   for (const marker of [
     "physicalMobileV99",
-    "referenceText",
-    "commentsText",
-    '"font-size"',
-    '"font-weight"',
+    "stabilizeCommentsRow",
+    "stableRowV102",
+    "clearTransientStyle",
     "nativeRowV99",
   ]) assert.ok(runtime.includes(marker), marker);
+  assert.doesNotMatch(runtime, /getComputedStyle\(reference/);
+  assert.doesNotMatch(runtime, /copyComputed\(reference/);
 });
 
-test("theme editor has always-visible Copy and Preview tools", async () => {
+test("theme editor keeps code and preview visible together with functional Copy and refresh tools", async () => {
   const [css, runtime] = await Promise.all([
     read("src/studio-mobile-precision-v99.css"),
     read("src/studio-mobile-precision-v99.js"),
   ]);
   for (const marker of [
-    "tn-v99-tools-inline",
-    "tn-v99-tool",
+    "tn-v102-tools-inline",
+    "tn-v102-tool",
     "tn-code-status",
-    "data-preview-open-v99",
+    "grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr)",
+    "grid-template-rows: minmax(250px, 1.08fr) minmax(220px, .92fr)",
+    "display: block !important",
   ]) assert.ok(css.includes(marker), marker);
   for (const marker of [
     "Salin kode",
-    "Lihat pratinjau",
-    "Kembali ke kode",
+    "Perbarui preview",
+    "Preview diperbarui",
     "navigator.clipboard.writeText",
-    "previewOpenV99",
+    "splitPreviewV102",
     "status.insertBefore",
+    "frame.srcdoc",
   ]) assert.ok(runtime.includes(marker), marker);
   assert.doesNotMatch(runtime, /footer\.prepend\(tools\)/);
 });
 
-test("theme and layout panels keep safe mobile margins instead of full-screen takeover", async () => {
+test("theme and layout panels keep safe margins and preserve the structured layout map", async () => {
   const css = await read("src/studio-mobile-precision-v99.css");
   for (const marker of [
-    "height: min(84dvh, 800px)",
-    "height: min(82dvh, 720px)",
+    "height: min(86dvh, 820px)",
+    "height: min(88dvh, 760px)",
     "border-radius: 18px",
     ".lb39-body",
-    "grid-template-columns: minmax(0, 1fr)",
-    ".lb39-canvas",
-    "min-width: 0",
+    ".lb39-content-row",
+    "grid-template-columns: minmax(90px, .55fr) minmax(190px, 1.7fr) minmax(90px, .55fr)",
+    "grid-template-columns: minmax(68px, .55fr) minmax(132px, 1.65fr) minmax(68px, .55fr)",
+    ".lb39-pair",
+    "repeat(2, minmax(0, 1fr))",
     "overflow-y: auto",
   ]) assert.ok(css.includes(marker), marker);
   assert.doesNotMatch(css, /\.tn-modal\.fullscreen[^}]*height:\s*100dvh/);
   assert.doesNotMatch(css, /\.lb39-dialog[^}]*height:\s*100dvh/);
   assert.doesNotMatch(css, /\.lb39-canvas[^}]*min-width:\s*640px/);
+  assert.doesNotMatch(css, /\.lb39-content-row[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
-test("v99 precision loads after v100 and PWA rotates to release v101", async () => {
+test("precision authority still loads after v100 and remains part of the PWA shell", async () => {
   const [html, sw] = await Promise.all([read("index.html"), read("public/sw.js")]);
   const oldCss = html.indexOf("studio-surface-authority-v100.css");
-  const newCss = html.indexOf("studio-mobile-precision-v99.css");
+  const precisionCss = html.indexOf("studio-mobile-precision-v99.css");
   const oldJs = html.indexOf("studio-surface-authority-v100.js");
-  const newJs = html.indexOf("studio-mobile-precision-v99.js");
-  assert.ok(oldCss >= 0 && newCss > oldCss, "precision CSS must load after v100");
-  assert.ok(oldJs >= 0 && newJs > oldJs, "precision JS must load after v100");
-  assert.match(sw, /studio-mobile-theme-layout-v101-20260728/);
-  assert.match(sw, /ngeblogging-app-v101-20260728/);
-  assert.match(sw, /pwa-v101/);
+  const precisionJs = html.indexOf("studio-mobile-precision-v99.js");
+  assert.ok(oldCss >= 0 && precisionCss > oldCss, "precision CSS must load after v100");
+  assert.ok(oldJs >= 0 && precisionJs > oldJs, "precision JS must load after v100");
+  assert.match(sw, /studio-mobile-theme-layout-v101-20260728|studio-responsive-precision-v102-20260728/);
+  assert.match(sw, /ngeblogging-app-v101-20260728|ngeblogging-app-v102-20260728/);
+  assert.match(sw, /pwa-v101|pwa-v102/);
   assert.match(sw, /studio-mobile-precision-v99\.css/);
   assert.match(sw, /studio-mobile-precision-v99\.js/);
 });
