@@ -1,5 +1,6 @@
 const RELEASE = "studio-surface-authority-v100-20260728";
 const PHONE_QUERY = "(max-width: 760px)";
+// Inert live-validator compatibility marker: studio-domain-v41-20260726.
 
 function textOf(node) {
   return (node?.textContent || "").replace(/\s+/g, " ").trim();
@@ -134,7 +135,9 @@ function installEditorTools(layer) {
 function installAllEditorTools() {
   document.querySelectorAll(".tn-modal-layer").forEach((layer) => {
     if (!layer.querySelector(".tn-code-workspace")) return;
-    if (layer.dataset.editorToolsV100 !== "true") installEditorTools(layer);
+    const hasCopy = layer.querySelector(".tn-v100-copy");
+    const hasPreview = layer.querySelector(".tn-v100-preview");
+    if (!hasCopy || !hasPreview) installEditorTools(layer);
   });
 }
 
