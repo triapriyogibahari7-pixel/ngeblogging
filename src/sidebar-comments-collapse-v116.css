@@ -1,0 +1,55 @@
+/* Sidebar Comments collapse authority v116.
+   Expanded desktop keeps the normal label. Collapsed desktop and Desktop-site
+   Android show only the centered comment icon. */
+:root{--sidebar-comments-collapse-v116:1}
+
+@media(min-width:761px){
+  .sn-side.collapsed>nav>#ngeblogging-comments-native-v106>span{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:0!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+  }
+}
+
+html[data-desktop-layout-requested="true"] .sn-side.collapsed>nav>#ngeblogging-comments-native-v106>span{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  width:0!important;
+  min-width:0!important;
+  max-width:0!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+
+@media(min-width:761px){
+  .sn-side:not(.collapsed)>nav>#ngeblogging-comments-native-v106>span:not([hidden]),
+  html[data-desktop-layout-requested="true"] .sn-side:not(.collapsed)>nav>#ngeblogging-comments-native-v106>span:not([hidden]){
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    overflow:visible!important;
+    pointer-events:auto!important;
+    white-space:nowrap!important;
+  }
+}
