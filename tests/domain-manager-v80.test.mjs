@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const executableCss = (source) => source.replace(/\/\*[\s\S]*?\*\//g, "");
 
 test("domain manager v80 uses a Shadow DOM as the only visible domain surface", async () => {
   const [entry, manager, styles, legacy] = await Promise.all([
@@ -32,7 +33,7 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
   assert.ok(legacy.includes("domain-manager-v79-20260727"), "legacy source remains archived but is no longer imported");
 });
 
-test("settings and logout are a dedicated React footer outside scrollable navigation", async () => {
+test("Domain stays after Anggota while account actions remain in the dedicated footer", async () => {
   const [secure, styles, studio, legacyProxy] = await Promise.all([
     read("src/StudioSecure.jsx"),
     read("src/sidebar-account-footer-v85.css"),
@@ -52,13 +53,16 @@ test("settings and logout are a dedicated React footer outside scrollable naviga
     'onClick={()=>chooseView("settings")}',
     "onClick={onExit}",
     'className="sn-logo-mark"',
-    "<strong>n</strong><i>.</i>",
   ]) assert.ok(studio.includes(marker), marker);
+  assert.match(studio, />Anggota<\/span><\/button><button[^>]*>[\s\S]*?>Domain<\/span><\/button><\/nav>/);
   assert.match(studio, /<\/nav><div className="sn-account-footer"/);
   assert.doesNotMatch(studio, /<nav[^>]*>[\s\S]*sn-account-settings-v88[\s\S]*<\/nav>/);
 
   for (const marker of [
-    "Sidebar React footer v88",
+    "Sidebar navigation and account footer v89",
+    ".sn-side > nav > button:last-child",
+    "margin-top: 0 !important",
+    "margin-bottom: 0 !important",
     ".sn-account-footer",
     ".sn-account-settings-v88",
     ".sn-account-logout-v88",
@@ -66,19 +70,23 @@ test("settings and logout are a dedicated React footer outside scrollable naviga
     "min-height: 48px !important",
     "min-height: 58px !important",
     "font-size: 15px !important",
-    ".sn-logo-mark",
-    "align-items: baseline !important",
+    ".sn-logo-mark > i",
+    "display: none !important",
+    ".sn-logo::after",
+    "content: none !important",
     "data-desktop-layout-requested",
     "data-layout-mode=\"tablet\"",
   ]) assert.ok(styles.includes(marker), marker);
-  assert.doesNotMatch(styles, /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
+  const activeStyles = executableCss(styles);
+  assert.doesNotMatch(activeStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|nth-last-child|margin-top:\s*auto\s*!important/);
+  assert.doesNotMatch(activeStyles, /^\s*bottom:\s*\d/m);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"), "legacy proxy stays archived but is no longer imported");
 });
 
-test("PWA cache rotates for dedicated React sidebar footer", async () => {
+test("PWA cache rotates for fixed Domain order and dot-free logo", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /sidebar-react-footer-v88-20260728/);
-  assert.match(worker, /pwa-v88/);
-  assert.match(worker, /service-worker-activated-sidebar-react-footer-v88/);
+  assert.match(worker, /sidebar-nav-logo-v89-20260728/);
+  assert.match(worker, /pwa-v89/);
+  assert.match(worker, /service-worker-activated-sidebar-nav-logo-v89/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
 });

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const executableCss = (source) => source.replace(/\/\*[\s\S]*?\*\//g, "");
 
 test("domain manager v80 is the only active domain DOM writer and follows the global workspace", async () => {
   const [entry, secure, manager, archived, operations, legacy, isolatedCss, footerStyles, studio, legacyProxy] = await Promise.all([
@@ -52,17 +53,23 @@ test("domain manager v80 is the only active domain DOM writer and follows the gl
   assert.doesNotMatch(legacy, /normalizeDomain|sn-domain-preview-row-v35/);
   assert.match(isolatedCss, /:host\{all:initial/);
 
+  assert.match(studio, />Anggota<\/span><\/button><button[^>]*>[\s\S]*?>Domain<\/span><\/button><\/nav>/);
   assert.match(studio, /<\/nav><div className="sn-account-footer"/);
   assert.match(studio, /sn-account-settings-v88/);
   assert.match(studio, /sn-account-logout-v88/);
-  assert.match(studio, /<strong>n<\/strong><i>\.<\/i>/);
-  assert.match(footerStyles, /Sidebar React footer v88/);
+  assert.match(footerStyles, /Sidebar navigation and account footer v89/);
+  assert.match(footerStyles, /\.sn-side > nav > button:last-child/);
+  assert.match(footerStyles, /margin-top: 0 !important/);
   assert.match(footerStyles, /\.sn-account-footer/);
   assert.match(footerStyles, /\.sn-account-settings-v88/);
   assert.match(footerStyles, /\.sn-account-logout-v88/);
+  assert.match(footerStyles, /\.sn-logo-mark > i[\s\S]*display: none !important/);
+  assert.match(footerStyles, /\.sn-logo::after[\s\S]*content: none !important/);
   assert.match(footerStyles, /flex: 0 0 auto !important/);
   assert.match(footerStyles, /font-size: 15px !important/);
-  assert.doesNotMatch(footerStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|bottom:\s*\d|nth-last-child|margin-top:\s*auto\s*!important/);
+  const activeStyles = executableCss(footerStyles);
+  assert.doesNotMatch(activeStyles, /position:\s*(?:absolute|fixed|sticky)\s*!important|nth-last-child|margin-top:\s*auto\s*!important/);
+  assert.doesNotMatch(activeStyles, /^\s*bottom:\s*\d/m);
   assert.ok(legacyProxy.includes("sidebar-footer-v82-20260728"));
   assert.ok(archived.includes("domain-manager-v79-20260727"));
 });
