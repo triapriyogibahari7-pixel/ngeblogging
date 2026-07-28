@@ -37,13 +37,76 @@
   transform: none !important;
 }
 
+/* Domain is a normal workspace item, never a red account/destructive action. */
+.sn-side > nav > button[data-sidebar-domain-v91="true"] {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: #64738a !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+}
+
+.sn-side > nav > button[data-sidebar-domain-v91="true"]:hover,
+.sn-side > nav > button[data-sidebar-domain-v91="true"]:focus-visible {
+  border-color: transparent !important;
+  background: #f1f5fa !important;
+  color: #52647c !important;
+  outline: none !important;
+}
+
+.sn-side > nav > button[data-sidebar-domain-v91="true"].active {
+  border-color: transparent !important;
+  background: #eaf2ff !important;
+  color: #245fc9 !important;
+  font-weight: 900 !important;
+}
+
 .sn-side > nav > button[hidden] {
   display: none !important;
 }
 
-/* The clean logo mark is only the letter n. */
+/* The clean logo mark is only the letter n; legacy dot geometry is neutralized. */
+.sn-side .sn-logo > .sn-logo-mark {
+  position: static !important;
+  inset: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: #17253c !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.sn-side .sn-logo > .sn-logo-mark > strong {
+  position: static !important;
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #17253c !important;
+  line-height: 1 !important;
+  transform: none !important;
+}
+
 .sn-side .sn-logo-mark > i,
 .sn-side .sn-logo > i,
+.sn-side .sn-logo > span:not(.sn-logo-mark),
 .sn-side .sn-logo > span:not(.sn-logo-mark):empty {
   display: none !important;
   width: 0 !important;
@@ -52,9 +115,12 @@
   min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
   overflow: hidden !important;
   visibility: hidden !important;
   opacity: 0 !important;
+  transform: none !important;
 }
 
 .sn-side .sn-logo::before,
@@ -69,7 +135,7 @@
   display: none !important;
 }
 
-/* Mobile/PWA: the create button belongs to the white menu surface. */
+/* Mobile/PWA: blue create button with safe spacing below the logo/header. */
 @media (max-width: 760px) {
   html:not([data-desktop-layout-requested="true"]) .sn-side .sn-logo {
     flex: 0 0 auto !important;
@@ -87,12 +153,12 @@
     min-height: 58px !important;
     margin: 14px 14px 14px !important;
     padding: 0 18px !important;
-    border: 1px solid #dfe6ef !important;
+    border: 0 !important;
     border-radius: 14px !important;
-    background: #ffffff !important;
-    background-image: none !important;
-    color: #17253c !important;
-    box-shadow: none !important;
+    background: #2d6edf !important;
+    background-image: linear-gradient(135deg, #2d6edf, #4c83e9) !important;
+    color: #ffffff !important;
+    box-shadow: 0 9px 22px #2d6edf2c !important;
     overflow: visible !important;
     transform: none !important;
   }
@@ -100,9 +166,10 @@
   html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new:hover,
   html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new:focus-visible,
   html:not([data-desktop-layout-requested="true"]) .sn-side .sn-new:active {
-    border-color: #c9d9ef !important;
-    background: #f7f9fc !important;
-    color: #245fc9 !important;
+    border-color: transparent !important;
+    background: #245fc9 !important;
+    background-image: linear-gradient(135deg, #245fc9, #3c75df) !important;
+    color: #ffffff !important;
     outline: none !important;
   }
 
