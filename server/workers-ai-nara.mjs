@@ -1,4 +1,5 @@
 const DEFAULT_MODEL = "@cf/zai-org/glm-4.7-flash";
+const DEFAULT_FALLBACK_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 const DEFAULT_VISION_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 const MAX_MESSAGE_LENGTH = 8_000;
 const MAX_HISTORY_ITEMS = 12;
@@ -170,6 +171,23 @@ function intelligenceSettings(value) {
   };
 }
 
+function inferenceTimeout(milliseconds, model) {
+  return new Promise((_, reject) => setTimeout(() => reject(Object.assign(
+    new Error(`Workers AI timeout: ${model}`),
+    { timeout: true, model },
+  )), milliseconds));
+}
+
+async function runInference(env, model, payload, milliseconds) {
+  const result = await Promise.race([
+    env.AI.run(model, payload),
+    inferenceTimeout(milliseconds, model),
+  ]);
+  const answer = outputText(result);
+  if (!answer) throw Object.assign(new Error(`Workers AI returned an empty answer: ${model}`), { model });
+  return answer;
+}
+
 export function workersAiReady(env) {
   return Boolean(env?.AI && typeof env.AI.run === "function");
 }
@@ -221,43 +239,59 @@ export async function handleWorkersAiNara(request, env, requestId, corsOrigin = 
   try { image = imageAttachment(input); }
   catch (error) { return json(error.status || 400, { code: error.code || "INVALID_IMAGE", error: error.message }, requestId, corsOrigin); }
 
-  const model = image
+  const primaryModel = image
     ? String(env.CF_AI_VISION_MODEL || DEFAULT_VISION_MODEL)
     : String(env.CF_AI_MODEL || DEFAULT_MODEL);
+  const fallbackModel = String(env.CF_AI_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL);
+  const candidates = image || fallbackModel === primaryModel
+    ? [{ model: primaryModel, timeout: image ? 42_000 : 38_000, fallback: false }]
+    : [
+      { model: primaryModel, timeout: 24_000, fallback: false },
+      { model: fallbackModel, timeout: 16_000, fallback: true },
+    ];
+  const inferencePayload = {
+    messages,
+    ...(image ? { image: image.dataUrl } : {}),
+    max_tokens: maxTokens,
+    temperature: intelligence === "xhigh" ? 0.2 : 0.35,
+  };
 
-  try {
-    const inference = env.AI.run(model, {
-      messages,
-      ...(image ? { image: image.dataUrl } : {}),
-      max_tokens: maxTokens,
-      temperature: intelligence === "xhigh" ? 0.2 : 0.35,
-    });
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("Workers AI timeout"), { timeout: true })), image ? 58_000 : 50_000));
-    const result = await Promise.race([inference, timeout]);
-    const answer = outputText(result);
-    if (!answer) throw new Error("Workers AI returned an empty answer");
-
-    return json(200, {
-      answer,
-      modelLabel: image ? "Nara Vision Edge" : "Nara Edge",
-      intelligence,
-      intelligenceLabel,
-      providerModel: model,
-      provider: "Cloudflare Workers AI",
-      capability: image ? "vision" : "text",
-      plan: quota.account_plan,
-      remaining: quota.remaining,
-    }, requestId, corsOrigin);
-  } catch (error) {
-    console.error("Workers AI Nara failed", { requestId, model, vision: Boolean(image), name: error?.name || "Error" });
-    return json(error?.timeout ? 504 : 502, {
-      code: error?.timeout ? "WORKERS_AI_TIMEOUT" : image ? "WORKERS_VISION_UNAVAILABLE" : "WORKERS_AI_UNAVAILABLE",
-      error: error?.timeout
-        ? "Jawaban Nara melewati batas waktu. Tekan Coba lagi."
-        : image
-          ? "Nara Vision sedang mengalami gangguan sementara. Coba lagi dengan JPG, PNG, atau WebP yang lebih kecil."
-          : "Mesin Nara sedang mengalami gangguan sementara. Coba lagi beberapa saat.",
-      retryable: true,
-    }, requestId, corsOrigin);
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      const answer = await runInference(env, candidate.model, inferencePayload, candidate.timeout);
+      return json(200, {
+        answer,
+        modelLabel: image ? "Nara Vision Edge" : candidate.fallback ? "Nara Edge Cadangan" : "Nara Edge",
+        intelligence,
+        intelligenceLabel,
+        providerModel: candidate.model,
+        provider: "Cloudflare Workers AI",
+        capability: image ? "vision" : "text",
+        fallbackUsed: candidate.fallback,
+        plan: quota.account_plan,
+        remaining: quota.remaining,
+      }, requestId, corsOrigin);
+    } catch (error) {
+      lastError = error;
+      console.error("Workers AI Nara model failed", {
+        requestId,
+        model: candidate.model,
+        fallback: candidate.fallback,
+        vision: Boolean(image),
+        timeout: Boolean(error?.timeout),
+        name: error?.name || "Error",
+      });
+    }
   }
+
+  return json(lastError?.timeout ? 504 : 502, {
+    code: lastError?.timeout ? "WORKERS_AI_TIMEOUT" : image ? "WORKERS_VISION_UNAVAILABLE" : "WORKERS_AI_UNAVAILABLE",
+    error: lastError?.timeout
+      ? "Jawaban Nara melewati batas waktu. Tekan Coba lagi."
+      : image
+        ? "Nara Vision sedang mengalami gangguan sementara. Coba lagi dengan JPG, PNG, atau WebP yang lebih kecil."
+        : "Mesin utama dan cadangan Nara sedang mengalami gangguan sementara. Tekan Coba lagi.",
+    retryable: true,
+  }, requestId, corsOrigin);
 }
