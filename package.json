@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/run-test-group-v147.mjs \"^f[a-m]\" && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "node scripts/run-test-group-v147.mjs \"^favicon-mobile-seo\" && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
