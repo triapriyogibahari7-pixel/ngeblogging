@@ -1,0 +1,64 @@
+/* Last visual authority: one mobile trigger and no legacy menu surfaces. */
+.sn-shell .sn-comments-nav-host-v93,
+.sn-shell .sn-comments-page-host-v93,
+.sn-shell #ngeblogging-api-keys-nav-v135,
+.sn-shell #ngeblogging-api-keys-v135,
+.sn-shell .sn-v139-forced-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle{
+  display:grid!important;
+  place-items:center!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  flex:0 0 42px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  color:#245fc9!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle>*{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle::before{
+  content:"n."!important;
+  display:block!important;
+  color:#245fc9!important;
+  font:900 27px/1 "DM Sans",system-ui,sans-serif!important;
+  letter-spacing:-.09em!important;
+  transform:translateX(-1px)!important;
+}
+html[data-studio-device-mode="large"] .sn-shell .sn-sidebar-toggle::before{content:none!important}
+
+html,body,#root,.sn-shell,.sn-shell>.sn-main{
+  max-width:100%!important;
+  min-width:0!important;
+  margin-right:0!important;
+  overflow-x:hidden!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+@supports(overflow-x:clip){html,body,#root,.sn-shell,.sn-shell>.sn-main{overflow-x:clip!important}}
+
+html[data-studio-device-mode="small"] .sn-shell>.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed+.sn-main{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side-backdrop,
+html[data-studio-device-mode="small"] .sn-shell>.sn-main>.sn-top{
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
