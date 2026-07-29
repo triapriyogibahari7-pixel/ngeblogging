@@ -27,3 +27,8 @@ new MutationObserver((mutations) => {
 }).observe(document.documentElement, { childList: true, subtree: true });
 
 document.documentElement.dataset.naraConnectorsV29 = RELEASE;
+
+/* API Keys is an independent Studio route. Loading it here avoids touching the
+   restored pre-API-Keys shell, sidebar geometry, Domain, Comments, or Nara. */
+import("./api-keys-studio-bridge.jsx")
+  .catch((error) => console.error("API Keys Studio bridge failed", error));
