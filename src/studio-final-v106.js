@@ -21,6 +21,7 @@ function labelOf(button) {
 }
 
 function syncNativeCommentsButton() {
+  if (document.querySelector('.sn-shell[data-navigation-owner="react-v138"]')) return;
   const nav = document.querySelector(".sn-shell > .sn-side > nav");
   const legacyHost = nav?.querySelector(":scope > .sn-comments-nav-host-v93");
   const legacyButton = legacyHost?.querySelector(".sn-comments-nav-button-v93");
@@ -68,6 +69,7 @@ function syncNativeCommentsButton() {
 }
 
 function syncDomainMenuOrder() {
+  if (document.querySelector('.sn-shell[data-navigation-owner="react-v138"]')) return;
   const side = document.querySelector(".sn-shell > .sn-side");
   const nav = side?.querySelector(":scope > nav");
   if (!(side instanceof HTMLElement) || !(nav instanceof HTMLElement)) return;
