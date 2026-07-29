@@ -48,3 +48,11 @@ test("API Keys interface remains responsive on phone and desktop", () => {
   assert.match(css, /sn-api-table>article/);
   assert.match(css, /sn-api-secret-modal/);
 });
+
+test("v135 rotates stale clients while preserving the restored Studio baseline", () => {
+  const worker = read("public/sw.js");
+  assert.match(worker, /ngeblogging-app-v135-api-keys-20260729/);
+  assert.match(worker, /pre-api-ui-plus-api-keys-v135-20260729/);
+  assert.match(worker, /pwa-v135-api-keys/);
+  assert.match(worker, /restored pre-API-Keys v123 Studio baseline/);
+});
