@@ -10,6 +10,9 @@ const bootstrap = read("src/auth-studio-bootstrap-v106.js");
 const gateway = read("server/auth-gateway-v108.mjs");
 const worker = read("cloudflare/worker-v67.mjs");
 const production = JSON.parse(read("wrangler.production.jsonc"));
+const pwa = read("src/pwa-runtime.js");
+const serviceWorker = read("public/sw.js");
+const workflow = read(".github/workflows/deploy-production.yml");
 const index = read("index.html");
 
 const providers = ["google", "github", "linkedin_oidc"];
@@ -67,4 +70,23 @@ test("production metadata and health expose auth v153 readiness", () => {
     "2026.07.30-auth-production-v153", "authProduction", "authTransport",
     "emailPassword", "magicLink", "google", "linkedin",
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
+});
+
+test("PWA cache never destroys an authentication callback", () => {
+  for (const marker of [
+    "ngeblogging-pwa-v153-20260730", "pwa-v153-auth-production",
+    "auth-production-v153", 'authMode === "signin"', 'authMode === "signup"',
+  ]) assert.ok(pwa.includes(marker), `PWA missing ${marker}`);
+  for (const marker of [
+    "ngeblogging-app-v153-auth-production-20260730", "auth-production-cache-v153",
+    "service-worker-activated-auth-production-v153", 'authMode === "callback"',
+  ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
+});
+
+test("deployment rejects stale WHITE-R4 and probes the auth gateway", () => {
+  for (const marker of [
+    "2026.07.30-auth-production-v153", "2026.07.30-auth-gateway-v153",
+    "WHITE-R4-2026.07.12", "ngeblogging-auth-session-runtime",
+    "/api/auth-proxy/auth/v1/token", "DEPLOY_VERIFY_AUTH_PRODUCTION_V153_FAILED",
+  ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 });
