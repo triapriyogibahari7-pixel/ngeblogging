@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import ApiKeysPanel from "./ApiKeysPanel";
+import "./api-keys-studio-bridge.css";
 
 const RELEASE = "api-keys-studio-v135-20260729";
 const HOST_ID = "ngeblogging-api-keys-v135";
