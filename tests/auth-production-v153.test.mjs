@@ -8,7 +8,8 @@ const modal = read("src/AuthModal.jsx");
 const callback = read("src/auth-callback-authority-v107.js");
 const bootstrap = read("src/auth-studio-bootstrap-v106.js");
 const gateway = read("server/auth-gateway-v108.mjs");
-const worker = read("cloudflare/worker-v67.mjs");
+const authWorker = read("cloudflare/worker-v67.mjs");
+const entryWorker = read("cloudflare/worker-v68.mjs");
 const cloudflareDefault = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const pwa = read("src/pwa-runtime.js");
@@ -20,8 +21,8 @@ const providers = ["google", "github", "linkedin_oidc"];
 
 test("all requested login buttons remain connected to real Supabase actions", () => {
   for (const provider of providers) {
-    assert.ok(modal.includes(`id: \"${provider}\"`), `AuthModal missing ${provider}`);
-    assert.ok(client.includes(`\"${provider}\"`), `auth client missing ${provider}`);
+    assert.ok(modal.includes(`id: "${provider}"`), `AuthModal missing ${provider}`);
+    assert.ok(client.includes(`"${provider}"`), `auth client missing ${provider}`);
   }
   for (const marker of [
     "signInWithPassword", "signInWithMagicLink", "signUpWithPassword",
@@ -63,24 +64,26 @@ test("Cloudflare auth gateway accepts production and preview surfaces", () => {
   assert.match(gateway, /responseHeaders\.set\("x-ngeblogging-auth-gateway"/);
 });
 
-test("all Cloudflare deployment configs use worker-v67 and auth v153", () => {
+test("all Cloudflare deployment configs use entry v154 while retaining auth v153", () => {
   for (const config of [cloudflareDefault, production]) {
-    assert.equal(config.main, "./cloudflare/worker-v67.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-auth-production-v153");
-    assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-auth-production-v153");
+    assert.equal(config.main, "./cloudflare/worker-v68.mjs");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-entry-v154");
+    assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-production-entry-v154");
     assert.equal(config.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
+    assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v154");
     assert.equal(config.assets.run_worker_first, true);
     assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com/*"));
   }
-  assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v67.mjs");
-  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-auth-production-v153");
+  assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v68.mjs");
+  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-entry-v154");
+  assert.ok(entryWorker.includes('./worker-v67.mjs'));
 });
 
-test("production metadata and health expose auth v153 readiness", () => {
+test("auth worker metadata and health expose v153 readiness", () => {
   for (const marker of [
     "2026.07.30-auth-production-v153", "authProduction", "authTransport",
     "emailPassword", "magicLink", "google", "linkedin",
-  ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
+  ]) assert.ok(authWorker.includes(marker), `auth worker missing ${marker}`);
 });
 
 test("PWA cache never destroys an authentication callback", () => {
@@ -94,10 +97,10 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment rejects stale WHITE-R4 and probes the auth gateway", () => {
+test("deployment rejects stale WHITE-R4 and probes entry v154 plus auth gateway v153", () => {
   for (const marker of [
-    "2026.07.30-auth-production-v153", "2026.07.30-auth-gateway-v153",
-    "WHITE-R4-2026.07.12", "ngeblogging-auth-session-runtime",
-    "/api/auth-proxy/auth/v1/token", "DEPLOY_VERIFY_AUTH_PRODUCTION_V153_FAILED",
+    "2026.07.30-production-entry-v154", "2026.07.30-auth-gateway-v153",
+    "WHITE-R4-2026.07.12", "/release-v154.json",
+    "/api/auth-proxy/auth/v1/token", "DEPLOY_VERIFY_PRODUCTION_ENTRY_V154_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 });
