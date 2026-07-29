@@ -39,8 +39,8 @@ function applyAuthority(node, rules, removed = GEOMETRY_PROPERTIES) {
     const priority = node.style.getPropertyPriority(property);
     preserved.push(`${property}:${value}${priority ? " !important" : ""}`);
   }
-  const authority = importantRules(rules);
-  node.style.cssText = `${preserved.join(";")}${preserved.length ? ";" : ""}${authority}`;
+  const next = `${preserved.join(";")}${preserved.length ? ";" : ""}${importantRules(rules)}`;
+  if (node.style.cssText !== next) node.style.cssText = next;
 }
 
 function canonicalButtonRules(collapsed) {
@@ -91,9 +91,10 @@ function styleIcon(icon, collapsed, fallbackOwned = false) {
 
 function styleLabel(label, collapsed) {
   if (!(label instanceof HTMLElement)) return;
-  label.hidden = collapsed;
-  if (collapsed) label.setAttribute("aria-hidden", "true");
-  else label.removeAttribute("aria-hidden");
+  if (label.hidden !== collapsed) label.hidden = collapsed;
+  if (collapsed) {
+    if (label.getAttribute("aria-hidden") !== "true") label.setAttribute("aria-hidden", "true");
+  } else if (label.hasAttribute("aria-hidden")) label.removeAttribute("aria-hidden");
   applyAuthority(label, collapsed ? {
     display: "none", visibility: "hidden", opacity: "0", width: "0", "min-width": "0", "max-width": "0",
     height: "0", "min-height": "0", "max-height": "0", margin: "0", padding: "0", overflow: "hidden",
@@ -160,7 +161,7 @@ function syncSidebarLock() {
 
   const comment = directButtons.find((button) => sidebarLabelOf(button) === "Komentar");
   if (comment) {
-    comment.id = COMMENTS_ID;
+    if (comment.id !== COMMENTS_ID) comment.id = COMMENTS_ID;
     comment.dataset.sidebarCommentsLockedV123 = "true";
     styleLabel(comment.querySelector(":scope > span"), collapsed);
   }
@@ -186,13 +187,13 @@ function start() {
   const observer = new MutationObserver((mutations) => {
     if (mutations.some((mutation) => mutation.addedNodes.length
       || mutation.removedNodes.length
-      || ["class", "hidden", "aria-hidden", "style"].includes(mutation.attributeName))) schedule();
+      || ["class", "hidden", "aria-hidden"].includes(mutation.attributeName))) schedule();
   });
   observer.observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "hidden", "aria-hidden", "style"],
+    attributeFilter: ["class", "hidden", "aria-hidden"],
   });
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("orientationchange", schedule, { passive: true });
