@@ -1,0 +1,8 @@
+{
+  "release": "2026.07.30-auth-production-v153",
+  "authGateway": "2026.07.30-auth-gateway-v153",
+  "pwa": "ngeblogging-app-v153-auth-production-20260730",
+  "studioContinuity": "studio-continuity-v152-20260729",
+  "productionPromotion": true,
+  "staleReleaseRejected": "WHITE-R4-2026.07.12"
+}
