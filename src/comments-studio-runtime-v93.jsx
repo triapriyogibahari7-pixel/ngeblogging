@@ -18,6 +18,12 @@ function labelOf(button){return button?.querySelector("span")?.textContent?.trim
 function ensureHosts(){
   const shell=document.querySelector(".sn-shell"),nav=shell?.querySelector(":scope > .sn-side > nav"),main=shell?.querySelector(":scope > .sn-main");
   if(!shell||!nav||!main)return null;
+  if(shell.dataset.navigationOwner==="react-v138"){
+    nav.querySelector(":scope > .sn-comments-nav-host-v93")?.remove();
+    main.querySelector(":scope > .sn-comments-page-host-v93")?.remove();
+    shell.dataset.commentsRelease="native-react-v138";
+    return null;
+  }
   let navHost=nav.querySelector(":scope > .sn-comments-nav-host-v93");
   if(!navHost){navHost=document.createElement("span");navHost.className="sn-comments-nav-host-v93";const domain=[...nav.querySelectorAll(":scope > button")].find((button)=>labelOf(button)==="Domain");nav.insertBefore(navHost,domain||null);}
   let pageHost=main.querySelector(":scope > .sn-comments-page-host-v93");

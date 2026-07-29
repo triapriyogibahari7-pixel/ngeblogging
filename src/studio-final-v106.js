@@ -1,4 +1,4 @@
-const RELEASE = "studio-final-v138-20260729";
+const RELEASE = "studio-final-v113-20260729";
 const DOMAIN_ORDER_RELEASE = "sidebar-domain-order-v113-20260729";
 const ACTIONS_CLASS = "tn-code-header-actions-v106";
 const COMMENTS_ID = "ngeblogging-comments-native-v106";
@@ -21,6 +21,7 @@ function labelOf(button) {
 }
 
 function syncNativeCommentsButton() {
+  if (document.querySelector('.sn-shell[data-navigation-owner="react-v138"]')) return;
   const nav = document.querySelector(".sn-shell > .sn-side > nav");
   const legacyHost = nav?.querySelector(":scope > .sn-comments-nav-host-v93");
   const legacyButton = legacyHost?.querySelector(".sn-comments-nav-button-v93");
@@ -68,6 +69,7 @@ function syncNativeCommentsButton() {
 }
 
 function syncDomainMenuOrder() {
+  if (document.querySelector('.sn-shell[data-navigation-owner="react-v138"]')) return;
   const side = document.querySelector(".sn-shell > .sn-side");
   const nav = side?.querySelector(":scope > nav");
   if (!(side instanceof HTMLElement) || !(nav instanceof HTMLElement)) return;
