@@ -12,7 +12,7 @@ const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 
 test("Studio loads the modular cloud Media library without legacy DOM bridges", () => {
   assert.match(studio, /import MediaLibrary from "\.\/MediaLibrary"/);
-  assert.match(studio, /view===?"media"|view==="media"/);
+  assert.match(studio, /view\s*===\s*"media"/);
   assert.match(library, /uploadMedia/);
   assert.match(dataModule, /site-public-media/);
   assert.match(dataModule, /media_assets/);
