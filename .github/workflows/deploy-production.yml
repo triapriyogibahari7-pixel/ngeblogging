@@ -1,0 +1,82 @@
+name: Deploy Ngeblogging Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      QWEN_API_KEY: ci-dry-run-only
+      QWEN_WORKSPACE_ID: production-dry-run
+      SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate deployment credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run production regression tests
+        run: npm run test:production
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Validate Cloudflare bundle
+        run: npm run cloudflare:dry-run
+
+      - name: Deploy Worker, API, Studio and tenant assets
+        run: npm run deploy:cloudflare
+
+      - name: Verify v133 is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            stamp=$(date +%s)
+            index=$(curl -fsSL --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
+            worker=$(curl -fsSL --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
+            health_code=$(curl -sS -o /tmp/ngeblogging-health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
+            if [[ "$worker" == *"ngeblogging-app-v133-20260729"* ]] \
+              && [[ "$index" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$health_code" == "200" ]]; then
+              echo "Production v133 verified on attempt $attempt."
+              exit 0
+            fi
+            echo "Production belum v133 (attempt $attempt/30); menunggu propagasi."
+            sleep 10
+          done
+          echo "DEPLOY_VERIFY_FAILED"
+          exit 1
