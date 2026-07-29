@@ -44,7 +44,9 @@ test("small and large geometry cannot overlap or leave white viewport gaps", () 
   assert.match(css, /data-studio-device-mode="large"/);
   assert.match(css, /width:86vw!important/);
   assert.match(css, /transform:translate3d\(-105%,0,0\)!important/);
-  assert.match(css, /margin-left:0!important/);
+  assert.match(css, /\.sn-shell\[data-navigation-owner="react-v138"\]>\.sn-side:not\(\.collapsed\)\+\.sn-main/);
+  assert.match(css, /margin:0!important/);
+  assert.match(css, /display:flex!important;\s*grid-template-columns:none!important/);
   assert.match(css, /width:calc\(100% - 220px\)!important/);
   assert.match(css, /width:calc\(100% - 70px\)!important/);
   assert.match(css, /background:#f5f7fb/);
