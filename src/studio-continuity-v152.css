@@ -1,0 +1,153 @@
+/* Studio continuity v152: preserve sidebar state and keep small/medium Nara non-modal. */
+.sn-shell,
+.sn-main,
+.sn-main > *,
+.sn-view-pad,
+.sn-view-pad > *,
+.sv124-page,
+.sv124-page > *,
+.tn-studio,
+.tn-studio > *,
+.ce-app,
+.ce-app > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: clip !important;
+}
+
+.sn-main {
+  width: auto !important;
+  overflow-x: clip !important;
+}
+
+.sn-sidebar-edge-toggle-v147 {
+  z-index: 140 !important;
+  touch-action: manipulation !important;
+}
+
+html[data-studio-device-mode="large"] .sn-shell[data-sidebar-state="expanded"] .sn-main {
+  min-width: 0 !important;
+}
+
+html[data-studio-device-mode="small"] .sn-side {
+  width: clamp(280px, 78vw, 360px) !important;
+  max-width: calc(100vw - 36px) !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-device-mode="small"] .sn-side > nav {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+}
+
+html[data-studio-device-mode="small"] .sn-account-footer {
+  margin-top: auto !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="non-modal"] {
+  pointer-events: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-backdrop {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell {
+  pointer-events: auto !important;
+  position: fixed !important;
+  right: max(14px, env(safe-area-inset-right)) !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+  top: auto !important;
+  max-width: calc(100vw - 28px) !important;
+  max-height: calc(100dvh - 28px) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 70px rgba(18, 31, 53, .22) !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell[data-nara-size="small"] {
+  width: min(430px, calc(100vw - 28px)) !important;
+  height: min(620px, calc(100dvh - 28px)) !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell[data-nara-size="medium"] {
+  width: min(760px, calc(100vw - 28px)) !important;
+  height: min(780px, calc(100dvh - 28px)) !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="modal"] {
+  background: rgba(14, 24, 42, .32) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.nara-assistant-layer[data-nara-interaction="modal"] .nara-assistant-shell[data-nara-size="full"] {
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+}
+
+body.nara-nonmodal-open-v152 {
+  overflow: auto !important;
+  touch-action: auto !important;
+}
+
+@media (max-width: 760px) {
+  .nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell {
+    right: 8px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 16px !important;
+  }
+
+  .nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell[data-nara-size="small"] {
+    height: min(54dvh, 520px) !important;
+  }
+
+  .nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell[data-nara-size="medium"] {
+    height: min(78dvh, 720px) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html[data-studio-device-mode="small"] .sn-side {
+    width: min(84vw, 340px) !important;
+    max-width: calc(100vw - 28px) !important;
+  }
+
+  .nara-assistant-layer[data-nara-interaction="non-modal"] .nara-assistant-shell {
+    right: 6px !important;
+    width: calc(100vw - 12px) !important;
+    max-width: calc(100vw - 12px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-shell *,
+  .nara-assistant-layer * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
