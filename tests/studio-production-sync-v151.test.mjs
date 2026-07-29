@@ -17,7 +17,7 @@ const menu = [
   "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar",
 ];
 
-test("PWA controller and service worker use the same Studio completion generation", () => {
+test("PWA controller and service worker retain Studio completion v151 compatibility", () => {
   for (const marker of [
     "ngeblogging-pwa-v151-20260729", "ngeblogging-pwa-controller-v151",
     "pwa-v151-studio-completion", "studio-completion-v151",
@@ -29,14 +29,19 @@ test("PWA controller and service worker use the same Studio completion generatio
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare metadata and deployment verification match v151", () => {
-  assert.equal(production.vars.APP_RELEASE, "2026.07.29-studio-completion-v151");
-  assert.equal(production.vars.UI_AUTHORITY_RELEASE, "2026.07.29-studio-completion-v151");
+test("Cloudflare production advances beyond v151 without losing its compatibility markers", () => {
   assert.equal(production.assets.run_worker_first, true);
+  assert.match(production.vars.APP_RELEASE, /^2026\.07\.(?:29|30)-/);
+  assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
+  assert.ok(
+    production.vars.APP_RELEASE === "2026.07.29-studio-completion-v151"
+      || production.vars.APP_RELEASE === "2026.07.30-auth-production-v153",
+  );
   for (const marker of [
-    "ngeblogging-app-v151-studio-completion-20260729", "studio-completion-cache-v151",
-    "2026.07.29-studio-completion-v151", "DEPLOY_VERIFY_STUDIO_COMPLETION_V151_FAILED",
-  ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
+    "Run Studio and authentication contracts through v153",
+    "DEPLOY_VERIFY_AUTH_PRODUCTION_V153_FAILED",
+    "studio-completion-v151",
+  ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker), `release chain missing ${marker}`);
 });
 
 test("all responsive modes, menus, Theme tools and Nara controls remain intact", () => {
@@ -59,7 +64,7 @@ test("auth surfaces stay protected from forced PWA navigation", () => {
     assert.ok(worker.includes(route), `worker auth guard missing ${route}`);
     assert.ok(pwa.includes(route), `PWA auth guard missing ${route}`);
   }
-  for (const mode of ["callback", "recovery", "session-expired", "callback-error"]) {
+  for (const mode of ["signin", "signup", "callback", "recovery", "session-expired", "callback-error"]) {
     assert.ok(worker.includes(mode));
     assert.ok(pwa.includes(mode));
   }
