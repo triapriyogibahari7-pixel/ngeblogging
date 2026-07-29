@@ -60,15 +60,22 @@ jobs:
             "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID" \
             -o /tmp/netlify-site.json
 
+          resolved_site_id=$(node -e "const s=require('/tmp/netlify-site.json'); if(!s.id)process.exit(2); process.stdout.write(String(s.id))")
+          site_name=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.name||''))")
+          custom_domain=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.custom_domain||''))")
+          current_deploy_id=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.published_deploy?.id||''))")
+          current_deploy_locked=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.published_deploy?.locked===true))")
+
+          {
+            echo "NETLIFY_RESOLVED_SITE_ID=$resolved_site_id"
+            echo "NETLIFY_SITE_NAME=$site_name"
+            echo "NETLIFY_CUSTOM_DOMAIN=$custom_domain"
+            echo "NETLIFY_CURRENT_DEPLOY_ID=$current_deploy_id"
+            echo "NETLIFY_CURRENT_DEPLOY_LOCKED=$current_deploy_locked"
+          } >> "$GITHUB_ENV"
+
           node <<'NODE'
-          const fs = require('fs');
-          const site = JSON.parse(fs.readFileSync('/tmp/netlify-site.json', 'utf8'));
-          if (!site.id) throw new Error('NETLIFY_SITE_NOT_FOUND');
-          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_RESOLVED_SITE_ID=${site.id}\n`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_SITE_NAME=${site.name || ''}\n`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_CUSTOM_DOMAIN=${site.custom_domain || ''}\n`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_CURRENT_DEPLOY_ID=${site.published_deploy?.id || ''}\n`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_CURRENT_DEPLOY_LOCKED=${site.published_deploy?.locked === true}\n`);
+          const site = require('/tmp/netlify-site.json');
           console.log(JSON.stringify({
             siteId: site.id,
             name: site.name,
@@ -80,11 +87,11 @@ jobs:
           }, null, 2));
           NODE
 
-          if [[ "${NETLIFY_CURRENT_DEPLOY_LOCKED:-false}" == "true" && -n "${NETLIFY_CURRENT_DEPLOY_ID:-}" ]]; then
+          if [[ "$current_deploy_locked" == "true" && -n "$current_deploy_id" ]]; then
             curl -fsSL -X POST \
               -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
               -H "Accept: application/json" \
-              "https://api.netlify.com/api/v1/deploys/$NETLIFY_CURRENT_DEPLOY_ID/unlock" \
+              "https://api.netlify.com/api/v1/deploys/$current_deploy_id/unlock" \
               -o /tmp/netlify-unlock.json
             echo "Deploy produksi lama dibuka agar versi baru dapat dipublikasikan."
           fi
