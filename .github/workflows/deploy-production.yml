@@ -47,7 +47,7 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v142 production regression tests
+      - name: Run v144 production regression tests
         run: npm run test:production
 
       - name: Build production assets
@@ -56,10 +56,10 @@ jobs:
       - name: Validate Cloudflare bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy Studio handheld and authentication v142
+      - name: Deploy Studio layout authority v144
         run: npm run deploy:cloudflare
 
-      - name: Verify v142 release is live
+      - name: Verify v144 release is live
         shell: bash
         run: |
           set -euo pipefail
@@ -68,15 +68,16 @@ jobs:
             worker=$(curl -fsSL --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/ngeblogging-health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
             page_code=$(curl -sS -o /tmp/ngeblogging-home.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
-            if [[ "$worker" == *"ngeblogging-app-v142-studio-auth-20260729"* ]] \
-              && [[ "$worker" == *"single-react-handheld-auth-once-v142"* ]] \
+            if [[ "$worker" == *"ngeblogging-app-v144-studio-layout-20260729"* ]] \
+              && [[ "$worker" == *"single-react-layout-authority-v144"* ]] \
+              && [[ "$worker" == *"auth-route-handoff-v143-20260729"* ]] \
               && [[ "$health_code" == "200" ]] \
               && [[ "$page_code" == "200" ]]; then
-              echo "Production v142 verified on attempt $attempt."
+              echo "Production v144 verified on attempt $attempt."
               exit 0
             fi
-            echo "Production v142 belum aktif (attempt $attempt/30); menunggu propagasi."
+            echo "Production v144 belum aktif (attempt $attempt/30); menunggu propagasi."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_V142_FAILED"
+          echo "DEPLOY_VERIFY_V144_FAILED"
           exit 1
