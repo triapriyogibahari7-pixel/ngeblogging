@@ -1,8 +1,11 @@
-/* Ngeblogging sidebar account icons v119.
-   Final desktop collapsed-rail authority. The icon is painted as the button
-   background, so legacy rules that hide/remove Lucide SVG children cannot make
-   Pengaturan or Keluar appear empty. Mobile/drawer presentation is untouched. */
-:root{--sidebar-account-collapsed-icons-v119:1}
+/* Ngeblogging collapsed sidebar authority v120.
+   - Pengaturan and Keluar use painted fallback icons so legacy SVG-hiding rules
+     cannot make them empty.
+   - Their fallback icons use the workspace axis measured by v117 instead of the
+     center of a potentially wider footer row.
+   - Inactive Domain is rendered as a plain collapsed navigation icon.
+   Mobile/drawer presentation is untouched. */
+:root{--sidebar-account-collapsed-icons-v119:1;--sidebar-collapsed-precision-v120:1}
 
 @media (min-width:761px){
   html body #root .sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88{
@@ -12,7 +15,7 @@
     background-color:#f7f9fc!important;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2352647c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E")!important;
     background-repeat:no-repeat!important;
-    background-position:center!important;
+    background-position:var(--af117-icon-center,24px) center!important;
     background-size:22px 22px!important;
   }
 
@@ -23,7 +26,7 @@
     background-color:#fff2f3!important;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a23c49' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 17l5-5-5-5'/%3E%3Cpath d='M15 12H3'/%3E%3Cpath d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'/%3E%3C/svg%3E")!important;
     background-repeat:no-repeat!important;
-    background-position:center!important;
+    background-position:var(--af117-icon-center,24px) center!important;
     background-size:22px 22px!important;
   }
 
@@ -31,5 +34,26 @@
   html body #root .sn-shell>.sn-side.collapsed>.sn-account-footer>button:is(.sn-account-settings-v88,.sn-account-logout-v88)>span{
     visibility:hidden!important;
     opacity:0!important;
+  }
+
+  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active),
+  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active):hover,
+  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active):focus,
+  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active):focus-visible{
+    border:0!important;
+    outline:0!important;
+    background:transparent!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+
+  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active)::before,
+  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active)::after{
+    content:none!important;
+    display:none!important;
   }
 }
