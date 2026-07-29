@@ -2,13 +2,19 @@ import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import {
   Activity, BarChart3, BookOpen, Check, ChevronDown, Cloud, CloudOff,
   Eye, FilePlus2, FileText, Globe2, Image, LayoutDashboard, LoaderCircle, LogOut,
-  MoreHorizontal, Palette, PanelLeftClose, Plus, Search, Settings,
+  KeyRound, MessageCircle, MoreHorizontal, Palette, PanelLeftClose, Plus, Search, Settings,
   ShieldCheck, Sparkles, Trash2, Users, X,
 } from "lucide-react";
 import NaraAssistant from "./NaraAssistant";
 import ContentEditor from "./ContentEditor";
 import MediaLibrary from "./MediaLibrary";
 import DomainPanelV124 from "./DomainPanelV124.jsx";
+import CommentsPanelV124 from "./CommentsPanelV124.jsx";
+import ApiKeysPanel from "./ApiKeysPanel.jsx";
+import {
+  currentStudioDeviceMode,
+  MODE_EVENT,
+} from "./studio-device-mode-v138.js";
 import { supabase, supabaseConfigured } from "./lib/supabase";
 import {
   createUserSite, getOrCreatePrimarySite, getUserProfile, listUserSites,
@@ -23,7 +29,6 @@ import "./studio-recovery-v135.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
-const PHONE_QUERY = "(max-width: 700px)";
 
 function localDocument(type, title, content, status = "draft") {
   const metadata = normalizeMetadata({ commentsEnabled: type !== "page", showAuthor: type !== "page", showDate: type !== "page", showShare: type !== "page" }, type);
@@ -104,7 +109,7 @@ export default function StudioNext({ onExit, user }) {
   const [saved, setSaved] = useState(true);
   const [sidebar, setSidebar] = useState(true);
   const [mobileSidebar, setMobileSidebar] = useState(false);
-  const [smallScreen, setSmallScreen] = useState(() => window.matchMedia(PHONE_QUERY).matches);
+  const [deviceMode, setDeviceMode] = useState(currentStudioDeviceMode);
   const [toast, setToast] = useState("");
   const [naraOpen, setNaraOpen] = useState(false);
   const [siteManager, setSiteManager] = useState(false);
@@ -127,27 +132,31 @@ export default function StudioNext({ onExit, user }) {
   useEffect(() => { if (!toast) return undefined; const timer = setTimeout(() => setToast(""), 3200); return () => clearTimeout(timer); }, [toast]);
   useEffect(() => () => clearTimeout(saveTimer.current), []);
   useEffect(() => {
-    const media = window.matchMedia(PHONE_QUERY);
     const sync = () => {
-      setSmallScreen(media.matches);
-      if (!media.matches) setMobileSidebar(false);
+      const next = currentStudioDeviceMode();
+      setDeviceMode(next);
+      if (next === "large") setMobileSidebar(false);
     };
+    window.addEventListener(MODE_EVENT, sync);
+    window.addEventListener("pageshow", sync, { passive: true });
     sync();
-    media.addEventListener?.("change", sync);
-    return () => media.removeEventListener?.("change", sync);
+    return () => {
+      window.removeEventListener(MODE_EVENT, sync);
+      window.removeEventListener("pageshow", sync);
+    };
   }, []);
   useEffect(() => {
-    document.body.classList.toggle("sn-mobile-sidebar-open", smallScreen && mobileSidebar);
+    document.body.classList.toggle("sn-mobile-sidebar-open", deviceMode === "small" && mobileSidebar);
     return () => document.body.classList.remove("sn-mobile-sidebar-open");
-  }, [smallScreen, mobileSidebar]);
+  }, [deviceMode, mobileSidebar]);
   useEffect(() => {
-    if (!smallScreen || !mobileSidebar) return undefined;
+    if (deviceMode !== "small" || !mobileSidebar) return undefined;
     const closeOnEscape = (event) => {
       if (event.key === "Escape") setMobileSidebar(false);
     };
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [smallScreen, mobileSidebar]);
+  }, [deviceMode, mobileSidebar]);
 
   useEffect(() => {
     if (!user?.id || !supabaseConfigured) { setDataMode("local"); return; }
@@ -250,7 +259,7 @@ export default function StudioNext({ onExit, user }) {
   const chooseView = (next) => { setView(next); setMobileSidebar(false); if (["posts", "pages"].includes(next)) setQuery(""); };
   const selectSite = (next) => { setActiveSiteId(next.id); setSite(next); setSiteManager(false); setDocs([]); setView("home"); setToast(`Workspace ${next.name} aktif`); };
   const toggleSidebar = () => {
-    if (smallScreen) setMobileSidebar((current) => !current);
+    if (currentStudioDeviceMode() === "small") setMobileSidebar((current) => !current);
     else setSidebar((current) => !current);
   };
 
@@ -259,7 +268,7 @@ export default function StudioNext({ onExit, user }) {
     <NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "editor", siteId: site?.id, siteName: site?.name, documentId: active.id, documentType: active.type, documentTitle: active.title, documentContent: (active.content || "").slice(0, 12000), metadata: active.metadata }}/>
   </>;
 
-  return <div className="sn-shell" data-ui-release="stable-v138" data-layout-mode={smallScreen ? "small" : "large"}>
+  return <div className="sn-shell" data-ui-release="stable-v138" data-navigation-owner="react-v138" data-navigation-release="v138" data-device-mode={deviceMode}>
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
@@ -273,7 +282,9 @@ export default function StudioNext({ onExit, user }) {
         <button className={view === "media" ? "active" : ""} onClick={() => chooseView("media")}><Image/><span>Media</span></button>
         <button className={view === "analytics" ? "active" : ""} onClick={() => chooseView("analytics")}><BarChart3/><span>Analitik</span></button>
         <button className={view === "members" ? "active" : ""} onClick={() => chooseView("members")}><Users/><span>Anggota</span></button>
+        <button className={view === "comments" ? "active" : ""} onClick={() => chooseView("comments")}><MessageCircle/><span>Komentar</span></button>
         <button className={view === "domain" ? "active" : ""} onClick={() => chooseView("domain")}><Globe2/><span>Domain</span></button>
+        <button className={view === "api-keys" ? "active" : ""} onClick={() => chooseView("api-keys")}><KeyRound/><span>API Keys</span></button>
       </nav>
       <div className="sn-account-footer" data-sidebar-footer-release="v135">
         <button className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}`} onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
@@ -283,13 +294,10 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        <button
-          className="sn-icon sn-sidebar-toggle"
-          onClick={toggleSidebar}
-          aria-label={smallScreen ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Buka menu Studio")}
-          aria-expanded={smallScreen ? mobileSidebar : sidebar}
-          aria-controls="ngeblogging-studio-sidebar"
-        ><span className="sn-sidebar-toggle-mark" aria-hidden="true">n</span><PanelLeftClose className="sn-sidebar-toggle-panel" aria-hidden="true"/></button>
+        <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
+          <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong><i>.</i></span>
+          <PanelLeftClose className="sn-desktop-sidebar-icon"/>
+        </button>
         <button className="sn-workspace" onClick={() => setSiteManager(true)}><span>{site?.name?.slice(0, 2).toUpperCase() || "NB"}</span><div><small>WORKSPACE</small><b>{site?.name || "Ngeblogging"}</b></div><ChevronDown/></button>
         <div className={`sn-cloud ${dataMode}`}>{dataMode === "cloud" ? <Cloud/> : dataMode === "connecting" ? <LoaderCircle className="spin"/> : <CloudOff/>}<span>{dataMode === "cloud" ? "Cloud aktif" : dataMode === "connecting" ? "Menghubungkan" : "Mode perangkat"}</span></div>
         <div className="sn-top-actions">
@@ -307,7 +315,9 @@ export default function StudioNext({ onExit, user }) {
       {view === "media" && <div className="sn-view-pad"><MediaLibrary site={site} user={user} setToast={setToast}/></div>} 
       {view === "analytics" && <AnalyticsView/>} 
       {view === "members" && <MembersView site={site} user={user} profile={profile} setToast={setToast}/>} 
+      {view === "comments" && <CommentsPanelV124 site={site} setToast={setToast}/>} 
       {view === "domain" && <DomainPanelV124 site={site} sites={sites} onSiteUpdate={setSite} setToast={setToast}/>} 
+      {view === "api-keys" && <ApiKeysPanel setToast={setToast}/>} 
       {view === "settings" && <SettingsView site={site} setSite={setSite} profile={profile} setProfile={setProfile} user={user} setToast={setToast}/>} 
     </main>
 
