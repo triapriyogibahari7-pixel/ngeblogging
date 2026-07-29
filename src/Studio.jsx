@@ -11,5 +11,6 @@ import "./studio-layout-authority-v144.css";
 import "./studio-layout-authority-v145.css";
 import "./studio-interface-authority-v147.css";
 import "./studio-interface-v148.css";
+import "./studio-interface-v149.css";
 
 export default StudioFastGate;
