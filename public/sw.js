@@ -1,10 +1,8 @@
-const VERSION = "ngeblogging-app-v139-sidebar-auth-20260729";
-const CACHE_RELEASE = "locked-device-layout-and-auth-v139";
+const VERSION = "ngeblogging-app-v140-sidebar-auth-20260729";
+const CACHE_RELEASE = "single-react-layout-and-auth-v140";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
-const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v139-sidebar-auth";
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
@@ -14,13 +12,7 @@ self.addEventListener("install", (event) => {
   })());
 });
 
-function isSensitiveAuthCallback(url) {
-  return url.searchParams.has("code")
-    || url.searchParams.get("auth") === "callback"
-    || url.searchParams.get("auth") === "recovery";
-}
-
-async function refreshOpenWindows() {
+async function notifyOpenWindows() {
   const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
   await Promise.all(windows.map(async (client) => {
     try {
@@ -30,12 +22,8 @@ async function refreshOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-sidebar-auth-v139",
+        reason: "service-worker-activated-sidebar-auth-v140",
       });
-      if (isSensitiveAuthCallback(url)) return;
-      if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
-      url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
-      await client.navigate(url.href);
     } catch {
       // A broken tab must not block activation for the other clients.
     }
@@ -49,7 +37,7 @@ self.addEventListener("activate", (event) => {
       .filter((key) => ![SHELL_CACHE, ASSET_CACHE].includes(key))
       .map((key) => caches.delete(key)));
     await self.clients.claim();
-    await refreshOpenWindows();
+    await notifyOpenWindows();
   })());
 });
 
