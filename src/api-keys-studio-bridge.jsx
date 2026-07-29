@@ -52,6 +52,11 @@ function deactivate(shell) {
   if (host instanceof HTMLElement) host.hidden = true;
 }
 
+function closeMobileSidebar(shell) {
+  const closeButton = shell.querySelector(":scope > .sn-side.mobile-open .sn-side-close");
+  if (closeButton instanceof HTMLButtonElement) closeButton.click();
+}
+
 function activate(shell) {
   if (!(shell instanceof HTMLElement)) return;
   shell.querySelectorAll(":scope > .sn-side nav button.active").forEach((button) => {
@@ -67,6 +72,7 @@ function activate(shell) {
     host.hidden = false;
     host.scrollIntoView({ block: "start" });
   }
+  closeMobileSidebar(shell);
 }
 
 function ensureButton(shell) {
