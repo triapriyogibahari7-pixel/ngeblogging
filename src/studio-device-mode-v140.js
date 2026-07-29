@@ -4,7 +4,7 @@ const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
 const PHONE_MAX = 430;
-const HANDHELD_MAX = 700;
+const HANDHELD_MAX = 600;
 const RESPONSIVE_MODES = Object.freeze([
   "application",
   "phone",
@@ -86,12 +86,13 @@ function touchHandheldSignal(view) {
   const touchPoints = Number(navigator.maxTouchPoints || 0);
   const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
   const finePointer = mediaMatches("(any-pointer: fine)");
-  const compactPhysicalScreen = view.physicalShortSide <= HANDHELD_MAX && view.density >= 1.2;
-  const denseTouchScreen = touchPoints > 1 && view.density >= 1.5 && view.physicalShortSide <= 900;
+  const compactPhysicalScreen = view.physicalShortSide <= HANDHELD_MAX && view.density >= 1.1;
 
+  // Fallback ini hanya untuk telepon yang menyamarkan user-agent ketika "Situs desktop" aktif.
+  // Layar sentuh laptop tidak masuk karena masih memiliki pointer halus dan sisi fisik lebih besar.
   return touchPoints > 1
-    && (coarsePointer || denseTouchScreen)
-    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen || denseTouchScreen);
+    && coarsePointer
+    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
 }
 
 function handheldSignal(view) {
