@@ -1,0 +1,179 @@
+/* Recovery v150: restored analytics, first-site onboarding, profile dropdown, and safe mobile surfaces. */
+html[data-studio-operations-v41] .sn-analytics-roadmap-v148{display:none!important}
+
+.sn-profile-menu-v150{
+  position:absolute!important;
+  top:calc(100% + 10px)!important;
+  right:0!important;
+  z-index:2147483100!important;
+  width:min(290px,calc(100vw - 20px))!important;
+  display:grid!important;
+  gap:5px!important;
+  padding:9px!important;
+  border:1px solid #dbe4ef!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  box-shadow:0 22px 65px rgba(20,39,67,.18)!important;
+}
+.sn-top-actions{position:relative!important}
+.sn-profile-menu-v150>button{
+  width:100%!important;
+  min-height:54px!important;
+  display:grid!important;
+  justify-items:start!important;
+  align-content:center!important;
+  gap:3px!important;
+  padding:9px 11px!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:#263a55!important;
+  text-align:left!important;
+}
+.sn-profile-menu-v150>button:hover,.sn-profile-menu-v150>button:focus-visible{background:#eef5ff!important;color:#235fc8!important;outline:none!important}
+.sn-profile-menu-v150 span{font-size:12px!important;font-weight:900!important}
+.sn-profile-menu-v150 small{color:#7b899b!important;font-size:9px!important;font-weight:600!important}
+.sn-profile-menu-v150>button:last-child{border-top:1px solid #edf1f6!important;border-radius:0 0 10px 10px!important;color:#bd3747!important}
+
+.tn-edit-layout-v150{
+  border-color:#cbd9ea!important;
+  background:#fff!important;
+  color:#2d65c7!important;
+  font-weight:900!important;
+}
+.tn-edit-layout-v150::before{content:"▦";font-size:16px;line-height:1}
+.tn-layout-studio:focus{outline:3px solid rgba(45,110,223,.24)!important;outline-offset:4px!important}
+
+.sn-onboarding-layer-v150{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483600!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:18px!important;
+  background:rgba(18,31,50,.72)!important;
+  backdrop-filter:blur(10px)!important;
+  overflow:auto!important;
+}
+.sn-onboarding-v150{
+  width:min(1120px,100%)!important;
+  max-height:calc(100dvh - 36px)!important;
+  display:grid!important;
+  gap:18px!important;
+  padding:clamp(18px,3vw,34px)!important;
+  border:1px solid rgba(255,255,255,.68)!important;
+  border-radius:26px!important;
+  background:linear-gradient(145deg,#fff,#f5f9ff)!important;
+  box-shadow:0 35px 100px rgba(9,22,40,.32)!important;
+  overflow:auto!important;
+}
+.sn-onboarding-v150 *{box-sizing:border-box!important;min-width:0!important}
+.sn-onboarding-v150 header small{color:#2d6edf!important;font-size:9px!important;font-weight:900!important;letter-spacing:.14em!important}
+.sn-onboarding-v150 header h1{margin:7px 0!important;color:#142842!important;font:600 clamp(30px,5vw,54px)/1.08 "Playfair Display",serif!important}
+.sn-onboarding-v150 header p{max-width:780px!important;margin:0!important;color:#66778e!important;font-size:12px!important;line-height:1.7!important}
+.sn-onboarding-blueprints-v150{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+.sn-onboarding-blueprints-v150>button{
+  position:relative!important;
+  min-height:104px!important;
+  display:grid!important;
+  align-content:center!important;
+  gap:7px!important;
+  padding:16px!important;
+  border:1px solid #dce5ef!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  color:#304661!important;
+  text-align:left!important;
+}
+.sn-onboarding-blueprints-v150>button:hover{border-color:#8eb0ec!important;background:#f8fbff!important}
+.sn-onboarding-blueprints-v150>button.active{border-color:#2d6edf!important;background:#eef5ff!important;box-shadow:0 0 0 2px rgba(45,110,223,.10)!important}
+.sn-onboarding-blueprints-v150 b{font-size:13px!important}
+.sn-onboarding-blueprints-v150 span{color:#75849a!important;font-size:9px!important;line-height:1.55!important}
+.sn-onboarding-blueprints-v150 i{
+  position:absolute!important;
+  top:10px!important;
+  right:10px!important;
+  width:22px!important;
+  height:22px!important;
+  display:none!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:#2d6edf!important;
+  color:#fff!important;
+  font-size:11px!important;
+  font-style:normal!important;
+}
+.sn-onboarding-blueprints-v150>button.active i{display:grid!important}
+.sn-onboarding-fields-v150{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+.sn-onboarding-fields-v150 label{display:grid!important;gap:6px!important;color:#52657d!important;font-size:10px!important;font-weight:900!important}
+.sn-onboarding-fields-v150 label.wide{grid-column:1/-1!important}
+.sn-onboarding-fields-v150 input,.sn-onboarding-fields-v150 textarea{
+  width:100%!important;
+  min-height:46px!important;
+  padding:10px 12px!important;
+  border:1px solid #d6e0eb!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  color:#243a55!important;
+  font:600 12px "DM Sans",sans-serif!important;
+}
+.sn-onboarding-fields-v150 textarea{min-height:88px!important;resize:vertical!important}
+.sn-onboarding-fields-v150 label>div{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;border:1px solid #d6e0eb!important;border-radius:11px!important;background:#fff!important;overflow:hidden!important}
+.sn-onboarding-fields-v150 label>div input{border:0!important;border-radius:0!important}
+.sn-onboarding-fields-v150 label>div span{padding:0 12px!important;color:#718198!important;font-size:10px!important;white-space:nowrap!important}
+.sn-onboarding-error-v150{min-height:18px!important;margin:0!important;color:#c0394b!important;font-size:10px!important;font-weight:800!important}
+.sn-onboarding-v150 footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding-top:15px!important;border-top:1px solid #e0e8f1!important}
+.sn-onboarding-v150 footer span{color:#75849a!important;font-size:9px!important}
+.sn-onboarding-v150 footer button{
+  min-height:48px!important;
+  padding:0 20px!important;
+  border:1px solid #2d6edf!important;
+  border-radius:12px!important;
+  background:#2d6edf!important;
+  color:#fff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+.sn-onboarding-v150 footer button:disabled{opacity:.62!important;cursor:wait!important}
+
+html[data-studio-operations-v41] .op41-host,
+html[data-studio-operations-v41] .op41-panel,
+html[data-studio-operations-v41] .op41-panel>*{min-width:0!important;max-width:100%!important}
+html[data-studio-operations-v41] .op41-table-wrap{max-width:100%!important;overflow-x:auto!important}
+
+@media(max-width:760px){
+  .sn-profile-menu-v150{position:fixed!important;top:62px!important;right:10px!important}
+  .sn-onboarding-layer-v150{padding:8px!important;place-items:start center!important}
+  .sn-onboarding-v150{max-height:calc(100dvh - 16px)!important;padding:16px!important;border-radius:18px!important}
+  .sn-onboarding-blueprints-v150{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .sn-onboarding-fields-v150{grid-template-columns:1fr!important}
+  .sn-onboarding-fields-v150 label.wide{grid-column:auto!important}
+  .sn-onboarding-v150 footer{align-items:stretch!important;flex-direction:column!important}
+  .sn-onboarding-v150 footer button{width:100%!important}
+  html[data-studio-operations-v41] .op41-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  html[data-studio-operations-v41] .op41-chart-grid,
+  html[data-studio-operations-v41] .op41-chart-grid.equal{grid-template-columns:1fr!important}
+  html[data-studio-operations-v41] .op41-toolbar{align-items:stretch!important;flex-direction:column!important}
+  html[data-studio-operations-v41] .op41-toolbar-actions{justify-content:stretch!important}
+  html[data-studio-operations-v41] .op41-toolbar-actions>*{flex:1 1 130px!important}
+}
+
+@media(max-width:420px){
+  .sn-onboarding-blueprints-v150{grid-template-columns:1fr!important}
+  .sn-onboarding-blueprints-v150>button{min-height:86px!important}
+  .sn-onboarding-fields-v150 label>div{grid-template-columns:minmax(0,1fr)!important}
+  .sn-onboarding-fields-v150 label>div span{padding:0 12px 10px!important}
+  html[data-studio-operations-v41] .op41-metrics{grid-template-columns:1fr!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .tn-layout-studio{scroll-behavior:auto!important}
+}
