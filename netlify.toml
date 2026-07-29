@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/netlify-diagnostic.mjs"
+  command = "node --test tests/studio-interface-v147.test.mjs tests/studio-interface-v148.test.mjs tests/studio-interface-v149.test.mjs tests/studio-recovery-v150.test.mjs && mkdir -p dist && printf '<!doctype html><title>legacy contracts pass</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
