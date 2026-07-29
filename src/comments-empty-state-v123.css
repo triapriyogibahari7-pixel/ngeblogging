@@ -1,0 +1,83 @@
+/* Comments workspace empty-state authority v123.
+   When the active site has zero comments, show one clean message instead of
+   duplicating “Tidak ada komentar” and “Pilih komentar” in two uneven columns. */
+:root{--comments-empty-state-v123:1}
+
+.csm-workspace-v93.csm-zero-comments-v123{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(360px,1fr)!important;
+  min-height:440px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123>.csm-inbox-v93{
+  display:none!important;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123>.csm-detail-v93{
+  display:grid!important;
+  place-items:center!important;
+  min-width:0!important;
+  min-height:440px!important;
+  padding:42px 24px!important;
+  border:0!important;
+  background:linear-gradient(180deg,#fff 0%,#fbfdff 100%)!important;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123 .csm-empty-detail-v93{
+  display:grid!important;
+  place-items:center!important;
+  align-content:center!important;
+  gap:12px!important;
+  width:min(100%,520px)!important;
+  min-height:0!important;
+  padding:32px!important;
+  border:1px dashed #d7e2ef!important;
+  border-radius:20px!important;
+  background:#f8fbff!important;
+  color:#6b7b90!important;
+  text-align:center!important;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123 .csm-empty-detail-v93 svg{
+  width:48px!important;
+  height:48px!important;
+  padding:11px!important;
+  border-radius:16px!important;
+  background:#eaf2ff!important;
+  color:#2d6edf!important;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123 .csm-empty-detail-v93 h2{
+  margin:0!important;
+  font-size:0!important;
+  line-height:1.25!important;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123 .csm-empty-detail-v93 h2::after{
+  content:"Belum ada komentar";
+  display:block;
+  color:#17253c;
+  font-size:21px;
+  font-weight:800;
+}
+
+.csm-workspace-v93.csm-zero-comments-v123 .csm-empty-detail-v93::after{
+  content:"Komentar baru dari Posts dan Pages akan tampil di ruang moderasi ini.";
+  display:block;
+  max-width:420px;
+  color:#6b7b90;
+  font-size:13px;
+  line-height:1.6;
+}
+
+@media(max-width:820px){
+  .csm-workspace-v93.csm-zero-comments-v123,
+  .csm-workspace-v93.csm-zero-comments-v123>.csm-detail-v93{
+    min-height:360px!important;
+  }
+  .csm-workspace-v93.csm-zero-comments-v123>.csm-detail-v93{padding:22px 14px!important}
+  .csm-workspace-v93.csm-zero-comments-v123 .csm-empty-detail-v93{padding:26px 18px!important}
+}
