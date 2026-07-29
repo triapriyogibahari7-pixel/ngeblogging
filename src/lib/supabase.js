@@ -203,4 +203,64 @@ export async function signOut() {
   if (error) throw error;
 }
 
-export { AUTH_RELEASE, AUTH_GATEWAY_PREFIX, authAwareFetch };
+function requestedAuthMode() {
+  if (typeof window === "undefined") return "";
+  const url = new URL(window.location.href);
+  const path = url.pathname.replace(/\/+$/, "") || "/";
+  const routeMode = path === "/signup" ? "signup" : ["/login", "/signin"].includes(path) ? "signin" : "";
+  const queryMode = url.searchParams.get("auth") || "";
+  const mode = routeMode || (["signin", "signup", "session-expired", "callback-error"].includes(queryMode) ? (queryMode === "signup" ? "signup" : "signin") : "");
+  if (routeMode) {
+    url.pathname = "/";
+    url.searchParams.set("auth", routeMode);
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+  return mode;
+}
+
+function installAuthEntryBridge() {
+  if (typeof document === "undefined") return;
+  const requested = requestedAuthMode();
+  if (!requested) return;
+  document.documentElement.dataset.authEntryV153 = requested;
+  let opened = false;
+  let switched = false;
+  let observer;
+  const started = Date.now();
+
+  const scan = () => {
+    const modal = document.querySelector(".auth-modal");
+    if (!modal && !opened) {
+      const trigger = document.querySelector("button.nav-cta,.actions button.primary,.future button.primary");
+      if (trigger) {
+        opened = true;
+        trigger.click();
+      }
+    }
+
+    if (modal) {
+      const heading = modal.querySelector("h2")?.textContent || "";
+      const signupVisible = /Buat akun/i.test(heading);
+      if (requested === "signup" && !signupVisible && !switched) {
+        const button = [...modal.querySelectorAll(".auth-switch button")].find((node) => /Daftar/i.test(node.textContent || ""));
+        if (button) { switched = true; button.click(); }
+      } else if (requested === "signin" && signupVisible && !switched) {
+        const button = [...modal.querySelectorAll(".auth-switch button")].find((node) => /Masuk/i.test(node.textContent || ""));
+        if (button) { switched = true; button.click(); }
+      } else if ((requested === "signup" && signupVisible) || (requested === "signin" && !signupVisible)) {
+        observer?.disconnect();
+      }
+    }
+
+    if (Date.now() - started > 12_000) observer?.disconnect();
+  };
+
+  observer = new MutationObserver(scan);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scan, { once: true });
+  else scan();
+}
+
+installAuthEntryBridge();
+
+export { AUTH_RELEASE, AUTH_GATEWAY_PREFIX, authAwareFetch, installAuthEntryBridge };
