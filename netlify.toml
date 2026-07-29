@@ -1,5 +1,5 @@
 [build]
-  command = "node --test tests/studio-completion-v151.test.mjs && mkdir -p dist && printf '<!doctype html><title>completion v151 passes</title>' > dist/index.html"
+  command = "npm run test:production && mkdir -p dist && printf '<!doctype html><title>all production contracts pass</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
