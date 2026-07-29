@@ -266,7 +266,9 @@ function enhanceStudio() {
     enrichAnalytics(shell);
     enhanceThemeEditor(shell);
   }
-  enhanceNara();
+  const hasNaraShell = Boolean(document.querySelector(".nara-assistant-shell"));
+  if (hasNaraShell) enhanceNara();
+  else document.body.classList.remove("nara-fullscreen-open-v148");
   document.documentElement.dataset.studioInterfaceRelease = RELEASE;
 }
 
