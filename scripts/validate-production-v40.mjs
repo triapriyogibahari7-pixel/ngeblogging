@@ -6,7 +6,7 @@ const requireMarker = (source, marker, label) => {
   if (!source.includes(marker)) throw new Error(`${label} kehilangan marker: ${marker}`);
 };
 const forbidMarker = (source, marker, label) => {
-  if (source.includes(marker)) throw new Error(`${label} masih memuat authority lama: ${marker}`);
+  if (source.includes(marker)) throw new Error(`${label} masih memuat authority terlarang: ${marker}`);
 };
 
 const [
@@ -15,15 +15,16 @@ const [
   index,
   studio,
   studioNext,
+  styleAuthority,
   deviceRuntime,
-  compatibilityRuntime,
-  layout,
-  layoutHotfix,
-  layoutFinal,
+  finalLayout,
+  naraSize,
   serviceWorker,
   pwaRuntime,
   authCallback,
+  authBootstrap,
   supabaseClient,
+  favicon,
   worker,
 ] = await Promise.all([
   text("package.json"),
@@ -31,21 +32,21 @@ const [
   text("index.html"),
   text("src/Studio.jsx"),
   text("src/StudioNext.jsx"),
+  text("src/studio-style-authority-v144.js"),
   text("src/studio-device-mode-v140.js"),
-  text("src/studio-device-mode-v138.js"),
-  text("src/studio-layout-v140.css"),
-  text("src/studio-layout-hotfix-v141.css"),
-  text("src/studio-layout-hotfix-v142.css"),
+  text("src/studio-layout-authority-v144.css"),
+  text("src/nara-size-authority-v144.js"),
   text("public/sw.js"),
   text("src/pwa-runtime.js"),
   text("src/auth-callback-authority-v107.js"),
+  text("src/auth-studio-bootstrap-v106.js"),
   text("src/lib/supabase.js"),
+  text("public/favicon.svg"),
   text("cloudflare/worker-v67.mjs"),
 ]);
 
 const pkg = JSON.parse(packageSource);
 const production = JSON.parse(productionSource);
-
 if (pkg.scripts?.test !== "node --test tests/*.test.mjs") throw new Error("Test runner produksi berubah tanpa validasi.");
 requireMarker(pkg.scripts?.build || "", "vite build", "Build produksi");
 requireMarker(pkg.scripts?.["deploy:cloudflare"] || "", "wrangler deploy", "Deploy Cloudflare");
@@ -58,20 +59,30 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-handheld-auth-v142") throw new Error("APP_RELEASE belum v142.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-handheld-auth-v142") throw new Error("UI authority belum v142.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("APP_RELEASE belum v144.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("UI authority belum v144.");
 
 for (const marker of [
+  "studio-style-authority-v144.js",
   "studio-device-mode-v140.js",
+  "nara-size-authority-v144.js",
   "studio-layout-v140.css",
   "studio-layout-hotfix-v141.css",
   "studio-layout-hotfix-v142.css",
+  "studio-layout-authority-v144.css",
   "StudioFastGate.jsx",
 ]) requireMarker(studio, marker, "Studio entry");
-forbidMarker(studio, "studio-device-mode-v139.js", "Studio entry");
-forbidMarker(studio, "studio-device-modes-v138.css", "Studio entry");
-requireMarker(compatibilityRuntime, "studio-device-mode-v140.js", "Compatibility runtime v138");
-forbidMarker(compatibilityRuntime, "studio-device-mode-v139.js", "Compatibility runtime v138");
+
+for (const marker of [
+  "studio-style-authority-v144-20260729",
+  "LEGACY_STUDIO_STYLES",
+  "/src/studio-responsive-v23.css",
+  "/src/studio-shell-v30.css",
+  "/src/sidebar-final-v91.css",
+  "/src/studio-final-v106.css",
+  "link.media = \"not all\"",
+  "MutationObserver",
+]) requireMarker(styleAuthority, marker, "Style authority v144");
 
 for (const marker of [
   "studio-device-mode-v141-20260729",
@@ -81,52 +92,40 @@ for (const marker of [
   "any-pointer: coarse",
   "any-pointer: fine",
   "effectiveWidth <= COMPACT_MAX || handheldSignal()",
-  'REACT_NAVIGATION_OWNER = "react-v138"',
-  "LAYOUT_NODES",
-  "LEGACY_INLINE_PROPERTIES",
-  "clearLegacyInlineLayout",
-  "MutationObserver",
   "ngeblogging:studio-device-mode-change",
-]) requireMarker(deviceRuntime, marker, "Device authority v141");
+]) requireMarker(deviceRuntime, marker, "Deteksi perangkat");
 for (const legacy of ["forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer", "stopImmediatePropagation"]) {
-  forbidMarker(deviceRuntime, legacy, "Device authority v141");
+  forbidMarker(deviceRuntime, legacy, "Deteksi perangkat");
 }
 
 for (const marker of [
-  "--studio-side-open:232px",
-  "--studio-side-closed:76px",
-  "--studio-drawer:min(88vw,340px)",
-  'data-studio-device-mode="small"',
+  "--studio-v144-side-open:248px",
+  "--studio-v144-side-closed:76px",
   'data-studio-device-mode="large"',
-  "sn-mobile-menu-mark",
-  "sn-desktop-sidebar-icon",
-  "width:calc(100% - var(--studio-side-open))!important",
-  "width:calc(100% - var(--studio-side-closed))!important",
-  "overflow-x:hidden!important",
-  "backdrop-filter:none!important",
-]) requireMarker(layout, marker, "Layout authority v140");
-forbidMarker(layout, "studio-final-recovery-v136.css", "Layout authority v140");
-forbidMarker(layout, "data-v139-forced-mobile-open", "Layout authority v140");
-
-for (const marker of [
   'data-studio-device-mode="small"',
-  ".sn-side.collapsed+.sn-main",
-  "width:100%!important",
-  "background:rgba(10,24,43,.22)!important",
+  "width:100vw!important",
+  "min-width:100vw!important",
+  "content:\"n\"!important",
+  ".sn-logo-mark i{display:none!important}",
   "backdrop-filter:none!important",
-  ".sn-mobile-menu-mark",
-  ".sn-desktop-sidebar-icon",
-  ".sn-v139-forced-backdrop",
-]) requireMarker(layoutHotfix, marker, "Layout hotfix v141");
+  "overflow-x:hidden!important",
+  'data-nara-size="small"',
+  'data-nara-size="medium"',
+  'data-nara-size="full"',
+  "height:48dvh!important",
+  "height:76dvh!important",
+]) requireMarker(finalLayout, marker, "Layout final v144");
+forbidMarker(finalLayout, "content:\"n.\"", "Layout final v144");
 
 for (const marker of [
-  ".sn-comments-nav-host-v93",
-  "#ngeblogging-api-keys-nav-v135",
-  ".sn-sidebar-toggle>*{display:none!important}",
-  'content:"n."!important',
-  "overflow-x:hidden!important",
-  "backdrop-filter:none!important",
-]) requireMarker(layoutFinal, marker, "Layout final v142");
+  "nara-size-authority-v144-20260729",
+  "Kecil",
+  "Sedang",
+  "Penuh",
+  "data.naraSize",
+  "localStorage.setItem",
+  "MutationObserver",
+]) requireMarker(naraSize, marker, "Ukuran Nara v144");
 
 for (const marker of [
   'data-navigation-owner="react-v138"',
@@ -134,32 +133,28 @@ for (const marker of [
   "<span>Komentar</span>",
   "<span>Domain</span>",
   "<span>API Keys</span>",
-  "sn-mobile-menu-mark",
-  "<strong>n</strong><i>.</i>",
+  "sn-sidebar-toggle",
 ]) requireMarker(studioNext, marker, "Navigasi React Studio");
 
 for (const marker of [
-  "ngeblogging-app-v142-studio-auth-20260729",
-  "single-react-handheld-auth-once-v142",
+  "ngeblogging-app-v144-studio-layout-20260729",
+  "single-react-layout-authority-v144",
+  "auth-route-handoff-v143-20260729",
   "function isAuthSurface",
+  'url.pathname === "/signin"',
   "notifyOpenWindows",
   "NGE_BLOGGING_FORCE_RELOAD_V77",
   "Promise.allSettled",
   "self.clients.claim()",
-]) requireMarker(serviceWorker, marker, "Service Worker v142");
-forbidMarker(serviceWorker, "client.navigate(url.href)", "Service Worker v142");
+]) requireMarker(serviceWorker, marker, "Service Worker v144");
+forbidMarker(serviceWorker, "client.navigate", "Service Worker v144");
 
 for (const marker of [
   "ngeblogging-pwa-v142-20260729",
   "function handheldSignal",
-  "navigator.userAgentData?.mobile",
-  "navigator.maxTouchPoints",
-  'if (handheld || effectiveWidth <= 820) mode = "mobile"',
   "function authSurface",
-  "ngeblogging-pwa-controller-v142",
-  "pwa-v142-studio-auth",
   "navigator.serviceWorker.register",
-]) requireMarker(pwaRuntime, marker, "Runtime PWA v142");
+]) requireMarker(pwaRuntime, marker, "Runtime PWA");
 
 for (const marker of [
   "auth-callback-authority-v142-20260729",
@@ -169,28 +164,32 @@ for (const marker of [
   "supabase.auth.setSession",
   "history.replaceState",
   "ngeblogging:auth-session-ready",
-  "installPasswordFallback()",
-]) requireMarker(authCallback, marker, "Login callback v142");
+]) requireMarker(authCallback, marker, "Callback login");
+for (const marker of [
+  "auth-route-handoff-v143-20260729",
+  "redirectAuthenticatedSurface",
+  'path === "/login"',
+  'path === "/signup"',
+  'path === "/signin"',
+]) requireMarker(authBootstrap, marker, "Handoff login");
 
 for (const marker of [
   "createClient(url, key",
   "persistSession: true",
   "autoRefreshToken: true",
   "detectSessionInUrl: false",
-  "ngeblogging-web-v140",
-  'supabaseTransport = supabaseConfigured ? "direct-v140"',
-  "signInWithPassword",
+  "direct-v140",
 ]) requireMarker(supabaseClient, marker, "Transport Supabase langsung");
 for (const legacy of ["resilientSupabaseFetch", "/api/auth-proxy", "/api/data-proxy", "direct-fallback"]) {
   forbidMarker(supabaseClient, legacy, "Transport Supabase langsung");
 }
 
-for (const marker of [
-  "handleAuthGatewayRequest",
-  "handleDataGatewayRequest",
-  "handleCommentsRequest",
-  "injectPublicComments",
-]) requireMarker(worker, marker, "Worker produksi");
+requireMarker(favicon, "Ikon huruf n untuk Ngeblogging", "Favicon n");
+forbidMarker(favicon, "<circle", "Favicon n");
+
+for (const marker of ["handleAuthGatewayRequest", "handleDataGatewayRequest", "handleCommentsRequest", "injectPublicComments"]) {
+  requireMarker(worker, marker, "Worker produksi");
+}
 
 const disabledStudioRuntimes = [
   "comments-studio-runtime-v93.jsx",
@@ -217,13 +216,10 @@ const disabledStudioRuntimes = [
   "studio-final-v106.js",
 ];
 for (const runtime of disabledStudioRuntimes) {
-  requireMarker(index, `type="application/x-disabled" src="/src/${runtime}`, "Shell runtime tunggal v141");
-  forbidMarker(index, `type="module" src="/src/${runtime}`, "Shell runtime tunggal v141");
+  requireMarker(index, `type="application/x-disabled" src="/src/${runtime}`, "Runtime lama");
+  forbidMarker(index, `type="module" src="/src/${runtime}`, "Runtime lama");
 }
-
-requireMarker(index, 'ngeblogging-studio-runtime-authority" content="react-v141"', "Shell produksi");
-requireMarker(index, 'type="application/x-disabled" src="/src/sidebar-final-v91.js', "Shell produksi");
 requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
 requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
 
-console.log("Validasi produksi v142 lulus: satu runtime React, mode HP terkunci, tombol n. selalu ada, menu lama disingkirkan, cache hanya reload sekali, dan callback login tidak diproses dua kali.");
+console.log("Validasi produksi v144 lulus: stylesheet lama dimatikan, sidebar React presisi di HP dan desktop, ikon n tunggal aktif, Nara memiliki mode kecil/sedang/penuh, cache baru, serta login v143 tetap dilindungi.");
