@@ -10,22 +10,12 @@ import "./studio-flow-integrity-v111.css";
 import "./studio-flow-integrity-v111.js";
 import "./studio-domain-single-authority-v112.css";
 import "./studio-domain-single-authority-v112.js";
+import "./nara-controls-v135.js";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
-const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v33-20260725";
-const ACCOUNT_FOOTER_RELEASE = "sidebar-home-actions-v90-20260728";
-// Archived validator markers only; these are comments and do not restore the removed Nara route:
-// studio-source-navigation-v29-20260725
-// naraRoute.dataset.naraWorkspaceRoute = "true";
-// naraRoute.hidden = false;
-// naraRoute.disabled = false;
-// naraRoute.removeAttribute("aria-hidden");
-// Compatibility markers only: studio-source-navigation-v14-20260724,
-// studio-source-navigation-v21-20260725, dataset.sidebarAuthority, PHONE_QUERY,
-// button.hidden = false. Visible device controls are owned by Studio shell v30.
-const PHONE_QUERY = "(max-width: 760px)";
-void PHONE_QUERY;
+const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v135-20260729";
+const ACCOUNT_FOOTER_RELEASE = "sidebar-home-actions-v135-20260729";
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
@@ -47,7 +37,7 @@ function buttonLabel(button) {
     || "";
 }
 
-function hideNaraRouteWithoutRemovingReactNodes(shell) {
+function hideDuplicateNaraNavigation(shell) {
   const nav = shell.querySelector(":scope > .sn-side > nav");
   [...(nav?.querySelectorAll(":scope > button") || [])]
     .filter((button) => buttonLabel(button) === "Nara AI")
@@ -56,7 +46,6 @@ function hideNaraRouteWithoutRemovingReactNodes(shell) {
       button.disabled = true;
       button.tabIndex = -1;
       button.setAttribute("aria-hidden", "true");
-      button.dataset.reactNodePreserved = "true";
       button.style.setProperty("display", "none", "important");
     });
 
@@ -85,14 +74,16 @@ function revealAccountButton(button, className, actionName) {
 
 function syncAccountFooter(shell) {
   const nav = shell.querySelector(":scope > .sn-side > nav");
-  if (!nav) return;
-
-  const buttons = [...nav.querySelectorAll(":scope > button")];
+  const footer = shell.querySelector(":scope > .sn-side > .sn-account-footer");
+  const buttons = [
+    ...(nav?.querySelectorAll(":scope > button") || []),
+    ...(footer?.querySelectorAll(":scope > button") || []),
+  ];
   const settingsButton = buttons.find((button) => buttonLabel(button) === "Pengaturan");
   const logoutButton = buttons.find((button) => buttonLabel(button) === "Keluar");
 
-  const settingsReady = revealAccountButton(settingsButton, "sn-account-settings-v85", "settings");
-  const logoutReady = revealAccountButton(logoutButton, "sn-account-logout-v85", "logout");
+  const settingsReady = revealAccountButton(settingsButton, "sn-account-settings-v135", "settings");
+  const logoutReady = revealAccountButton(logoutButton, "sn-account-logout-v135", "logout");
   shell.dataset.accountSettingsReady = String(settingsReady);
   shell.dataset.accountLogoutReady = String(logoutReady);
 }
@@ -103,12 +94,16 @@ function syncReadinessChrome() {
 
   shell.dataset.sourceNavigation = SOURCE_NAVIGATION_RELEASE;
   shell.dataset.accountFooterRelease = ACCOUNT_FOOTER_RELEASE;
-  shell.querySelectorAll(":scope > .sn-mobile-nav, :scope > .sn-mobile-sheet-layer, .sn-side-close, .sn-side-bottom")
-    .forEach((node) => node.remove());
+  shell.dataset.stableLayout = "v135";
 
-  hideNaraRouteWithoutRemovingReactNodes(shell);
+  // Do not remove .sn-mobile-nav, .sn-mobile-sheet-layer, .sn-side-close,
+  // backdrops, or React-owned sidebar nodes. Removing them caused the mobile
+  // navigation to disappear and left an empty page area.
+  hideDuplicateNaraNavigation(shell);
   syncAccountFooter(shell);
 
+  // Nara is opened through the single floating mini button. The duplicate
+  // top-bar and editor shortcuts stay hidden without touching the assistant.
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
     button.disabled = true;
