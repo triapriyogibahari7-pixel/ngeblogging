@@ -1,6 +1,7 @@
 const RELEASE = "ngeblogging-pwa-v153-20260730";
 const LEGACY_RELEASE = "ngeblogging-pwa-v151-20260729";
 const UI_RELEASE = "auth-production-v153";
+const LEGACY_UI_RELEASE = "studio-completion-v151";
 const ROOT = document.getElementById("root") || document.documentElement;
 const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v153";
 const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v151";
@@ -119,6 +120,7 @@ function syncDeviceMode() {
   root.dataset.pwaRuntime = RELEASE;
   root.dataset.pwaLegacyRelease = LEGACY_RELEASE;
   root.dataset.pwaUiRelease = UI_RELEASE;
+  root.dataset.pwaLegacyUiRelease = LEGACY_UI_RELEASE;
   root.style.setProperty("--sn-browser-scale", "1");
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight}px`);
