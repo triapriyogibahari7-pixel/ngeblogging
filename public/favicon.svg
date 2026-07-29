@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">Ngeblogging</title>
-  <desc id="desc">Ikon huruf n dan titik untuk Ngeblogging.</desc>
+  <desc id="desc">Ikon huruf n untuk Ngeblogging.</desc>
   <defs>
     <linearGradient id="bg" x1="56" y1="32" x2="456" y2="480" gradientUnits="userSpaceOnUse">
       <stop stop-color="#2563eb"/>
@@ -12,6 +12,5 @@
     </filter>
   </defs>
   <rect x="32" y="32" width="448" height="448" rx="116" fill="url(#bg)" filter="url(#shadow)"/>
-  <path fill="#fff" d="M126 369V151h62l139 137V151h61v218h-57L187 228v141h-61Z"/>
-  <circle cx="407" cy="350" r="31" fill="#b9d2ff"/>
+  <path fill="#fff" d="M118 380V132h72l145 143V132h67v248h-63L185 229v151h-67Z"/>
 </svg>
