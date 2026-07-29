@@ -1,12 +1,16 @@
-const RELEASE = "ngeblogging-pwa-v145-20260729";
-const LEGACY_RELEASE = "ngeblogging-pwa-v142-20260729";
+const RELEASE = "ngeblogging-pwa-v151-20260729";
+const LEGACY_RELEASE = "ngeblogging-pwa-v145-20260729";
+const UI_RELEASE = "studio-completion-v151";
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v145";
-const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v142";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v151";
+const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v145";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v145-studio-mobile-cache";
-const LEGACY_RECOVERY_VALUE = "pwa-v142-studio-auth";
-const PHYSICAL_PHONE_MAX = 720;
+const RECOVERY_VALUE = "pwa-v151-studio-completion";
+const LEGACY_RECOVERY_VALUE = "pwa-v145-studio-mobile-cache";
+const COMPACT_MAX = 760;
+const TABLET_MAX = 1180;
+const PHONE_MAX = 430;
+const HANDHELD_MAX = 600;
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
@@ -16,54 +20,84 @@ function mediaMatches(query) {
   try { return window.matchMedia?.(query)?.matches === true; } catch { return false; }
 }
 
+function finitePositive(value, fallback = 1) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function standalone() {
+  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true;
+}
+
+function normalizedScreenDimension(raw, density, fallback) {
+  const value = finitePositive(raw, fallback);
+  if (value <= 900) return value;
+  return density >= 1.25 ? value / density : fallback;
+}
+
 function platformHandheldSignal() {
   const platform = `${navigator.userAgentData?.platform || ""} ${navigator.platform || ""}`;
   return /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform);
 }
 
-function handheldSignal() {
+function viewportMetrics() {
+  const layoutWidth = finitePositive(document.documentElement.clientWidth || window.innerWidth, 1);
+  const layoutHeight = finitePositive(document.documentElement.clientHeight || window.innerHeight, 1);
+  const visualWidth = finitePositive(window.visualViewport?.width, layoutWidth);
+  const density = finitePositive(window.devicePixelRatio, 1);
+  const screenWidth = normalizedScreenDimension(window.screen?.width, density, layoutWidth);
+  const screenHeight = normalizedScreenDimension(window.screen?.height, density, layoutHeight);
+  const physicalShortSide = Math.min(screenWidth, screenHeight);
+  const physicalLongSide = Math.max(screenWidth, screenHeight);
+  const portrait = layoutHeight >= layoutWidth;
+  return {
+    layoutWidth,
+    layoutHeight,
+    visualWidth,
+    density,
+    screenWidth,
+    screenHeight,
+    physicalShortSide,
+    physicalViewportWidth: portrait ? physicalShortSide : physicalLongSide,
+    effectiveWidth: Math.min(layoutWidth, visualWidth),
+  };
+}
+
+function handheldSignal(view) {
   const userAgent = navigator.userAgent || "";
   const mobileUa = navigator.userAgentData?.mobile === true
     || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent)
     || platformHandheldSignal();
+  if (mobileUa) return true;
+
   const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
   const finePointer = mediaMatches("(any-pointer: fine)");
-  const screenWidth = Math.max(1, Number(window.screen?.width) || Number(window.innerWidth) || 1);
-  const screenHeight = Math.max(1, Number(window.screen?.height) || Number(window.innerHeight) || 1);
-  const physicalShortSide = Math.min(screenWidth, screenHeight);
-  const density = Math.max(1, Number(window.devicePixelRatio) || 1);
-  const compactPhysicalScreen = physicalShortSide <= PHYSICAL_PHONE_MAX && density >= 1.25;
-  const touchHandheld = Number(navigator.maxTouchPoints || 0) > 1
+  const compactPhysicalScreen = view.physicalShortSide <= HANDHELD_MAX && view.density >= 1.1;
+  return Number(navigator.maxTouchPoints || 0) > 1
     && coarsePointer
     && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
-  return mobileUa || touchHandheld;
+}
+
+function responsiveFamily(view, handheld) {
+  if (standalone()) return "application";
+  if (handheld && view.physicalShortSide <= PHONE_MAX) return "phone";
+  if (handheld) return "mobile";
+  if (view.effectiveWidth <= COMPACT_MAX) return "compact";
+  if (view.effectiveWidth <= TABLET_MAX) return "tablet";
+  return "desktop";
 }
 
 function viewportProfile() {
-  const layoutWidth = Math.max(1, Number(document.documentElement.clientWidth || window.innerWidth) || 1);
-  const layoutHeight = Math.max(1, Number(document.documentElement.clientHeight || window.innerHeight) || 1);
-  const visualWidth = Math.max(1, Number(window.visualViewport?.width) || layoutWidth);
-  const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
-  const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
-  const handheld = handheldSignal();
-  const effectiveWidth = Math.min(layoutWidth, visualWidth);
-  const desktopSitePhone = handheld && layoutWidth > 820;
-
+  const view = viewportMetrics();
+  const handheld = handheldSignal(view);
+  const family = responsiveFamily(view, handheld);
+  const desktopSitePhone = handheld && view.layoutWidth > Math.max(TABLET_MAX, view.physicalViewportWidth * 1.35);
   let mode = "desktop";
-  if (handheld || effectiveWidth <= 820) mode = "mobile";
-  else if (layoutWidth <= 1100) mode = "tablet";
-  else if (layoutWidth <= 1440) mode = "laptop";
+  if (["application", "phone", "mobile", "compact"].includes(family)) mode = "mobile";
+  else if (family === "tablet") mode = "tablet";
+  else if (view.effectiveWidth <= 1536) mode = "laptop";
 
-  return {
-    mode,
-    handheld,
-    desktopSitePhone,
-    layoutWidth,
-    layoutHeight,
-    visualWidth,
-    screenWidth,
-    screenHeight,
-  };
+  return { ...view, mode, family, handheld, desktopSitePhone };
 }
 
 function deviceMode() {
@@ -74,8 +108,9 @@ function syncDeviceMode() {
   const profile = viewportProfile();
   const root = document.documentElement;
   root.dataset.deviceMode = profile.mode;
-  root.dataset.physicalPhone = String(profile.handheld);
-  root.dataset.physicalMobile = String(profile.mode === "mobile");
+  root.dataset.deviceFamily = profile.family;
+  root.dataset.physicalPhone = String(profile.family === "phone");
+  root.dataset.physicalMobile = String(["application", "phone", "mobile", "compact"].includes(profile.family));
   root.dataset.physicalScreenMobile = String(profile.handheld);
   root.dataset.desktopSitePhone = String(profile.desktopSitePhone);
   root.dataset.desktopLayoutRequested = String(profile.desktopSitePhone);
@@ -83,14 +118,11 @@ function syncDeviceMode() {
   root.dataset.orientation = mediaMatches("(orientation: portrait)") ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
   root.dataset.pwaLegacyRelease = LEGACY_RELEASE;
+  root.dataset.pwaUiRelease = UI_RELEASE;
   root.style.setProperty("--sn-browser-scale", "1");
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight}px`);
   root.style.setProperty("--sn-visual-width", `${profile.visualWidth}px`);
-}
-
-function standalone() {
-  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true;
 }
 
 function productionHost() {
@@ -176,10 +208,7 @@ async function registerServiceWorker() {
   if (!productionHost() || !("serviceWorker" in navigator)) return;
   if (location.protocol !== "https:" && location.hostname !== "localhost") return;
   try {
-    const registration = await navigator.serviceWorker.register("/sw.js", {
-      scope: "/",
-      updateViaCache: "none",
-    });
+    const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
     registration.update().catch(() => null);
     registration.addEventListener("updatefound", () => {
       const worker = registration.installing;
@@ -195,9 +224,7 @@ async function registerServiceWorker() {
       reloadForNewController("controllerchange");
     });
     navigator.serviceWorker.addEventListener("message", (event) => {
-      if (event.data?.type === "NGE_BLOGGING_FORCE_RELOAD_V77") {
-        reloadForNewController(event.data.reason || "service-worker-message");
-      }
+      if (event.data?.type === "NGE_BLOGGING_FORCE_RELOAD_V77") reloadForNewController(event.data.reason || "service-worker-message");
     });
   } catch (error) {
     console.warn("PWA registration failed", error);
