@@ -94,7 +94,9 @@ export default function StudioSecure(props) {
   }, []);
 
   return <>
-    <StudioStableV124 {...props}/>
+    <div data-studio-shell="v124" data-studio-release="stable-react-v124" style={{ display: "contents" }}>
+      <StudioStableV124 {...props}/>
+    </div>
     {backupMount ? createPortal(<BackupCenter user={props.user}/>, backupMount) : null}
   </>;
 }
