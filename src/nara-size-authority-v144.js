@@ -9,7 +9,7 @@ function preferredSize() {
   } catch {
     // Pembatasan penyimpanan browser tidak boleh memblokir Nara.
   }
-  return matchMedia?.("(max-width:760px)")?.matches ? "medium" : "medium";
+  return "medium";
 }
 
 function setSize(shell, size) {
