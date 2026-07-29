@@ -1,0 +1,60 @@
+/* Canonical geometry override for the React Studio. No DOM mutation. */
+.sv124-shell{--side-open:244px;--side-closed:72px;width:100%;min-width:0;overflow-x:clip}
+.sv124-side{width:var(--side-open)!important;min-width:var(--side-open)!important;max-width:var(--side-open)!important;contain:layout paint}
+.sv124-main{width:calc(100% - var(--side-open))!important;max-width:none!important;min-width:0!important;margin-left:var(--side-open)!important;overflow-x:clip}
+.sv124-shell.collapsed .sv124-side{width:var(--side-closed)!important;min-width:var(--side-closed)!important;max-width:var(--side-closed)!important}
+.sv124-shell.collapsed .sv124-main{width:calc(100% - var(--side-closed))!important;margin-left:var(--side-closed)!important}
+
+/* Navigation and account actions share exactly one grid. */
+.sv124-side>nav,.sv124-account-footer{width:100%;min-width:0}
+.sv124-side>nav{align-items:stretch!important}
+.sv124-side nav button,.sv124-account-footer button{position:relative!important;inset:auto!important;width:100%!important;min-width:0!important;max-width:none!important;height:46px!important;min-height:46px!important;max-height:46px!important;display:grid!important;grid-template-columns:24px minmax(0,1fr)!important;align-items:center!important;justify-content:stretch!important;justify-items:start!important;gap:12px!important;margin:0!important;padding:0 14px!important;transform:none!important;line-height:1!important}
+.sv124-side nav button svg,.sv124-account-footer button svg{grid-column:1!important;width:21px!important;height:21px!important;margin:0!important;justify-self:center!important;align-self:center!important}
+.sv124-side nav button span,.sv124-account-footer button span{grid-column:2!important;display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;align-self:center!important;justify-self:stretch!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:13px!important;line-height:1.15!important;text-align:left!important}
+.sv124-account-footer{align-items:stretch!important;padding-left:12px!important;padding-right:12px!important}
+
+/* Closed desktop sidebar is permanently icon-only. */
+.sv124-shell.collapsed .sv124-logo>b,.sv124-shell.collapsed .sv124-new span,.sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{display:none!important;visibility:hidden!important;width:0!important;max-width:0!important;opacity:0!important;overflow:hidden!important}
+.sv124-shell.collapsed .sv124-side>nav,.sv124-shell.collapsed .sv124-account-footer{align-items:center!important;padding-left:12px!important;padding-right:12px!important}
+.sv124-shell.collapsed .sv124-side nav button,.sv124-shell.collapsed .sv124-account-footer button{width:48px!important;min-width:48px!important;max-width:48px!important;height:44px!important;min-height:44px!important;max-height:44px!important;grid-template-columns:24px!important;justify-content:center!important;justify-items:center!important;gap:0!important;margin:0 auto!important;padding:0!important}
+.sv124-shell.collapsed .sv124-side nav button svg,.sv124-shell.collapsed .sv124-account-footer button svg{grid-column:1!important;justify-self:center!important}
+
+/* Every route fills the available area like Theme and Media. */
+.sv124-main>.sv124-page,.sv124-main>.sv124-comments-page,.sv124-main>.sv124-domain-page,.sv124-main>.sv124-api-page,.sv124-main>.sv124-panel-loading,.sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page{width:100%!important;max-width:none!important;min-width:0!important;margin:0!important}
+.sv124-page>*,.sv124-page-title,.sv124-welcome,.sv124-card,.sv124-info-grid,.sv124-settings-grid,.sv124-content-card,.sv124-members,.sv124-comment-workspace,.sv124-domain-list,.sv124-domain-register,.sv124-domain-audit,.sv124-free-domain,.sv124-api-list,.sv124-api-endpoint{width:100%!important;max-width:none!important;min-width:0!important}
+.sv124-main,.sv124-main *{min-inline-size:0}
+.sv124-main pre,.sv124-main code{max-width:100%}
+.sv124-key-table,.sv124-comment-tools>div{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+
+/* Empty and loading states occupy a real panel, never an apparently missing page. */
+.sv124-unified-empty,.sv124-panel-loading{width:100%!important;max-width:none!important;min-height:240px!important}
+.sv124-unified-empty.compact{min-height:200px!important}
+.sv124-members:empty{min-height:250px;display:grid;place-items:center;color:#748196}
+.sv124-members:empty::after{content:"Belum ada anggota tambahan pada situs aktif.";padding:24px;text-align:center;font-size:13px;font-weight:700}
+
+/* Keep the real floating Nara mini visible; the sidebar route is removed in React. */
+.nara-floating-button{position:fixed!important;z-index:4500!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(12px,env(safe-area-inset-bottom))!important;display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+
+@media(max-width:1100px){
+  .sv124-page{padding-left:20px!important;padding-right:20px!important}
+  .sv124-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .sv124-comment-columns{grid-template-columns:minmax(250px,40%) minmax(0,60%)!important}
+}
+
+@media(max-width:760px){
+  .sv124-side,.sv124-shell.collapsed .sv124-side{width:min(88vw,370px)!important;min-width:min(88vw,370px)!important;max-width:min(88vw,370px)!important}
+  .sv124-main,.sv124-shell.collapsed .sv124-main{width:100%!important;margin-left:0!important}
+  .sv124-shell:not(.mobile-open) .sv124-side{transform:translateX(-105%)!important}
+  .sv124-shell.mobile-open .sv124-side{transform:translateX(0)!important}
+  .sv124-shell.collapsed .sv124-logo>b,.sv124-shell.collapsed .sv124-new span,.sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{display:block!important;visibility:visible!important;width:auto!important;max-width:none!important;opacity:1!important}
+  .sv124-side nav button,.sv124-account-footer button,.sv124-shell.collapsed .sv124-side nav button,.sv124-shell.collapsed .sv124-account-footer button{width:100%!important;min-width:0!important;max-width:none!important;height:54px!important;min-height:54px!important;max-height:54px!important;grid-template-columns:28px minmax(0,1fr)!important;justify-content:stretch!important;justify-items:start!important;gap:14px!important;margin:0!important;padding:0 19px!important;font-size:15px!important}
+  .sv124-side nav button svg,.sv124-account-footer button svg,.sv124-shell.collapsed .sv124-side nav button svg,.sv124-shell.collapsed .sv124-account-footer button svg{grid-column:1!important;width:24px!important;height:24px!important}
+  .sv124-side nav button span,.sv124-account-footer button span,.sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{grid-column:2!important;font-size:15px!important}
+  .sv124-account-footer,.sv124-shell.collapsed .sv124-account-footer{align-items:stretch!important;padding:12px 16px calc(14px + env(safe-area-inset-bottom))!important}
+  .sv124-page{padding:18px 14px 82px!important}
+  .sv124-info-grid,.sv124-settings-grid,.sv124-comment-columns{grid-template-columns:1fr!important}
+  .sv124-comment-detail{display:none}
+  .sv124-comment-list{min-height:260px}
+  .sv124-page-title h1,.sv124-welcome h1{font-size:32px!important}
+  .nara-floating-button{right:10px!important;bottom:10px!important;transform:scale(.92);transform-origin:right bottom}
+}
