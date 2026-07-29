@@ -15,7 +15,7 @@
     "domain:netlify": "node scripts/netlify-domain-alias.mjs",
     "check": "npm test && vite build",
     "test": "node --test tests/*.test.mjs",
-    "test:production": "node --test tests/*.test.mjs && node scripts/validate-production-v40.mjs"
+    "test:production": "node --test tests/*.test.mjs && node scripts/validate-production-v147.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
