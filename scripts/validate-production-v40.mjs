@@ -18,6 +18,7 @@ const [
   styleAuthority,
   deviceRuntime,
   finalLayout,
+  mobileCacheLayout,
   naraSize,
   serviceWorker,
   pwaRuntime,
@@ -35,6 +36,7 @@ const [
   text("src/studio-style-authority-v144.js"),
   text("src/studio-device-mode-v140.js"),
   text("src/studio-layout-authority-v144.css"),
+  text("src/studio-layout-authority-v145.css"),
   text("src/nara-size-authority-v144.js"),
   text("public/sw.js"),
   text("src/pwa-runtime.js"),
@@ -59,8 +61,8 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("APP_RELEASE belum v144.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("UI authority belum v144.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("APP_RELEASE dasar belum v144.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("UI authority dasar belum v144.");
 
 for (const marker of [
   "studio-style-authority-v144.js",
@@ -70,6 +72,7 @@ for (const marker of [
   "studio-layout-hotfix-v141.css",
   "studio-layout-hotfix-v142.css",
   "studio-layout-authority-v144.css",
+  "studio-layout-authority-v145.css",
   "StudioFastGate.jsx",
 ]) requireMarker(studio, marker, "Studio entry");
 
@@ -85,17 +88,21 @@ for (const marker of [
 ]) requireMarker(styleAuthority, marker, "Style authority v144");
 
 for (const marker of [
+  "studio-device-mode-v145-20260729",
   "studio-device-mode-v141-20260729",
   "COMPACT_MAX = 820",
+  "PHYSICAL_PHONE_MAX = 720",
   "navigator.userAgentData?.mobile",
   "navigator.maxTouchPoints",
   "any-pointer: coarse",
   "any-pointer: fine",
+  "platformHandheldSignal",
+  "compactPhysicalScreen",
   "effectiveWidth <= COMPACT_MAX || handheldSignal()",
   "ngeblogging:studio-device-mode-change",
-]) requireMarker(deviceRuntime, marker, "Deteksi perangkat");
+]) requireMarker(deviceRuntime, marker, "Deteksi perangkat v145");
 for (const legacy of ["forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer", "stopImmediatePropagation"]) {
-  forbidMarker(deviceRuntime, legacy, "Deteksi perangkat");
+  forbidMarker(deviceRuntime, legacy, "Deteksi perangkat v145");
 }
 
 for (const marker of [
@@ -114,8 +121,24 @@ for (const marker of [
   'data-nara-size="full"',
   "height:48dvh!important",
   "height:76dvh!important",
-]) requireMarker(finalLayout, marker, "Layout final v144");
-forbidMarker(finalLayout, "content:\"n.\"", "Layout final v144");
+]) requireMarker(finalLayout, marker, "Layout dasar v144");
+forbidMarker(finalLayout, "content:\"n.\"", "Layout dasar v144");
+
+for (const marker of [
+  "--studio-v145-side-open:248px",
+  "--studio-v145-side-closed:76px",
+  'data-studio-device-mode="small"',
+  "z-index:2147482000!important",
+  "width:100%!important",
+  "height:100dvh!important",
+  "transition:none!important",
+  ".sn-shell>.sn-side-backdrop",
+  "display:none!important",
+  "content:\"n\"!important",
+  "backdrop-filter:none!important",
+  ".nara-size-controls-v144",
+]) requireMarker(mobileCacheLayout, marker, "Kunci mobile v145");
+forbidMarker(mobileCacheLayout, "content:\"n.\"", "Kunci mobile v145");
 
 for (const marker of [
   "nara-size-authority-v144-20260729",
@@ -125,7 +148,7 @@ for (const marker of [
   "data.naraSize",
   "localStorage.setItem",
   "MutationObserver",
-]) requireMarker(naraSize, marker, "Ukuran Nara v144");
+]) requireMarker(naraSize, marker, "Ukuran Nara");
 
 for (const marker of [
   'data-navigation-owner="react-v138"',
@@ -137,24 +160,33 @@ for (const marker of [
 ]) requireMarker(studioNext, marker, "Navigasi React Studio");
 
 for (const marker of [
-  "ngeblogging-app-v144-studio-layout-20260729",
-  "single-react-layout-authority-v144",
+  "ngeblogging-app-v145-studio-mobile-cache-20260729",
+  "single-react-mobile-cache-v145",
   "auth-route-handoff-v143-20260729",
+  "FORCE_REFRESH_QUERY",
+  "FORCE_REFRESH_VALUE",
   "function isAuthSurface",
   'url.pathname === "/signin"',
+  "refreshStaleWindow",
+  "client.navigate(url.href)",
   "notifyOpenWindows",
   "NGE_BLOGGING_FORCE_RELOAD_V77",
   "Promise.allSettled",
   "self.clients.claim()",
-]) requireMarker(serviceWorker, marker, "Service Worker v144");
-forbidMarker(serviceWorker, "client.navigate", "Service Worker v144");
+]) requireMarker(serviceWorker, marker, "Service Worker v145");
 
 for (const marker of [
-  "ngeblogging-pwa-v142-20260729",
+  "ngeblogging-pwa-v145-20260729",
+  "ngeblogging-pwa-controller-v145",
+  "pwa-v145-studio-mobile-cache",
   "function handheldSignal",
+  "platformHandheldSignal",
   "function authSurface",
+  'location.pathname === "/signin"',
+  'authMode === "session-expired"',
+  'authMode === "callback-error"',
   "navigator.serviceWorker.register",
-]) requireMarker(pwaRuntime, marker, "Runtime PWA");
+]) requireMarker(pwaRuntime, marker, "Runtime PWA v145");
 
 for (const marker of [
   "auth-callback-authority-v142-20260729",
@@ -222,4 +254,4 @@ for (const runtime of disabledStudioRuntimes) {
 requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
 requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
 
-console.log("Validasi produksi v144 lulus: stylesheet lama dimatikan, sidebar React presisi di HP dan desktop, ikon n tunggal aktif, Nara memiliki mode kecil/sedang/penuh, cache baru, serta login v143 tetap dilindungi.");
+console.log("Validasi produksi v145 lulus: cache v142 diputus satu kali, HP Situs desktop dikenali, drawer menutup viewport tanpa blur/celah, tombol n tetap aktif, Nara memiliki mode kecil/sedang/penuh, dan login v143 tidak dinavigasi paksa.");
