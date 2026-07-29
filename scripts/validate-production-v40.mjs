@@ -72,6 +72,7 @@ for (const marker of [
   "LAYOUT_NODES",
   "LEGACY_INLINE_PROPERTIES",
   "clearLegacyInlineLayout",
+  'declaredOwner.startsWith("react-v")',
   "sn-mobile-sheet-layer",
   "MutationObserver",
   "ngeblogging:studio-device-mode-change",
@@ -154,8 +155,38 @@ for (const marker of [
   "injectPublicComments",
 ]) requireMarker(worker, marker, "Worker produksi");
 
+const disabledStudioRuntimes = [
+  "comments-studio-runtime-v93.jsx",
+  "studio-interaction-v49.js",
+  "studio-layout-route-v29.js",
+  "studio-shell-v30.js",
+  "studio-mobile-route-reset-v32.js",
+  "studio-content-flow-v34.js",
+  "studio-domain-backup-v35.js",
+  "studio-production-audit-v37.js",
+  "studio-production-repair-v38.js",
+  "production-contract-v38.js",
+  "studio-layout-builder-v39.js",
+  "studio-quality-v39.js",
+  "studio-layout-device-v40.js",
+  "studio-responsive-repair-v43.js",
+  "studio-operations-v41.js",
+  "studio-reflow-v48.js",
+  "studio-theme-domain-v50.js",
+  "studio-site-switcher-v52.js",
+  "studio-ui-stability-v95.js",
+  "studio-surface-authority-v100.js",
+  "studio-mobile-precision-v99.js",
+  "studio-final-v106.js",
+];
+for (const runtime of disabledStudioRuntimes) {
+  requireMarker(index, `type="application/x-disabled" src="/src/${runtime}`, "Shell runtime tunggal v140");
+  forbidMarker(index, `type="module" src="/src/${runtime}`, "Shell runtime tunggal v140");
+}
+
+requireMarker(index, 'ngeblogging-studio-runtime-authority" content="react-v140"', "Shell produksi");
 requireMarker(index, 'type="application/x-disabled" src="/src/sidebar-final-v91.js', "Shell produksi");
 requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
 requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
 
-console.log("Validasi produksi v140 lulus: satu authority layout React, tombol n. mobile, tanpa blur/overflow putih, cache baru, dan login Supabase langsung aktif.");
+console.log("Validasi produksi v140 lulus: satu runtime React, tombol n. mobile, tanpa blur/overflow putih, cache baru, dan login Supabase langsung aktif.");
