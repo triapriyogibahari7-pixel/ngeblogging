@@ -1,0 +1,84 @@
+/* Sidebar account desktop visibility authority v118.
+   Keep the approved v117 geometry and guarantee that Pengaturan/Keluar icons
+   remain visible in desktop, laptop, desktop-phone, and browser Desktop-site
+   layouts. Compact mobile/app layout is intentionally untouched. */
+:root{--sidebar-account-desktop-visibility-v118:1}
+
+html.studio-v30-desktop .sn-side>.sn-account-footer,
+html.studio-v30-laptop .sn-side>.sn-account-footer,
+html.studio-v30-desktop-phone .sn-side>.sn-account-footer,
+html[data-desktop-layout-requested="true"] .sn-side>.sn-account-footer{
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+}
+
+html.studio-v30-desktop .sn-side>.sn-account-footer>button,
+html.studio-v30-laptop .sn-side>.sn-account-footer>button,
+html.studio-v30-desktop-phone .sn-side>.sn-account-footer>button,
+html[data-desktop-layout-requested="true"] .sn-side>.sn-account-footer>button{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  pointer-events:auto!important;
+  clip:auto!important;
+  clip-path:none!important;
+  filter:none!important;
+}
+
+html.studio-v30-desktop .sn-side>.sn-account-footer>.sn-account-settings-v88,
+html.studio-v30-laptop .sn-side>.sn-account-footer>.sn-account-settings-v88,
+html.studio-v30-desktop-phone .sn-side>.sn-account-footer>.sn-account-settings-v88,
+html[data-desktop-layout-requested="true"] .sn-side>.sn-account-footer>.sn-account-settings-v88{
+  color:#52647c!important;
+}
+
+html.studio-v30-desktop .sn-side>.sn-account-footer>.sn-account-logout-v88,
+html.studio-v30-laptop .sn-side>.sn-account-footer>.sn-account-logout-v88,
+html.studio-v30-desktop-phone .sn-side>.sn-account-footer>.sn-account-logout-v88,
+html[data-desktop-layout-requested="true"] .sn-side>.sn-account-footer>.sn-account-logout-v88{
+  color:#a23c49!important;
+}
+
+html.studio-v30-desktop .sn-side>.sn-account-footer>button>svg,
+html.studio-v30-laptop .sn-side>.sn-account-footer>button>svg,
+html.studio-v30-desktop-phone .sn-side>.sn-account-footer>button>svg,
+html[data-desktop-layout-requested="true"] .sn-side>.sn-account-footer>button>svg,
+html.studio-v30-desktop .sn-side>.sn-account-footer>button>svg[hidden],
+html.studio-v30-laptop .sn-side>.sn-account-footer>button>svg[hidden],
+html.studio-v30-desktop-phone .sn-side>.sn-account-footer>button>svg[hidden],
+html[data-desktop-layout-requested="true"] .sn-side>.sn-account-footer>button>svg[hidden]{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  color:inherit!important;
+  stroke:currentColor!important;
+  fill:none!important;
+  filter:none!important;
+  clip:auto!important;
+  clip-path:none!important;
+  overflow:visible!important;
+  pointer-events:none!important;
+  z-index:2!important;
+}
+
+html.studio-v30-desktop .sn-side:not(.collapsed)>.sn-account-footer>button>span,
+html.studio-v30-laptop .sn-side:not(.collapsed)>.sn-account-footer>button>span,
+html.studio-v30-desktop-phone .sn-side:not(.collapsed)>.sn-account-footer>button>span,
+html[data-desktop-layout-requested="true"] .sn-side:not(.collapsed)>.sn-account-footer>button>span{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  clip:auto!important;
+  clip-path:none!important;
+  filter:none!important;
+}
+
+html.studio-v30-desktop .sn-side.collapsed>.sn-account-footer>button>span,
+html.studio-v30-laptop .sn-side.collapsed>.sn-account-footer>button>span,
+html.studio-v30-desktop-phone .sn-side.collapsed>.sn-account-footer>button>span,
+html[data-desktop-layout-requested="true"] .sn-side.collapsed>.sn-account-footer>button>span{
+  display:none!important;
+  visibility:hidden!important;
+}
