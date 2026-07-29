@@ -9,7 +9,6 @@ import {
 import NaraAssistant from "./NaraAssistant.jsx";
 import ContentEditor from "./ContentEditor.jsx";
 import MediaLibrary from "./MediaLibrary.jsx";
-import NaraWorkspace from "./NaraWorkspace.jsx";
 import CommentsPanelV124 from "./CommentsPanelV124.jsx";
 import DomainPanelV124 from "./DomainPanelV124.jsx";
 import ApiKeysPanelV124 from "./ApiKeysPanelV124.jsx";
@@ -23,9 +22,20 @@ import {
   listContentPage, normalizeMetadata, normalizeSeo, slugify, updateContentDocument,
 } from "./lib/content-data.js";
 import "./studio-stable-v124.css";
+import "./studio-stable-v125.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio.jsx"));
 const LOCAL_STORE = "ngeblogging-studio-v124-local";
+const SIDEBAR_STORE = "ngeblogging-sidebar-expanded-v125";
+
+function loadSidebarPreference() {
+  try {
+    const stored = localStorage.getItem(SIDEBAR_STORE);
+    return stored === null ? true : stored === "true";
+  } catch {
+    return true;
+  }
+}
 
 function localDocument(type, title, content, status = "draft") {
   const metadata = normalizeMetadata({
@@ -157,17 +167,41 @@ function AnalyticsView() {
 
 function MembersView({ site, setToast }) {
   const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    if (!site?.id || !supabase) return;
-    setLoading(true);
-    supabase.from("site_members").select("user_id,role,joined_at,profiles(display_name,avatar_url)").eq("site_id", site.id).order("joined_at").then(({ data, error }) => {
-      if (error) setToast("Anggota belum dapat dimuat");
-      else setMembers(data || []);
+    let active = true;
+    setMembers([]);
+    setError("");
+    if (!site?.id) {
       setLoading(false);
+      return () => { active = false; };
+    }
+    if (!supabase) {
+      setLoading(false);
+      setError("Koneksi anggota belum tersedia pada perangkat ini.");
+      return () => { active = false; };
+    }
+    setLoading(true);
+    supabase.from("site_members").select("user_id,role,joined_at,profiles(display_name,avatar_url)").eq("site_id", site.id).order("joined_at").then(({ data, error: loadError }) => {
+      if (!active) return;
+      if (loadError) {
+        setError(loadError.message || "Anggota belum dapat dimuat.");
+        setToast?.("Anggota belum dapat dimuat");
+      } else {
+        setMembers(data || []);
+      }
+    }).finally(() => {
+      if (active) setLoading(false);
     });
+    return () => { active = false; };
   }, [site?.id]);
-  return <div className="sv124-page"><PageTitle title="Anggota & tim" description="Peran, akses, dan jejak kerja untuk situs aktif."/>{loading ? <Loading label="Memuat anggota…"/> : <section className="sv124-card sv124-members">{members.map((member) => <article key={member.user_id}><span>{member.profiles?.display_name?.slice(0, 2).toUpperCase() || "U"}</span><div><b>{member.profiles?.display_name || "Pengguna"}</b><small>Bergabung {new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(member.joined_at))}</small></div><i>{member.role}</i><button><MoreHorizontal/></button></article>)}</section>}</div>;
+
+  return <div className="sv124-page"><PageTitle title="Anggota & tim" description="Peran, akses, dan jejak kerja untuk situs aktif."/>
+    {error ? <div className="sv124-error" role="alert">{error}</div> : null}
+    {loading ? <Loading label="Memuat anggota…"/> : !members.length ? <div className="sv124-card sv124-unified-empty"><Users/><h2>Belum ada anggota tambahan</h2><p>Pemilik situs tetap aktif. Undangan dan peran anggota akan muncul di halaman ini setelah tersedia.</p></div> : <section className="sv124-card sv124-members">{members.map((member) => <article key={member.user_id}><span>{member.profiles?.display_name?.slice(0, 2).toUpperCase() || "U"}</span><div><b>{member.profiles?.display_name || "Pengguna"}</b><small>Bergabung {new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(member.joined_at))}</small></div><i>{member.role}</i><button aria-label="Aksi anggota"><MoreHorizontal/></button></article>)}</section>}
+  </div>;
 }
 
 function SettingsView({ site, setSite, profile, setProfile, user, setToast }) {
@@ -203,7 +237,7 @@ export default function StudioStableV124({ onExit, user }) {
   const [activeId, setActiveId] = useState(null);
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(true);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(loadSidebarPreference);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [naraOpen, setNaraOpen] = useState(false);
@@ -224,6 +258,7 @@ export default function StudioStableV124({ onExit, user }) {
   const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "NB";
 
   useEffect(() => { if (dataMode === "local") localStorage.setItem(LOCAL_STORE, JSON.stringify(docs)); }, [docs, dataMode]);
+  useEffect(() => { try { localStorage.setItem(SIDEBAR_STORE, String(sidebarExpanded)); } catch { /* storage optional */ } }, [sidebarExpanded]);
   useEffect(() => { if (!toast) return undefined; const timer = setTimeout(() => setToast(""), 3600); return () => clearTimeout(timer); }, [toast]);
   useEffect(() => () => clearTimeout(saveTimer.current), []);
 
@@ -358,7 +393,7 @@ export default function StudioStableV124({ onExit, user }) {
 
   if (view === "editor" && active) return <><ContentEditor doc={active} site={site} user={user} saved={saved} patch={patch} publish={publish} onBack={() => setView(active.type === "page" ? "pages" : "posts")} onOpenNara={() => setNaraOpen(true)} setToast={setToast}/><NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "editor", siteId: site?.id, siteName: site?.name, documentId: active.id, documentType: active.type, documentTitle: active.title, documentContent: (active.content || "").slice(0, 12000), metadata: active.metadata }}/></>;
 
-  return <div className={`sv124-shell ${sidebarExpanded ? "expanded" : "collapsed"} ${mobileOpen ? "mobile-open" : ""}`} data-studio-release="v124">
+  return <div className={`sv124-shell ${sidebarExpanded ? "expanded" : "collapsed"} ${mobileOpen ? "mobile-open" : ""}`} data-studio-release="v125">
     {toast ? <div className="sv124-toast"><Check/>{toast}</div> : null}
     {mobileOpen ? <button className="sv124-mobile-backdrop" onClick={() => setMobileOpen(false)} aria-label="Tutup menu"/> : null}
     <aside className="sv124-side">
@@ -370,7 +405,6 @@ export default function StudioStableV124({ onExit, user }) {
         <NavButton active={view === "pages"} onClick={() => chooseView("pages")} icon={BookOpen} label="Pages"/>
         <NavButton active={view === "themes"} onClick={() => chooseView("themes")} icon={Palette} label="Tema"/>
         <NavButton active={view === "media"} onClick={() => chooseView("media")} icon={Image} label="Media"/>
-        <NavButton active={view === "nara"} onClick={() => chooseView("nara")} icon={Sparkles} label="Nara AI"/>
         <NavButton active={view === "analytics"} onClick={() => chooseView("analytics")} icon={BarChart3} label="Analitik"/>
         <NavButton active={view === "members"} onClick={() => chooseView("members")} icon={Users} label="Anggota"/>
         <NavButton active={view === "comments"} onClick={() => chooseView("comments")} icon={MessageCircle} label="Komentar"/>
@@ -397,7 +431,6 @@ export default function StudioStableV124({ onExit, user }) {
       {view === "pages" ? <ContentList docs={docs} type="page" query={query} setQuery={setQuery} createDoc={createDoc} openDoc={openDoc} removeDoc={removeDoc} loading={contentLoading} hasMore={pageInfo.hasMore} loadMore={loadMore}/> : null}
       {view === "themes" ? <Suspense fallback={<Loading label="Menyiapkan tema…"/>}><ThemeStudio setToast={setToast} site={site} user={user}/></Suspense> : null}
       {view === "media" ? <div className="sv124-page"><MediaLibrary site={site} user={user} setToast={setToast}/></div> : null}
-      {view === "nara" ? <NaraWorkspace user={user} site={site} setToast={setToast} onOpenAssistant={() => setNaraOpen(true)}/> : null}
       {view === "analytics" ? <AnalyticsView/> : null}
       {view === "members" ? <MembersView site={site} setToast={setToast}/> : null}
       {view === "comments" ? <CommentsPanelV124 site={site} setToast={setToast}/> : null}
