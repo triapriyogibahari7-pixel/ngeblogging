@@ -13,6 +13,7 @@ import "./comments-empty-state-v123.css";
 import "./comments-empty-state-v123.js";
 import "./sidebar-lock-v123.css";
 import "./sidebar-lock-v123.js";
+import "./sidebar-mobile-lock-v123.js";
 
 const RELEASE = "studio-domain-single-authority-v112-20260728";
 const LEGACY_SELECTORS = [
