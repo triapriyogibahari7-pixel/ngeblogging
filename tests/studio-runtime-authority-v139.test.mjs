@@ -29,8 +29,8 @@ const disabledLayoutRuntimes = [
   "studio-final-v106.js",
 ];
 
-test("production shell executes only React v139 as the Studio runtime owner", () => {
-  assert.match(index, /ngeblogging-studio-runtime-authority" content="react-v139"/);
+test("production shell executes only React v140 as the Studio runtime owner", () => {
+  assert.match(index, /ngeblogging-studio-runtime-authority" content="react-v140"/);
 
   for (const runtime of disabledLayoutRuntimes) {
     const escaped = runtime.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -42,7 +42,7 @@ test("production shell executes only React v139 as the Studio runtime owner", ()
     assert.doesNotMatch(
       index,
       new RegExp(`type="module" src="/src/${escaped}`),
-      `${runtime} must not execute beside React v139`,
+      `${runtime} must not execute beside React v140`,
     );
   }
 });
