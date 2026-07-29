@@ -29,17 +29,18 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances beyond v151 without losing its compatibility markers", () => {
+test("Cloudflare production advances beyond v151 without losing compatibility markers", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.match(production.vars.APP_RELEASE, /^2026\.07\.(?:29|30)-/);
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
-  assert.ok(
-    production.vars.APP_RELEASE === "2026.07.29-studio-completion-v151"
-      || production.vars.APP_RELEASE === "2026.07.30-auth-production-v153",
-  );
+  assert.ok([
+    "2026.07.29-studio-completion-v151",
+    "2026.07.30-auth-production-v153",
+    "2026.07.30-production-entry-v154",
+  ].includes(production.vars.APP_RELEASE));
   for (const marker of [
-    "Run Studio and authentication contracts through v153",
-    "DEPLOY_VERIFY_AUTH_PRODUCTION_V153_FAILED",
+    "Run Studio, authentication and production-entry contracts through v154",
+    "DEPLOY_VERIFY_PRODUCTION_ENTRY_V154_FAILED",
     "studio-completion-v151",
   ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker), `release chain missing ${marker}`);
 });
