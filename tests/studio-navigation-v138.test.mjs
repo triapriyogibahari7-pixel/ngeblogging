@@ -4,26 +4,32 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Studio loads the v140 device and layout authorities statically", () => {
+test("Studio loads the v141 final authority after the v140 base layout", () => {
   const studio = read("src/Studio.jsx");
   const compatibility = read("src/studio-device-mode-v138.js");
   assert.match(studio, /import StudioFastGate from "\.\/StudioFastGate\.jsx"/);
   assert.match(studio, /studio-device-mode-v140\.js/);
   assert.match(studio, /studio-layout-v140\.css/);
+  assert.match(studio, /studio-v141-final\.css/);
   assert.doesNotMatch(studio, /studio-device-mode-v139\.js/);
   assert.doesNotMatch(studio, /studio-device-modes-v138\.css/);
   assert.match(compatibility, /from "\.\/studio-device-mode-v140\.js"/);
   assert.doesNotMatch(compatibility, /studio-device-mode-v139\.js/);
 });
 
-test("v140 uses one viewport authority without forced mobile interception", () => {
+test("v141 detects physical phones including browser desktop-site mode", () => {
   const runtime = read("src/studio-device-mode-v140.js");
+  assert.match(runtime, /studio-device-mode-v141-20260729/);
   assert.match(runtime, /COMPACT_MAX = 820/);
-  assert.match(runtime, /document\.documentElement\.clientWidth/);
-  assert.match(runtime, /layoutWidth\(\) <= COMPACT_MAX/);
-  assert.match(runtime, /LAYOUT_NODES/);
-  assert.match(runtime, /LEGACY_INLINE_PROPERTIES/);
+  assert.match(runtime, /HANDHELD_MAX = 820/);
+  assert.match(runtime, /Android\|iPhone\|iPad\|iPod/);
+  assert.match(runtime, /navigator\.maxTouchPoints > 1/);
+  assert.match(runtime, /pointer: coarse/);
+  assert.match(runtime, /physicalShortSide/);
+  assert.match(runtime, /physicalHandheld/);
   assert.match(runtime, /clearLegacyInlineLayout/);
+  assert.match(runtime, /shell\.dataset\.navigationOwner = "react-v138"/);
+  assert.match(runtime, /shell\.dataset\.navigationAuthority = "react-v141"/);
   assert.match(runtime, /MutationObserver/);
   assert.match(runtime, /MODE_EVENT/);
   assert.doesNotMatch(runtime, /forcedDesktopSitePhone/);
@@ -46,24 +52,24 @@ test("React owns the complete navigation and mobile n button", () => {
   assert.match(studio, /currentStudioDeviceMode\(\) === "small"/);
 });
 
-test("v140 geometry cannot overlap, blur, or leave white viewport gaps", () => {
-  const css = read("src/studio-layout-v140.css");
-  assert.match(css, /--studio-side-open:232px/);
-  assert.match(css, /--studio-side-closed:76px/);
-  assert.match(css, /--studio-drawer:min\(88vw,340px\)/);
-  assert.match(css, /data-studio-device-mode="small"/);
-  assert.match(css, /data-studio-device-mode="large"/);
-  assert.match(css, /sn-mobile-menu-mark/);
-  assert.match(css, /sn-desktop-sidebar-icon/);
-  assert.match(css, /margin-left:0!important/);
-  assert.match(css, /width:calc\(100% - var\(--studio-side-open\)\)!important/);
-  assert.match(css, /width:calc\(100% - var\(--studio-side-closed\)\)!important/);
-  assert.match(css, /overflow-x:hidden!important/);
-  assert.match(css, /backdrop-filter:none!important/);
-  assert.match(css, /\.sn-mobile-v30-header/);
-  assert.match(css, /\.sn-mobile-nav,\.sn-mobile-sheet-layer\{display:none!important\}/);
-  assert.doesNotMatch(css, /studio-final-recovery-v136\.css/);
-  assert.doesNotMatch(css, /data-v139-forced-mobile-open/);
+test("v141 geometry locks n, removes blur, and prevents right or bottom gaps", () => {
+  const base = read("src/studio-layout-v140.css");
+  const final = read("src/studio-v141-final.css");
+  assert.match(base, /--studio-side-open:232px/);
+  assert.match(base, /--studio-side-closed:76px/);
+  assert.match(base, /--studio-drawer:min\(88vw,340px\)/);
+  assert.match(base, /data-studio-device-mode="small"/);
+  assert.match(base, /data-studio-device-mode="large"/);
+  assert.match(base, /width:calc\(100% - var\(--studio-side-open\)\)!important/);
+  assert.match(base, /width:calc\(100% - var\(--studio-side-closed\)\)!important/);
+  assert.match(final, /studio-v141-final-20260729/);
+  assert.match(final, /content:"n\."!important/);
+  assert.match(final, /\.sn-sidebar-toggle>\*\{display:none!important\}/);
+  assert.match(final, /width:min\(88vw,340px\)!important/);
+  assert.match(final, /overflow-x:hidden!important/);
+  assert.match(final, /backdrop-filter:none!important/);
+  assert.match(final, /\.sn-comments-nav-host-v93/);
+  assert.match(final, /#ngeblogging-api-keys-nav-v135/);
 });
 
 test("legacy menu bridges stand down when React owns navigation", () => {
@@ -80,18 +86,20 @@ test("legacy menu bridges stand down when React owns navigation", () => {
   assert.match(finalRuntime, /data-navigation-owner="react-v138"/);
 });
 
-test("service worker rotates all stale clients to v140", () => {
+test("service worker rotates stale clients once without a second navigation", () => {
   const worker = read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v140-studio-auth-20260729/);
-  assert.match(worker, /single-react-layout-direct-auth-v140/);
-  assert.match(worker, /pwa-v140/);
+  assert.match(worker, /ngeblogging-app-v141-studio-auth-20260729/);
+  assert.match(worker, /single-react-physical-device-auth-v141/);
   assert.match(worker, /Promise\.allSettled/);
   assert.match(worker, /self\.clients\.claim\(\)/);
-  assert.match(worker, /client\.navigate\(url\.href\)/);
+  assert.match(worker, /notifyOpenWindows/);
+  assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
+  assert.doesNotMatch(worker, /client\.navigate\(url\.href\)/);
 });
 
-test("Supabase login is direct and does not wait for app proxy timeouts", () => {
+test("Supabase login is direct and callback completion does not reload twice", () => {
   const client = read("src/lib/supabase.js");
+  const callback = read("src/auth-callback-authority-v107.js");
   assert.match(client, /createClient\(url, key/);
   assert.match(client, /persistSession: true/);
   assert.match(client, /autoRefreshToken: true/);
@@ -101,4 +109,7 @@ test("Supabase login is direct and does not wait for app proxy timeouts", () => 
   assert.doesNotMatch(client, /resilientSupabaseFetch/);
   assert.doesNotMatch(client, /\/api\/auth-proxy/);
   assert.doesNotMatch(client, /\/api\/data-proxy/);
+  assert.match(callback, /auth-callback-authority-v141-20260729/);
+  assert.match(callback, /history\.replaceState/);
+  assert.match(callback, /ngeblogging:auth-session-ready/);
 });
