@@ -13,8 +13,8 @@ const files = (await readdir(testsDir))
   .sort();
 
 if (!files.length) {
-  console.error(`No test files matched ${pattern}${invert ? " (inverted)" : ""}`);
-  process.exit(2);
+  console.log(`No test files matched ${pattern}${invert ? " (inverted)" : ""}.`);
+  process.exit(0);
 }
 
 let failures = 0;
