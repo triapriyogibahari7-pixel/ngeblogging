@@ -1,11 +1,12 @@
-const VERSION = "ngeblogging-app-v145-studio-mobile-cache-20260729";
-const LEGACY_VERSION = "ngeblogging-app-v144-studio-layout-20260729";
-const CACHE_RELEASE = "single-react-mobile-cache-v145";
-const LEGACY_CACHE_RELEASE = "single-react-layout-authority-v144";
-const LEGACY_ACTIVATION_REASON = "service-worker-activated-studio-layout-v144";
+const VERSION = "ngeblogging-app-v146-true-mobile-20260729";
+const LEGACY_VERSION = "ngeblogging-app-v145-studio-mobile-cache-20260729";
+const CACHE_RELEASE = "single-react-true-mobile-v146";
+const LEGACY_CACHE_RELEASE = "single-react-mobile-cache-v145";
+const LEGACY_ACTIVATION_REASON = "service-worker-activated-studio-mobile-cache-v145";
 const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "studio-mobile-cache-v145";
+const FORCE_REFRESH_VALUE = "studio-true-mobile-v146";
+const LEGACY_FORCE_REFRESH_VALUE = "studio-mobile-cache-v145";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
@@ -34,11 +35,11 @@ function isAuthSurface(url) {
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
-  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v145");
+  url.searchParams.set("recovery_reason", "service-worker-true-mobile-v146");
   try {
     await client.navigate(url.href);
   } catch {
-    // Pesan reload tetap menjadi jalur cadangan bila navigasi WindowClient ditolak browser.
+    // Pesan controller tetap menjadi jalur cadangan bila navigasi ditolak browser.
   }
 }
 
@@ -55,8 +56,9 @@ async function notifyOpenWindows() {
         release: CACHE_RELEASE,
         legacyRelease: LEGACY_CACHE_RELEASE,
         legacyActivationReason: LEGACY_ACTIVATION_REASON,
+        legacyForceRefreshValue: LEGACY_FORCE_REFRESH_VALUE,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
-        reason: "service-worker-activated-studio-mobile-cache-v145",
+        reason: "service-worker-activated-studio-true-mobile-v146",
       });
       await refreshStaleWindow(client, url);
     } catch {
@@ -86,6 +88,7 @@ self.addEventListener("message", (event) => {
       release: CACHE_RELEASE,
       legacyRelease: LEGACY_CACHE_RELEASE,
       legacyActivationReason: LEGACY_ACTIVATION_REASON,
+      legacyForceRefreshValue: LEGACY_FORCE_REFRESH_VALUE,
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
     });
   }
