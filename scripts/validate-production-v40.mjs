@@ -28,9 +28,9 @@ const [
   text("index.html"),
   text("src/Studio.jsx"),
   text("src/StudioNext.jsx"),
-  text("src/studio-device-mode-v139.js"),
+  text("src/studio-device-mode-v140.js"),
   text("src/studio-device-mode-v138.js"),
-  text("src/studio-layout-v139.css"),
+  text("src/studio-layout-v140.css"),
   text("public/sw.js"),
   text("src/auth-callback-authority-v107.js"),
   text("src/lib/supabase.js"),
@@ -52,25 +52,25 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-sidebar-auth-v139") throw new Error("APP_RELEASE belum v139.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-sidebar-auth-v139") throw new Error("UI authority belum v139.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-sidebar-auth-v140") throw new Error("APP_RELEASE belum v140.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-sidebar-auth-v140") throw new Error("UI authority belum v140.");
 
-for (const marker of ["studio-device-mode-v139.js", "studio-layout-v139.css", "StudioFastGate.jsx"]) {
+for (const marker of ["studio-device-mode-v140.js", "studio-layout-v140.css", "StudioFastGate.jsx"]) {
   requireMarker(studio, marker, "Studio entry");
 }
 forbidMarker(studio, "studio-device-modes-v138.css", "Studio entry");
-requireMarker(compatibilityRuntime, "studio-device-mode-v139.js", "Compatibility runtime v138");
+requireMarker(compatibilityRuntime, "studio-device-mode-v140.js", "Compatibility runtime v138");
 
 for (const marker of [
-  "HANDHELD_MAX = 820",
-  "COMPACT_MAX = 760",
-  "forcedDesktopSitePhone",
-  "sn-sidebar-toggle",
-  "sn-side-close",
-  "sn-v139-forced-backdrop",
+  "COMPACT_MAX = 820",
+  "document.documentElement.clientWidth",
+  "layoutWidth() <= COMPACT_MAX",
+  "LEGACY_INLINE_PROPERTIES",
+  "clearLegacyInlineLayout",
+  'declaredOwner.startsWith("react-v")',
   "MutationObserver",
   "ngeblogging:studio-device-mode-change",
-]) requireMarker(deviceRuntime, marker, "Device authority v139");
+]) requireMarker(deviceRuntime, marker, "Device authority v140");
 
 for (const marker of [
   "--studio-side-open:232px",
@@ -78,11 +78,10 @@ for (const marker of [
   "--studio-drawer:min(88vw,340px)",
   'data-studio-device-mode="small"',
   'data-studio-device-mode="large"',
-  'data-v139-forced-mobile-open="true"',
   "overflow-x:hidden!important",
   "backdrop-filter:none!important",
   ".sn-mobile-nav,.sn-mobile-sheet-layer{display:none!important}",
-]) requireMarker(layout, marker, "Layout authority v139");
+]) requireMarker(layout, marker, "Layout authority v140");
 
 for (const marker of [
   'data-navigation-owner="react-v138"',
@@ -95,13 +94,13 @@ for (const marker of [
 ]) requireMarker(studioNext, marker, "Navigasi React Studio");
 
 for (const marker of [
-  "ngeblogging-app-v139-sidebar-auth-20260729",
-  "locked-device-layout-and-auth-v139",
-  "pwa-v139-sidebar-auth",
+  "ngeblogging-app-v140-studio-auth-20260729",
+  "single-react-layout-direct-auth-v140",
+  "pwa-v140",
   "Promise.allSettled",
   "self.clients.claim()",
   "client.navigate(url.href)",
-]) requireMarker(serviceWorker, marker, "Service Worker v139");
+]) requireMarker(serviceWorker, marker, "Service Worker v140");
 
 for (const marker of [
   "auth-callback-authority-v139-20260729",
@@ -110,16 +109,16 @@ for (const marker of [
   "/auth/v1/token?grant_type=password",
   "supabase.auth.setSession",
   "installPasswordFallback()",
-]) requireMarker(authCallback, marker, "Pemulihan login v139");
+]) requireMarker(authCallback, marker, "Pemulihan callback login");
 
 for (const marker of [
-  "resilientSupabaseFetch",
-  "/api/auth-proxy",
-  "/api/data-proxy",
-  "direct-fallback",
+  "createClient(url, key",
+  '"x-client-info": "ngeblogging-web-v140"',
+  '"direct-v140"',
+  "signInWithPassword",
   "persistSession: true",
   "autoRefreshToken: true",
-]) requireMarker(supabaseClient, marker, "Transport Supabase");
+]) requireMarker(supabaseClient, marker, "Transport Supabase langsung v140");
 
 for (const marker of [
   "handleAuthGatewayRequest",
@@ -128,8 +127,42 @@ for (const marker of [
   "injectPublicComments",
 ]) requireMarker(worker, marker, "Worker produksi");
 
-requireMarker(index, 'type="application/x-disabled" src="/src/sidebar-final-v91.js', "Shell produksi");
-requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
-requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
+const disabledStudioRuntimes = [
+  "comments-studio-runtime-v93.jsx",
+  "studio-interaction-v49.js",
+  "studio-layout-route-v29.js",
+  "studio-shell-v30.js",
+  "studio-mobile-route-reset-v32.js",
+  "studio-content-flow-v34.js",
+  "studio-domain-backup-v35.js",
+  "studio-production-audit-v37.js",
+  "studio-production-repair-v38.js",
+  "production-contract-v38.js",
+  "studio-layout-builder-v39.js",
+  "studio-quality-v39.js",
+  "studio-layout-device-v40.js",
+  "studio-responsive-repair-v43.js",
+  "studio-operations-v41.js",
+  "studio-reflow-v48.js",
+  "studio-theme-domain-v50.js",
+  "studio-site-switcher-v52.js",
+  "studio-ui-stability-v95.js",
+  "studio-surface-authority-v100.js",
+  "studio-mobile-precision-v99.js",
+  "studio-final-v106.js",
+];
+for (const runtime of disabledStudioRuntimes) {
+  requireMarker(index, `type="application/x-disabled" src="/src/${runtime}`, "Shell produksi");
+  forbidMarker(index, `type="module" src="/src/${runtime}`, "Shell produksi");
+}
 
-console.log("Validasi produksi v139 lulus: sidebar lintas perangkat, layout tanpa overflow, cache baru, dan fallback login aktif.");
+for (const runtime of [
+  "pwa-runtime.js",
+  "auth-session-authority-v76.js",
+  "auth-studio-bootstrap-v106.js",
+  "main.jsx",
+  "site-quota-bridge.js",
+  "nara-command-center-bridge.js",
+]) requireMarker(index, `type="module" src="/src/${runtime}`, "Runtime fitur aktif");
+
+console.log("Validasi produksi v140 lulus: satu runtime React, sidebar responsif, layout tanpa overflow, cache baru, dan login langsung aktif.");
