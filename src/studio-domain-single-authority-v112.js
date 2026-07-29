@@ -6,6 +6,7 @@ import "./sidebar-account-footer-alignment-v117.css";
 import "./sidebar-account-footer-alignment-v117.js";
 import "./sidebar-account-desktop-visibility-v118.css";
 import "./sidebar-account-desktop-visibility-v118.js";
+import "./sidebar-account-collapsed-fallback-v119.css";
 
 const RELEASE = "studio-domain-single-authority-v112-20260728";
 const LEGACY_SELECTORS = [
