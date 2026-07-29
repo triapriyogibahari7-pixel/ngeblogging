@@ -2,229 +2,89 @@ import { createClient } from "@supabase/supabase-js";
 import { createAppUrl } from "./site-url.js";
 
 const browserEnv = import.meta.env || {};
-const url = browserEnv.VITE_SUPABASE_URL;
-const key =
-  browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  browserEnv.VITE_SUPABASE_ANON_KEY;
-const nativeFetch = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
-const AUTH_GATEWAY_RELEASE = "login-data-gateway-v114-20260729";
-const DATA_GATEWAY_RELEASE = "login-data-gateway-v114-20260729";
-const DEFAULT_API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
-
-function ngebloggingOrigin() {
-  if (typeof window === "undefined") return "";
-  const hostname = window.location.hostname.toLowerCase();
-  if (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com")) {
-    return window.location.origin;
-  }
-  return "";
-}
-
-function configuredApiOrigin() {
-  if (typeof window === "undefined") return "";
-  const metaOrigin = document.querySelector('meta[name="ngeblogging-api-origin"]')?.getAttribute("content") || "";
-  const candidate = String(
-    browserEnv.VITE_NGEBLOGGING_API_ORIGIN
-    || browserEnv.VITE_API_ORIGIN
-    || metaOrigin
-    || DEFAULT_API_ORIGIN,
-  ).trim().replace(/\/$/, "");
-  try {
-    const parsed = new URL(candidate);
-    return parsed.protocol === "https:" ? parsed.origin : "";
-  } catch {
-    return "";
-  }
-}
-
-function gatewayOrigins() {
-  const values = [ngebloggingOrigin(), configuredApiOrigin()].filter(Boolean);
-  return [...new Set(values)];
-}
-
-function supabaseTarget(value) {
-  try {
-    const target = new URL(value instanceof Request ? value.url : String(value));
-    const project = new URL(String(url || ""));
-    if (target.origin !== project.origin) return null;
-    if (target.pathname.startsWith("/auth/v1/")) {
-      return {
-        target,
-        service: "auth",
-        gatewayPrefix: "/api/auth-proxy",
-        release: AUTH_GATEWAY_RELEASE,
-        marker: "x-ngeblogging-auth-gateway",
-      };
-    }
-    if (target.pathname.startsWith("/rest/v1/") || target.pathname.startsWith("/storage/v1/")) {
-      return {
-        target,
-        service: "data",
-        gatewayPrefix: "/api/data-proxy",
-        release: DATA_GATEWAY_RELEASE,
-        marker: "x-ngeblogging-data-gateway",
-      };
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-async function copyRequest(input, init, nextUrl = "") {
-  const source = input instanceof Request ? new Request(input, init) : new Request(input, init);
-  if (!nextUrl) return source;
-  const headers = new Headers(source.headers);
-  const hasBody = !["GET", "HEAD"].includes(source.method);
-  const body = hasBody ? await source.clone().arrayBuffer() : undefined;
-  return new Request(nextUrl, {
-    method: source.method,
-    headers,
-    body,
-    cache: "no-store",
-    credentials: "same-origin",
-    redirect: "follow",
-    signal: source.signal,
-  });
-}
-
-function markTransport(service, value) {
-  if (typeof document === "undefined") return;
-  if (service === "auth") document.documentElement.dataset.authTransportV114 = value;
-  else document.documentElement.dataset.dataTransportV114 = value;
-}
-
-function rememberGatewayError(service, error) {
-  if (typeof window === "undefined") return;
-  if (service === "auth") window.__ngebloggingAuthGatewayErrorV114 = error;
-  else window.__ngebloggingDataGatewayErrorV114 = error;
-}
-
-function networkUnavailableError(service, cause, release) {
-  const dataService = service === "data";
-  const error = new Error(dataService
-    ? "Data Studio belum dapat dijangkau. Sesi akun tetap tersimpan; coba kembali saat jaringan stabil."
-    : "Layanan login belum dapat dijangkau. Sesi yang sudah tersimpan tetap dipertahankan; coba kembali saat jaringan stabil.");
-  error.name = dataService ? "DataTransportError" : "AuthTransportError";
-  error.code = dataService ? "DATA_NETWORK_UNAVAILABLE" : "AUTH_NETWORK_UNAVAILABLE";
-  error.cause = cause;
-  error.gatewayRelease = release;
-  return error;
-}
-
-function gatewayResponseAccepted(response, descriptor) {
-  if (!(response instanceof Response)) return false;
-  const marker = response.headers.get(descriptor.marker) || "";
-  if (!marker) return false;
-  return ![502, 503, 504].includes(response.status);
-}
-
-function gatewayMismatchError(response, descriptor, gatewayUrl) {
-  const contentType = response?.headers?.get("content-type") || "";
-  const error = new Error(
-    `Jalur ${descriptor.service} tidak mengembalikan respons gateway Ngeblogging yang sah.`,
-  );
-  error.name = "GatewayResponseMismatchError";
-  error.code = "GATEWAY_RESPONSE_MISMATCH";
-  error.status = Number(response?.status || 0);
-  error.contentType = contentType;
-  error.gatewayUrl = gatewayUrl;
-  return error;
-}
-
-async function resilientSupabaseFetch(input, init) {
-  if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada perangkat ini.");
-  const source = await copyRequest(input, init);
-  const descriptor = supabaseTarget(source);
-  if (!descriptor || typeof window === "undefined") return nativeFetch(source);
-
-  let lastGatewayError = null;
-  for (const origin of gatewayOrigins()) {
-    const gateway = new URL(`${descriptor.gatewayPrefix}${descriptor.target.pathname}${descriptor.target.search}`, origin);
-    try {
-      const response = await nativeFetch(await copyRequest(source.clone(), undefined, gateway.href));
-      if (gatewayResponseAccepted(response, descriptor)) {
-        markTransport(descriptor.service, origin === window.location.origin ? "same-origin" : "api-worker");
-        return response;
-      }
-      lastGatewayError = gatewayMismatchError(response, descriptor, gateway.href);
-      rememberGatewayError(descriptor.service, lastGatewayError);
-    } catch (gatewayError) {
-      lastGatewayError = gatewayError;
-      rememberGatewayError(descriptor.service, gatewayError);
-    }
-  }
-
-  try {
-    const response = await nativeFetch(source.clone());
-    markTransport(descriptor.service, "direct-fallback");
-    return response;
-  } catch (directError) {
-    throw networkUnavailableError(descriptor.service, directError || lastGatewayError, descriptor.release);
-  }
-}
+const url = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+const key = String(
+  browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY
+  || browserEnv.VITE_SUPABASE_ANON_KEY
+  || "",
+).trim();
 
 export const supabaseConfigured = Boolean(url && key);
 export const supabase = supabaseConfigured
   ? createClient(url, key, {
-      global: {
-        fetch: resilientSupabaseFetch,
-      },
       auth: {
         flowType: "pkce",
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: false,
       },
+      global: {
+        headers: {
+          "x-client-info": "ngeblogging-web-v140",
+        },
+      },
     })
   : null;
+
+if (typeof document !== "undefined") {
+  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "direct-v140" : "not-configured";
+}
 
 const configuredSiteUrl = browserEnv.VITE_PUBLIC_SITE_URL;
 const currentOrigin = typeof window === "undefined" ? "" : window.location.origin;
 const appUrl = (path = "/") => createAppUrl(path, configuredSiteUrl, currentOrigin);
 
 function requireSupabase() {
-  if (!supabase) throw new Error("Supabase belum dikonfigurasi.");
+  if (!supabase) throw new Error("Supabase belum dikonfigurasi pada deployment ini.");
   return supabase;
+}
+
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
 }
 
 export async function signInWithProvider(provider) {
   const client = requireSupabase();
-  const { error } = await client.auth.signInWithOAuth({
+  const { data, error } = await client.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: appUrl("/?auth=callback") },
+    options: {
+      redirectTo: appUrl("/?auth=callback"),
+      skipBrowserRedirect: false,
+    },
   });
   if (error) throw error;
+  return data;
 }
 
 export async function signInWithMagicLink(email) {
   const client = requireSupabase();
-  const { error } = await client.auth.signInWithOtp({
-    email: String(email || "").trim().toLowerCase(),
+  const { data, error } = await client.auth.signInWithOtp({
+    email: normalizeEmail(email),
     options: {
       emailRedirectTo: appUrl("/?auth=callback"),
       shouldCreateUser: false,
     },
   });
   if (error) throw error;
+  return data;
 }
 
 export async function signInWithPassword(email, password) {
   const client = requireSupabase();
   const { data, error } = await client.auth.signInWithPassword({
-    email: String(email || "").trim().toLowerCase(),
-    password,
+    email: normalizeEmail(email),
+    password: String(password || ""),
   });
   if (error) throw error;
+  if (!data?.session?.access_token) throw new Error("Sesi login tidak terbentuk. Silakan coba kembali.");
   return data;
 }
 
 export async function signUpWithPassword(email, password, fullName) {
   const client = requireSupabase();
-  const normalizedEmail = String(email || "").trim().toLowerCase();
   const { data, error } = await client.auth.signUp({
-    email: normalizedEmail,
-    password,
+    email: normalizeEmail(email),
+    password: String(password || ""),
     options: {
       emailRedirectTo: appUrl("/?auth=callback"),
       data: { full_name: String(fullName || "").trim() },
@@ -236,7 +96,7 @@ export async function signUpWithPassword(email, password, fullName) {
 
 export async function resendSignUpConfirmation(email) {
   const client = requireSupabase();
-  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail) throw new Error("Masukkan email yang digunakan saat mendaftar.");
   const { data, error } = await client.auth.resend({
     type: "signup",
@@ -249,22 +109,23 @@ export async function resendSignUpConfirmation(email) {
 
 export async function requestPasswordReset(email) {
   const client = requireSupabase();
-  const { error } = await client.auth.resetPasswordForEmail(
-    String(email || "").trim().toLowerCase(),
+  const { data, error } = await client.auth.resetPasswordForEmail(
+    normalizeEmail(email),
     { redirectTo: appUrl("/?auth=recovery") },
   );
   if (error) throw error;
+  return data;
 }
 
 export async function updatePassword(password) {
   const client = requireSupabase();
-  const { data, error } = await client.auth.updateUser({ password });
+  const { data, error } = await client.auth.updateUser({ password: String(password || "") });
   if (error) throw error;
   return data;
 }
 
 export async function signOut() {
   const client = requireSupabase();
-  const { error } = await client.auth.signOut();
+  const { error } = await client.auth.signOut({ scope: "local" });
   if (error) throw error;
 }
