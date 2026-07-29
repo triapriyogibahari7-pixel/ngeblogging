@@ -14,6 +14,7 @@ function preferredSize() {
 
 function setSize(shell, size) {
   const normalized = VALID_SIZES.has(size) ? size : "medium";
+  // data.naraSize compatibility marker; nilai aktual disimpan pada shell.dataset.naraSize.
   shell.dataset.naraSize = normalized;
   document.documentElement.dataset.naraAssistantSize = normalized;
   shell.querySelectorAll(".nara-size-controls-v144 button").forEach((button) => {
