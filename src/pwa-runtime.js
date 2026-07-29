@@ -1,10 +1,10 @@
-const RELEASE = "ngeblogging-pwa-v77-20260727";
+const RELEASE = "ngeblogging-pwa-v138-20260729";
 const VALIDATOR_COMPATIBILITY = "ngeblogging-pwa-v23-20260725";
 // Historical audit markers: ngeblogging-pwa-v21-20260725, ngeblogging-pwa-v14-20260724.
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v77";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v138";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v77";
+const RECOVERY_VALUE = "pwa-v138";
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
