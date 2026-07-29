@@ -1,0 +1,119 @@
+@import "./studio-layout-v139.css";
+
+:root{--ngeblogging-studio-release:studio-layout-v140-20260729}
+
+/* v140 is the final visual authority. Legacy injected navigation is never shown. */
+.sn-shell .sn-v139-forced-backdrop,
+.sn-shell .sn-mobile-v30-header,
+.sn-shell .sn-mobile-v30-search,
+.sn-shell .sn-mobile-v30-launcher,
+.sn-shell .sn-mobile-v30-scrim,
+.sn-shell .sn-mobile-v29-header,
+.sn-shell .sn-mobile-v29-search,
+.sn-shell .sn-mobile-v29-launcher,
+.sn-shell .sn-mobile-v29-scrim,
+.sn-shell .sn-sidebar-scrim-v23,
+.sn-shell .sn-device-toggle-v26,
+.sn-shell .sn-device-toggle-v27,
+.sn-shell .sn-device-scrim-v27,
+.sn-shell .sn-mobile-nav,
+.sn-shell .sn-mobile-sheet-layer{display:none!important}
+
+html,body,#root,.sn-shell,.sn-shell>.sn-main{
+  max-width:100%!important;
+  overflow-x:hidden!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+@supports(overflow-x:clip){html,body,#root,.sn-shell,.sn-shell>.sn-main{overflow-x:clip!important}}
+
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  color:#17253c!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle>*{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle::before{
+  content:"n."!important;
+  display:block!important;
+  color:#245fc9!important;
+  font:900 27px/1 "DM Sans",system-ui,sans-serif!important;
+  letter-spacing:-.09em!important;
+  transform:translateX(-1px)!important;
+}
+html[data-studio-device-mode="large"] .sn-shell .sn-sidebar-toggle::before{content:none!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-sidebar-toggle .sn-desktop-sidebar-icon{display:block!important}
+
+html[data-studio-device-mode="small"] .sn-shell>.sn-side,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed{
+  width:min(88vw,340px)!important;
+  max-width:min(88vw,340px)!important;
+  left:0!important;
+  right:auto!important;
+  top:0!important;
+  bottom:0!important;
+  margin:0!important;
+  border-radius:0!important;
+  transform:translate3d(-104%,0,0)!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.mobile-open,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed.mobile-open{
+  transform:translate3d(0,0,0)!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side-backdrop{
+  background:rgba(10,24,43,.42)!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  left:0!important;
+  right:auto!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main>.sn-top{
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>nav>button,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>.sn-account-footer>button{
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+html[data-studio-device-mode="large"] .sn-shell>.sn-side,
+html[data-studio-device-mode="large"] .sn-shell>.sn-side.collapsed{
+  top:0!important;
+  bottom:0!important;
+  left:0!important;
+  height:100dvh!important;
+  transform:none!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-main{
+  min-height:100dvh!important;
+  margin-top:0!important;
+  margin-right:0!important;
+  margin-bottom:0!important;
+}
+
+@media(max-width:390px){
+  html[data-studio-device-mode="small"] .sn-shell>.sn-side,
+  html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed{
+    width:min(90vw,330px)!important;
+    max-width:min(90vw,330px)!important;
+  }
+}
