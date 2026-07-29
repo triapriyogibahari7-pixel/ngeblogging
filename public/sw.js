@@ -1,5 +1,5 @@
-const VERSION = "ngeblogging-app-v142-studio-auth-20260729";
-const CACHE_RELEASE = "single-react-handheld-auth-once-v142";
+const VERSION = "ngeblogging-app-v144-studio-layout-20260729";
+const CACHE_RELEASE = "single-react-layout-authority-v144";
 const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
@@ -37,7 +37,7 @@ async function notifyOpenWindows() {
         version: VERSION,
         release: CACHE_RELEASE,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
-        reason: "service-worker-activated-auth-route-handoff-v143",
+        reason: "service-worker-activated-studio-layout-v144",
       });
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
