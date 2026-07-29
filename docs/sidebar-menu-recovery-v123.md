@@ -5,8 +5,9 @@ Dokumen ini adalah jalur pemulihan apabila tampilan sidebar berubah akibat style
 ## Sumber kebenaran
 
 - `src/sidebar-menu-contract-v123.js` — urutan dan geometri menu.
-- `src/sidebar-lock-v123.css` — authority visual terakhir.
-- `src/sidebar-lock-v123.js` — mengunci kembali inline style yang ditulis runtime lama.
+- `src/sidebar-lock-v123.css` — authority visual terakhir untuk desktop.
+- `src/sidebar-lock-v123.js` — mengunci kembali inline style desktop yang ditulis runtime lama.
+- `src/sidebar-mobile-lock-v123.js` — memulihkan layout mobile setelah mode “Situs desktop” diaktifkan atau dimatikan.
 - `src/sidebar-account-collapsed-icons-v119.css` — fallback ikon Pengaturan dan Keluar ketika sidebar ditutup.
 
 ## Struktur tombol yang wajib
@@ -27,7 +28,8 @@ Menu dinamis seperti Komentar boleh dipasang melalui portal, tetapi tombol akhir
 3. Jangan memberikan `position:absolute`, `margin-left`, `right`, `bottom`, atau ukuran khusus pada tombol tersebut.
 4. Untuk desktop terbuka, authority memakai grid `24px + 112px`.
 5. Untuk desktop tertutup, semua tombol memakai ukuran `48 × 44px` dan dipusatkan.
-6. Jalankan pemeriksaan pada sidebar terbuka, sidebar tertutup, mode mobile, dan fitur “Situs desktop” pada browser Android.
+6. Untuk mobile, semua tombol kembali menjadi baris penuh dengan ikon 25px dan label terlihat.
+7. Jalankan pemeriksaan pada sidebar terbuka, sidebar tertutup, mode mobile, dan fitur “Situs desktop” pada browser Android.
 
 ## Urutan menu cadangan
 
