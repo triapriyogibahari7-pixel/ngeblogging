@@ -1,14 +1,15 @@
-const VERSION = "ngeblogging-app-v134-rollback-20260729";
-const CACHE_RELEASE = "pre-api-keys-ui-restored-v123-20260729";
-// Active UI behavior is the restored pre-API-Keys v123 release. Only cache
-// identifiers are advanced so browsers discard the broken v124-v133 assets.
-// Historical validator literals only; active behavior remains v123:
+const VERSION = "ngeblogging-app-v135-api-keys-20260729";
+const CACHE_RELEASE = "pre-api-ui-plus-api-keys-v135-20260729";
+// Active UI behavior remains the restored pre-API-Keys v123 Studio baseline.
+// v135 adds only the isolated, functional API Keys route and rotates caches.
+// Historical validator literals only; active Studio geometry remains v123:
+// const VERSION = "ngeblogging-app-v134-rollback-20260729"
 // const VERSION = "ngeblogging-app-v77-20260727"
 // NGE_BLOGGING_FORCE_RELOAD_V77
 // Historical application cache markers retained for production validators only:
 // ngeblogging-app-v123-20260729, ngeblogging-app-v122-20260729, ngeblogging-app-v121-20260729, ngeblogging-app-v114-20260729, ngeblogging-app-v113-20260729, ngeblogging-app-v112-20260728, ngeblogging-app-v111-20260728, ngeblogging-app-v110-20260728, ngeblogging-app-v109-20260728, ngeblogging-app-v108-20260728, ngeblogging-app-v107-20260728, ngeblogging-app-v106-20260728, ngeblogging-app-v105-20260728, ngeblogging-app-v104-20260728, ngeblogging-app-v103-20260728, ngeblogging-app-v102-20260728, ngeblogging-app-v101-20260728, ngeblogging-app-v100-20260728, ngeblogging-app-v98-20260728, ngeblogging-app-v97-20260728, ngeblogging-app-v95-20260728, ngeblogging-app-v94-20260728, ngeblogging-app-v93-20260728, ngeblogging-app-v92-20260728, ngeblogging-app-v91-20260728, ngeblogging-app-v90-20260728, ngeblogging-app-v89-20260728, ngeblogging-app-v88-20260728, ngeblogging-app-v87-20260728, ngeblogging-app-v86-20260728, ngeblogging-app-v85-20260728, ngeblogging-app-v84-20260728, ngeblogging-app-v83-20260728, ngeblogging-app-v82-20260728, ngeblogging-app-v81-20260728, ngeblogging-app-v80-20260727, ngeblogging-app-v79-20260727, ngeblogging-app-v77-20260727, ngeblogging-app-v76-20260727, ngeblogging-app-v75-20260727, ngeblogging-app-v74-20260727, ngeblogging-app-v73-20260727, ngeblogging-app-v65-20260727, ngeblogging-app-v61-20260727, ngeblogging-app-v60-20260727, ngeblogging-app-v59-20260727, ngeblogging-app-v58-20260727, ngeblogging-app-v57-20260727, ngeblogging-app-v56-20260727, ngeblogging-app-v53-20260726, ngeblogging-app-v52-20260726, ngeblogging-app-v51-20260726, ngeblogging-app-v50-20260726, ngeblogging-app-v49-20260726, ngeblogging-app-v48-20260726, ngeblogging-app-v43-20260726, ngeblogging-app-v40-20260726, ngeblogging-app-v39-20260726, ngeblogging-app-v37-20260725, ngeblogging-app-v36-20260725, ngeblogging-app-v35-20260725, ngeblogging-app-v34-20260725, ngeblogging-app-v33-20260725, ngeblogging-app-v32-20260725, ngeblogging-app-v31-20260725, ngeblogging-app-v30-20260725, ngeblogging-app-v29-20260725, ngeblogging-app-v28-20260725, ngeblogging-app-v27-20260725, ngeblogging-app-v26-20260725, ngeblogging-app-v25-20260725, ngeblogging-app-v24-20260725, ngeblogging-app-v23-20260725, ngeblogging-app-v22-20260725, ngeblogging-app-v14-20260724-v21.
 // Historical recovery markers are inert text and do not control the active worker:
-// domain-comments-sidebar-lock-v123-20260729, sidebar-axis-domain-separator-v122-20260729, sidebar-collapsed-footer-icons-v121-20260729, login-data-gateway-v114-20260729, sidebar-domain-order-v113-20260729, domain-single-authority-v112-20260728, studio-flow-integrity-v111-20260728, same-origin-data-gateway-v110-20260728, studio-session-replay-v109-20260728, persistent-session-auth-gateway-v108-20260728, explicit-pkce-callback-dashboard-v107-20260728, studio-responsive-precision-v106-20260728, studio-responsive-precision-v105-20260728, studio-responsive-precision-v104-20260728, studio-responsive-precision-v103-20260728, studio-responsive-precision-v102-20260728, studio-mobile-theme-layout-v101-20260728, studio-ui-stability-v95-20260728, pwa-v123, pwa-v122, pwa-v121, pwa-v114, pwa-v113, pwa-v111, pwa-v110, pwa-v109, pwa-v108, pwa-v107, pwa-v106, pwa-v105, pwa-v104, pwa-v103, pwa-v102, pwa-v101, pwa-v95, service-worker-activated-studio-ui-stability-v95
+// domain-comments-sidebar-lock-v123-20260729, sidebar-axis-domain-separator-v122-20260729, sidebar-collapsed-footer-icons-v121-20260729, login-data-gateway-v114-20260729, sidebar-domain-order-v113-20260729, domain-single-authority-v112-20260728, studio-flow-integrity-v111-20260728, same-origin-data-gateway-v110-20260728, studio-session-replay-v109-20260728, persistent-session-auth-gateway-v108-20260728, explicit-pkce-callback-dashboard-v107-20260728, studio-responsive-precision-v106-20260728, studio-responsive-precision-v105-20260728, studio-responsive-precision-v104-20260728, studio-responsive-precision-v103-20260728, studio-responsive-precision-v102-20260728, studio-mobile-theme-layout-v101-20260728, studio-ui-stability-v95-20260728, pwa-v134-rollback, pwa-v123, pwa-v122, pwa-v121, pwa-v114, pwa-v113, pwa-v111, pwa-v110, pwa-v109, pwa-v108, pwa-v107, pwa-v106, pwa-v105, pwa-v104, pwa-v103, pwa-v102, pwa-v101, pwa-v95, service-worker-activated-studio-ui-stability-v95
 // ngeblogging-pwa-v77-20260727, ngeblogging-pwa-v23-20260725, ngeblogging-pwa-v21-20260725, ngeblogging-pwa-v14-20260724
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
@@ -27,7 +28,7 @@ const APP_SHELL = [
   "/src/sidebar-mobile-lock-v123.js", "/src/sidebar-account-collapsed-icons-v119.css"
 ];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v134-rollback";
+const RECOVERY_VALUE = "pwa-v135-api-keys";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -53,7 +54,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-pre-api-keys-ui-rollback",
+        reason: "service-worker-activated-pre-api-ui-plus-api-keys-v135",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
