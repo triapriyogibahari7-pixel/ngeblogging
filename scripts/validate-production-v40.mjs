@@ -17,9 +17,11 @@ const [
   studioNext,
   styleAuthority,
   deviceRuntime,
-  finalLayout,
+  baseLayout,
   mobileCacheLayout,
-  naraSize,
+  interfaceLayout,
+  shellController,
+  naraInterface,
   serviceWorker,
   pwaRuntime,
   authCallback,
@@ -37,6 +39,8 @@ const [
   text("src/studio-device-mode-v140.js"),
   text("src/studio-layout-authority-v144.css"),
   text("src/studio-layout-authority-v145.css"),
+  text("src/studio-interface-authority-v147.css"),
+  text("src/studio-shell-controller-v147.js"),
   text("src/nara-size-authority-v144.js"),
   text("public/sw.js"),
   text("src/pwa-runtime.js"),
@@ -50,6 +54,7 @@ const [
 const pkg = JSON.parse(packageSource);
 const production = JSON.parse(productionSource);
 if (pkg.scripts?.test !== "node --test tests/*.test.mjs") throw new Error("Test runner produksi berubah tanpa validasi.");
+requireMarker(pkg.scripts?.build || "", "tests/studio-interface-v147.test.mjs", "Build kontrak v147");
 requireMarker(pkg.scripts?.build || "", "vite build", "Build produksi");
 requireMarker(pkg.scripts?.["deploy:cloudflare"] || "", "wrangler deploy", "Deploy Cloudflare");
 
@@ -61,20 +66,22 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-mobile-cache-v145") throw new Error("APP_RELEASE belum v145.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-mobile-cache-v145") throw new Error("UI authority belum v145.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-interface-v147") throw new Error("APP_RELEASE belum v147.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-interface-v147") throw new Error("UI authority belum v147.");
 
 for (const marker of [
   "studio-style-authority-v144.js",
   "studio-device-mode-v140.js",
   "nara-size-authority-v144.js",
+  "studio-shell-controller-v147.js",
   "studio-layout-v140.css",
   "studio-layout-hotfix-v141.css",
   "studio-layout-hotfix-v142.css",
   "studio-layout-authority-v144.css",
   "studio-layout-authority-v145.css",
+  "studio-interface-authority-v147.css",
   "StudioFastGate.jsx",
-]) requireMarker(studio, marker, "Studio entry");
+]) requireMarker(studio, marker, "Studio entry v147");
 
 for (const marker of [
   "studio-style-authority-v144-20260729",
@@ -85,24 +92,34 @@ for (const marker of [
   "/src/studio-final-v106.css",
   "link.media = \"not all\"",
   "MutationObserver",
-]) requireMarker(styleAuthority, marker, "Style authority v144");
+]) requireMarker(styleAuthority, marker, "Style legacy isolation");
 
 for (const marker of [
+  "studio-device-mode-v147-20260729",
   "studio-device-mode-v145-20260729",
-  "studio-device-mode-v141-20260729",
-  "COMPACT_MAX = 820",
-  "PHYSICAL_PHONE_MAX = 720",
+  "COMPACT_MAX = 760",
+  "TABLET_MAX = 1180",
+  "PHONE_MAX = 430",
+  "HANDHELD_MAX = 600",
+  '"application"',
+  '"phone"',
+  '"mobile"',
+  '"compact"',
+  '"tablet"',
+  '"desktop"',
+  '"laptop"',
+  '"computer"',
   "navigator.userAgentData?.mobile",
   "navigator.maxTouchPoints",
   "any-pointer: coarse",
   "any-pointer: fine",
   "platformHandheldSignal",
   "compactPhysicalScreen",
-  "effectiveWidth <= COMPACT_MAX || handheldSignal()",
+  "interactive-widget=resizes-content",
   "ngeblogging:studio-device-mode-change",
-]) requireMarker(deviceRuntime, marker, "Deteksi perangkat v145");
-for (const legacy of ["forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer", "stopImmediatePropagation"]) {
-  forbidMarker(deviceRuntime, legacy, "Deteksi perangkat v145");
+]) requireMarker(deviceRuntime, marker, "Deteksi perangkat v147");
+for (const legacy of ["forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer", "stopImmediatePropagation", "clearLegacyInlineLayout"]) {
+  forbidMarker(deviceRuntime, legacy, "Deteksi perangkat v147");
 }
 
 for (const marker of [
@@ -110,61 +127,91 @@ for (const marker of [
   "--studio-v144-side-closed:76px",
   'data-studio-device-mode="large"',
   'data-studio-device-mode="small"',
-  "width:100vw!important",
-  "min-width:100vw!important",
   "content:\"n\"!important",
   ".sn-logo-mark i{display:none!important}",
   "backdrop-filter:none!important",
   "overflow-x:hidden!important",
-  'data-nara-size="small"',
-  'data-nara-size="medium"',
-  'data-nara-size="full"',
-  "height:48dvh!important",
-  "height:76dvh!important",
-]) requireMarker(finalLayout, marker, "Layout dasar v144");
-forbidMarker(finalLayout, "content:\"n.\"", "Layout dasar v144");
+]) requireMarker(baseLayout, marker, "Layout dasar v144");
+forbidMarker(baseLayout, "content:\"n.\"", "Layout dasar v144");
 
 for (const marker of [
   "--studio-v145-side-open:248px",
   "--studio-v145-side-closed:76px",
   'data-studio-device-mode="small"',
   "z-index:2147482000!important",
-  "width:100%!important",
   "height:100dvh!important",
-  "transition:none!important",
-  ".sn-shell>.sn-side-backdrop",
-  "display:none!important",
   "content:\"n\"!important",
   "backdrop-filter:none!important",
-  ".nara-size-controls-v144",
-]) requireMarker(mobileCacheLayout, marker, "Kunci mobile v145");
-forbidMarker(mobileCacheLayout, "content:\"n.\"", "Kunci mobile v145");
+]) requireMarker(mobileCacheLayout, marker, "Riwayat kunci mobile v145");
+forbidMarker(mobileCacheLayout, "content:\"n.\"", "Riwayat kunci mobile v145");
 
 for (const marker of [
-  "nara-size-authority-v144-20260729",
-  "Kecil",
-  "Sedang",
-  "Penuh",
-  "data.naraSize",
-  "localStorage.setItem",
+  "--sn-v147-sidebar-open:268px",
+  "--sn-v147-sidebar-closed:80px",
+  "width:min(82vw,360px)!important",
+  "sn-sidebar-edge-toggle-v147",
+  "sn-profile-menu-v147",
+  "grid-template-columns:380px 380px!important",
+  'data-nara-size="medium"',
+  'data-nara-size="full"',
+  ".nara-size-controls-v147",
+  ".nara-speech-action-v147",
+  "overflow-x:clip!important",
+  "backdrop-filter:none!important",
+]) requireMarker(interfaceLayout, marker, "Interface authority v147");
+forbidMarker(interfaceLayout, "content:\"n.\"", "Interface authority v147");
+
+for (const marker of [
+  "studio-shell-controller-v147-20260729",
+  "sn-sidebar-edge-toggle-v147",
+  "sn-profile-menu-v147",
+  ">Profil<",
+  ">Pengaturan<",
+  ">Keluar<",
+  "aria-expanded",
   "MutationObserver",
-]) requireMarker(naraSize, marker, "Ukuran Nara");
+]) requireMarker(shellController, marker, "Controller shell v147");
+
+for (const marker of [
+  "nara-interface-authority-v147-20260729",
+  "Kecil",
+  "Medium",
+  "Penuh",
+  "Instan",
+  "Sedang",
+  "Tinggi",
+  "speechSynthesis",
+  "nara-speech-action-v147",
+  "MutationObserver",
+]) requireMarker(naraInterface, marker, "Interface Nara v147");
 
 for (const marker of [
   'data-navigation-owner="react-v138"',
+  "<span>Buat Post</span>",
   "<span>Ringkasan</span>",
+  "<span>Posts</span>",
+  "<span>Pages</span>",
+  "<span>Tema</span>",
+  "<span>Media</span>",
+  "<span>Analitik</span>",
+  "<span>Anggota</span>",
   "<span>Komentar</span>",
   "<span>Domain</span>",
   "<span>API Keys</span>",
+  "<span>Pengaturan</span>",
+  "<span>Keluar</span>",
   "sn-sidebar-toggle",
 ]) requireMarker(studioNext, marker, "Navigasi React Studio");
 
 for (const marker of [
+  "ngeblogging-app-v147-studio-interface-20260729",
   "ngeblogging-app-v145-studio-mobile-cache-20260729",
+  "single-react-interface-v147",
   "single-react-mobile-cache-v145",
   "auth-route-handoff-v143-20260729",
-  "FORCE_REFRESH_QUERY",
-  "FORCE_REFRESH_VALUE",
+  "studio-interface-v147",
+  "service-worker-stale-shell-v147",
+  "service-worker-activated-studio-interface-v147",
   "function isAuthSurface",
   'url.pathname === "/signin"',
   "refreshStaleWindow",
@@ -173,20 +220,25 @@ for (const marker of [
   "NGE_BLOGGING_FORCE_RELOAD_V77",
   "Promise.allSettled",
   "self.clients.claim()",
-]) requireMarker(serviceWorker, marker, "Service Worker v145");
+]) requireMarker(serviceWorker, marker, "Service Worker v147");
 
 for (const marker of [
+  "ngeblogging-pwa-v147-20260729",
   "ngeblogging-pwa-v145-20260729",
+  "ngeblogging-pwa-controller-v147",
   "ngeblogging-pwa-controller-v145",
+  "pwa-v147-studio-interface",
   "pwa-v145-studio-mobile-cache",
   "function handheldSignal",
+  "function responsiveFamily",
   "platformHandheldSignal",
+  "data.deviceFamily",
   "function authSurface",
   'location.pathname === "/signin"',
   'authMode === "session-expired"',
   'authMode === "callback-error"',
   "navigator.serviceWorker.register",
-]) requireMarker(pwaRuntime, marker, "Runtime PWA v145");
+]) requireMarker(pwaRuntime, marker, "Runtime PWA v147");
 
 for (const marker of [
   "auth-callback-authority-v142-20260729",
@@ -254,4 +306,4 @@ for (const runtime of disabledStudioRuntimes) {
 requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
 requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
 
-console.log("Validasi produksi v145 lulus: cache v142 diputus satu kali, HP Situs desktop dikenali, drawer menutup viewport tanpa blur/celah, tombol n tetap aktif, Nara memiliki mode kecil/sedang/penuh, dan login v143 tidak dinavigasi paksa.");
+console.log("Validasi produksi v147 lulus: menu Studio lengkap dipertahankan, enam keluarga perangkat aktif, sidebar mengikuti ukuran layar tanpa celah, cache v145 diputus, Nara memiliki Kecil/Medium/Penuh dan speaker, serta jalur login tetap dilindungi.");
