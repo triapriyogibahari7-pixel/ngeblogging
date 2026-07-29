@@ -93,9 +93,12 @@ jobs:
             if [[ "$root" == *"ngeblogging-production-entry"* ]] \
               && [[ "$login" == *"ngeblogging-production-entry"* ]] \
               && [[ "$signup" == *"ngeblogging-production-entry"* ]] \
-              && [[ "$root" == *"/src/main.jsx"* ]] \
-              && [[ "$login" == *"/src/main.jsx"* ]] \
-              && [[ "$signup" == *"/src/main.jsx"* ]] \
+              && [[ "$root" == *'id="root"'* ]] \
+              && [[ "$login" == *'id="root"'* ]] \
+              && [[ "$signup" == *'id="root"'* ]] \
+              && [[ "$root" == *"/assets/"* ]] \
+              && [[ "$login" == *"/assets/"* ]] \
+              && [[ "$signup" == *"/assets/"* ]] \
               && [[ "$root" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
