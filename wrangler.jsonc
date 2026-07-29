@@ -1,24 +1,15 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ngeblogging",
-  "main": "./cloudflare/worker.mjs",
+  "main": "./cloudflare/worker-v67.mjs",
   "compatibility_date": "2026-07-23",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
   "workers_dev": true,
   "routes": [
-    {
-      "pattern": "ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    },
-    {
-      "pattern": "www.ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    },
-    {
-      "pattern": "*.ngeblogging.com/*",
-      "zone_name": "ngeblogging.com"
-    }
+    {"pattern": "ngeblogging.com/*", "zone_name": "ngeblogging.com"},
+    {"pattern": "www.ngeblogging.com/*", "zone_name": "ngeblogging.com"},
+    {"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"}
   ],
   "assets": {
     "directory": "./dist/",
@@ -26,78 +17,87 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": true
   },
-  "ai": {
-    "binding": "AI"
-  },
+  "ai": {"binding": "AI"},
   "vars": {
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
-    "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-    "APP_RELEASE": "2026.07.24-studio-v14",
+    "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
+    "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
+    "APP_RELEASE": "2026.07.30-auth-production-v153",
+    "UI_AUTHORITY_RELEASE": "2026.07.30-auth-production-v153",
+    "AUTH_GATEWAY_RELEASE": "2026.07.30-auth-gateway-v153",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
+    "CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone",
+    "CUSTOM_DOMAIN_DNS_V67": "false",
+    "CLOUDFLARE_SAAS_ENABLED": "false",
+    "CLOUDFLARE_CUSTOM_HOSTNAMES_READY": "false",
+    "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",
+    "CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "connect.ngeblogging.com",
+    "CLOUDFLARE_CUSTOM_ORIGIN": "connect.ngeblogging.com",
+    "CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls",
+    "FREE_SUBDOMAIN_MODE": "persistent",
+    "CUSTOM_DOMAIN_REDIRECT_MODE": "canonical-308",
+    "NETLIFY_SITE_HOSTNAME": "ngeblogging.netlify.app",
     "QWEN_REGION": "singapore",
     "CF_AI_MODEL": "@cf/zai-org/glm-4.7-flash",
+    "CF_AI_FALLBACK_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8",
     "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
     "AUTH_BRANDED_EMAIL_READY": "false",
+    "AUTH_MEMBER_INVITES_READY": "false",
     "AUTH_EMAIL_FROM": "",
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_PRODUCTION_READY": "true",
     "NARA_PRODUCTION_PROBE": "passed",
-    "NARA_RUNTIME": "cloudflare-worker-default-v14"
+    "NARA_RUNTIME": "cloudflare-worker-production-v153"
   },
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 0.1
-  },
+  "observability": {"enabled": true, "head_sampling_rate": 0.1},
   "env": {
     "production": {
       "name": "ngeblogging",
+      "main": "./cloudflare/worker-v67.mjs",
       "workers_dev": true,
       "routes": [
-        {
-          "pattern": "ngeblogging.com/*",
-          "zone_name": "ngeblogging.com"
-        },
-        {
-          "pattern": "www.ngeblogging.com/*",
-          "zone_name": "ngeblogging.com"
-        },
-        {
-          "pattern": "*.ngeblogging.com/*",
-          "zone_name": "ngeblogging.com"
-        }
+        {"pattern": "ngeblogging.com/*", "zone_name": "ngeblogging.com"},
+        {"pattern": "www.ngeblogging.com/*", "zone_name": "ngeblogging.com"},
+        {"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"}
       ],
-      "ai": {
-        "binding": "AI"
-      },
       "vars": {
         "PUBLIC_SITE_URL": "https://ngeblogging.com",
-        "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com",
-        "APP_RELEASE": "2026.07.24-studio-v14",
+        "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
+        "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
+        "APP_RELEASE": "2026.07.30-auth-production-v153",
+        "UI_AUTHORITY_RELEASE": "2026.07.30-auth-production-v153",
+        "AUTH_GATEWAY_RELEASE": "2026.07.30-auth-gateway-v153",
         "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
         "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
+        "CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone",
+        "CUSTOM_DOMAIN_DNS_V67": "false",
+        "CLOUDFLARE_SAAS_ENABLED": "false",
+        "CLOUDFLARE_CUSTOM_HOSTNAMES_READY": "false",
+        "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",
+        "CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "connect.ngeblogging.com",
+        "CLOUDFLARE_CUSTOM_ORIGIN": "connect.ngeblogging.com",
+        "CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls",
+        "FREE_SUBDOMAIN_MODE": "persistent",
+        "CUSTOM_DOMAIN_REDIRECT_MODE": "canonical-308",
+        "NETLIFY_SITE_HOSTNAME": "ngeblogging.netlify.app",
         "QWEN_REGION": "singapore",
         "CF_AI_MODEL": "@cf/zai-org/glm-4.7-flash",
+        "CF_AI_FALLBACK_MODEL": "@cf/qwen/qwen3-30b-a3b-fp8",
         "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
         "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
         "PAYPAL_ENV": "sandbox",
         "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
         "AUTH_BRANDED_EMAIL_READY": "false",
+        "AUTH_MEMBER_INVITES_READY": "false",
         "AUTH_EMAIL_FROM": "",
         "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
         "NARA_PRODUCTION_READY": "true",
         "NARA_PRODUCTION_PROBE": "passed",
-        "NARA_RUNTIME": "cloudflare-worker-production-v14"
-      },
-      "secrets": {
-        "required": [],
-        "optional": [
-          "QWEN_API_KEY",
-          "QWEN_WORKSPACE_ID"
-        ]
+        "NARA_RUNTIME": "cloudflare-worker-production-v153"
       }
     }
   }
