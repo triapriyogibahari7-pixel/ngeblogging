@@ -10,6 +10,7 @@ const serviceWorker = read("public/sw.js");
 const browserBridge = read("src/production-entry-v154.js");
 const styleAuthority = read("src/studio-style-authority-v144.js");
 const auth = read("src/lib/supabase.js");
+const callback = read("src/auth-callback-authority-v107.js");
 const authModal = read("src/AuthModal.jsx");
 const studio = read("src/StudioNext.jsx");
 
@@ -29,7 +30,7 @@ test("production system routes are forced to the current React build", () => {
   ]) assert.ok(worker.includes(marker), `worker entry missing ${marker}`);
 
   for (const route of ["/login", "/signin", "/signup", "/auth/callback", "/auth/recovery"]) {
-    assert.ok(worker.includes(`\"${route}\"`), `system route missing ${route}`);
+    assert.ok(worker.includes(`"${route}"`), `system route missing ${route}`);
   }
 
   assert.ok(worker.includes('url.pathname.startsWith("/api/")'));
@@ -77,12 +78,15 @@ test("browser bridge verifies v154 and clears only legacy PWA guards", () => {
   assert.ok(styleAuthority.startsWith('import "./production-entry-v154.js";'));
 });
 
-test("Google, LinkedIn, email and persistent sessions remain wired", () => {
+test("Google, LinkedIn, email, PKCE callback and persistent sessions remain wired", () => {
   for (const marker of [
     '"google"', '"linkedin_oidc"', "signInWithProvider", "signInWithPassword",
-    "signInWithMagicLink", "exchangeCodeForSession", "persistSession: true",
-    "autoRefreshToken: true", "AUTH_GATEWAY_PREFIX", "/api/auth-proxy",
+    "signInWithMagicLink", "persistSession: true", "autoRefreshToken: true",
+    "AUTH_GATEWAY_PREFIX", "/api/auth-proxy",
   ]) assert.ok(auth.includes(marker), `auth source missing ${marker}`);
+  for (const marker of ["exchangeCodeForSession", "publishSession", "ngeblogging:auth-session-ready"]) {
+    assert.ok(callback.includes(marker), `callback authority missing ${marker}`);
+  }
   for (const marker of ["Google", "LinkedIn", "Masuk dengan email", "Masuk tanpa password melalui email"]) {
     assert.ok(authModal.includes(marker), `auth modal missing ${marker}`);
   }
