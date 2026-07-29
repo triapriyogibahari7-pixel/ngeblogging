@@ -1,8 +1,8 @@
-const RELEASE = "ngeblogging-pwa-v141-20260729";
+const RELEASE = "ngeblogging-pwa-v142-20260729";
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v141";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v142";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v141-studio-mobile-auth";
+const RECOVERY_VALUE = "pwa-v142-studio-auth";
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
