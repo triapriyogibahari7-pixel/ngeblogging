@@ -1,4 +1,5 @@
-const RELEASE = "api-origin-failover-v73-20260727";
+const RELEASE = "api-origin-failover-v144-20260729";
+const LEGACY_V73_RELEASE = "api-origin-failover-v73-20260727";
 const LEGACY_V65_RELEASE = "api-origin-failover-v65-20260727";
 const LEGACY_V61_RELEASE = "api-origin-failover-v61-20260727";
 const LEGACY_V60_RELEASE = "api-origin-failover-v60-20260727";
@@ -7,13 +8,20 @@ const PRIMARY_TIMEOUT_MS = 8_000;
 const BACKUP_TIMEOUT_MS = 10_000;
 const nativeFetch = window.fetch.bind(window);
 
-function isApiUrl(value) {
+function requestUrl(value) {
   try {
-    const url = value instanceof Request ? new URL(value.url) : new URL(String(value), location.href);
-    return url.pathname.startsWith("/api/");
+    return value instanceof Request ? new URL(value.url) : new URL(String(value), location.href);
   } catch {
-    return false;
+    return null;
   }
+}
+
+function isDomainApiUrl(value) {
+  const url = requestUrl(value);
+  return Boolean(url && (
+    url.pathname.startsWith("/api/domains/")
+    || url.pathname.startsWith("/api/domain-redirects/")
+  ));
 }
 
 function requestFor(input, init) {
@@ -132,8 +140,11 @@ function statusMessage(status) {
   return "Layanan domain belum dapat memberikan respons yang dapat diproses.";
 }
 
-async function resilientFetch(input, init) {
-  if (!isApiUrl(input)) return nativeFetch(input, init);
+async function resilientDomainFetch(input, init) {
+  // Nara, komentar, media, auth, data, dan API lain memakai timeout mereka sendiri.
+  // Failover 8/10 detik ini hanya untuk API Domain agar inferensi Nara tidak pernah
+  // dipotong lalu disalahartikan sebagai kegagalan domain.
+  if (!isDomainApiUrl(input)) return nativeFetch(input, init);
 
   const primary = requestFor(input, init);
   const primaryUrl = new URL(primary.url);
@@ -221,11 +232,14 @@ async function resilientFetch(input, init) {
   );
 }
 
-if (!window.__ngebloggingApiOriginFailoverV73) {
-  window.__ngebloggingApiOriginFailoverV73 = RELEASE;
+if (!window.__ngebloggingApiOriginFailoverV144) {
+  window.__ngebloggingApiOriginFailoverV144 = RELEASE;
+  window.__ngebloggingApiOriginFailoverV73 = LEGACY_V73_RELEASE;
   window.__ngebloggingApiOriginFailoverV65 = LEGACY_V65_RELEASE;
   window.__ngebloggingApiOriginFailoverV61 = LEGACY_V61_RELEASE;
   window.__ngebloggingApiOriginFailoverV60 = LEGACY_V60_RELEASE;
-  window.fetch = resilientFetch;
-  document.documentElement.dataset.apiOriginFailoverV73 = RELEASE;
+  window.fetch = resilientDomainFetch;
+  document.documentElement.dataset.apiOriginFailoverV144 = RELEASE;
 }
+
+export { RELEASE, isDomainApiUrl, resilientDomainFetch };
