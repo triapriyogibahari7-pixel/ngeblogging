@@ -1,11 +1,14 @@
-const RELEASE = "ngeblogging-pwa-v145-20260729";
-const LEGACY_RELEASE = "ngeblogging-pwa-v142-20260729";
+const RELEASE = "ngeblogging-pwa-v146-20260729";
+const LEGACY_RELEASE = "ngeblogging-pwa-v145-20260729";
+const PREVIOUS_RELEASE = "ngeblogging-pwa-v142-20260729";
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v145";
-const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v142";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v146";
+const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v145";
+const PREVIOUS_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v142";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v145-studio-mobile-cache";
-const LEGACY_RECOVERY_VALUE = "pwa-v142-studio-auth";
+const RECOVERY_VALUE = "pwa-v146-true-mobile";
+const LEGACY_RECOVERY_VALUE = "pwa-v145-studio-mobile-cache";
+const PREVIOUS_RECOVERY_VALUE = "pwa-v142-studio-auth";
 const PHYSICAL_PHONE_MAX = 720;
 let installPrompt = null;
 let installButton = null;
@@ -21,21 +24,28 @@ function platformHandheldSignal() {
   return /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform);
 }
 
+function physicalCssDimension(raw, density, fallback) {
+  const value = Math.max(1, Number(raw) || fallback || 1);
+  if (value <= 900) return value;
+  return density >= 1.25 ? value / density : fallback;
+}
+
 function handheldSignal() {
   const userAgent = navigator.userAgent || "";
+  const density = Math.max(1, Number(window.devicePixelRatio) || 1);
+  const screenWidth = physicalCssDimension(window.screen?.width, density, window.innerWidth);
+  const screenHeight = physicalCssDimension(window.screen?.height, density, window.innerHeight);
+  const physicalShortSide = Math.min(screenWidth, screenHeight);
   const mobileUa = navigator.userAgentData?.mobile === true
     || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent)
     || platformHandheldSignal();
   const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
   const finePointer = mediaMatches("(any-pointer: fine)");
-  const screenWidth = Math.max(1, Number(window.screen?.width) || Number(window.innerWidth) || 1);
-  const screenHeight = Math.max(1, Number(window.screen?.height) || Number(window.innerHeight) || 1);
-  const physicalShortSide = Math.min(screenWidth, screenHeight);
-  const density = Math.max(1, Number(window.devicePixelRatio) || 1);
   const compactPhysicalScreen = physicalShortSide <= PHYSICAL_PHONE_MAX && density >= 1.25;
+  const denseTouchScreen = Number(navigator.maxTouchPoints || 0) > 1 && density >= 1.5 && physicalShortSide <= 900;
   const touchHandheld = Number(navigator.maxTouchPoints || 0) > 1
-    && coarsePointer
-    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
+    && (coarsePointer || denseTouchScreen)
+    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen || denseTouchScreen);
   return mobileUa || touchHandheld;
 }
 
@@ -43,11 +53,13 @@ function viewportProfile() {
   const layoutWidth = Math.max(1, Number(document.documentElement.clientWidth || window.innerWidth) || 1);
   const layoutHeight = Math.max(1, Number(document.documentElement.clientHeight || window.innerHeight) || 1);
   const visualWidth = Math.max(1, Number(window.visualViewport?.width) || layoutWidth);
-  const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
-  const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
+  const density = Math.max(1, Number(window.devicePixelRatio) || 1);
+  const screenWidth = physicalCssDimension(window.screen?.width, density, layoutWidth);
+  const screenHeight = physicalCssDimension(window.screen?.height, density, layoutHeight);
   const handheld = handheldSignal();
   const effectiveWidth = Math.min(layoutWidth, visualWidth);
-  const desktopSitePhone = handheld && layoutWidth > 820;
+  const physicalViewportWidth = layoutHeight >= layoutWidth ? Math.min(screenWidth, screenHeight) : Math.max(screenWidth, screenHeight);
+  const desktopSitePhone = handheld && layoutWidth > Math.max(820, physicalViewportWidth * 1.18);
 
   let mode = "desktop";
   if (handheld || effectiveWidth <= 820) mode = "mobile";
@@ -83,6 +95,7 @@ function syncDeviceMode() {
   root.dataset.orientation = mediaMatches("(orientation: portrait)") ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
   root.dataset.pwaLegacyRelease = LEGACY_RELEASE;
+  root.dataset.pwaPreviousRelease = PREVIOUS_RELEASE;
   root.style.setProperty("--sn-browser-scale", "1");
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight}px`);
@@ -124,6 +137,7 @@ function reloadForNewController(reason = "controllerchange") {
     if (sessionStorage.getItem(CONTROLLER_GUARD) === RECOVERY_VALUE) return;
     sessionStorage.setItem(CONTROLLER_GUARD, RECOVERY_VALUE);
     sessionStorage.removeItem(LEGACY_CONTROLLER_GUARD);
+    sessionStorage.removeItem(PREVIOUS_CONTROLLER_GUARD);
   } catch {
     // Query guard tetap mencegah loop ketika storage browser dibatasi.
   }
@@ -192,11 +206,11 @@ async function registerServiceWorker() {
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       document.documentElement.dataset.appUpdate = "applied";
-      reloadForNewController("controllerchange");
+      reloadForNewController("controllerchange-v146");
     });
     navigator.serviceWorker.addEventListener("message", (event) => {
       if (event.data?.type === "NGE_BLOGGING_FORCE_RELOAD_V77") {
-        reloadForNewController(event.data.reason || "service-worker-message");
+        reloadForNewController(event.data.reason || "service-worker-message-v146");
       }
     });
   } catch (error) {
@@ -223,6 +237,7 @@ new MutationObserver(scheduleInstallButton).observe(ROOT, { childList: true, sub
 syncDeviceMode();
 document.documentElement.dataset.installed = String(standalone());
 document.documentElement.dataset.pwaLegacyRecovery = LEGACY_RECOVERY_VALUE;
+document.documentElement.dataset.pwaPreviousRecovery = PREVIOUS_RECOVERY_VALUE;
 registerServiceWorker();
 
 export { deviceMode };
