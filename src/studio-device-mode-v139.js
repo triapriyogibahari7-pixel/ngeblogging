@@ -79,23 +79,32 @@ function ensureForcedBackdrop(shell) {
 
 function setForcedDrawer(open) {
   const shell = document.querySelector(".sn-shell");
+  const wasOpen = forcedDrawerOpen;
   forcedDrawerOpen = Boolean(open && forcedDesktopSitePhone() && shell);
   if (!shell) return;
   shell.dataset.v139ForcedMobileOpen = String(forcedDrawerOpen);
-  document.body.classList.toggle("sn-mobile-sidebar-open", forcedDrawerOpen);
+  if (forcedDrawerOpen) {
+    document.body.classList.add("sn-mobile-sidebar-open");
+  } else if (wasOpen && !shell.querySelector(".sn-side.mobile-open")) {
+    document.body.classList.remove("sn-mobile-sidebar-open");
+  }
   ensureForcedBackdrop(shell);
   if (forcedBackdrop) forcedBackdrop.hidden = !forcedDrawerOpen;
   const toggle = shell.querySelector(".sn-sidebar-toggle");
-  toggle?.setAttribute("aria-expanded", String(forcedDrawerOpen));
+  if (forcedDesktopSitePhone()) toggle?.setAttribute("aria-expanded", String(forcedDrawerOpen));
 }
 
 function syncForcedBridge() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
+  const isDesktopSitePhone = forcedDesktopSitePhone();
   shell.dataset.deviceAuthority = RELEASE;
-  shell.dataset.v139DesktopSitePhone = String(forcedDesktopSitePhone());
-  if (!forcedDesktopSitePhone()) setForcedDrawer(false);
-  else ensureForcedBackdrop(shell);
+  shell.dataset.v139DesktopSitePhone = String(isDesktopSitePhone);
+  if (!isDesktopSitePhone && (forcedDrawerOpen || shell.dataset.v139ForcedMobileOpen === "true")) {
+    setForcedDrawer(false);
+  } else if (isDesktopSitePhone) {
+    ensureForcedBackdrop(shell);
+  }
 }
 
 function applyDeviceMode() {
