@@ -9,12 +9,13 @@ const productionConfig = read("wrangler.production.jsonc");
 const serviceWorker = read("public/sw.js");
 const browserBridge = read("src/production-entry-v154.js");
 const styleAuthority = read("src/studio-style-authority-v144.js");
+const netlifyBuild = read("scripts/write-netlify-redirects.mjs");
 const auth = read("src/lib/supabase.js");
 const callback = read("src/auth-callback-authority-v107.js");
 const authModal = read("src/AuthModal.jsx");
 const studio = read("src/StudioNext.jsx");
 
-const activeEntryFiles = [worker, defaultConfig, productionConfig, serviceWorker, browserBridge];
+const activeEntryFiles = [worker, defaultConfig, productionConfig, serviceWorker, browserBridge, netlifyBuild];
 
 test("production system routes are forced to the current React build", () => {
   for (const marker of [
@@ -47,6 +48,23 @@ test("all Wrangler authorities deploy worker v68 with v154 metadata", () => {
     assert.ok(config.includes('"pattern": "ngeblogging.com/*"'));
     assert.ok(config.includes('"pattern": "*.ngeblogging.com/*"'));
   }
+});
+
+test("Netlify production publishes the same React markers, release probe and no-cache auth routes", () => {
+  for (const marker of [
+    "2026.07.30-production-entry-v154",
+    "2026.07.30-auth-entry-v154",
+    "release-v154.json",
+    "legacyWhiteR4: false",
+    "netlify-static-fallback",
+    "ngeblogging-production-entry",
+    "ngeblogging-auth-entry",
+    "Cache-Control: no-store, max-age=0, must-revalidate",
+    "/login",
+    "/signin",
+    "/signup",
+    "/*       /index.html",
+  ]) assert.ok(netlifyBuild.includes(marker), `Netlify fallback missing ${marker}`);
 });
 
 test("PWA cache rotation removes stale shells without interrupting auth callbacks", () => {
