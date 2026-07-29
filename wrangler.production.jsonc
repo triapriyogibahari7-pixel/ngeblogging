@@ -56,7 +56,7 @@
     "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
     "NARA_FALLBACK_WORKER_COMPAT": "worker-v22.mjs",
-    "UI_AUTHORITY_RELEASE": "2026.07.29-locked-react-v125",
+    "UI_AUTHORITY_RELEASE": "2026.07.29-locked-react-v133",
     "AUTH_GATEWAY_RELEASE": "2026.07.28-auth-gateway-v108",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
