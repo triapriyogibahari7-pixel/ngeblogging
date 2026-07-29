@@ -7,6 +7,8 @@ const SYSTEM_HOSTS = new Set([
   "studio.ngeblogging.com",
   "api.ngeblogging.com",
 ]);
+const PREVIEW_SUFFIXES = [".workers.dev", ".pages.dev", ".netlify.app"];
+let observer = null;
 
 function hasPublishedContentPath() {
   return window.location.pathname.split("/").filter(Boolean).length > 0;
@@ -15,9 +17,7 @@ function hasPublishedContentPath() {
 function isPublicTenant() {
   const host = window.location.hostname.toLowerCase();
   if (SYSTEM_HOSTS.has(host)) return false;
-  if (host.endsWith(".workers.dev") || host.endsWith(".pages.dev") || host.endsWith(".netlify.app")) {
-    return Boolean(document.querySelector(".ps-site,.ps-theme-home"));
-  }
+  if (PREVIEW_SUFFIXES.some((suffix) => host.endsWith(suffix))) return true;
   return host.endsWith(".ngeblogging.com") || !host.endsWith("ngeblogging.com");
 }
 
@@ -40,18 +40,32 @@ function ensureScript() {
   document.body.append(script);
 }
 
+function publicContentReady() {
+  return Boolean(document.querySelector(".ps-site .ps-content,.ps-theme-home,[data-ngeblogging-content]"));
+}
+
 function activatePublicComments() {
-  if (!isPublicTenant() || !hasPublishedContentPath()) return;
+  if (!isPublicTenant() || !hasPublishedContentPath()) return false;
+  if (!publicContentReady()) return false;
   ensureStylesheet();
   ensureScript();
   document.documentElement.dataset.publicCommentsLoaderV151 = RELEASE;
+  observer?.disconnect();
+  observer = null;
+  return true;
+}
+
+function watchForPublicContent() {
+  if (activatePublicComments() || observer || !isPublicTenant() || !hasPublishedContentPath()) return;
+  observer = new MutationObserver(() => activatePublicComments());
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", activatePublicComments, { once: true });
+  document.addEventListener("DOMContentLoaded", watchForPublicContent, { once: true });
 } else {
-  activatePublicComments();
+  watchForPublicContent();
 }
-window.addEventListener("pageshow", activatePublicComments, { passive: true });
+window.addEventListener("pageshow", watchForPublicContent, { passive: true });
 
-export { RELEASE, activatePublicComments };
+export { RELEASE, activatePublicComments, watchForPublicContent };
