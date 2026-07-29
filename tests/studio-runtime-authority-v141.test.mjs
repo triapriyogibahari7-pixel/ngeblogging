@@ -46,8 +46,8 @@ const activeFeatureRuntimes = [
   "nara-connectors-v29.js",
 ];
 
-test("production shell executes only React v141 as Studio layout runtime", () => {
-  assert.match(index, /ngeblogging-studio-runtime-authority" content="react-v141"/);
+test("production shell executes only React v144 as the Studio layout runtime", () => {
+  assert.match(index, /ngeblogging-studio-runtime-authority" content="react-v144"/);
   for (const runtime of disabledLayoutRuntimes) {
     const escaped = escapeRegExp(runtime);
     assert.match(index, new RegExp(`type="application/x-disabled" src="/src/${escaped}`));
