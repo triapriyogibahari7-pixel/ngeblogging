@@ -48,11 +48,21 @@ test("existing Theme Studio functions are preserved", () => {
   }
 });
 
-test("all sidebar pages and Nara controls remain present", () => {
+test("all sidebar pages remain present", () => {
   for (const label of requiredSidebarLabels) assert.ok(studio.includes(`>${label}<`), `missing ${label}`);
-  for (const marker of ["cameraInput", "imageInput", "fileInput", "startVoice", "modelOptions", "intelligenceOptions", "nara-floating-button"]) {
+});
+
+test("Nara controls are React-owned without removing attachments, microphone, models or intelligence", () => {
+  for (const marker of [
+    "cameraInput", "imageInput", "fileInput", "startVoice", "modelOptions", "intelligenceOptions",
+    "nara-floating-button", "data-nara-native-size=\"v149\"", "nara-native-size-controls-v149",
+    "nara-speech-action-v149", "SpeakerIcon", "Instan", "Sedang", "Tinggi", "Maksimal",
+  ]) {
     assert.ok(nara.includes(marker), `missing ${marker}`);
   }
+  for (const size of ["small", "medium", "full"]) assert.ok(nara.includes(`\"${size}\"`), `missing Nara size ${size}`);
+  assert.match(nara, /writePreference\(NARA_SIZE_KEY/);
+  assert.match(nara, /SpeechSynthesisUtterance/);
 });
 
 test("v149 stylesheet blocks are balanced", () => {
