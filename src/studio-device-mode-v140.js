@@ -1,6 +1,7 @@
-const RELEASE = "studio-device-mode-v140-20260729";
+const RELEASE = "studio-device-mode-v141-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 820;
+const REACT_NAVIGATION_OWNER = "react-v138";
 const LAYOUT_NODES = [
   ".sn-shell",
   ".sn-shell > .sn-side",
@@ -20,28 +21,73 @@ const LEGACY_INLINE_PROPERTIES = [
 let frame = 0;
 let cleanupFrame = 0;
 
-function layoutWidth() {
-  return Math.max(
-    1,
-    Number(document.documentElement.clientWidth)
-      || Number(window.innerWidth)
-      || 1,
-  );
+function finitePositive(value, fallback = Number.POSITIVE_INFINITY) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function mediaMatches(query) {
+  try {
+    return window.matchMedia?.(query)?.matches === true;
+  } catch {
+    return false;
+  }
+}
+
+function viewportMetrics() {
+  const layoutWidth = finitePositive(document.documentElement.clientWidth || window.innerWidth, 1);
+  const layoutHeight = finitePositive(document.documentElement.clientHeight || window.innerHeight, 1);
+  const visualWidth = finitePositive(window.visualViewport?.width, layoutWidth);
+  const visualHeight = finitePositive(window.visualViewport?.height, layoutHeight);
+  const screenWidth = finitePositive(window.screen?.width, layoutWidth);
+  const screenHeight = finitePositive(window.screen?.height, layoutHeight);
+
+  return {
+    layoutWidth,
+    layoutHeight,
+    visualWidth,
+    visualHeight,
+    screenWidth,
+    screenHeight,
+    effectiveWidth: Math.min(layoutWidth, visualWidth),
+  };
+}
+
+function mobileUserAgentSignal() {
+  const userAgent = navigator.userAgent || "";
+  return navigator.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent);
+}
+
+function touchHandheldSignal() {
+  const touchPoints = Number(navigator.maxTouchPoints || 0);
+  const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
+  const finePointer = mediaMatches("(any-pointer: fine)");
+
+  // Chrome "Situs desktop" dapat mengganti UA Android dan membuat viewport
+  // sangat lebar. Perangkat multi-touch dengan pointer coarse tanpa pointer fine
+  // tetap diperlakukan sebagai perangkat genggam.
+  return touchPoints > 1 && coarsePointer && !finePointer;
+}
+
+function handheldSignal() {
+  return mobileUserAgentSignal() || touchHandheldSignal();
 }
 
 function surfaceMode() {
-  return window.matchMedia?.("(display-mode: standalone)")?.matches
-    || window.navigator.standalone === true
+  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true
     ? "application"
     : "browser";
 }
 
 export function detectStudioDeviceMode() {
-  return layoutWidth() <= COMPACT_MAX ? "small" : "large";
+  const view = viewportMetrics();
+  return view.effectiveWidth <= COMPACT_MAX || handheldSignal() ? "small" : "large";
 }
 
 export function currentStudioDeviceMode() {
-  return document.documentElement.dataset.studioDeviceMode || detectStudioDeviceMode();
+  const stored = document.documentElement.dataset.studioDeviceMode;
+  return stored === "small" || stored === "large" ? stored : detectStudioDeviceMode();
 }
 
 function clearLegacyInlineLayout() {
@@ -56,7 +102,9 @@ function clearLegacyInlineLayout() {
     });
   }
 
-  shell.dataset.navigationOwner = "react-v140";
+  // Jangan ganti nilai ini menjadi react-v140/v141. Bridge Komentar, Domain,
+  // API Keys, dan sidebar lama memakai kontrak react-v138 untuk berhenti bekerja.
+  shell.dataset.navigationOwner = REACT_NAVIGATION_OWNER;
   shell.dataset.layoutAuthority = RELEASE;
   shell.querySelectorAll([
     ".sn-mobile-v30-header",
@@ -85,20 +133,26 @@ function applyDeviceMode() {
   frame = 0;
   const root = document.documentElement;
   const previous = root.dataset.studioDeviceMode || "";
-  const mode = detectStudioDeviceMode();
-  const width = layoutWidth();
+  const view = viewportMetrics();
+  const handheld = handheldSignal();
+  const mode = view.effectiveWidth <= COMPACT_MAX || handheld ? "small" : "large";
 
   root.dataset.studioDeviceMode = mode;
   root.dataset.studioSurfaceMode = surfaceMode();
   root.dataset.studioDeviceRelease = RELEASE;
-  root.dataset.studioNavigationAuthority = "react-v140";
-  root.style.setProperty("--studio-layout-width", `${width}px`);
+  root.dataset.studioNavigationAuthority = REACT_NAVIGATION_OWNER;
+  root.dataset.studioHandheld = String(handheld);
+  root.dataset.studioDesktopSitePhone = String(handheld && view.layoutWidth > COMPACT_MAX);
+  root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
+  root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
+  root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
+  root.style.setProperty("--studio-visual-height", `${view.visualHeight}px`);
 
   scheduleLegacyCleanup();
 
   if (previous !== mode) {
     window.dispatchEvent(new CustomEvent(MODE_EVENT, {
-      detail: { mode, previous, release: RELEASE, width },
+      detail: { mode, previous, release: RELEASE, handheld, ...view },
     }));
   }
 }
@@ -114,18 +168,19 @@ window.addEventListener("resize", schedule, { passive: true });
 window.addEventListener("orientationchange", schedule, { passive: true });
 window.addEventListener("pageshow", schedule, { passive: true });
 window.visualViewport?.addEventListener("resize", schedule, { passive: true });
+window.visualViewport?.addEventListener("scroll", schedule, { passive: true });
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) schedule();
+});
 
 const observer = new MutationObserver((mutations) => {
-  if (mutations.some((mutation) => {
-    if (mutation.type === "childList") return mutation.addedNodes.length > 0;
-    return mutation.type === "attributes" && mutation.attributeName === "style";
-  })) scheduleLegacyCleanup();
+  if (mutations.some((mutation) => mutation.type === "childList" && mutation.addedNodes.length > 0)) {
+    scheduleLegacyCleanup();
+  }
 });
 observer.observe(document.documentElement, {
   childList: true,
   subtree: true,
-  attributes: true,
-  attributeFilter: ["style"],
 });
 
 applyDeviceMode();
