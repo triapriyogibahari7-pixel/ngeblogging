@@ -4,123 +4,108 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Studio loads the v145 mobile lock last", () => {
+test("Studio loads the v147 interface authority last", () => {
   const studio = read("src/Studio.jsx");
   const compatibility = read("src/studio-device-mode-v138.js");
   assert.match(studio, /import StudioFastGate from "\.\/StudioFastGate\.jsx"/);
-  assert.match(studio, /studio-style-authority-v144\.js/);
-  assert.match(studio, /studio-device-mode-v140\.js/);
-  assert.match(studio, /nara-size-authority-v144\.js/);
-  assert.match(studio, /studio-layout-v140\.css/);
-  assert.match(studio, /studio-layout-hotfix-v141\.css/);
-  assert.match(studio, /studio-layout-hotfix-v142\.css/);
-  assert.match(studio, /studio-layout-authority-v144\.css/);
-  assert.match(studio, /studio-layout-authority-v145\.css/);
+  for (const marker of [
+    "studio-style-authority-v144.js",
+    "studio-device-mode-v140.js",
+    "nara-size-authority-v144.js",
+    "studio-shell-controller-v147.js",
+    "studio-layout-v140.css",
+    "studio-layout-hotfix-v141.css",
+    "studio-layout-hotfix-v142.css",
+    "studio-layout-authority-v144.css",
+    "studio-layout-authority-v145.css",
+    "studio-interface-authority-v147.css",
+  ]) assert.ok(studio.includes(marker), `${marker} harus tetap dimuat`);
+  assert.ok(studio.lastIndexOf("studio-interface-authority-v147.css") > studio.lastIndexOf("studio-layout-authority-v145.css"));
   assert.match(compatibility, /from "\.\/studio-device-mode-v140\.js"/);
   assert.doesNotMatch(studio, /studio-device-mode-v139\.js/);
 });
 
-test("device authority covers mobile, app, desktop-site phones, and large browsers", () => {
+test("device authority declares six families and protects touch laptops", () => {
   const runtime = read("src/studio-device-mode-v140.js");
-  assert.match(runtime, /studio-device-mode-v145-20260729/);
-  assert.match(runtime, /studio-device-mode-v141-20260729/);
-  assert.match(runtime, /COMPACT_MAX = 820/);
-  assert.match(runtime, /PHYSICAL_PHONE_MAX = 720/);
-  assert.match(runtime, /navigator\.userAgentData\?\.mobile/);
-  assert.match(runtime, /navigator\.maxTouchPoints/);
-  assert.match(runtime, /any-pointer: coarse/);
-  assert.match(runtime, /any-pointer: fine/);
-  assert.match(runtime, /platformHandheldSignal/);
-  assert.match(runtime, /compactPhysicalScreen/);
-  assert.match(runtime, /effectiveWidth <= COMPACT_MAX \|\| handheldSignal\(\)/);
-  assert.match(runtime, /surfaceMode/);
-  assert.match(runtime, /application/);
-  assert.match(runtime, /browser/);
-  assert.match(runtime, /clearLegacyInlineLayout/);
-  assert.match(runtime, /MutationObserver/);
-  assert.doesNotMatch(runtime, /forcedDesktopSitePhone/);
-  assert.doesNotMatch(runtime, /forcedBackdrop/);
-  assert.doesNotMatch(runtime, /setForcedDrawer/);
-  assert.doesNotMatch(runtime, /stopImmediatePropagation/);
+  for (const marker of [
+    "studio-device-mode-v147-20260729",
+    "studio-device-mode-v145-20260729",
+    "COMPACT_MAX = 760",
+    "TABLET_MAX = 1180",
+    "PHONE_MAX = 430",
+    "HANDHELD_MAX = 600",
+    '"application"', '"phone"', '"mobile"', '"compact"', '"tablet"', '"desktop"',
+    '"laptop"', '"computer"',
+    "navigator.userAgentData?.mobile",
+    "navigator.maxTouchPoints",
+    "any-pointer: coarse",
+    "any-pointer: fine",
+    "platformHandheldSignal",
+    "compactPhysicalScreen",
+    "interactive-widget=resizes-content",
+    "ngeblogging:studio-device-mode-change",
+  ]) assert.ok(runtime.includes(marker), `${marker} harus ada`);
+  for (const forbidden of ["clearLegacyInlineLayout", "forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer"]) {
+    assert.ok(!runtime.includes(forbidden), `${forbidden} tidak boleh kembali`);
+  }
 });
 
-test("React remains the only complete sidebar owner", () => {
+test("React remains the complete sidebar owner", () => {
   const studio = read("src/StudioNext.jsx");
   assert.match(studio, /data-navigation-owner="react-v138"/);
-  for (const label of ["Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys"]) {
-    assert.match(studio, new RegExp(`<span>${label}<\\/span>`));
-  }
+  for (const label of [
+    "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
+    "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar",
+  ]) assert.ok(studio.includes(label), `${label} harus tetap ada`);
   assert.match(studio, /<CommentsPanelV124 site=\{site\}/);
   assert.match(studio, /<DomainPanelV124 site=\{site\}/);
   assert.match(studio, /<ApiKeysPanel setToast=\{setToast\}\/>/);
   assert.match(studio, /currentStudioDeviceMode\(\) === "small"/);
 });
 
-test("v144 disables every active historical Studio stylesheet", () => {
+test("historical Studio styles remain isolated", () => {
   const authority = read("src/studio-style-authority-v144.js");
   assert.match(authority, /studio-style-authority-v144-20260729/);
   for (const stylesheet of [
-    "studio-responsive-v23.css",
-    "studio-shell-v30.css",
-    "studio-mobile-content-v31.css",
-    "studio-mobile-polish-v32.css",
-    "studio-mobile-overlap-v33.css",
-    "studio-layout-builder-v39.css",
-    "sidebar-final-v91.css",
-    "studio-ui-stability-v95.css",
-    "studio-surface-authority-v100.css",
-    "studio-mobile-precision-v99.css",
-    "studio-final-v106.css",
-  ]) assert.match(authority, new RegExp(stylesheet.replaceAll(".", "\\.")));
+    "studio-responsive-v23.css", "studio-shell-v30.css", "studio-mobile-content-v31.css",
+    "studio-mobile-polish-v32.css", "studio-mobile-overlap-v33.css",
+    "studio-layout-builder-v39.css", "sidebar-final-v91.css", "studio-ui-stability-v95.css",
+    "studio-surface-authority-v100.css", "studio-mobile-precision-v99.css", "studio-final-v106.css",
+  ]) assert.ok(authority.includes(stylesheet));
   assert.match(authority, /link\.media = "not all"/);
   assert.match(authority, /MutationObserver/);
 });
 
-test("v144 geometry establishes exact widths, n-only trigger, and no blur", () => {
-  const layout = read("src/studio-layout-authority-v144.css");
-  assert.match(layout, /--studio-v144-side-open:248px/);
-  assert.match(layout, /--studio-v144-side-closed:76px/);
-  assert.match(layout, /data-studio-device-mode="large"/);
-  assert.match(layout, /data-studio-device-mode="small"/);
-  assert.match(layout, /width:100vw!important/);
-  assert.match(layout, /min-width:100vw!important/);
-  assert.match(layout, /height:100dvh!important/);
-  assert.match(layout, /content:"n"!important/);
-  assert.match(layout, /\.sn-logo-mark i\{display:none!important\}/);
-  assert.match(layout, /overflow-x:hidden!important/);
-  assert.match(layout, /backdrop-filter:none!important/);
-  assert.doesNotMatch(layout, /content:"n\."/);
+test("v147 geometry has responsive sidebar rails, partial mobile drawer, and no overflow", () => {
+  const css = read("src/studio-interface-authority-v147.css");
+  for (const marker of [
+    "--sn-v147-sidebar-open:268px",
+    "--sn-v147-sidebar-closed:80px",
+    "calc(100% - var(--sn-v147-sidebar-open))",
+    "calc(100% - var(--sn-v147-sidebar-closed))",
+    "width:min(82vw,360px)!important",
+    "sn-sidebar-edge-toggle-v147",
+    "sn-profile-menu-v147",
+    "content:\"n\"!important",
+    "overflow-x:clip!important",
+    "backdrop-filter:none!important",
+  ]) assert.ok(css.includes(marker), `${marker} harus ada`);
+  assert.ok(!css.includes('content:"n."'));
+  assert.equal((css.match(/{/g) || []).length, (css.match(/}/g) || []).length);
 });
 
-test("v145 locks the mobile sidebar to the full viewport without a scrim", () => {
-  const layout = read("src/studio-layout-authority-v145.css");
-  assert.match(layout, /--studio-v145-side-open:248px/);
-  assert.match(layout, /z-index:2147482000!important/);
-  assert.match(layout, /width:100%!important/);
-  assert.match(layout, /height:100dvh!important/);
-  assert.match(layout, /transition:none!important/);
-  assert.match(layout, /\.sn-shell>\.sn-side-backdrop\{/);
-  assert.match(layout, /display:none!important/);
-  assert.match(layout, /content:"n"!important/);
-  assert.match(layout, /backdrop-filter:none!important/);
-});
-
-test("Nara provides small, medium, and full screen modes", () => {
+test("Nara provides small medium full modes, intelligence choices, and spoken replies", () => {
   const runtime = read("src/nara-size-authority-v144.js");
-  const layout = read("src/studio-layout-authority-v144.css");
-  const finalLock = read("src/studio-layout-authority-v145.css");
-  assert.match(runtime, /nara-size-authority-v144-20260729/);
-  assert.match(runtime, /\["small", "Kecil"\]/);
-  assert.match(runtime, /\["medium", "Sedang"\]/);
-  assert.match(runtime, /\["full", "Penuh"\]/);
-  assert.match(runtime, /shell\.dataset\.naraSize/);
-  assert.match(runtime, /localStorage\.setItem/);
-  assert.match(layout, /data-nara-size="small"/);
-  assert.match(layout, /data-nara-size="medium"/);
-  assert.match(layout, /data-nara-size="full"/);
-  assert.match(layout, /height:48dvh!important/);
-  assert.match(layout, /height:76dvh!important/);
-  assert.match(finalLock, /\.nara-size-controls-v144/);
+  const css = read("src/studio-interface-authority-v147.css");
+  for (const marker of [
+    "nara-interface-authority-v147-20260729",
+    "Kecil", "Medium", "Penuh", "Instan", "Sedang", "Tinggi",
+    "shell.dataset.naraSize", "speechSynthesis", "nara-speech-action-v147",
+  ]) assert.ok(runtime.includes(marker), `${marker} harus ada`);
+  for (const marker of [
+    'data-nara-size="medium"', 'data-nara-size="full"',
+    ".nara-size-controls-v147", ".nara-speech-action-v147",
+  ]) assert.ok(css.includes(marker));
 });
 
 test("legacy menu bridges stand down when React owns navigation", () => {
@@ -136,24 +121,28 @@ test("legacy menu bridges stand down when React owns navigation", () => {
   assert.match(finalRuntime, /data-navigation-owner="react-v138"/);
 });
 
-test("service worker rotates to v145 once and keeps v143 login handoff", () => {
+test("service worker rotates to v147 and preserves v143 login handoff", () => {
   const worker = read("public/sw.js");
   const pwa = read("src/pwa-runtime.js");
-  assert.match(worker, /ngeblogging-app-v145-studio-mobile-cache-20260729/);
-  assert.match(worker, /single-react-mobile-cache-v145/);
-  assert.match(worker, /auth-route-handoff-v143-20260729/);
-  assert.match(worker, /function isAuthSurface/);
-  assert.match(worker, /url\.pathname === "\/signin"/);
-  assert.match(worker, /notifyOpenWindows/);
-  assert.match(worker, /refreshStaleWindow/);
-  assert.match(worker, /FORCE_REFRESH_QUERY/);
-  assert.match(worker, /client\.navigate\(url\.href\)/);
-  assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
-  assert.match(worker, /Promise\.allSettled/);
-  assert.match(worker, /self\.clients\.claim\(\)/);
-  assert.match(pwa, /ngeblogging-pwa-v145-20260729/);
-  assert.match(pwa, /ngeblogging-pwa-controller-v145/);
-  assert.match(pwa, /function authSurface/);
+  for (const marker of [
+    "ngeblogging-app-v147-studio-interface-20260729",
+    "ngeblogging-app-v145-studio-mobile-cache-20260729",
+    "single-react-interface-v147",
+    "single-react-mobile-cache-v145",
+    "auth-route-handoff-v143-20260729",
+    "function isAuthSurface",
+    'url.pathname === "/signin"',
+    "notifyOpenWindows", "refreshStaleWindow", "FORCE_REFRESH_QUERY",
+    "client.navigate(url.href)", "NGE_BLOGGING_FORCE_RELOAD_V77",
+    "Promise.allSettled", "self.clients.claim()",
+  ]) assert.ok(worker.includes(marker), `${marker} harus ada`);
+  for (const marker of [
+    "ngeblogging-pwa-v147-20260729",
+    "ngeblogging-pwa-controller-v147",
+    "pwa-v147-studio-interface",
+    "function responsiveFamily",
+    "function authSurface",
+  ]) assert.ok(pwa.includes(marker));
 });
 
 test("Supabase login stays direct and callback completion does not reload twice", () => {
