@@ -9,6 +9,7 @@ const callback = read("src/auth-callback-authority-v107.js");
 const bootstrap = read("src/auth-studio-bootstrap-v106.js");
 const gateway = read("server/auth-gateway-v108.mjs");
 const worker = read("cloudflare/worker-v67.mjs");
+const cloudflareDefault = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const pwa = read("src/pwa-runtime.js");
 const serviceWorker = read("public/sw.js");
@@ -62,10 +63,20 @@ test("Cloudflare auth gateway accepts production and preview surfaces", () => {
   assert.match(gateway, /responseHeaders\.set\("x-ngeblogging-auth-gateway"/);
 });
 
+test("all Cloudflare deployment configs use worker-v67 and auth v153", () => {
+  for (const config of [cloudflareDefault, production]) {
+    assert.equal(config.main, "./cloudflare/worker-v67.mjs");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-auth-production-v153");
+    assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-auth-production-v153");
+    assert.equal(config.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
+    assert.equal(config.assets.run_worker_first, true);
+    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com/*"));
+  }
+  assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v67.mjs");
+  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-auth-production-v153");
+});
+
 test("production metadata and health expose auth v153 readiness", () => {
-  assert.equal(production.vars.APP_RELEASE, "2026.07.30-auth-production-v153");
-  assert.equal(production.vars.UI_AUTHORITY_RELEASE, "2026.07.30-auth-production-v153");
-  assert.equal(production.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
   for (const marker of [
     "2026.07.30-auth-production-v153", "authProduction", "authTransport",
     "emailPassword", "magicLink", "google", "linkedin",
