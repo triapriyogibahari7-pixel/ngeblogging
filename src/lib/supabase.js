@@ -7,9 +7,12 @@ const key =
   browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
   browserEnv.VITE_SUPABASE_ANON_KEY;
 const nativeFetch = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
-const AUTH_GATEWAY_RELEASE = "login-data-gateway-v114-20260729";
-const DATA_GATEWAY_RELEASE = "login-data-gateway-v114-20260729";
+const AUTH_GATEWAY_RELEASE = "login-data-gateway-v140-20260729";
+const DATA_GATEWAY_RELEASE = "login-data-gateway-v140-20260729";
 const DEFAULT_API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
+const AUTH_DIRECT_TIMEOUT_MS = 8_000;
+const GATEWAY_TIMEOUT_MS = 6_500;
+const DATA_DIRECT_TIMEOUT_MS = 10_000;
 
 function ngebloggingOrigin() {
   if (typeof window === "undefined") return "";
@@ -88,16 +91,46 @@ async function copyRequest(input, init, nextUrl = "") {
   });
 }
 
+function timeoutReason(label, milliseconds) {
+  const message = `${label} tidak merespons dalam ${Math.round(milliseconds / 1000)} detik.`;
+  try {
+    return new DOMException(message, "TimeoutError");
+  } catch {
+    return Object.assign(new Error(message), { name: "TimeoutError" });
+  }
+}
+
+async function timedNativeFetch(request, milliseconds, label) {
+  const controller = new AbortController();
+  const sourceSignal = request.signal;
+  const relayAbort = () => controller.abort(sourceSignal?.reason);
+  if (sourceSignal?.aborted) relayAbort();
+  else sourceSignal?.addEventListener("abort", relayAbort, { once: true });
+  const timer = globalThis.setTimeout(
+    () => controller.abort(timeoutReason(label, milliseconds)),
+    milliseconds,
+  );
+  try {
+    return await nativeFetch(new Request(request, {
+      signal: controller.signal,
+      cache: "no-store",
+    }));
+  } finally {
+    globalThis.clearTimeout(timer);
+    sourceSignal?.removeEventListener("abort", relayAbort);
+  }
+}
+
 function markTransport(service, value) {
   if (typeof document === "undefined") return;
-  if (service === "auth") document.documentElement.dataset.authTransportV114 = value;
-  else document.documentElement.dataset.dataTransportV114 = value;
+  if (service === "auth") document.documentElement.dataset.authTransportV140 = value;
+  else document.documentElement.dataset.dataTransportV140 = value;
 }
 
 function rememberGatewayError(service, error) {
   if (typeof window === "undefined") return;
-  if (service === "auth") window.__ngebloggingAuthGatewayErrorV114 = error;
-  else window.__ngebloggingDataGatewayErrorV114 = error;
+  if (service === "auth") window.__ngebloggingAuthGatewayErrorV140 = error;
+  else window.__ngebloggingDataGatewayErrorV140 = error;
 }
 
 function networkUnavailableError(service, cause, release) {
@@ -132,35 +165,74 @@ function gatewayMismatchError(response, descriptor, gatewayUrl) {
   return error;
 }
 
+async function tryGateways(source, descriptor) {
+  let lastError = null;
+  for (const origin of gatewayOrigins()) {
+    const gateway = new URL(`${descriptor.gatewayPrefix}${descriptor.target.pathname}${descriptor.target.search}`, origin);
+    try {
+      const request = await copyRequest(source.clone(), undefined, gateway.href);
+      const response = await timedNativeFetch(
+        request,
+        GATEWAY_TIMEOUT_MS,
+        `${descriptor.service === "auth" ? "Gateway login" : "Gateway data"} Ngeblogging`,
+      );
+      if (gatewayResponseAccepted(response, descriptor)) {
+        markTransport(descriptor.service, origin === window.location.origin ? "same-origin-gateway" : "api-worker-gateway");
+        return { response, lastError: null };
+      }
+      lastError = gatewayMismatchError(response, descriptor, gateway.href);
+      rememberGatewayError(descriptor.service, lastError);
+    } catch (gatewayError) {
+      lastError = gatewayError;
+      rememberGatewayError(descriptor.service, gatewayError);
+    }
+  }
+  return { response: null, lastError };
+}
+
 async function resilientSupabaseFetch(input, init) {
   if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada perangkat ini.");
   const source = await copyRequest(input, init);
   const descriptor = supabaseTarget(source);
   if (!descriptor || typeof window === "undefined") return nativeFetch(source);
 
-  let lastGatewayError = null;
-  for (const origin of gatewayOrigins()) {
-    const gateway = new URL(`${descriptor.gatewayPrefix}${descriptor.target.pathname}${descriptor.target.search}`, origin);
+  let lastError = null;
+
+  // Authentication must never wait for the Ngeblogging domain API. Supabase is
+  // the source of truth, so use its HTTPS endpoint first with a strict deadline.
+  if (descriptor.service === "auth") {
     try {
-      const response = await nativeFetch(await copyRequest(source.clone(), undefined, gateway.href));
-      if (gatewayResponseAccepted(response, descriptor)) {
-        markTransport(descriptor.service, origin === window.location.origin ? "same-origin" : "api-worker");
-        return response;
-      }
-      lastGatewayError = gatewayMismatchError(response, descriptor, gateway.href);
-      rememberGatewayError(descriptor.service, lastGatewayError);
-    } catch (gatewayError) {
-      lastGatewayError = gatewayError;
-      rememberGatewayError(descriptor.service, gatewayError);
+      const response = await timedNativeFetch(
+        source.clone(),
+        AUTH_DIRECT_TIMEOUT_MS,
+        "Layanan login Supabase",
+      );
+      markTransport("auth", "direct-primary");
+      return response;
+    } catch (directError) {
+      lastError = directError;
+      rememberGatewayError("auth", directError);
     }
+
+    const gatewayResult = await tryGateways(source, descriptor);
+    if (gatewayResult.response) return gatewayResult.response;
+    throw networkUnavailableError("auth", gatewayResult.lastError || lastError, descriptor.release);
   }
 
+  const gatewayResult = await tryGateways(source, descriptor);
+  if (gatewayResult.response) return gatewayResult.response;
+  lastError = gatewayResult.lastError;
+
   try {
-    const response = await nativeFetch(source.clone());
-    markTransport(descriptor.service, "direct-fallback");
+    const response = await timedNativeFetch(
+      source.clone(),
+      DATA_DIRECT_TIMEOUT_MS,
+      "Layanan data Supabase",
+    );
+    markTransport("data", "direct-fallback");
     return response;
   } catch (directError) {
-    throw networkUnavailableError(descriptor.service, directError || lastGatewayError, descriptor.release);
+    throw networkUnavailableError("data", directError || lastError, descriptor.release);
   }
 }
 
