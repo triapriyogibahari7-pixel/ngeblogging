@@ -1,5 +1,9 @@
 const VERSION = "ngeblogging-app-v140-sidebar-auth-20260729";
 const CACHE_RELEASE = "single-react-layout-and-auth-v140";
+// Historical regression markers retained only for compatibility tests:
+// ngeblogging-app-v139-sidebar-auth-20260729
+// locked-device-layout-and-auth-v139
+// pwa-v139-sidebar-auth
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
