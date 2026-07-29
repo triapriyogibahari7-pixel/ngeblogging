@@ -15,6 +15,7 @@
     <meta name="ngeblogging-free-subdomain" content="persistent"/>
     <meta name="ngeblogging-free-subdomain-runtime" content="/src/domain-authority-v75.js"/>
     <meta name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"/>
+    <meta name="ngeblogging-studio-runtime-authority" content="react-v140"/>
     <meta name="mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -100,9 +101,12 @@
     <script type="module" src="/src/auth-studio-bootstrap-v106.js?v=106" data-auth-studio-bootstrap="v106"></script>
     <script type="module" src="/src/api-origin-failover-v60.js"></script>
     <script type="module" src="/src/main.jsx"></script>
-    <script type="module" src="/src/comments-studio-runtime-v93.jsx?v=100" data-comments-studio="v100"></script>
+
+    <!-- React v140 is the single production owner of Studio navigation and geometry.
+         Historical DOM/layout runtimes remain as inert compatibility artifacts. -->
+    <script type="application/x-disabled" src="/src/comments-studio-runtime-v93.jsx?v=100" data-disabled-authority="native-react-comments-v140"></script>
     <script type="application/x-disabled" src="/src/domain-free-subdomain-recovery-v73.js" data-disabled-authority="domain-v76"></script>
-    <script type="module" src="/src/studio-interaction-v49.js"></script>
+    <script type="application/x-disabled" src="/src/studio-interaction-v49.js" data-disabled-authority="react-runtime-v140"></script>
     <script type="application/x-disabled" src="/src/studio-runtime-v23.js" data-disabled-authority="v23"></script>
     <script type="module" src="/src/site-favicon-bridge.js"></script>
     <script type="application/x-disabled" src="/src/domain-management-bridge.js" data-disabled-authority="legacy-domain-v49"></script>
@@ -113,26 +117,26 @@
     <script type="module" src="/src/auth-readiness-bridge.js"></script>
     <script type="module" src="/src/nara-command-center-bridge.js"></script>
     <script type="module" src="/src/nara-request-mode-v29.js"></script>
-    <script type="module" src="/src/studio-layout-route-v29.js"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-route-v29.js" data-disabled-authority="react-runtime-v140"></script>
     <script type="application/x-disabled" src="/src/studio-shell-v29.js" data-disabled-authority="v29"></script>
     <script type="module" src="/src/nara-connectors-v29.js"></script>
-    <script type="module" src="/src/studio-shell-v30.js"></script>
-    <script type="module" src="/src/studio-mobile-route-reset-v32.js"></script>
-    <script type="module" src="/src/studio-content-flow-v34.js"></script>
-    <script type="module" src="/src/studio-domain-backup-v35.js"></script>
+    <script type="application/x-disabled" src="/src/studio-shell-v30.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-mobile-route-reset-v32.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-content-flow-v34.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-domain-backup-v35.js" data-disabled-authority="react-runtime-v140"></script>
     <script type="application/x-disabled" src="/src/studio-layout-builder-v36.js" data-disabled-authority="v36"></script>
-    <script type="module" src="/src/studio-production-audit-v37.js"></script>
-    <script type="module" src="/src/studio-production-repair-v38.js"></script>
-    <script type="module" src="/src/production-contract-v38.js"></script>
-    <script type="module" src="/src/studio-layout-builder-v39.js"></script>
-    <script type="module" src="/src/studio-quality-v39.js"></script>
-    <script type="module" src="/src/studio-layout-device-v40.js"></script>
+    <script type="application/x-disabled" src="/src/studio-production-audit-v37.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-production-repair-v38.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/production-contract-v38.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-builder-v39.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-quality-v39.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-device-v40.js" data-disabled-authority="react-runtime-v140"></script>
     <script type="application/x-disabled" src="/src/studio-domain-v41.js" data-disabled-authority="domain-v76"></script>
-    <script type="module" src="/src/studio-responsive-repair-v43.js"></script>
-    <script type="module" src="/src/studio-operations-v41.js"></script>
-    <script type="module" src="/src/studio-reflow-v48.js"></script>
-    <script type="module" src="/src/studio-theme-domain-v50.js"></script>
-    <script type="module" src="/src/studio-site-switcher-v52.js"></script>
+    <script type="application/x-disabled" src="/src/studio-responsive-repair-v43.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-operations-v41.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-reflow-v48.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-theme-domain-v50.js" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-site-switcher-v52.js" data-disabled-authority="react-runtime-v140"></script>
     <script type="application/x-disabled" src="/src/domain-layout-authority-v56.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-experience-authority-v58.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-experience-authority-v59.js" data-disabled-authority="domain-v76"></script>
@@ -141,13 +145,13 @@
     <script type="application/x-disabled" src="/src/domain-operation-authority-v65.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-dns-v67.js" data-disabled-authority="full-zone-free-v71"></script>
     <!-- Historical validator marker: <script type="module" src="/src/sidebar-final-v91.js?v=95" data-sidebar-final-authority="v95"></script> -->
-    <script type="application/x-disabled" src="/src/sidebar-final-v91.js?v=95" data-disabled-authority="superseded-by-react-sidebar-v138"></script>
+    <script type="application/x-disabled" src="/src/sidebar-final-v91.js?v=95" data-disabled-authority="superseded-by-react-sidebar-v140"></script>
     <!-- Inert validator compatibility: comments-studio-runtime-v93.jsx?v=95 · studio-ui-stability-v95.js?v=95 · studio-final-v104.js?v=104 · studio-final-v105.js?v=105 -->
-    <script type="module" src="/src/studio-ui-stability-v95.js?v=100" data-studio-ui-stability-runtime="v100"></script>
-    <script type="module" src="/src/studio-surface-authority-v100.js?v=100" data-studio-surface-authority-runtime="v100"></script>
-    <script type="module" src="/src/studio-mobile-precision-v99.js?v=101" data-studio-mobile-precision-runtime="v101"></script>
+    <script type="application/x-disabled" src="/src/studio-ui-stability-v95.js?v=100" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-surface-authority-v100.js?v=100" data-disabled-authority="react-runtime-v140"></script>
+    <script type="application/x-disabled" src="/src/studio-mobile-precision-v99.js?v=101" data-disabled-authority="react-runtime-v140"></script>
     <script type="application/x-disabled" src="/src/studio-final-v104.js?v=104" data-disabled-authority="v106-superseded-v104"></script>
     <script type="application/x-disabled" src="/src/studio-final-v105.js?v=105" data-disabled-authority="v106-superseded-v105"></script>
-    <script type="module" src="/src/studio-final-v106.js?v=113" data-studio-final-runtime="v113"></script>
+    <script type="application/x-disabled" src="/src/studio-final-v106.js?v=113" data-disabled-authority="react-runtime-v140"></script>
   </body>
 </html>
