@@ -1,4 +1,4 @@
-export const AUTH_GATEWAY_RELEASE = "2026.07.29-auth-gateway-v114";
+export const AUTH_GATEWAY_RELEASE = "2026.07.30-auth-gateway-v153";
 const PREFIX = "/api/auth-proxy";
 const MAX_AUTH_BODY_BYTES = 128 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]);
@@ -11,13 +11,35 @@ const FORWARDED_HEADERS = new Set([
   "x-supabase-api-version",
 ]);
 
-function allowedOrigin(origin) {
+function configuredOrigins(env) {
+  return new Set([
+    "https://ngeblogging.com",
+    "https://www.ngeblogging.com",
+    String(env.PUBLIC_SITE_URL || "").trim().replace(/\/$/, ""),
+    ...String(env.PUBLIC_ALLOWED_ORIGINS || "")
+      .split(",")
+      .map((value) => value.trim().replace(/\/$/, ""))
+      .filter(Boolean),
+  ].filter(Boolean));
+}
+
+function allowedOrigin(origin, env) {
   if (!origin) return true;
+  const normalized = String(origin).trim().replace(/\/$/, "");
+  if (configuredOrigins(env).has(normalized)) return true;
   try {
-    const url = new URL(origin);
+    const url = new URL(normalized);
     const hostname = url.hostname.toLowerCase();
-    return url.protocol === "https:"
-      && (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com"));
+    if (["localhost", "127.0.0.1", "[::1]"].includes(hostname)) {
+      return ["http:", "https:"].includes(url.protocol);
+    }
+    return url.protocol === "https:" && (
+      hostname === "ngeblogging.com"
+      || hostname.endsWith(".ngeblogging.com")
+      || hostname.endsWith(".netlify.app")
+      || hostname.endsWith(".pages.dev")
+      || hostname.endsWith(".workers.dev")
+    );
   } catch {
     return false;
   }
@@ -58,7 +80,7 @@ export function isAuthGatewayRequest(url) {
 
 export async function handleAuthGatewayRequest(request, env, requestId) {
   const origin = request.headers.get("origin") || "";
-  if (!allowedOrigin(origin)) {
+  if (!allowedOrigin(origin, env)) {
     return json(403, { code: "AUTH_ORIGIN_NOT_ALLOWED", error: "Origin autentikasi tidak diizinkan." }, requestId, origin);
   }
   if (!ALLOWED_METHODS.has(request.method)) {
@@ -93,6 +115,7 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
   }
   if (!headers.has("apikey")) headers.set("apikey", publishableKey);
   headers.set("cache-control", "no-store");
+  headers.set("x-client-info", headers.get("x-client-info") || "ngeblogging-auth-gateway-v153");
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
   const body = hasBody ? await request.arrayBuffer() : undefined;

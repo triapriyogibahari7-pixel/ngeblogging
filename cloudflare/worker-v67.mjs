@@ -19,7 +19,7 @@ import {
   isDataGatewayRequest,
 } from "../server/data-gateway-v110.mjs";
 
-const RELEASE = "2026.07.28-comments-sidebar-v93";
+const RELEASE = "2026.07.30-auth-production-v153";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
 const SAAS_PROVIDERS = new Set(["cloudflare", "cloudflare-custom-hostnames"]);
 
@@ -89,6 +89,10 @@ async function enrichHealth(response, env) {
     const state = saasAccountState(env);
     const fullZone = provider === FULL_ZONE_PROVIDER;
     const comments = commentsReady(env);
+    const authConfigured = Boolean(
+      String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
+      && String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim(),
+    );
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
@@ -96,13 +100,28 @@ async function enrichHealth(response, env) {
     headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
     headers.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
     headers.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
+    headers.set("x-ngeblogging-release", String(env.APP_RELEASE || RELEASE));
     return new Response(JSON.stringify({
       ...payload,
+      release: String(env.APP_RELEASE || RELEASE),
+      appRelease: String(env.APP_RELEASE || RELEASE),
+      uiAuthorityRelease: String(env.UI_AUTHORITY_RELEASE || ""),
+      workerRelease: RELEASE,
       domainReleaseCurrent: RELEASE,
       comments,
       commentsRelease: "comments-v93-20260728",
-      authGateway: true,
+      authGateway: authConfigured,
       authGatewayRelease: AUTH_GATEWAY_RELEASE,
+      authProduction: authConfigured,
+      authTransport: "same-origin-gateway",
+      authMethods: {
+        emailPassword: authConfigured,
+        magicLink: authConfigured,
+        google: authConfigured,
+        linkedin: authConfigured,
+        github: authConfigured,
+        providerConfigurationExternal: true,
+      },
       dataGateway: true,
       dataGatewayRelease: DATA_GATEWAY_RELEASE,
       dataGatewayServices: ["rest", "storage"],
