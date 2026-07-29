@@ -2,6 +2,7 @@ const VERSION = "ngeblogging-app-v145-studio-mobile-cache-20260729";
 const LEGACY_VERSION = "ngeblogging-app-v144-studio-layout-20260729";
 const CACHE_RELEASE = "single-react-mobile-cache-v145";
 const LEGACY_CACHE_RELEASE = "single-react-layout-authority-v144";
+const LEGACY_ACTIVATION_REASON = "service-worker-activated-studio-layout-v144";
 const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
@@ -40,6 +41,7 @@ async function notifyOpenWindows() {
         legacyVersion: LEGACY_VERSION,
         release: CACHE_RELEASE,
         legacyRelease: LEGACY_CACHE_RELEASE,
+        legacyActivationReason: LEGACY_ACTIVATION_REASON,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
         reason: "service-worker-activated-studio-mobile-cache-v145",
       });
@@ -69,6 +71,7 @@ self.addEventListener("message", (event) => {
       legacyVersion: LEGACY_VERSION,
       release: CACHE_RELEASE,
       legacyRelease: LEGACY_CACHE_RELEASE,
+      legacyActivationReason: LEGACY_ACTIVATION_REASON,
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
     });
   }
