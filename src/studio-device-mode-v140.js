@@ -56,7 +56,10 @@ function clearLegacyInlineLayout() {
     });
   }
 
-  shell.dataset.navigationOwner = "react-v140";
+  // StudioNext already marks the React-owned navigation. Preserve that marker so
+  // compatibility bridges stand down instead of injecting duplicate menu items.
+  const declaredOwner = String(shell.dataset.navigationOwner || "");
+  if (!declaredOwner.startsWith("react-v")) shell.dataset.navigationOwner = "react-v140";
   shell.dataset.layoutAuthority = RELEASE;
   shell.querySelectorAll([
     ".sn-mobile-v30-header",
