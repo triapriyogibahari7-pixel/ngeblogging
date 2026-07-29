@@ -1,0 +1,40 @@
+/* Studio geometry recovery authority v126 */
+html,body,#root{width:100%;min-width:0;min-height:100%;margin:0;overflow-x:hidden}
+.sv124-shell{width:100vw!important;max-width:100vw!important;min-height:100dvh!important;overflow-x:hidden!important}
+.sv124-main{box-sizing:border-box!important;max-width:none!important;min-width:0!important;min-height:100dvh!important}
+.sv124-main>.sv124-page,
+.sv124-main>.sv124-comments-page,
+.sv124-main>.sv124-domain-page,
+.sv124-main>.sv124-api-page,
+.sv124-main>#ngeblogging-operational-surface-v125,
+.sv125-operational-host{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important}
+.sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,.sv125-analytics-page,.sv125-members-page{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important}
+.sv124-main>*{max-inline-size:none!important}
+
+/* Keep sidebar labels and icons on one stable grid. */
+.sv124-side nav button,.sv124-account-footer button{grid-template-columns:24px minmax(0,1fr)!important;align-items:center!important;justify-items:start!important;gap:12px!important;padding-inline:14px!important}
+.sv124-side nav button svg,.sv124-account-footer button svg{grid-column:1!important;grid-row:1!important;margin:0!important;justify-self:center!important}
+.sv124-side nav button span,.sv124-account-footer button span{grid-column:2!important;grid-row:1!important;margin:0!important;text-align:left!important;justify-self:stretch!important}
+.sv124-account-footer{box-sizing:border-box!important;width:100%!important;padding-inline:12px!important}
+
+/* Closed desktop sidebar must never leak labels. */
+@media(min-width:761px){
+  .sv124-shell.collapsed .sv124-side nav button,
+  .sv124-shell.collapsed .sv124-account-footer button{grid-template-columns:24px!important;padding:0!important;justify-items:center!important}
+  .sv124-shell.collapsed .sv124-side nav button span,
+  .sv124-shell.collapsed .sv124-account-footer button span{display:none!important;visibility:hidden!important;opacity:0!important;width:0!important;max-width:0!important;overflow:hidden!important}
+}
+
+/* Mobile/app: true full-width content, drawer only when opened. */
+@media(max-width:760px){
+  .sv124-shell,.sv124-main,.sv124-shell.collapsed .sv124-main{width:100vw!important;max-width:100vw!important;margin-left:0!important}
+  .sv124-main{padding:0!important;overflow-x:hidden!important}
+  .sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,.sv125-analytics-page,.sv125-members-page{padding:16px 14px 88px!important}
+  .sv124-shell:not(.mobile-open) .sv124-side{transform:translate3d(-105%,0,0)!important;pointer-events:none!important}
+  .sv124-shell.mobile-open .sv124-side{transform:translate3d(0,0,0)!important;pointer-events:auto!important}
+  .sv124-side,.sv124-shell.collapsed .sv124-side{width:min(88vw,370px)!important;min-width:min(88vw,370px)!important;max-width:min(88vw,370px)!important}
+  .sv124-side nav button,.sv124-account-footer button,.sv124-shell.collapsed .sv124-side nav button,.sv124-shell.collapsed .sv124-account-footer button{width:100%!important;grid-template-columns:28px minmax(0,1fr)!important;gap:14px!important;padding:0 19px!important;justify-items:start!important}
+  .sv124-side nav button span,.sv124-account-footer button span,.sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{display:block!important;visibility:visible!important;opacity:1!important;width:auto!important;max-width:none!important;font-size:15px!important}
+  .nara-floating-button{display:flex!important;right:12px!important;bottom:12px!important;transform:none!important}
+  .nara-assistant-panel,.nara-panel,.nara-command-panel{box-sizing:border-box!important;position:fixed!important;inset:0 0 0 auto!important;width:min(94vw,430px)!important;max-width:min(94vw,430px)!important;height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}
+}
