@@ -15,18 +15,17 @@ test("API Keys panel uses the real secured Supabase RPCs", () => {
   assert.match(panel, /Uji koneksi/);
 });
 
-test("API Keys route is injected after Domain without replacing Studio", () => {
+test("API Keys route remains available after Domain without replacing Studio", () => {
   const bridge = read("src/api-keys-studio-bridge.jsx");
-  assert.match(bridge, /ngeblogging-api-keys-nav-v135/);
-  assert.match(bridge, /ngeblogging-api-keys-v135/);
-  assert.match(bridge, /labelOf\(candidate\) === "Domain"/);
-  assert.match(bridge, /nav\.insertBefore\(button, domain\.nextElementSibling\)/);
-  assert.match(bridge, /createRoot\(host\)/);
-  assert.match(bridge, /<ApiKeysPanel setToast=\{toast\}\/>/);
+  const studio = read("src/StudioNext.jsx");
+  assert.match(bridge, /navigationOwner === "react-v138"/);
+  assert.match(studio, /<span>Domain<\/span>/);
+  assert.match(studio, /<span>API Keys<\/span>/);
+  assert.match(studio, /<ApiKeysPanel setToast=\{setToast\}\/>/);
   assert.doesNotMatch(bridge, /Nara AI<\/span>/);
 });
 
-test("API Keys route hides only the current content surface while active", () => {
+test("legacy API Keys bridge stays isolated from layout and Nara", () => {
   const css = read("src/api-keys-studio-bridge.css");
   assert.match(css, /sn-api-keys-active-v135/);
   assert.match(css, /:not\(\.sn-top\):not\(#ngeblogging-api-keys-v135\)/);
@@ -35,7 +34,7 @@ test("API Keys route hides only the current content surface while active", () =>
   assert.doesNotMatch(css, /\.nara-assistant/);
 });
 
-test("existing loaded runtime starts the independent API Keys bridge", () => {
+test("existing runtime preserves the independent API Keys bridge compatibility", () => {
   const runtime = read("src/nara-connectors-v29.js");
   assert.match(runtime, /import\("\.\/api-keys-studio-bridge\.jsx"\)/);
   assert.match(runtime, /connector UI and connector actions remain disabled/);
@@ -49,10 +48,11 @@ test("API Keys interface remains responsive on phone and desktop", () => {
   assert.match(css, /sn-api-secret-modal/);
 });
 
-test("v135 rotates stale clients while preserving the restored Studio baseline", () => {
+test("v139 rotates stale clients while preserving API Keys", () => {
   const worker = read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v135-api-keys-20260729/);
-  assert.match(worker, /pre-api-ui-plus-api-keys-v135-20260729/);
-  assert.match(worker, /pwa-v135-api-keys/);
-  assert.match(worker, /restored pre-API-Keys v123 Studio baseline/);
+  const studio = read("src/StudioNext.jsx");
+  assert.match(worker, /ngeblogging-app-v139-sidebar-auth-20260729/);
+  assert.match(worker, /locked-device-layout-and-auth-v139/);
+  assert.match(worker, /pwa-v139-sidebar-auth/);
+  assert.match(studio, /<ApiKeysPanel setToast=\{setToast\}\/>/);
 });
