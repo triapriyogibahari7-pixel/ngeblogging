@@ -1,0 +1,129 @@
+/* Studio shell v149: final geometry guard without removing any existing page or action. */
+:root{
+  --sn-v149-mobile-drawer:clamp(264px,70vw,344px);
+}
+
+.sn-shell,.sn-main,.sn-main>*{
+  min-width:0!important;
+  max-width:100%!important;
+}
+.sn-shell{overflow-x:clip!important}
+.sn-main{contain:inline-size!important}
+.sn-main :where(section,article,header,footer,div,form,nav){min-width:0}
+.sn-main :where(h1,h2,h3,h4,p,span,b,strong,small,label,a,code){overflow-wrap:anywhere}
+.sn-main :where(input,textarea,select,table,iframe,img,video,canvas){max-width:100%!important}
+
+html[data-studio-device-mode="large"] .sn-shell>.sn-side>nav{
+  justify-content:safe center!important;
+  align-content:center!important;
+  padding-block:10px!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-side>nav>button,
+html[data-studio-device-mode="large"] .sn-shell>.sn-side>.sn-account-footer>button{
+  flex:0 0 44px!important;
+}
+
+html[data-studio-device-mode="small"] .sn-shell>.sn-side,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed{
+  width:var(--sn-v149-mobile-drawer)!important;
+  min-width:var(--sn-v149-mobile-drawer)!important;
+  max-width:var(--sn-v149-mobile-drawer)!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>nav{
+  justify-content:safe center!important;
+  padding-block:8px!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>nav>button,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>.sn-account-footer>button{
+  flex:0 0 43px!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed+.sn-main{
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main>.sn-top{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:visible!important;
+}
+html[data-studio-device-mode="small"] .sn-workspace,
+html[data-studio-device-mode="small"] .sn-workspace>div,
+html[data-studio-device-mode="small"] .sn-top-actions{min-width:0!important}
+
+.sn-profile-menu-v147{
+  max-width:calc(100vw - 20px)!important;
+  overflow:hidden!important;
+}
+.sn-profile-menu-v147>button span{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+.sn-view-pad,.sv124-page,.sn-api-page,.tn-studio,
+.sn-content-card,.sn-settings-grid,.sn-members,.sn-info-grid,.sn-home-grid,
+.sn-comments-page,.sn-domain-page{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:clip!important;
+}
+.sn-doc-row,.sn-table-head{min-width:0!important;max-width:100%!important}
+.sn-doc-row>*,.sn-table-head>*{min-width:0!important}
+
+.nara-native-size-controls-v149{
+  flex:0 0 auto!important;
+  min-width:auto!important;
+}
+.nara-native-size-controls-v149 button svg,
+.nara-native-auto-voice-v149 svg,
+.nara-speech-action-v149 svg{
+  width:17px!important;
+  height:17px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.nara-message-actions-v149{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:6px!important;
+  margin-top:8px!important;
+}
+.nara-message-actions-v149 .nara-message-action{margin:0!important}
+
+html[data-studio-device-mode="small"] .nara-assistant-header{
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-device-mode="small"] .nara-native-size-controls-v149{
+  margin-left:auto!important;
+}
+html[data-studio-device-mode="small"] .nara-native-size-controls-v149 button,
+html[data-studio-device-mode="small"] .nara-native-auto-voice-v149{
+  width:28px!important;
+  height:28px!important;
+  flex-basis:28px!important;
+}
+
+@media(max-height:720px){
+  html[data-studio-device-mode="small"] .sn-shell>.sn-side>nav{
+    justify-content:flex-start!important;
+  }
+  html[data-studio-device-mode="large"] .sn-shell>.sn-side>nav{
+    justify-content:flex-start!important;
+  }
+}
+
+@media(max-width:390px){
+  :root{--sn-v149-mobile-drawer:min(78vw,300px)}
+  .sn-view-pad,.sv124-page,.sn-api-page,.tn-studio{padding-inline:11px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .sn-shell>.sn-main,.sn-shell>.sn-side{transition:none!important}
+}
