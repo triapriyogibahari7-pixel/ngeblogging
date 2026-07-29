@@ -1,3 +1,5 @@
+import "./production-entry-v154.js";
+
 const RELEASE = "studio-style-authority-v144-20260729";
 
 const LEGACY_STUDIO_STYLES = new Set([
