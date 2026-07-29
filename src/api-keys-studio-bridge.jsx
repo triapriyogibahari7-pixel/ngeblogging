@@ -143,12 +143,8 @@ function routeExitTarget(target, shell) {
   if (!(target instanceof Element)) return false;
   const button = target.closest("button,a");
   if (!(button instanceof Element) || button.id === BUTTON_ID) return false;
-  return Boolean(
-    button.closest(":scope > .sn-side > nav", shell)
-      || button.closest(":scope > .sn-side > .sn-account-footer", shell)
-      || button.closest(":scope > .sn-side > .sn-new", shell)
-      || button.closest(":scope > .sn-main > .sn-top", shell),
-  );
+  const area = button.closest(".sn-side nav,.sn-account-footer,.sn-new,.sn-top");
+  return area instanceof Element && shell.contains(area);
 }
 
 function synchronize() {
