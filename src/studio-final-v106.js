@@ -1,4 +1,4 @@
-const RELEASE = "studio-final-v113-20260729";
+const RELEASE = "studio-final-v138-20260729";
 const DOMAIN_ORDER_RELEASE = "sidebar-domain-order-v113-20260729";
 const ACTIONS_CLASS = "tn-code-header-actions-v106";
 const COMMENTS_ID = "ngeblogging-comments-native-v106";
@@ -370,16 +370,14 @@ function schedule() {
 
 function start() {
   const observer = new MutationObserver((mutations) => {
-    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.attributeName === "class" || mutation.attributeName === "style")) {
+    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) {
       schedule();
     }
   });
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+  observer.observe(document.body, { childList: true, subtree: true });
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("orientationchange", schedule, { passive: true });
   window.addEventListener("pageshow", schedule, { passive: true });
-  window.visualViewport?.addEventListener("resize", schedule, { passive: true });
-  window.setInterval(sync, 700);
   schedule();
 }
 
