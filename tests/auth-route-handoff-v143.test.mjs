@@ -30,12 +30,12 @@ test("OAuth callback and password recovery are never interrupted", () => {
   assert.match(bootstrap, /callbackInProgress\(\) \|\| !loginSurface\(\)/);
 });
 
-test("v142 Studio stays intact while v143 rotates only the auth cache", () => {
+test("v144 rotates layout caches while preserving the v143 auth handoff", () => {
   const worker = read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v142-studio-auth-20260729/);
-  assert.match(worker, /single-react-handheld-auth-once-v142/);
+  assert.match(worker, /ngeblogging-app-v144-studio-layout-20260729/);
+  assert.match(worker, /single-react-layout-authority-v144/);
   assert.match(worker, /auth-route-handoff-v143-20260729/);
-  assert.match(worker, /service-worker-activated-auth-route-handoff-v143/);
+  assert.match(worker, /service-worker-activated-studio-layout-v144/);
   assert.match(worker, /authHandoffRelease/);
   assert.match(worker, /url\.pathname === "\/signin"/);
   assert.match(worker, /authMode === "session-expired"/);
