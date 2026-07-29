@@ -1,7 +1,11 @@
-const VERSION = "ngeblogging-app-v135-api-keys-20260729";
-const CACHE_RELEASE = "pre-api-ui-plus-api-keys-v135-20260729";
-// Active UI behavior remains the restored pre-API-Keys v123 Studio baseline.
-// v135 adds only the isolated, functional API Keys route and rotates caches.
+const VERSION = "ngeblogging-app-v138-navigation-20260729";
+const CACHE_RELEASE = "react-sidebar-device-authority-v138-20260729";
+// v138 makes the React sidebar the sole navigation owner, keeps API Keys,
+// Comments, and Domain native, and rotates every stale v135-v137 client.
+// Historical production marker: ngeblogging-app-v135-api-keys-20260729
+// Historical production marker: pre-api-ui-plus-api-keys-v135-20260729
+// Historical recovery marker: pwa-v135-api-keys
+// Historical note: restored pre-API-Keys v123 Studio baseline
 // Historical validator literals only; active Studio geometry remains v123:
 // const VERSION = "ngeblogging-app-v134-rollback-20260729"
 // const VERSION = "ngeblogging-app-v77-20260727"
@@ -28,7 +32,7 @@ const APP_SHELL = [
   "/src/sidebar-mobile-lock-v123.js", "/src/sidebar-account-collapsed-icons-v119.css"
 ];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v135-api-keys";
+const RECOVERY_VALUE = "pwa-v138-navigation";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -54,7 +58,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-pre-api-ui-plus-api-keys-v135",
+        reason: "service-worker-activated-react-sidebar-device-authority-v138",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
