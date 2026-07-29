@@ -1,19 +1,21 @@
-name: Deploy Ngeblogging Production
+name: Deploy Studio v140 Now
 
 on:
-  push:
+  pull_request:
     branches: [main]
-  workflow_dispatch:
+    paths:
+      - ".deploy-studio-v140"
 
 permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production
+  group: ngeblogging-studio-v140-production
   cancel-in-progress: false
 
 jobs:
   deploy:
+    if: startsWith(github.head_ref, 'deploy/studio-v140')
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -22,13 +24,13 @@ jobs:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
-      QWEN_API_KEY: ci-dry-run-only
-      QWEN_WORKSPACE_ID: production-dry-run
       SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
       SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      QWEN_API_KEY: ci-dry-run-only
+      QWEN_WORKSPACE_ID: production-dry-run
 
     steps:
-      - name: Checkout main
+      - name: Checkout deployment branch
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -37,14 +39,14 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Validate deployment credentials
+      - name: Validate Cloudflare credentials
         shell: bash
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
 
-      - name: Install pinned dependencies
+      - name: Install dependencies
         run: npm ci --ignore-scripts
 
       - name: Run v140 production regression tests
@@ -56,10 +58,10 @@ jobs:
       - name: Validate Cloudflare bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy Studio sidebar and authentication v140
+      - name: Deploy Studio v140 to Cloudflare production
         run: npm run deploy:cloudflare
 
-      - name: Verify v140 release is live
+      - name: Verify Studio v140 production markers
         shell: bash
         run: |
           set -euo pipefail
@@ -72,11 +74,11 @@ jobs:
               && [[ "$worker" == *"single-react-layout-direct-auth-v140"* ]] \
               && [[ "$health_code" == "200" ]] \
               && [[ "$page_code" == "200" ]]; then
-              echo "Production v140 verified on attempt $attempt."
+              echo "STUDIO_V140_PRODUCTION_VERIFIED"
               exit 0
             fi
-            echo "Production v140 belum aktif (attempt $attempt/30); menunggu propagasi."
+            echo "Waiting for Studio v140 production propagation ($attempt/30)."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_V140_FAILED"
+          echo "STUDIO_V140_PRODUCTION_VERIFY_FAILED"
           exit 1
