@@ -4,27 +4,24 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Studio loads the v139 device and layout authorities statically", () => {
+test("Studio loads the v140 device and layout authorities statically", () => {
   const studio = read("src/Studio.jsx");
   const compatibility = read("src/studio-device-mode-v138.js");
   assert.match(studio, /import StudioFastGate from "\.\/StudioFastGate\.jsx"/);
-  assert.match(studio, /studio-device-mode-v139\.js/);
-  assert.match(studio, /studio-layout-v139\.css/);
+  assert.match(studio, /studio-device-mode-v140\.js/);
+  assert.match(studio, /studio-layout-v140\.css/);
   assert.doesNotMatch(studio, /studio-device-modes-v138\.css/);
-  assert.match(compatibility, /from "\.\/studio-device-mode-v139\.js"/);
+  assert.match(compatibility, /from "\.\/studio-device-mode-v140\.js"/);
 });
 
-test("v139 detects physical phones and desktop-site mode", () => {
-  const runtime = read("src/studio-device-mode-v139.js");
-  assert.match(runtime, /HANDHELD_MAX = 820/);
-  assert.match(runtime, /COMPACT_MAX = 760/);
-  assert.match(runtime, /Android\|iPhone\|iPad\|iPod/);
-  assert.match(runtime, /navigator\.maxTouchPoints > 1/);
-  assert.match(runtime, /pointer: coarse/);
-  assert.match(runtime, /forcedDesktopSitePhone/);
-  assert.match(runtime, /sn-sidebar-toggle/);
-  assert.match(runtime, /sn-side-close/);
-  assert.match(runtime, /sn-v139-forced-backdrop/);
+test("v140 follows the actual browser viewport on mobile and desktop-site mode", () => {
+  const runtime = read("src/studio-device-mode-v140.js");
+  assert.match(runtime, /COMPACT_MAX = 820/);
+  assert.match(runtime, /document\.documentElement\.clientWidth/);
+  assert.match(runtime, /layoutWidth\(\) <= COMPACT_MAX/);
+  assert.match(runtime, /LEGACY_INLINE_PROPERTIES/);
+  assert.match(runtime, /clearLegacyInlineLayout/);
+  assert.match(runtime, /declaredOwner\.startsWith\("react-v"\)/);
   assert.match(runtime, /MutationObserver/);
   assert.match(runtime, /MODE_EVENT/);
 });
@@ -43,14 +40,13 @@ test("React owns the complete navigation and mobile n button", () => {
   assert.match(studio, /currentStudioDeviceMode\(\) === "small"/);
 });
 
-test("v139 geometry cannot overlap, blur, or leave white viewport gaps", () => {
-  const css = read("src/studio-layout-v139.css");
+test("v140 geometry cannot overlap, blur, or leave white viewport gaps", () => {
+  const css = read("src/studio-layout-v140.css");
   assert.match(css, /--studio-side-open:232px/);
   assert.match(css, /--studio-side-closed:76px/);
   assert.match(css, /--studio-drawer:min\(88vw,340px\)/);
   assert.match(css, /data-studio-device-mode="small"/);
   assert.match(css, /data-studio-device-mode="large"/);
-  assert.match(css, /data-v139-forced-mobile-open="true"/);
   assert.match(css, /margin-left:0!important/);
   assert.match(css, /width:calc\(100% - var\(--studio-side-open\)\)!important/);
   assert.match(css, /width:calc\(100% - var\(--studio-side-closed\)\)!important/);
@@ -74,11 +70,11 @@ test("legacy menu bridges stand down when React owns navigation", () => {
   assert.match(finalRuntime, /data-navigation-owner="react-v138"/);
 });
 
-test("service worker rotates all stale clients to v139", () => {
+test("service worker rotates all stale clients to v140", () => {
   const worker = read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v139-sidebar-auth-20260729/);
-  assert.match(worker, /locked-device-layout-and-auth-v139/);
-  assert.match(worker, /pwa-v139-sidebar-auth/);
+  assert.match(worker, /ngeblogging-app-v140-studio-auth-20260729/);
+  assert.match(worker, /single-react-layout-direct-auth-v140/);
+  assert.match(worker, /pwa-v140/);
   assert.match(worker, /Promise\.allSettled/);
   assert.match(worker, /self\.clients\.claim\(\)/);
   assert.match(worker, /client\.navigate\(url\.href\)/);
