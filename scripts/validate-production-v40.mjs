@@ -18,6 +18,7 @@ const [
   deviceRuntime,
   compatibilityRuntime,
   layout,
+  finalLayout,
   serviceWorker,
   pwaRuntime,
   authCallback,
@@ -32,6 +33,7 @@ const [
   text("src/studio-device-mode-v140.js"),
   text("src/studio-device-mode-v138.js"),
   text("src/studio-layout-v140.css"),
+  text("src/studio-v141-final.css"),
   text("public/sw.js"),
   text("src/pwa-runtime.js"),
   text("src/auth-callback-authority-v107.js"),
@@ -54,30 +56,36 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-sidebar-auth-v140") throw new Error("APP_RELEASE belum v140.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-sidebar-auth-v140") throw new Error("UI authority belum v140.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-sidebar-auth-v141") throw new Error("APP_RELEASE belum v141.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-sidebar-auth-v141") throw new Error("UI authority belum v141.");
 
-for (const marker of ["studio-device-mode-v140.js", "studio-layout-v140.css", "StudioFastGate.jsx"]) {
-  requireMarker(studio, marker, "Studio entry");
-}
+for (const marker of [
+  "studio-device-mode-v140.js",
+  "studio-layout-v140.css",
+  "studio-v141-final.css",
+  "StudioFastGate.jsx",
+]) requireMarker(studio, marker, "Studio entry");
 forbidMarker(studio, "studio-device-mode-v139.js", "Studio entry");
 forbidMarker(studio, "studio-device-modes-v138.css", "Studio entry");
 requireMarker(compatibilityRuntime, "studio-device-mode-v140.js", "Compatibility runtime v138");
 forbidMarker(compatibilityRuntime, "studio-device-mode-v139.js", "Compatibility runtime v138");
 
 for (const marker of [
-  "studio-device-mode-v140-20260729",
+  "studio-device-mode-v141-20260729",
   "COMPACT_MAX = 820",
-  "document.documentElement.clientWidth",
-  "LAYOUT_NODES",
-  "LEGACY_INLINE_PROPERTIES",
+  "HANDHELD_MAX = 820",
+  "handheldSignal",
+  "physicalShortSide",
+  "navigator.maxTouchPoints > 1",
+  "pointer: coarse",
+  'shell.dataset.navigationOwner = "react-v138"',
+  'shell.dataset.navigationAuthority = "react-v141"',
   "clearLegacyInlineLayout",
-  "sn-mobile-sheet-layer",
   "MutationObserver",
   "ngeblogging:studio-device-mode-change",
-]) requireMarker(deviceRuntime, marker, "Device authority v140");
-for (const legacy of ["forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer", "sn-v139-forced-backdrop"]) {
-  forbidMarker(deviceRuntime, legacy, "Device authority v140");
+]) requireMarker(deviceRuntime, marker, "Device authority v141");
+for (const legacy of ["forcedDesktopSitePhone", "forcedBackdrop", "setForcedDrawer", "stopImmediatePropagation"]) {
+  forbidMarker(deviceRuntime, legacy, "Device authority v141");
 }
 
 for (const marker of [
@@ -92,10 +100,19 @@ for (const marker of [
   "width:calc(100% - var(--studio-side-closed))!important",
   "overflow-x:hidden!important",
   "backdrop-filter:none!important",
-  ".sn-mobile-nav,.sn-mobile-sheet-layer{display:none!important}",
 ]) requireMarker(layout, marker, "Layout authority v140");
-forbidMarker(layout, "@import \"./studio-final-recovery-v136.css\"", "Layout authority v140");
 forbidMarker(layout, "data-v139-forced-mobile-open", "Layout authority v140");
+
+for (const marker of [
+  "studio-v141-final-20260729",
+  'content:"n."!important',
+  ".sn-sidebar-toggle>*{display:none!important}",
+  "width:min(88vw,340px)!important",
+  "overflow-x:hidden!important",
+  "backdrop-filter:none!important",
+  ".sn-comments-nav-host-v93",
+  "#ngeblogging-api-keys-nav-v135",
+]) requireMarker(finalLayout, marker, "Layout final v141");
 
 for (const marker of [
   'data-navigation-owner="react-v138"',
@@ -108,31 +125,36 @@ for (const marker of [
 ]) requireMarker(studioNext, marker, "Navigasi React Studio");
 
 for (const marker of [
-  "ngeblogging-app-v140-studio-auth-20260729",
-  "single-react-layout-direct-auth-v140",
-  "pwa-v140",
+  "ngeblogging-app-v141-studio-auth-20260729",
+  "single-react-physical-device-auth-v141",
   "Promise.allSettled",
   "self.clients.claim()",
-  "client.navigate(url.href)",
-]) requireMarker(serviceWorker, marker, "Service Worker v140");
+  "notifyOpenWindows",
+  "NGE_BLOGGING_FORCE_RELOAD_V77",
+]) requireMarker(serviceWorker, marker, "Service Worker v141");
+forbidMarker(serviceWorker, "client.navigate(url.href)", "Service Worker v141");
 
 for (const marker of [
-  "ngeblogging-pwa-v140-20260729",
-  "layoutWidth <= 820",
+  "ngeblogging-pwa-v141-20260729",
+  "handheldSignal",
+  "physicalPhone",
   "desktopSitePhone",
-  "ngeblogging-pwa-controller-v140",
-  "pwa-v140",
+  "ngeblogging-pwa-controller-v141",
+  "pwa-v141",
   "navigator.serviceWorker.register",
-]) requireMarker(pwaRuntime, marker, "Runtime PWA v140");
+  "sensitiveAuthCallback",
+]) requireMarker(pwaRuntime, marker, "Runtime PWA v141");
 
 for (const marker of [
-  "auth-callback-authority-v139-20260729",
-  "passwordFallbackV139",
+  "auth-callback-authority-v141-20260729",
+  "passwordFallbackV141",
   "directPasswordGrant",
   "/auth/v1/token?grant_type=password",
   "supabase.auth.setSession",
+  "history.replaceState",
+  "ngeblogging:auth-session-ready",
   "installPasswordFallback()",
-]) requireMarker(authCallback, marker, "Pemulihan login");
+]) requireMarker(authCallback, marker, "Pemulihan login v141");
 
 for (const marker of [
   "createClient(url, key",
@@ -142,9 +164,9 @@ for (const marker of [
   "ngeblogging-web-v140",
   'supabaseTransport = supabaseConfigured ? "direct-v140"',
   "signInWithPassword",
-]) requireMarker(supabaseClient, marker, "Transport Supabase langsung v140");
+]) requireMarker(supabaseClient, marker, "Transport Supabase langsung");
 for (const legacy of ["resilientSupabaseFetch", "/api/auth-proxy", "/api/data-proxy", "direct-fallback"]) {
-  forbidMarker(supabaseClient, legacy, "Transport Supabase langsung v140");
+  forbidMarker(supabaseClient, legacy, "Transport Supabase langsung");
 }
 
 for (const marker of [
@@ -155,7 +177,8 @@ for (const marker of [
 ]) requireMarker(worker, marker, "Worker produksi");
 
 requireMarker(index, 'type="application/x-disabled" src="/src/sidebar-final-v91.js', "Shell produksi");
+requireMarker(index, '/src/pwa-runtime.js', "Shell produksi");
 requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
 requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
 
-console.log("Validasi produksi v140 lulus: satu authority layout React, tombol n. mobile, tanpa blur/overflow putih, cache baru, dan login Supabase langsung aktif.");
+console.log("Validasi produksi v141 lulus: satu pemilik menu React, HP desktop-site tetap mobile, ikon n. terkunci, tanpa blur/ruang putih, cache satu kali, dan login tanpa callback ganda.");
