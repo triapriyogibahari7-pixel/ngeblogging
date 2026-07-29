@@ -1,7 +1,8 @@
 const VERSION = "ngeblogging-app-v142-studio-auth-20260729";
 const CACHE_RELEASE = "single-react-handheld-auth-once-v142";
-const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
-const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
+const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
+const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
+const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -13,12 +14,16 @@ self.addEventListener("install", (event) => {
 });
 
 function isAuthSurface(url) {
+  const authMode = url.searchParams.get("auth") || "";
   return url.pathname === "/login"
     || url.pathname === "/signup"
+    || url.pathname === "/signin"
     || url.pathname.startsWith("/auth/")
     || url.searchParams.has("code")
-    || url.searchParams.get("auth") === "callback"
-    || url.searchParams.get("auth") === "recovery";
+    || authMode === "callback"
+    || authMode === "recovery"
+    || authMode === "session-expired"
+    || authMode === "callback-error";
 }
 
 async function notifyOpenWindows() {
@@ -31,7 +36,8 @@ async function notifyOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-studio-auth-v142",
+        authHandoffRelease: AUTH_HANDOFF_RELEASE,
+        reason: "service-worker-activated-auth-route-handoff-v143",
       });
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
@@ -57,6 +63,7 @@ self.addEventListener("message", (event) => {
       type: "NGE_BLOGGING_PWA_VERSION",
       version: VERSION,
       release: CACHE_RELEASE,
+      authHandoffRelease: AUTH_HANDOFF_RELEASE,
     });
   }
 });
