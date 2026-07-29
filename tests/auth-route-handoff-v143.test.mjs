@@ -30,17 +30,21 @@ test("OAuth callback and password recovery are never interrupted", () => {
   assert.match(bootstrap, /callbackInProgress\(\) \|\| !loginSurface\(\)/);
 });
 
-test("v145 clears stale Studio clients while preserving the v143 auth handoff", () => {
+test("v147 clears stale Studio clients while preserving the v143 auth handoff", () => {
   const worker = read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v145-studio-mobile-cache-20260729/);
-  assert.match(worker, /single-react-mobile-cache-v145/);
-  assert.match(worker, /auth-route-handoff-v143-20260729/);
-  assert.match(worker, /service-worker-activated-studio-mobile-cache-v145/);
-  assert.match(worker, /authHandoffRelease/);
-  assert.match(worker, /url\.pathname === "\/signin"/);
-  assert.match(worker, /authMode === "session-expired"/);
-  assert.match(worker, /authMode === "callback-error"/);
-  assert.match(worker, /if \(url\.origin !== self\.location\.origin \|\| isAuthSurface\(url\)\) return/);
-  assert.match(worker, /FORCE_REFRESH_QUERY/);
-  assert.match(worker, /client\.navigate\(url\.href\)/);
+  for (const marker of [
+    "ngeblogging-app-v147-studio-interface-20260729",
+    "ngeblogging-app-v145-studio-mobile-cache-20260729",
+    "single-react-interface-v147",
+    "single-react-mobile-cache-v145",
+    "auth-route-handoff-v143-20260729",
+    "service-worker-activated-studio-interface-v147",
+    "authHandoffRelease",
+    'url.pathname === "/signin"',
+    'authMode === "session-expired"',
+    'authMode === "callback-error"',
+    "if (url.origin !== self.location.origin || isAuthSurface(url)) return",
+    "FORCE_REFRESH_QUERY",
+    "client.navigate(url.href)",
+  ]) assert.ok(worker.includes(marker), `${marker} harus ada`);
 });
