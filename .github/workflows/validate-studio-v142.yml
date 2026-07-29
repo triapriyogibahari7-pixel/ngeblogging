@@ -1,0 +1,51 @@
+name: Validate Studio v142
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-studio-v142-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      QWEN_API_KEY: ci-dry-run-only
+      QWEN_WORKSPACE_ID: production-dry-run
+
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run complete regression tests
+        run: npm test
+
+      - name: Run production contract validation
+        run: npm run test:production
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Validate Cloudflare bundle
+        run: npm run cloudflare:dry-run
