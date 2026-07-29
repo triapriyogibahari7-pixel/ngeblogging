@@ -1,39 +1,47 @@
-const RELEASE = "ngeblogging-pwa-v138-20260729";
+const RELEASE = "ngeblogging-pwa-v140-20260729";
 const VALIDATOR_COMPATIBILITY = "ngeblogging-pwa-v23-20260725";
-// Historical audit markers: ngeblogging-pwa-v21-20260725, ngeblogging-pwa-v14-20260724.
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v138";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v140";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v138";
+const RECOVERY_VALUE = "pwa-v140-stable-sidebar-auth";
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
 let controllerRecoveryStarted = false;
 
+function mediaMatches(query) {
+  try { return window.matchMedia?.(query)?.matches === true; } catch { return false; }
+}
+
+function handheldSignal() {
+  const ua = navigator.userAgent || "";
+  const mobileUa = navigator.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(ua);
+  const coarse = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
+  const fine = mediaMatches("(any-pointer: fine)");
+  return mobileUa || (Number(navigator.maxTouchPoints || 0) > 1 && coarse && !fine);
+}
+
 function viewportProfile() {
-  const layoutWidth = Math.max(1, Number(window.innerWidth) || 1);
-  const layoutHeight = Math.max(1, Number(window.innerHeight) || 1);
+  const layoutWidth = Math.max(1, Number(document.documentElement.clientWidth || window.innerWidth) || 1);
+  const layoutHeight = Math.max(1, Number(document.documentElement.clientHeight || window.innerHeight) || 1);
+  const visualWidth = Math.max(1, Number(window.visualViewport?.width) || layoutWidth);
   const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
   const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
-  const physicalShortSide = Math.min(screenWidth, screenHeight);
-  const physicalScreenMobile = physicalShortSide <= 760;
-  const viewportToScreenRatio = layoutWidth / screenWidth;
-  const desktopLayoutRequested = physicalScreenMobile
-    && (layoutWidth >= 780 || viewportToScreenRatio >= 1.18);
-  const compactViewport = layoutWidth <= 760 && !desktopLayoutRequested;
+  const handheld = handheldSignal();
+  const effectiveWidth = Math.min(layoutWidth, visualWidth);
+  const desktopLayoutRequested = handheld && layoutWidth > 820;
 
   let mode = "desktop";
-  if (compactViewport) mode = "mobile";
-  else if (!desktopLayoutRequested && layoutWidth <= 1100) mode = "tablet";
+  if (handheld || effectiveWidth <= 820) mode = "mobile";
+  else if (layoutWidth <= 1100) mode = "tablet";
   else if (layoutWidth <= 1440) mode = "laptop";
 
   return {
     mode,
-    physicalScreenMobile,
-    compactViewport,
+    handheld,
+    compactViewport: effectiveWidth <= 820,
     desktopLayoutRequested,
-    viewportToScreenRatio,
-    browserScale: 1,
     layoutWidth,
     layoutHeight,
     screenWidth,
@@ -49,13 +57,13 @@ function syncDeviceMode() {
   const profile = viewportProfile();
   const root = document.documentElement;
   root.dataset.deviceMode = profile.mode;
-  root.dataset.physicalPhone = String(profile.physicalScreenMobile);
-  root.dataset.physicalMobile = String(profile.compactViewport);
-  root.dataset.physicalScreenMobile = String(profile.physicalScreenMobile);
+  root.dataset.physicalPhone = String(profile.handheld);
+  root.dataset.physicalMobile = String(profile.mode === "mobile");
+  root.dataset.physicalScreenMobile = String(profile.handheld);
   root.dataset.desktopSitePhone = String(profile.desktopLayoutRequested);
   root.dataset.desktopLayoutRequested = String(profile.desktopLayoutRequested);
   root.dataset.desktopCompactPhone = "false";
-  root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
+  root.dataset.orientation = mediaMatches("(orientation: portrait)") ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
   root.dataset.pwaCompatibility = VALIDATOR_COMPATIBILITY;
   root.style.setProperty("--sn-browser-scale", "1");
@@ -63,11 +71,10 @@ function syncDeviceMode() {
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-width", `${profile.layoutWidth.toFixed(2)}px`);
   root.style.setProperty("--sn-physical-layout-height", `${profile.layoutHeight.toFixed(2)}px`);
-  root.style.setProperty("--sn-viewport-screen-ratio", profile.viewportToScreenRatio.toFixed(3));
 }
 
 function standalone() {
-  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true;
 }
 
 function productionHost() {
@@ -79,22 +86,25 @@ function productionHost() {
     || hostname === "127.0.0.1";
 }
 
-function sensitiveAuthCallback() {
+function authSurface() {
   const params = new URLSearchParams(window.location.search);
-  return params.has("code")
+  return location.pathname === "/login"
+    || location.pathname === "/signup"
+    || location.pathname.startsWith("/auth/")
+    || params.has("code")
     || params.get("auth") === "callback"
     || params.get("auth") === "recovery";
 }
 
 function reloadForNewController(reason = "controllerchange") {
-  if (controllerRecoveryStarted || sensitiveAuthCallback()) return;
+  if (controllerRecoveryStarted || authSurface()) return;
   const url = new URL(window.location.href);
   if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
   try {
     if (sessionStorage.getItem(CONTROLLER_GUARD) === RECOVERY_VALUE) return;
     sessionStorage.setItem(CONTROLLER_GUARD, RECOVERY_VALUE);
   } catch {
-    // Storage may be unavailable; the query guard still prevents a loop.
+    // The query guard still prevents a reload loop when storage is unavailable.
   }
   controllerRecoveryStarted = true;
   url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
@@ -178,13 +188,11 @@ window.addEventListener("beforeinstallprompt", (event) => {
   installPrompt = event;
   ensureInstallButton();
 });
-
 window.addEventListener("appinstalled", () => {
   installPrompt = null;
   document.documentElement.dataset.installed = String(standalone());
   removeInstallButton();
 });
-
 window.addEventListener("resize", syncDeviceMode, { passive: true });
 window.addEventListener("orientationchange", syncDeviceMode, { passive: true });
 window.addEventListener("pageshow", syncDeviceMode, { passive: true });
