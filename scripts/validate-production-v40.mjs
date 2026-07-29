@@ -19,6 +19,7 @@ const [
   compatibilityRuntime,
   layout,
   layoutHotfix,
+  layoutFinal,
   serviceWorker,
   pwaRuntime,
   authCallback,
@@ -34,6 +35,7 @@ const [
   text("src/studio-device-mode-v138.js"),
   text("src/studio-layout-v140.css"),
   text("src/studio-layout-hotfix-v141.css"),
+  text("src/studio-layout-hotfix-v142.css"),
   text("public/sw.js"),
   text("src/pwa-runtime.js"),
   text("src/auth-callback-authority-v107.js"),
@@ -56,13 +58,14 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-handheld-auth-v141") throw new Error("APP_RELEASE belum v141.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-handheld-auth-v141") throw new Error("UI authority belum v141.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-handheld-auth-v142") throw new Error("APP_RELEASE belum v142.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-handheld-auth-v142") throw new Error("UI authority belum v142.");
 
 for (const marker of [
   "studio-device-mode-v140.js",
   "studio-layout-v140.css",
   "studio-layout-hotfix-v141.css",
+  "studio-layout-hotfix-v142.css",
   "StudioFastGate.jsx",
 ]) requireMarker(studio, marker, "Studio entry");
 forbidMarker(studio, "studio-device-mode-v139.js", "Studio entry");
@@ -117,6 +120,15 @@ for (const marker of [
 ]) requireMarker(layoutHotfix, marker, "Layout hotfix v141");
 
 for (const marker of [
+  ".sn-comments-nav-host-v93",
+  "#ngeblogging-api-keys-nav-v135",
+  ".sn-sidebar-toggle>*{display:none!important}",
+  'content:"n."!important',
+  "overflow-x:hidden!important",
+  "backdrop-filter:none!important",
+]) requireMarker(layoutFinal, marker, "Layout final v142");
+
+for (const marker of [
   'data-navigation-owner="react-v138"',
   "<span>Ringkasan</span>",
   "<span>Komentar</span>",
@@ -127,37 +139,38 @@ for (const marker of [
 ]) requireMarker(studioNext, marker, "Navigasi React Studio");
 
 for (const marker of [
-  "ngeblogging-app-v141-studio-mobile-auth-20260729",
-  "single-react-layout-handheld-direct-auth-v141",
-  "pwa-v141-studio-mobile-auth",
+  "ngeblogging-app-v142-studio-auth-20260729",
+  "single-react-handheld-auth-once-v142",
   "function isAuthSurface",
-  'url.pathname === "/login"',
-  'url.pathname === "/signup"',
+  "notifyOpenWindows",
+  "NGE_BLOGGING_FORCE_RELOAD_V77",
   "Promise.allSettled",
   "self.clients.claim()",
-  "client.navigate(url.href)",
-]) requireMarker(serviceWorker, marker, "Service Worker v141");
+]) requireMarker(serviceWorker, marker, "Service Worker v142");
+forbidMarker(serviceWorker, "client.navigate(url.href)", "Service Worker v142");
 
 for (const marker of [
-  "ngeblogging-pwa-v141-20260729",
+  "ngeblogging-pwa-v142-20260729",
   "function handheldSignal",
   "navigator.userAgentData?.mobile",
   "navigator.maxTouchPoints",
   'if (handheld || effectiveWidth <= 820) mode = "mobile"',
   "function authSurface",
-  "ngeblogging-pwa-controller-v141",
-  "pwa-v141-studio-mobile-auth",
+  "ngeblogging-pwa-controller-v142",
+  "pwa-v142-studio-auth",
   "navigator.serviceWorker.register",
-]) requireMarker(pwaRuntime, marker, "Runtime PWA v141");
+]) requireMarker(pwaRuntime, marker, "Runtime PWA v142");
 
 for (const marker of [
-  "auth-callback-authority-v139-20260729",
-  "passwordFallbackV139",
+  "auth-callback-authority-v142-20260729",
+  "passwordFallbackV142",
   "directPasswordGrant",
   "/auth/v1/token?grant_type=password",
   "supabase.auth.setSession",
+  "history.replaceState",
+  "ngeblogging:auth-session-ready",
   "installPasswordFallback()",
-]) requireMarker(authCallback, marker, "Pemulihan login");
+]) requireMarker(authCallback, marker, "Login callback v142");
 
 for (const marker of [
   "createClient(url, key",
@@ -213,4 +226,4 @@ requireMarker(index, 'type="application/x-disabled" src="/src/sidebar-final-v91.
 requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
 requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
 
-console.log("Validasi produksi v141 lulus: satu runtime React, mode handphone terkunci, tombol n. aktif, tanpa blur/overflow putih, cache baru, dan login langsung terlindungi.");
+console.log("Validasi produksi v142 lulus: satu runtime React, mode HP terkunci, tombol n. selalu ada, menu lama disingkirkan, cache hanya reload sekali, dan callback login tidak diproses dua kali.");
