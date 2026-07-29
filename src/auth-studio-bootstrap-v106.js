@@ -3,11 +3,14 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 
 const RELEASE = "auth-studio-bootstrap-v109-20260728";
 const LEGACY_RELEASE = "auth-studio-bootstrap-v106-20260728";
+const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
+const AUTH_SUCCESS_VALUE = "v143";
 const PATCH_FLAG = Symbol.for("ngeblogging.authStudioBootstrapV106");
 const GATE_ID = "ngeblogging-auth-gate-v106";
 const subscribers = new Set();
 let recoveredSession = null;
 let replayScheduled = false;
+let routeRedirecting = false;
 
 function installGate() {
   if (document.getElementById(GATE_ID)) return;
@@ -60,6 +63,38 @@ function landingVisible() {
   return Boolean(document.querySelector("body>header,.hero,.landing-page"));
 }
 
+function callbackInProgress() {
+  const params = new URLSearchParams(window.location.search);
+  return Boolean(
+    params.get("code")
+    || params.get("auth") === "callback"
+    || params.get("auth") === "recovery"
+  );
+}
+
+function loginSurface() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  const params = new URLSearchParams(window.location.search);
+  const authMode = params.get("auth") || "";
+  return path === "/login"
+    || path === "/signup"
+    || path === "/signin"
+    || authMode === "session-expired"
+    || authMode === "callback-error";
+}
+
+function redirectAuthenticatedSurface(session, reason = "session") {
+  if (routeRedirecting || !session?.access_token || callbackInProgress() || !loginSurface()) return false;
+  routeRedirecting = true;
+  installGate();
+  document.documentElement.dataset.authRouteHandoff = AUTH_HANDOFF_RELEASE;
+  document.documentElement.dataset.authRouteHandoffReason = reason;
+  const target = new URL("/", window.location.origin);
+  target.searchParams.set("auth_success", AUTH_SUCCESS_VALUE);
+  window.location.replace(`${target.pathname}${target.search}`);
+  return true;
+}
+
 function scheduleGateRemoval(hasSession) {
   const started = Date.now();
   const check = () => {
@@ -92,13 +127,16 @@ function replayAuthenticatedSession(session = recoveredSession) {
   recoveredSession = session;
   window.__ngebloggingInitialSessionV106 = session;
   window.__ngebloggingRecoveredSessionV109 = session;
+  window.__ngebloggingAuthRouteHandoffV143 = AUTH_HANDOFF_RELEASE;
   document.documentElement.dataset.initialSessionV106 = "authenticated";
   document.documentElement.dataset.authStudioBootstrapV106 = RELEASE;
+  if (redirectAuthenticatedSurface(session, "replay")) return;
   for (const callback of subscribers) notifySubscriber(callback, session);
   window.dispatchEvent(new CustomEvent("ngeblogging:authenticated-session-ready", {
     detail: {
       release: RELEASE,
       compatibility: LEGACY_RELEASE,
+      authHandoff: AUTH_HANDOFF_RELEASE,
       userId: session.user?.id || "",
     },
   }));
@@ -130,6 +168,7 @@ function patchAuthListener() {
       }
       if ((normalizedEvent === "SIGNED_IN" || normalizedEvent === "TOKEN_REFRESHED") && session) {
         recoveredSession = session;
+        redirectAuthenticatedSurface(session, normalizedEvent.toLowerCase());
       }
       return callback(normalizedEvent, session);
     });
@@ -147,6 +186,22 @@ function patchAuthListener() {
   Object.defineProperty(supabase.auth, PATCH_FLAG, { value: true, configurable: false });
 }
 
+function installRouteHandoffListener() {
+  if (!supabaseConfigured || !supabase) return;
+  supabase.auth.onAuthStateChange((event, session) => {
+    if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
+      recoveredSession = session;
+      redirectAuthenticatedSurface(session, event.toLowerCase());
+    }
+  });
+  window.addEventListener("ngeblogging:auth-session-ready", (event) => {
+    const session = event.detail?.session || null;
+    if (!session?.access_token) return;
+    recoveredSession = session;
+    redirectAuthenticatedSurface(session, "oauth-callback");
+  });
+}
+
 async function preflightSession() {
   if (!supabaseConfigured || !supabase) {
     document.documentElement.dataset.authStudioBootstrapV106 = "not-configured";
@@ -160,12 +215,15 @@ async function preflightSession() {
     recoveredSession = session;
     window.__ngebloggingInitialSessionV106 = session;
     document.documentElement.dataset.authStudioBootstrapV106 = session ? RELEASE : "anonymous";
-    if (session) replayAuthenticatedSession(session);
-    else scheduleGateRemoval(false);
+    if (session) {
+      if (!redirectAuthenticatedSurface(session, "preflight")) replayAuthenticatedSession(session);
+    } else {
+      scheduleGateRemoval(false);
+    }
   } catch (error) {
     console.error("Dashboard session bootstrap failed", error);
     document.documentElement.dataset.authStudioBootstrapV106 = "network-deferred";
-    // A transient network failure must never erase or sign out a persisted account.
+    // Gangguan jaringan sementara tidak boleh menghapus atau mengeluarkan akun tersimpan.
     if (recoveredSession?.access_token) replayAuthenticatedSession(recoveredSession);
     else removeGate();
   }
@@ -173,13 +231,17 @@ async function preflightSession() {
 
 installGate();
 patchAuthListener();
+installRouteHandoffListener();
 preflightSession();
 
 window.addEventListener("pageshow", () => {
-  if (recoveredSession?.access_token && landingVisible() && !studioVisible()) {
-    replayAuthenticatedSession(recoveredSession);
+  if (recoveredSession?.access_token) {
+    if (redirectAuthenticatedSurface(recoveredSession, "pageshow")) return;
+    if (landingVisible() && !studioVisible()) replayAuthenticatedSession(recoveredSession);
   }
 });
 window.addEventListener("online", () => {
-  if (recoveredSession?.access_token) replayAuthenticatedSession(recoveredSession);
+  if (recoveredSession?.access_token) {
+    if (!redirectAuthenticatedSurface(recoveredSession, "online")) replayAuthenticatedSession(recoveredSession);
+  }
 });
