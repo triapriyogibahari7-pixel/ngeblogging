@@ -1,0 +1,82 @@
+/* Final specificity patch for Studio v133.
+   The historical v133 recovery used an off-canvas drawer on narrow screens.
+   The approved interface uses a permanent 64px icon rail and one panel toggle. */
+@media(max-width:760px){
+  html body .sv124-shell.expanded .sv124-side,
+  html body .sv124-shell.mobile-open .sv124-side{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    display:flex!important;
+    width:var(--v133-phone-side-open)!important;
+    min-width:var(--v133-phone-side-open)!important;
+    max-width:var(--v133-phone-side-open)!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    transform:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    overflow:hidden!important;
+    box-shadow:16px 0 42px rgba(20,38,66,.2)!important;
+  }
+  html body .sv124-shell.collapsed .sv124-side{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    display:flex!important;
+    width:var(--v133-phone-side-closed)!important;
+    min-width:var(--v133-phone-side-closed)!important;
+    max-width:var(--v133-phone-side-closed)!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    transform:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    overflow:hidden!important;
+    box-shadow:none!important;
+  }
+  html body .sv124-shell.expanded .sv124-side>nav,
+  html body .sv124-shell.expanded .sv124-account-footer{
+    align-items:stretch!important;
+  }
+  html body .sv124-shell.collapsed .sv124-side>nav,
+  html body .sv124-shell.collapsed .sv124-account-footer{
+    align-items:center!important;
+  }
+  html body .sv124-shell.collapsed .sv124-logo>b,
+  html body .sv124-shell.collapsed .sv124-logo>button,
+  html body .sv124-shell.collapsed .sv124-new>span,
+  html body .sv124-shell.collapsed .sv124-side nav button>span,
+  html body .sv124-shell.collapsed .sv124-account-footer button>span{
+    display:none!important;
+    visibility:hidden!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:0!important;
+    opacity:0!important;
+    overflow:hidden!important;
+  }
+  html body .sv124-shell.expanded .sv124-logo>b,
+  html body .sv124-shell.expanded .sv124-new>span,
+  html body .sv124-shell.expanded .sv124-side nav button>span,
+  html body .sv124-shell.expanded .sv124-account-footer button>span{
+    display:block!important;
+    visibility:visible!important;
+    width:auto!important;
+    max-width:100%!important;
+    opacity:1!important;
+  }
+  html body .sv124-mobile-toggle,
+  html body .sv124-mobile-backdrop{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+  html body .sv124-desktop-toggle{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+}
