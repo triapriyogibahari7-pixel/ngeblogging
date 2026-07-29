@@ -1,34 +1,50 @@
-const RELEASE = "ngeblogging-pwa-v140-20260729";
+const RELEASE = "ngeblogging-pwa-v141-20260729";
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v140";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v141";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v140";
+const RECOVERY_VALUE = "pwa-v141-studio-mobile-auth";
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
 let controllerRecoveryStarted = false;
 
+function mediaMatches(query) {
+  try { return window.matchMedia?.(query)?.matches === true; } catch { return false; }
+}
+
+function handheldSignal() {
+  const userAgent = navigator.userAgent || "";
+  const mobileUa = navigator.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent);
+  const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
+  const finePointer = mediaMatches("(any-pointer: fine)");
+  return mobileUa || (Number(navigator.maxTouchPoints || 0) > 1 && coarsePointer && !finePointer);
+}
+
 function viewportProfile() {
   const layoutWidth = Math.max(1, Number(document.documentElement.clientWidth || window.innerWidth) || 1);
   const layoutHeight = Math.max(1, Number(document.documentElement.clientHeight || window.innerHeight) || 1);
+  const visualWidth = Math.max(1, Number(window.visualViewport?.width) || layoutWidth);
   const screenWidth = Math.max(1, Number(window.screen?.width) || layoutWidth);
   const screenHeight = Math.max(1, Number(window.screen?.height) || layoutHeight);
-  const physicalPhone = Math.min(screenWidth, screenHeight) <= 820;
-  const desktopSitePhone = physicalPhone && layoutWidth > 820;
+  const handheld = handheldSignal();
+  const effectiveWidth = Math.min(layoutWidth, visualWidth);
+  const desktopSitePhone = handheld && layoutWidth > 820;
 
   let mode = "desktop";
-  if (layoutWidth <= 820) mode = "mobile";
+  if (handheld || effectiveWidth <= 820) mode = "mobile";
   else if (layoutWidth <= 1100) mode = "tablet";
   else if (layoutWidth <= 1440) mode = "laptop";
 
   return {
     mode,
+    handheld,
+    desktopSitePhone,
     layoutWidth,
     layoutHeight,
+    visualWidth,
     screenWidth,
     screenHeight,
-    physicalPhone,
-    desktopSitePhone,
   };
 }
 
@@ -40,21 +56,22 @@ function syncDeviceMode() {
   const profile = viewportProfile();
   const root = document.documentElement;
   root.dataset.deviceMode = profile.mode;
-  root.dataset.physicalPhone = String(profile.physicalPhone);
+  root.dataset.physicalPhone = String(profile.handheld);
   root.dataset.physicalMobile = String(profile.mode === "mobile");
-  root.dataset.physicalScreenMobile = String(profile.physicalPhone);
+  root.dataset.physicalScreenMobile = String(profile.handheld);
   root.dataset.desktopSitePhone = String(profile.desktopSitePhone);
   root.dataset.desktopLayoutRequested = String(profile.desktopSitePhone);
   root.dataset.desktopCompactPhone = "false";
-  root.dataset.orientation = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "landscape";
+  root.dataset.orientation = mediaMatches("(orientation: portrait)") ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
   root.style.setProperty("--sn-browser-scale", "1");
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight}px`);
+  root.style.setProperty("--sn-visual-width", `${profile.visualWidth}px`);
 }
 
 function standalone() {
-  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true;
 }
 
 function productionHost() {
@@ -66,22 +83,25 @@ function productionHost() {
     || hostname === "127.0.0.1";
 }
 
-function sensitiveAuthCallback() {
+function authSurface() {
   const params = new URLSearchParams(window.location.search);
-  return params.has("code")
+  return location.pathname === "/login"
+    || location.pathname === "/signup"
+    || location.pathname.startsWith("/auth/")
+    || params.has("code")
     || params.get("auth") === "callback"
     || params.get("auth") === "recovery";
 }
 
 function reloadForNewController(reason = "controllerchange") {
-  if (controllerRecoveryStarted || sensitiveAuthCallback()) return;
+  if (controllerRecoveryStarted || authSurface()) return;
   const url = new URL(window.location.href);
   if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
   try {
     if (sessionStorage.getItem(CONTROLLER_GUARD) === RECOVERY_VALUE) return;
     sessionStorage.setItem(CONTROLLER_GUARD, RECOVERY_VALUE);
   } catch {
-    // The query guard still prevents a reload loop when storage is restricted.
+    // Query guard tetap mencegah loop ketika storage browser dibatasi.
   }
   controllerRecoveryStarted = true;
   url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);

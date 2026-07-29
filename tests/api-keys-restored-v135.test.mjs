@@ -48,11 +48,11 @@ test("API Keys interface remains responsive on phone and desktop", () => {
   assert.match(css, /sn-api-secret-modal/);
 });
 
-test("v140 rotates stale clients while preserving API Keys", () => {
+test("v141 rotates stale clients while preserving API Keys", () => {
   const worker = read("public/sw.js");
   const studio = read("src/StudioNext.jsx");
-  assert.match(worker, /ngeblogging-app-v140-studio-auth-20260729/);
-  assert.match(worker, /single-react-layout-direct-auth-v140/);
-  assert.match(worker, /pwa-v140/);
+  assert.match(worker, /ngeblogging-app-v141-studio-mobile-auth-20260729/);
+  assert.match(worker, /single-react-layout-handheld-direct-auth-v141/);
+  assert.match(worker, /pwa-v141-studio-mobile-auth/);
   assert.match(studio, /<ApiKeysPanel setToast=\{setToast\}\/>/);
 });
