@@ -1,7 +1,8 @@
 const VERSION = "ngeblogging-app-v141-studio-mobile-auth-20260729";
 const CACHE_RELEASE = "single-react-layout-handheld-direct-auth-v141";
-const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
-const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
+const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v142-20260729";
+const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
+const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
 const RECOVERY_QUERY = "ngeblogging_recovery";
 const RECOVERY_VALUE = "pwa-v141-studio-mobile-auth";
@@ -33,11 +34,13 @@ async function refreshOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-studio-mobile-auth-v141",
+        authHandoffRelease: AUTH_HANDOFF_RELEASE,
+        reason: "service-worker-activated-auth-route-handoff-v142",
       });
       if (isAuthSurface(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
       url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
+      url.searchParams.set("auth_handoff", "v142");
       await client.navigate(url.href);
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
@@ -63,6 +66,7 @@ self.addEventListener("message", (event) => {
       type: "NGE_BLOGGING_PWA_VERSION",
       version: VERSION,
       release: CACHE_RELEASE,
+      authHandoffRelease: AUTH_HANDOFF_RELEASE,
     });
   }
 });
