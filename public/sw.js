@@ -1,7 +1,10 @@
 const VERSION = "ngeblogging-app-v154-production-entry-20260730";
 const LEGACY_VERSION = "ngeblogging-app-v153-auth-production-20260730";
+const STUDIO_COMPLETION_COMPAT_VERSION = "ngeblogging-app-v151-studio-completion-20260729";
 const CACHE_RELEASE = "production-entry-cache-v154";
 const LEGACY_CACHE_RELEASE = "auth-production-cache-v153";
+const STUDIO_COMPLETION_COMPAT_RELEASE = "studio-completion-cache-v151";
+const STUDIO_COMPLETION_COMPAT_UI = "studio-completion-v151";
 const LEGACY_ACTIVATION_REASON = "service-worker-activated-auth-production-v153";
 const AUTH_HANDOFF_RELEASE = "auth-entry-v154-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
@@ -54,8 +57,11 @@ async function notifyOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         legacyVersion: LEGACY_VERSION,
+        studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
         release: CACHE_RELEASE,
         legacyRelease: LEGACY_CACHE_RELEASE,
+        studioCompletionCompatRelease: STUDIO_COMPLETION_COMPAT_RELEASE,
+        studioCompletionCompatUi: STUDIO_COMPLETION_COMPAT_UI,
         legacyActivationReason: LEGACY_ACTIVATION_REASON,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
         reason: "service-worker-activated-production-entry-v154",
@@ -85,8 +91,11 @@ self.addEventListener("message", (event) => {
       type: "NGE_BLOGGING_PWA_VERSION",
       version: VERSION,
       legacyVersion: LEGACY_VERSION,
+      studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
       release: CACHE_RELEASE,
       legacyRelease: LEGACY_CACHE_RELEASE,
+      studioCompletionCompatRelease: STUDIO_COMPLETION_COMPAT_RELEASE,
+      studioCompletionCompatUi: STUDIO_COMPLETION_COMPAT_UI,
       legacyActivationReason: LEGACY_ACTIVATION_REASON,
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
     });
