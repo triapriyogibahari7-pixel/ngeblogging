@@ -1,0 +1,266 @@
+/* Studio v145: final no-shift lock after v144. */
+:root{
+  --studio-v145-side-open:248px;
+  --studio-v145-side-closed:76px;
+  --studio-v145-top:64px;
+  --studio-v145-bg:#f5f7fb;
+}
+
+html,body,#root,.sn-shell,.sn-shell>.sn-main{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:100vh!important;
+  min-height:100dvh!important;
+  margin-right:0!important;
+  padding-right:0!important;
+  background:var(--studio-v145-bg)!important;
+  overflow-x:hidden!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+@supports(overflow-x:clip){html,body,#root,.sn-shell,.sn-shell>.sn-main{overflow-x:clip!important}}
+
+.sn-shell>.sn-side,
+.sn-shell>.sn-side.collapsed,
+.sn-shell>.sn-side.mobile-open,
+.sn-shell>.sn-side.collapsed.mobile-open{
+  opacity:1!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  background:#fff!important;
+}
+
+/* Mobile/HP/aplikasi/Situs desktop pada HP: satu drawer penuh dan tanpa lapisan blur. */
+html[data-studio-device-mode="small"] body.sn-mobile-sidebar-open{
+  width:100%!important;
+  height:100%!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side:not(.collapsed)+.sn-main{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  translate:none!important;
+  scale:1!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed{
+  position:fixed!important;
+  z-index:2147482000!important;
+  inset:0!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  height:100vh!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:translate3d(-100%,0,0)!important;
+  transition:none!important;
+  contain:layout paint!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.mobile-open,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed.mobile-open{
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translate3d(0,0,0)!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>.sn-logo{
+  flex:0 0 var(--studio-v145-top)!important;
+  min-height:var(--studio-v145-top)!important;
+  padding:0 max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))!important;
+  background:#fff!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-logo-mark i{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>.sn-new{
+  flex:0 0 50px!important;
+  min-height:50px!important;
+  margin:10px 14px!important;
+  font-size:15px!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>nav{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  padding:0 12px 8px!important;
+  gap:2px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>nav>button,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>.sn-account-footer>button{
+  min-height:44px!important;
+  padding:0 14px!important;
+  border-radius:11px!important;
+  font-size:14px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side>.sn-account-footer{
+  flex:0 0 auto!important;
+  padding:8px 12px max(8px,env(safe-area-inset-bottom))!important;
+  background:#fff!important;
+}
+
+/* Tombol n selalu menjadi kontrol pertama header mobile. */
+html[data-studio-device-mode="small"] .sn-shell>.sn-main>.sn-top{
+  position:sticky!important;
+  z-index:2147481000!important;
+  inset:0 0 auto 0!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:var(--studio-v145-top)!important;
+  min-height:var(--studio-v145-top)!important;
+  margin:0!important;
+  padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))!important;
+  gap:8px!important;
+  background:#fff!important;
+  overflow:hidden!important;
+  opacity:1!important;
+  transform:none!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle{
+  order:-100!important;
+  position:relative!important;
+  z-index:2!important;
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 44px!important;
+  width:44px!important;
+  min-width:44px!important;
+  max-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid #d7e0ec!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#245fc9!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  overflow:hidden!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle>*{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle::before{
+  content:"n"!important;
+  display:block!important;
+  color:#245fc9!important;
+  font:900 29px/1 "DM Sans",system-ui,sans-serif!important;
+  letter-spacing:-.08em!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-workspace{order:0!important;flex:1 1 auto!important;min-width:0!important;overflow:hidden!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-cloud{order:1!important;flex:0 0 auto!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-top-actions{order:2!important;flex:0 0 auto!important;min-width:0!important}
+
+/* Konten mobile tidak boleh menciptakan ruang putih kanan atau bawah. */
+html[data-studio-device-mode="small"] .sn-shell .sn-view-pad,
+html[data-studio-device-mode="small"] .sn-shell .sv124-page,
+html[data-studio-device-mode="small"] .sn-shell .sn-api-page,
+html[data-studio-device-mode="small"] .sn-shell .theme-studio,
+html[data-studio-device-mode="small"] .sn-shell .theme-studio-shell,
+html[data-studio-device-mode="small"] .sn-shell [class*="theme-"]{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+}
+
+/* Desktop/laptop/komputer tetap memakai rel tetap, bukan layout mobile. */
+html[data-studio-device-mode="large"] .sn-shell>.sn-side{
+  width:var(--studio-v145-side-open)!important;
+  min-width:var(--studio-v145-side-open)!important;
+  max-width:var(--studio-v145-side-open)!important;
+  transform:none!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-side.collapsed{
+  width:var(--studio-v145-side-closed)!important;
+  min-width:var(--studio-v145-side-closed)!important;
+  max-width:var(--studio-v145-side-closed)!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-main{
+  width:calc(100% - var(--studio-v145-side-open))!important;
+  max-width:calc(100% - var(--studio-v145-side-open))!important;
+  margin-left:var(--studio-v145-side-open)!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-side.collapsed+.sn-main{
+  width:calc(100% - var(--studio-v145-side-closed))!important;
+  max-width:calc(100% - var(--studio-v145-side-closed))!important;
+  margin-left:var(--studio-v145-side-closed)!important;
+}
+
+/* Nara: kontrol ukuran harus selalu terlihat dan modal tidak memakai blur. */
+html .nara-assistant-backdrop{
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html .nara-size-controls-v144{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  flex-shrink:0!important;
+}
+html .nara-size-controls-v144 button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+@media(max-width:760px){
+  html .nara-size-controls-v144{
+    order:10!important;
+    width:100%!important;
+    flex:1 0 100%!important;
+  }
+  html .nara-assistant-shell[data-nara-size="small"]{height:48dvh!important;min-height:320px!important}
+  html .nara-assistant-shell[data-nara-size="medium"]{height:76dvh!important}
+  html .nara-assistant-shell[data-nara-size="full"]{height:100dvh!important}
+}

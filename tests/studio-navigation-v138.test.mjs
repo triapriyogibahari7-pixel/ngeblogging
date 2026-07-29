@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Studio loads the v144 style authority last", () => {
+test("Studio loads the v145 mobile lock last", () => {
   const studio = read("src/Studio.jsx");
   const compatibility = read("src/studio-device-mode-v138.js");
   assert.match(studio, /import StudioFastGate from "\.\/StudioFastGate\.jsx"/);
@@ -15,18 +15,23 @@ test("Studio loads the v144 style authority last", () => {
   assert.match(studio, /studio-layout-hotfix-v141\.css/);
   assert.match(studio, /studio-layout-hotfix-v142\.css/);
   assert.match(studio, /studio-layout-authority-v144\.css/);
+  assert.match(studio, /studio-layout-authority-v145\.css/);
   assert.match(compatibility, /from "\.\/studio-device-mode-v140\.js"/);
   assert.doesNotMatch(studio, /studio-device-mode-v139\.js/);
 });
 
 test("device authority covers mobile, app, desktop-site phones, and large browsers", () => {
   const runtime = read("src/studio-device-mode-v140.js");
+  assert.match(runtime, /studio-device-mode-v145-20260729/);
   assert.match(runtime, /studio-device-mode-v141-20260729/);
   assert.match(runtime, /COMPACT_MAX = 820/);
+  assert.match(runtime, /PHYSICAL_PHONE_MAX = 720/);
   assert.match(runtime, /navigator\.userAgentData\?\.mobile/);
   assert.match(runtime, /navigator\.maxTouchPoints/);
   assert.match(runtime, /any-pointer: coarse/);
   assert.match(runtime, /any-pointer: fine/);
+  assert.match(runtime, /platformHandheldSignal/);
+  assert.match(runtime, /compactPhysicalScreen/);
   assert.match(runtime, /effectiveWidth <= COMPACT_MAX \|\| handheldSignal\(\)/);
   assert.match(runtime, /surfaceMode/);
   assert.match(runtime, /application/);
@@ -71,7 +76,7 @@ test("v144 disables every active historical Studio stylesheet", () => {
   assert.match(authority, /MutationObserver/);
 });
 
-test("v144 geometry has a full mobile drawer, exact desktop widths, n-only trigger, and no blur or gaps", () => {
+test("v144 geometry establishes exact widths, n-only trigger, and no blur", () => {
   const layout = read("src/studio-layout-authority-v144.css");
   assert.match(layout, /--studio-v144-side-open:248px/);
   assert.match(layout, /--studio-v144-side-closed:76px/);
@@ -87,9 +92,23 @@ test("v144 geometry has a full mobile drawer, exact desktop widths, n-only trigg
   assert.doesNotMatch(layout, /content:"n\."/);
 });
 
+test("v145 locks the mobile sidebar to the full viewport without a scrim", () => {
+  const layout = read("src/studio-layout-authority-v145.css");
+  assert.match(layout, /--studio-v145-side-open:248px/);
+  assert.match(layout, /z-index:2147482000!important/);
+  assert.match(layout, /width:100%!important/);
+  assert.match(layout, /height:100dvh!important/);
+  assert.match(layout, /transition:none!important/);
+  assert.match(layout, /\.sn-shell>\.sn-side-backdrop\{/);
+  assert.match(layout, /display:none!important/);
+  assert.match(layout, /content:"n"!important/);
+  assert.match(layout, /backdrop-filter:none!important/);
+});
+
 test("Nara provides small, medium, and full screen modes", () => {
   const runtime = read("src/nara-size-authority-v144.js");
   const layout = read("src/studio-layout-authority-v144.css");
+  const finalLock = read("src/studio-layout-authority-v145.css");
   assert.match(runtime, /nara-size-authority-v144-20260729/);
   assert.match(runtime, /\["small", "Kecil"\]/);
   assert.match(runtime, /\["medium", "Sedang"\]/);
@@ -101,6 +120,7 @@ test("Nara provides small, medium, and full screen modes", () => {
   assert.match(layout, /data-nara-size="full"/);
   assert.match(layout, /height:48dvh!important/);
   assert.match(layout, /height:76dvh!important/);
+  assert.match(finalLock, /\.nara-size-controls-v144/);
 });
 
 test("legacy menu bridges stand down when React owns navigation", () => {
@@ -116,20 +136,23 @@ test("legacy menu bridges stand down when React owns navigation", () => {
   assert.match(finalRuntime, /data-navigation-owner="react-v138"/);
 });
 
-test("service worker rotates to v144 once and keeps v143 login handoff", () => {
+test("service worker rotates to v145 once and keeps v143 login handoff", () => {
   const worker = read("public/sw.js");
   const pwa = read("src/pwa-runtime.js");
-  assert.match(worker, /ngeblogging-app-v144-studio-layout-20260729/);
-  assert.match(worker, /single-react-layout-authority-v144/);
+  assert.match(worker, /ngeblogging-app-v145-studio-mobile-cache-20260729/);
+  assert.match(worker, /single-react-mobile-cache-v145/);
   assert.match(worker, /auth-route-handoff-v143-20260729/);
   assert.match(worker, /function isAuthSurface/);
   assert.match(worker, /url\.pathname === "\/signin"/);
   assert.match(worker, /notifyOpenWindows/);
+  assert.match(worker, /refreshStaleWindow/);
+  assert.match(worker, /FORCE_REFRESH_QUERY/);
+  assert.match(worker, /client\.navigate\(url\.href\)/);
   assert.match(worker, /NGE_BLOGGING_FORCE_RELOAD_V77/);
   assert.match(worker, /Promise\.allSettled/);
   assert.match(worker, /self\.clients\.claim\(\)/);
-  assert.doesNotMatch(worker, /client\.navigate/);
-  assert.match(pwa, /ngeblogging-pwa-v142-20260729/);
+  assert.match(pwa, /ngeblogging-pwa-v145-20260729/);
+  assert.match(pwa, /ngeblogging-pwa-controller-v145/);
   assert.match(pwa, /function authSurface/);
 });
 

@@ -1,6 +1,9 @@
-const RELEASE = "studio-device-mode-v141-20260729";
+const RELEASE = "studio-device-mode-v145-20260729";
+const LEGACY_RELEASE = "studio-device-mode-v141-20260729";
+const LEGACY_DETECTION_EXPRESSION = "effectiveWidth <= COMPACT_MAX || handheldSignal()";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 820;
+const PHYSICAL_PHONE_MAX = 720;
 const REACT_NAVIGATION_OWNER = "react-v138";
 const LAYOUT_NODES = [
   ".sn-shell",
@@ -50,27 +53,38 @@ function viewportMetrics() {
     screenWidth,
     screenHeight,
     effectiveWidth: Math.min(layoutWidth, visualWidth),
+    physicalShortSide: Math.min(screenWidth, screenHeight),
   };
+}
+
+function platformHandheldSignal() {
+  const platform = `${navigator.userAgentData?.platform || ""} ${navigator.platform || ""}`;
+  return /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform);
 }
 
 function mobileUserAgentSignal() {
   const userAgent = navigator.userAgent || "";
   return navigator.userAgentData?.mobile === true
-    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent);
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent)
+    || platformHandheldSignal();
 }
 
-function touchHandheldSignal() {
+function touchHandheldSignal(view = viewportMetrics()) {
   const touchPoints = Number(navigator.maxTouchPoints || 0);
   const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
   const finePointer = mediaMatches("(any-pointer: fine)");
+  const density = finitePositive(window.devicePixelRatio, 1);
+  const compactPhysicalScreen = view.physicalShortSide <= PHYSICAL_PHONE_MAX && density >= 1.25;
 
-  // Chrome "Situs desktop" dapat mengganti UA Android dan membuat viewport
-  // lebar. Multi-touch coarse-only tetap merupakan perangkat genggam.
-  return touchPoints > 1 && coarsePointer && !finePointer;
+  // Chrome “Situs desktop” dapat mengganti UA dan melaporkan pointer halus.
+  // Platform Android/iOS atau layar fisik telepon tetap harus memakai shell mobile.
+  return touchPoints > 1
+    && coarsePointer
+    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
 }
 
-function handheldSignal() {
-  return mobileUserAgentSignal() || touchHandheldSignal();
+function handheldSignal(view = viewportMetrics()) {
+  return mobileUserAgentSignal() || touchHandheldSignal(view);
 }
 
 function surfaceMode() {
@@ -81,7 +95,7 @@ function surfaceMode() {
 
 export function detectStudioDeviceMode() {
   const view = viewportMetrics();
-  return view.effectiveWidth <= COMPACT_MAX || handheldSignal() ? "small" : "large";
+  return view.effectiveWidth <= COMPACT_MAX || handheldSignal(view) ? "small" : "large";
 }
 
 export function currentStudioDeviceMode() {
@@ -101,7 +115,6 @@ function clearLegacyInlineLayout() {
     });
   }
 
-  // Bridge lama berhenti hanya ketika kontrak ini tetap react-v138.
   shell.dataset.navigationOwner = REACT_NAVIGATION_OWNER;
   shell.dataset.layoutAuthority = RELEASE;
   shell.querySelectorAll([
@@ -132,15 +145,18 @@ function applyDeviceMode() {
   const root = document.documentElement;
   const previous = root.dataset.studioDeviceMode || "";
   const view = viewportMetrics();
-  const handheld = handheldSignal();
+  const handheld = handheldSignal(view);
   const mode = view.effectiveWidth <= COMPACT_MAX || handheld ? "small" : "large";
 
   root.dataset.studioDeviceMode = mode;
   root.dataset.studioSurfaceMode = surfaceMode();
   root.dataset.studioDeviceRelease = RELEASE;
+  root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
   root.dataset.studioNavigationAuthority = REACT_NAVIGATION_OWNER;
   root.dataset.studioHandheld = String(handheld);
   root.dataset.studioDesktopSitePhone = String(handheld && view.layoutWidth > COMPACT_MAX);
+  root.dataset.studioPhysicalShortSide = String(view.physicalShortSide);
+  root.dataset.studioLegacyDetectionExpression = LEGACY_DETECTION_EXPRESSION;
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
   root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
   root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
@@ -183,4 +199,4 @@ observer.observe(document.documentElement, {
 
 applyDeviceMode();
 
-export { RELEASE, MODE_EVENT, COMPACT_MAX };
+export { RELEASE, LEGACY_RELEASE, MODE_EVENT, COMPACT_MAX };

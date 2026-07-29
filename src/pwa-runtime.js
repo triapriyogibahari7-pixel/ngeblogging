@@ -1,8 +1,12 @@
-const RELEASE = "ngeblogging-pwa-v142-20260729";
+const RELEASE = "ngeblogging-pwa-v145-20260729";
+const LEGACY_RELEASE = "ngeblogging-pwa-v142-20260729";
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v142";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v145";
+const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v142";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v142-studio-auth";
+const RECOVERY_VALUE = "pwa-v145-studio-mobile-cache";
+const LEGACY_RECOVERY_VALUE = "pwa-v142-studio-auth";
+const PHYSICAL_PHONE_MAX = 720;
 let installPrompt = null;
 let installButton = null;
 let scanFrame = 0;
@@ -12,13 +16,27 @@ function mediaMatches(query) {
   try { return window.matchMedia?.(query)?.matches === true; } catch { return false; }
 }
 
+function platformHandheldSignal() {
+  const platform = `${navigator.userAgentData?.platform || ""} ${navigator.platform || ""}`;
+  return /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform);
+}
+
 function handheldSignal() {
   const userAgent = navigator.userAgent || "";
   const mobileUa = navigator.userAgentData?.mobile === true
-    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent);
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent)
+    || platformHandheldSignal();
   const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
   const finePointer = mediaMatches("(any-pointer: fine)");
-  return mobileUa || (Number(navigator.maxTouchPoints || 0) > 1 && coarsePointer && !finePointer);
+  const screenWidth = Math.max(1, Number(window.screen?.width) || Number(window.innerWidth) || 1);
+  const screenHeight = Math.max(1, Number(window.screen?.height) || Number(window.innerHeight) || 1);
+  const physicalShortSide = Math.min(screenWidth, screenHeight);
+  const density = Math.max(1, Number(window.devicePixelRatio) || 1);
+  const compactPhysicalScreen = physicalShortSide <= PHYSICAL_PHONE_MAX && density >= 1.25;
+  const touchHandheld = Number(navigator.maxTouchPoints || 0) > 1
+    && coarsePointer
+    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
+  return mobileUa || touchHandheld;
 }
 
 function viewportProfile() {
@@ -64,6 +82,7 @@ function syncDeviceMode() {
   root.dataset.desktopCompactPhone = "false";
   root.dataset.orientation = mediaMatches("(orientation: portrait)") ? "portrait" : "landscape";
   root.dataset.pwaRuntime = RELEASE;
+  root.dataset.pwaLegacyRelease = LEGACY_RELEASE;
   root.style.setProperty("--sn-browser-scale", "1");
   root.style.setProperty("--sn-layout-width", `${profile.layoutWidth}px`);
   root.style.setProperty("--sn-layout-height", `${profile.layoutHeight}px`);
@@ -85,12 +104,16 @@ function productionHost() {
 
 function authSurface() {
   const params = new URLSearchParams(window.location.search);
+  const authMode = params.get("auth") || "";
   return location.pathname === "/login"
     || location.pathname === "/signup"
+    || location.pathname === "/signin"
     || location.pathname.startsWith("/auth/")
     || params.has("code")
-    || params.get("auth") === "callback"
-    || params.get("auth") === "recovery";
+    || authMode === "callback"
+    || authMode === "recovery"
+    || authMode === "session-expired"
+    || authMode === "callback-error";
 }
 
 function reloadForNewController(reason = "controllerchange") {
@@ -100,6 +123,7 @@ function reloadForNewController(reason = "controllerchange") {
   try {
     if (sessionStorage.getItem(CONTROLLER_GUARD) === RECOVERY_VALUE) return;
     sessionStorage.setItem(CONTROLLER_GUARD, RECOVERY_VALUE);
+    sessionStorage.removeItem(LEGACY_CONTROLLER_GUARD);
   } catch {
     // Query guard tetap mencegah loop ketika storage browser dibatasi.
   }
@@ -198,6 +222,7 @@ new MutationObserver(scheduleInstallButton).observe(ROOT, { childList: true, sub
 
 syncDeviceMode();
 document.documentElement.dataset.installed = String(standalone());
+document.documentElement.dataset.pwaLegacyRecovery = LEGACY_RECOVERY_VALUE;
 registerServiceWorker();
 
 export { deviceMode };

@@ -1,6 +1,11 @@
-const VERSION = "ngeblogging-app-v144-studio-layout-20260729";
-const CACHE_RELEASE = "single-react-layout-authority-v144";
+const VERSION = "ngeblogging-app-v145-studio-mobile-cache-20260729";
+const LEGACY_VERSION = "ngeblogging-app-v144-studio-layout-20260729";
+const CACHE_RELEASE = "single-react-mobile-cache-v145";
+const LEGACY_CACHE_RELEASE = "single-react-layout-authority-v144";
+const LEGACY_ACTIVATION_REASON = "service-worker-activated-studio-layout-v144";
 const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
+const FORCE_REFRESH_QUERY = "ngeblogging_release";
+const FORCE_REFRESH_VALUE = "studio-mobile-cache-v145";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
@@ -26,6 +31,17 @@ function isAuthSurface(url) {
     || authMode === "callback-error";
 }
 
+async function refreshStaleWindow(client, url) {
+  if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
+  url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
+  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v145");
+  try {
+    await client.navigate(url.href);
+  } catch {
+    // Pesan reload tetap menjadi jalur cadangan bila navigasi WindowClient ditolak browser.
+  }
+}
+
 async function notifyOpenWindows() {
   const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
   await Promise.all(windows.map(async (client) => {
@@ -35,10 +51,14 @@ async function notifyOpenWindows() {
       client.postMessage({
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
+        legacyVersion: LEGACY_VERSION,
         release: CACHE_RELEASE,
+        legacyRelease: LEGACY_CACHE_RELEASE,
+        legacyActivationReason: LEGACY_ACTIVATION_REASON,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
-        reason: "service-worker-activated-studio-layout-v144",
+        reason: "service-worker-activated-studio-mobile-cache-v145",
       });
+      await refreshStaleWindow(client, url);
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
     }
@@ -62,7 +82,10 @@ self.addEventListener("message", (event) => {
     event.source?.postMessage?.({
       type: "NGE_BLOGGING_PWA_VERSION",
       version: VERSION,
+      legacyVersion: LEGACY_VERSION,
       release: CACHE_RELEASE,
+      legacyRelease: LEGACY_CACHE_RELEASE,
+      legacyActivationReason: LEGACY_ACTIVATION_REASON,
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
     });
   }

@@ -6,5 +6,6 @@ import "./studio-layout-v140.css";
 import "./studio-layout-hotfix-v141.css";
 import "./studio-layout-hotfix-v142.css";
 import "./studio-layout-authority-v144.css";
+import "./studio-layout-authority-v145.css";
 
 export default StudioFastGate;
