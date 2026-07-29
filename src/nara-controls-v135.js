@@ -21,14 +21,17 @@ function setFullscreen(shell, button, fullscreen) {
 }
 
 function install(shell) {
-  if (!shell || shell.dataset.naraControlsRelease === RELEASE) return;
+  if (!shell) return;
   const header = shell.querySelector(".nara-assistant-header");
   if (!header) return;
+
+  const existing = header.querySelector(`.${CONTROL_CLASS}`);
+  if (shell.dataset.naraControlsRelease === RELEASE && existing) return;
 
   shell.dataset.naraControlsRelease = RELEASE;
   header.dataset.naraControlsV135 = "true";
 
-  let button = header.querySelector(`.${CONTROL_CLASS}`);
+  let button = existing;
   if (!button) {
     button = document.createElement("button");
     button.type = "button";
@@ -38,17 +41,25 @@ function install(shell) {
     else header.append(button);
   }
 
-  setFullscreen(shell, button, false);
-  button.addEventListener("click", () => {
-    setFullscreen(shell, button, !shell.classList.contains(FULLSCREEN_CLASS));
-  });
+  const fullscreen = shell.classList.contains(FULLSCREEN_CLASS);
+  setFullscreen(shell, button, fullscreen);
+
+  if (button.dataset.listenerReady !== "true") {
+    button.dataset.listenerReady = "true";
+    button.addEventListener("click", () => {
+      setFullscreen(shell, button, !shell.classList.contains(FULLSCREEN_CLASS));
+    });
+  }
 
   const closeButton = [...header.querySelectorAll(":scope > button")]
     .find((candidate) => candidate !== button && /tutup/i.test(candidate.title || candidate.getAttribute("aria-label") || ""))
     || header.lastElementChild;
-  closeButton?.addEventListener("click", () => {
-    document.body.classList.remove("nara-fullscreen-open-v135");
-  });
+  if (closeButton && closeButton.dataset.naraCloseListenerV135 !== "true") {
+    closeButton.dataset.naraCloseListenerV135 = "true";
+    closeButton.addEventListener("click", () => {
+      document.body.classList.remove("nara-fullscreen-open-v135");
+    });
+  }
 }
 
 function sync() {
