@@ -1,106 +1,64 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-    <meta name="description" content="Ngeblogging — bangun, kelola, dan kembangkan kehadiran digital dengan Nara AI."/>
-    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
-    <meta name="theme-color" content="#2d6edf"/>
-    <meta name="color-scheme" content="light"/>
-    <meta name="application-name" content="Ngeblogging"/>
-    <meta name="ngeblogging-domain-runtime" content="/src/domain-authority-v75.js"/>
-    <meta name="ngeblogging-domain-styles" content="/src/domain-authority-v75.css"/>
-    <meta name="ngeblogging-domain-authority" content="single-domain-authority-v76"/>
-    <meta name="ngeblogging-auth-session-runtime" content="/src/auth-session-authority-v76.js"/>
-    <meta name="ngeblogging-free-subdomain" content="persistent"/>
-    <meta name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"/>
-    <meta name="ngeblogging-studio-authority" content="locked-react-v127"/>
-    <meta name="mobile-web-app-capable" content="yes"/>
-    <meta name="apple-mobile-web-app-capable" content="yes"/>
-    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-    <meta name="apple-mobile-web-app-title" content="Ngeblogging"/>
-    <meta property="og:site_name" content="Ngeblogging"/>
-    <meta property="og:locale" content="id_ID"/>
-    <meta property="og:title" content="Ngeblogging — Platform Kehadiran Digital Berbasis AI"/>
-    <meta property="og:description" content="Bangun situs, terbitkan ide, dan berkembang bersama Nara AI."/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:url" content="https://ngeblogging.com"/>
-    <meta name="twitter:card" content="summary_large_image"/>
-    <link rel="canonical" href="https://ngeblogging.com"/>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any"/>
-    <link rel="alternate icon" href="/favicon.svg"/>
-    <link rel="apple-touch-icon" href="/favicon.svg"/>
-    <link rel="manifest" href="/site.webmanifest"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet"/>
-
-    <!-- Active non-Studio feature styles. Studio imports its canonical component CSS from React. -->
-    <link href="/src/nara-image-studio.css" rel="stylesheet"/>
-    <link href="/src/nara-v9-readiness.css" rel="stylesheet"/>
-    <link href="/src/nara-command-center.css" rel="stylesheet"/>
-    <link href="/src/nara-interaction-authority.css" rel="stylesheet"/>
-    <link href="/src/nara-tools-v29.css" rel="stylesheet"/>
-    <link href="/src/site-quota-bridge.css" rel="stylesheet"/>
-    <link href="/src/auth-readiness-bridge.css" rel="stylesheet"/>
-    <link href="/src/theme-device-modes.css" rel="stylesheet"/>
-    <link href="/src/studio-geometry-recovery-v126.css?v=127" rel="stylesheet" data-studio-geometry="v127"/>
-
-    <title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
-
-    <!--
-      Historical validator compatibility only. None of these legacy Studio
-      authorities are loaded or executed after v125:
-      studio-v14-authority.css, studio-responsive-v21.css,
-      studio-responsive-v22.css, studio-v22-final.css,
-      studio-v23-validator-compat.css, studio-responsive-v23.css,
-      studio-mobile-nara-v24.css, studio-interaction-v25.css,
-      studio-device-sidebar-v26.css, studio-mobile-widget-v28.css,
-      studio-shell-v29.css, studio-shell-v30.css,
-      studio-mobile-content-v31.css, studio-mobile-polish-v32.css,
-      studio-mobile-overlap-v33.css, studio-content-flow-v34.css,
-      studio-domain-backup-v35.css, studio-layout-builder-v36.css,
-      studio-production-audit-v37.css, studio-layout-builder-v39.css,
-      studio-quality-v39.css, studio-layout-device-v40.css,
-      studio-responsive-repair-v43.css, studio-operations-v41.css,
-      studio-reflow-v48.css, studio-flow-v49.css,
-      studio-theme-domain-v50.css, studio-site-switcher-v52.css,
-      studio-site-switcher-stability-v53.css, sidebar-final-v91.css,
-      comments-studio-v93.css, studio-ui-stability-v95.css,
-      studio-surface-authority-v100.css, studio-mobile-precision-v99.css,
-      studio-final-v104.css, studio-final-v105.css,
-      studio-final-v106.css, sidebar-account-collapsed-icons-v119.css,
-      comments-studio-runtime-v93.jsx, studio-interaction-v49.js,
-      studio-layout-route-v29.js, studio-shell-v30.js,
-      studio-mobile-route-reset-v32.js, studio-content-flow-v34.js,
-      studio-domain-backup-v35.js, studio-production-audit-v37.js,
-      studio-production-repair-v38.js, production-contract-v38.js,
-      studio-layout-builder-v39.js, studio-quality-v39.js,
-      studio-layout-device-v40.js, studio-responsive-repair-v43.js,
-      studio-operations-v41.js, studio-reflow-v48.js,
-      studio-theme-domain-v50.js, studio-site-switcher-v52.js,
-      sidebar-final-v91.js, studio-ui-stability-v95.js,
-      studio-surface-authority-v100.js, studio-mobile-precision-v99.js,
-      studio-final-v104.js, studio-final-v105.js, studio-final-v106.js,
-      stable-react-v124.
-    -->
-  </head>
-  <body>
-    <div id="root"></div>
-
-    <!-- Auth and platform runtimes that remain authoritative. -->
-    <script type="module" src="/src/pwa-runtime.js"></script>
-    <script type="module" src="/src/auth-session-authority-v76.js"></script>
-    <script type="module" src="/src/auth-studio-bootstrap-v106.js?v=127" data-auth-studio-bootstrap="v127"></script>
-    <script type="module" src="/src/api-origin-failover-v60.js"></script>
-    <script type="module" src="/src/main.jsx?v=127"></script>
-    <script type="module" src="/src/site-favicon-bridge.js"></script>
-    <script type="module" src="/src/site-quota-bridge.js"></script>
-    <script type="module" src="/src/billing-availability-bridge.js"></script>
-    <script type="module" src="/src/auth-readiness-bridge.js"></script>
-    <script type="module" src="/src/nara-command-center-bridge.js"></script>
-    <script type="module" src="/src/nara-request-mode-v29.js"></script>
-    <script type="module" src="/src/nara-connectors-v29.js"></script>
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="description" content="Ngeblogging — bangun, kelola, dan kembangkan kehadiran digital dengan Nara AI."/>
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
+<meta name="theme-color" content="#2d6edf"/>
+<meta name="color-scheme" content="light"/>
+<meta name="application-name" content="Ngeblogging"/>
+<meta name="ngeblogging-domain-runtime" content="/src/domain-authority-v75.js"/>
+<meta name="ngeblogging-domain-styles" content="/src/domain-authority-v75.css"/>
+<meta name="ngeblogging-domain-authority" content="single-domain-authority-v76"/>
+<meta name="ngeblogging-auth-session-runtime" content="/src/auth-session-authority-v76.js"/>
+<meta name="ngeblogging-free-subdomain" content="persistent"/>
+<meta name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"/>
+<meta name="ngeblogging-studio-authority" content="locked-react-v128"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Ngeblogging"/>
+<meta property="og:site_name" content="Ngeblogging"/>
+<meta property="og:locale" content="id_ID"/>
+<meta property="og:title" content="Ngeblogging — Platform Kehadiran Digital Berbasis AI"/>
+<meta property="og:description" content="Bangun situs, terbitkan ide, dan berkembang bersama Nara AI."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://ngeblogging.com"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link rel="canonical" href="https://ngeblogging.com"/>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any"/>
+<link rel="alternate icon" href="/favicon.svg"/>
+<link rel="apple-touch-icon" href="/favicon.svg"/>
+<link rel="manifest" href="/site.webmanifest"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet"/>
+<link href="/src/nara-image-studio.css" rel="stylesheet"/>
+<link href="/src/nara-v9-readiness.css" rel="stylesheet"/>
+<link href="/src/nara-command-center.css" rel="stylesheet"/>
+<link href="/src/nara-interaction-authority.css" rel="stylesheet"/>
+<link href="/src/nara-tools-v29.css" rel="stylesheet"/>
+<link href="/src/site-quota-bridge.css" rel="stylesheet"/>
+<link href="/src/auth-readiness-bridge.css" rel="stylesheet"/>
+<link href="/src/theme-device-modes.css" rel="stylesheet"/>
+<link href="/src/studio-geometry-recovery-v126.css?v=128" rel="stylesheet" data-studio-geometry="v128"/>
+<title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/pwa-runtime.js"></script>
+<script type="module" src="/src/auth-session-authority-v76.js"></script>
+<script type="module" src="/src/auth-studio-bootstrap-v106.js?v=128" data-auth-studio-bootstrap="v128"></script>
+<script type="module" src="/src/api-origin-failover-v60.js"></script>
+<script type="module" src="/src/main.jsx?v=128"></script>
+<script type="module" src="/src/site-favicon-bridge.js"></script>
+<script type="module" src="/src/site-quota-bridge.js"></script>
+<script type="module" src="/src/billing-availability-bridge.js"></script>
+<script type="module" src="/src/auth-readiness-bridge.js"></script>
+<script type="module" src="/src/nara-command-center-bridge.js"></script>
+<script type="module" src="/src/nara-request-mode-v29.js"></script>
+<script type="module" src="/src/nara-connectors-v29.js"></script>
+</body>
 </html>
