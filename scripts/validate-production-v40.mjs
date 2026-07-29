@@ -1,51 +1,135 @@
 import { readFile } from "node:fs/promises";
 
-const validatorUrl = new URL("./validate-production.mjs", import.meta.url);
-let source = await readFile(validatorUrl, "utf8");
+const root = new URL("../", import.meta.url);
+const text = (path) => readFile(new URL(path, root), "utf8");
+const requireMarker = (source, marker, label) => {
+  if (!source.includes(marker)) throw new Error(`${label} kehilangan marker: ${marker}`);
+};
+const forbidMarker = (source, marker, label) => {
+  if (source.includes(marker)) throw new Error(`${label} masih memuat authority lama: ${marker}`);
+};
 
-const replacements = [
-  [
-    'for (const [label, config] of [["default", wrangler], ["production", cloudflareProduction]]) {',
-    'for (const [label, config] of [["default", wrangler], ["production", cloudflareProduction], ["production upload", productionWrangler]]) {',
-  ],
-  [
-    'if (productionWrangler.routes || productionWrangler.env) throw new Error("Konfigurasi upload produksi tidak boleh menulis ulang route atau environment yang sudah aktif.");',
-    'if (productionWrangler.env) throw new Error("Konfigurasi upload produksi tidak boleh mendefinisikan environment bertingkat.");',
-  ],
-  [
-    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || productionWrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker belum v14.");',
-    'if (wrangler.vars?.APP_RELEASE !== "2026.07.24-studio-v14" || cloudflareProduction.vars?.APP_RELEASE !== "2026.07.24-studio-v14") throw new Error("Release Worker kanonis belum v14.");\nif (productionWrangler.vars?.APP_RELEASE !== "2026.07.27-free-subdomains-full-zone-v71") throw new Error("Release upload produksi belum Full Zone gratis v71.");',
-  ],
-  [
-    'for (const marker of ["handleNaraImage", "imageGenerationReady", "workersVisionReady", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "/api/nara/image", "/api/billing/paypal/webhook", "/api/billing/", "2026.07.24-studio-v14"]) {',
-    'for (const marker of ["handleNaraImage", "imageGenerationReady", "workersVisionReady", "handleBillingRequest", "handlePayPalWebhook", "seoEndpoint", "injectTenantSeo", "handleWorkersAiNara", "handleDomainRequest", "handleDomainRedirectRequest", "/api/nara/image", "/api/domains/", "/api/domain-redirects/", "/api/billing/paypal/webhook", "/api/billing/", "2026.07.27-domain-api-v60"]) {',
-  ],
-  [
-    'for (const marker of ["npm run deploy:cloudflare", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "2026.07.24-studio-v14", "health.naraProviders?.vision", "health.imageGeneration", "TENANT_SMOKE_TEST_URL", "tenant-404"]) {',
-    'for (const marker of ["npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars", "Resolve authoritative Cloudflare zone and account", "RESOLVED_CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_DOMAIN_API_TOKEN", "studio-v14-authority.css", "nara-command-center-bridge.js", "ngeblogging-app-v14-20260724", "TENANT_SMOKE_TEST_URL", "tenant-404", "health.customDomainProvider", "cloudflare-full-zone", "domain-full-zone-v54.js", "ngeblogging.triapriyogibahari7.workers.dev", "2026.07.27-domain-api-v60"]) {',
-  ],
-  [
-    'for (const marker of ["ngeblogging-pwa-v14-20260724", "beforeinstallprompt", "navigator.serviceWorker.register", "updateViaCache: \\"none\\"", "Never reload during a click"]) {\n  if (!pwaRuntime.includes(marker)) throw new Error(`Runtime PWA v14 kehilangan ${marker}.`);\n}\nif (/window\\.location\\.reload/.test(pwaRuntime)) throw new Error("Runtime PWA tidak boleh memuat ulang halaman saat interaksi pengguna.");',
-    'for (const marker of ["ngeblogging-pwa-v77-20260727", "beforeinstallprompt", "navigator.serviceWorker.register", "updateViaCache: \\"none\\"", "controllerchange", "NGE_BLOGGING_FORCE_RELOAD_V77", "window.location.replace", "ngeblogging-pwa-controller-v77"]) {\n  if (!pwaRuntime.includes(marker)) throw new Error(`Runtime PWA v77 kehilangan ${marker}.`);\n}\nif (/window\\.location\\.reload/.test(pwaRuntime)) throw new Error("Runtime PWA tidak boleh memakai reload tanpa guard; pemulihan v77 wajib memakai location.replace.");',
-  ],
-  [
-    'const studio = await readFile(new URL("../src/Studio.jsx", import.meta.url), "utf8");\nif (!studio.includes("StudioSecure.jsx")) throw new Error("Studio belum mengaktifkan pusat cadangan di Pengaturan.");',
-    'const studio = await readFile(new URL("../src/Studio.jsx", import.meta.url), "utf8");\nconst studioGate = await readFile(new URL("../src/StudioOnboardingGate.jsx", import.meta.url), "utf8");\nconst domainAuthorityV75 = await readFile(new URL("../src/domain-authority-v75.js", import.meta.url), "utf8");\nconst onboardingCssV75 = await readFile(new URL("../src/site-onboarding-v75.css", import.meta.url), "utf8");\nconst domainCssV75 = await readFile(new URL("../src/domain-authority-v75.css", import.meta.url), "utf8");\nconst authSessionV76 = await readFile(new URL("../src/lib/auth-session-v76.js", import.meta.url), "utf8");\nconst authAuthorityV76 = await readFile(new URL("../src/auth-session-authority-v76.js", import.meta.url), "utf8");\nif (!studio.includes("StudioOnboardingGate.jsx") || !studioGate.includes("StudioSecure.jsx")) throw new Error("Studio wajib melewati onboarding sebelum wrapper aman dan pusat cadangan.");\nfor (const marker of ["first-site-onboarding-v76-20260727", "listUserSites", "createUserSite", "is_site_slug_available", "getVerifiedSession({ force: true })", "isSessionReauthError", "Pilih jenis situs", "Nama situs dan subdomain tidak diambil dari email", "Portal berita", "Forum", "Komunitas", "Landing page", "Diary"]) if (!studioGate.includes(marker)) throw new Error(`Onboarding v76 kehilangan ${marker}.`);\nif (/email\\?\\.split|email\\.split/.test(studioGate)) throw new Error("Onboarding tidak boleh membentuk identitas situs dari email.");\nconst normalizedDomainAuthorityV75 = domainAuthorityV75.toLowerCase();\nfor (const marker of ["domain-authority-v75-20260727", "DEADLINE_MS = 10_000", "domainAuthoritySuperseded", "Subdomain gratis · tetap ada", "Tidak memakai Cloudflare for SaaS", "Panel domain berhenti menunggu.", "/api/domains/register", "/api/domains/refresh", "/api/domains/address"]) if (!normalizedDomainAuthorityV75.includes(marker.toLowerCase())) throw new Error(`Domain Authority v75 kehilangan ${marker}.`);\nif (/Memuat domain situs…|class=\\"dfz-loading\\"/.test(domainAuthorityV75)) throw new Error("Domain Authority v75 tidak boleh mengembalikan spinner lama.");\nfor (const marker of ["auth-session-authority-v76-20260727", "supabase.auth.getUser(session.access_token)", "supabase.auth.refreshSession(data.session)", "signOut({ scope: \\"local\\" })", "SESSION_REAUTH_REQUIRED", "session_not_found", "clearPersistedAuthStorage"]) if (!authSessionV76.includes(marker)) throw new Error(`Pemulihan sesi v76 kehilangan ${marker}.`);\nfor (const marker of ["ngeblogging:session-invalid", "session-expired", "window.location.replace", "clearInvalidLocalSession"]) if (!authAuthorityV76.includes(marker)) throw new Error(`Otoritas sesi browser v76 kehilangan ${marker}.`);\nfor (const legacy of ["domain-free-subdomain-recovery-v73.js", "domain-full-zone-v54.js", "studio-domain-v41.js", "domain-layout-authority-v56.js", "domain-experience-authority-v59.js", "domain-feedback-authority-v60.js", "domain-mobile-precision-v61.js", "domain-operation-authority-v65.js"]) { if (!index.includes(`type=\\"application/x-disabled\\" src=\\"/src/${legacy}\\"`) || index.includes(`type=\\"module\\" src=\\"/src/${legacy}\\"`)) throw new Error(`Runtime domain lama masih aktif: ${legacy}`); }\nif (!index.includes("single-domain-authority-v76") || !index.includes("auth-session-authority-v76.js")) throw new Error("Shell produksi belum memakai kepemilikan domain dan sesi v76.");\nif (!onboardingCssV75.includes(".so75-shell") || !onboardingCssV75.includes("@media(max-width:700px)")) throw new Error("CSS onboarding v75 belum responsif.");\nif (!domainCssV75.includes(".d75-root") || !domainCssV75.includes("@media(max-width:700px)")) throw new Error("CSS Domain Authority v75 belum responsif.");',
-  ],
-  [
-    'if (!serviceWorker.includes("ngeblogging-app-v14-20260724")) throw new Error("Service worker belum menginvalidasi cache ke v14.");',
-    'if (!serviceWorker.includes("ngeblogging-app-v77-20260727") || !serviceWorker.includes("ngeblogging-app-v76-20260727") || !serviceWorker.includes("ngeblogging-app-v75-20260727") || !serviceWorker.includes("ngeblogging-app-v14-20260724")) throw new Error("Service worker belum menginvalidasi cache dan memulihkan klien ke v77.");\nfor (const marker of ["self.clients.matchAll", "includeUncontrolled: true", "NGE_BLOGGING_FORCE_RELOAD_V77", "client.navigate(url.href)", "self.clients.claim()", "ngeblogging_recovery"]) if (!serviceWorker.includes(marker)) throw new Error(`Service Worker v77 kehilangan ${marker}.`);',
-  ],
-];
+const [
+  packageSource,
+  productionSource,
+  index,
+  studio,
+  studioNext,
+  deviceRuntime,
+  compatibilityRuntime,
+  layout,
+  serviceWorker,
+  authCallback,
+  supabaseClient,
+  worker,
+] = await Promise.all([
+  text("package.json"),
+  text("wrangler.production.jsonc"),
+  text("index.html"),
+  text("src/Studio.jsx"),
+  text("src/StudioNext.jsx"),
+  text("src/studio-device-mode-v139.js"),
+  text("src/studio-device-mode-v138.js"),
+  text("src/studio-layout-v139.css"),
+  text("public/sw.js"),
+  text("src/auth-callback-authority-v107.js"),
+  text("src/lib/supabase.js"),
+  text("cloudflare/worker-v67.mjs"),
+]);
 
-for (const [before, after] of replacements) {
-  if (!source.includes(before)) throw new Error(`Kontrak validator berubah; patch v40 tidak menemukan: ${before.slice(0, 90)}`);
-  source = source.replace(before, after);
+const pkg = JSON.parse(packageSource);
+const production = JSON.parse(productionSource);
+
+if (pkg.scripts?.test !== "node --test tests/*.test.mjs") throw new Error("Test runner produksi berubah tanpa validasi.");
+requireMarker(pkg.scripts?.build || "", "vite build", "Build produksi");
+requireMarker(pkg.scripts?.["deploy:cloudflare"] || "", "wrangler deploy", "Deploy Cloudflare");
+
+if (production.main !== "./cloudflare/worker-v67.mjs") throw new Error("Worker produksi bukan worker-v67.");
+if (production.assets?.directory !== "./dist/" || production.assets?.run_worker_first !== true) {
+  throw new Error("Binding aset produksi tidak menggunakan dist dan worker-first.");
 }
+const routes = new Set((production.routes || []).map((route) => route.pattern));
+for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
+  if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
+}
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-sidebar-auth-v139") throw new Error("APP_RELEASE belum v139.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-sidebar-auth-v139") throw new Error("UI authority belum v139.");
 
-const importMarker = 'import { existsSync } from "node:fs";';
-if (!source.includes(importMarker)) throw new Error("Validator produksi kehilangan import marker.");
-source = source.replace(importMarker, `${importMarker}\nconst VALIDATOR_URL = ${JSON.stringify(validatorUrl.href)};`);
-source = source.replaceAll("import.meta.url", "VALIDATOR_URL");
+for (const marker of ["studio-device-mode-v139.js", "studio-layout-v139.css", "StudioFastGate.jsx"]) {
+  requireMarker(studio, marker, "Studio entry");
+}
+forbidMarker(studio, "studio-device-modes-v138.css", "Studio entry");
+requireMarker(compatibilityRuntime, "studio-device-mode-v139.js", "Compatibility runtime v138");
 
-await import(`data:text/javascript;base64,${Buffer.from(source, "utf8").toString("base64")}`);
+for (const marker of [
+  "HANDHELD_MAX = 820",
+  "COMPACT_MAX = 760",
+  "forcedDesktopSitePhone",
+  "sn-sidebar-toggle",
+  "sn-side-close",
+  "sn-v139-forced-backdrop",
+  "MutationObserver",
+  "ngeblogging:studio-device-mode-change",
+]) requireMarker(deviceRuntime, marker, "Device authority v139");
+
+for (const marker of [
+  "--studio-side-open:232px",
+  "--studio-side-closed:76px",
+  "--studio-drawer:min(88vw,340px)",
+  'data-studio-device-mode="small"',
+  'data-studio-device-mode="large"',
+  'data-v139-forced-mobile-open="true"',
+  "overflow-x:hidden!important",
+  "backdrop-filter:none!important",
+  ".sn-mobile-nav,.sn-mobile-sheet-layer{display:none!important}",
+]) requireMarker(layout, marker, "Layout authority v139");
+
+for (const marker of [
+  'data-navigation-owner="react-v138"',
+  "<span>Ringkasan</span>",
+  "<span>Komentar</span>",
+  "<span>Domain</span>",
+  "<span>API Keys</span>",
+  "sn-mobile-menu-mark",
+  "<strong>n</strong><i>.</i>",
+]) requireMarker(studioNext, marker, "Navigasi React Studio");
+
+for (const marker of [
+  "ngeblogging-app-v139-sidebar-auth-20260729",
+  "locked-device-layout-and-auth-v139",
+  "pwa-v139-sidebar-auth",
+  "Promise.allSettled",
+  "self.clients.claim()",
+  "client.navigate(url.href)",
+]) requireMarker(serviceWorker, marker, "Service Worker v139");
+
+for (const marker of [
+  "auth-callback-authority-v139-20260729",
+  "passwordFallbackV139",
+  "directPasswordGrant",
+  "/auth/v1/token?grant_type=password",
+  "supabase.auth.setSession",
+  "installPasswordFallback()",
+]) requireMarker(authCallback, marker, "Pemulihan login v139");
+
+for (const marker of [
+  "resilientSupabaseFetch",
+  "/api/auth-proxy",
+  "/api/data-proxy",
+  "direct-fallback",
+  "persistSession: true",
+  "autoRefreshToken: true",
+]) requireMarker(supabaseClient, marker, "Transport Supabase");
+
+for (const marker of [
+  "handleAuthGatewayRequest",
+  "handleDataGatewayRequest",
+  "handleCommentsRequest",
+  "injectPublicComments",
+]) requireMarker(worker, marker, "Worker produksi");
+
+requireMarker(index, 'type="application/x-disabled" src="/src/sidebar-final-v91.js', "Shell produksi");
+requireMarker(index, '/src/auth-session-authority-v76.js', "Shell produksi");
+requireMarker(index, '/src/auth-studio-bootstrap-v106.js', "Shell produksi");
+
+console.log("Validasi produksi v139 lulus: sidebar lintas perangkat, layout tanpa overflow, cache baru, dan fallback login aktif.");
