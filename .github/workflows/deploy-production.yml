@@ -3,24 +3,26 @@ name: Deploy Ngeblogging Production
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production
+  group: ngeblogging-production-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  validate-build-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
       QWEN_API_KEY: ci-dry-run-only
       QWEN_WORKSPACE_ID: production-dry-run
@@ -28,7 +30,7 @@ jobs:
       SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
 
     steps:
-      - name: Checkout main
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -37,17 +39,10 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Validate deployment credentials
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
-
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v139 production regression tests
+      - name: Run v140 production regression tests
         run: npm run test:production
 
       - name: Build production assets
@@ -56,27 +51,38 @@ jobs:
       - name: Validate Cloudflare bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy Studio sidebar and authentication v139
+      - name: Validate deployment credentials
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+
+      - name: Deploy Studio sidebar and authentication v140
+        if: github.event_name != 'pull_request'
         run: npm run deploy:cloudflare
 
-      - name: Verify v139 release is live
+      - name: Verify v140 release is live
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 30); do
             stamp=$(date +%s)
             worker=$(curl -fsSL --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
+            page=$(curl -fsSL --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/ngeblogging-health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
-            page_code=$(curl -sS -o /tmp/ngeblogging-home.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
-            if [[ "$worker" == *"ngeblogging-app-v139-sidebar-auth-20260729"* ]] \
-              && [[ "$worker" == *"locked-device-layout-and-auth-v139"* ]] \
-              && [[ "$health_code" == "200" ]] \
-              && [[ "$page_code" == "200" ]]; then
-              echo "Production v139 verified on attempt $attempt."
+            if [[ "$worker" == *"ngeblogging-app-v140-studio-auth-20260729"* ]] \
+              && [[ "$worker" == *"single-react-layout-direct-auth-v140"* ]] \
+              && [[ "$page" == *"ngeblogging-studio-runtime-authority"* ]] \
+              && [[ "$page" == *"react-v140"* ]] \
+              && [[ "$health_code" == "200" ]]; then
+              echo "Production v140 verified on attempt $attempt."
               exit 0
             fi
-            echo "Production v139 belum aktif (attempt $attempt/30); menunggu propagasi."
+            echo "Production v140 belum aktif (attempt $attempt/30); menunggu propagasi."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_V139_FAILED"
+          echo "DEPLOY_VERIFY_V140_FAILED"
           exit 1
