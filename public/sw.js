@@ -1,11 +1,11 @@
-const VERSION = "ngeblogging-app-v145-studio-mobile-cache-20260729";
-const LEGACY_VERSION = "ngeblogging-app-v144-studio-layout-20260729";
-const CACHE_RELEASE = "single-react-mobile-cache-v145";
-const LEGACY_CACHE_RELEASE = "single-react-layout-authority-v144";
-const LEGACY_ACTIVATION_REASON = "service-worker-activated-studio-layout-v144";
+const VERSION = "ngeblogging-app-v151-studio-completion-20260729";
+const LEGACY_VERSION = "ngeblogging-app-v145-studio-mobile-cache-20260729";
+const CACHE_RELEASE = "studio-completion-cache-v151";
+const LEGACY_CACHE_RELEASE = "single-react-mobile-cache-v145";
+const LEGACY_ACTIVATION_REASON = "service-worker-activated-studio-mobile-cache-v145";
 const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "studio-mobile-cache-v145";
+const FORCE_REFRESH_VALUE = "studio-completion-v151";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
@@ -34,7 +34,7 @@ function isAuthSurface(url) {
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
-  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v145");
+  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v151");
   try {
     await client.navigate(url.href);
   } catch {
@@ -56,7 +56,7 @@ async function notifyOpenWindows() {
         legacyRelease: LEGACY_CACHE_RELEASE,
         legacyActivationReason: LEGACY_ACTIVATION_REASON,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
-        reason: "service-worker-activated-studio-mobile-cache-v145",
+        reason: "service-worker-activated-studio-completion-v151",
       });
       await refreshStaleWindow(client, url);
     } catch {
