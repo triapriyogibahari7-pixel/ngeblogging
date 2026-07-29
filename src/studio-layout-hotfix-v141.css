@@ -1,0 +1,110 @@
+/* Final shell overrides for Studio v141. Loaded after studio-layout-v140.css. */
+html,body,#root,.sn-shell,.sn-shell>.sn-main{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:100vh!important;
+  min-height:100dvh!important;
+  margin-right:0!important;
+  background:#f5f7fb!important;
+  overflow-x:hidden!important;
+}
+@supports(overflow-x:clip){html,body,#root,.sn-shell,.sn-shell>.sn-main{overflow-x:clip!important}}
+
+/* React remains the single sidebar owner. */
+.sn-mobile-v30-header,.sn-mobile-v30-search,.sn-mobile-v30-launcher,.sn-mobile-v30-scrim,
+.sn-mobile-v29-header,.sn-mobile-v29-search,.sn-mobile-v29-launcher,.sn-mobile-v29-scrim,
+.sn-sidebar-scrim-v23,.sn-device-toggle-v26,.sn-device-toggle-v27,.sn-device-scrim-v27,
+.sn-mobile-nav,.sn-mobile-sheet-layer,.sn-v139-forced-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+html[data-studio-device-mode="small"] body.sn-mobile-sidebar-open{overflow:hidden!important}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side:not(.collapsed)+.sn-main{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  transform:none!important;
+  translate:none!important;
+  scale:1!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side,
+html[data-studio-device-mode="small"] .sn-shell>.sn-side.collapsed{
+  width:min(88vw,340px)!important;
+  min-width:0!important;
+  max-width:min(88vw,340px)!important;
+  height:100vh!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  border-radius:0!important;
+  background:#fff!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-side-backdrop{
+  width:100vw!important;
+  max-width:100vw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  background:rgba(10,24,43,.22)!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main>.sn-top{
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  background:#fff!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-mobile-menu-mark{
+  display:inline-flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+html[data-studio-device-mode="small"] .sn-shell .sn-desktop-sidebar-icon{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-view-pad,
+html[data-studio-device-mode="small"] .sn-shell .sv124-page,
+html[data-studio-device-mode="small"] .sn-shell .sn-api-page,
+html[data-studio-device-mode="small"] .sn-shell .sn-content-card,
+html[data-studio-device-mode="small"] .sn-shell .sn-home-grid,
+html[data-studio-device-mode="small"] .sn-shell .sn-settings-grid,
+html[data-studio-device-mode="small"] .sn-shell .sn-info-grid{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+
+html[data-studio-device-mode="large"] .sn-shell>.sn-side{
+  transform:translate3d(0,0,0)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-side-backdrop{display:none!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-mobile-menu-mark{display:none!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-desktop-sidebar-icon{display:block!important}
