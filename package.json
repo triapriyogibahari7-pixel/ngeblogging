@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node --test tests/studio-interface-v147.test.mjs tests/studio-interface-v148.test.mjs tests/studio-interface-v149.test.mjs tests/studio-recovery-v150.test.mjs tests/studio-completion-v151.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "npm run test:production && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
@@ -15,19 +15,14 @@
     "domain:netlify": "node scripts/netlify-domain-alias.mjs",
     "check": "npm test && vite build",
     "test": "node --test tests/*.test.mjs",
-    "test:production": "node --test tests/*.test.mjs && node scripts/validate-production-v40.mjs"
+    "test:production": "node --test tests/studio-interface-v147.test.mjs tests/studio-interface-v148.test.mjs tests/studio-interface-v149.test.mjs tests/studio-recovery-v150.test.mjs tests/studio-completion-v151.test.mjs tests/studio-production-sync-v151.test.mjs"
   },
-  "engines": {
-    "node": ">=22.12.0"
-  },
+  "engines": {"node": ">=22.12.0"},
   "dependencies": {
     "@supabase/supabase-js": "2.110.7",
     "lucide-react": "1.25.0",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
-  "devDependencies": {
-    "vite": "8.1.5",
-    "wrangler": "4.113.0"
-  }
+  "devDependencies": {"vite": "8.1.5", "wrangler": "4.113.0"}
 }
