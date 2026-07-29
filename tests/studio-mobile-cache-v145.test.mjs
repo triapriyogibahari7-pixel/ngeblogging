@@ -14,11 +14,15 @@ test("v145 rotates the PWA guard instead of reusing the v142 one", () => {
   assert.match(worker, /ngeblogging-app-v145-studio-mobile-cache-20260729/);
   assert.match(worker, /single-react-mobile-cache-v145/);
   assert.match(worker, /service-worker-activated-studio-mobile-cache-v145/);
-  assert.doesNotMatch(worker, /client\.navigate/);
+  assert.match(worker, /FORCE_REFRESH_QUERY/);
+  assert.match(worker, /FORCE_REFRESH_VALUE/);
+  assert.match(worker, /refreshStaleWindow/);
+  assert.match(worker, /client\.navigate\(url\.href\)/);
 });
 
 test("login and callback surfaces are protected from update reloads", () => {
   const pwa = read("src/pwa-runtime.js");
+  const worker = read("public/sw.js");
   for (const marker of [
     'location.pathname === "/login"',
     'location.pathname === "/signup"',
@@ -28,6 +32,7 @@ test("login and callback surfaces are protected from update reloads", () => {
     'authMode === "session-expired"',
     'authMode === "callback-error"',
   ]) assert.match(pwa, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(worker, /if \(url\.origin !== self\.location\.origin \|\| isAuthSurface\(url\)\) return/);
 });
 
 test("desktop-site phones use the physical-device fallback", () => {
