@@ -4,6 +4,8 @@ import "./sidebar-comments-collapse-v116.css";
 import "./sidebar-comments-collapse-v116.js";
 import "./sidebar-account-footer-alignment-v117.css";
 import "./sidebar-account-footer-alignment-v117.js";
+import "./sidebar-account-desktop-visibility-v118.css";
+import "./sidebar-account-desktop-visibility-v118.js";
 
 const RELEASE = "studio-domain-single-authority-v112-20260728";
 const LEGACY_SELECTORS = [
