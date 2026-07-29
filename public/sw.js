@@ -1,9 +1,9 @@
-const VERSION = "ngeblogging-app-v132-20260729";
-const CACHE_RELEASE = "studio-interaction-recovery-v132-20260729";
-// Historical validator literals only; active behavior remains v132:
-// ngeblogging-app-v131-20260729, ngeblogging-app-v130-20260729, ngeblogging-app-v125-20260729, ngeblogging-app-v124-20260729
-// nara-mini-mobile-recovery-v131-20260729, studio-device-nara-domain-v130-20260729
-// pwa-v131, pwa-v130, pwa-v125, pwa-v124, pwa-v123, pwa-v122, pwa-v121, NGE_BLOGGING_FORCE_RELOAD_V77
+const VERSION = "ngeblogging-app-v133-20260729";
+const CACHE_RELEASE = "single-studio-recovery-v133-20260729";
+// Historical validator literals only; active behavior remains v133:
+// ngeblogging-app-v132-20260729, ngeblogging-app-v131-20260729, ngeblogging-app-v130-20260729, ngeblogging-app-v125-20260729
+// studio-interaction-recovery-v132-20260729, nara-mini-mobile-recovery-v131-20260729, studio-device-nara-domain-v130-20260729
+// pwa-v132, pwa-v131, pwa-v130, pwa-v125, pwa-v124, pwa-v123, pwa-v122, pwa-v121, NGE_BLOGGING_FORCE_RELOAD_V77
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 
@@ -18,7 +18,7 @@ const APP_SHELL = [
   "/comments-v93.js",
 ];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v132";
+const RECOVERY_VALUE = "pwa-v133";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -44,7 +44,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-studio-interaction-recovery-v132",
+        reason: "service-worker-activated-single-studio-recovery-v133",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
