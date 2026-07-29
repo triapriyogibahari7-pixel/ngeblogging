@@ -1,9 +1,9 @@
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
 
-const RELEASE = "auth-callback-authority-v139-20260729";
-const GATE_ID = "ngeblogging-auth-callback-gate-v139";
-const CALLBACK_MARKER = "ngeblogging-auth-callback-v139";
-const PASSWORD_PATCH = Symbol.for("ngeblogging.auth.passwordFallbackV139");
+const RELEASE = "auth-callback-authority-v140-20260729";
+const GATE_ID = "ngeblogging-auth-callback-gate-v140";
+const CALLBACK_MARKER = "ngeblogging-auth-callback-v140";
+const PASSWORD_PATCH = Symbol.for("ngeblogging.auth.passwordFallbackV140");
 const SUPABASE_URL = String(import.meta.env?.VITE_SUPABASE_URL || "").replace(/\/$/, "");
 const SUPABASE_KEY = String(
   import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
@@ -53,17 +53,21 @@ function installGate(mode) {
     borderRadius: "999px",
     border: "3px solid #dbe5f5",
     borderTopColor: "#2d6edf",
-    animation: "ngeblogging-callback-spin-v139 .75s linear infinite",
+    animation: "ngeblogging-callback-spin-v140 .75s linear infinite",
   });
   const heading = gate.querySelector("b");
   if (heading) Object.assign(heading.style, { fontSize: "16px", lineHeight: "1.35" });
   const note = gate.querySelector("small");
   if (note) Object.assign(note.style, { color: "#718097", fontSize: "13px" });
   const style = document.createElement("style");
-  style.textContent = "@keyframes ngeblogging-callback-spin-v139{to{transform:rotate(360deg)}}";
-  style.dataset.authCallbackV139 = "true";
+  style.textContent = "@keyframes ngeblogging-callback-spin-v140{to{transform:rotate(360deg)}}";
+  style.dataset.authCallbackV140 = "true";
   document.head.append(style);
   document.body.append(gate);
+}
+
+function removeGate() {
+  document.getElementById(GATE_ID)?.remove();
 }
 
 function successTarget(mode) {
@@ -71,7 +75,7 @@ function successTarget(mode) {
   ["code", "error", "error_code", "error_description"].forEach((key) => url.searchParams.delete(key));
   if (mode === "recovery") url.searchParams.set("auth", "recovery");
   else url.searchParams.delete("auth");
-  url.searchParams.set("auth_success", "v139");
+  url.searchParams.set("auth_success", "v140");
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
@@ -117,7 +121,7 @@ async function directPasswordGrant(credentials) {
       apikey: SUPABASE_KEY,
       authorization: `Bearer ${SUPABASE_KEY}`,
       "content-type": "application/json",
-      "x-client-info": "ngeblogging-auth-v139",
+      "x-client-info": "ngeblogging-auth-v140",
     },
     body: JSON.stringify({
       email: String(credentials?.email || "").trim().toLowerCase(),
@@ -153,49 +157,55 @@ function installPasswordFallback() {
     }
     try {
       const recovered = await directPasswordGrant(credentials);
-      document.documentElement.dataset.authPasswordTransportV139 = "direct-recovery";
+      document.documentElement.dataset.authPasswordTransportV140 = "direct-recovery";
       return recovered;
     } catch (fallbackError) {
-      document.documentElement.dataset.authPasswordTransportV139 = "failed";
+      document.documentElement.dataset.authPasswordTransportV140 = "failed";
       return { data: originalResult?.data || null, error: fallbackError };
     }
   };
   Object.defineProperty(supabase.auth, PASSWORD_PATCH, { value: true, configurable: false });
-  document.documentElement.dataset.authPasswordFallbackV139 = "installed";
+  document.documentElement.dataset.authPasswordFallbackV140 = "installed";
+}
+
+function publishSession(mode, session, state) {
+  window.__ngebloggingOAuthCallbackSessionV140 = session;
+  document.documentElement.dataset.authCallbackV140 = state;
+  try {
+    sessionStorage.setItem(CALLBACK_MARKER, JSON.stringify({
+      completedAt: Date.now(),
+      mode,
+      userId: session.user?.id || "",
+    }));
+  } catch {
+    // Storage restrictions must not prevent login completion.
+  }
+  history.replaceState(history.state, "", successTarget(mode));
+  removeGate();
+  window.dispatchEvent(new CustomEvent("ngeblogging:auth-session-ready", {
+    detail: { session, mode, release: RELEASE },
+  }));
 }
 
 async function completeCallback(mode, code) {
   installGate(mode);
   document.documentElement.dataset.authCallbackAuthority = RELEASE;
   try {
-    let session = await exchangeFreshCode(code);
+    const session = await exchangeFreshCode(code);
     if (!session?.access_token) throw new Error("Sesi login tidak terbentuk setelah callback diproses.");
-    window.__ngebloggingOAuthCallbackSessionV139 = session;
-    document.documentElement.dataset.authCallbackV139 = "completed";
-    try {
-      sessionStorage.setItem(CALLBACK_MARKER, JSON.stringify({
-        completedAt: Date.now(),
-        mode,
-        userId: session.user?.id || "",
-      }));
-    } catch {
-      // Storage restrictions must not prevent login completion.
-    }
-    window.location.replace(successTarget(mode));
+    publishSession(mode, session, "completed");
   } catch (initialError) {
     try {
       const recovered = await storedSession();
       if (recovered?.access_token) {
-        window.__ngebloggingOAuthCallbackSessionV139 = recovered;
-        document.documentElement.dataset.authCallbackV139 = "recovered-existing-session";
-        window.location.replace(successTarget(mode));
+        publishSession(mode, recovered, "recovered-existing-session");
         return;
       }
     } catch {
       // Use the original callback failure below.
     }
-    console.error("OAuth callback v139 failed", initialError);
-    document.documentElement.dataset.authCallbackV139 = "failed";
+    console.error("OAuth callback v140 failed", initialError);
+    document.documentElement.dataset.authCallbackV140 = "failed";
     window.location.replace(failureTarget(initialError?.message));
   }
 }
