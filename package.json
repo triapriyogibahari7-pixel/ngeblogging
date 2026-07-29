@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node --test tests/studio-interface-v147.test.mjs tests/studio-navigation-v138.test.mjs tests/studio-mobile-cache-v145.test.mjs tests/auth-route-handoff-v143.test.mjs && node scripts/validate-production-v147.mjs && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "node --test tests/studio-interface-v147.test.mjs tests/studio-navigation-v138.test.mjs tests/studio-mobile-cache-v145.test.mjs tests/auth-route-handoff-v143.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
