@@ -17,7 +17,6 @@ export const supabase = supabaseConfigured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: false,
-        storageKey: "ngeblogging-auth-session-v140",
       },
       global: {
         headers: {
