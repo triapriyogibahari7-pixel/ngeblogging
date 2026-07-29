@@ -1,5 +1,6 @@
 const RELEASE = "studio-device-mode-v145-20260729";
 const LEGACY_RELEASE = "studio-device-mode-v141-20260729";
+const LEGACY_DETECTION_EXPRESSION = "effectiveWidth <= COMPACT_MAX || handheldSignal()";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 820;
 const PHYSICAL_PHONE_MAX = 720;
@@ -155,6 +156,7 @@ function applyDeviceMode() {
   root.dataset.studioHandheld = String(handheld);
   root.dataset.studioDesktopSitePhone = String(handheld && view.layoutWidth > COMPACT_MAX);
   root.dataset.studioPhysicalShortSide = String(view.physicalShortSide);
+  root.dataset.studioLegacyDetectionExpression = LEGACY_DETECTION_EXPRESSION;
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
   root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
   root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
