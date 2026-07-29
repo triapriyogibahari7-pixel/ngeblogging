@@ -1,0 +1,130 @@
+/* Ngeblogging Studio interaction recovery v132.
+   Floating Nara must never lock the Studio, and physical phones must use the
+   compact sidebar geometry even when Chrome "Desktop site" widens the viewport. */
+:root{--studio-interaction-recovery-v132:1}
+
+/* Compact and medium are floating windows, not modal dialogs. The layer passes
+   clicks through to Studio while the assistant shell itself stays interactive. */
+html .nara-assistant-layer[data-nara-size="compact"],
+html .nara-assistant-layer[data-nara-size="medium"],
+html .nara-assistant-layer:has(.nara-assistant-shell[data-nara-size="compact"]),
+html .nara-assistant-layer:has(.nara-assistant-shell[data-nara-size="medium"]){
+  pointer-events:none!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html .nara-assistant-layer[data-nara-size="compact"] .nara-assistant-backdrop,
+html .nara-assistant-layer[data-nara-size="medium"] .nara-assistant-backdrop,
+html .nara-assistant-layer:has(.nara-assistant-shell[data-nara-size="compact"]) .nara-assistant-backdrop,
+html .nara-assistant-layer:has(.nara-assistant-shell[data-nara-size="medium"]) .nara-assistant-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html .nara-assistant-shell[data-nara-size="compact"],
+html .nara-assistant-shell[data-nara-size="medium"]{pointer-events:auto!important}
+
+html .nara-assistant-shell[data-nara-size="compact"]{
+  inset:auto max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) auto!important;
+  width:min(390px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  height:min(560px,calc(100dvh - 28px))!important;
+  min-height:360px!important;
+  max-height:calc(100dvh - 28px)!important;
+  border-radius:20px!important;
+}
+html .nara-assistant-shell[data-nara-size="medium"]{
+  inset:auto max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) auto!important;
+  width:min(560px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  height:min(700px,calc(100dvh - 28px))!important;
+  max-height:calc(100dvh - 28px)!important;
+  border-radius:20px!important;
+}
+
+/* A physical phone remains a phone even when the layout viewport is ~980px. */
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sv124-shell,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sn-shell{
+  --v132-rail:64px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:hidden!important;
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sv124-main,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sn-main{
+  width:calc(100% - var(--v132-rail))!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin-left:var(--v132-rail)!important;
+  overflow-x:hidden!important;
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sv124-side,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sn-side{
+  position:fixed!important;
+  inset:0 auto 0 0!important;
+  z-index:3200!important;
+  display:flex!important;
+  flex-direction:column!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sv124-shell.collapsed .sv124-side,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sn-side.collapsed{
+  width:var(--v132-rail)!important;
+  min-width:var(--v132-rail)!important;
+  max-width:var(--v132-rail)!important;
+  box-shadow:none!important;
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sv124-shell.expanded .sv124-side,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) .sn-side:not(.collapsed){
+  width:min(82vw,286px)!important;
+  min-width:min(82vw,286px)!important;
+  max-width:min(82vw,286px)!important;
+  box-shadow:16px 0 42px rgba(20,38,66,.22)!important;
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-mobile-toggle,.sn-mobile-toggle){display:none!important}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-desktop-toggle,.sn-desktop-toggle){display:grid!important;visibility:visible!important;opacity:1!important}
+
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.collapsed .sv124-side,.sn-side.collapsed) nav button,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.collapsed .sv124-account-footer,.sn-side.collapsed .sn-account-footer) button{
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  margin:2px auto!important;padding:0!important;
+  display:grid!important;place-items:center!important;
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.collapsed .sv124-side,.sn-side.collapsed) nav button span,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.collapsed .sv124-account-footer,.sn-side.collapsed .sn-account-footer) button span{
+  display:none!important;visibility:hidden!important;opacity:0!important;width:0!important;max-width:0!important;overflow:hidden!important
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.expanded .sv124-side,.sn-side:not(.collapsed)) nav button,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.expanded .sv124-account-footer,.sn-side:not(.collapsed) .sn-account-footer) button{
+  width:calc(100% - 20px)!important;max-width:calc(100% - 20px)!important;
+  min-height:48px!important;margin:2px 10px!important;padding:0 14px!important;
+  display:grid!important;grid-template-columns:25px minmax(0,1fr)!important;gap:12px!important;align-items:center!important
+}
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.expanded .sv124-side,.sn-side:not(.collapsed)) nav button span,
+html:is([data-physical-screen-mobile="true"],[data-desktop-site-phone="true"]) :is(.sv124-shell.expanded .sv124-account-footer,.sn-side:not(.collapsed) .sn-account-footer) button span{
+  display:block!important;visibility:visible!important;opacity:1!important;width:auto!important;max-width:none!important
+}
+
+/* All Studio pages own the complete remaining width. */
+.sv124-main>:not(.sv124-top),.sn-main>:not(.sn-top),
+.sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,
+.sv125-analytics-page,.sv125-members-page,#ngeblogging-operational-surface-v125,.sv125-operational-host,.sv125-operational-host>*{
+  box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important
+}
+
+/* Remove duplicate Nara navigation injected by any historical runtime. */
+.sv124-side nav button[data-nara-sidebar-duplicate="true"],
+.sn-side nav button[data-nara-sidebar-duplicate="true"]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;margin:0!important;padding:0!important;pointer-events:none!important}
