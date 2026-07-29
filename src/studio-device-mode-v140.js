@@ -1,30 +1,23 @@
-const RELEASE = "studio-device-mode-v145-20260729";
-const LEGACY_RELEASE = "studio-device-mode-v141-20260729";
-const LEGACY_DETECTION_EXPRESSION = "effectiveWidth <= COMPACT_MAX || handheldSignal()";
+const RELEASE = "studio-device-mode-v147-20260729";
+const LEGACY_RELEASE = "studio-device-mode-v145-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
-const COMPACT_MAX = 820;
-const PHYSICAL_PHONE_MAX = 720;
-const REACT_NAVIGATION_OWNER = "react-v138";
-const LAYOUT_NODES = [
-  ".sn-shell",
-  ".sn-shell > .sn-side",
-  ".sn-shell > .sn-main",
-  ".sn-shell > .sn-main > .sn-top",
-  ".sn-shell > .sn-side-backdrop",
-  ".sn-shell .sn-sidebar-toggle",
-];
-const LEGACY_INLINE_PROPERTIES = [
-  "inset", "top", "right", "bottom", "left",
-  "width", "min-width", "max-width", "height", "min-height", "max-height",
-  "margin", "margin-left", "margin-right", "padding-left", "padding-right",
-  "transform", "translate", "scale", "filter", "backdrop-filter", "-webkit-backdrop-filter",
-  "opacity", "visibility", "display", "position", "z-index", "overflow", "overflow-x",
-];
+const COMPACT_MAX = 760;
+const TABLET_MAX = 1180;
+const PHONE_MAX = 430;
+const HANDHELD_MAX = 700;
+const RESPONSIVE_MODES = Object.freeze([
+  "application",
+  "phone",
+  "mobile",
+  "compact",
+  "tablet",
+  "desktop",
+]);
 
 let frame = 0;
-let cleanupFrame = 0;
+let lastSignature = "";
 
-function finitePositive(value, fallback = Number.POSITIVE_INFINITY) {
+function finitePositive(value, fallback = 1) {
   const number = Number(value);
   return Number.isFinite(number) && number > 0 ? number : fallback;
 }
@@ -37,23 +30,43 @@ function mediaMatches(query) {
   }
 }
 
+function standaloneSurface() {
+  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true;
+}
+
+function normalizedScreenDimension(raw, density, fallback) {
+  const value = finitePositive(raw, fallback);
+  if (value <= 900) return value;
+  return density >= 1.25 ? value / density : fallback;
+}
+
 function viewportMetrics() {
   const layoutWidth = finitePositive(document.documentElement.clientWidth || window.innerWidth, 1);
   const layoutHeight = finitePositive(document.documentElement.clientHeight || window.innerHeight, 1);
   const visualWidth = finitePositive(window.visualViewport?.width, layoutWidth);
   const visualHeight = finitePositive(window.visualViewport?.height, layoutHeight);
-  const screenWidth = finitePositive(window.screen?.width, layoutWidth);
-  const screenHeight = finitePositive(window.screen?.height, layoutHeight);
+  const density = finitePositive(window.devicePixelRatio, 1);
+  const screenWidth = normalizedScreenDimension(window.screen?.width, density, layoutWidth);
+  const screenHeight = normalizedScreenDimension(window.screen?.height, density, layoutHeight);
+  const physicalShortSide = Math.min(screenWidth, screenHeight);
+  const physicalLongSide = Math.max(screenWidth, screenHeight);
+  const portrait = layoutHeight >= layoutWidth;
+  const physicalViewportWidth = portrait ? physicalShortSide : physicalLongSide;
+  const physicalViewportHeight = portrait ? physicalLongSide : physicalShortSide;
 
   return {
     layoutWidth,
     layoutHeight,
     visualWidth,
     visualHeight,
+    density,
     screenWidth,
     screenHeight,
+    physicalShortSide,
+    physicalLongSide,
+    physicalViewportWidth,
+    physicalViewportHeight,
     effectiveWidth: Math.min(layoutWidth, visualWidth),
-    physicalShortSide: Math.min(screenWidth, screenHeight),
   };
 }
 
@@ -62,40 +75,62 @@ function platformHandheldSignal() {
   return /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform);
 }
 
-function mobileUserAgentSignal() {
+function userAgentHandheldSignal() {
   const userAgent = navigator.userAgent || "";
   return navigator.userAgentData?.mobile === true
     || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent)
     || platformHandheldSignal();
 }
 
-function touchHandheldSignal(view = viewportMetrics()) {
+function touchHandheldSignal(view) {
   const touchPoints = Number(navigator.maxTouchPoints || 0);
   const coarsePointer = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
   const finePointer = mediaMatches("(any-pointer: fine)");
-  const density = finitePositive(window.devicePixelRatio, 1);
-  const compactPhysicalScreen = view.physicalShortSide <= PHYSICAL_PHONE_MAX && density >= 1.25;
+  const compactPhysicalScreen = view.physicalShortSide <= HANDHELD_MAX && view.density >= 1.2;
+  const denseTouchScreen = touchPoints > 1 && view.density >= 1.5 && view.physicalShortSide <= 900;
 
-  // Chrome “Situs desktop” dapat mengganti UA dan melaporkan pointer halus.
-  // Platform Android/iOS atau layar fisik telepon tetap harus memakai shell mobile.
   return touchPoints > 1
-    && coarsePointer
-    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
+    && (coarsePointer || denseTouchScreen)
+    && (platformHandheldSignal() || !finePointer || compactPhysicalScreen || denseTouchScreen);
 }
 
-function handheldSignal(view = viewportMetrics()) {
-  return mobileUserAgentSignal() || touchHandheldSignal(view);
+function handheldSignal(view) {
+  return userAgentHandheldSignal() || touchHandheldSignal(view);
 }
 
-function surfaceMode() {
-  return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true
-    ? "application"
-    : "browser";
+function classifyResponsiveMode(view, handheld) {
+  if (standaloneSurface()) return "application";
+  if (handheld && view.physicalShortSide <= PHONE_MAX) return "phone";
+  if (handheld) return "mobile";
+  if (view.effectiveWidth <= COMPACT_MAX) return "compact";
+  if (view.effectiveWidth <= TABLET_MAX) return "tablet";
+  return "desktop";
+}
+
+function desktopVariant(view, responsiveMode) {
+  if (responsiveMode !== "desktop") return responsiveMode;
+  if (view.effectiveWidth <= 1536) return "laptop";
+  return "computer";
+}
+
+function layoutMode(responsiveMode) {
+  return ["application", "phone", "mobile", "compact"].includes(responsiveMode)
+    ? "small"
+    : "large";
+}
+
+export function detectStudioResponsiveMode() {
+  const view = viewportMetrics();
+  return classifyResponsiveMode(view, handheldSignal(view));
+}
+
+export function currentStudioResponsiveMode() {
+  const stored = document.documentElement.dataset.studioResponsiveMode;
+  return RESPONSIVE_MODES.includes(stored) ? stored : detectStudioResponsiveMode();
 }
 
 export function detectStudioDeviceMode() {
-  const view = viewportMetrics();
-  return view.effectiveWidth <= COMPACT_MAX || handheldSignal(view) ? "small" : "large";
+  return layoutMode(detectStudioResponsiveMode());
 }
 
 export function currentStudioDeviceMode() {
@@ -103,70 +138,58 @@ export function currentStudioDeviceMode() {
   return stored === "small" || stored === "large" ? stored : detectStudioDeviceMode();
 }
 
-function clearLegacyInlineLayout() {
-  cleanupFrame = 0;
-  const shell = document.querySelector(".sn-shell");
-  if (!shell) return;
-
-  for (const selector of LAYOUT_NODES) {
-    document.querySelectorAll(selector).forEach((node) => {
-      if (!(node instanceof HTMLElement)) return;
-      for (const property of LEGACY_INLINE_PROPERTIES) node.style.removeProperty(property);
-    });
+function ensureViewportMeta() {
+  let viewport = document.querySelector('meta[name="viewport"]');
+  if (!viewport) {
+    viewport = document.createElement("meta");
+    viewport.name = "viewport";
+    document.head.prepend(viewport);
   }
-
-  shell.dataset.navigationOwner = REACT_NAVIGATION_OWNER;
-  shell.dataset.layoutAuthority = RELEASE;
-  shell.querySelectorAll([
-    ".sn-mobile-v30-header",
-    ".sn-mobile-v30-search",
-    ".sn-mobile-v30-launcher",
-    ".sn-mobile-v30-scrim",
-    ".sn-mobile-v29-header",
-    ".sn-mobile-v29-search",
-    ".sn-mobile-v29-launcher",
-    ".sn-mobile-v29-scrim",
-    ".sn-sidebar-scrim-v23",
-    ".sn-device-toggle-v26",
-    ".sn-device-toggle-v27",
-    ".sn-device-scrim-v27",
-    ".sn-mobile-nav",
-    ".sn-mobile-sheet-layer",
-  ].join(",")).forEach((node) => node.remove());
-}
-
-function scheduleLegacyCleanup() {
-  if (cleanupFrame) return;
-  cleanupFrame = requestAnimationFrame(clearLegacyInlineLayout);
+  viewport.content = "width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content";
 }
 
 function applyDeviceMode() {
   frame = 0;
   const root = document.documentElement;
-  const previous = root.dataset.studioDeviceMode || "";
   const view = viewportMetrics();
   const handheld = handheldSignal(view);
-  const mode = view.effectiveWidth <= COMPACT_MAX || handheld ? "small" : "large";
+  const responsiveMode = classifyResponsiveMode(view, handheld);
+  const nextLayoutMode = layoutMode(responsiveMode);
+  const variant = desktopVariant(view, responsiveMode);
+  const desktopSitePhone = handheld && view.layoutWidth > Math.max(TABLET_MAX, view.physicalViewportWidth * 1.35);
+  const signature = [responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
+  const previousMode = root.dataset.studioResponsiveMode || "";
 
-  root.dataset.studioDeviceMode = mode;
-  root.dataset.studioSurfaceMode = surfaceMode();
+  ensureViewportMeta();
+  root.dataset.studioResponsiveMode = responsiveMode;
+  root.dataset.studioDeviceMode = nextLayoutMode;
+  root.dataset.studioDeviceVariant = variant;
+  root.dataset.studioSurfaceMode = standaloneSurface() ? "application" : "browser";
+  root.dataset.studioHandheld = String(handheld);
+  root.dataset.studioDesktopSitePhone = String(desktopSitePhone);
+  root.dataset.studioSiteDesktop = String(!handheld && responsiveMode === "desktop");
   root.dataset.studioDeviceRelease = RELEASE;
   root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
-  root.dataset.studioNavigationAuthority = REACT_NAVIGATION_OWNER;
-  root.dataset.studioHandheld = String(handheld);
-  root.dataset.studioDesktopSitePhone = String(handheld && view.layoutWidth > COMPACT_MAX);
-  root.dataset.studioPhysicalShortSide = String(view.physicalShortSide);
-  root.dataset.studioLegacyDetectionExpression = LEGACY_DETECTION_EXPRESSION;
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
   root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
   root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
   root.style.setProperty("--studio-visual-height", `${view.visualHeight}px`);
+  root.style.setProperty("--studio-physical-width", `${view.physicalViewportWidth}px`);
+  root.style.setProperty("--studio-physical-height", `${view.physicalViewportHeight}px`);
 
-  scheduleLegacyCleanup();
-
-  if (previous !== mode) {
+  if (lastSignature !== signature) {
+    lastSignature = signature;
     window.dispatchEvent(new CustomEvent(MODE_EVENT, {
-      detail: { mode, previous, release: RELEASE, handheld, ...view },
+      detail: {
+        mode: nextLayoutMode,
+        responsiveMode,
+        variant,
+        previous: previousMode,
+        release: RELEASE,
+        handheld,
+        desktopSitePhone,
+        ...view,
+      },
     }));
   }
 }
@@ -176,27 +199,21 @@ function schedule() {
   frame = requestAnimationFrame(applyDeviceMode);
 }
 
-const media = window.matchMedia?.(`(max-width:${COMPACT_MAX}px)`);
-media?.addEventListener?.("change", schedule);
 window.addEventListener("resize", schedule, { passive: true });
 window.addEventListener("orientationchange", schedule, { passive: true });
 window.addEventListener("pageshow", schedule, { passive: true });
 window.visualViewport?.addEventListener("resize", schedule, { passive: true });
-window.visualViewport?.addEventListener("scroll", schedule, { passive: true });
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) schedule();
 });
 
-const observer = new MutationObserver((mutations) => {
-  if (mutations.some((mutation) => mutation.type === "childList" && mutation.addedNodes.length > 0)) {
-    scheduleLegacyCleanup();
-  }
-});
-observer.observe(document.documentElement, {
-  childList: true,
-  subtree: true,
-});
-
 applyDeviceMode();
 
-export { RELEASE, LEGACY_RELEASE, MODE_EVENT, COMPACT_MAX };
+export {
+  RELEASE,
+  LEGACY_RELEASE,
+  MODE_EVENT,
+  COMPACT_MAX,
+  TABLET_MAX,
+  RESPONSIVE_MODES,
+};
