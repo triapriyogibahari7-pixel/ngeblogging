@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.head_ref == 'deploy/studio-v140-now'
+    if: startsWith(github.head_ref, 'deploy/studio-v140')
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
