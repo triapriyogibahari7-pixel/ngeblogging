@@ -4,4 +4,4 @@ export {
   RELEASE,
   currentStudioDeviceMode,
   detectStudioDeviceMode,
-} from "./studio-device-mode-v139.js";
+} from "./studio-device-mode-v140.js";
