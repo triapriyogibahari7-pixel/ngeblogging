@@ -43,11 +43,13 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+          test -n "$VITE_SUPABASE_URL" || { echo "VITE_SUPABASE_URL_MISSING"; exit 1; }
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "VITE_SUPABASE_PUBLISHABLE_KEY_MISSING"; exit 1; }
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Studio completion v151 contracts
+      - name: Run Studio and authentication contracts through v153
         run: npm run test:production
 
       - name: Build production assets
@@ -56,10 +58,10 @@ jobs:
       - name: Validate Cloudflare bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy Studio completion v151
+      - name: Deploy authentication production v153
         run: npm run deploy:cloudflare
 
-      - name: Verify Studio completion v151 is live
+      - name: Verify authentication production v153 is live
         shell: bash
         run: |
           set -euo pipefail
@@ -68,18 +70,34 @@ jobs:
             worker=$(curl -fsSL --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/ngeblogging-health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
             page_code=$(curl -sS -o /tmp/ngeblogging-home.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
+            auth_code=$(curl -sS -D /tmp/ngeblogging-auth-headers.txt -o /tmp/ngeblogging-auth-body.txt -w '%{http_code}' --max-time 20 \
+              -X OPTIONS "https://ngeblogging.com/api/auth-proxy/auth/v1/token?grant_type=password&deploy_audit=$stamp" \
+              -H 'Origin: https://ngeblogging.com' \
+              -H 'Access-Control-Request-Method: POST' \
+              -H 'Access-Control-Request-Headers: apikey,content-type,x-client-info' || true)
             health=$(cat /tmp/ngeblogging-health.json 2>/dev/null || true)
-            if [[ "$worker" == *"ngeblogging-app-v151-studio-completion-20260729"* ]] \
-              && [[ "$worker" == *"studio-completion-cache-v151"* ]] \
-              && [[ "$worker" == *"studio-completion-v151"* ]] \
-              && [[ "$health" == *"2026.07.29-studio-completion-v151"* ]] \
+            page=$(cat /tmp/ngeblogging-home.html 2>/dev/null || true)
+            auth_headers=$(cat /tmp/ngeblogging-auth-headers.txt 2>/dev/null || true)
+
+            if [[ "$worker" == *"ngeblogging-app-v153-auth-production-20260730"* ]] \
+              && [[ "$worker" == *"auth-production-cache-v153"* ]] \
+              && [[ "$worker" == *"auth-production-v153"* ]] \
+              && [[ "$health" == *"2026.07.30-auth-production-v153"* ]] \
+              && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
+              && [[ "$health" == *'"authProduction":true'* ]] \
+              && [[ "$health" == *'"emailPassword":true'* ]] \
+              && [[ "$page" == *"ngeblogging-auth-session-runtime"* ]] \
+              && [[ "$page" == *"auth-studio-bootstrap-v106.js"* ]] \
+              && [[ "$page" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]] \
               && [[ "$health_code" == "200" ]] \
-              && [[ "$page_code" == "200" ]]; then
-              echo "Production Studio completion v151 verified on attempt $attempt."
+              && [[ "$page_code" == "200" ]] \
+              && [[ "$auth_code" == "204" ]]; then
+              echo "Production auth v153 verified on attempt $attempt."
               exit 0
             fi
-            echo "Studio completion v151 belum aktif (attempt $attempt/30); menunggu propagasi."
+            echo "Auth v153 belum aktif (attempt $attempt/30); menunggu propagasi."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_STUDIO_COMPLETION_V151_FAILED"
+          echo "DEPLOY_VERIFY_AUTH_PRODUCTION_V153_FAILED"
           exit 1
