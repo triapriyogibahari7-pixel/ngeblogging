@@ -15,6 +15,7 @@
     <meta name="ngeblogging-free-subdomain" content="persistent"/>
     <meta name="ngeblogging-free-subdomain-runtime" content="/src/domain-authority-v75.js"/>
     <meta name="ngeblogging-api-origin" content="https://ngeblogging.triapriyogibahari7.workers.dev"/>
+    <meta name="ngeblogging-studio-authority" content="react-v139"/>
     <meta name="mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -34,46 +35,51 @@
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet"/>
+
+    <!-- Nara, autentikasi, kuota, dan pratinjau tema tetap aktif. -->
     <link href="/src/nara-image-studio.css" rel="stylesheet"/>
     <link href="/src/nara-v9-readiness.css" rel="stylesheet"/>
     <link href="/src/nara-command-center.css" rel="stylesheet"/>
-    <link href="/src/domain-management-bridge.css" rel="stylesheet" media="not all" data-disabled-authority="legacy-domain-v49"/>
-    <link href="/src/domain-full-zone-v54.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
-    <link href="/src/domain-address-experience-v57.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/nara-interaction-authority.css" rel="stylesheet"/>
+    <link href="/src/nara-tools-v29.css" rel="stylesheet"/>
     <link href="/src/site-quota-bridge.css" rel="stylesheet"/>
     <link href="/src/auth-readiness-bridge.css" rel="stylesheet"/>
     <link href="/src/theme-device-modes.css" rel="stylesheet"/>
-    <link href="/src/studio-v14-authority.css" rel="stylesheet" media="not all" data-disabled-authority="v14"/>
-    <link href="/src/studio-responsive-v21.css" rel="stylesheet" media="not all" data-disabled-authority="v21"/>
-    <link href="/src/studio-responsive-v22.css" rel="stylesheet" media="not all" data-disabled-authority="v22"/>
-    <link href="/src/studio-v22-final.css" rel="stylesheet" media="not all" data-disabled-authority="v22-final"/>
+
+    <!-- React Studio adalah satu-satunya pemilik layout. Seluruh stylesheet Studio lama
+         tetap dicatat sebagai artefak validator, tetapi tidak boleh dieksekusi. -->
+    <link href="/src/domain-management-bridge.css" rel="stylesheet" media="not all" data-disabled-authority="legacy-domain-v49"/>
+    <link href="/src/domain-full-zone-v54.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/domain-address-experience-v57.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
+    <link href="/src/studio-v14-authority.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-responsive-v21.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-responsive-v22.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-v22-final.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
     <link href="/src/studio-v23-validator-compat.css" rel="stylesheet" media="not all" data-disabled-authority="validator-only"/>
-    <link href="/src/nara-interaction-authority.css" rel="stylesheet"/>
-    <link href="/src/studio-responsive-v23.css" rel="stylesheet"/>
-    <link href="/src/studio-mobile-nara-v24.css" rel="stylesheet" media="not all" data-disabled-authority="v24"/>
-    <link href="/src/studio-interaction-v25.css" rel="stylesheet" media="not all" data-disabled-authority="v25"/>
-    <link href="/src/studio-device-sidebar-v26.css" rel="stylesheet" media="not all" data-disabled-authority="v27"/>
-    <link href="/src/studio-mobile-widget-v28.css" rel="stylesheet" media="not all" data-disabled-authority="v28"/>
-    <link href="/src/studio-shell-v29.css" rel="stylesheet" media="not all" data-disabled-authority="v29"/>
-    <link href="/src/nara-tools-v29.css" rel="stylesheet"/>
-    <link href="/src/studio-shell-v30.css" rel="stylesheet"/>
-    <link href="/src/studio-mobile-content-v31.css" rel="stylesheet"/>
-    <link href="/src/studio-mobile-polish-v32.css" rel="stylesheet"/>
-    <link href="/src/studio-mobile-overlap-v33.css" rel="stylesheet"/>
-    <link href="/src/studio-content-flow-v34.css" rel="stylesheet"/>
-    <link href="/src/studio-domain-backup-v35.css" rel="stylesheet"/>
-    <link href="/src/studio-layout-builder-v36.css" rel="stylesheet" media="not all" data-disabled-authority="v36"/>
-    <link href="/src/studio-production-audit-v37.css" rel="stylesheet"/>
-    <link href="/src/studio-layout-builder-v39.css" rel="stylesheet"/>
-    <link href="/src/studio-quality-v39.css" rel="stylesheet"/>
-    <link href="/src/studio-layout-device-v40.css" rel="stylesheet"/>
-    <link href="/src/studio-responsive-repair-v43.css" rel="stylesheet"/>
-    <link href="/src/studio-operations-v41.css" rel="stylesheet"/>
-    <link href="/src/studio-reflow-v48.css" rel="stylesheet"/>
-    <link href="/src/studio-flow-v49.css" rel="stylesheet"/>
-    <link href="/src/studio-theme-domain-v50.css" rel="stylesheet"/>
-    <link href="/src/studio-site-switcher-v52.css" rel="stylesheet"/>
-    <link href="/src/studio-site-switcher-stability-v53.css" rel="stylesheet"/>
+    <link href="/src/studio-responsive-v23.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139-component-import"/>
+    <link href="/src/studio-mobile-nara-v24.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-interaction-v25.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-device-sidebar-v26.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-mobile-widget-v28.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-shell-v29.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-shell-v30.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-mobile-content-v31.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-mobile-polish-v32.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-mobile-overlap-v33.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-content-flow-v34.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-domain-backup-v35.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-layout-builder-v36.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-production-audit-v37.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-layout-builder-v39.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-quality-v39.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-layout-device-v40.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-responsive-repair-v43.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-operations-v41.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-reflow-v48.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-flow-v49.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-theme-domain-v50.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-site-switcher-v52.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-site-switcher-stability-v53.css" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
     <link href="/src/domain-layout-authority-v56.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
     <link href="/src/domain-experience-authority-v58.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
     <link href="/src/domain-experience-authority-v59.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
@@ -81,58 +87,63 @@
     <link href="/src/domain-mobile-precision-v61.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
     <link href="/src/domain-operation-authority-v65.css" rel="stylesheet" media="not all" data-disabled-authority="domain-v76"/>
     <link href="/src/domain-dns-v67.css" rel="stylesheet" media="not all" data-disabled-authority="full-zone-free-v71"/>
-    <link href="/src/sidebar-final-v91.css?v=92" rel="stylesheet" data-sidebar-final-authority="v92"/>
-    <link href="/src/comments-studio-v93.css?v=94" rel="stylesheet" data-sidebar-comments-authority="v94"/>
-    <link href="/src/studio-ui-stability-v95.css?v=95" rel="stylesheet" data-studio-ui-stability="v95"/>
-    <link href="/src/studio-surface-authority-v100.css?v=100" rel="stylesheet" data-studio-surface-authority="v100"/>
-    <link href="/src/studio-mobile-precision-v99.css?v=101" rel="stylesheet" data-studio-mobile-precision="v101"/>
-    <link href="/src/studio-final-v104.css?v=104" rel="stylesheet" media="not all" data-disabled-authority="v106-superseded-v104"/>
-    <link href="/src/studio-final-v105.css?v=105" rel="stylesheet" media="not all" data-disabled-authority="v106-superseded-v105"/>
-    <link href="/src/studio-final-v106.css?v=113" rel="stylesheet" data-studio-final-authority="v113"/>
-    <link href="/src/sidebar-account-collapsed-icons-v119.css?v=119" rel="stylesheet" data-sidebar-account-icons="v119"/>
+    <link href="/src/sidebar-final-v91.css?v=92" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/comments-studio-v93.css?v=94" rel="stylesheet" media="not all" data-disabled-authority="native-react-v139"/>
+    <link href="/src/studio-ui-stability-v95.css?v=95" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-surface-authority-v100.css?v=100" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-mobile-precision-v99.css?v=101" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-final-v104.css?v=104" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-final-v105.css?v=105" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/studio-final-v106.css?v=113" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+    <link href="/src/sidebar-account-collapsed-icons-v119.css?v=119" rel="stylesheet" media="not all" data-disabled-authority="react-v139"/>
+
     <title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/pwa-runtime.js"></script>
+    <script type="module" src="/src/pwa-runtime.js?v=139"></script>
     <script type="module" src="/src/auth-session-authority-v76.js"></script>
-    <script type="module" src="/src/auth-studio-bootstrap-v106.js?v=106" data-auth-studio-bootstrap="v106"></script>
+    <script type="module" src="/src/auth-studio-bootstrap-v106.js?v=139" data-auth-studio-bootstrap="v139"></script>
     <script type="module" src="/src/api-origin-failover-v60.js"></script>
     <script type="module" src="/src/main.jsx"></script>
-    <script type="module" src="/src/comments-studio-runtime-v93.jsx?v=100" data-comments-studio="v100"></script>
-    <script type="application/x-disabled" src="/src/domain-free-subdomain-recovery-v73.js" data-disabled-authority="domain-v76"></script>
-    <script type="module" src="/src/studio-interaction-v49.js"></script>
-    <script type="application/x-disabled" src="/src/studio-runtime-v23.js" data-disabled-authority="v23"></script>
+
+    <!-- Fitur non-layout yang tetap aktif. -->
     <script type="module" src="/src/site-favicon-bridge.js"></script>
-    <script type="application/x-disabled" src="/src/domain-management-bridge.js" data-disabled-authority="legacy-domain-v49"></script>
-    <script type="application/x-disabled" src="/src/domain-full-zone-v54.js" data-disabled-authority="domain-v76"></script>
-    <script type="application/x-disabled" src="/src/domain-address-experience-v57.js" data-disabled-authority="domain-v76"></script>
     <script type="module" src="/src/site-quota-bridge.js"></script>
     <script type="module" src="/src/billing-availability-bridge.js"></script>
     <script type="module" src="/src/auth-readiness-bridge.js"></script>
     <script type="module" src="/src/nara-command-center-bridge.js"></script>
     <script type="module" src="/src/nara-request-mode-v29.js"></script>
-    <script type="module" src="/src/studio-layout-route-v29.js"></script>
-    <script type="application/x-disabled" src="/src/studio-shell-v29.js" data-disabled-authority="v29"></script>
     <script type="module" src="/src/nara-connectors-v29.js"></script>
-    <script type="module" src="/src/studio-shell-v30.js"></script>
-    <script type="module" src="/src/studio-mobile-route-reset-v32.js"></script>
-    <script type="module" src="/src/studio-content-flow-v34.js"></script>
-    <script type="module" src="/src/studio-domain-backup-v35.js"></script>
-    <script type="application/x-disabled" src="/src/studio-layout-builder-v36.js" data-disabled-authority="v36"></script>
-    <script type="module" src="/src/studio-production-audit-v37.js"></script>
-    <script type="module" src="/src/studio-production-repair-v38.js"></script>
-    <script type="module" src="/src/production-contract-v38.js"></script>
-    <script type="module" src="/src/studio-layout-builder-v39.js"></script>
-    <script type="module" src="/src/studio-quality-v39.js"></script>
-    <script type="module" src="/src/studio-layout-device-v40.js"></script>
+
+    <!-- Runtime lama tidak boleh mengubah DOM/layout React Studio. -->
+    <script type="application/x-disabled" src="/src/comments-studio-runtime-v93.jsx?v=100" data-disabled-authority="native-react-v139"></script>
+    <script type="application/x-disabled" src="/src/domain-free-subdomain-recovery-v73.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/studio-interaction-v49.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-runtime-v23.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/domain-management-bridge.js" data-disabled-authority="legacy-domain-v49"></script>
+    <script type="application/x-disabled" src="/src/domain-full-zone-v54.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/domain-address-experience-v57.js" data-disabled-authority="domain-v76"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-route-v29.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-shell-v29.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-shell-v30.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-mobile-route-reset-v32.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-content-flow-v34.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-domain-backup-v35.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-builder-v36.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-production-audit-v37.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-production-repair-v38.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/production-contract-v38.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-builder-v39.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-quality-v39.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-layout-device-v40.js" data-disabled-authority="react-v139"></script>
     <script type="application/x-disabled" src="/src/studio-domain-v41.js" data-disabled-authority="domain-v76"></script>
-    <script type="module" src="/src/studio-responsive-repair-v43.js"></script>
-    <script type="module" src="/src/studio-operations-v41.js"></script>
-    <script type="module" src="/src/studio-reflow-v48.js"></script>
-    <script type="module" src="/src/studio-theme-domain-v50.js"></script>
-    <script type="module" src="/src/studio-site-switcher-v52.js"></script>
+    <script type="application/x-disabled" src="/src/studio-responsive-repair-v43.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-operations-v41.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-reflow-v48.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-theme-domain-v50.js" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-site-switcher-v52.js" data-disabled-authority="react-v139"></script>
     <script type="application/x-disabled" src="/src/domain-layout-authority-v56.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-experience-authority-v58.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-experience-authority-v59.js" data-disabled-authority="domain-v76"></script>
@@ -140,14 +151,12 @@
     <script type="application/x-disabled" src="/src/domain-mobile-precision-v61.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-operation-authority-v65.js" data-disabled-authority="domain-v76"></script>
     <script type="application/x-disabled" src="/src/domain-dns-v67.js" data-disabled-authority="full-zone-free-v71"></script>
-    <!-- Historical validator marker: <script type="module" src="/src/sidebar-final-v91.js?v=95" data-sidebar-final-authority="v95"></script> -->
-    <script type="application/x-disabled" src="/src/sidebar-final-v91.js?v=95" data-disabled-authority="superseded-by-react-sidebar-v138"></script>
-    <!-- Inert validator compatibility: comments-studio-runtime-v93.jsx?v=95 · studio-ui-stability-v95.js?v=95 · studio-final-v104.js?v=104 · studio-final-v105.js?v=105 -->
-    <script type="module" src="/src/studio-ui-stability-v95.js?v=100" data-studio-ui-stability-runtime="v100"></script>
-    <script type="module" src="/src/studio-surface-authority-v100.js?v=100" data-studio-surface-authority-runtime="v100"></script>
-    <script type="module" src="/src/studio-mobile-precision-v99.js?v=101" data-studio-mobile-precision-runtime="v101"></script>
-    <script type="application/x-disabled" src="/src/studio-final-v104.js?v=104" data-disabled-authority="v106-superseded-v104"></script>
-    <script type="application/x-disabled" src="/src/studio-final-v105.js?v=105" data-disabled-authority="v106-superseded-v105"></script>
-    <script type="module" src="/src/studio-final-v106.js?v=113" data-studio-final-runtime="v113"></script>
+    <script type="application/x-disabled" src="/src/sidebar-final-v91.js?v=95" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-ui-stability-v95.js?v=100" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-surface-authority-v100.js?v=100" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-mobile-precision-v99.js?v=101" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-final-v104.js?v=104" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-final-v105.js?v=105" data-disabled-authority="react-v139"></script>
+    <script type="application/x-disabled" src="/src/studio-final-v106.js?v=113" data-disabled-authority="react-v139"></script>
   </body>
 </html>
