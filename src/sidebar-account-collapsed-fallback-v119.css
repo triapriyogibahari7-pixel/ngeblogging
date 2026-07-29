@@ -1,0 +1,90 @@
+/* Collapsed account icon fallback authority v119.
+   This is intentionally independent from html layout-class timing. When the
+   sidebar is collapsed, the footer buttons render their own icon through a
+   mask asset, so legacy rules cannot erase the only visible control. Mobile
+   drawer-open mode is untouched because it does not use .collapsed. */
+:root{--sidebar-account-collapsed-fallback-v119:1}
+
+.sn-shell>.sn-side.collapsed>.sn-account-footer{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  clip:auto!important;
+  clip-path:none!important;
+  filter:none!important;
+}
+
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88,
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-logout-v88{
+  position:relative!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  clip:auto!important;
+  clip-path:none!important;
+  filter:none!important;
+  pointer-events:auto!important;
+  isolation:isolate!important;
+}
+
+/* The Lucide node may be hidden by legacy inline/CSS rules. Suppress it in the
+   collapsed state and use the stable fallback below to prevent duplicates. */
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88>svg,
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-logout-v88>svg{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+}
+
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88::before,
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-logout-v88::before{
+  content:""!important;
+  position:absolute!important;
+  left:var(--af117-icon-center,50%)!important;
+  top:50%!important;
+  width:22px!important;
+  height:22px!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  margin:0!important;
+  padding:0!important;
+  transform:translate(-50%,-50%)!important;
+  background-color:currentColor!important;
+  background-image:none!important;
+  -webkit-mask-position:center!important;
+  mask-position:center!important;
+  -webkit-mask-repeat:no-repeat!important;
+  mask-repeat:no-repeat!important;
+  -webkit-mask-size:contain!important;
+  mask-size:contain!important;
+  pointer-events:none!important;
+  z-index:10!important;
+}
+
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88{
+  color:#52647c!important;
+}
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88::before{
+  -webkit-mask-image:url("/sidebar-settings-v119.svg")!important;
+  mask-image:url("/sidebar-settings-v119.svg")!important;
+}
+
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-logout-v88{
+  color:#a23c49!important;
+}
+.sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-logout-v88::before{
+  -webkit-mask-image:url("/sidebar-logout-v119.svg")!important;
+  mask-image:url("/sidebar-logout-v119.svg")!important;
+}
+
+/* Expanded desktop and mobile drawer keep the original Lucide icons and use
+   explicit readable colors instead of inheriting faded legacy values. */
+.sn-shell>.sn-side:not(.collapsed)>.sn-account-footer>.sn-account-settings-v88{
+  color:#52647c!important;
+}
+.sn-shell>.sn-side:not(.collapsed)>.sn-account-footer>.sn-account-logout-v88{
+  color:#a23c49!important;
+}
