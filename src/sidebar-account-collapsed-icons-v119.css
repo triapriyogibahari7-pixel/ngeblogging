@@ -1,59 +1,173 @@
-/* Ngeblogging collapsed sidebar authority v120.
-   - Pengaturan and Keluar use painted fallback icons so legacy SVG-hiding rules
-     cannot make them empty.
-   - Their fallback icons use the workspace axis measured by v117 instead of the
-     center of a potentially wider footer row.
-   - Inactive Domain is rendered as a plain collapsed navigation icon.
-   Mobile/drawer presentation is untouched. */
-:root{--sidebar-account-collapsed-icons-v119:1;--sidebar-collapsed-precision-v120:1}
+/* Ngeblogging collapsed sidebar footer authority v121.
+   Desktop/laptop/large-device goals:
+   - Pengaturan and Keluar always retain a visible icon while the sidebar is collapsed.
+   - The footer icon axis exactly matches workspace navigation rows (8px container + 11px row padding).
+   - Legacy SVG/background fallbacks cannot create empty buttons or shift icons.
+   - Inactive Domain is a plain navigation icon with no rounded card/border.
+   Mobile/app drawer presentation is intentionally untouched. */
+:root {
+  --sidebar-account-collapsed-icons-v121: 1;
+}
 
-@media (min-width:761px){
-  html body #root .sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-settings-v88{
-    display:grid!important;
-    place-items:center!important;
-    color:#52647c!important;
-    background-color:#f7f9fc!important;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2352647c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E")!important;
-    background-repeat:no-repeat!important;
-    background-position:var(--af117-icon-center,24px) center!important;
-    background-size:22px 22px!important;
+@media (min-width: 761px) {
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer {
+    position: static !important;
+    inset: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    gap: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    transform: none !important;
   }
 
-  html body #root .sn-shell>.sn-side.collapsed>.sn-account-footer>.sn-account-logout-v88{
-    display:grid!important;
-    place-items:center!important;
-    color:#a23c49!important;
-    background-color:#fff2f3!important;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a23c49' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 17l5-5-5-5'/%3E%3Cpath d='M15 12H3'/%3E%3Cpath d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'/%3E%3C/svg%3E")!important;
-    background-repeat:no-repeat!important;
-    background-position:var(--af117-icon-center,24px) center!important;
-    background-size:22px 22px!important;
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > button:is(.sn-account-settings-v88, .sn-account-logout-v88) {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    justify-self: stretch !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 11px !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
+    transform: none !important;
+    background-image: none !important;
   }
 
-  html body #root .sn-shell>.sn-side.collapsed>.sn-account-footer>button:is(.sn-account-settings-v88,.sn-account-logout-v88)>svg,
-  html body #root .sn-shell>.sn-side.collapsed>.sn-account-footer>button:is(.sn-account-settings-v88,.sn-account-logout-v88)>span{
-    visibility:hidden!important;
-    opacity:0!important;
+  /* Dedicated painted flex items are immune to legacy rules that hide direct SVG children. */
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > .sn-account-settings-v88::before,
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > .sn-account-logout-v88::before {
+    content: "" !important;
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 0 0 17px !important;
+    width: 17px !important;
+    min-width: 17px !important;
+    max-width: 17px !important;
+    height: 17px !important;
+    min-height: 17px !important;
+    max-height: 17px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 17px 17px !important;
+    transform: none !important;
+    filter: none !important;
+    pointer-events: none !important;
   }
 
-  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active),
-  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active):hover,
-  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active):focus,
-  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active):focus-visible{
-    border:0!important;
-    outline:0!important;
-    background:transparent!important;
-    background-color:transparent!important;
-    background-image:none!important;
-    box-shadow:none!important;
-    filter:none!important;
-    -webkit-backdrop-filter:none!important;
-    backdrop-filter:none!important;
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > .sn-account-settings-v88::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2352647c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E") !important;
   }
 
-  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active)::before,
-  html body #root .sn-shell>.sn-side.collapsed>nav>button:is([data-sidebar-domain-order-v113="true"],[data-sidebar-domain-v91="true"]):not(.active)::after{
-    content:none!important;
-    display:none!important;
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > .sn-account-logout-v88::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a23c49' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 17l5-5-5-5'/%3E%3Cpath d='M15 12H3'/%3E%3Cpath d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'/%3E%3C/svg%3E") !important;
+  }
+
+  /* Remove the legacy direct children from collapsed flow; the v121 pseudo icons own visibility. */
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > button:is(.sn-account-settings-v88, .sn-account-logout-v88) > svg,
+  html body #root .sn-shell > .sn-side.collapsed > .sn-account-footer > button:is(.sn-account-settings-v88, .sn-account-logout-v88) > span {
+    position: absolute !important;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Domain must look exactly like other inactive collapsed navigation icons. */
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active),
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active):hover,
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active):focus,
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active):focus-visible {
+    border: 0 !important;
+    border-color: transparent !important;
+    border-radius: 9px !important;
+    outline: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active) > svg {
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active)::before,
+  html body #root .sn-shell > .sn-side.collapsed > nav > button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    :last-child
+  ):not(.active)::after {
+    content: none !important;
+    display: none !important;
   }
 }
