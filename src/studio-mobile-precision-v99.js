@@ -1,4 +1,4 @@
-const RELEASE = "studio-responsive-precision-v103-20260728";
+const RELEASE = "studio-responsive-precision-v138-20260729";
 const LEGACY_RELEASE = "studio-mobile-precision-v99-20260728";
 const COARSE_QUERY = "(pointer: coarse) and (max-device-width: 1024px)";
 const FINAL_STYLE_ID = "studio-final-v103-style";
@@ -23,7 +23,7 @@ function setDeviceContract() {
   document.documentElement.dataset.physicalMobileV99 = String(physicalMobile());
   document.documentElement.dataset.studioResponsivePrecision = RELEASE;
   document.documentElement.dataset.studioMobilePrecision = LEGACY_RELEASE;
-  document.documentElement.dataset.studioFinalAuthority = "v103";
+  document.documentElement.dataset.studioFinalAuthority = "v138";
 }
 
 function sidebarGeometry() {
@@ -205,10 +205,7 @@ function markLayoutBuilder() {
 }
 
 function sync() {
-  ensureFinalStyle();
   setDeviceContract();
-  syncSidebarGeometry();
-  stabilizeCommentsRow();
   syncThemeTools();
   markLayoutBuilder();
 }
@@ -221,14 +218,13 @@ function schedule() {
 
 function start() {
   const observer = new MutationObserver((mutations) => {
-    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length || mutation.attributeName === "class" || mutation.attributeName === "style")) schedule();
+    if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) schedule();
   });
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+  observer.observe(document.body, { childList: true, subtree: true });
 
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("orientationchange", schedule, { passive: true });
   window.addEventListener("pageshow", schedule, { passive: true });
-  window.visualViewport?.addEventListener("resize", schedule, { passive: true });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
   schedule();
 }
