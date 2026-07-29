@@ -1,9 +1,9 @@
-const VERSION = "ngeblogging-app-v124-20260729";
-const CACHE_RELEASE = "stable-react-studio-api-keys-v124-20260729";
-// Historical validator literals only; active behavior remains v124:
-// ngeblogging-app-v123-20260729, ngeblogging-app-v122-20260729, ngeblogging-app-v121-20260729
+const VERSION = "ngeblogging-app-v125-20260729";
+const CACHE_RELEASE = "locked-react-studio-sidebar-domain-v125-20260729";
+// Historical validator literals only; active behavior remains v125:
+// ngeblogging-app-v124-20260729, ngeblogging-app-v123-20260729, ngeblogging-app-v122-20260729
 // domain-comments-sidebar-lock-v123-20260729, sidebar-axis-domain-separator-v122-20260729
-// pwa-v123, pwa-v122, pwa-v121, NGE_BLOGGING_FORCE_RELOAD_V77
+// pwa-v124, pwa-v123, pwa-v122, pwa-v121, NGE_BLOGGING_FORCE_RELOAD_V77
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 
@@ -18,7 +18,7 @@ const APP_SHELL = [
   "/comments-v93.js",
 ];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v124";
+const RECOVERY_VALUE = "pwa-v125";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -44,7 +44,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-stable-react-studio-v124",
+        reason: "service-worker-activated-stable-react-studio-v125",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
