@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ngeblogging",
-  "main": "./cloudflare/worker-v67.mjs",
+  "main": "./cloudflare/worker-v68.mjs",
   "compatibility_date": "2026-07-23",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
@@ -33,7 +33,7 @@
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
-    "APP_RELEASE": "2026.07.27-free-subdomains-full-zone-v71",
+    "APP_RELEASE": "2026.07.29-nara-workers-ai-v68",
     "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
     "UI_V37_WORKER_COMPAT": "worker-v37.mjs",
     "UI_V35_RELEASE_COMPAT": "2026.07.25-studio-v35",
@@ -56,7 +56,7 @@
     "CF_AI_VISION_MODEL": "@cf/google/gemma-4-26b-a4b-it",
     "CF_AI_IMAGE_MODEL": "@cf/bytedance/stable-diffusion-xl-lightning",
     "NARA_FALLBACK_WORKER_COMPAT": "worker-v22.mjs",
-    "UI_AUTHORITY_RELEASE": "2026.07.27-free-subdomains-full-zone-v71",
+    "UI_AUTHORITY_RELEASE": "2026.07.29-locked-react-v125",
     "AUTH_GATEWAY_RELEASE": "2026.07.28-auth-gateway-v108",
     "PAYPAL_ENV": "sandbox",
     "PAYPAL_MERCHANT_EMAIL": "triapriyogibahari9@gmail.com",
@@ -66,7 +66,7 @@
     "AUTH_EMAIL_DELIVERY_PROBE": "not-run",
     "NARA_PRODUCTION_READY": "true",
     "NARA_PRODUCTION_PROBE": "passed",
-    "NARA_RUNTIME": "cloudflare-worker-production-v60"
+    "NARA_RUNTIME": "cloudflare-workers-ai-v68"
   },
   "observability": {
     "enabled": true,
