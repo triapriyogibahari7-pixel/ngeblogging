@@ -1,4 +1,4 @@
-/* Studio geometry recovery authority v128 — loaded directly by index.html */
+/* Studio geometry recovery authority v129 — permanent collapsible sidebar */
 html,body,#root{width:100%;min-width:0;min-height:100%;margin:0;overflow-x:hidden}
 .sv124-shell{--recovery-side-open:244px;--recovery-side-closed:72px;position:relative!important;width:100%!important;max-width:none!important;min-width:0!important;min-height:100dvh!important;overflow-x:clip!important}
 .sv124-main{box-sizing:border-box!important;width:calc(100% - var(--recovery-side-open))!important;max-width:none!important;min-width:0!important;min-height:100dvh!important;margin-left:var(--recovery-side-open)!important;overflow-x:clip!important}
@@ -7,65 +7,56 @@ html,body,#root{width:100%;min-width:0;min-height:100%;margin:0;overflow-x:hidde
 .sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,.sv125-analytics-page,.sv125-members-page{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important}
 .sv124-page>*,.sv124-comments-page>*,.sv124-domain-page>*,.sv124-api-page>*,.sv125-analytics-page>*,.sv125-members-page>*{max-width:100%!important;min-width:0!important}
 
-/* Sidebar menu and account actions use one identical geometry. */
+/* Sidebar navigation and account actions share exactly one geometry. */
 .sv124-side nav button,.sv124-account-footer button{position:static!important;width:100%!important;min-width:0!important;max-width:none!important;height:46px!important;display:grid!important;grid-template-columns:24px minmax(0,1fr)!important;align-items:center!important;justify-items:start!important;gap:12px!important;margin:0!important;padding:0 14px!important;transform:none!important}
 .sv124-side nav button svg,.sv124-account-footer button svg{grid-column:1!important;grid-row:1!important;width:21px!important;height:21px!important;margin:0!important;justify-self:center!important}
 .sv124-side nav button span,.sv124-account-footer button span{grid-column:2!important;grid-row:1!important;display:block!important;min-width:0!important;margin:0!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .sv124-account-footer{box-sizing:border-box!important;width:100%!important;padding-inline:12px!important}
 
-@media(min-width:761px) and (pointer:fine){
+@media(min-width:761px){
+  .sv124-mobile-toggle{display:none!important}
+  .sv124-desktop-toggle{display:grid!important}
+  .sv124-mobile-backdrop{display:none!important}
   .sv124-shell.collapsed .sv124-side nav button,.sv124-shell.collapsed .sv124-account-footer button{width:48px!important;min-width:48px!important;max-width:48px!important;grid-template-columns:24px!important;justify-items:center!important;margin:0 auto!important;padding:0!important}
   .sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{display:none!important;visibility:hidden!important;opacity:0!important;width:0!important;max-width:0!important;overflow:hidden!important}
 }
 
-/* Mobile/app authority, including Android Chrome desktop-site viewport. */
-@media(max-width:760px), (max-width:1100px) and (hover:none) and (pointer:coarse){
+/* True phone/app layout: fixed rail that expands and collapses; never a hamburger drawer. */
+@media(max-width:760px){
   html,body,#root{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
-  .sv124-shell,.sv124-shell.collapsed{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
-  .sv124-main,.sv124-shell.collapsed .sv124-main{width:100%!important;max-width:100%!important;min-width:0!important;margin-left:0!important;padding:0!important;overflow-x:hidden!important}
-  .sv124-main>*,.sv124-main>.sv124-page,.sv124-main>.sv124-comments-page,.sv124-main>.sv124-domain-page,.sv124-main>.sv124-api-page,.sv124-main>#ngeblogging-operational-surface-v125,.sv125-operational-host{width:100%!important;max-width:100%!important;min-width:0!important}
-  .sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,.sv125-analytics-page,.sv125-members-page{width:100%!important;max-width:100%!important;min-width:0!important;padding:18px 14px 88px!important}
-
+  .sv124-shell{--recovery-side-open:min(76vw,278px);--recovery-side-closed:64px;width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
   .sv124-side,.sv124-shell.collapsed .sv124-side{
     position:fixed!important;inset:0 auto 0 0!important;z-index:3200!important;
-    display:flex!important;flex-direction:column!important;
-    width:min(84vw,340px)!important;min-width:min(84vw,340px)!important;max-width:min(84vw,340px)!important;
-    height:100dvh!important;max-height:100dvh!important;
-    overflow:hidden!important;background:#fff!important;
-    transform:translate3d(-105%,0,0)!important;pointer-events:none!important;visibility:hidden!important;
+    display:flex!important;flex-direction:column!important;height:100dvh!important;max-height:100dvh!important;
+    overflow:hidden!important;background:#fff!important;visibility:visible!important;pointer-events:auto!important;transform:none!important;
+    transition:width .22s ease!important;
   }
-  .sv124-shell.mobile-open .sv124-side,.sv124-shell.collapsed.mobile-open .sv124-side{transform:translate3d(0,0,0)!important;pointer-events:auto!important;visibility:visible!important}
-  .sv124-logo{position:static!important;flex:0 0 70px!important;height:70px!important;min-height:70px!important}
-  .sv124-new{position:static!important;flex:0 0 48px!important}
-  .sv124-side>nav,.sv124-shell.collapsed .sv124-side>nav{
-    position:static!important;inset:auto!important;flex:1 1 auto!important;min-height:0!important;
-    display:flex!important;flex-direction:column!important;align-items:stretch!important;
-    overflow-x:hidden!important;overflow-y:auto!important;padding:0 14px 12px!important;
-  }
-  .sv124-account-footer,.sv124-shell.collapsed .sv124-account-footer{
-    position:static!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
-    z-index:auto!important;flex:0 0 auto!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;
-    width:100%!important;margin:0!important;padding:10px 14px calc(12px + env(safe-area-inset-bottom))!important;
-    border-top:1px solid #e5eaf1!important;background:#fff!important;transform:none!important;
-  }
-  .sv124-side nav button,.sv124-account-footer button,.sv124-shell.collapsed .sv124-side nav button,.sv124-shell.collapsed .sv124-account-footer button{
-    position:static!important;width:100%!important;min-width:0!important;max-width:none!important;height:52px!important;min-height:52px!important;max-height:52px!important;
-    grid-template-columns:27px minmax(0,1fr)!important;gap:13px!important;margin:0!important;padding:0 17px!important;justify-items:start!important;
-    font-size:15px!important;border-radius:12px!important;
-  }
-  .sv124-side nav button span,.sv124-account-footer button span,.sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{display:block!important;visibility:visible!important;opacity:1!important;width:auto!important;max-width:none!important;font-size:15px!important}
-
-  /* Restore the original panel open/close visual instead of a hamburger. */
-  .sv124-desktop-toggle{display:none!important}
-  .sv124-mobile-toggle{display:grid!important;position:relative!important}
-  .sv124-mobile-toggle svg{display:none!important}
-  .sv124-mobile-toggle::before{content:"⇤";display:block;font:700 23px/1 "DM Sans",sans-serif;color:#63738a;transform:translateY(-1px)}
-
-  .sv124-mobile-backdrop{position:fixed!important;inset:0!important;z-index:3100!important;display:block!important;background:rgba(20,35,56,.42)!important;border:0!important}
+  .sv124-shell.expanded .sv124-side{width:var(--recovery-side-open)!important;min-width:var(--recovery-side-open)!important;max-width:var(--recovery-side-open)!important;box-shadow:14px 0 38px rgba(28,45,70,.16)!important}
+  .sv124-shell.collapsed .sv124-side{width:var(--recovery-side-closed)!important;min-width:var(--recovery-side-closed)!important;max-width:var(--recovery-side-closed)!important;box-shadow:none!important}
+  .sv124-main{width:calc(100% - var(--recovery-side-open))!important;max-width:none!important;min-width:0!important;margin-left:var(--recovery-side-open)!important;padding:0!important;overflow-x:hidden!important;transition:width .22s ease,margin-left .22s ease!important}
+  .sv124-shell.collapsed .sv124-main{width:calc(100% - var(--recovery-side-closed))!important;margin-left:var(--recovery-side-closed)!important}
+  .sv124-main>*,.sv124-main>.sv124-page,.sv124-main>.sv124-comments-page,.sv124-main>.sv124-domain-page,.sv124-main>.sv124-api-page,.sv124-main>#ngeblogging-operational-surface-v125,.sv125-operational-host{width:100%!important;max-width:100%!important;min-width:0!important}
+  .sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,.sv125-analytics-page,.sv125-members-page{width:100%!important;max-width:100%!important;min-width:0!important;padding:18px 12px 84px!important}
+  .sv124-logo{position:static!important;flex:0 0 64px!important;height:64px!important;min-height:64px!important;padding:0 12px!important}
+  .sv124-logo>button{display:none!important}
+  .sv124-new{position:static!important;flex:0 0 46px!important;margin:10px!important}
+  .sv124-side>nav,.sv124-shell.collapsed .sv124-side>nav{position:static!important;inset:auto!important;flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;overflow-x:hidden!important;overflow-y:auto!important;padding:0 10px 10px!important}
+  .sv124-account-footer,.sv124-shell.collapsed .sv124-account-footer{position:static!important;inset:auto!important;z-index:auto!important;flex:0 0 auto!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;margin:0!important;padding:9px 10px calc(10px + env(safe-area-inset-bottom))!important;border-top:1px solid #e5eaf1!important;background:#fff!important;transform:none!important}
+  .sv124-side nav button,.sv124-account-footer button{height:48px!important;min-height:48px!important;max-height:48px!important;border-radius:11px!important}
+  .sv124-shell.expanded .sv124-side nav button,.sv124-shell.expanded .sv124-account-footer button{width:100%!important;grid-template-columns:25px minmax(0,1fr)!important;gap:12px!important;padding:0 14px!important;font-size:14px!important}
+  .sv124-shell.expanded .sv124-side nav button span,.sv124-shell.expanded .sv124-account-footer button span{display:block!important;visibility:visible!important;opacity:1!important;width:auto!important;max-width:none!important}
+  .sv124-shell.collapsed .sv124-side nav button,.sv124-shell.collapsed .sv124-account-footer button{width:44px!important;min-width:44px!important;max-width:44px!important;grid-template-columns:24px!important;justify-items:center!important;margin:0 auto!important;padding:0!important}
+  .sv124-shell.collapsed .sv124-side nav button span,.sv124-shell.collapsed .sv124-account-footer button span{display:none!important;visibility:hidden!important;opacity:0!important;width:0!important;max-width:0!important;overflow:hidden!important}
+  .sv124-desktop-toggle{display:grid!important;flex:0 0 40px!important}
+  .sv124-desktop-toggle svg{display:block!important}
+  .sv124-mobile-toggle{display:none!important}
+  .sv124-mobile-backdrop{display:none!important;visibility:hidden!important;pointer-events:none!important}
+  .sv124-top{padding:0 10px!important;gap:7px!important}
+  .sv124-workspace>div,.sv124-cloud span,.sv124-top-actions span{display:none!important}
+  .sv124-workspace{padding:4px!important}
   .sv124-metrics-grid,.sv124-home-grid,.sv124-info-grid,.sv124-settings-grid,.sv125-analytics-metrics,.sv125-member-metrics,.sv125-analytics-grid,.sv125-breakdown-grid,.sv125-member-grid{grid-template-columns:1fr!important}
-  .nara-floating-button{position:fixed!important;z-index:3000!important;right:10px!important;bottom:10px!important;display:flex!important;visibility:visible!important;opacity:1!important;transform:none!important}
-  .mobile-open .nara-floating-button{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+  .nara-floating-button{position:fixed!important;z-index:3000!important;right:8px!important;bottom:8px!important;display:flex!important;visibility:visible!important;opacity:1!important;transform:none!important}
   .nara-assistant-layer{position:fixed!important;z-index:5000!important;inset:0!important;width:100%!important;height:100dvh!important;overflow:hidden!important}
-  .nara-assistant-shell{position:absolute!important;inset:0 0 0 auto!important;box-sizing:border-box!important;width:min(94%,430px)!important;max-width:min(94%,430px)!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;overflow:hidden!important}
+  .nara-assistant-shell{position:absolute!important;inset:0 0 0 auto!important;box-sizing:border-box!important;width:min(92vw,430px)!important;max-width:min(92vw,430px)!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;overflow:hidden!important}
   .nara-assistant-backdrop{position:absolute!important;inset:0!important}
 }
