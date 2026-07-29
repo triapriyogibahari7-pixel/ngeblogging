@@ -1,10 +1,8 @@
-const VERSION = "ngeblogging-app-v141-studio-mobile-auth-20260729";
-const CACHE_RELEASE = "single-react-layout-handheld-direct-auth-v141";
+const VERSION = "ngeblogging-app-v142-studio-auth-20260729";
+const CACHE_RELEASE = "single-react-handheld-auth-once-v142";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
-const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v141-studio-mobile-auth";
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
@@ -23,22 +21,18 @@ function isAuthSurface(url) {
     || url.searchParams.get("auth") === "recovery";
 }
 
-async function refreshOpenWindows() {
+async function notifyOpenWindows() {
   const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
   await Promise.all(windows.map(async (client) => {
     try {
       const url = new URL(client.url);
-      if (url.origin !== self.location.origin) return;
+      if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-studio-mobile-auth-v141",
+        reason: "service-worker-activated-studio-auth-v142",
       });
-      if (isAuthSurface(url)) return;
-      if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
-      url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
-      await client.navigate(url.href);
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
     }
@@ -52,7 +46,7 @@ self.addEventListener("activate", (event) => {
       .filter((key) => ![SHELL_CACHE, ASSET_CACHE].includes(key))
       .map((key) => caches.delete(key)));
     await self.clients.claim();
-    await refreshOpenWindows();
+    await notifyOpenWindows();
   })());
 });
 
