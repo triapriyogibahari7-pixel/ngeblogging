@@ -99,15 +99,16 @@ html[data-studio-device-mode="large"] .sn-shell .sn-side.collapsed{
   min-width:70px!important;
   max-width:70px!important;
 }
-html[data-studio-device-mode="large"] .sn-shell .sn-main{
+html[data-studio-device-mode="large"] .sn-shell[data-navigation-owner="react-v138"]>.sn-main,
+html[data-studio-device-mode="large"] .sn-shell[data-navigation-owner="react-v138"]>.sn-side+.sn-main{
   width:calc(100% - 220px)!important;
   max-width:calc(100% - 220px)!important;
-  margin-left:220px!important;
+  margin:0 0 0 220px!important;
 }
-html[data-studio-device-mode="large"] .sn-shell .sn-side.collapsed+.sn-main{
+html[data-studio-device-mode="large"] .sn-shell[data-navigation-owner="react-v138"]>.sn-side.collapsed+.sn-main{
   width:calc(100% - 70px)!important;
   max-width:calc(100% - 70px)!important;
-  margin-left:70px!important;
+  margin:0 0 0 70px!important;
 }
 html[data-studio-device-mode="large"] .sn-shell .sn-side.collapsed .sn-logo>b,
 html[data-studio-device-mode="large"] .sn-shell .sn-side.collapsed .sn-new span,
@@ -132,11 +133,13 @@ html[data-studio-device-mode="large"] .sn-desktop-sidebar-icon{display:block!imp
 /* Phone, installed application/PWA, narrow browser, and desktop-site mode on a
    physical phone. All mobile rules use the device attribute, not CSS width. */
 html[data-studio-device-mode="small"] body.sn-mobile-sidebar-open{overflow:hidden!important}
-html[data-studio-device-mode="small"] .sn-shell .sn-main,
-html[data-studio-device-mode="small"] .sn-shell .sn-side.collapsed+.sn-main{
+html[data-studio-device-mode="small"] .sn-shell[data-navigation-owner="react-v138"]>.sn-main,
+html[data-studio-device-mode="small"] .sn-shell[data-navigation-owner="react-v138"]>.sn-side+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell[data-navigation-owner="react-v138"]>.sn-side.collapsed+.sn-main,
+html[data-studio-device-mode="small"] .sn-shell[data-navigation-owner="react-v138"]>.sn-side:not(.collapsed)+.sn-main{
   width:100%!important;
   max-width:100%!important;
-  margin-left:0!important;
+  margin:0!important;
 }
 html[data-studio-device-mode="small"] .sn-shell .sn-side,
 html[data-studio-device-mode="small"] .sn-shell .sn-side.collapsed{
@@ -242,6 +245,9 @@ html[data-studio-device-mode="small"] .sn-side-backdrop{
   backdrop-filter:none!important;
 }
 html[data-studio-device-mode="small"] .sn-shell .sn-top{
+  display:flex!important;
+  grid-template-columns:none!important;
+  align-items:center!important;
   width:100%!important;
   max-width:100%!important;
   height:60px!important;
