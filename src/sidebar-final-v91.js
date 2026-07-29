@@ -311,6 +311,10 @@ function syncFinalSidebar() {
   if (!side || !nav) return;
 
   shell.dataset.sidebarFinalRelease = RELEASE;
+  if (shell.dataset.navigationOwner === "react-v138") {
+    shell.dataset.sidebarFinalRelease = "bypassed-by-react-v138";
+    return;
+  }
   hideNaraSidebar(nav);
   const buttons = [...nav.querySelectorAll(":scope > button")];
   normalizeDomain(buttons.find((button) => labelOf(button) === "Domain"));
