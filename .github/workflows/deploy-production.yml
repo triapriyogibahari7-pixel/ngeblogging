@@ -56,10 +56,10 @@ jobs:
       - name: Validate Cloudflare bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy restored pre-API-Keys Studio
+      - name: Deploy restored Studio plus API Keys
         run: npm run deploy:cloudflare
 
-      - name: Verify rollback release is live
+      - name: Verify v135 release is live
         shell: bash
         run: |
           set -euo pipefail
@@ -67,12 +67,12 @@ jobs:
             stamp=$(date +%s)
             worker=$(curl -fsSL --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/ngeblogging-health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
-            if [[ "$worker" == *"ngeblogging-app-v134-rollback-20260729"* ]] \
+            if [[ "$worker" == *"ngeblogging-app-v135-api-keys-20260729"* ]] \
               && [[ "$health_code" == "200" ]]; then
-              echo "Production rollback v134 verified on attempt $attempt."
+              echo "Production v135 verified on attempt $attempt."
               exit 0
             fi
-            echo "Production rollback belum aktif (attempt $attempt/30); menunggu propagasi."
+            echo "Production v135 belum aktif (attempt $attempt/30); menunggu propagasi."
             sleep 10
           done
           echo "DEPLOY_VERIFY_FAILED"
