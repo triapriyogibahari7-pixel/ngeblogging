@@ -159,6 +159,16 @@ function synchronize() {
   frame = requestAnimationFrame(() => {
     const shell = document.querySelector(".sn-shell");
     if (!(shell instanceof HTMLElement)) return;
+    if (shell.dataset.navigationOwner === "react-v138") {
+      root?.unmount();
+      root = null;
+      mountedHost = null;
+      document.getElementById(BUTTON_ID)?.remove();
+      document.getElementById(HOST_ID)?.remove();
+      shell.classList.remove(ACTIVE_CLASS);
+      shell.dataset.apiKeysBridge = "native-react-v138";
+      return;
+    }
     ensureButton(shell);
     ensureHost(shell);
     shell.dataset.apiKeysBridge = RELEASE;
