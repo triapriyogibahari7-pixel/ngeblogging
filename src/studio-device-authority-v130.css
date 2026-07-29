@@ -1,0 +1,332 @@
+/*
+ * Ngeblogging Studio device authority v130.
+ * Loaded last. It preserves the accepted Studio design while locking geometry
+ * for desktop, laptop, true mobile, Android desktop-site mode, operational
+ * pages, the editor, and Nara Mini/Assistant.
+ */
+
+html,body,#root{width:100%;min-width:0;min-height:100%;margin:0;overflow-x:hidden}
+
+/* ---------- Shared Studio shell contract ---------- */
+.sv124-shell{
+  --v130-side-open:244px;
+  --v130-side-closed:72px;
+  position:relative!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  overflow-x:clip!important;
+}
+.sv124-side{
+  width:var(--v130-side-open)!important;
+  min-width:var(--v130-side-open)!important;
+  max-width:var(--v130-side-open)!important;
+}
+.sv124-main{
+  box-sizing:border-box!important;
+  width:calc(100% - var(--v130-side-open))!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  margin-left:var(--v130-side-open)!important;
+  overflow-x:clip!important;
+}
+.sv124-shell.collapsed .sv124-side{
+  width:var(--v130-side-closed)!important;
+  min-width:var(--v130-side-closed)!important;
+  max-width:var(--v130-side-closed)!important;
+}
+.sv124-shell.collapsed .sv124-main{
+  width:calc(100% - var(--v130-side-closed))!important;
+  margin-left:var(--v130-side-closed)!important;
+}
+
+/* Every route owns the full remaining width. This also fixes portal-mounted
+   Analytics and Members pages that previously occupied only the left side. */
+.sv124-main>.sv124-top{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important}
+.sv124-main>:not(.sv124-top),
+.sv124-main>.sv124-page,
+.sv124-main>.sv124-comments-page,
+.sv124-main>.sv124-domain-page,
+.sv124-main>.sv124-api-page,
+.sv124-main>#ngeblogging-operational-surface-v125,
+#ngeblogging-operational-surface-v125,
+.sv125-operational-host,
+.sv125-operational-host>*{
+  box-sizing:border-box!important;
+  display:block;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin-right:0!important;
+  margin-left:0!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+}
+.sv124-page,
+.sv124-comments-page,
+.sv124-domain-page,
+.sv124-api-page,
+.sv125-analytics-page,
+.sv125-members-page{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+}
+.sv124-page>*,
+.sv124-comments-page>*,
+.sv124-domain-page>*,
+.sv124-api-page>*,
+.sv125-analytics-page>*,
+.sv125-members-page>*{max-width:none!important;min-width:0!important}
+.sv125-analytics-page,.sv125-members-page{display:flex!important}
+
+/* One exact axis for Ringkasan through API Keys, Pengaturan, and Keluar. */
+.sv124-side>nav,.sv124-account-footer{box-sizing:border-box!important;width:100%!important;min-width:0!important;padding-inline:12px!important}
+.sv124-side nav button,.sv124-account-footer button{
+  position:static!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  display:grid!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  align-items:center!important;
+  justify-content:stretch!important;
+  justify-items:start!important;
+  gap:12px!important;
+  margin:0!important;
+  padding:0 14px!important;
+  transform:none!important;
+}
+.sv124-side nav button svg,.sv124-account-footer button svg{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:21px!important;
+  height:21px!important;
+  margin:0!important;
+  justify-self:center!important;
+  align-self:center!important;
+}
+.sv124-side nav button span,.sv124-account-footer button span{
+  grid-column:2!important;
+  grid-row:1!important;
+  display:block!important;
+  visibility:visible!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  opacity:1!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  text-align:left!important;
+}
+.sv124-shell.collapsed .sv124-side nav button,
+.sv124-shell.collapsed .sv124-account-footer button{
+  width:48px!important;
+  min-width:48px!important;
+  max-width:48px!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  grid-template-columns:24px!important;
+  justify-content:center!important;
+  justify-items:center!important;
+  gap:0!important;
+  margin:0 auto!important;
+  padding:0!important;
+}
+.sv124-shell.collapsed .sv124-side nav button span,
+.sv124-shell.collapsed .sv124-account-footer button span{
+  display:none!important;
+  visibility:hidden!important;
+  width:0!important;
+  min-width:0!important;
+  max-width:0!important;
+  opacity:0!important;
+  overflow:hidden!important;
+}
+.sv124-account-footer{align-items:stretch!important}
+
+/* The real panel toggle is always used. The hamburger route stays disabled. */
+.sv124-desktop-toggle{display:grid!important;flex:0 0 40px!important}
+.sv124-mobile-toggle{display:none!important}
+.sv124-mobile-backdrop{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+/* Domain, Comments, Members, API Keys, Theme and Media remain isolated routes. */
+.sv124-comments-page+.sv124-domain-page,
+.sv124-domain-page+.sv124-comments-page{clear:both!important}
+.sv124-domain-page,.sv124-comments-page,.sv124-api-page,.sv125-members-page{position:relative!important;isolation:isolate!important}
+.sv124-domain-loading,.sv124-panel-loading{max-width:none!important}
+
+/* ---------- Android/phone “Desktop site” ----------
+   The PWA runtime detects the physical phone even when the layout viewport is
+   around 980px. Keep the accepted desktop-like sidebar, but make every surface
+   consume the complete remaining width. */
+html[data-desktop-site-phone="true"] .sv124-shell{
+  --v130-side-open:244px;
+  --v130-side-closed:72px;
+}
+html[data-desktop-site-phone="true"] .sv124-main>:not(.sv124-top),
+html[data-desktop-site-phone="true"] #ngeblogging-operational-surface-v125,
+html[data-desktop-site-phone="true"] .sv125-operational-host,
+html[data-desktop-site-phone="true"] .sv125-operational-host>*{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+}
+html[data-desktop-site-phone="true"] .sv124-page,
+html[data-desktop-site-phone="true"] .sv124-comments-page,
+html[data-desktop-site-phone="true"] .sv124-domain-page,
+html[data-desktop-site-phone="true"] .sv124-api-page,
+html[data-desktop-site-phone="true"] .sv125-analytics-page,
+html[data-desktop-site-phone="true"] .sv125-members-page{
+  width:100%!important;
+  max-width:none!important;
+  padding:24px 24px 40px!important;
+}
+html[data-desktop-site-phone="true"] .sv125-analytics-metrics,
+html[data-desktop-site-phone="true"] .sv125-member-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html[data-desktop-site-phone="true"] .sv125-analytics-grid{grid-template-columns:minmax(0,1.45fr) minmax(250px,.75fr)!important}
+html[data-desktop-site-phone="true"] .sv125-breakdown-grid,
+html[data-desktop-site-phone="true"] .sv125-member-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+/* Fill the editor canvas to the viewport height instead of leaving the large
+   grey block underneath a short paper in Android desktop-site mode. */
+html[data-desktop-site-phone="true"] .ce-workspace{width:100%!important;max-width:none!important;min-width:0!important}
+html[data-desktop-site-phone="true"] .ce-paper-shell{box-sizing:border-box!important;min-height:calc(100dvh - 168px)!important;padding-bottom:24px!important}
+html[data-desktop-site-phone="true"] .ce-paper{min-height:max(980px,calc(100dvh - 248px))!important}
+html[data-desktop-site-phone="true"] .ce-sidebar{max-height:calc(100dvh - 168px)!important}
+
+/* ---------- True compact phone / installed application ---------- */
+@media(max-width:760px){
+  .sv124-shell{--v130-side-open:min(78vw,286px);--v130-side-closed:64px;width:100%!important;max-width:100%!important}
+  .sv124-side,.sv124-shell.collapsed .sv124-side{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    z-index:3200!important;
+    display:flex!important;
+    flex-direction:column!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    transform:none!important;
+    transition:width .2s ease!important;
+  }
+  .sv124-shell.expanded .sv124-side{width:var(--v130-side-open)!important;min-width:var(--v130-side-open)!important;max-width:var(--v130-side-open)!important;box-shadow:16px 0 42px rgba(20,38,66,.2)!important}
+  .sv124-shell.collapsed .sv124-side{width:var(--v130-side-closed)!important;min-width:var(--v130-side-closed)!important;max-width:var(--v130-side-closed)!important;box-shadow:none!important}
+  /* The compact rail reserves 64px. Opening it overlays the content instead of
+     crushing every page into an unusably narrow column. */
+  .sv124-main,.sv124-shell.expanded .sv124-main,.sv124-shell.collapsed .sv124-main{
+    width:calc(100% - var(--v130-side-closed))!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin-left:var(--v130-side-closed)!important;
+    padding:0!important;
+    overflow-x:hidden!important;
+  }
+  .sv124-logo{height:64px!important;min-height:64px!important;flex-basis:64px!important;padding:0 12px!important}
+  .sv124-shell.expanded .sv124-logo>button{display:grid!important;width:36px!important;height:36px!important;place-items:center!important;margin-left:auto!important;border:0!important;border-radius:9px!important;background:#f2f5f9!important}
+  .sv124-shell.collapsed .sv124-logo>button{display:none!important}
+  .sv124-side>nav,.sv124-shell.collapsed .sv124-side>nav{padding:0 10px 10px!important}
+  .sv124-account-footer,.sv124-shell.collapsed .sv124-account-footer{padding:9px 10px calc(10px + env(safe-area-inset-bottom))!important}
+  .sv124-shell.expanded .sv124-side nav button,
+  .sv124-shell.expanded .sv124-account-footer button{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    grid-template-columns:25px minmax(0,1fr)!important;
+    gap:12px!important;
+    margin:0!important;
+    padding:0 14px!important;
+  }
+  .sv124-shell.expanded .sv124-side nav button span,
+  .sv124-shell.expanded .sv124-account-footer button span{display:block!important;visibility:visible!important;width:auto!important;max-width:none!important;opacity:1!important}
+  .sv124-shell.collapsed .sv124-side nav button,
+  .sv124-shell.collapsed .sv124-account-footer button{width:44px!important;min-width:44px!important;max-width:44px!important;margin:0 auto!important}
+  .sv124-top{padding:0 8px!important;gap:6px!important}
+  .sv124-workspace>div,.sv124-cloud span,.sv124-top-actions span{display:none!important}
+  .sv124-page,.sv124-comments-page,.sv124-domain-page,.sv124-api-page,.sv125-analytics-page,.sv125-members-page{padding:18px 12px 32px!important}
+  .sv124-metrics-grid,.sv124-home-grid,.sv124-info-grid,.sv124-settings-grid,
+  .sv125-analytics-metrics,.sv125-member-metrics,.sv125-analytics-grid,
+  .sv125-breakdown-grid,.sv125-member-grid{grid-template-columns:1fr!important}
+}
+
+/* ---------- Nara Mini and Assistant ---------- */
+html .nara-floating-button{
+  position:fixed!important;
+  right:max(10px,env(safe-area-inset-right))!important;
+  bottom:max(10px,env(safe-area-inset-bottom))!important;
+  z-index:2147483000!important;
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+}
+html .nara-assistant-layer{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  z-index:2147483100!important;
+  overflow:hidden!important;
+}
+html .nara-assistant-backdrop{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+html .nara-assistant-shell{
+  position:absolute!important;
+  inset:0 0 0 auto!important;
+  box-sizing:border-box!important;
+  width:min(680px,100vw)!important;
+  max-width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  min-width:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+html .nara-assistant-shell[data-nara-size="compact"]{width:min(430px,100vw)!important}
+html .nara-assistant-shell[data-nara-size="medium"]{width:min(680px,100vw)!important}
+html .nara-assistant-shell[data-nara-size="full"]{inset:0!important;width:100vw!important;max-width:100vw!important}
+html .nara-window-controls{display:flex!important;align-items:center!important;gap:4px!important}
+html .nara-window-controls button{
+  width:34px!important;
+  height:34px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:#f1f4f8!important;
+  color:#63738a!important;
+  padding:0!important;
+}
+html .nara-window-controls button.active{background:#e7efff!important;color:#285fc6!important;box-shadow:inset 0 0 0 1px #cbdcff!important}
+html .nara-window-controls svg{width:16px!important;height:16px!important}
+html .nara-assistant-shell .nara-assistant-header{grid-template-columns:42px minmax(0,1fr) auto 38px 38px!important}
+
+html[data-desktop-site-phone="true"] .nara-assistant-shell:not([data-nara-size]),
+html[data-desktop-site-phone="true"] .nara-assistant-shell[data-nara-size="medium"]{width:min(76vw,760px)!important;max-width:100vw!important}
+html[data-desktop-site-phone="true"] .nara-assistant-shell[data-nara-size="full"]{inset:0!important;width:100vw!important;max-width:100vw!important}
+
+@media(max-width:760px){
+  html .nara-floating-button{width:54px!important;min-width:54px!important;height:54px!important;min-height:54px!important;border-radius:18px!important;padding:0!important;grid-template-columns:1fr!important;grid-template-rows:1fr!important;place-items:center!important}
+  html .nara-floating-button>b,html .nara-floating-button>small{display:none!important}
+  html .nara-assistant-shell,
+  html .nara-assistant-shell[data-nara-size="medium"],
+  html .nara-assistant-shell[data-nara-size="full"]{inset:0!important;width:100vw!important;max-width:100vw!important;border-radius:0!important}
+  html .nara-assistant-shell[data-nara-size="compact"]{left:auto!important;right:0!important;width:min(92vw,430px)!important;max-width:92vw!important}
+  html .nara-assistant-shell .nara-assistant-header{grid-template-columns:38px minmax(0,1fr) auto 36px 36px!important;gap:5px!important;padding-inline:8px!important}
+  html .nara-window-controls button{width:31px!important;height:31px!important}
+}
