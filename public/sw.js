@@ -1,15 +1,15 @@
-const VERSION = "ngeblogging-app-v139-sidebar-auth-20260729";
-const CACHE_RELEASE = "locked-device-layout-and-auth-v139";
+const VERSION = "ngeblogging-app-v140-studio-auth-20260729";
+const CACHE_RELEASE = "single-react-layout-direct-auth-v140";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v139-sidebar-auth";
+const RECOVERY_VALUE = "pwa-v140";
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(SHELL_CACHE);
-    await Promise.allSettled(APP_SHELL.map((url) => cache.add(new Request(url, { cache: "reload" }))));
+    await Promise.allSettled(APP_SHELL.map((asset) => cache.add(new Request(asset, { cache: "reload" }))));
     await self.skipWaiting();
   })());
 });
@@ -30,14 +30,14 @@ async function refreshOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-sidebar-auth-v139",
+        reason: "service-worker-activated-studio-auth-v140",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;
       url.searchParams.set(RECOVERY_QUERY, RECOVERY_VALUE);
       await client.navigate(url.href);
     } catch {
-      // A broken tab must not block activation for the other clients.
+      // One broken tab must not block refresh for the others.
     }
   }));
 }
