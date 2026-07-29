@@ -4,59 +4,67 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Studio activates the final device-mode runtime instead of a static early CSS authority", () => {
+test("Studio loads one static final device authority", () => {
   const studio = read("src/Studio.jsx");
-  assert.match(studio, /studio-device-mode-v137\.js/);
-  assert.doesNotMatch(studio, /studio-final-recovery-v136\.css/);
-});
-
-test("device runtime distinguishes small application and large browser layouts", () => {
   const runtime = read("src/studio-device-mode-v137.js");
-  assert.match(runtime, /SMALL_MAX = 700/);
-  assert.match(runtime, /studioDeviceMode = mode/);
-  assert.match(runtime, /"small" : "large"/);
-  assert.match(runtime, /display-mode: standalone/);
-  assert.match(runtime, /visualViewport/);
-  assert.match(runtime, /orientationchange/);
-  assert.match(runtime, /pageshow/);
-  assert.match(runtime, /requestAnimationFrame\(\(\) => requestAnimationFrame/);
-  assert.match(runtime, /import\("\.\/studio-device-modes-v137\.css"\)/);
+  assert.match(studio, /studio-device-mode-v137\.js/);
+  assert.match(runtime, /^import "\.\/studio-device-modes-v137\.css";/);
+  assert.doesNotMatch(runtime, /requestAnimationFrame\(\(\) => requestAnimationFrame/);
+  assert.doesNotMatch(runtime, /visualViewport/);
+  assert.match(runtime, /SMALL_QUERY = "\(max-width: 700px\)"/);
 });
 
-test("final authority prevents white right and bottom gaps", () => {
-  const css = read("src/studio-device-modes-v137.css");
-  assert.match(css, /html\{width:100%;max-width:100%;min-height:100%;background:#f5f7fb;overflow-x:hidden\}/);
-  assert.match(css, /body,#root\{width:100%;max-width:100%;min-width:0;min-height:100%/);
-  assert.match(css, /body,#root,\.sn-shell,\.sn-main\{min-height:100vh;min-height:100dvh\}/);
-  assert.match(css, /max-width:100vw!important/);
-  assert.match(css, /overflow-x:clip!important/);
+test("React owns the same small-screen contract and exposes the n menu control", () => {
+  const source = read("src/StudioNext.jsx");
+  assert.match(source, /PHONE_QUERY = "\(max-width: 700px\)"/);
+  assert.match(source, /smallScreen \? \(mobileSidebar/);
+  assert.match(source, /sn-sidebar-toggle-mark/);
+  assert.match(source, />n<\/span><PanelLeftClose/);
+  assert.match(source, /aria-controls="ngeblogging-studio-sidebar"/);
+  assert.match(source, /id="ngeblogging-studio-sidebar"/);
 });
 
-test("small mode is an off-canvas drawer with full-width content", () => {
+test("mobile drawer has no blur and desktop geometry is exact", () => {
   const css = read("src/studio-device-modes-v137.css");
-  assert.match(css, /data-studio-device-mode="small"/);
-  assert.match(css, /transform:translateX\(-105%\)!important/);
-  assert.match(css, /\.sn-side\.mobile-open/);
-  assert.match(css, /margin-left:0!important;width:100%!important;max-width:100%!important/);
-  assert.match(css, /safe-area-inset-left/);
-  assert.match(css, /safe-area-inset-bottom/);
+  assert.match(css, /@media\(max-width:700px\)/);
+  assert.match(css, /transform:translate3d\(-102%,0,0\)!important/);
+  assert.match(css, /\.sn-shell>\.sn-side\.mobile-open/);
+  assert.match(css, /backdrop-filter:none!important/);
+  assert.match(css, /sn-sidebar-toggle-mark/);
+  assert.match(css, /--studio-side-open:220px/);
+  assert.match(css, /--studio-side-closed:70px/);
+  assert.match(css, /width:calc\(100% - var\(--studio-side-open\)\)!important/);
 });
 
-test("large mode keeps precise expanded and collapsed desktop geometry", () => {
-  const css = read("src/studio-device-modes-v137.css");
-  assert.match(css, /data-studio-device-mode="large"/);
-  assert.match(css, /width:220px!important;max-width:220px!important/);
-  assert.match(css, /width:70px!important;max-width:70px!important/);
-  assert.match(css, /width:calc\(100% - 220px\)!important/);
-  assert.match(css, /width:calc\(100% - 70px\)!important/);
+test("legacy authorities cannot rewrite sidebar geometry repeatedly", () => {
+  const index = read("index.html");
+  const shell = read("src/studio-shell-v30.js");
+  const precision = read("src/studio-mobile-precision-v99.js");
+  const final = read("src/studio-final-v106.js");
+  assert.match(index, /superseded-by-react-sidebar-v138/);
+  assert.doesNotMatch(shell.match(/function sync\(\) \{[\s\S]*?\n\}/)?.[0] || "", /syncSidebar|autoOpenNara/);
+  assert.doesNotMatch(precision.match(/function sync\(\) \{[\s\S]*?\n\}/)?.[0] || "", /syncSidebarGeometry|stabilizeCommentsRow|ensureFinalStyle/);
+  assert.doesNotMatch(final, /setInterval\(sync,\s*700\)/);
 });
 
-test("Domain, API Keys, tables, and Nara remain isolated and responsive", () => {
+test("Domain, API Keys, comments, and Nara remain present and isolated", () => {
   const css = read("src/studio-device-modes-v137.css");
+  const index = read("index.html");
+  const connectors = read("src/nara-connectors-v29.js");
   assert.match(css, /#ngeblogging-api-keys-v135/);
-  assert.match(css, /\.sv124-page/);
-  assert.match(css, /\.sn-api-table\{overflow-x:auto!important/);
-  assert.match(css, /\.nara-assistant-shell\{pointer-events:auto!important/);
-  assert.match(css, /\.nara-assistant-shell\.nara-fullscreen-v135/);
-  assert.match(css, /height:min\(52dvh,460px\)!important/);
+  assert.match(css, /sn-comments-nav-host-v93/);
+  assert.match(css, /nara-assistant-shell/);
+  assert.match(index, /comments-studio-runtime-v93\.jsx/);
+  assert.match(index, /studio-final-v106\.js/);
+  assert.match(connectors, /api-keys-studio-bridge\.jsx/);
+});
+
+test("PWA cache rotates to the v138 sidebar authority", () => {
+  const runtime = read("src/pwa-runtime.js");
+  const worker = read("public/sw.js");
+  assert.match(runtime, /ngeblogging-pwa-v138-20260729/);
+  assert.match(runtime, /pwa-v138/);
+  assert.match(worker, /ngeblogging-app-v138-sidebar-20260729/);
+  assert.match(worker, /single-react-sidebar-v138-20260729/);
+  assert.match(worker, /studio-device-modes-v137\.css/);
 });
