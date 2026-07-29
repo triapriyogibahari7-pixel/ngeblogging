@@ -6,6 +6,21 @@ const API_ORIGIN = "https://ngeblogging.triapriyogibahari7.workers.dev";
 const initializedNaraShells = new WeakSet();
 let scheduledFrame = 0;
 
+function ensureAuthorityStyles() {
+  let link = document.querySelector('link[data-studio-ui-authority="v133"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/src/studio-ui-authority-v133.css?v=133";
+    link.dataset.studioUiAuthority = "v133";
+    document.head.append(link);
+    return;
+  }
+  /* The recovery runtime appends its stylesheet dynamically. Moving this link
+     to the end makes the user's approved geometry the final cascade authority. */
+  if (link !== document.head.lastElementChild) document.head.append(link);
+}
+
 function physicalPhone() {
   const root = document.documentElement;
   const shortestScreenEdge = Math.min(Number(screen?.width || 0), Number(screen?.height || 0));
@@ -35,6 +50,7 @@ function activateNaraSize(shell, size) {
   shell.dataset.naraSize = size;
   const layer = shell.closest(".nara-assistant-layer");
   layer?.setAttribute("data-nara-size", size);
+  layer?.setAttribute("aria-modal", String(size === "full"));
   shell.querySelectorAll(".nara-window-controls button[data-size]").forEach((button) => {
     const active = button.dataset.size === size;
     button.classList.toggle("active", active);
@@ -99,6 +115,7 @@ function normalizeSidebar() {
 function synchronize() {
   cancelAnimationFrame(scheduledFrame);
   scheduledFrame = requestAnimationFrame(() => {
+    ensureAuthorityStyles();
     removeSidebarNara();
     migratePhoneSidebar();
     normalizeSidebar();
