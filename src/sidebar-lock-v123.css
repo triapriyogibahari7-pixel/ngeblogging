@@ -1,0 +1,142 @@
+/* Final sidebar visual authority v123.
+   Loaded after all historical sidebar styles. Mobile drawer geometry is untouched. */
+:root{--sidebar-lock-v123:1}
+
+@media(min-width:761px){
+  .sn-shell>.sn-side>nav>.sn-comments-nav-host-v93{display:contents!important}
+
+  .sn-shell>.sn-side:not(.collapsed)>nav>button,
+  .sn-shell>.sn-side:not(.collapsed)>nav>#ngeblogging-comments-native-v106,
+  .sn-shell>.sn-side:not(.collapsed)>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93,
+  .sn-shell>.sn-side:not(.collapsed)>.sn-account-footer>button{
+    position:relative!important;
+    inset:auto!important;
+    display:grid!important;
+    grid-template-columns:24px minmax(0,112px)!important;
+    grid-auto-flow:column!important;
+    align-items:center!important;
+    align-content:center!important;
+    justify-items:start!important;
+    justify-content:center!important;
+    width:calc(100% - 16px)!important;
+    min-width:0!important;
+    max-width:calc(100% - 16px)!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:2px auto!important;
+    padding:0 12px!important;
+    gap:12px!important;
+    box-sizing:border-box!important;
+    text-align:left!important;
+    transform:none!important;
+  }
+
+  .sn-shell>.sn-side.collapsed>nav>button,
+  .sn-shell>.sn-side.collapsed>nav>#ngeblogging-comments-native-v106,
+  .sn-shell>.sn-side.collapsed>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93,
+  .sn-shell>.sn-side.collapsed>.sn-account-footer>button{
+    position:relative!important;
+    inset:auto!important;
+    display:grid!important;
+    place-items:center!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:2px auto!important;
+    padding:0!important;
+    gap:0!important;
+    box-sizing:border-box!important;
+    text-align:center!important;
+    transform:none!important;
+  }
+
+  .sn-shell>.sn-side:not(.collapsed)>nav :is(button,#ngeblogging-comments-native-v106)>.sn-comments-nav-button-v93,
+  .sn-shell>.sn-side:not(.collapsed)>nav :is(button,#ngeblogging-comments-native-v106)>svg,
+  .sn-shell>.sn-side:not(.collapsed)>.sn-account-footer>button>svg,
+  .sn-shell>.sn-side.collapsed>nav :is(button,#ngeblogging-comments-native-v106)>svg{
+    width:20px!important;
+    height:20px!important;
+    margin:0!important;
+    padding:0!important;
+    justify-self:center!important;
+    align-self:center!important;
+    transform:none!important;
+  }
+
+  .sn-shell>.sn-side:not(.collapsed)>nav>#ngeblogging-comments-native-v106>span,
+  .sn-shell>.sn-side:not(.collapsed)>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:auto!important;
+    height:auto!important;
+    margin:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  .sn-shell>.sn-side.collapsed>nav>#ngeblogging-comments-native-v106>span,
+  .sn-shell>.sn-side.collapsed>nav>.sn-comments-nav-host-v93>.sn-comments-nav-button-v93>span{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    width:0!important;
+    height:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+
+  .sn-shell>.sn-side>.sn-account-footer{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    justify-items:center!important;
+    align-items:center!important;
+    gap:4px!important;
+    width:100%!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+  }
+
+  .sn-shell>.sn-side>nav>button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    [data-sidebar-domain-alignment-v115="true"]
+  ):not(.active),
+  .sn-shell>.sn-side>nav>button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    [data-sidebar-domain-alignment-v115="true"]
+  ):not(.active):is(:hover,:focus,:focus-visible,:active){
+    border:0!important;
+    border-top:0!important;
+    border-color:transparent!important;
+    outline:0!important;
+    background:transparent!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+    backdrop-filter:none!important;
+  }
+
+  .sn-shell>.sn-side>nav>button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    [data-sidebar-domain-alignment-v115="true"]
+  ):not(.active)::before,
+  .sn-shell>.sn-side>nav>button:is(
+    [data-sidebar-domain-order-v113="true"],
+    [data-sidebar-domain-v91="true"],
+    [data-sidebar-domain-alignment-v115="true"]
+  ):not(.active)::after{
+    content:none!important;
+    display:none!important;
+  }
+}
+
+html[data-desktop-layout-requested="true"] .sn-shell>.sn-side>nav>.sn-comments-nav-host-v93{display:contents!important}

@@ -1,0 +1,33 @@
+/* Domain React-view to isolated Domain Manager handoff v123. */
+:root{--domain-view-handoff-v123:1}
+
+.dm112-preload[data-domain-handoff-v123="waiting"]{
+  min-height:calc(100dvh - 76px)!important;
+}
+
+.dm112-preload.dm123-stalled svg.spin{
+  animation-play-state:paused!important;
+  opacity:.45!important;
+}
+
+.dm112-preload .dm123-retry{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  margin:16px auto 0;
+  padding:0 18px;
+  border:0;
+  border-radius:12px;
+  background:#2d6edf;
+  color:#fff;
+  font:800 13px/1 "DM Sans",Arial,sans-serif;
+  box-shadow:0 9px 22px rgba(45,110,223,.22);
+  cursor:pointer;
+}
+
+.dm112-preload .dm123-retry:active{transform:translateY(1px)}
+
+@media(max-width:760px){
+  .dm112-preload[data-domain-handoff-v123="waiting"]{min-height:calc(100dvh - 64px)!important}
+}
