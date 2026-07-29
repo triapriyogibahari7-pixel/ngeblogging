@@ -1,0 +1,184 @@
+name: Publish Ngeblogging Netlify Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-netlify-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      NETLIFY: true
+      NGEBLOGGING_API_ORIGIN: https://ngeblogging.triapriyogibahari7.workers.dev
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate Netlify credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo "NETLIFY_AUTH_TOKEN_MISSING"; exit 1; }
+          if [[ -z "$NETLIFY_SITE_ID" ]]; then
+            echo "NETLIFY_SITE_ID=ngeblogging.netlify.app" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test and build React production
+        run: npm run build
+
+      - name: Inspect and unlock current production deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            -H "Accept: application/json" \
+            "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID" \
+            -o /tmp/netlify-site.json
+
+          resolved_site_id=$(node -e "const s=require('/tmp/netlify-site.json'); if(!s.id)process.exit(2); process.stdout.write(String(s.id))")
+          site_name=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.name||''))")
+          custom_domain=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.custom_domain||''))")
+          current_deploy_id=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.published_deploy?.id||''))")
+          current_deploy_locked=$(node -e "const s=require('/tmp/netlify-site.json'); process.stdout.write(String(s.published_deploy?.locked===true))")
+
+          {
+            echo "NETLIFY_RESOLVED_SITE_ID=$resolved_site_id"
+            echo "NETLIFY_SITE_NAME=$site_name"
+            echo "NETLIFY_CUSTOM_DOMAIN=$custom_domain"
+            echo "NETLIFY_CURRENT_DEPLOY_ID=$current_deploy_id"
+            echo "NETLIFY_CURRENT_DEPLOY_LOCKED=$current_deploy_locked"
+          } >> "$GITHUB_ENV"
+
+          node <<'NODE'
+          const site = require('/tmp/netlify-site.json');
+          console.log(JSON.stringify({
+            siteId: site.id,
+            name: site.name,
+            customDomain: site.custom_domain,
+            aliases: site.domain_aliases || [],
+            publishedDeploy: site.published_deploy?.id || null,
+            locked: site.published_deploy?.locked === true,
+            repoBranch: site.build_settings?.repo_branch || site.repo?.branch || null,
+          }, null, 2));
+          NODE
+
+          if [[ "$current_deploy_locked" == "true" && -n "$current_deploy_id" ]]; then
+            curl -fsSL -X POST \
+              -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              -H "Accept: application/json" \
+              "https://api.netlify.com/api/v1/deploys/$current_deploy_id/unlock" \
+              -o /tmp/netlify-unlock.json
+            echo "Deploy produksi lama dibuka agar versi baru dapat dipublikasikan."
+          fi
+
+      - name: Upload dist as the production deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/index.html || { echo "DIST_INDEX_MISSING"; exit 1; }
+          test -f dist/release-v154.json || { echo "DIST_RELEASE_PROBE_MISSING"; exit 1; }
+          grep -q 'ngeblogging-production-entry' dist/index.html || { echo "DIST_ENTRY_MARKER_MISSING"; exit 1; }
+          ! grep -q 'WHITE-R4-2026.07.12' dist/index.html || { echo "DIST_CONTAINS_WHITE_R4"; exit 1; }
+
+          (cd dist && zip -q -r ../ngeblogging-production-v154.zip .)
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @ngeblogging-production-v154.zip \
+            "https://api.netlify.com/api/v1/sites/$NETLIFY_RESOLVED_SITE_ID/deploys" \
+            -o /tmp/netlify-deploy.json
+
+          node <<'NODE'
+          const fs = require('fs');
+          const deploy = JSON.parse(fs.readFileSync('/tmp/netlify-deploy.json', 'utf8'));
+          if (!deploy.id) throw new Error(deploy.message || deploy.error || 'NETLIFY_DEPLOY_NOT_CREATED');
+          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_NEW_DEPLOY_ID=${deploy.id}\n`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `NETLIFY_NEW_DEPLOY_URL=${deploy.ssl_url || deploy.deploy_ssl_url || deploy.url || ''}\n`);
+          console.log(JSON.stringify({ id: deploy.id, state: deploy.state, url: deploy.ssl_url || deploy.deploy_ssl_url || deploy.url }, null, 2));
+          NODE
+
+      - name: Wait until the production deploy is ready
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            curl -fsSL \
+              -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+              -H "Accept: application/json" \
+              "https://api.netlify.com/api/v1/deploys/$NETLIFY_NEW_DEPLOY_ID" \
+              -o /tmp/netlify-deploy-state.json
+            state=$(node -e "const d=require('/tmp/netlify-deploy-state.json'); process.stdout.write(String(d.state||''))")
+            if [[ "$state" == "ready" ]]; then
+              echo "Netlify production deploy ready."
+              exit 0
+            fi
+            if [[ "$state" == "error" ]]; then
+              cat /tmp/netlify-deploy-state.json
+              exit 1
+            fi
+            echo "Netlify deploy state: $state ($attempt/60)"
+            sleep 5
+          done
+          echo "NETLIFY_DEPLOY_READY_TIMEOUT"
+          exit 1
+
+      - name: Purge Netlify CDN cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"site_id\":\"$NETLIFY_RESOLVED_SITE_ID\"}" \
+            "https://api.netlify.com/api/v1/purge" \
+            -o /tmp/netlify-purge.json
+
+      - name: Verify Netlify production and the custom domain
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_url() {
+            local url="$1"
+            local label="$2"
+            local stamp
+            stamp=$(date +%s)
+            curl -fsSL --max-time 25 -D "/tmp/${label}-headers.txt" "$url?deploy_audit=$stamp" -o "/tmp/${label}-body.txt"
+            grep -q 'ngeblogging-production-entry' "/tmp/${label}-body.txt" || { echo "${label}_ENTRY_MARKER_MISSING"; return 1; }
+            ! grep -q 'WHITE-R4-2026.07.12' "/tmp/${label}-body.txt" || { echo "${label}_WHITE_R4_STILL_ACTIVE"; return 1; }
+          }
+
+          verify_url "https://ngeblogging.netlify.app/" "netlify_root"
+          verify_url "https://ngeblogging.netlify.app/login" "netlify_login"
+          curl -fsSL --max-time 25 "https://ngeblogging.netlify.app/release-v154.json?deploy_audit=$(date +%s)" -o /tmp/netlify-release.json
+          grep -q '2026.07.30-production-entry-v154' /tmp/netlify-release.json
+          grep -q '"legacyWhiteR4": false' /tmp/netlify-release.json
+
+          if [[ -n "${NETLIFY_CUSTOM_DOMAIN:-}" ]]; then
+            verify_url "https://$NETLIFY_CUSTOM_DOMAIN/" "custom_root"
+            verify_url "https://$NETLIFY_CUSTOM_DOMAIN/login" "custom_login"
+          fi
