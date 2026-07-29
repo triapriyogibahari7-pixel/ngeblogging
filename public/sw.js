@@ -22,7 +22,7 @@ const APP_SHELL = [
   "/src/domain-manager-v80.js", "/src/domain-view-handoff-v123.css", "/src/domain-view-handoff-v123.js",
   "/src/comments-empty-state-v123.css", "/src/comments-empty-state-v123.js",
   "/src/sidebar-menu-contract-v123.js", "/src/sidebar-lock-v123.css", "/src/sidebar-lock-v123.js",
-  "/src/sidebar-account-collapsed-icons-v119.css"
+  "/src/sidebar-mobile-lock-v123.js", "/src/sidebar-account-collapsed-icons-v119.css"
 ];
 const RECOVERY_QUERY = "ngeblogging_recovery";
 const RECOVERY_VALUE = "pwa-v123";
