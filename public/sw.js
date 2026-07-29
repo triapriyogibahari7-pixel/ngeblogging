@@ -1,5 +1,5 @@
-const VERSION = "ngeblogging-app-v135-api-keys-20260729";
-const CACHE_RELEASE = "pre-api-ui-plus-api-keys-v135-20260729";
+const VERSION = "ngeblogging-app-v138-sidebar-20260729";
+const CACHE_RELEASE = "single-react-sidebar-v138-20260729";
 // Active UI behavior remains the restored pre-API-Keys v123 Studio baseline.
 // v135 adds only the isolated, functional API Keys route and rotates caches.
 // Historical validator literals only; active Studio geometry remains v123:
@@ -16,9 +16,8 @@ const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = [
   "/", "/site.webmanifest", "/favicon.svg", "/comments-v93.css", "/comments-v93.js",
   "/src/studio-ui-stability-v95.css", "/src/studio-ui-stability-v95.js",
-  "/src/studio-surface-authority-v100.css", "/src/studio-surface-authority-v100.js",
-  "/src/studio-mobile-precision-v99.css", "/src/studio-mobile-precision-v99.js",
-  "/src/studio-final-v103.css", "/src/auth-callback-authority-v107.js",
+  "/src/studio-device-mode-v137.js", "/src/studio-device-modes-v137.css",
+  "/src/auth-callback-authority-v107.js",
   "/src/auth-studio-bootstrap-v106.js", "/src/studio-final-v106.css", "/src/studio-final-v106.js",
   "/src/studio-flow-integrity-v111.css", "/src/studio-flow-integrity-v111.js",
   "/src/studio-domain-single-authority-v112.css", "/src/studio-domain-single-authority-v112.js",
@@ -28,7 +27,7 @@ const APP_SHELL = [
   "/src/sidebar-mobile-lock-v123.js", "/src/sidebar-account-collapsed-icons-v119.css"
 ];
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v135-api-keys";
+const RECOVERY_VALUE = "pwa-v138-sidebar";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -54,7 +53,7 @@ async function recoverOpenWindows() {
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
         release: CACHE_RELEASE,
-        reason: "service-worker-activated-pre-api-ui-plus-api-keys-v135",
+        reason: "service-worker-activated-single-react-sidebar-v138",
       });
       if (isSensitiveAuthCallback(url)) return;
       if (url.searchParams.get(RECOVERY_QUERY) === RECOVERY_VALUE) return;

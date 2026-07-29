@@ -104,6 +104,7 @@ export default function StudioNext({ onExit, user }) {
   const [saved, setSaved] = useState(true);
   const [sidebar, setSidebar] = useState(true);
   const [mobileSidebar, setMobileSidebar] = useState(false);
+  const [smallScreen, setSmallScreen] = useState(() => window.matchMedia(PHONE_QUERY).matches);
   const [toast, setToast] = useState("");
   const [naraOpen, setNaraOpen] = useState(false);
   const [siteManager, setSiteManager] = useState(false);
@@ -127,14 +128,26 @@ export default function StudioNext({ onExit, user }) {
   useEffect(() => () => clearTimeout(saveTimer.current), []);
   useEffect(() => {
     const media = window.matchMedia(PHONE_QUERY);
-    const sync = () => { if (!media.matches) setMobileSidebar(false); };
+    const sync = () => {
+      setSmallScreen(media.matches);
+      if (!media.matches) setMobileSidebar(false);
+    };
+    sync();
     media.addEventListener?.("change", sync);
     return () => media.removeEventListener?.("change", sync);
   }, []);
   useEffect(() => {
-    document.body.classList.toggle("sn-mobile-sidebar-open", mobileSidebar);
+    document.body.classList.toggle("sn-mobile-sidebar-open", smallScreen && mobileSidebar);
     return () => document.body.classList.remove("sn-mobile-sidebar-open");
-  }, [mobileSidebar]);
+  }, [smallScreen, mobileSidebar]);
+  useEffect(() => {
+    if (!smallScreen || !mobileSidebar) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMobileSidebar(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [smallScreen, mobileSidebar]);
 
   useEffect(() => {
     if (!user?.id || !supabaseConfigured) { setDataMode("local"); return; }
@@ -237,7 +250,7 @@ export default function StudioNext({ onExit, user }) {
   const chooseView = (next) => { setView(next); setMobileSidebar(false); if (["posts", "pages"].includes(next)) setQuery(""); };
   const selectSite = (next) => { setActiveSiteId(next.id); setSite(next); setSiteManager(false); setDocs([]); setView("home"); setToast(`Workspace ${next.name} aktif`); };
   const toggleSidebar = () => {
-    if (window.matchMedia(PHONE_QUERY).matches) setMobileSidebar((current) => !current);
+    if (smallScreen) setMobileSidebar((current) => !current);
     else setSidebar((current) => !current);
   };
 
@@ -246,10 +259,10 @@ export default function StudioNext({ onExit, user }) {
     <NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "editor", siteId: site?.id, siteName: site?.name, documentId: active.id, documentType: active.type, documentTitle: active.title, documentContent: (active.content || "").slice(0, 12000), metadata: active.metadata }}/>
   </>;
 
-  return <div className="sn-shell" data-ui-release="stable-v135">
+  return <div className="sn-shell" data-ui-release="stable-v138" data-layout-mode={smallScreen ? "small" : "large"}>
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
-    <aside className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
+    <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
       <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
       <button className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
@@ -270,7 +283,13 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        <button className="sn-icon" onClick={toggleSidebar} aria-label={mobileSidebar ? "Tutup menu Studio" : "Buka atau tutup menu Studio"} aria-expanded={mobileSidebar}><PanelLeftClose/></button>
+        <button
+          className="sn-icon sn-sidebar-toggle"
+          onClick={toggleSidebar}
+          aria-label={smallScreen ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Buka menu Studio")}
+          aria-expanded={smallScreen ? mobileSidebar : sidebar}
+          aria-controls="ngeblogging-studio-sidebar"
+        ><span className="sn-sidebar-toggle-mark" aria-hidden="true">n</span><PanelLeftClose className="sn-sidebar-toggle-panel" aria-hidden="true"/></button>
         <button className="sn-workspace" onClick={() => setSiteManager(true)}><span>{site?.name?.slice(0, 2).toUpperCase() || "NB"}</span><div><small>WORKSPACE</small><b>{site?.name || "Ngeblogging"}</b></div><ChevronDown/></button>
         <div className={`sn-cloud ${dataMode}`}>{dataMode === "cloud" ? <Cloud/> : dataMode === "connecting" ? <LoaderCircle className="spin"/> : <CloudOff/>}<span>{dataMode === "cloud" ? "Cloud aktif" : dataMode === "connecting" ? "Menghubungkan" : "Mode perangkat"}</span></div>
         <div className="sn-top-actions">

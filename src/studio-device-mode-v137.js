@@ -1,13 +1,8 @@
-const RELEASE = "studio-device-modes-v137-20260729";
-const SMALL_MAX = 700;
-let cssPromise = null;
-let frame = 0;
+import "./studio-device-modes-v137.css";
 
-function viewportWidth() {
-  const visualWidth = Number(window.visualViewport?.width || 0);
-  const layoutWidth = Number(document.documentElement.clientWidth || window.innerWidth || 0);
-  return Math.max(1, Math.round(visualWidth || layoutWidth));
-}
+const RELEASE = "studio-device-modes-v138-20260729";
+const SMALL_QUERY = "(max-width: 700px)";
+let frame = 0;
 
 function surfaceMode() {
   const standalone = window.matchMedia?.("(display-mode: standalone)")?.matches
@@ -18,32 +13,25 @@ function surfaceMode() {
 function syncDeviceMode() {
   cancelAnimationFrame(frame);
   frame = requestAnimationFrame(() => {
-    const width = viewportWidth();
-    const mode = width <= SMALL_MAX ? "small" : "large";
     const root = document.documentElement;
-    root.dataset.studioDeviceMode = mode;
+    const small = window.matchMedia(SMALL_QUERY).matches;
+    const width = Math.max(1, Math.round(
+      document.documentElement.clientWidth || window.innerWidth || 1,
+    ));
+
+    root.dataset.studioDeviceMode = small ? "small" : "large";
     root.dataset.studioSurfaceMode = surfaceMode();
     root.dataset.studioDeviceRelease = RELEASE;
     root.style.setProperty("--studio-viewport-width", `${width}px`);
   });
 }
 
-function loadFinalAuthority() {
-  if (!cssPromise) {
-    cssPromise = new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-      .then(() => import("./studio-device-modes-v137.css"))
-      .catch((error) => console.error("Studio device authority failed", error));
-  }
-  return cssPromise;
-}
-
 function start() {
-  loadFinalAuthority();
   syncDeviceMode();
+  window.matchMedia(SMALL_QUERY).addEventListener?.("change", syncDeviceMode);
   window.addEventListener("resize", syncDeviceMode, { passive: true });
   window.addEventListener("orientationchange", syncDeviceMode, { passive: true });
   window.addEventListener("pageshow", syncDeviceMode, { passive: true });
-  window.visualViewport?.addEventListener("resize", syncDeviceMode, { passive: true });
 }
 
 if (document.readyState === "loading") {

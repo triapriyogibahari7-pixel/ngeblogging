@@ -1,0 +1,41 @@
+name: Studio Sidebar v138 Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - "public/sw.js"
+      - "src/StudioNext.jsx"
+      - "src/pwa-runtime.js"
+      - "src/studio-device-mode-v137.js"
+      - "src/studio-device-modes-v137.css"
+      - "src/studio-final-v106.js"
+      - "src/studio-mobile-precision-v99.js"
+      - "src/studio-shell-v30.js"
+      - "tests/studio-device-modes-v137.test.mjs"
+      - ".github/workflows/studio-sidebar-v138-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Run tests
+        run: npm test
+      - name: Build production bundle
+        run: npm run build

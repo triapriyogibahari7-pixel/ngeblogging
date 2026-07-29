@@ -1,4 +1,4 @@
-const RELEASE = "studio-shell-v30-20260725";
+const RELEASE = "studio-shell-nara-only-v138-20260729";
 const MOBILE_MAX = 760;
 const TABLET_MAX = 1100;
 const shellState = new WeakMap();
@@ -379,9 +379,11 @@ function autoOpenNara(profile) {
 
 function sync() {
   const profile = deviceProfile();
-  syncRoot(profile);
-  document.querySelectorAll(".sn-shell").forEach((shell) => syncSidebar(shell, profile));
-  autoOpenNara(profile);
+  document.documentElement.dataset.studioShellAuthorityV30 = RELEASE;
+  document.documentElement.dataset.studioShellModeV30 = "nara-only";
+  document.querySelectorAll(".nara-assistant-shell").forEach((shell) => {
+    ensureNaraControls(shell, profile);
+  });
 }
 
 function schedule() {
@@ -393,24 +395,9 @@ new MutationObserver((mutations) => {
   if (mutations.some((mutation) => mutation.type === "childList" || mutation.attributeName === "class")) schedule();
 }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
 
-document.addEventListener("click", (event) => {
-  const button = event.target.closest(".sn-side > nav > button, .sn-side > .sn-new");
-  if (!button) return;
-  const profile = deviceProfile();
-  if (!profile.compact) return;
-  const shell = button.closest(".sn-shell");
-  if (shell) requestAnimationFrame(() => clickSource(shell, false));
-}, true);
-
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   const profile = deviceProfile();
-  const studio = document.querySelector(".sn-shell");
-  const side = studio?.querySelector(":scope > .sn-side");
-  if (profile.compact && studio && side && !side.classList.contains("collapsed")) {
-    clickSource(studio, false);
-    return;
-  }
   const layer = document.querySelector('.nara-assistant-layer[data-nara-shell-v30="true"]');
   const shell = layer?.querySelector(":scope > .nara-assistant-shell");
   const state = shell ? naraProfile(shell, profile) : null;
@@ -421,6 +408,5 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("resize", schedule, { passive: true });
 window.addEventListener("orientationchange", schedule, { passive: true });
 window.addEventListener("pageshow", schedule, { passive: true });
-window.visualViewport?.addEventListener("resize", schedule, { passive: true });
 
 schedule();
