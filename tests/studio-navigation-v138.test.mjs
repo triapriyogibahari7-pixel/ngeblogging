@@ -4,82 +4,69 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Studio loads the v139 device and layout authorities statically", () => {
+test("Studio loads v140 authority plus the final v141 layout hotfix", () => {
   const studio = read("src/Studio.jsx");
   const compatibility = read("src/studio-device-mode-v138.js");
   assert.match(studio, /import StudioFastGate from "\.\/StudioFastGate\.jsx"/);
-  assert.match(studio, /studio-device-mode-v139\.js/);
-  assert.match(studio, /studio-layout-v139\.css/);
-  assert.doesNotMatch(studio, /studio-device-modes-v138\.css/);
-  assert.match(compatibility, /from "\.\/studio-device-mode-v139\.js"/);
+  assert.match(studio, /studio-device-mode-v140\.js/);
+  assert.match(studio, /studio-layout-v140\.css/);
+  assert.match(studio, /studio-layout-hotfix-v141\.css/);
+  assert.match(compatibility, /from "\.\/studio-device-mode-v140\.js"/);
 });
 
-test("v139 detects physical phones and desktop-site mode", () => {
-  const runtime = read("src/studio-device-mode-v139.js");
-  assert.match(runtime, /HANDHELD_MAX = 820/);
-  assert.match(runtime, /COMPACT_MAX = 760/);
-  assert.match(runtime, /Android\|iPhone\|iPad\|iPod/);
-  assert.match(runtime, /navigator\.maxTouchPoints > 1/);
-  assert.match(runtime, /pointer: coarse/);
-  assert.match(runtime, /forcedDesktopSitePhone/);
-  assert.match(runtime, /sn-sidebar-toggle/);
-  assert.match(runtime, /sn-side-close/);
-  assert.match(runtime, /sn-v139-forced-backdrop/);
-  assert.match(runtime, /MutationObserver/);
-  assert.match(runtime, /MODE_EVENT/);
+test("device authority detects narrow viewports and Chrome desktop-site phones", () => {
+  const runtime = read("src/studio-device-mode-v140.js");
+  assert.match(runtime, /studio-device-mode-v141-20260729/);
+  assert.match(runtime, /COMPACT_MAX = 820/);
+  assert.match(runtime, /navigator\.userAgentData\?\.mobile/);
+  assert.match(runtime, /navigator\.maxTouchPoints/);
+  assert.match(runtime, /any-pointer: coarse/);
+  assert.match(runtime, /any-pointer: fine/);
+  assert.match(runtime, /effectiveWidth <= COMPACT_MAX \|\| handheldSignal\(\)/);
+  assert.match(runtime, /REACT_NAVIGATION_OWNER = "react-v138"/);
+  assert.doesNotMatch(runtime, /stopImmediatePropagation/);
+  assert.doesNotMatch(runtime, /forcedDrawerOpen/);
 });
 
-test("React owns the complete navigation and mobile n button", () => {
+test("React remains the only complete navigation and exposes the mobile n button", () => {
   const studio = read("src/StudioNext.jsx");
   assert.match(studio, /data-navigation-owner="react-v138"/);
+  assert.match(studio, /<span>Ringkasan<\/span>/);
   assert.match(studio, /<span>Komentar<\/span>/);
   assert.match(studio, /<span>Domain<\/span>/);
   assert.match(studio, /<span>API Keys<\/span>/);
-  assert.match(studio, /<CommentsPanelV124 site=\{site\}/);
-  assert.match(studio, /<DomainPanelV124 site=\{site\}/);
-  assert.match(studio, /<ApiKeysPanel setToast=\{setToast\}\/>/);
   assert.match(studio, /sn-mobile-menu-mark/);
   assert.match(studio, /<strong>n<\/strong><i>\.<\/i>/);
   assert.match(studio, /currentStudioDeviceMode\(\) === "small"/);
 });
 
-test("v139 geometry cannot overlap, blur, or leave white viewport gaps", () => {
-  const css = read("src/studio-layout-v139.css");
-  assert.match(css, /--studio-side-open:232px/);
-  assert.match(css, /--studio-side-closed:76px/);
-  assert.match(css, /--studio-drawer:min\(88vw,340px\)/);
-  assert.match(css, /data-studio-device-mode="small"/);
-  assert.match(css, /data-studio-device-mode="large"/);
-  assert.match(css, /data-v139-forced-mobile-open="true"/);
-  assert.match(css, /margin-left:0!important/);
-  assert.match(css, /width:calc\(100% - var\(--studio-side-open\)\)!important/);
-  assert.match(css, /width:calc\(100% - var\(--studio-side-closed\)\)!important/);
-  assert.match(css, /overflow-x:hidden!important/);
-  assert.match(css, /backdrop-filter:none!important/);
-  assert.match(css, /\.sn-mobile-v30-header/);
-  assert.match(css, /\.sn-mobile-nav,\.sn-mobile-sheet-layer\{display:none!important\}/);
+test("v141 geometry cannot blur, overlap, or leave white viewport gaps", () => {
+  const base = read("src/studio-layout-v140.css");
+  const hotfix = read("src/studio-layout-hotfix-v141.css");
+  assert.match(base, /--studio-side-open:232px/);
+  assert.match(base, /--studio-side-closed:76px/);
+  assert.match(base, /--studio-drawer:min\(88vw,340px\)/);
+  assert.match(hotfix, /data-studio-device-mode="small"/);
+  assert.match(hotfix, /\.sn-side\.collapsed\+\.sn-main/);
+  assert.match(hotfix, /width:100%!important/);
+  assert.match(hotfix, /background:rgba\(10,24,43,\.22\)!important/);
+  assert.match(hotfix, /backdrop-filter:none!important/);
+  assert.match(hotfix, /\.sn-mobile-menu-mark/);
+  assert.match(hotfix, /\.sn-desktop-sidebar-icon/);
+  assert.match(hotfix, /\.sn-v139-forced-backdrop/);
 });
 
-test("legacy menu bridges stand down when React owns navigation", () => {
-  const secure = read("src/StudioSecure.jsx");
-  const comments = read("src/comments-studio-runtime-v93.jsx");
-  const api = read("src/api-keys-studio-bridge.jsx");
-  const sidebar = read("src/sidebar-final-v91.js");
-  const finalRuntime = read("src/studio-final-v106.js");
-
-  assert.doesNotMatch(secure, /import "\.\/studio-domain-single-authority-v112\.js"/);
-  assert.match(comments, /navigationOwner==="react-v138"/);
-  assert.match(api, /navigationOwner === "react-v138"/);
-  assert.match(sidebar, /navigationOwner === "react-v138"/);
-  assert.match(finalRuntime, /data-navigation-owner="react-v138"/);
-});
-
-test("service worker rotates all stale clients to v139", () => {
+test("login uses direct Supabase transport and PWA never reloads auth surfaces", () => {
+  const supabase = read("src/lib/supabase.js");
+  const pwa = read("src/pwa-runtime.js");
   const worker = read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v139-sidebar-auth-20260729/);
-  assert.match(worker, /locked-device-layout-and-auth-v139/);
-  assert.match(worker, /pwa-v139-sidebar-auth/);
-  assert.match(worker, /Promise\.allSettled/);
-  assert.match(worker, /self\.clients\.claim\(\)/);
-  assert.match(worker, /client\.navigate\(url\.href\)/);
+  assert.match(supabase, /supabaseTransport = supabaseConfigured \? "direct-v140"/);
+  assert.doesNotMatch(supabase, /resilientSupabaseFetch/);
+  assert.match(pwa, /location\.pathname === "\/login"/);
+  assert.match(pwa, /location\.pathname === "\/signup"/);
+  assert.match(worker, /ngeblogging-app-v141-studio-mobile-auth-20260729/);
+  assert.match(worker, /single-react-layout-handheld-direct-auth-v141/);
+  assert.match(worker, /pwa-v141-studio-mobile-auth/);
+  assert.match(worker, /function isAuthSurface/);
+  assert.match(worker, /cache: "no-store"/);
 });
