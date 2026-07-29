@@ -61,8 +61,8 @@ const routes = new Set((production.routes || []).map((route) => route.pattern));
 for (const route of ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"]) {
   if (!routes.has(route)) throw new Error(`Route produksi hilang: ${route}`);
 }
-if (production.vars?.APP_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("APP_RELEASE dasar belum v144.");
-if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-layout-authority-v144") throw new Error("UI authority dasar belum v144.");
+if (production.vars?.APP_RELEASE !== "2026.07.29-studio-mobile-cache-v145") throw new Error("APP_RELEASE belum v145.");
+if (production.vars?.UI_AUTHORITY_RELEASE !== "2026.07.29-studio-mobile-cache-v145") throw new Error("UI authority belum v145.");
 
 for (const marker of [
   "studio-style-authority-v144.js",
