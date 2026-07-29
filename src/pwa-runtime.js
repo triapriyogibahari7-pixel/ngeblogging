@@ -1,12 +1,12 @@
-const RELEASE = "ngeblogging-pwa-v151-20260729";
-const LEGACY_RELEASE = "ngeblogging-pwa-v145-20260729";
-const UI_RELEASE = "studio-completion-v151";
+const RELEASE = "ngeblogging-pwa-v153-20260730";
+const LEGACY_RELEASE = "ngeblogging-pwa-v151-20260729";
+const UI_RELEASE = "auth-production-v153";
 const ROOT = document.getElementById("root") || document.documentElement;
-const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v151";
-const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v145";
+const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v153";
+const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v151";
 const RECOVERY_QUERY = "ngeblogging_recovery";
-const RECOVERY_VALUE = "pwa-v151-studio-completion";
-const LEGACY_RECOVERY_VALUE = "pwa-v145-studio-mobile-cache";
+const RECOVERY_VALUE = "pwa-v153-auth-production";
+const LEGACY_RECOVERY_VALUE = "pwa-v151-studio-completion";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
 const PHONE_MAX = 430;
@@ -142,6 +142,8 @@ function authSurface() {
     || location.pathname === "/signin"
     || location.pathname.startsWith("/auth/")
     || params.has("code")
+    || authMode === "signin"
+    || authMode === "signup"
     || authMode === "callback"
     || authMode === "recovery"
     || authMode === "session-expired"
