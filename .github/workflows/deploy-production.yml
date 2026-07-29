@@ -49,55 +49,80 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Studio and authentication contracts through v153
+      - name: Run Studio, authentication and production-entry contracts through v154
         run: npm run test:production
 
-      - name: Build production assets
+      - name: Build production React assets
         run: npm run build
 
-      - name: Validate Cloudflare bundle
+      - name: Validate Cloudflare v154 bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy authentication production v153
+      - name: Deploy React production entry v154
         run: npm run deploy:cloudflare
 
-      - name: Verify authentication production v153 is live
+      - name: Verify React shell and authentication v154 are live
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 30); do
             stamp=$(date +%s)
-            worker=$(curl -fsSL --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
-            health_code=$(curl -sS -o /tmp/ngeblogging-health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
-            page_code=$(curl -sS -o /tmp/ngeblogging-home.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
-            auth_code=$(curl -sS -D /tmp/ngeblogging-auth-headers.txt -o /tmp/ngeblogging-auth-body.txt -w '%{http_code}' --max-time 20 \
+            root_code=$(curl -sS -D /tmp/root-headers.txt -o /tmp/root.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
+            login_code=$(curl -sS -D /tmp/login-headers.txt -o /tmp/login.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/login?deploy_audit=$stamp" || true)
+            signup_code=$(curl -sS -D /tmp/signup-headers.txt -o /tmp/signup.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/signup?deploy_audit=$stamp" || true)
+            release_code=$(curl -sS -D /tmp/release-headers.txt -o /tmp/release.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v154.json?deploy_audit=$stamp" || true)
+            health_code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
+            sw_code=$(curl -sS -o /tmp/sw.js -w '%{http_code}' --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
+            auth_code=$(curl -sS -D /tmp/auth-headers.txt -o /tmp/auth-body.txt -w '%{http_code}' --max-time 20 \
               -X OPTIONS "https://ngeblogging.com/api/auth-proxy/auth/v1/token?grant_type=password&deploy_audit=$stamp" \
               -H 'Origin: https://ngeblogging.com' \
               -H 'Access-Control-Request-Method: POST' \
               -H 'Access-Control-Request-Headers: apikey,content-type,x-client-info' || true)
-            health=$(cat /tmp/ngeblogging-health.json 2>/dev/null || true)
-            page=$(cat /tmp/ngeblogging-home.html 2>/dev/null || true)
-            auth_headers=$(cat /tmp/ngeblogging-auth-headers.txt 2>/dev/null || true)
 
-            if [[ "$worker" == *"ngeblogging-app-v153-auth-production-20260730"* ]] \
-              && [[ "$worker" == *"auth-production-cache-v153"* ]] \
-              && [[ "$worker" == *"auth-production-v153"* ]] \
-              && [[ "$health" == *"2026.07.30-auth-production-v153"* ]] \
+            root=$(cat /tmp/root.html 2>/dev/null || true)
+            login=$(cat /tmp/login.html 2>/dev/null || true)
+            signup=$(cat /tmp/signup.html 2>/dev/null || true)
+            release=$(cat /tmp/release.json 2>/dev/null || true)
+            health=$(cat /tmp/health.json 2>/dev/null || true)
+            worker=$(cat /tmp/sw.js 2>/dev/null || true)
+            root_headers=$(cat /tmp/root-headers.txt 2>/dev/null || true)
+            login_headers=$(cat /tmp/login-headers.txt 2>/dev/null || true)
+            signup_headers=$(cat /tmp/signup-headers.txt 2>/dev/null || true)
+            auth_headers=$(cat /tmp/auth-headers.txt 2>/dev/null || true)
+
+            if [[ "$root" == *"ngeblogging-production-entry"* ]] \
+              && [[ "$login" == *"ngeblogging-production-entry"* ]] \
+              && [[ "$signup" == *"ngeblogging-production-entry"* ]] \
+              && [[ "$root" == *'id="root"'* ]] \
+              && [[ "$login" == *'id="root"'* ]] \
+              && [[ "$signup" == *'id="root"'* ]] \
+              && [[ "$root" == *"/assets/"* ]] \
+              && [[ "$login" == *"/assets/"* ]] \
+              && [[ "$signup" == *"/assets/"* ]] \
+              && [[ "$root" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$release" == *"2026.07.30-production-entry-v154"* ]] \
+              && [[ "$release" == *'"legacyWhiteR4":false'* ]] \
               && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
-              && [[ "$health" == *'"authProduction":true'* ]] \
-              && [[ "$health" == *'"emailPassword":true'* ]] \
-              && [[ "$page" == *"ngeblogging-auth-session-runtime"* ]] \
-              && [[ "$page" == *"auth-studio-bootstrap-v106.js"* ]] \
-              && [[ "$page" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$worker" == *"ngeblogging-app-v154-production-entry-20260730"* ]] \
+              && [[ "$root_headers" == *"2026.07.30-production-entry-v154"* ]] \
+              && [[ "$login_headers" == *"2026.07.30-auth-entry-v154"* ]] \
+              && [[ "$signup_headers" == *"2026.07.30-auth-entry-v154"* ]] \
               && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]] \
+              && [[ "$root_code" == "200" ]] \
+              && [[ "$login_code" == "200" ]] \
+              && [[ "$signup_code" == "200" ]] \
+              && [[ "$release_code" == "200" ]] \
               && [[ "$health_code" == "200" ]] \
-              && [[ "$page_code" == "200" ]] \
+              && [[ "$sw_code" == "200" ]] \
               && [[ "$auth_code" == "204" ]]; then
-              echo "Production auth v153 verified on attempt $attempt."
+              echo "Production entry and auth v154 verified on attempt $attempt."
               exit 0
             fi
-            echo "Auth v153 belum aktif (attempt $attempt/30); menunggu propagasi."
+
+            echo "Production entry v154 belum aktif (attempt $attempt/30); menunggu propagasi."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_AUTH_PRODUCTION_V153_FAILED"
+          echo "DEPLOY_VERIFY_PRODUCTION_ENTRY_V154_FAILED"
           exit 1
