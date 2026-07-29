@@ -1,6 +1,7 @@
-const RELEASE = "studio-device-mode-v140-20260729";
+const RELEASE = "studio-device-mode-v141-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 820;
+const HANDHELD_MAX = 820;
 const LAYOUT_NODES = [
   ".sn-shell",
   ".sn-shell > .sn-side",
@@ -16,17 +17,62 @@ const LEGACY_INLINE_PROPERTIES = [
   "transform", "translate", "scale", "filter", "backdrop-filter", "-webkit-backdrop-filter",
   "opacity", "visibility", "display", "position", "z-index", "overflow", "overflow-x",
 ];
+const LEGACY_NODES = [
+  ".sn-mobile-v30-header",
+  ".sn-mobile-v30-search",
+  ".sn-mobile-v30-launcher",
+  ".sn-mobile-v30-scrim",
+  ".sn-mobile-v29-header",
+  ".sn-mobile-v29-search",
+  ".sn-mobile-v29-launcher",
+  ".sn-mobile-v29-scrim",
+  ".sn-sidebar-scrim-v23",
+  ".sn-device-toggle-v26",
+  ".sn-device-toggle-v27",
+  ".sn-device-scrim-v27",
+  ".sn-mobile-nav",
+  ".sn-mobile-sheet-layer",
+  ".sn-comments-nav-host-v93",
+  ".sn-comments-page-host-v93",
+  "#ngeblogging-api-keys-nav-v135",
+  "#ngeblogging-api-keys-v135",
+  ".sn-v139-forced-backdrop",
+];
 
 let frame = 0;
 let cleanupFrame = 0;
 
-function layoutWidth() {
-  return Math.max(
-    1,
-    Number(document.documentElement.clientWidth)
-      || Number(window.innerWidth)
-      || 1,
-  );
+function positive(value, fallback = Number.POSITIVE_INFINITY) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function viewportProfile() {
+  const layoutWidth = positive(document.documentElement.clientWidth || window.innerWidth, 1);
+  const layoutHeight = positive(document.documentElement.clientHeight || window.innerHeight, 1);
+  const visualWidth = positive(window.visualViewport?.width, layoutWidth);
+  const visualHeight = positive(window.visualViewport?.height, layoutHeight);
+  const screenWidth = positive(window.screen?.width, layoutWidth);
+  const screenHeight = positive(window.screen?.height, layoutHeight);
+  return {
+    layoutWidth,
+    layoutHeight,
+    visualWidth,
+    visualHeight,
+    screenWidth,
+    screenHeight,
+    effectiveWidth: Math.min(layoutWidth, visualWidth),
+    physicalShortSide: Math.min(screenWidth, screenHeight),
+  };
+}
+
+function handheldSignal() {
+  return navigator.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(
+      navigator.userAgent || "",
+    )
+    || navigator.maxTouchPoints > 1
+    || window.matchMedia?.("(pointer: coarse)")?.matches === true;
 }
 
 function surfaceMode() {
@@ -37,7 +83,10 @@ function surfaceMode() {
 }
 
 export function detectStudioDeviceMode() {
-  return layoutWidth() <= COMPACT_MAX ? "small" : "large";
+  const profile = viewportProfile();
+  const compactViewport = profile.effectiveWidth <= COMPACT_MAX;
+  const physicalHandheld = handheldSignal() && profile.physicalShortSide <= HANDHELD_MAX;
+  return compactViewport || physicalHandheld ? "small" : "large";
 }
 
 export function currentStudioDeviceMode() {
@@ -56,24 +105,11 @@ function clearLegacyInlineLayout() {
     });
   }
 
-  shell.dataset.navigationOwner = "react-v140";
+  shell.dataset.navigationOwner = "react-v138";
+  shell.dataset.navigationAuthority = "react-v141";
   shell.dataset.layoutAuthority = RELEASE;
-  shell.querySelectorAll([
-    ".sn-mobile-v30-header",
-    ".sn-mobile-v30-search",
-    ".sn-mobile-v30-launcher",
-    ".sn-mobile-v30-scrim",
-    ".sn-mobile-v29-header",
-    ".sn-mobile-v29-search",
-    ".sn-mobile-v29-launcher",
-    ".sn-mobile-v29-scrim",
-    ".sn-sidebar-scrim-v23",
-    ".sn-device-toggle-v26",
-    ".sn-device-toggle-v27",
-    ".sn-device-scrim-v27",
-    ".sn-mobile-nav",
-    ".sn-mobile-sheet-layer",
-  ].join(",")).forEach((node) => node.remove());
+  shell.removeAttribute("data-v139-forced-mobile-open");
+  shell.querySelectorAll(LEGACY_NODES.join(",")).forEach((node) => node.remove());
 }
 
 function scheduleLegacyCleanup() {
@@ -85,20 +121,28 @@ function applyDeviceMode() {
   frame = 0;
   const root = document.documentElement;
   const previous = root.dataset.studioDeviceMode || "";
+  const profile = viewportProfile();
   const mode = detectStudioDeviceMode();
-  const width = layoutWidth();
 
   root.dataset.studioDeviceMode = mode;
   root.dataset.studioSurfaceMode = surfaceMode();
   root.dataset.studioDeviceRelease = RELEASE;
-  root.dataset.studioNavigationAuthority = "react-v140";
-  root.style.setProperty("--studio-layout-width", `${width}px`);
+  root.dataset.studioNavigationAuthority = "react-v141";
+  root.dataset.studioHandheldSignal = String(handheldSignal());
+  root.dataset.studioDesktopSitePhone = String(
+    mode === "small" && profile.layoutWidth > COMPACT_MAX,
+  );
+  root.style.setProperty("--studio-layout-width", `${profile.layoutWidth}px`);
+  root.style.setProperty("--studio-layout-height", `${profile.layoutHeight}px`);
+  root.style.setProperty("--studio-visual-width", `${profile.visualWidth}px`);
+  root.style.setProperty("--studio-visual-height", `${profile.visualHeight}px`);
 
+  if (mode === "large") document.body?.classList.remove("sn-mobile-sidebar-open");
   scheduleLegacyCleanup();
 
   if (previous !== mode) {
     window.dispatchEvent(new CustomEvent(MODE_EVENT, {
-      detail: { mode, previous, release: RELEASE, width },
+      detail: { mode, previous, release: RELEASE, profile },
     }));
   }
 }
@@ -130,4 +174,4 @@ observer.observe(document.documentElement, {
 
 applyDeviceMode();
 
-export { RELEASE, MODE_EVENT, COMPACT_MAX };
+export { RELEASE, MODE_EVENT, COMPACT_MAX, HANDHELD_MAX };
