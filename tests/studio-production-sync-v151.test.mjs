@@ -29,7 +29,7 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances beyond v151 without losing compatibility markers", () => {
+test("Cloudflare production advances through v163 without losing v151 compatibility markers", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.match(production.vars.APP_RELEASE, /^2026\.07\.(?:29|30)-/);
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
@@ -38,7 +38,9 @@ test("Cloudflare production advances beyond v151 without losing compatibility ma
     "2026.07.30-auth-production-v153",
     "2026.07.30-production-entry-v154",
     "2026.07.30-production-authority-v160",
+    "2026.07.30-production-route-authority-v163",
   ].includes(production.vars.APP_RELEASE));
+  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-zone-route-v163");
   for (const marker of [
     "Run Studio, authentication, viewport and production contracts through v160",
     "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED",
