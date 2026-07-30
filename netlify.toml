@@ -6,4 +6,4 @@
   NODE_VERSION = "22"
 
 [context.deploy-preview]
-  command = "node --test tests/auth-production-v153.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
+  command = "node --test tests/production-entry-v154.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
