@@ -44,15 +44,18 @@ test("v165 fallback verifies each hostname points to the expected service", () =
   assert.match(attach, /const verified = await verify\(\)/);
 });
 
-test("v168 production deploy no longer blocks on the conflicting v165 attachment step", () => {
+test("v168-v169 production deploy no longer blocks on the conflicting v165 attachment step", () => {
   assert.equal(packageJson.scripts["cloudflare:attach-domains"], "node scripts/attach-cloudflare-domains-v165.mjs");
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-domain-attach-v165.test.mjs"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-route-recovery-v168.test.mjs"));
+  assert.ok(packageJson.scripts["test:production"].includes("tests/first-site-onboarding-v169.test.mjs"));
   for (const marker of [
     "npm run deploy:cloudflare",
     "2026.07.30-production-route-recovery-v168",
+    "first-site-onboarding-v169-20260730",
     "/release-v168.json",
-    "DEPLOY_VERIFY_PRODUCTION_ROUTE_RECOVERY_V168_FAILED",
+    "/release-v169.json",
+    "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED",
   ]) assert.ok(workflow.includes(marker), `production workflow missing ${marker}`);
   assert.ok(!workflow.includes("npm run cloudflare:attach-domains"));
 });
@@ -67,16 +70,24 @@ test("active configs use route recovery while preserving the tenant wildcard", (
   }
 });
 
-test("Worker Netlify and static v165 probe retain compatibility markers", () => {
-  for (const source of [worker, netlify]) {
-    for (const marker of [
-      RELEASE,
-      "/release-v165.json",
-      "ngeblogging-production-domain-attach-v165",
-      "cloudflare-workers-domains-api-v165",
-      "legacyWhiteR4: false",
-    ]) assert.ok(source.includes(marker), `publisher missing ${marker}`);
+test("Worker preserves v165 compatibility marker while attach authority remains in fallback artifacts", () => {
+  for (const marker of [
+    RELEASE,
+    "/release-v165.json",
+    "ngeblogging-production-domain-attach-v165",
+    "legacyWhiteR4: false",
+  ]) assert.ok(worker.includes(marker), `Worker compatibility missing ${marker}`);
+
+  for (const source of [attach, netlify]) {
+    assert.ok(source.includes("cloudflare-workers-domains-api-v165"), "fallback authority marker missing");
   }
+  for (const marker of [
+    RELEASE,
+    "/release-v165.json",
+    "ngeblogging-production-domain-attach-v165",
+    "legacyWhiteR4: false",
+  ]) assert.ok(netlify.includes(marker), `Netlify fallback missing ${marker}`);
+
   assert.equal(release.status, "ok");
   assert.equal(release.release, RELEASE);
   assert.equal(release.domainAttachAuthority, "cloudflare-workers-domains-api-v165");
