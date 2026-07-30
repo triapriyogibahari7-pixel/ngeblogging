@@ -75,7 +75,9 @@ test("v168 release is factual and keeps protected platform contracts", () => {
   assert.equal(release.legacyWhiteR4, false);
 });
 
-test("service worker cache is bumped for route recovery and auth pages stay network-first", () => {
+test("active v169 cache preserves v168 recovery compatibility and keeps auth network-first", () => {
+  assert.ok(serviceWorker.includes("ngeblogging-app-v169-first-site-20260730"));
+  assert.ok(serviceWorker.includes("first-site-cache-v169"));
   assert.ok(serviceWorker.includes("ngeblogging-app-v168-route-recovery-20260730"));
   assert.ok(serviceWorker.includes("route-recovery-cache-v168"));
   assert.ok(serviceWorker.includes('url.pathname === "/login"'));
