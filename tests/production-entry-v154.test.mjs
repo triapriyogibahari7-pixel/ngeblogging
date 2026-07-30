@@ -23,11 +23,14 @@ function occurrences(source, marker) {
   return source.split(marker).length - 1;
 }
 
-test("production system routes remain forced to React while v154 and v163 compatibility are retained", () => {
+test("production system routes remain forced to React while v154-v169 compatibility is retained", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-production-route-authority-v163",
     "2026.07.30-production-custom-domain-authority-v164",
+    "2026.07.30-production-domain-attach-v165",
+    "2026.07.30-production-route-recovery-v168",
+    "first-site-onboarding-v169-20260730",
     "2026.07.30-auth-entry-v158",
     "./worker-v67.mjs",
     'new URL("/index.html", request.url)',
@@ -39,6 +42,8 @@ test("production system routes remain forced to React while v154 and v163 compat
     "/release-v160.json",
     "/release-v163.json",
     "/release-v164.json",
+    "/release-v168.json",
+    "/release-v169.json",
   ]) assert.ok(worker.includes(marker), `worker entry missing ${marker}`);
 
   for (const route of ["/login", "/signin", "/signup", "/auth/callback", "/auth/recovery"]) {
@@ -51,21 +56,22 @@ test("production system routes remain forced to React while v154 and v163 compat
   assert.ok(compatibilityWorker.includes("2026.07.30-auth-entry-v154"));
 });
 
-test("all Wrangler authorities deploy worker v69 with exact v164 Custom Domains and v160 compatibility", () => {
+test("all active Wrangler authorities deploy worker v69 with v168 zone routes and v160 compatibility", () => {
   for (const config of [defaultConfig, productionConfig]) {
     assert.ok(config.includes('"main": "./cloudflare/worker-v69.mjs"'));
-    assert.ok(config.includes('"APP_RELEASE": "2026.07.30-production-custom-domain-authority-v164"'));
+    assert.ok(config.includes('"APP_RELEASE": "2026.07.30-production-route-recovery-v168"'));
+    assert.ok(config.includes('"PRODUCTION_ROUTE_AUTHORITY": "cloudflare-route-takeover-v168"'));
     assert.ok(config.includes('"UI_AUTHORITY_RELEASE": "2026.07.30-studio-ui-contract-v160"'));
     assert.ok(config.includes('"AUTH_ENTRY_RELEASE": "2026.07.30-auth-entry-v158"'));
     assert.ok(config.includes('"run_worker_first": true'));
-    assert.ok(config.includes('"pattern": "ngeblogging.com", "custom_domain": true'));
-    assert.ok(config.includes('"pattern": "www.ngeblogging.com", "custom_domain": true'));
+    assert.ok(config.includes('"pattern": "ngeblogging.com/*", "zone_name": "ngeblogging.com"'));
+    assert.ok(config.includes('"pattern": "www.ngeblogging.com/*", "zone_name": "ngeblogging.com"'));
     assert.ok(config.includes('"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"'));
     assert.ok(!config.includes('"pattern": "*.ngeblogging.com/*", "custom_domain": true'));
   }
 });
 
-test("Netlify production publishes v164 authority plus v163 and v154 compatibility probes", () => {
+test("Netlify production keeps v164-v165 compatibility while publishing React fallback", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-production-route-authority-v163",
@@ -91,6 +97,7 @@ test("Netlify production publishes v164 authority plus v163 and v154 compatibili
 
 test("PWA cache rotation removes stale shells without interrupting auth callbacks", () => {
   for (const marker of [
+    "ngeblogging-app-v169-first-site-20260730",
     "ngeblogging-app-v162-auth-editor-20260730",
     "ngeblogging-app-v159-studio-ui-contract-20260730",
     "ngeblogging-app-v154-production-entry-20260730",
