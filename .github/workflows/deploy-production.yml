@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v168
+name: Deploy Ngeblogging Production v168-v169
 
 on:
   push:
@@ -55,7 +55,7 @@ jobs:
         id: dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run protected production contracts through v168
+      - name: Run protected production contracts through v169
         id: contracts
         run: npm run test:production
 
@@ -63,15 +63,15 @@ jobs:
         id: build
         run: npm run build
 
-      - name: Validate Cloudflare route recovery bundle v168
+      - name: Validate Cloudflare route recovery and first-site bundle
         id: dry_run
         run: npm run cloudflare:dry-run
 
-      - name: Deploy Worker route takeover v168
+      - name: Deploy Worker route v168 and first-site v169
         id: deploy_worker
         run: npm run deploy:cloudflare
 
-      - name: Verify root login signup Studio auth and route takeover v168
+      - name: Verify root login signup Studio auth route and first-site v169
         id: verify_production
         shell: bash
         run: |
@@ -83,7 +83,8 @@ jobs:
             login_code=$(curl -sS -D /tmp/login-headers.txt -o /tmp/login.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/login?deploy_audit=$stamp" || true)
             signup_code=$(curl -sS -D /tmp/signup-headers.txt -o /tmp/signup.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/signup?deploy_audit=$stamp" || true)
             studio_code=$(curl -sS -D /tmp/studio-headers.txt -o /tmp/studio.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/studio?deploy_audit=$stamp" || true)
-            release_code=$(curl -sS -D /tmp/release-headers.txt -o /tmp/release.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v168.json?deploy_audit=$stamp" || true)
+            release168_code=$(curl -sS -o /tmp/release-v168.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v168.json?deploy_audit=$stamp" || true)
+            release169_code=$(curl -sS -D /tmp/release-v169-headers.txt -o /tmp/release-v169.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v169.json?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
             auth_code=$(curl -sS -D /tmp/auth-headers.txt -o /tmp/auth-body.txt -w '%{http_code}' --max-time 20 \
               -X OPTIONS "https://ngeblogging.com/api/auth-proxy/auth/v1/token?grant_type=password&deploy_audit=$stamp" \
@@ -96,13 +97,15 @@ jobs:
             login=$(cat /tmp/login.html 2>/dev/null || true)
             signup=$(cat /tmp/signup.html 2>/dev/null || true)
             studio=$(cat /tmp/studio.html 2>/dev/null || true)
-            release=$(tr -d '\n\r ' < /tmp/release.json 2>/dev/null || true)
+            release168=$(tr -d '\n\r ' < /tmp/release-v168.json 2>/dev/null || true)
+            release169=$(tr -d '\n\r ' < /tmp/release-v169.json 2>/dev/null || true)
             health=$(cat /tmp/health.json 2>/dev/null || true)
             root_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/root-headers.txt 2>/dev/null || true)
             www_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/www-headers.txt 2>/dev/null || true)
             login_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/login-headers.txt 2>/dev/null || true)
             signup_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/signup-headers.txt 2>/dev/null || true)
             studio_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/studio-headers.txt 2>/dev/null || true)
+            release169_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/release-v169-headers.txt 2>/dev/null || true)
             auth_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/auth-headers.txt 2>/dev/null || true)
 
             if [[ "$root" == *"ngeblogging-production-route-recovery-v168"* ]] \
@@ -110,6 +113,7 @@ jobs:
               && [[ "$login" == *"ngeblogging-production-route-recovery-v168"* ]] \
               && [[ "$signup" == *"ngeblogging-production-route-recovery-v168"* ]] \
               && [[ "$studio" == *"ngeblogging-production-route-recovery-v168"* ]] \
+              && [[ "$root" == *"ngeblogging-first-site-v169"* ]] \
               && [[ "$login" == *"ngeblogging-auth-callback-singleflight-v162"* ]] \
               && [[ "$root" == *'id="root"'* ]] \
               && [[ "$www" == *'id="root"'* ]] \
@@ -121,32 +125,38 @@ jobs:
               && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$studio" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$release" == *'"release":"2026.07.30-production-route-recovery-v168"'* ]] \
-              && [[ "$release" == *'"routeAuthority":"cloudflare-route-takeover-v168"'* ]] \
-              && [[ "$release" == *'"legacyWhiteR4":false'* ]] \
+              && [[ "$release168" == *'"release":"2026.07.30-production-route-recovery-v168"'* ]] \
+              && [[ "$release169" == *'"firstSiteRelease":"first-site-onboarding-v169-20260730"'* ]] \
+              && [[ "$release169" == *'"maxSitesPerAccount":25'* ]] \
+              && [[ "$release169" == *'"firstSiteBeforeStudio":true'* ]] \
+              && [[ "$release169" == *'"installAppProfileAction":true'* ]] \
+              && [[ "$release169" == *'"legacyWhiteR4":false'* ]] \
               && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
               && [[ "$root_headers" == *"x-ngeblogging-production-recovery: 2026.07.30-production-route-recovery-v168"* ]] \
               && [[ "$www_headers" == *"x-ngeblogging-production-recovery: 2026.07.30-production-route-recovery-v168"* ]] \
+              && [[ "$root_headers" == *"x-ngeblogging-first-site: first-site-onboarding-v169-20260730"* ]] \
               && [[ "$login_headers" == *"x-ngeblogging-auth-entry: 2026.07.30-auth-entry-v158"* ]] \
               && [[ "$signup_headers" == *"x-ngeblogging-ui-contract: 2026.07.30-studio-ui-contract-v160"* ]] \
               && [[ "$studio_headers" == *"x-ngeblogging-studio-route: 2026.07.30-studio-route-v160"* ]] \
+              && [[ "$release169_headers" == *"x-ngeblogging-site-policy: site-policy-v169-20260730"* ]] \
               && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]] \
               && [[ "$root_code" == "200" ]] \
               && [[ "$www_code" == "200" ]] \
               && [[ "$login_code" == "200" ]] \
               && [[ "$signup_code" == "200" ]] \
               && [[ "$studio_code" == "200" ]] \
-              && [[ "$release_code" == "200" ]] \
+              && [[ "$release168_code" == "200" ]] \
+              && [[ "$release169_code" == "200" ]] \
               && [[ "$health_code" == "200" ]] \
               && [[ "$auth_code" == "204" ]]; then
-              echo "Production route recovery v168 verified on attempt $attempt."
+              echo "Production route v168 and first-site v169 verified on attempt $attempt."
               exit 0
             fi
 
-            echo "Route recovery v168 belum aktif (attempt $attempt/48)."
+            echo "Route v168 / first-site v169 belum aktif (attempt $attempt/48)."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_PRODUCTION_ROUTE_RECOVERY_V168_FAILED"
+          echo "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED"
           exit 1
 
       - name: Publish production deployment status to issue 243
@@ -168,11 +178,13 @@ jobs:
             const icon = status === "success" ? "✅" : "❌";
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
-              `## ${icon} Deployment produksi v168 ${status}`,
+              `## ${icon} Deployment produksi v168-v169 ${status}`,
               "",
               `- Commit: \`${context.sha}\``,
               `- Run: ${runUrl}`,
-              `- Authority: \`2026.07.30-production-route-recovery-v168\``,
+              `- Route authority: \`2026.07.30-production-route-recovery-v168\``,
+              `- First-site authority: \`first-site-onboarding-v169-20260730\``,
+              `- Site policy: \`site-policy-v169-20260730\` (maksimal 25 situs milik akun)`,
               `- Waktu UTC: \`${new Date().toISOString()}\``,
               "",
               "### Hasil tahap",
@@ -182,10 +194,10 @@ jobs:
               `- Build React: **${process.env.BUILD_OUTCOME || "not-run"}**`,
               `- Dry-run Cloudflare: **${process.env.DRY_RUN_OUTCOME || "not-run"}**`,
               `- Deploy route Worker: **${process.env.DEPLOY_WORKER_OUTCOME || "not-run"}**`,
-              `- Verifikasi root/login/Studio/auth: **${process.env.VERIFY_PRODUCTION_OUTCOME || "not-run"}**`,
+              `- Verifikasi root/login/Studio/auth/onboarding: **${process.env.VERIFY_PRODUCTION_OUTCOME || "not-run"}**`,
               "",
               status === "success"
-                ? "Route v168 aktif, React shell terbaru tampil, WHITE-R4 hilang, dan permukaan auth lulus verifikasi."
+                ? "Route v168 aktif, WHITE-R4 hilang, auth surface lulus, dan marker onboarding/kuota v169 tampil di produksi."
                 : "Produksi belum dinyatakan selesai. Lihat run untuk tahap yang gagal.",
             ].join("\n");
             const update = {
