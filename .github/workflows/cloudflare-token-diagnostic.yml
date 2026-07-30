@@ -1,4 +1,4 @@
-name: Cloudflare token diagnostic
+name: Ngeblogging Cloudflare production v173
 
 on:
   push:
@@ -8,88 +8,106 @@ on:
 permissions:
   contents: read
   statuses: write
+  issues: write
 
 concurrency:
-  group: cloudflare-token-diagnostic
-  cancel-in-progress: true
+  group: ngeblogging-cloudflare-production
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
+      CLOUDFLARE_ZONE_NAME: ngeblogging.com
+      CLOUDFLARE_WORKER_SERVICE: ngeblogging
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
-      VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL || 'https://ngeblogging.com' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
       WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      - name: Install Wrangler
+      - name: Install pinned dependencies
+        id: dependencies
         run: npm ci --ignore-scripts
 
-      - name: Diagnose Cloudflare token permissions
+      - name: Validate Cloudflare credentials and active zone
+        id: credentials
         shell: bash
         run: |
-          set +e
-          : > /tmp/cloudflare-diagnostic.txt
-          echo "account_id_shape=$([[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] && echo valid || echo invalid)" >> /tmp/cloudflare-diagnostic.txt
-          echo "token_present=$([[ -n "${CLOUDFLARE_API_TOKEN}" ]] && echo true || echo false)" >> /tmp/cloudflare-diagnostic.txt
-
+          set -euo pipefail
+          [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID_INVALID"; exit 1; }
+          [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
           scripts_code="$(curl -sS -o /tmp/workers-scripts.json -w '%{http_code}' \
             -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H 'accept: application/json' \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts")"
-          echo "workers_scripts_http=${scripts_code}" >> /tmp/cloudflare-diagnostic.txt
-
-          WORKERS_FILE=/tmp/workers-scripts.json node --input-type=module <<'NODE' >> /tmp/cloudflare-diagnostic.txt
+          test "${scripts_code}" = "200" || { echo "WORKERS_SCRIPTS_HTTP_${scripts_code}"; exit 1; }
+          zone_code="$(curl -sS -o /tmp/zone.json -w '%{http_code}' \
+            -H "authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H 'accept: application/json' \
+            "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}")"
+          test "${zone_code}" = "200" || { echo "ZONE_HTTP_${zone_code}"; exit 1; }
+          node --input-type=module <<'NODE'
           import fs from 'node:fs';
-          const payload = JSON.parse(fs.readFileSync(process.env.WORKERS_FILE, 'utf8'));
-          console.log(`workers_scripts_success=${payload.success === true}`);
-          console.log(`workers_script_count=${Array.isArray(payload.result) ? payload.result.length : 0}`);
-          console.log(`workers_error_codes=${(payload.errors || []).map((error) => error.code).join(',') || 'none'}`);
+          const scripts = JSON.parse(fs.readFileSync('/tmp/workers-scripts.json', 'utf8'));
+          const zone = JSON.parse(fs.readFileSync('/tmp/zone.json', 'utf8'));
+          if (scripts.success !== true || !scripts.result?.some((item) => (item.id || item.name) === 'ngeblogging')) {
+            throw new Error('Service ngeblogging tidak terlihat oleh token Cloudflare.');
+          }
+          if (zone.success !== true || zone.result?.name !== 'ngeblogging.com' || zone.result?.status !== 'active') {
+            throw new Error('Zone aktif ngeblogging.com tidak cocok.');
+          }
           NODE
 
-          set -o pipefail
-          npx wrangler whoami 2>&1 \
-            | sed -E 's/[A-Za-z0-9_-]{30,}/[redacted]/g' \
-            | tail -n 40 >> /tmp/cloudflare-diagnostic.txt
-          echo "wrangler_whoami_exit=${PIPESTATUS[0]}" >> /tmp/cloudflare-diagnostic.txt
-          cat /tmp/cloudflare-diagnostic.txt
-          exit 0
-
-      - name: Build application after main quality gate
+      - name: Run complete production regression and build
+        id: build
         run: npm run build
 
-      - name: Build active Wrangler configuration
+      - name: Build active-zone Wrangler without converting Custom Domains to routes
+        id: active_config
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
-          else
-            echo "RESOLVED_CLOUDFLARE_ZONE_ID=" >> "${GITHUB_ENV}"
-          fi
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
+          echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-recovery-build
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const config = JSON.parse(fs.readFileSync('wrangler.production.active-zone.jsonc', 'utf8'));
+          const routes = config.routes || [];
+          const required = [
+            ['ngeblogging.com', true],
+            ['www.ngeblogging.com', true],
+          ];
+          for (const [pattern, customDomain] of required) {
+            const route = routes.find((item) => item.pattern === pattern);
+            if (!route || route.custom_domain !== customDomain) throw new Error(`Custom Domain ${pattern} hilang dari active config.`);
+          }
+          const wildcard = routes.find((item) => item.pattern === '*.ngeblogging.com/*');
+          if (!wildcard || wildcard.zone_id !== process.env.CLOUDFLARE_ZONE_ID) throw new Error('Wildcard tenant tidak memakai Zone ID aktif.');
+          if (routes.some((item) => item.pattern === 'ngeblogging.com/*' || item.pattern === 'www.ngeblogging.com/*')) {
+            throw new Error('Active config masih mengubah apex/www menjadi Worker Routes.');
+          }
+          NODE
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v173
 
-      - name: Wait for primary workflow lock to clear
-        run: sleep 45
-
-      - name: Deploy recovered Cloudflare production
+      - name: Deploy Worker v172 assets and authority
         id: deploy
         continue-on-error: true
         shell: bash
@@ -97,128 +115,162 @@ jobs:
           set -o pipefail
           npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars 2>&1 \
             | sed -E 's/[a-fA-F0-9]{32}/[cloudflare-id]/g; s/[A-Za-z0-9_-]{40,}/[redacted]/g' \
-            | tee /tmp/cloudflare-deploy-diagnostic.txt
+            | tee /tmp/cloudflare-deploy-v173.txt
 
-      - name: Synchronize full-zone runtime secrets
-        if: steps.deploy.outcome == 'success'
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s' "${CLOUDFLARE_API_TOKEN}" | npx wrangler secret put CLOUDFLARE_API_TOKEN --config wrangler.production.active-zone.jsonc >/dev/null
-          printf '%s' "${CLOUDFLARE_ACCOUNT_ID}" | npx wrangler secret put CLOUDFLARE_ACCOUNT_ID --config wrangler.production.active-zone.jsonc >/dev/null
-          if [[ "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
-            printf '%s' "${CLOUDFLARE_ZONE_ID}" | npx wrangler secret put CLOUDFLARE_ZONE_ID --config wrangler.production.active-zone.jsonc >/dev/null
-          fi
-
-      - name: Verify live workers, apex, tenant, domain UI, and twelve-site contract
-        id: verify
+      - name: Attach exact Worker Domains and delete only legacy apex routes
+        id: finalize
         if: steps.deploy.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
-          : > /tmp/cloudflare-live-verification.txt
-          for attempt in $(seq 1 24); do
-            stamp="$(date +%s)-${attempt}"
-            worker_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/api/health?recovery=${stamp}" || true)"
-            apex_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/apex-health.json -w '%{http_code}' -H 'accept: application/json' -H 'cache-control: no-cache' "https://ngeblogging.com/api/health?recovery=${stamp}" || true)"
-            index_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/index.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/?recovery=${stamp}" || true)"
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?recovery=${stamp}" || true)"
+          set -o pipefail
+          node scripts/finalize-cloudflare-routes-v173.mjs 2>&1 \
+            | sed -E 's/[a-fA-F0-9]{32}/[cloudflare-id]/g; s/[A-Za-z0-9_-]{40,}/[redacted]/g' \
+            | tee /tmp/cloudflare-finalizer-v173.txt
 
-            if [[ "${worker_code}" == 200 && "${apex_code}" == 200 && "${index_code}" == 200 && "${tenant_code}" == 200 ]]; then
+      - name: Verify workers.dev apex www login Studio onboarding and tenant
+        id: verify
+        if: steps.deploy.outcome == 'success' && steps.finalize.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/cloudflare-live-v173.txt
+          for attempt in $(seq 1 60); do
+            stamp="$(date +%s)-${attempt}"
+            worker_release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/worker-release.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v172.json?verify=${stamp}" || true)"
+            apex_release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/apex-release.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v172.json?verify=${stamp}" || true)"
+            root_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D /tmp/root-headers.txt -o /tmp/root.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/?verify=${stamp}" || true)"
+            www_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/www.html -w '%{http_code}' -H 'cache-control: no-cache' "https://www.ngeblogging.com/?verify=${stamp}" || true)"
+            login_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/login.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/login?verify=${stamp}" || true)"
+            signup_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/signup.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/signup?verify=${stamp}" || true)"
+            studio_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/studio.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/studio?verify=${stamp}" || true)"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify=${stamp}" || true)"
+
+            if [[ "${worker_release_code}" == 200 && "${apex_release_code}" == 200 && "${root_code}" == 200 && "${www_code}" == 200 && "${login_code}" == 200 && "${signup_code}" == 200 && "${studio_code}" == 200 && "${tenant_code}" == 200 ]]; then
               if node --input-type=module <<'NODE'
           import fs from 'node:fs';
-          const worker = JSON.parse(fs.readFileSync('/tmp/worker-health.json', 'utf8'));
-          const apex = JSON.parse(fs.readFileSync('/tmp/apex-health.json', 'utf8'));
-          const index = fs.readFileSync('/tmp/index.html', 'utf8');
-          const tenant = fs.readFileSync('/tmp/tenant.html', 'utf8');
+          const worker = JSON.parse(fs.readFileSync('/tmp/worker-release.json', 'utf8'));
+          const apex = JSON.parse(fs.readFileSync('/tmp/apex-release.json', 'utf8'));
+          const pages = Object.fromEntries(['root','www','login','signup','studio','tenant'].map((name) => [name, fs.readFileSync(`/tmp/${name}.html`, 'utf8')]));
+          const headers = fs.readFileSync('/tmp/root-headers.txt', 'utf8').toLowerCase();
           const errors = [];
-          const requiredDomainRelease = '2026.07.27-full-zone-domains-v62';
-          for (const [name, health] of [['worker', worker], ['apex', apex]]) {
-            if (health.status !== 'ok') errors.push(`${name}.status`);
-            const compatibleDomainRelease = health.domainRelease === requiredDomainRelease
-              || health.domainReleaseCompatibility?.includes(requiredDomainRelease);
-            if (!compatibleDomainRelease) errors.push(`${name}.domainRelease`);
-            if (health.customDomains !== true) errors.push(`${name}.customDomains`);
-            if (health.customDomainProvider !== 'cloudflare-full-zone') errors.push(`${name}.provider`);
-            if (health.customDomainMode !== 'full-zone-nameserver') errors.push(`${name}.mode`);
-            if (health.customDomainBindings?.apiToken !== true) errors.push(`${name}.apiToken`);
-            if (health.customDomainBindings?.accountId !== true) errors.push(`${name}.accountId`);
-            if (health.customDomainBindings?.workerService !== true) errors.push(`${name}.workerService`);
-            if (health.customDomainBindings?.databaseAccess !== true) errors.push(`${name}.databaseAccess`);
-            if (health.siteCapacity?.mode !== 'fixed' || health.siteCapacity?.defaultLimit !== 12) errors.push(`${name}.siteCapacity`);
-            if (health.siteLimits?.free !== 12 || health.siteLimits?.maximum !== 12) errors.push(`${name}.siteLimits`);
+          for (const [name, release] of [['worker', worker], ['apex', apex]]) {
+            if (release.release !== '2026.07.30-production-custom-domain-v172') errors.push(`${name}.release`);
+            if (release.firstSiteBeforeStudio !== true) errors.push(`${name}.firstSite`);
+            if (release.maxSitesPerAccount !== 25) errors.push(`${name}.siteLimit`);
+            if (release.sessionPersistsUntilExplicitLogout !== true) errors.push(`${name}.session`);
+            if (release.legacyWhiteR4 !== false) errors.push(`${name}.whiteR4`);
           }
-          if (!index.includes('/src/domain-full-zone-v54.js')) errors.push('domain-ui-js');
-          if (!index.includes('/src/domain-full-zone-v54.css')) errors.push('domain-ui-css');
-          if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
-          if (!tenant.includes('/src/main.jsx') && !tenant.includes('/assets/')) errors.push('tenant-shell');
+          for (const name of ['root','www','login','signup','studio']) {
+            const html = pages[name];
+            if (!html.includes('id="root"')) errors.push(`${name}.reactRoot`);
+            if (!html.includes('ngeblogging-production-custom-domain-v172')) errors.push(`${name}.v172`);
+            if (!html.includes('ngeblogging-mobile-public-v171')) errors.push(`${name}.v171`);
+            if (html.includes('WHITE-R4-2026.07.12')) errors.push(`${name}.legacy`);
+          }
+          if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(pages.tenant)) errors.push('tenant.404');
+          if (!pages.tenant.includes('/assets/') && !pages.tenant.includes('/src/main.jsx')) errors.push('tenant.shell');
+          if (!headers.includes('x-ngeblogging-production-custom-domain: 2026.07.30-production-custom-domain-v172')) errors.push('root.header');
           if (errors.length) {
             console.error(errors.join(','));
             process.exit(1);
           }
           NODE
               then
-                cp /tmp/apex-health.json /tmp/cloudflare-live-health.json
-                echo "worker_http=200" >> /tmp/cloudflare-live-verification.txt
-                echo "apex_http=200" >> /tmp/cloudflare-live-verification.txt
-                echo "index_http=200" >> /tmp/cloudflare-live-verification.txt
-                echo "tenant_http=200" >> /tmp/cloudflare-live-verification.txt
-                echo "full_zone=true" >> /tmp/cloudflare-live-verification.txt
-                echo "site_limit=12" >> /tmp/cloudflare-live-verification.txt
-                cat /tmp/cloudflare-live-verification.txt
+                echo "production_custom_domain_v172=true" >> /tmp/cloudflare-live-v173.txt
+                echo "legacy_apex_routes_removed=true" >> /tmp/cloudflare-live-v173.txt
+                echo "mobile_public_v171=true" >> /tmp/cloudflare-live-v173.txt
+                echo "first_site_before_studio=true" >> /tmp/cloudflare-live-v173.txt
+                echo "max_sites_per_account=25" >> /tmp/cloudflare-live-v173.txt
+                echo "tenant_wildcard_preserved=true" >> /tmp/cloudflare-live-v173.txt
+                cat /tmp/cloudflare-live-v173.txt
                 exit 0
               fi
             fi
             sleep 10
           done
-          cp /tmp/apex-health.json /tmp/cloudflare-live-health.json 2>/dev/null || echo '{}' > /tmp/cloudflare-live-health.json
-          echo "live_verification=false" >> /tmp/cloudflare-live-verification.txt
-          cat /tmp/cloudflare-live-verification.txt
+          echo "PRODUCTION_ROUTE_FINALIZER_V173_VERIFY_FAILED" | tee -a /tmp/cloudflare-live-v173.txt
           exit 1
 
-      - name: Publish production recovery result
+      - name: Publish production status to commit and issue 243
         if: always()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v7
         env:
+          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          ACTIVE_CONFIG_OUTCOME: ${{ steps.active_config.outcome }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          FINALIZE_OUTCOME: ${{ steps.finalize.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const text = fs.readFileSync('/tmp/cloudflare-diagnostic.txt', 'utf8');
-            const value = (key) => text.match(new RegExp(`^${key}=(.*)$`, 'm'))?.[1]?.trim() || 'unknown';
-            const scriptsSuccess = value('workers_scripts_success');
-            const whoami = value('wrangler_whoami_exit');
-            const deploy = process.env.DEPLOY_OUTCOME || 'unknown';
-            const verify = process.env.VERIFY_OUTCOME || 'unknown';
-            const ready = scriptsSuccess === 'true' && whoami === '0' && deploy === 'success' && verify === 'success';
-            const description = `scripts=${scriptsSuccess}; deploy=${deploy}; live=${verify}`.slice(0, 140);
-            for (const contextName of ['Cloudflare token diagnostic', 'Ngeblogging Cloudflare production']) {
-              await github.rest.repos.createCommitStatus({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                sha: context.sha,
-                state: ready ? 'success' : 'failure',
-                context: contextName,
-                description,
-                target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              });
-            }
+            const outcomes = {
+              credentials: process.env.CREDENTIALS_OUTCOME || 'not-run',
+              build: process.env.BUILD_OUTCOME || 'not-run',
+              activeConfig: process.env.ACTIVE_CONFIG_OUTCOME || 'not-run',
+              deploy: process.env.DEPLOY_OUTCOME || 'not-run',
+              finalizer: process.env.FINALIZE_OUTCOME || 'not-run',
+              verify: process.env.VERIFY_OUTCOME || 'not-run',
+            };
+            const ready = Object.values(outcomes).every((value) => value === 'success');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const description = `deploy=${outcomes.deploy}; routes=${outcomes.finalizer}; live=${outcomes.verify}`.slice(0, 140);
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ready ? 'success' : 'failure',
+              context: 'Ngeblogging Cloudflare production',
+              description,
+              target_url: runUrl,
+            });
+            const body = [
+              `## ${ready ? '✅' : '❌'} Produksi Ngeblogging v173 ${ready ? 'terverifikasi' : 'belum lolos'}`,
+              '',
+              `- Commit: \`${context.sha}\``,
+              `- Run: ${runUrl}`,
+              '- Authority aplikasi: `2026.07.30-production-custom-domain-v172`',
+              '- Finalizer route: `2026.07.30-production-route-finalizer-v173`',
+              '- Tampilan mobile/publik: `mobile-public-v171-20260730`',
+              '- Onboarding situs pertama: aktif sebelum Studio',
+              '- Batas situs milik akun: 25',
+              '',
+              '### Hasil tahap',
+              `- Kredensial dan zone: **${outcomes.credentials}**`,
+              `- Regression dan build: **${outcomes.build}**`,
+              `- Active config Custom Domain: **${outcomes.activeConfig}**`,
+              `- Deploy Worker: **${outcomes.deploy}**`,
+              `- Lepas route lama + attach apex/www: **${outcomes.finalizer}**`,
+              `- Probe root/www/login/signup/Studio/tenant: **${outcomes.verify}**`,
+              '',
+              ready
+                ? 'Apex dan www telah berpindah ke Worker v172, WHITE-R4 hilang, wildcard tenant tetap aktif, dan permukaan login/Studio terbaru terverifikasi.'
+                : 'Produksi tidak dinyatakan selesai. Buka run di atas untuk tahap yang gagal; tidak ada klaim 100% sebelum seluruh probe lulus.',
+            ].join('\n');
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 243,
+              title: 'Produksi Ngeblogging — Custom Domain, login, onboarding, dan Studio v173',
+              body,
+              state: ready ? 'closed' : 'open',
+              ...(ready ? { state_reason: 'completed' } : {}),
+            });
 
-      - name: Upload sanitized diagnostics
+      - name: Upload sanitized production diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cloudflare-production-recovery-${{ github.run_id }}
+          name: ngeblogging-production-v173-${{ github.run_id }}
           path: |
-            /tmp/cloudflare-diagnostic.txt
-            /tmp/cloudflare-deploy-diagnostic.txt
-            /tmp/cloudflare-live-verification.txt
-            /tmp/cloudflare-live-health.json
+            /tmp/cloudflare-deploy-v173.txt
+            /tmp/cloudflare-finalizer-v173.txt
+            /tmp/cloudflare-live-v173.txt
           retention-days: 3
           if-no-files-found: warn
 
-      - name: Preserve production result
-        if: steps.deploy.outcome != 'success' || steps.verify.outcome != 'success'
+      - name: Fail when deployment is not fully verified
+        if: steps.deploy.outcome != 'success' || steps.finalize.outcome != 'success' || steps.verify.outcome != 'success'
         run: exit 1
