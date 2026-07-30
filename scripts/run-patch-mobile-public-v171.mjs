@@ -75,6 +75,19 @@ function patchNaraNonModal() {
   write(file, source);
 }
 
+function patchRuntimeContentOnly() {
+  const file = "src/theme-layout-runtime-v170.js";
+  let source = read(file);
+  if (source.includes(".ng-content-grid-v170.content-only{")) return;
+  source = replaceRequired(
+    source,
+    ".ng-content-grid-v170{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:20px;width:100%;min-width:0}",
+    ".ng-content-grid-v170{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:20px;width:100%;min-width:0}\n.ng-content-grid-v170.content-only{grid-template-columns:minmax(0,1fr)}",
+    "selector grid content-only",
+  );
+  write(file, source);
+}
+
 function patchServiceWorker() {
   const file = "public/sw.js";
   let source = read(file);
@@ -120,6 +133,7 @@ function verifyComplete() {
     ["src/main.jsx", 'import "./theme-map-extension-v171.css";'],
     ["src/StudioNext.jsx", `data-mobile-layout-authority="${AUTHORITY}"`],
     ["src/NaraAssistant.jsx", "data-nara-layer-size={size}"],
+    ["src/theme-layout-runtime-v170.js", ".ng-content-grid-v170.content-only{"],
     ["public/sw.js", 'ngeblogging-app-v171-mobile-public-20260730'],
     ["public/sw.js", 'mobile-public-cache-v171'],
   ];
@@ -131,6 +145,7 @@ patchWidgets();
 patchGlobalStyles();
 patchStudioAuthority();
 patchNaraNonModal();
+patchRuntimeContentOnly();
 patchServiceWorker();
 verifyComplete();
 console.log(`[${AUTHORITY}] patch applied exactly once and verified`);
