@@ -1,4 +1,6 @@
 import { performance } from "node:perf_hooks";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 export const AUTH_SMOKE_RELEASE = "auth-smoke-load-v162-20260730";
 export const MAX_SAFE_REQUESTS = 200;
@@ -108,7 +110,8 @@ export async function runSmoke({ origin, requests = 20, concurrency = 4, paths =
   };
 }
 
-const invokedDirectly = process.argv[1] && import.meta.url.endsWith(process.argv[1].replaceAll("\\", "/"));
+const invokedDirectly = process.argv[1]
+  && pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
 if (invokedDirectly) {
   const origin = stringArg("--origin", "http://127.0.0.1:4173");
   const requests = integerArg("--requests", 20);
