@@ -4,6 +4,3 @@
 
 [build.environment]
   NODE_VERSION = "22"
-
-[context.deploy-preview]
-  command = "npm run test:production && npx vite build && node scripts/write-netlify-redirects.mjs"
