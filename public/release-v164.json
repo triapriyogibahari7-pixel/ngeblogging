@@ -1,0 +1,26 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-production-custom-domain-authority-v164",
+  "productionAuthorityCompatibility": "2026.07.30-production-authority-v160",
+  "productionRouteCompatibility": "2026.07.30-production-route-authority-v163",
+  "authEditorCompatibility": "2026.07.30-auth-editor-v162",
+  "routeAuthority": "cloudflare-custom-domain-v164",
+  "routePatterns": [
+    "ngeblogging.com",
+    "www.ngeblogging.com",
+    "*.ngeblogging.com/*"
+  ],
+  "exactCustomDomains": [
+    "ngeblogging.com",
+    "www.ngeblogging.com"
+  ],
+  "tenantWildcardRoute": "*.ngeblogging.com/*",
+  "apexCustomDomain": true,
+  "wwwCustomDomain": true,
+  "tenantWildcardPreserved": true,
+  "rootUsesReactShell": true,
+  "authUsesReactShell": true,
+  "studioUsesReactShell": true,
+  "apiDelegated": true,
+  "legacyWhiteR4": false
+}

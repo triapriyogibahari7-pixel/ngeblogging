@@ -74,23 +74,25 @@ test("Cloudflare auth gateway accepts production and preview surfaces", () => {
   assert.match(gateway, /responseHeaders\.set\("x-ngeblogging-auth-gateway"/);
 });
 
-test("Cloudflare route v163 retains auth v153 and entry v154 compatibility", () => {
+test("Cloudflare Custom Domain v164 retains auth v153 entry v154 and route v163 compatibility", () => {
   for (const config of [cloudflareDefault, production]) {
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-authority-v163");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
     assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
     assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
-    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-zone-route-v163");
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-v164");
     assert.equal(config.assets.run_worker_first, true);
-    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(config.routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(!config.routes.some((route) => route.custom_domain === true));
+    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
+    assert.ok(config.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
+    assert.ok(config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+    assert.ok(!config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
   }
   assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v69.mjs");
-  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-route-authority-v163");
+  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
   assert.ok(entryWorker.includes('./worker-v67.mjs'));
   assert.ok(entryWorker.includes("2026.07.30-production-route-authority-v163"));
+  assert.ok(entryWorker.includes("2026.07.30-production-custom-domain-authority-v164"));
   assert.ok(compatibilityWorker.includes("2026.07.30-production-entry-v154"));
 });
 
