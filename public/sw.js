@@ -1,9 +1,11 @@
-const VERSION = "ngeblogging-app-v161-content-workflow-20260730";
+const VERSION = "ngeblogging-app-v162-auth-editor-20260730";
+const CONTENT_WORKFLOW_COMPAT_VERSION = "ngeblogging-app-v161-content-workflow-20260730";
 const STUDIO_UI_COMPAT_VERSION = "ngeblogging-app-v159-studio-ui-contract-20260730";
 const PRODUCTION_ENTRY_COMPAT_VERSION = "ngeblogging-app-v154-production-entry-20260730";
 const LEGACY_VERSION = "ngeblogging-app-v153-auth-production-20260730";
 const STUDIO_COMPLETION_COMPAT_VERSION = "ngeblogging-app-v151-studio-completion-20260729";
-const CACHE_RELEASE = "content-workflow-cache-v161";
+const CACHE_RELEASE = "auth-editor-cache-v162";
+const CONTENT_WORKFLOW_COMPAT_RELEASE = "content-workflow-cache-v161";
 const STUDIO_UI_COMPAT_RELEASE = "studio-ui-contract-cache-v159";
 const PRODUCTION_ENTRY_COMPAT_RELEASE = "production-entry-cache-v154";
 const LEGACY_CACHE_RELEASE = "auth-production-cache-v153";
@@ -15,8 +17,10 @@ const PRODUCTION_ENTRY_COMPAT_STALE_REASON = "service-worker-stale-shell-v154";
 const AUTH_HANDOFF_RELEASE = "auth-entry-v154-20260730";
 const UI_CONTRACT_RELEASE = "studio-ui-contract-v159-20260730";
 const CONTENT_WORKFLOW_RELEASE = "studio-content-workflow-v161-20260730";
+const AUTH_CALLBACK_RELEASE = "auth-callback-v162-20260730";
+const CONTENT_EDITOR_RELEASE = "content-editor-v162-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "content-workflow-v161";
+const FORCE_REFRESH_VALUE = "auth-editor-v162";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
@@ -34,8 +38,11 @@ function isAuthSurface(url) {
   return url.pathname === "/login"
     || url.pathname === "/signup"
     || url.pathname === "/signin"
+    || url.pathname === "/forgot-password"
+    || url.pathname === "/reset-password"
     || url.pathname.startsWith("/auth/")
     || url.searchParams.has("code")
+    || url.searchParams.has("error")
     || authMode === "signin"
     || authMode === "signup"
     || authMode === "callback"
@@ -47,7 +54,7 @@ function isAuthSurface(url) {
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
-  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v161");
+  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v162");
   try {
     await client.navigate(url.href);
   } catch {
@@ -64,11 +71,13 @@ async function notifyOpenWindows() {
       client.postMessage({
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
+        contentWorkflowCompatVersion: CONTENT_WORKFLOW_COMPAT_VERSION,
         studioUiCompatVersion: STUDIO_UI_COMPAT_VERSION,
         productionEntryCompatVersion: PRODUCTION_ENTRY_COMPAT_VERSION,
         legacyVersion: LEGACY_VERSION,
         studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
         release: CACHE_RELEASE,
+        contentWorkflowCompatRelease: CONTENT_WORKFLOW_COMPAT_RELEASE,
         studioUiCompatRelease: STUDIO_UI_COMPAT_RELEASE,
         productionEntryCompatRelease: PRODUCTION_ENTRY_COMPAT_RELEASE,
         legacyRelease: LEGACY_CACHE_RELEASE,
@@ -80,7 +89,9 @@ async function notifyOpenWindows() {
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
         uiContractRelease: UI_CONTRACT_RELEASE,
         contentWorkflowRelease: CONTENT_WORKFLOW_RELEASE,
-        reason: "service-worker-activated-content-workflow-v161",
+        authCallbackRelease: AUTH_CALLBACK_RELEASE,
+        contentEditorRelease: CONTENT_EDITOR_RELEASE,
+        reason: "service-worker-activated-auth-editor-v162",
       });
       await refreshStaleWindow(client, url);
     } catch {
@@ -106,11 +117,13 @@ self.addEventListener("message", (event) => {
     event.source?.postMessage?.({
       type: "NGE_BLOGGING_PWA_VERSION",
       version: VERSION,
+      contentWorkflowCompatVersion: CONTENT_WORKFLOW_COMPAT_VERSION,
       studioUiCompatVersion: STUDIO_UI_COMPAT_VERSION,
       productionEntryCompatVersion: PRODUCTION_ENTRY_COMPAT_VERSION,
       legacyVersion: LEGACY_VERSION,
       studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
       release: CACHE_RELEASE,
+      contentWorkflowCompatRelease: CONTENT_WORKFLOW_COMPAT_RELEASE,
       studioUiCompatRelease: STUDIO_UI_COMPAT_RELEASE,
       productionEntryCompatRelease: PRODUCTION_ENTRY_COMPAT_RELEASE,
       legacyRelease: LEGACY_CACHE_RELEASE,
@@ -122,6 +135,8 @@ self.addEventListener("message", (event) => {
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
       uiContractRelease: UI_CONTRACT_RELEASE,
       contentWorkflowRelease: CONTENT_WORKFLOW_RELEASE,
+      authCallbackRelease: AUTH_CALLBACK_RELEASE,
+      contentEditorRelease: CONTENT_EDITOR_RELEASE,
     });
   }
 });

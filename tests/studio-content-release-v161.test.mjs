@@ -23,24 +23,23 @@ test("static v161 probe describes real content workflow behavior", () => {
   assert.equal(release.legacyWhiteR4, false);
 });
 
-test("Service Worker v161 uses a new cache and never reloads authentication surfaces", () => {
+test("Service Worker v162 preserves the complete v161 content workflow contract", () => {
   for (const marker of [
+    "ngeblogging-app-v162-auth-editor-20260730",
+    "auth-editor-cache-v162",
     "ngeblogging-app-v161-content-workflow-20260730",
     "content-workflow-cache-v161",
     "studio-content-workflow-v161-20260730",
-    "content-workflow-v161",
-    "service-worker-stale-shell-v161",
-    "service-worker-activated-content-workflow-v161",
     "caches.delete",
     "includeUncontrolled: true",
     "cache: \"reload\"",
     "cache: \"no-store\"",
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
-  for (const route of ["/login", "/signup", "/signin", "/auth/"]) assert.ok(serviceWorker.includes(route));
+  for (const route of ["/login", "/signup", "/signin", "/forgot-password", "/reset-password", "/auth/"]) assert.ok(serviceWorker.includes(route));
   for (const mode of ["callback", "recovery", "session-expired", "callback-error"]) assert.ok(serviceWorker.includes(mode));
 });
 
-test("Cloudflare and Netlify expose the v161 release path, meta marker and header", () => {
+test("Cloudflare and Netlify expose the v161 compatibility release path, meta marker and header", () => {
   for (const source of [worker, netlify]) {
     for (const marker of [
       "2026.07.30-studio-content-workflow-v161",
@@ -53,10 +52,10 @@ test("Cloudflare and Netlify expose the v161 release path, meta marker and heade
   assert.ok(netlify.includes("X-Ngeblogging-Content-Workflow"));
 });
 
-test("build always patches and validates the v161 React integration", () => {
-  assert.equal(packageJson.scripts.predev, "node scripts/patch-studio-content-v161.mjs");
-  assert.ok(packageJson.scripts.test.startsWith("node scripts/patch-studio-content-v161.mjs"));
-  assert.ok(packageJson.scripts["test:production"].startsWith("node scripts/patch-studio-content-v161.mjs"));
+test("build patches auth v162, editor v162 and v161 React content integration in order", () => {
+  assert.ok(packageJson.scripts.predev.startsWith("node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs"));
+  assert.ok(packageJson.scripts.test.startsWith("node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs"));
+  assert.ok(packageJson.scripts["test:production"].startsWith("node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/studio-content-v161.test.mjs"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/studio-content-release-v161.test.mjs"));
 });
