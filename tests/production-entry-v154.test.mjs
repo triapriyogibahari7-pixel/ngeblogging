@@ -23,10 +23,11 @@ function occurrences(source, marker) {
   return source.split(marker).length - 1;
 }
 
-test("production system routes remain forced to React while v154 compatibility is retained", () => {
+test("production system routes remain forced to React while v154 and v163 compatibility are retained", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-production-route-authority-v163",
+    "2026.07.30-production-custom-domain-authority-v164",
     "2026.07.30-auth-entry-v158",
     "./worker-v67.mjs",
     'new URL("/index.html", request.url)',
@@ -37,6 +38,7 @@ test("production system routes remain forced to React while v154 compatibility i
     "/release-v154.json",
     "/release-v160.json",
     "/release-v163.json",
+    "/release-v164.json",
   ]) assert.ok(worker.includes(marker), `worker entry missing ${marker}`);
 
   for (const route of ["/login", "/signin", "/signup", "/auth/callback", "/auth/recovery"]) {
@@ -49,32 +51,35 @@ test("production system routes remain forced to React while v154 compatibility i
   assert.ok(compatibilityWorker.includes("2026.07.30-auth-entry-v154"));
 });
 
-test("all Wrangler authorities deploy worker v69 with v163 zone routes and v160 compatibility", () => {
+test("all Wrangler authorities deploy worker v69 with exact v164 Custom Domains and v160 compatibility", () => {
   for (const config of [defaultConfig, productionConfig]) {
     assert.ok(config.includes('"main": "./cloudflare/worker-v69.mjs"'));
-    assert.ok(config.includes('"APP_RELEASE": "2026.07.30-production-route-authority-v163"'));
+    assert.ok(config.includes('"APP_RELEASE": "2026.07.30-production-custom-domain-authority-v164"'));
     assert.ok(config.includes('"UI_AUTHORITY_RELEASE": "2026.07.30-studio-ui-contract-v160"'));
     assert.ok(config.includes('"AUTH_ENTRY_RELEASE": "2026.07.30-auth-entry-v158"'));
     assert.ok(config.includes('"run_worker_first": true'));
-    assert.ok(config.includes('"pattern": "ngeblogging.com/*", "zone_name": "ngeblogging.com"'));
-    assert.ok(config.includes('"pattern": "www.ngeblogging.com/*", "zone_name": "ngeblogging.com"'));
+    assert.ok(config.includes('"pattern": "ngeblogging.com", "custom_domain": true'));
+    assert.ok(config.includes('"pattern": "www.ngeblogging.com", "custom_domain": true'));
     assert.ok(config.includes('"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"'));
-    assert.ok(!config.includes('"custom_domain": true'));
+    assert.ok(!config.includes('"pattern": "*.ngeblogging.com/*", "custom_domain": true'));
   }
 });
 
-test("Netlify production publishes v163 markers plus v154 compatibility probe", () => {
+test("Netlify production publishes v164 authority plus v163 and v154 compatibility probes", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-production-route-authority-v163",
+    "2026.07.30-production-custom-domain-authority-v164",
     "2026.07.30-auth-entry-v158",
     "release-v154.json",
     "release-v160.json",
     "release-v163.json",
+    "release-v164.json",
     "legacyWhiteR4: false",
-    "netlify-static-fallback",
+    "netlify-static-fallback-v164",
     "ngeblogging-production-entry",
     "ngeblogging-production-route-v163",
+    "ngeblogging-production-custom-domain-v164",
     "ngeblogging-auth-entry",
     "Cache-Control: no-store, max-age=0, must-revalidate",
     "/login",
