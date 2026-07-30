@@ -6,4 +6,4 @@
   NODE_VERSION = "22"
 
 [context.deploy-preview]
-  command = "npm run verify:v172 && npx vite build && node scripts/write-netlify-redirects.mjs"
+  command = "node --test --test-name-pattern='v172 makes apex' tests/production-custom-domain-v172.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
