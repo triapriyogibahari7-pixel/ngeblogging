@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node --test --test-name-pattern=\"Worker v69 forces React\" tests/production-authority-v160.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "node --test --test-name-pattern=\"Netlify fallback publishes identical\" tests/production-authority-v160.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
