@@ -1,4 +1,5 @@
 const RELEASE = "2026.07.30-production-domain-attach-v165";
+const AUTHORITY = "cloudflare-workers-domains-api-v165";
 const ACCOUNT_ID = String(process.env.CLOUDFLARE_ACCOUNT_ID || "").trim();
 const API_TOKEN = String(process.env.CLOUDFLARE_API_TOKEN || "").trim();
 const SERVICE = String(process.env.CLOUDFLARE_WORKER_SERVICE || "ngeblogging").trim();
@@ -78,6 +79,7 @@ const verified = await verify();
 console.log(JSON.stringify({
   status: "ok",
   release: RELEASE,
+  authority: AUTHORITY,
   service: SERVICE,
   zoneName: ZONE_NAME,
   attached,
