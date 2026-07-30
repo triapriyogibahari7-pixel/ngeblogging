@@ -27,8 +27,9 @@ test("v172 makes apex and www exact Worker Custom Domains and preserves tenant w
     assert.deepEqual(config.routes[0], { pattern: "ngeblogging.com", custom_domain: true });
     assert.deepEqual(config.routes[1], { pattern: "www.ngeblogging.com", custom_domain: true });
     assert.deepEqual(config.routes[2], { pattern: "*.ngeblogging.com/*", zone_name: "ngeblogging.com" });
-    assert.equal(config.assets.run_worker_first, true);
   }
+  assert.equal(wrangler.assets.run_worker_first, true);
+  assert.equal(production.assets.run_worker_first, true);
 });
 
 test("v172 Worker publishes React login Studio onboarding and mobile layout authority", () => {
