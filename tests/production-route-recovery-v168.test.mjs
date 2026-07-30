@@ -6,7 +6,8 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const wrangler = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const worker = read("cloudflare/worker-v69.mjs");
-const workflow = read(".github/workflows/deploy-production.yml");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
+const finalizer = read("scripts/finalize-cloudflare-routes-v173.mjs");
 const serviceWorker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v168.json"));
 
@@ -65,22 +66,28 @@ test("Worker retains all v168 evidence while publishing v172 as active authority
   assert.ok(worker.includes('desktopVariants: ["laptop", "computer"]'));
 });
 
-test("v172 production workflow deploys, attaches exact domains, and verifies compatibility", () => {
+test("v173 production workflow supersedes v168 routes and verifies compatibility", () => {
   for (const marker of [
-    "Deploy Ngeblogging Production v172",
-    "npm run test:production",
-    "npm run cloudflare:dry-run",
-    "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains",
+    "Ngeblogging Cloudflare production v173",
+    "npm run build",
+    "build-active-zone-wrangler.mjs",
+    "finalize-cloudflare-routes-v173.mjs",
     "/release-v172.json",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "PRODUCTION_ROUTE_FINALIZER_V173_VERIFY_FAILED",
     "WHITE-R4-2026.07.12",
-    "x-ngeblogging-production-custom-domain",
-    "x-ngeblogging-first-site",
-    "x-ngeblogging-mobile-public",
-    "maxSitesPerAccount",
+    "firstSiteBeforeStudio !== true",
+    "maxSitesPerAccount !== 25",
+    "sessionPersistsUntilExplicitLogout !== true",
+    "ngeblogging-mobile-public-v171",
     "issue_number: 243",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
+  for (const marker of [
+    '"ngeblogging.com/*"',
+    '"www.ngeblogging.com/*"',
+    'TENANT_WILDCARD_PATTERN = "*.ngeblogging.com/*"',
+    "deleteLegacyExactRoutes",
+    "verifyFinalState",
+  ]) assert.ok(finalizer.includes(marker), `finalizer missing ${marker}`);
 });
 
 test("active v171 cache preserves v168 and v169 compatibility without caching auth callbacks", () => {
