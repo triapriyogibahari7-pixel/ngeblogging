@@ -45,16 +45,19 @@ test("v168 Worker serves the React shell and release probe on system routes", ()
   assert.ok(worker.includes('desktopVariants: ["laptop", "computer"]'));
 });
 
-test("v168 workflow deploys route config directly and verifies all login surfaces", () => {
+test("v168-v169 workflow deploys route config directly and verifies login plus onboarding", () => {
   for (const marker of [
-    "Deploy Ngeblogging Production v168",
+    "Deploy Ngeblogging Production v168-v169",
     "npm run test:production",
     "npm run cloudflare:dry-run",
     "npm run deploy:cloudflare",
     "/release-v168.json",
-    "DEPLOY_VERIFY_PRODUCTION_ROUTE_RECOVERY_V168_FAILED",
+    "/release-v169.json",
+    "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED",
     "WHITE-R4-2026.07.12",
     "x-ngeblogging-production-recovery",
+    "x-ngeblogging-first-site",
+    "maxSitesPerAccount",
     "issue_number: 243",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
   assert.ok(!workflow.includes("npm run cloudflare:attach-domains"));
