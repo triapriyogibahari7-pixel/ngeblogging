@@ -19,7 +19,7 @@ test("v163 remains recorded as the explicit zone-route compatibility release", (
   assert.equal(release.legacyWhiteR4, false);
 });
 
-test("v168 Worker preserves v163 v164 and v165 markers for diagnostics", () => {
+test("v172 Worker preserves v163 through v169 markers for diagnostics", () => {
   for (const marker of [
     "2026.07.30-production-route-authority-v163",
     "ngeblogging-production-route-v163",
@@ -29,14 +29,18 @@ test("v168 Worker preserves v163 v164 and v165 markers for diagnostics", () => {
     "2026.07.30-production-domain-attach-v165",
     "ngeblogging-production-domain-attach-v165",
     "2026.07.30-production-route-recovery-v168",
-    "cloudflare-route-takeover-v168",
-    "worker-v69-route-recovery-v168",
+    "ngeblogging-production-route-recovery-v168",
+    "first-site-onboarding-v169-20260730",
+    "2026.07.30-production-custom-domain-v172",
+    "worker-v69-custom-domain-v172",
   ]) assert.ok(worker.includes(marker), `worker missing compatibility marker ${marker}`);
   assert.doesNotMatch(worker, /WHITE-R4-2026\.07\.12/);
 });
 
-test("all critical React shell routes remain protected after v168 recovery", () => {
+test("all critical React shell routes remain protected under v172", () => {
   for (const route of ["/login", "/signup", "/auth/callback", "/studio", "/dashboard", "/workspace"]) {
     assert.ok(worker.includes(`"${route}"`), `worker shell route missing ${route}`);
   }
+  assert.ok(worker.includes("ngeblogging-mobile-public-v171"));
+  assert.ok(worker.includes("ngeblogging-production-custom-domain-v172"));
 });
