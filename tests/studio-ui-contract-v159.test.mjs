@@ -104,8 +104,9 @@ test("Posts and Pages share the complete SEO editor and preserve the 5,000 word 
 test("Nara opens small, remains nonmodal until fullscreen and keeps all requested tools", () => {
   for (const marker of [
     "SMALL_NARA_SHELLS", 'data-size="small"', "smallButton.click()", "backdrop.hidden = !full",
-    'aria-modal", full ? "true" : "false"', "data-nara-interaction-v159",
+    'aria-modal", full ? "true" : "false"', "naraInteractionV159",
   ]) assert.ok(runtime.includes(marker), `Nara runtime missing ${marker}`);
+  assert.ok(css.includes('data-nara-interaction-v159="full"'));
   for (const marker of [
     "Kamera", "Foto", "File teks", "Mic", "SpeakerIcon", "modelOptions", "intelligenceOptions",
     "Instan", "Sedang", "Tinggi", "small", "medium", "full",
