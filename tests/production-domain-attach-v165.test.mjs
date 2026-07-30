@@ -60,6 +60,24 @@ test("package and production workflow execute domain attachment before final ver
   assert.ok(workflow.indexOf("npm run deploy:cloudflare") < workflow.indexOf("npm run cloudflare:attach-domains"));
 });
 
+test("v166 reports every production stage to the dedicated deployment issue", () => {
+  for (const marker of [
+    "issues: write",
+    "actions/github-script@v7",
+    "if: always()",
+    "issue_number: 243",
+    "CREDENTIALS_OUTCOME",
+    "CONTRACTS_OUTCOME",
+    "BUILD_OUTCOME",
+    "DEPLOY_WORKER_OUTCOME",
+    "ATTACH_DOMAINS_OUTCOME",
+    "VERIFY_PRODUCTION_OUTCOME",
+    "Deployment produksi",
+  ]) assert.ok(workflow.includes(marker), `production observability missing ${marker}`);
+  assert.ok(workflow.includes('state: status === "success" ? "closed" : "open"'));
+  assert.ok(workflow.includes('state_reason: status === "success" ? "completed" : undefined'));
+});
+
 test("v165 keeps exact Custom Domains and the tenant wildcard route separated", () => {
   for (const config of [wrangler, wrangler.env.production, production]) {
     assert.ok(config.routes.some((route) => route.pattern === EXACT_HOSTS[0] && route.custom_domain === true));
