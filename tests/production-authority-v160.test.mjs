@@ -15,12 +15,13 @@ test("v160 is the single Worker entry in default and production configurations",
   for (const config of configs) {
     assert.equal(config.name, "ngeblogging");
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.assets.run_worker_first, true);
     assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-authority-v160");
     assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
     assert.equal(config.vars.STUDIO_ROUTE_RELEASE, "2026.07.30-studio-route-v160");
   }
+  assert.equal(wrangler.assets.run_worker_first, true);
+  assert.equal(production.assets.run_worker_first, true);
 });
 
 test("apex and www are Worker custom domains while tenant subdomains remain routed", () => {
@@ -71,7 +72,7 @@ test("Netlify fallback publishes identical v160 markers and no-cache system rout
   ]) assert.ok(netlify.includes(marker), `Netlify publisher missing ${marker}`);
 
   for (const path of ["/", "/studio", "/dashboard", "/workspace", "/login", "/signin", "/signup"]) {
-    assert.ok(netlify.includes(`${path}\\n  Cache-Control: no-store`), `no-store missing for ${path}`);
+    assert.ok(netlify.includes(`${path}\n  Cache-Control: no-store`), `no-store missing for ${path}`);
   }
 });
 
