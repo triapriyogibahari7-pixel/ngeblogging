@@ -5,6 +5,7 @@ export const AUTH_ENTRY_RELEASE = "2026.07.30-auth-entry-v158";
 export const STUDIO_ROUTE_RELEASE = "2026.07.30-studio-route-v160";
 export const UI_CONTRACT_RELEASE = "2026.07.30-studio-ui-contract-v160";
 export const CONTENT_WORKFLOW_RELEASE = "2026.07.30-studio-content-workflow-v161";
+export const AUTH_EDITOR_RELEASE = "2026.07.30-auth-editor-v162";
 
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
 const SYSTEM_SHELL_PATHS = new Set([
@@ -33,6 +34,7 @@ const RELEASE_PATHS = new Set([
   "/release-v159.json",
   "/release-v160.json",
   "/release-v161.json",
+  "/release-v162.json",
 ]);
 
 function isSystemHost(url) {
@@ -55,6 +57,9 @@ function releaseResponse(request) {
     studioRouteRelease: STUDIO_ROUTE_RELEASE,
     uiContractRelease: UI_CONTRACT_RELEASE,
     contentWorkflowRelease: CONTENT_WORKFLOW_RELEASE,
+    authEditorRelease: AUTH_EDITOR_RELEASE,
+    authCallbackRelease: "auth-callback-v162-20260730",
+    contentEditorRelease: "content-editor-v162-20260730",
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
     responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"],
     desktopVariants: ["laptop", "computer"],
@@ -62,6 +67,10 @@ function releaseResponse(request) {
     previewPublishedOnly: true,
     duplicateCreatesDraft: true,
     pagesUseSameWorkflow: true,
+    pkceExplicitExchange: true,
+    emailPasswordSessionHandoff: true,
+    mobileEditorMinimumWidth: 320,
+    wordLimit: 5000,
     shell: "react-dist-index",
     customDomainAuthority: "worker-v69",
     legacyWhiteR4: false,
@@ -77,19 +86,21 @@ function releaseResponse(request) {
       "x-ngeblogging-studio-route": STUDIO_ROUTE_RELEASE,
       "x-ngeblogging-ui-contract": UI_CONTRACT_RELEASE,
       "x-ngeblogging-content-workflow": CONTENT_WORKFLOW_RELEASE,
+      "x-ngeblogging-auth-editor": AUTH_EDITOR_RELEASE,
       "x-ngeblogging-custom-domain-authority": "worker-v69",
     },
   });
 }
 
 function injectReleaseMarker(html) {
-  if (html.includes("ngeblogging-studio-content-v161")) return html;
+  if (html.includes("ngeblogging-auth-editor-v162")) return html;
   const marker = [
     `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}"/>`,
     `<meta name="ngeblogging-auth-entry" content="${AUTH_ENTRY_RELEASE}"/>`,
     `<meta name="ngeblogging-studio-route" content="${STUDIO_ROUTE_RELEASE}"/>`,
     `<meta name="ngeblogging-ui-contract" content="${UI_CONTRACT_RELEASE}"/>`,
     `<meta name="ngeblogging-studio-content-v161" content="${CONTENT_WORKFLOW_RELEASE}"/>`,
+    `<meta name="ngeblogging-auth-editor-v162" content="${AUTH_EDITOR_RELEASE}"/>`,
     '<meta name="ngeblogging-custom-domain-authority" content="worker-v69"/>',
     '<meta name="ngeblogging-legacy-white-r4" content="disabled"/>',
   ].join("");
@@ -127,6 +138,7 @@ async function serveReactShell(request, env, context) {
   headers.set("x-ngeblogging-studio-route", STUDIO_ROUTE_RELEASE);
   headers.set("x-ngeblogging-ui-contract", UI_CONTRACT_RELEASE);
   headers.set("x-ngeblogging-content-workflow", CONTENT_WORKFLOW_RELEASE);
+  headers.set("x-ngeblogging-auth-editor", AUTH_EDITOR_RELEASE);
   headers.set("x-ngeblogging-shell", "react-dist-index");
   headers.set("x-ngeblogging-custom-domain-authority", "worker-v69");
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
