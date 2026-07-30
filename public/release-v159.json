@@ -1,0 +1,16 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-studio-ui-contract-v159",
+  "uiContract": "studio-ui-contract-v159-20260730",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "sidebarComplete": true,
+  "profileDropdown": true,
+  "firstSiteOnboarding": true,
+  "analyticsRestored": true,
+  "themeStudio": true,
+  "naraNonmodalSmallMedium": true,
+  "authCompatibility": ["v158", "v154", "v153"],
+  "editorCompatibility": "v151",
+  "legacyWhiteR4": false
+}
