@@ -10,6 +10,9 @@ const recoveryCss = read("src/studio-recovery-v150.css");
 const policy = read("src/lib/site-policy-v169.js");
 const migration = read("supabase/migrations/20260730093000_site_limit_25_v169.sql");
 const fastGate = read("src/StudioFastGate.jsx");
+const worker = read("cloudflare/worker-v69.mjs");
+const serviceWorker = read("public/sw.js");
+const release = JSON.parse(read("public/release-v169.json"));
 
 const TYPES = [
   ["blog", "Blog"],
@@ -27,7 +30,7 @@ const TYPES = [
 
 test("v169 keeps first-site onboarding before Studio", () => {
   assert.ok(fastGate.includes("StudioOnboardingGate"));
-  assert.ok(fastGate.includes('data.studioEntryMode = "verify-first-site"') || fastGate.includes('dataset.studioEntryMode = "verify-first-site"'));
+  assert.ok(fastGate.includes('dataset.studioEntryMode = "verify-first-site"'));
   assert.ok(gate.includes('if (phase === "ready") return <StudioSecure'));
   assert.ok(gate.includes('if (phase === "onboarding") return <FirstSiteOnboarding'));
   assert.ok(gate.includes("Studio baru dibuka setelah situs nyata berhasil dibuat"));
@@ -45,9 +48,10 @@ test("v169 onboarding contains every requested site type and required preference
   ]) assert.ok(gate.includes(marker), `onboarding missing ${marker}`);
 });
 
-test("v169 enforces a factual maximum of 25 sites in UI data layer and database", () => {
+test("v169 enforces a factual maximum of 25 owned sites in UI data layer and database", () => {
   for (const marker of [
     "MAX_SITES_PER_ACCOUNT = 25", "SITE_LIMIT_REACHED_25", "getSiteQuota", "createUserSiteWithPolicy",
+    'site.role || ""', "ownedSites.length",
   ]) assert.ok(policy.includes(marker), `policy missing ${marker}`);
   assert.ok(gate.includes("MAX_SITES_PER_ACCOUNT"));
   assert.ok(gate.includes("quota.canCreate"));
@@ -79,4 +83,28 @@ test("first-site surfaces prevent horizontal overflow and respect safe areas", (
     "min-width:0", "max-width:100%", "overflow-x:hidden", "env(safe-area-inset-top)",
     "env(safe-area-inset-bottom)", "grid-template-columns:1fr", "prefers-reduced-motion",
   ]) assert.ok(`${gateCss}\n${recoveryCss}`.includes(marker), `responsive onboarding missing ${marker}`);
+});
+
+test("production probe and Worker publish the v169 contract", () => {
+  assert.equal(release.status, "ok");
+  assert.equal(release.release, "first-site-onboarding-v169-20260730");
+  assert.equal(release.maxSitesPerAccount, 25);
+  assert.equal(release.firstSiteBeforeStudio, true);
+  assert.equal(release.firstSiteCreatedAutomaticallyFromEmail, false);
+  assert.equal(release.activeWorkspaceAfterCreate, true);
+  assert.equal(release.autoPublishAfterCreate, false);
+  assert.equal(release.installAppProfileAction, true);
+  assert.equal(release.legacyWhiteR4, false);
+  for (const marker of [
+    "FIRST_SITE_RELEASE", "SITE_POLICY_RELEASE", "/release-v169.json", "maxSitesPerAccount: 25",
+    "firstSiteBeforeStudio: true", "installAppProfileAction: true", "x-ngeblogging-first-site",
+  ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
+});
+
+test("PWA cache is upgraded without caching auth callbacks", () => {
+  for (const marker of [
+    "ngeblogging-app-v169-first-site-20260730", "first-site-cache-v169",
+    "first-site-onboarding-v169-20260730", "site-policy-v169-20260730",
+    'url.pathname === "/login"', 'url.pathname.startsWith("/auth/")', "networkFirst(request",
+  ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
