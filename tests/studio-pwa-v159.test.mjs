@@ -5,13 +5,17 @@ import test from "node:test";
 const serviceWorker = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
 const release = JSON.parse(readFileSync(new URL("../public/release-v159.json", import.meta.url), "utf8"));
 
-test("PWA v161 rotates stale shells while preserving v159, auth and editor compatibility", () => {
+test("PWA v162 rotates stale shells while preserving v161, v159, auth and editor compatibility", () => {
   for (const marker of [
+    "ngeblogging-app-v162-auth-editor-20260730",
+    "auth-editor-cache-v162",
+    "auth-callback-v162-20260730",
+    "content-editor-v162-20260730",
+    "service-worker-stale-shell-v162",
+    "service-worker-activated-auth-editor-v162",
     "ngeblogging-app-v161-content-workflow-20260730",
     "content-workflow-cache-v161",
     "studio-content-workflow-v161-20260730",
-    "service-worker-stale-shell-v161",
-    "service-worker-activated-content-workflow-v161",
     "ngeblogging-app-v159-studio-ui-contract-20260730",
     "studio-ui-contract-cache-v159",
     "studio-ui-contract-v159-20260730",
@@ -26,7 +30,7 @@ test("PWA v161 rotates stale shells while preserving v159, auth and editor compa
     "auth-entry-v154-20260730",
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 
-  for (const route of ["/", "/studio", "/login", "/signup", "/signin", "/auth/"]) {
+  for (const route of ["/", "/studio", "/login", "/signup", "/signin", "/forgot-password", "/reset-password", "/auth/"]) {
     assert.ok(serviceWorker.includes(route), `PWA route missing ${route}`);
   }
   for (const mode of ["callback", "recovery", "session-expired", "callback-error"]) {
