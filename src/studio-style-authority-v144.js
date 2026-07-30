@@ -1,4 +1,5 @@
 import "./production-entry-v154.js";
+import "./studio-ui-contract-v159.js";
 
 const RELEASE = "studio-style-authority-v144-20260729";
 
