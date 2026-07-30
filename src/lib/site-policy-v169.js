@@ -4,7 +4,7 @@ export const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
 export const MAX_SITES_PER_ACCOUNT = 25;
 
 export function siteLimitError() {
-  const error = new Error(`Setiap akun dapat memiliki maksimal ${MAX_SITES_PER_ACCOUNT} situs.`);
+  const error = new Error(`Setiap akun dapat memiliki maksimal ${MAX_SITES_PER_ACCOUNT} situs milik sendiri.`);
   error.code = "SITE_LIMIT_REACHED_25";
   error.limit = MAX_SITES_PER_ACCOUNT;
   return error;
@@ -12,12 +12,14 @@ export function siteLimitError() {
 
 export async function getSiteQuota(userId) {
   const sites = await listUserSites(userId);
+  const ownedSites = sites.filter((site) => String(site.role || "").toLowerCase() === "owner");
   return {
     sites,
-    used: sites.length,
+    ownedSites,
+    used: ownedSites.length,
     limit: MAX_SITES_PER_ACCOUNT,
-    remaining: Math.max(0, MAX_SITES_PER_ACCOUNT - sites.length),
-    canCreate: sites.length < MAX_SITES_PER_ACCOUNT,
+    remaining: Math.max(0, MAX_SITES_PER_ACCOUNT - ownedSites.length),
+    canCreate: ownedSites.length < MAX_SITES_PER_ACCOUNT,
     release: SITE_POLICY_RELEASE,
   };
 }
