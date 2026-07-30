@@ -1,0 +1,61 @@
+/* Theme map v171: preserves all 20 v170 areas and adds four real header/footer areas. */
+body.nara-fullscreen-open-v148{overflow:hidden!important;overscroll-behavior:none}
+.tn-studio[data-theme-layout-authority="theme-layout-v170-20260730"] .tn-layout-canvas-v170{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  grid-template-rows:68px 72px 70px repeat(3,minmax(76px,1fr)) 70px 72px 68px;
+  grid-template-areas:
+    "header-primary-left header-primary-left header-primary-left header-primary-right header-primary-right header-primary-right"
+    "top-left-1 top-left-2 top-left-3 top-right-1 top-right-2 top-right-3"
+    "before-content before-content before-content before-content before-content before-content"
+    "sidebar-left-1 content-main content-main content-main content-main sidebar-right-1"
+    "sidebar-left-2 content-main content-main content-main content-main sidebar-right-2"
+    "sidebar-left-3 content-main content-main content-main content-main sidebar-right-3"
+    "after-content after-content after-content after-content after-content after-content"
+    "bottom-left-1 bottom-left-2 bottom-left-3 bottom-right-1 bottom-right-2 bottom-right-3"
+    "footer-copyright-left footer-copyright-left footer-copyright-left footer-copyright-right footer-copyright-right footer-copyright-right";
+  min-height:790px;
+}
+.tn-layout-slot-v170.header-primary-left{grid-area:header-primary-left}
+.tn-layout-slot-v170.header-primary-right{grid-area:header-primary-right}
+.tn-layout-slot-v170.footer-copyright-left{grid-area:footer-copyright-left}
+.tn-layout-slot-v170.footer-copyright-right{grid-area:footer-copyright-right}
+
+@media(max-width:760px){
+  .tn-studio[data-theme-layout-authority="theme-layout-v170-20260730"] .tn-layout-canvas-v170{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:64px repeat(3,64px) 64px repeat(3,64px) minmax(150px,1fr) 64px repeat(3,64px) 64px!important;
+    grid-template-areas:
+      "header-primary-left header-primary-right"
+      "top-left-1 top-right-1"
+      "top-left-2 top-right-2"
+      "top-left-3 top-right-3"
+      "before-content before-content"
+      "sidebar-left-1 sidebar-right-1"
+      "sidebar-left-2 sidebar-right-2"
+      "sidebar-left-3 sidebar-right-3"
+      "content-main content-main"
+      "after-content after-content"
+      "bottom-left-1 bottom-right-1"
+      "bottom-left-2 bottom-right-2"
+      "bottom-left-3 bottom-right-3"
+      "footer-copyright-left footer-copyright-right"!important;
+    grid-auto-rows:minmax(64px,auto)!important;
+    min-height:1050px!important;
+  }
+}
+
+@media(max-width:339px){
+  .tn-studio[data-theme-layout-authority="theme-layout-v170-20260730"] .tn-layout-canvas-v170{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:none!important;
+    grid-auto-rows:minmax(64px,auto)!important;
+    grid-template-areas:
+      "header-primary-left" "header-primary-right"
+      "top-left-1" "top-left-2" "top-left-3" "top-right-1" "top-right-2" "top-right-3"
+      "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "content-main"
+      "sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "after-content"
+      "bottom-left-1" "bottom-left-2" "bottom-left-3" "bottom-right-1" "bottom-right-2" "bottom-right-3"
+      "footer-copyright-left" "footer-copyright-right"!important;
+    min-height:0!important;
+  }
+}

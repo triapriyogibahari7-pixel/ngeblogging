@@ -1,0 +1,168 @@
+name: Diagnose Mobile Public v171
+
+on:
+  push:
+    branches:
+      - fix/mobile-public-layout-v171
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: diagnose-v171-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      QWEN_API_KEY: ci-dry-run-only
+      QWEN_WORKSPACE_ID: validation-v171
+    steps:
+      - name: Checkout exact branch commit
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Capture every validation stage
+        id: diagnose
+        shell: bash
+        run: |
+          set +e
+          npm ci --ignore-scripts > install.log 2>&1
+          install_code=$?
+
+          verify_code=99
+          production_code=99
+          vite_code=99
+          worker_code=99
+
+          if [ "$install_code" -eq 0 ]; then
+            npm run verify:v171 > verify.log 2>&1
+            verify_code=$?
+          else
+            echo "SKIPPED: dependency installation failed" > verify.log
+          fi
+
+          if [ "$verify_code" -eq 0 ]; then
+            npm run test:production > production.log 2>&1
+            production_code=$?
+          else
+            echo "SKIPPED: focused v171 verification failed" > production.log
+          fi
+
+          if [ "$production_code" -eq 0 ]; then
+            npx vite build > vite.log 2>&1
+            vite_code=$?
+          else
+            echo "SKIPPED: production regressions failed" > vite.log
+          fi
+
+          if [ "$vite_code" -eq 0 ]; then
+            npm run cloudflare:dry-run > worker.log 2>&1
+            worker_code=$?
+          else
+            echo "SKIPPED: Vite build failed" > worker.log
+          fi
+
+          {
+            echo "install_code=$install_code"
+            echo "verify_code=$verify_code"
+            echo "production_code=$production_code"
+            echo "vite_code=$vite_code"
+            echo "worker_code=$worker_code"
+            echo "log<<NGELOG"
+            for file in install.log verify.log production.log vite.log worker.log; do
+              echo
+              echo "===== $file ====="
+              tail -n 70 "$file"
+            done
+            echo "NGELOG"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish diagnostic result to PR 247
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          INSTALL_CODE: ${{ steps.diagnose.outputs.install_code }}
+          VERIFY_CODE: ${{ steps.diagnose.outputs.verify_code }}
+          PRODUCTION_CODE: ${{ steps.diagnose.outputs.production_code }}
+          VITE_CODE: ${{ steps.diagnose.outputs.vite_code }}
+          WORKER_CODE: ${{ steps.diagnose.outputs.worker_code }}
+          DIAGNOSTIC_LOG: ${{ steps.diagnose.outputs.log }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const marker = "<!-- ngeblogging-v171-diagnostic -->";
+            const codes = {
+              install: process.env.INSTALL_CODE || "missing",
+              verify: process.env.VERIFY_CODE || "missing",
+              production: process.env.PRODUCTION_CODE || "missing",
+              vite: process.env.VITE_CODE || "missing",
+              worker: process.env.WORKER_CODE || "missing",
+            };
+            const success = Object.values(codes).every((code) => code === "0");
+            const raw = process.env.DIAGNOSTIC_LOG || "Workflow berhenti sebelum log tersedia.";
+            const safeLog = raw.slice(-18000).replace(/```/g, "` ` `");
+            const body = [
+              marker,
+              `## ${success ? "✅" : "❌"} Diagnostik v171 ${success ? "lulus" : "gagal"}`,
+              "",
+              `Commit: \`${context.sha}\``,
+              "",
+              `- npm ci: \`${codes.install}\``,
+              `- verify:v171: \`${codes.verify}\``,
+              `- test:production: \`${codes.production}\``,
+              `- vite build: \`${codes.vite}\``,
+              `- Worker dry-run: \`${codes.worker}\``,
+              "",
+              "<details><summary>Potongan log</summary>",
+              "",
+              "```text",
+              safeLog,
+              "```",
+              "</details>",
+            ].join("\n");
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 247,
+              per_page: 100,
+            });
+            const previous = comments.find((comment) => comment.body?.includes(marker));
+            if (previous) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: previous.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: 247,
+                body,
+              });
+            }
+
+      - name: Fail workflow when validation failed
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.diagnose.outputs.install_code }}" = "0"
+          test "${{ steps.diagnose.outputs.verify_code }}" = "0"
+          test "${{ steps.diagnose.outputs.production_code }}" = "0"
+          test "${{ steps.diagnose.outputs.vite_code }}" = "0"
+          test "${{ steps.diagnose.outputs.worker_code }}" = "0"
