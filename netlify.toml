@@ -6,4 +6,4 @@
   NODE_VERSION = "22"
 
 [context.deploy-preview]
-  command = "node scripts/netlify-diagnostic-v172.mjs"
+  command = "npm run verify:v172 && npx vite build && node scripts/write-netlify-redirects.mjs"
