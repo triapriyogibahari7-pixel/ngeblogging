@@ -90,7 +90,7 @@ test("Nara small and medium are non-modal while full screen remains closable mod
     '.nara-assistant-shell[data-nara-size="small"]', '.nara-assistant-shell[data-nara-size="medium"]',
     '.nara-assistant-layer[data-nara-layer-size="full"]{pointer-events:auto!important',
     "body.nara-fullscreen-open-v148", ".nara-floating-button",
-  ]) assert.ok(responsiveCss.includes(marker) || nara.includes(marker), `Nara contract missing ${marker}`);
+  ]) assert.ok(responsiveCss.includes(marker) || mapCss.includes(marker) || nara.includes(marker), `Nara contract missing ${marker}`);
   for (const capability of ["Nara Mini", "Nara Writer", "Nara Vision", "Nara Max", "Instan", "Sedang", "Tinggi", "Maksimal", "Camera", "Mic", "SpeakerIcon"]) {
     assert.ok(nara.includes(capability), `Nara capability removed: ${capability}`);
   }
@@ -104,7 +104,7 @@ test("v171 rotates cache and production build cannot skip the responsive patch",
   ]) assert.ok(serviceWorker.includes(marker), `service worker marker missing ${marker}`);
   for (const marker of [
     "patchWidgets()", "patchGlobalStyles()", "patchStudioAuthority()", "patchNaraNonModal()",
-    "patchServiceWorker()", "verifyComplete()", "patch applied exactly once and verified",
+    "patchRuntimeContentOnly()", "patchServiceWorker()", "verifyComplete()", "patch applied exactly once and verified",
   ]) assert.ok(runner.includes(marker), `runner marker missing ${marker}`);
   for (const command of [packageJson.scripts.predev, packageJson.scripts.test, packageJson.scripts["test:production"], packageJson.scripts["verify:v171"]]) {
     assert.ok(command.includes("run-patch-theme-layout-v170.mjs"), `v170 prerequisite missing from ${command}`);
