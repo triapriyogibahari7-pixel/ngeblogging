@@ -19,20 +19,23 @@ test("v163 remains recorded as the explicit zone-route compatibility release", (
   assert.equal(release.legacyWhiteR4, false);
 });
 
-test("v164 Worker preserves v163 markers for diagnostics without making v163 current authority", () => {
+test("v168 Worker preserves v163 v164 and v165 markers for diagnostics", () => {
   for (const marker of [
     "2026.07.30-production-route-authority-v163",
     "ngeblogging-production-route-v163",
     "/release-v163.json",
-  ]) assert.ok(worker.includes(marker), `worker missing v163 compatibility marker ${marker}`);
-
-  assert.ok(worker.includes("2026.07.30-production-custom-domain-authority-v164"));
-  assert.ok(worker.includes("cloudflare-custom-domain-v164"));
-  assert.ok(worker.includes("worker-v69-custom-domain-v164"));
+    "2026.07.30-production-custom-domain-authority-v164",
+    "ngeblogging-production-custom-domain-v164",
+    "2026.07.30-production-domain-attach-v165",
+    "ngeblogging-production-domain-attach-v165",
+    "2026.07.30-production-route-recovery-v168",
+    "cloudflare-route-takeover-v168",
+    "worker-v69-route-recovery-v168",
+  ]) assert.ok(worker.includes(marker), `worker missing compatibility marker ${marker}`);
   assert.doesNotMatch(worker, /WHITE-R4-2026\.07\.12/);
 });
 
-test("all critical React shell routes remain protected after the v164 routing migration", () => {
+test("all critical React shell routes remain protected after v168 recovery", () => {
   for (const route of ["/login", "/signup", "/auth/callback", "/studio", "/dashboard", "/workspace"]) {
     assert.ok(worker.includes(`"${route}"`), `worker shell route missing ${route}`);
   }
