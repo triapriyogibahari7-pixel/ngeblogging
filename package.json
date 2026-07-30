@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run test:production && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/auth-production-v153.test.mjs tests/production-entry-v154.test.mjs tests/netlify-production-publisher-v156.test.mjs tests/auth-studio-route-v158.test.mjs tests/studio-ui-contract-v159.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
