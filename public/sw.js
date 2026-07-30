@@ -1,17 +1,22 @@
-const VERSION = "ngeblogging-app-v154-production-entry-20260730";
+const VERSION = "ngeblogging-app-v159-studio-ui-contract-20260730";
+const PRODUCTION_ENTRY_COMPAT_VERSION = "ngeblogging-app-v154-production-entry-20260730";
 const LEGACY_VERSION = "ngeblogging-app-v153-auth-production-20260730";
 const STUDIO_COMPLETION_COMPAT_VERSION = "ngeblogging-app-v151-studio-completion-20260729";
-const CACHE_RELEASE = "production-entry-cache-v154";
+const CACHE_RELEASE = "studio-ui-contract-cache-v159";
+const PRODUCTION_ENTRY_COMPAT_RELEASE = "production-entry-cache-v154";
 const LEGACY_CACHE_RELEASE = "auth-production-cache-v153";
 const STUDIO_COMPLETION_COMPAT_RELEASE = "studio-completion-cache-v151";
 const STUDIO_COMPLETION_COMPAT_UI = "studio-completion-v151";
 const LEGACY_ACTIVATION_REASON = "service-worker-activated-auth-production-v153";
+const PRODUCTION_ENTRY_COMPAT_REASON = "service-worker-activated-production-entry-v154";
+const PRODUCTION_ENTRY_COMPAT_STALE_REASON = "service-worker-stale-shell-v154";
 const AUTH_HANDOFF_RELEASE = "auth-entry-v154-20260730";
+const UI_CONTRACT_RELEASE = "studio-ui-contract-v159-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "production-entry-v154";
+const FORCE_REFRESH_VALUE = "studio-ui-contract-v159";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
-const APP_SHELL = ["/", "/site.webmanifest", "/favicon.svg"];
+const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
@@ -39,7 +44,7 @@ function isAuthSurface(url) {
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
-  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v154");
+  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v159");
   try {
     await client.navigate(url.href);
   } catch {
@@ -56,15 +61,20 @@ async function notifyOpenWindows() {
       client.postMessage({
         type: "NGE_BLOGGING_FORCE_RELOAD_V77",
         version: VERSION,
+        productionEntryCompatVersion: PRODUCTION_ENTRY_COMPAT_VERSION,
         legacyVersion: LEGACY_VERSION,
         studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
         release: CACHE_RELEASE,
+        productionEntryCompatRelease: PRODUCTION_ENTRY_COMPAT_RELEASE,
         legacyRelease: LEGACY_CACHE_RELEASE,
         studioCompletionCompatRelease: STUDIO_COMPLETION_COMPAT_RELEASE,
         studioCompletionCompatUi: STUDIO_COMPLETION_COMPAT_UI,
         legacyActivationReason: LEGACY_ACTIVATION_REASON,
+        productionEntryCompatReason: PRODUCTION_ENTRY_COMPAT_REASON,
+        productionEntryCompatStaleReason: PRODUCTION_ENTRY_COMPAT_STALE_REASON,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
-        reason: "service-worker-activated-production-entry-v154",
+        uiContractRelease: UI_CONTRACT_RELEASE,
+        reason: "service-worker-activated-studio-ui-contract-v159",
       });
       await refreshStaleWindow(client, url);
     } catch {
@@ -90,14 +100,19 @@ self.addEventListener("message", (event) => {
     event.source?.postMessage?.({
       type: "NGE_BLOGGING_PWA_VERSION",
       version: VERSION,
+      productionEntryCompatVersion: PRODUCTION_ENTRY_COMPAT_VERSION,
       legacyVersion: LEGACY_VERSION,
       studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
       release: CACHE_RELEASE,
+      productionEntryCompatRelease: PRODUCTION_ENTRY_COMPAT_RELEASE,
       legacyRelease: LEGACY_CACHE_RELEASE,
       studioCompletionCompatRelease: STUDIO_COMPLETION_COMPAT_RELEASE,
       studioCompletionCompatUi: STUDIO_COMPLETION_COMPAT_UI,
       legacyActivationReason: LEGACY_ACTIVATION_REASON,
+      productionEntryCompatReason: PRODUCTION_ENTRY_COMPAT_REASON,
+      productionEntryCompatStaleReason: PRODUCTION_ENTRY_COMPAT_STALE_REASON,
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
+      uiContractRelease: UI_CONTRACT_RELEASE,
     });
   }
 });
