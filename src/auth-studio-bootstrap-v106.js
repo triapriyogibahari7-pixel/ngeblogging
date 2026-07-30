@@ -3,10 +3,11 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 
 const RELEASE = "auth-studio-bootstrap-v109-20260728";
 const LEGACY_RELEASE = "auth-studio-bootstrap-v106-20260728";
-const AUTH_HANDOFF_RELEASE = "auth-route-handoff-v143-20260729";
-const AUTH_SUCCESS_VALUE = "v143";
+const AUTH_HANDOFF_RELEASE = "auth-studio-route-v158-20260730";
+const AUTH_SUCCESS_VALUE = "v158";
 const PATCH_FLAG = Symbol.for("ngeblogging.authStudioBootstrapV106");
 const GATE_ID = "ngeblogging-auth-gate-v106";
+const STUDIO_ROUTES = new Set(["/studio", "/dashboard", "/workspace"]);
 const subscribers = new Set();
 let recoveredSession = null;
 let replayScheduled = false;
@@ -63,6 +64,10 @@ function landingVisible() {
   return Boolean(document.querySelector("body>header,.hero,.landing-page"));
 }
 
+function normalizedPath() {
+  return window.location.pathname.replace(/\/+$/, "") || "/";
+}
+
 function callbackInProgress() {
   const params = new URLSearchParams(window.location.search);
   return Boolean(
@@ -73,7 +78,7 @@ function callbackInProgress() {
 }
 
 function loginSurface() {
-  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  const path = normalizedPath();
   const params = new URLSearchParams(window.location.search);
   const authMode = params.get("auth") || "";
   return path === "/login"
@@ -83,14 +88,21 @@ function loginSurface() {
     || authMode === "callback-error";
 }
 
+function needsStudioHandoff() {
+  const path = normalizedPath();
+  if (STUDIO_ROUTES.has(path)) return false;
+  return loginSurface() || (path === "/" && landingVisible() && !studioVisible());
+}
+
 function redirectAuthenticatedSurface(session, reason = "session") {
-  if (routeRedirecting || !session?.access_token || callbackInProgress() || !loginSurface()) return false;
+  if (routeRedirecting || !session?.access_token || callbackInProgress() || !needsStudioHandoff()) return false;
   routeRedirecting = true;
   installGate();
   document.documentElement.dataset.authRouteHandoff = AUTH_HANDOFF_RELEASE;
   document.documentElement.dataset.authRouteHandoffReason = reason;
-  const target = new URL("/", window.location.origin);
+  const target = new URL("/studio", window.location.origin);
   target.searchParams.set("auth_success", AUTH_SUCCESS_VALUE);
+  target.searchParams.set("source", normalizedPath() === "/" ? "landing" : "auth");
   window.location.replace(`${target.pathname}${target.search}`);
   return true;
 }

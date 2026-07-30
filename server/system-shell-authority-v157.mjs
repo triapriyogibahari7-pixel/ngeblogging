@@ -1,8 +1,12 @@
 export const SYSTEM_SHELL_RELEASE_V157 = "2026.07.30-system-shell-v157";
 export const AUTH_SHELL_RELEASE_V157 = "2026.07.30-auth-shell-v157";
+export const STUDIO_ROUTE_RELEASE_V158 = "2026.07.30-auth-studio-route-v158";
 
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
-const AUTH_PATHS = new Set([
+const SHELL_PATHS = new Set([
+  "/studio",
+  "/dashboard",
+  "/workspace",
   "/login",
   "/signin",
   "/signup",
@@ -26,7 +30,7 @@ function isSystemHost(url) {
 
 function isShellPath(url) {
   const path = url.pathname.replace(/\/+$/, "") || "/";
-  if (path === "/" || AUTH_PATHS.has(path)) return true;
+  if (path === "/" || SHELL_PATHS.has(path)) return true;
   return url.searchParams.has("code") || AUTH_MODES.has(url.searchParams.get("auth") || "");
 }
 
@@ -35,6 +39,8 @@ function releaseResponse(request) {
     status: "ok",
     release: SYSTEM_SHELL_RELEASE_V157,
     authRelease: AUTH_SHELL_RELEASE_V157,
+    studioRouteRelease: STUDIO_ROUTE_RELEASE_V158,
+    studioRoutes: ["/studio", "/dashboard", "/workspace"],
     shell: "react-dist-index",
     legacyWhiteR4: false,
   });
@@ -45,15 +51,17 @@ function releaseResponse(request) {
       "cache-control": "no-store, max-age=0",
       "x-ngeblogging-system-shell": SYSTEM_SHELL_RELEASE_V157,
       "x-ngeblogging-auth-shell": AUTH_SHELL_RELEASE_V157,
+      "x-ngeblogging-studio-route": STUDIO_ROUTE_RELEASE_V158,
     },
   });
 }
 
 function injectMarkers(html) {
-  if (html.includes("ngeblogging-system-shell-v157")) return html;
+  if (html.includes("ngeblogging-studio-route-v158")) return html;
   const markers = [
     `<meta name="ngeblogging-system-shell" content="${SYSTEM_SHELL_RELEASE_V157}"/>`,
     `<meta name="ngeblogging-auth-shell" content="${AUTH_SHELL_RELEASE_V157}"/>`,
+    `<meta name="ngeblogging-studio-route" content="${STUDIO_ROUTE_RELEASE_V158}"/>`,
     '<meta name="ngeblogging-legacy-white-r4" content="disabled"/>',
   ].join("");
   return /<head(?:\s[^>]*)?>/i.test(html)
@@ -64,7 +72,9 @@ function injectMarkers(html) {
 export async function tryServeSystemShellV157(request, env) {
   const url = new URL(request.url);
   if (!isSystemHost(url) || !["GET", "HEAD"].includes(request.method)) return null;
-  if (url.pathname === "/release-v157.json") return releaseResponse(request);
+  if (url.pathname === "/release-v157.json" || url.pathname === "/release-v158.json") {
+    return releaseResponse(request);
+  }
   if (url.pathname.startsWith("/api/") || !isShellPath(url)) return null;
   if (!env?.ASSETS?.fetch) return null;
 
@@ -89,6 +99,7 @@ export async function tryServeSystemShellV157(request, env) {
   headers.set("expires", "0");
   headers.set("x-ngeblogging-system-shell", SYSTEM_SHELL_RELEASE_V157);
   headers.set("x-ngeblogging-auth-shell", AUTH_SHELL_RELEASE_V157);
+  headers.set("x-ngeblogging-studio-route", STUDIO_ROUTE_RELEASE_V158);
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
 
   return new Response(request.method === "HEAD" ? null : html, {
