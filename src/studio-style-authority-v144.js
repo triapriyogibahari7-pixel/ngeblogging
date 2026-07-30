@@ -1,7 +1,7 @@
 import "./production-entry-v154.js";
-import "./studio-ui-contract-v159.js";
+import "./studio-platform-v160.js";
 
-const RELEASE = "studio-style-authority-v144-20260729";
+const RELEASE = "studio-style-authority-v160-20260730";
 
 const LEGACY_STUDIO_STYLES = new Set([
   "/src/studio-responsive-v23.css",

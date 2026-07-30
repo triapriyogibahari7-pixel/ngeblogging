@@ -1,0 +1,19 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-production-authority-v160",
+  "authEntryRelease": "2026.07.30-auth-entry-v158",
+  "studioRouteRelease": "2026.07.30-studio-route-v160",
+  "uiContractRelease": "2026.07.30-studio-ui-contract-v160",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "viewportMatrix": ["320x568", "360x640", "375x667", "390x844", "412x915", "430x932", "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768", "1440x900", "1920x1080"],
+  "sidebarPersistent": true,
+  "drawerKeyboard": true,
+  "profileKeyboard": true,
+  "safeArea": true,
+  "naraNonmodalSmallMedium": true,
+  "customDomainAuthority": "worker-v69",
+  "regressionSuite": "v147-v160",
+  "strictProductionBuild": true,
+  "legacyWhiteR4": false
+}

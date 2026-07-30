@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production
+name: Deploy Ngeblogging Production v160
 
 on:
   push:
@@ -49,28 +49,29 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Studio, authentication and production-entry contracts through v154
+      - name: Run Studio, authentication, viewport and production contracts through v160
         run: npm run test:production
 
       - name: Build production React assets
         run: npm run build
 
-      - name: Validate Cloudflare v154 bundle
+      - name: Validate Cloudflare v160 bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy React production entry v154
+      - name: Deploy React production authority v160
         run: npm run deploy:cloudflare
 
-      - name: Verify React shell and authentication v154 are live
+      - name: Verify React, login, Studio, Custom Domain and auth gateway v160
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 30); do
+          for attempt in $(seq 1 36); do
             stamp=$(date +%s)
             root_code=$(curl -sS -D /tmp/root-headers.txt -o /tmp/root.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
             login_code=$(curl -sS -D /tmp/login-headers.txt -o /tmp/login.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/login?deploy_audit=$stamp" || true)
             signup_code=$(curl -sS -D /tmp/signup-headers.txt -o /tmp/signup.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/signup?deploy_audit=$stamp" || true)
-            release_code=$(curl -sS -D /tmp/release-headers.txt -o /tmp/release.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v154.json?deploy_audit=$stamp" || true)
+            studio_code=$(curl -sS -D /tmp/studio-headers.txt -o /tmp/studio.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/studio?deploy_audit=$stamp" || true)
+            release_code=$(curl -sS -D /tmp/release-headers.txt -o /tmp/release.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v160.json?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
             sw_code=$(curl -sS -o /tmp/sw.js -w '%{http_code}' --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
             auth_code=$(curl -sS -D /tmp/auth-headers.txt -o /tmp/auth-body.txt -w '%{http_code}' --max-time 20 \
@@ -82,47 +83,56 @@ jobs:
             root=$(cat /tmp/root.html 2>/dev/null || true)
             login=$(cat /tmp/login.html 2>/dev/null || true)
             signup=$(cat /tmp/signup.html 2>/dev/null || true)
-            release=$(cat /tmp/release.json 2>/dev/null || true)
+            studio=$(cat /tmp/studio.html 2>/dev/null || true)
+            release=$(tr -d '\n\r ' < /tmp/release.json 2>/dev/null || true)
             health=$(cat /tmp/health.json 2>/dev/null || true)
             worker=$(cat /tmp/sw.js 2>/dev/null || true)
-            root_headers=$(cat /tmp/root-headers.txt 2>/dev/null || true)
-            login_headers=$(cat /tmp/login-headers.txt 2>/dev/null || true)
-            signup_headers=$(cat /tmp/signup-headers.txt 2>/dev/null || true)
-            auth_headers=$(cat /tmp/auth-headers.txt 2>/dev/null || true)
+            root_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/root-headers.txt 2>/dev/null || true)
+            login_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/login-headers.txt 2>/dev/null || true)
+            signup_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/signup-headers.txt 2>/dev/null || true)
+            studio_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/studio-headers.txt 2>/dev/null || true)
+            auth_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/auth-headers.txt 2>/dev/null || true)
 
-            if [[ "$root" == *"ngeblogging-production-entry"* ]] \
-              && [[ "$login" == *"ngeblogging-production-entry"* ]] \
-              && [[ "$signup" == *"ngeblogging-production-entry"* ]] \
+            if [[ "$root" == *"ngeblogging-production-authority-v160"* ]] \
+              && [[ "$login" == *"ngeblogging-production-authority-v160"* ]] \
+              && [[ "$signup" == *"ngeblogging-production-authority-v160"* ]] \
+              && [[ "$studio" == *"ngeblogging-production-authority-v160"* ]] \
               && [[ "$root" == *'id="root"'* ]] \
               && [[ "$login" == *'id="root"'* ]] \
               && [[ "$signup" == *'id="root"'* ]] \
+              && [[ "$studio" == *'id="root"'* ]] \
               && [[ "$root" == *"/assets/"* ]] \
               && [[ "$login" == *"/assets/"* ]] \
               && [[ "$signup" == *"/assets/"* ]] \
+              && [[ "$studio" == *"/assets/"* ]] \
               && [[ "$root" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$release" == *"2026.07.30-production-entry-v154"* ]] \
+              && [[ "$studio" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$release" == *"2026.07.30-production-authority-v160"* ]] \
               && [[ "$release" == *'"legacyWhiteR4":false'* ]] \
+              && [[ "$release" == *'"customDomainAuthority":"worker-v69"'* ]] \
               && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
-              && [[ "$worker" == *"ngeblogging-app-v154-production-entry-20260730"* ]] \
-              && [[ "$root_headers" == *"2026.07.30-production-entry-v154"* ]] \
-              && [[ "$login_headers" == *"2026.07.30-auth-entry-v154"* ]] \
-              && [[ "$signup_headers" == *"2026.07.30-auth-entry-v154"* ]] \
+              && [[ "$worker" == *"ngeblogging-app-v159-studio-ui-contract-20260730"* ]] \
+              && [[ "$root_headers" == *"x-ngeblogging-custom-domain-authority: worker-v69"* ]] \
+              && [[ "$login_headers" == *"x-ngeblogging-auth-entry: 2026.07.30-auth-entry-v158"* ]] \
+              && [[ "$signup_headers" == *"x-ngeblogging-ui-contract: 2026.07.30-studio-ui-contract-v160"* ]] \
+              && [[ "$studio_headers" == *"x-ngeblogging-studio-route: 2026.07.30-studio-route-v160"* ]] \
               && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]] \
               && [[ "$root_code" == "200" ]] \
               && [[ "$login_code" == "200" ]] \
               && [[ "$signup_code" == "200" ]] \
+              && [[ "$studio_code" == "200" ]] \
               && [[ "$release_code" == "200" ]] \
               && [[ "$health_code" == "200" ]] \
               && [[ "$sw_code" == "200" ]] \
               && [[ "$auth_code" == "204" ]]; then
-              echo "Production entry and auth v154 verified on attempt $attempt."
+              echo "Production authority, Studio UI, login and auth v160 verified on attempt $attempt."
               exit 0
             fi
 
-            echo "Production entry v154 belum aktif (attempt $attempt/30); menunggu propagasi."
+            echo "Production authority v160 belum aktif (attempt $attempt/36); menunggu route dan propagasi."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_PRODUCTION_ENTRY_V154_FAILED"
+          echo "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED"
           exit 1

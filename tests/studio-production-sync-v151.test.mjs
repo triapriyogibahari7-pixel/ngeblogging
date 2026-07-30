@@ -37,10 +37,11 @@ test("Cloudflare production advances beyond v151 without losing compatibility ma
     "2026.07.29-studio-completion-v151",
     "2026.07.30-auth-production-v153",
     "2026.07.30-production-entry-v154",
+    "2026.07.30-production-authority-v160",
   ].includes(production.vars.APP_RELEASE));
   for (const marker of [
-    "Run Studio, authentication and production-entry contracts through v154",
-    "DEPLOY_VERIFY_PRODUCTION_ENTRY_V154_FAILED",
+    "Run Studio, authentication, viewport and production contracts through v160",
+    "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED",
     "studio-completion-v151",
   ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker), `release chain missing ${marker}`);
 });

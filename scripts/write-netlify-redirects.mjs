@@ -1,9 +1,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const PRODUCTION_ENTRY_RELEASE = "2026.07.30-production-entry-v154";
-const AUTH_ENTRY_RELEASE = "2026.07.30-auth-entry-v154";
-const STUDIO_ROUTE_RELEASE = "2026.07.30-auth-studio-route-v158";
+const PRODUCTION_ENTRY_RELEASE = "2026.07.30-production-authority-v160";
+const AUTH_ENTRY_RELEASE = "2026.07.30-auth-entry-v158";
+const STUDIO_ROUTE_RELEASE = "2026.07.30-studio-route-v160";
+const UI_CONTRACT_RELEASE = "2026.07.30-studio-ui-contract-v160";
 
 if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   const dist = resolve("dist");
@@ -26,7 +27,7 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
 
   writeFileSync(
     resolve(dist, "_headers"),
-    `/*\n  X-Ngeblogging-Production-Entry: ${PRODUCTION_ENTRY_RELEASE}\n  X-Ngeblogging-Auth-Entry: ${AUTH_ENTRY_RELEASE}\n  X-Ngeblogging-Studio-Route: ${STUDIO_ROUTE_RELEASE}\n/index.html\n  Cache-Control: no-store, max-age=0, must-revalidate\n/\n  Cache-Control: no-store, max-age=0, must-revalidate\n/studio\n  Cache-Control: no-store, max-age=0, must-revalidate\n/dashboard\n  Cache-Control: no-store, max-age=0, must-revalidate\n/workspace\n  Cache-Control: no-store, max-age=0, must-revalidate\n/login\n  Cache-Control: no-store, max-age=0, must-revalidate\n/signin\n  Cache-Control: no-store, max-age=0, must-revalidate\n/signup\n  Cache-Control: no-store, max-age=0, must-revalidate\n/release-v154.json\n  Cache-Control: no-store, max-age=0\n/release-v158.json\n  Cache-Control: no-store, max-age=0\n`,
+    `/*\n  X-Ngeblogging-Production-Entry: ${PRODUCTION_ENTRY_RELEASE}\n  X-Ngeblogging-Auth-Entry: ${AUTH_ENTRY_RELEASE}\n  X-Ngeblogging-Studio-Route: ${STUDIO_ROUTE_RELEASE}\n  X-Ngeblogging-UI-Contract: ${UI_CONTRACT_RELEASE}\n  X-Ngeblogging-Custom-Domain-Authority: netlify-v160\n/index.html\n  Cache-Control: no-store, max-age=0, must-revalidate\n/\n  Cache-Control: no-store, max-age=0, must-revalidate\n/studio\n  Cache-Control: no-store, max-age=0, must-revalidate\n/dashboard\n  Cache-Control: no-store, max-age=0, must-revalidate\n/workspace\n  Cache-Control: no-store, max-age=0, must-revalidate\n/login\n  Cache-Control: no-store, max-age=0, must-revalidate\n/signin\n  Cache-Control: no-store, max-age=0, must-revalidate\n/signup\n  Cache-Control: no-store, max-age=0, must-revalidate\n/release-v154.json\n  Cache-Control: no-store, max-age=0\n/release-v158.json\n  Cache-Control: no-store, max-age=0\n/release-v159.json\n  Cache-Control: no-store, max-age=0\n/release-v160.json\n  Cache-Control: no-store, max-age=0\n`,
     "utf8",
   );
 
@@ -35,26 +36,34 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
     release: PRODUCTION_ENTRY_RELEASE,
     authEntryRelease: AUTH_ENTRY_RELEASE,
     studioRouteRelease: STUDIO_ROUTE_RELEASE,
+    uiContractRelease: UI_CONTRACT_RELEASE,
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
+    responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    desktopVariants: ["laptop", "computer"],
     shell: "react-vite-dist-index",
+    customDomainAuthority: "netlify-v160",
     legacyWhiteR4: false,
     deployment: "netlify-static-fallback",
   };
-  writeFileSync(resolve(dist, "release-v154.json"), `${JSON.stringify(release, null, 2)}\n`, "utf8");
-  writeFileSync(resolve(dist, "release-v158.json"), `${JSON.stringify(release, null, 2)}\n`, "utf8");
+  for (const filename of ["release-v154.json", "release-v158.json", "release-v159.json", "release-v160.json"]) {
+    writeFileSync(resolve(dist, filename), `${JSON.stringify(release, null, 2)}\n`, "utf8");
+  }
 
   const indexPath = resolve(dist, "index.html");
   let html = readFileSync(indexPath, "utf8");
-  if (!html.includes('name="ngeblogging-studio-route"')) {
+  if (!html.includes('name="ngeblogging-production-authority-v160"')) {
     const markers = [
+      `<meta name="ngeblogging-production-authority-v160" content="${PRODUCTION_ENTRY_RELEASE}">`,
       `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}">`,
       `<meta name="ngeblogging-auth-entry" content="${AUTH_ENTRY_RELEASE}">`,
       `<meta name="ngeblogging-studio-route" content="${STUDIO_ROUTE_RELEASE}">`,
+      `<meta name="ngeblogging-ui-contract" content="${UI_CONTRACT_RELEASE}">`,
+      '<meta name="ngeblogging-custom-domain-authority" content="netlify-v160">',
       '<meta name="ngeblogging-legacy-white-r4" content="disabled">',
     ].join("");
     html = html.replace(/<head(\s[^>]*)?>/i, (match) => `${match}${markers}`);
     writeFileSync(indexPath, html, "utf8");
   }
 
-  console.log(`Netlify React entry ${PRODUCTION_ENTRY_RELEASE} dan Studio ${STUDIO_ROUTE_RELEASE} aktif; API diarahkan ke ${apiOrigin}`);
+  console.log(`Netlify React authority ${PRODUCTION_ENTRY_RELEASE}, Studio ${STUDIO_ROUTE_RELEASE}, dan UI ${UI_CONTRACT_RELEASE} aktif; API diarahkan ke ${apiOrigin}`);
 }

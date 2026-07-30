@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
-const worker = read("cloudflare/worker-v68.mjs");
+const worker = read("cloudflare/worker-v69.mjs");
+const compatibilityWorker = read("cloudflare/worker-v68.mjs");
 const defaultConfig = read("wrangler.jsonc");
 const productionConfig = read("wrangler.production.jsonc");
 const serviceWorker = read("public/sw.js");
@@ -17,10 +18,10 @@ const studio = read("src/StudioNext.jsx");
 
 const activeEntryFiles = [worker, defaultConfig, productionConfig, serviceWorker, browserBridge, netlifyBuild];
 
-test("production system routes are forced to the current React build", () => {
+test("production system routes remain forced to React while v154 compatibility is retained", () => {
   for (const marker of [
-    "2026.07.30-production-entry-v154",
-    "2026.07.30-auth-entry-v154",
+    "2026.07.30-production-authority-v160",
+    "2026.07.30-auth-entry-v158",
     "./worker-v67.mjs",
     'new URL("/index.html", request.url)',
     "env.ASSETS.fetch",
@@ -28,6 +29,7 @@ test("production system routes are forced to the current React build", () => {
     "no-store, max-age=0, must-revalidate",
     "x-ngeblogging-legacy-white-r4",
     "/release-v154.json",
+    "/release-v160.json",
   ]) assert.ok(worker.includes(marker), `worker entry missing ${marker}`);
 
   for (const route of ["/login", "/signin", "/signup", "/auth/callback", "/auth/recovery"]) {
@@ -36,25 +38,28 @@ test("production system routes are forced to the current React build", () => {
 
   assert.ok(worker.includes('url.pathname.startsWith("/api/")'));
   assert.ok(worker.includes("return baseWorker.fetch(request, env, context)"));
+  assert.ok(compatibilityWorker.includes("2026.07.30-production-entry-v154"));
+  assert.ok(compatibilityWorker.includes("2026.07.30-auth-entry-v154"));
 });
 
-test("all Wrangler authorities deploy worker v68 with v154 metadata", () => {
+test("all Wrangler authorities deploy worker v69 with v160 metadata and custom domains", () => {
   for (const config of [defaultConfig, productionConfig]) {
-    assert.ok(config.includes('"main": "./cloudflare/worker-v68.mjs"'));
-    assert.ok(config.includes('"APP_RELEASE": "2026.07.30-production-entry-v154"'));
-    assert.ok(config.includes('"UI_AUTHORITY_RELEASE": "2026.07.30-production-entry-v154"'));
-    assert.ok(config.includes('"AUTH_ENTRY_RELEASE": "2026.07.30-auth-entry-v154"'));
+    assert.ok(config.includes('"main": "./cloudflare/worker-v69.mjs"'));
+    assert.ok(config.includes('"APP_RELEASE": "2026.07.30-production-authority-v160"'));
+    assert.ok(config.includes('"UI_AUTHORITY_RELEASE": "2026.07.30-studio-ui-contract-v160"'));
+    assert.ok(config.includes('"AUTH_ENTRY_RELEASE": "2026.07.30-auth-entry-v158"'));
     assert.ok(config.includes('"run_worker_first": true'));
-    assert.ok(config.includes('"pattern": "ngeblogging.com/*"'));
+    assert.ok(config.includes('"pattern": "ngeblogging.com", "custom_domain": true'));
     assert.ok(config.includes('"pattern": "*.ngeblogging.com/*"'));
   }
 });
 
-test("Netlify production publishes the same React markers, release probe and no-cache auth routes", () => {
+test("Netlify production publishes v160 markers plus v154 compatibility probe", () => {
   for (const marker of [
-    "2026.07.30-production-entry-v154",
-    "2026.07.30-auth-entry-v154",
+    "2026.07.30-production-authority-v160",
+    "2026.07.30-auth-entry-v158",
     "release-v154.json",
+    "release-v160.json",
     "legacyWhiteR4: false",
     "netlify-static-fallback",
     "ngeblogging-production-entry",
@@ -69,6 +74,7 @@ test("Netlify production publishes the same React markers, release probe and no-
 
 test("PWA cache rotation removes stale shells without interrupting auth callbacks", () => {
   for (const marker of [
+    "ngeblogging-app-v159-studio-ui-contract-20260730",
     "ngeblogging-app-v154-production-entry-20260730",
     "production-entry-cache-v154",
     "auth-entry-v154-20260730",
@@ -94,6 +100,7 @@ test("browser bridge verifies v154 and clears only legacy PWA guards", () => {
     "authSurface",
   ]) assert.ok(browserBridge.includes(marker), `browser bridge missing ${marker}`);
   assert.ok(styleAuthority.startsWith('import "./production-entry-v154.js";'));
+  assert.ok(styleAuthority.includes('import "./studio-platform-v160.js";'));
 });
 
 test("Google, LinkedIn, email, PKCE callback and persistent sessions remain wired", () => {

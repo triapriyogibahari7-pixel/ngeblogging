@@ -9,7 +9,8 @@ const callback = read("src/auth-callback-authority-v107.js");
 const bootstrap = read("src/auth-studio-bootstrap-v106.js");
 const gateway = read("server/auth-gateway-v108.mjs");
 const authWorker = read("cloudflare/worker-v67.mjs");
-const entryWorker = read("cloudflare/worker-v68.mjs");
+const entryWorker = read("cloudflare/worker-v69.mjs");
+const compatibilityWorker = read("cloudflare/worker-v68.mjs");
 const cloudflareDefault = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const pwa = read("src/pwa-runtime.js");
@@ -64,19 +65,20 @@ test("Cloudflare auth gateway accepts production and preview surfaces", () => {
   assert.match(gateway, /responseHeaders\.set\("x-ngeblogging-auth-gateway"/);
 });
 
-test("all Cloudflare deployment configs use entry v154 while retaining auth v153", () => {
+test("Cloudflare deployment uses v160 while retaining auth v153 and entry v154 compatibility", () => {
   for (const config of [cloudflareDefault, production]) {
-    assert.equal(config.main, "./cloudflare/worker-v68.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-entry-v154");
-    assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-production-entry-v154");
+    assert.equal(config.main, "./cloudflare/worker-v69.mjs");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-authority-v160");
+    assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
-    assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v154");
+    assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
     assert.equal(config.assets.run_worker_first, true);
-    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com/*"));
+    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
   }
-  assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v68.mjs");
-  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-entry-v154");
+  assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v69.mjs");
+  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-authority-v160");
   assert.ok(entryWorker.includes('./worker-v67.mjs'));
+  assert.ok(compatibilityWorker.includes("2026.07.30-production-entry-v154"));
 });
 
 test("auth worker metadata and health expose v153 readiness", () => {
@@ -97,10 +99,10 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment rejects stale WHITE-R4 and probes entry v154 plus auth gateway v153", () => {
+test("deployment rejects stale WHITE-R4 and probes authority v160 plus auth gateway v153", () => {
   for (const marker of [
-    "2026.07.30-production-entry-v154", "2026.07.30-auth-gateway-v153",
-    "WHITE-R4-2026.07.12", "/release-v154.json",
-    "/api/auth-proxy/auth/v1/token", "DEPLOY_VERIFY_PRODUCTION_ENTRY_V154_FAILED",
+    "2026.07.30-production-authority-v160", "2026.07.30-auth-gateway-v153",
+    "WHITE-R4-2026.07.12", "/release-v160.json", "/studio",
+    "/api/auth-proxy/auth/v1/token", "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 });

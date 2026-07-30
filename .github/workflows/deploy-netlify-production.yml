@@ -1,4 +1,4 @@
-name: Publish Ngeblogging Netlify Production
+name: Publish Ngeblogging Netlify Production v160
 
 on:
   push:
@@ -47,7 +47,7 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Test and build React production
+      - name: Test and build React production v160
         run: npm run build
 
       - name: Inspect and unlock current production deploy
@@ -96,20 +96,20 @@ jobs:
             echo "Deploy produksi lama dibuka agar versi baru dapat dipublikasikan."
           fi
 
-      - name: Upload dist as the production deploy
+      - name: Upload dist as the production deploy v160
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html || { echo "DIST_INDEX_MISSING"; exit 1; }
-          test -f dist/release-v154.json || { echo "DIST_RELEASE_PROBE_MISSING"; exit 1; }
-          grep -q 'ngeblogging-production-entry' dist/index.html || { echo "DIST_ENTRY_MARKER_MISSING"; exit 1; }
+          test -f dist/release-v160.json || { echo "DIST_RELEASE_V160_PROBE_MISSING"; exit 1; }
+          grep -q 'ngeblogging-production-authority-v160' dist/index.html || { echo "DIST_V160_ENTRY_MARKER_MISSING"; exit 1; }
           ! grep -q 'WHITE-R4-2026.07.12' dist/index.html || { echo "DIST_CONTAINS_WHITE_R4"; exit 1; }
 
-          (cd dist && zip -q -r ../ngeblogging-production-v154.zip .)
+          (cd dist && zip -q -r ../ngeblogging-production-v160.zip .)
           curl -fsSL -X POST \
             -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
             -H "Content-Type: application/zip" \
-            --data-binary @ngeblogging-production-v154.zip \
+            --data-binary @ngeblogging-production-v160.zip \
             "https://api.netlify.com/api/v1/sites/$NETLIFY_RESOLVED_SITE_ID/deploys" \
             -o /tmp/netlify-deploy.json
 
@@ -134,7 +134,7 @@ jobs:
               -o /tmp/netlify-deploy-state.json
             state=$(node -e "const d=require('/tmp/netlify-deploy-state.json'); process.stdout.write(String(d.state||''))")
             if [[ "$state" == "ready" ]]; then
-              echo "Netlify production deploy ready."
+              echo "Netlify production deploy v160 ready."
               exit 0
             fi
             if [[ "$state" == "error" ]]; then
@@ -158,7 +158,7 @@ jobs:
             "https://api.netlify.com/api/v1/purge" \
             -o /tmp/netlify-purge.json
 
-      - name: Verify Netlify production and the custom domain
+      - name: Verify Netlify production, Studio, login and custom domain v160
         shell: bash
         run: |
           set -euo pipefail
@@ -168,17 +168,20 @@ jobs:
             local stamp
             stamp=$(date +%s)
             curl -fsSL --max-time 25 -D "/tmp/${label}-headers.txt" "$url?deploy_audit=$stamp" -o "/tmp/${label}-body.txt"
-            grep -q 'ngeblogging-production-entry' "/tmp/${label}-body.txt" || { echo "${label}_ENTRY_MARKER_MISSING"; return 1; }
+            grep -q 'ngeblogging-production-authority-v160' "/tmp/${label}-body.txt" || { echo "${label}_V160_ENTRY_MARKER_MISSING"; return 1; }
             ! grep -q 'WHITE-R4-2026.07.12' "/tmp/${label}-body.txt" || { echo "${label}_WHITE_R4_STILL_ACTIVE"; return 1; }
           }
 
           verify_url "https://ngeblogging.netlify.app/" "netlify_root"
           verify_url "https://ngeblogging.netlify.app/login" "netlify_login"
-          curl -fsSL --max-time 25 "https://ngeblogging.netlify.app/release-v154.json?deploy_audit=$(date +%s)" -o /tmp/netlify-release.json
-          grep -q '2026.07.30-production-entry-v154' /tmp/netlify-release.json
+          verify_url "https://ngeblogging.netlify.app/signup" "netlify_signup"
+          verify_url "https://ngeblogging.netlify.app/studio" "netlify_studio"
+          curl -fsSL --max-time 25 "https://ngeblogging.netlify.app/release-v160.json?deploy_audit=$(date +%s)" -o /tmp/netlify-release.json
+          grep -q '2026.07.30-production-authority-v160' /tmp/netlify-release.json
           grep -q '"legacyWhiteR4": false' /tmp/netlify-release.json
 
           if [[ -n "${NETLIFY_CUSTOM_DOMAIN:-}" ]]; then
             verify_url "https://$NETLIFY_CUSTOM_DOMAIN/" "custom_root"
             verify_url "https://$NETLIFY_CUSTOM_DOMAIN/login" "custom_login"
+            verify_url "https://$NETLIFY_CUSTOM_DOMAIN/studio" "custom_studio"
           fi
