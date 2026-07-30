@@ -6,7 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const pwa = read("src/pwa-runtime.js");
 const worker = read("public/sw.js");
 const production = JSON.parse(read("wrangler.production.jsonc"));
-const workflow = read(".github/workflows/deploy-production.yml");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const device = read("src/studio-device-mode-v140.js");
 const studio = read("src/StudioNext.jsx");
 const theme = read("src/ThemeStudio.jsx");
@@ -30,7 +30,7 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances through v172 without losing v151-v171 compatibility", () => {
+test("Cloudflare production advances through v173 without losing v151-v172 compatibility", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
@@ -40,8 +40,10 @@ test("Cloudflare production advances through v172 without losing v151-v171 compa
   assert.ok(production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
   assert.ok(!production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
   for (const marker of [
-    "Run protected production contracts through v172",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "Ngeblogging Cloudflare production v173",
+    "Run complete production regression and build",
+    "finalize-cloudflare-routes-v173.mjs",
+    "PRODUCTION_ROUTE_FINALIZER_V173_VERIFY_FAILED",
     "2026.07.30-production-custom-domain-v172",
     "first-site-onboarding-v169-20260730",
     "mobile-public-v171-20260730",
