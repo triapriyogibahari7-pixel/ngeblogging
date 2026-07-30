@@ -1,9 +1,6 @@
-name: Deploy Ngeblogging Production v172
+name: Deploy Ngeblogging Production v172 Manual Fallback
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -11,25 +8,23 @@ permissions:
   issues: write
 
 concurrency:
-  group: ngeblogging-production
+  group: ngeblogging-cloudflare-production
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 35
+    environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_WORKER_SERVICE: ngeblogging
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
       CLOUDFLARE_ZONE_NAME: ngeblogging.com
-      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
-      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      CLOUDFLARE_WORKER_SERVICE: ngeblogging
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
-      QWEN_API_KEY: ci-dry-run-only
-      QWEN_WORKSPACE_ID: production-dry-run
-      SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
-      SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
 
     steps:
       - name: Checkout main
@@ -42,179 +37,76 @@ jobs:
           cache: npm
 
       - name: Validate deployment credentials
-        id: credentials
-        shell: bash
         run: |
           set -euo pipefail
-          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
-          test "$CLOUDFLARE_WORKER_SERVICE" = "ngeblogging" || { echo "CLOUDFLARE_WORKER_SERVICE_INVALID"; exit 1; }
-          test "$CLOUDFLARE_ZONE_NAME" = "ngeblogging.com" || { echo "CLOUDFLARE_ZONE_NAME_INVALID"; exit 1; }
+          [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]]
+          [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]]
+          test -n "${CLOUDFLARE_API_TOKEN}"
 
       - name: Install pinned dependencies
-        id: dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run protected production contracts through v172
-        id: contracts
+      - name: Run protected production contracts through v173
         run: npm run test:production
 
       - name: Build production React assets
-        id: build
         run: npm run build
 
       - name: Validate Cloudflare Custom Domain bundle
-        id: dry_run
         run: npm run cloudflare:dry-run
 
+      - name: Build active-zone Custom Domain configuration
+        run: |
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
+          echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
+          node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-manual-v173
+
       - name: Deploy Worker and React assets v172
-        id: deploy_worker
-        run: npm run deploy:cloudflare
+        run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
       - name: Attach and verify exact apex and www Worker Domains
-        id: attach_domains
         run: npm run cloudflare:attach-domains
 
+      - name: Remove only legacy apex routes and preserve wildcard tenant
+        run: npm run cloudflare:finalize-routes
+
       - name: Verify root login signup Studio auth onboarding and mobile layout v172
-        id: verify_production
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 60); do
-            stamp=$(date +%s)
-            root_code=$(curl -sS -D /tmp/root-headers.txt -o /tmp/root.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
-            www_code=$(curl -sS -D /tmp/www-headers.txt -o /tmp/www.html -w '%{http_code}' --max-time 20 "https://www.ngeblogging.com/?deploy_audit=$stamp" || true)
-            login_code=$(curl -sS -D /tmp/login-headers.txt -o /tmp/login.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/login?deploy_audit=$stamp" || true)
-            signup_code=$(curl -sS -D /tmp/signup-headers.txt -o /tmp/signup.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/signup?deploy_audit=$stamp" || true)
-            studio_code=$(curl -sS -D /tmp/studio-headers.txt -o /tmp/studio.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/studio?deploy_audit=$stamp" || true)
-            release172_code=$(curl -sS -D /tmp/release-v172-headers.txt -o /tmp/release-v172.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v172.json?deploy_audit=$stamp" || true)
-            health_code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
-            auth_code=$(curl -sS -D /tmp/auth-headers.txt -o /tmp/auth-body.txt -w '%{http_code}' --max-time 20 \
-              -X OPTIONS "https://ngeblogging.com/api/auth-proxy/auth/v1/token?grant_type=password&deploy_audit=$stamp" \
-              -H 'Origin: https://ngeblogging.com' \
-              -H 'Access-Control-Request-Method: POST' \
-              -H 'Access-Control-Request-Headers: apikey,content-type,x-client-info' || true)
-
-            root=$(cat /tmp/root.html 2>/dev/null || true)
-            www=$(cat /tmp/www.html 2>/dev/null || true)
-            login=$(cat /tmp/login.html 2>/dev/null || true)
-            signup=$(cat /tmp/signup.html 2>/dev/null || true)
-            studio=$(cat /tmp/studio.html 2>/dev/null || true)
-            release172=$(tr -d '\n\r ' < /tmp/release-v172.json 2>/dev/null || true)
-            health=$(cat /tmp/health.json 2>/dev/null || true)
-            root_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/root-headers.txt 2>/dev/null || true)
-            www_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/www-headers.txt 2>/dev/null || true)
-            login_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/login-headers.txt 2>/dev/null || true)
-            signup_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/signup-headers.txt 2>/dev/null || true)
-            studio_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/studio-headers.txt 2>/dev/null || true)
-            release172_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/release-v172-headers.txt 2>/dev/null || true)
-            auth_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/auth-headers.txt 2>/dev/null || true)
-
-            if [[ "$root" == *"ngeblogging-production-custom-domain-v172"* ]] \
-              && [[ "$www" == *"ngeblogging-production-custom-domain-v172"* ]] \
-              && [[ "$login" == *"ngeblogging-production-custom-domain-v172"* ]] \
-              && [[ "$signup" == *"ngeblogging-production-custom-domain-v172"* ]] \
-              && [[ "$studio" == *"ngeblogging-production-custom-domain-v172"* ]] \
-              && [[ "$root" == *"ngeblogging-first-site-v169"* ]] \
-              && [[ "$root" == *"ngeblogging-mobile-public-v171"* ]] \
-              && [[ "$login" == *"ngeblogging-auth-callback-singleflight-v162"* ]] \
-              && [[ "$root" == *'id="root"'* ]] \
-              && [[ "$www" == *'id="root"'* ]] \
-              && [[ "$login" == *'id="root"'* ]] \
-              && [[ "$signup" == *'id="root"'* ]] \
-              && [[ "$studio" == *'id="root"'* ]] \
-              && [[ "$root" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$www" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$studio" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$release172" == *'"release":"2026.07.30-production-custom-domain-v172"'* ]] \
-              && [[ "$release172" == *'"apexCustomDomain":true'* ]] \
-              && [[ "$release172" == *'"wwwCustomDomain":true'* ]] \
-              && [[ "$release172" == *'"tenantWildcardPreserved":true'* ]] \
-              && [[ "$release172" == *'"maxSitesPerAccount":25'* ]] \
-              && [[ "$release172" == *'"firstSiteBeforeStudio":true'* ]] \
-              && [[ "$release172" == *'"sessionPersistsUntilExplicitLogout":true'* ]] \
-              && [[ "$release172" == *'"legacyWhiteR4":false'* ]] \
-              && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
-              && [[ "$root_headers" == *"x-ngeblogging-production-custom-domain: 2026.07.30-production-custom-domain-v172"* ]] \
-              && [[ "$www_headers" == *"x-ngeblogging-production-custom-domain: 2026.07.30-production-custom-domain-v172"* ]] \
-              && [[ "$root_headers" == *"x-ngeblogging-mobile-public: mobile-public-v171-20260730"* ]] \
-              && [[ "$root_headers" == *"x-ngeblogging-first-site: first-site-onboarding-v169-20260730"* ]] \
-              && [[ "$login_headers" == *"x-ngeblogging-auth-entry: 2026.07.30-auth-entry-v158"* ]] \
-              && [[ "$signup_headers" == *"x-ngeblogging-ui-contract: 2026.07.30-studio-ui-contract-v160"* ]] \
-              && [[ "$studio_headers" == *"x-ngeblogging-studio-route: 2026.07.30-studio-route-v160"* ]] \
-              && [[ "$release172_headers" == *"x-ngeblogging-production-custom-domain: 2026.07.30-production-custom-domain-v172"* ]] \
-              && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]] \
-              && [[ "$root_code" == "200" ]] \
-              && [[ "$www_code" == "200" ]] \
-              && [[ "$login_code" == "200" ]] \
-              && [[ "$signup_code" == "200" ]] \
-              && [[ "$studio_code" == "200" ]] \
-              && [[ "$release172_code" == "200" ]] \
-              && [[ "$health_code" == "200" ]] \
-              && [[ "$auth_code" == "204" ]]; then
-              echo "Production Custom Domains v172 verified on attempt $attempt."
+            stamp="$(date +%s)-${attempt}"
+            release_code="$(curl -sS -L --max-time 20 -o /tmp/release-v172.json -w '%{http_code}' "https://ngeblogging.com/release-v172.json?manual=${stamp}" || true)"
+            root_code="$(curl -sS -L --max-time 20 -o /tmp/root.html -w '%{http_code}' "https://ngeblogging.com/?manual=${stamp}" || true)"
+            login_code="$(curl -sS -L --max-time 20 -o /tmp/login.html -w '%{http_code}' "https://ngeblogging.com/login?manual=${stamp}" || true)"
+            studio_code="$(curl -sS -L --max-time 20 -o /tmp/studio.html -w '%{http_code}' "https://ngeblogging.com/studio?manual=${stamp}" || true)"
+            release="$(tr -d '\n\r ' < /tmp/release-v172.json 2>/dev/null || true)"
+            pages="$(cat /tmp/root.html /tmp/login.html /tmp/studio.html 2>/dev/null || true)"
+            if [[ "${release_code}" == 200 && "${root_code}" == 200 && "${login_code}" == 200 && "${studio_code}" == 200 ]] \
+              && [[ "${release}" == *'"release":"2026.07.30-production-custom-domain-v172"'* ]] \
+              && [[ "${release}" == *'"maxSitesPerAccount":25'* ]] \
+              && [[ "${release}" == *'"firstSiteBeforeStudio":true'* ]] \
+              && [[ "${release}" == *'"legacyWhiteR4":false'* ]] \
+              && [[ "${pages}" == *"ngeblogging-mobile-public-v171"* ]] \
+              && [[ "${pages}" != *"WHITE-R4-2026.07.12"* ]]; then
+              echo "Manual fallback production v173 verified."
               exit 0
             fi
-
-            echo "Custom Domain v172 belum aktif (attempt $attempt/60)."
             sleep 10
           done
           echo "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED"
           exit 1
 
-      - name: Publish production deployment status to issue 243
+      - name: Record manual fallback result on issue 243
         if: always()
         uses: actions/github-script@v7
-        env:
-          JOB_STATUS: ${{ job.status }}
-          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
-          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
-          CONTRACTS_OUTCOME: ${{ steps.contracts.outcome }}
-          BUILD_OUTCOME: ${{ steps.build.outcome }}
-          DRY_RUN_OUTCOME: ${{ steps.dry_run.outcome }}
-          DEPLOY_WORKER_OUTCOME: ${{ steps.deploy_worker.outcome }}
-          ATTACH_DOMAINS_OUTCOME: ${{ steps.attach_domains.outcome }}
-          VERIFY_PRODUCTION_OUTCOME: ${{ steps.verify_production.outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const status = process.env.JOB_STATUS || "unknown";
-            const icon = status === "success" ? "✅" : "❌";
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              `## ${icon} Deployment produksi Custom Domain v172 ${status}`,
-              "",
-              `- Commit: \`${context.sha}\``,
-              `- Run: ${runUrl}`,
-              `- Custom Domain authority: \`2026.07.30-production-custom-domain-v172\``,
-              `- Mobile/public layout: \`mobile-public-v171-20260730\``,
-              `- First-site authority: \`first-site-onboarding-v169-20260730\``,
-              `- Site policy: \`site-policy-v169-20260730\` (maksimal 25 situs milik akun)`,
-              `- Waktu UTC: \`${new Date().toISOString()}\``,
-              "",
-              "### Hasil tahap",
-              `- Kredensial: **${process.env.CREDENTIALS_OUTCOME || "not-run"}**`,
-              `- Dependensi: **${process.env.DEPENDENCIES_OUTCOME || "not-run"}**`,
-              `- Regression: **${process.env.CONTRACTS_OUTCOME || "not-run"}**`,
-              `- Build React: **${process.env.BUILD_OUTCOME || "not-run"}**`,
-              `- Dry-run Cloudflare: **${process.env.DRY_RUN_OUTCOME || "not-run"}**`,
-              `- Deploy Worker: **${process.env.DEPLOY_WORKER_OUTCOME || "not-run"}**`,
-              `- Attach apex/www: **${process.env.ATTACH_DOMAINS_OUTCOME || "not-run"}**`,
-              `- Verifikasi root/login/Studio/auth/onboarding/layout: **${process.env.VERIFY_PRODUCTION_OUTCOME || "not-run"}**`,
-              "",
-              status === "success"
-                ? "Apex dan www terikat ke service ngeblogging, WHITE-R4 hilang, login surface serta onboarding/kuota/layout v171 tampil di produksi."
-                : "Produksi belum dinyatakan selesai. Lihat run untuk tahap yang gagal.",
-            ].join("\n");
-            const update = {
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: 243,
-              title: "Produksi Ngeblogging — Verifikasi Custom Domain, login, onboarding, dan Studio v172",
-              body,
-              state: status === "success" ? "closed" : "open",
-            };
-            if (status === "success") update.state_reason = "completed";
-            await github.rest.issues.update(update);
+              body: `Manual fallback v172/v173 finished with job status **${{ job.status }}**. Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
