@@ -13,6 +13,7 @@ let scanFrame = 0;
 let sidebarHydrated = false;
 let sidebarObserver = null;
 let lastSidebarButton = null;
+let drawerWasOpen = false;
 
 function safeGet(key) {
   try { return localStorage.getItem(key); } catch { return null; }
@@ -85,12 +86,14 @@ function syncDrawerAccessibility() {
   const mobileOpen = isSmallMode() && sidebar.classList.contains("mobile-open");
   sidebar.setAttribute("aria-hidden", isSmallMode() && !mobileOpen ? "true" : "false");
   main.toggleAttribute("inert", mobileOpen);
-  if (mobileOpen) {
+
+  if (mobileOpen && !drawerWasOpen) {
     lastSidebarButton = toggle;
-    sidebar.querySelector(".sn-side-close,nav button,.sn-new")?.focus({ preventScroll: true });
-  } else if (lastSidebarButton && document.activeElement && sidebar.contains(document.activeElement)) {
-    lastSidebarButton.focus({ preventScroll: true });
+    requestAnimationFrame(() => sidebar.querySelector(".sn-side-close,nav button,.sn-new")?.focus({ preventScroll: true }));
+  } else if (!mobileOpen && drawerWasOpen) {
+    requestAnimationFrame(() => lastSidebarButton?.focus({ preventScroll: true }));
   }
+  drawerWasOpen = mobileOpen;
 }
 
 function syncProfileKeyboard() {
@@ -162,7 +165,6 @@ document.addEventListener("keydown", (event) => {
   const sidebar = document.querySelector("#ngeblogging-studio-sidebar.sn-side.mobile-open");
   if (sidebar && isSmallMode()) {
     document.querySelector(".sn-side-close")?.click();
-    requestAnimationFrame(() => lastSidebarButton?.focus({ preventScroll: true }));
   }
 });
 
