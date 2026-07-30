@@ -9,14 +9,13 @@ const worker = read("cloudflare/worker-v69.mjs");
 const release = JSON.parse(read("public/release-v164.json"));
 
 const activeConfigs = [wrangler, wrangler.env.production, production];
-const historicalPatterns = ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"];
-const recoveryPatterns = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
+const patterns = ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"];
 
 test("v164 Custom Domain contract remains published as historical compatibility", () => {
   assert.equal(release.status, "ok");
   assert.equal(release.release, "2026.07.30-production-custom-domain-authority-v164");
   assert.equal(release.routeAuthority, "cloudflare-custom-domain-v164");
-  assert.deepEqual(release.routePatterns, historicalPatterns);
+  assert.deepEqual(release.routePatterns, patterns);
   assert.deepEqual(release.exactCustomDomains, ["ngeblogging.com", "www.ngeblogging.com"]);
   assert.equal(release.tenantWildcardRoute, "*.ngeblogging.com/*");
   assert.equal(release.apexCustomDomain, true);
@@ -28,33 +27,38 @@ test("v164 Custom Domain contract remains published as historical compatibility"
   assert.equal(release.legacyWhiteR4, false);
 });
 
-test("active production may recover through v168 routes without deleting v164 evidence", () => {
+test("active v172 restores exact Custom Domains without deleting v164 or v168 evidence", () => {
   for (const config of activeConfigs) {
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-recovery-v168");
-    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-route-takeover-v168");
-    assert.deepEqual(config.routes.map((route) => route.pattern), recoveryPatterns);
-    for (const route of config.routes) {
-      assert.equal(route.zone_name, "ngeblogging.com");
-      assert.notEqual(route.custom_domain, true);
-    }
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-authority-v172");
+    assert.equal(config.vars.PRODUCTION_RECOVERY_RELEASE, "2026.07.30-production-route-recovery-v168");
+    assert.deepEqual(config.routes.map((route) => route.pattern), patterns);
+    assert.equal(config.routes[0].custom_domain, true);
+    assert.equal(config.routes[1].custom_domain, true);
+    assert.equal(config.routes[2].zone_name, "ngeblogging.com");
+    assert.notEqual(config.routes[2].custom_domain, true);
   }
 });
 
-test("Worker keeps v164 markers while v168 becomes the active authority", () => {
+test("Worker keeps v164 and v168 compatibility while v172 is active", () => {
   for (const marker of [
     "2026.07.30-production-custom-domain-authority-v164",
     "ngeblogging-production-custom-domain-v164",
     "2026.07.30-production-route-recovery-v168",
-    "cloudflare-route-takeover-v168",
-    "worker-v69-route-recovery-v168",
+    "ngeblogging-production-route-recovery-v168",
+    "2026.07.30-production-custom-domain-v172",
+    "ngeblogging-production-custom-domain-v172",
+    "worker-v69-custom-domain-v172",
     "x-ngeblogging-production-authority",
+    "x-ngeblogging-production-custom-domain",
     "/release-v164.json",
     "/release-v168.json",
+    "/release-v172.json",
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("v164 compatibility does not regress auth callback editor six modes or explicit logout", () => {
+test("Custom Domain evolution does not regress auth editor six modes or explicit logout", () => {
   for (const marker of [
     "auth-callback-singleflight-v162-20260730",
     "pkceSingleFlight: true",
@@ -63,6 +67,7 @@ test("v164 compatibility does not regress auth callback editor six modes or expl
     "sessionPersistsUntilExplicitLogout: true",
     "wordLimit: 5000",
     '["application", "phone", "mobile", "compact", "tablet", "desktop"]',
+    "mobile-public-v171-20260730",
     "legacyWhiteR4: false",
   ]) assert.ok(worker.includes(marker), `worker missing protected contract ${marker}`);
 });
