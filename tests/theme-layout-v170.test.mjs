@@ -96,9 +96,10 @@ test("v170 rotates PWA cache while preserving v169 auth and onboarding compatibi
 });
 
 test("v170 patch and regression cannot be skipped by production build", () => {
-  for (const command of [packageJson.scripts.predev, packageJson.scripts.prebuild, packageJson.scripts.test, packageJson.scripts["test:production"]]) {
+  for (const command of [packageJson.scripts.predev, packageJson.scripts.test, packageJson.scripts["test:production"]]) {
     assert.ok(command.includes("patch-theme-layout-v170.mjs"));
   }
+  assert.ok(packageJson.scripts.build.includes("verify:v170") || packageJson.scripts.build.includes("test:production"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/theme-layout-v170.test.mjs"));
   assert.ok(packageJson.scripts["verify:v170"].includes("tests/theme-layout-v170.test.mjs"));
 });
