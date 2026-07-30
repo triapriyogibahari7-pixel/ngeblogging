@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-auth-editor-v162",
+  "productionAuthority": "2026.07.30-production-authority-v160",
+  "contentWorkflowCompatibility": "studio-content-workflow-v161-20260730",
+  "authCallback": "auth-callback-v162-20260730",
+  "contentEditor": "content-editor-v162-20260730",
+  "oauthProviders": ["google", "linkedin_oidc"],
+  "emailPasswordSessionHandoff": true,
+  "pkceExplicitExchange": true,
+  "callbackRefreshRecovery": true,
+  "sessionPersistsUntilExplicitLogout": true,
+  "wordLimit": 5000,
+  "wordWarningAt": 4500,
+  "draftIsNeverTruncated": true,
+  "mobileEditorTabs": ["content", "insert", "layout", "metadata", "seo", "html"],
+  "seoTitle": true,
+  "socialMetadata": true,
+  "pageNavigationSettings": true,
+  "responsiveViewportMinimum": 320,
+  "serviceWorker": "ngeblogging-app-v162-auth-editor-20260730",
+  "legacyWhiteR4": false
+}
