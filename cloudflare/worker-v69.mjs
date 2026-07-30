@@ -13,6 +13,8 @@ export const PRODUCTION_ROUTE_COMPAT_RELEASE = "2026.07.30-production-route-auth
 export const PRODUCTION_CUSTOM_DOMAIN_COMPAT_RELEASE = "2026.07.30-production-custom-domain-authority-v164";
 export const PRODUCTION_DOMAIN_ATTACH_COMPAT_RELEASE = "2026.07.30-production-domain-attach-v165";
 export const PRODUCTION_RECOVERY_RELEASE = "2026.07.30-production-route-recovery-v168";
+export const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
+export const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
 export const PRODUCTION_ROUTE_RELEASE = PRODUCTION_RECOVERY_RELEASE;
 
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
@@ -47,6 +49,7 @@ const RELEASE_PATHS = new Set([
   "/release-v164.json",
   "/release-v165.json",
   "/release-v168.json",
+  "/release-v169.json",
 ]);
 const DIAGNOSTIC_ASSET_PATHS = new Set([
   "/auth-capacity-v162.json",
@@ -69,6 +72,8 @@ function releaseResponse(request) {
   const body = JSON.stringify({
     status: "ok",
     release: PRODUCTION_RECOVERY_RELEASE,
+    firstSiteRelease: FIRST_SITE_RELEASE,
+    sitePolicyRelease: SITE_POLICY_RELEASE,
     productionEntryRelease: PRODUCTION_ENTRY_RELEASE,
     authEntryRelease: AUTH_ENTRY_RELEASE,
     studioRouteRelease: STUDIO_ROUTE_RELEASE,
@@ -86,6 +91,13 @@ function releaseResponse(request) {
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
     responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"],
     desktopVariants: ["laptop", "computer"],
+    firstSiteBeforeStudio: true,
+    firstSiteCreatedAutomaticallyFromEmail: false,
+    maxSitesPerAccount: 25,
+    siteTypes: ["blog", "website", "news", "portfolio", "forum", "community", "landing", "profile", "diary", "knowledge", "general-knowledge"],
+    onboardingFields: ["name", "subdomain", "description", "blueprint", "theme", "language", "timezone"],
+    installAppProfileAction: true,
+    activeWorkspaceWithoutAutoPublish: true,
     summaryRealCounts: true,
     previewPublishedOnly: true,
     duplicateCreatesDraft: true,
@@ -125,6 +137,8 @@ function releaseResponse(request) {
       "x-ngeblogging-production-route": PRODUCTION_RECOVERY_RELEASE,
       "x-ngeblogging-production-authority": PRODUCTION_RECOVERY_RELEASE,
       "x-ngeblogging-production-recovery": PRODUCTION_RECOVERY_RELEASE,
+      "x-ngeblogging-first-site": FIRST_SITE_RELEASE,
+      "x-ngeblogging-site-policy": SITE_POLICY_RELEASE,
       "x-ngeblogging-worker-authority": "worker-v69-route-recovery-v168",
     },
   });
@@ -133,6 +147,7 @@ function releaseResponse(request) {
 function injectReleaseMarker(html) {
   if (
     html.includes("ngeblogging-production-route-recovery-v168")
+    && html.includes("ngeblogging-first-site-v169")
     && html.includes("ngeblogging-auth-callback-singleflight-v162")
   ) return html;
   const marker = [
@@ -148,6 +163,8 @@ function injectReleaseMarker(html) {
     `<meta name="ngeblogging-production-custom-domain-v164" content="${PRODUCTION_CUSTOM_DOMAIN_COMPAT_RELEASE}"/>`,
     `<meta name="ngeblogging-production-domain-attach-v165" content="${PRODUCTION_DOMAIN_ATTACH_COMPAT_RELEASE}"/>`,
     `<meta name="ngeblogging-production-route-recovery-v168" content="${PRODUCTION_RECOVERY_RELEASE}"/>`,
+    `<meta name="ngeblogging-first-site-v169" content="${FIRST_SITE_RELEASE}"/>`,
+    `<meta name="ngeblogging-site-policy-v169" content="${SITE_POLICY_RELEASE}"/>`,
     '<meta name="ngeblogging-worker-authority" content="worker-v69-route-recovery-v168"/>',
     '<meta name="ngeblogging-legacy-white-r4" content="disabled"/>',
   ].join("");
@@ -165,6 +182,8 @@ async function serveStaticDiagnostic(request, env) {
   headers.set("x-ngeblogging-auth-capacity", AUTH_CAPACITY_RELEASE);
   headers.set("x-ngeblogging-production-authority", PRODUCTION_RECOVERY_RELEASE);
   headers.set("x-ngeblogging-production-recovery", PRODUCTION_RECOVERY_RELEASE);
+  headers.set("x-ngeblogging-first-site", FIRST_SITE_RELEASE);
+  headers.set("x-ngeblogging-site-policy", SITE_POLICY_RELEASE);
   return new Response(request.method === "HEAD" ? null : response.body, {
     status: response.status,
     headers,
@@ -206,6 +225,8 @@ async function serveReactShell(request, env, context) {
   headers.set("x-ngeblogging-production-route", PRODUCTION_RECOVERY_RELEASE);
   headers.set("x-ngeblogging-production-authority", PRODUCTION_RECOVERY_RELEASE);
   headers.set("x-ngeblogging-production-recovery", PRODUCTION_RECOVERY_RELEASE);
+  headers.set("x-ngeblogging-first-site", FIRST_SITE_RELEASE);
+  headers.set("x-ngeblogging-site-policy", SITE_POLICY_RELEASE);
   headers.set("x-ngeblogging-shell", "react-dist-index");
   headers.set("x-ngeblogging-worker-authority", "worker-v69-route-recovery-v168");
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
