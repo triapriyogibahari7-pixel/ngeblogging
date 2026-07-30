@@ -30,26 +30,28 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances through v169 without losing v151-v165 compatibility", () => {
+test("Cloudflare production advances through v172 without losing v151-v171 compatibility", () => {
   assert.equal(production.assets.run_worker_first, true);
-  assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-route-recovery-v168");
+  assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
-  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-route-takeover-v168");
-  assert.ok(production.routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-  assert.ok(production.routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-authority-v172");
+  assert.ok(production.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
+  assert.ok(production.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
   assert.ok(production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-  assert.ok(!production.routes.some((route) => route.custom_domain === true));
+  assert.ok(!production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
   for (const marker of [
-    "Run protected production contracts through v169",
-    "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED",
-    "2026.07.30-production-route-recovery-v168",
+    "Run protected production contracts through v172",
+    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "2026.07.30-production-custom-domain-v172",
     "first-site-onboarding-v169-20260730",
+    "mobile-public-v171-20260730",
     "studio-completion-v151",
   ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker) || entryWorker.includes(marker), `release chain missing ${marker}`);
   for (const marker of [
     "2026.07.30-production-route-authority-v163",
     "2026.07.30-production-custom-domain-authority-v164",
     "2026.07.30-production-domain-attach-v165",
+    "2026.07.30-production-route-recovery-v168",
   ]) assert.ok(entryWorker.includes(marker), `historical release missing ${marker}`);
 });
 
