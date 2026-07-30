@@ -1,5 +1,7 @@
 import { appendFile, readFile, writeFile } from "node:fs/promises";
 
+export const PRODUCTION_ROUTE_FINALIZER_RELEASE = "2026.07.30-production-route-finalizer-v173";
+
 const CLOUDFLARE_API_BASE = "https://api.cloudflare.com/client/v4";
 const inputPath = process.argv[2] || "wrangler.production.jsonc";
 const outputPath = process.argv[3] || "wrangler.production.active-zone.jsonc";
@@ -88,27 +90,35 @@ if (configuredAccountId && configuredAccountId !== accountId) {
 
 const source = await readFile(inputPath, "utf8");
 const config = JSON.parse(source);
-const requiredPatterns = [
-  "ngeblogging.com/*",
-  "www.ngeblogging.com/*",
-  "*.ngeblogging.com/*",
+const exactCustomDomains = [
+  { pattern: "ngeblogging.com", custom_domain: true },
+  { pattern: "www.ngeblogging.com", custom_domain: true },
 ];
+const tenantWildcard = validCloudflareId(zoneId)
+  ? { pattern: "*.ngeblogging.com/*", zone_id: zoneId }
+  : { pattern: "*.ngeblogging.com/*", zone_name: "ngeblogging.com" };
 
 config.account_id = accountId;
-if (validCloudflareId(zoneId)) {
-  config.routes = requiredPatterns.map((pattern) => ({ pattern, zone_id: zoneId }));
-  console.log("Route produksi resmi dikunci memakai Zone ID aktif; route SaaS catch-all dikelola terpisah melalui API.");
-} else {
-  delete config.routes;
-  console.warn("Zone ID tidak tersedia; upload Worker tidak menulis ulang route yang sudah aktif.");
-}
+config.routes = [...exactCustomDomains, tenantWildcard];
+config.vars = {
+  ...(config.vars || {}),
+  APP_RELEASE: "2026.07.30-production-custom-domain-v172",
+  PRODUCTION_ROUTE_AUTHORITY: "cloudflare-custom-domain-authority-v172",
+  PRODUCTION_CUSTOM_DOMAIN_RELEASE: "2026.07.30-production-custom-domain-v172",
+  PRODUCTION_ROUTE_FINALIZER_RELEASE,
+};
 
 await writeFile(outputPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 if (process.env.GITHUB_ENV) {
-  await appendFile(process.env.GITHUB_ENV, `CLOUDFLARE_ACCOUNT_ID=${accountId}\nRESOLVED_CLOUDFLARE_ACCOUNT_ID=${accountId}\n`, "utf8");
+  await appendFile(
+    process.env.GITHUB_ENV,
+    `CLOUDFLARE_ACCOUNT_ID=${accountId}\nRESOLVED_CLOUDFLARE_ACCOUNT_ID=${accountId}\nPRODUCTION_ROUTE_FINALIZER_RELEASE=${PRODUCTION_ROUTE_FINALIZER_RELEASE}\n`,
+    "utf8",
+  );
 }
+
 console.log(
   validCloudflareId(zoneId)
-    ? `Konfigurasi produksi aktif dibuat untuk ${requiredPatterns.length} route resmi pada account terautentikasi.`
-    : "Konfigurasi produksi aktif dibuat untuk memperbarui Worker pada account terautentikasi tanpa mengubah route resmi.",
+    ? "Konfigurasi produksi v173 dibuat: apex dan www tetap Custom Domain; wildcard tenant memakai Zone ID aktif."
+    : "Konfigurasi produksi v173 dibuat: apex dan www tetap Custom Domain; wildcard tenant memakai zone_name.",
 );
