@@ -15,6 +15,8 @@ const PRODUCTION_ENTRY_COMPAT_RELEASE = "production-entry-cache-v154";
 const LEGACY_CACHE_RELEASE = "auth-production-cache-v153";
 const STUDIO_COMPLETION_COMPAT_RELEASE = "studio-completion-cache-v151";
 const STUDIO_COMPLETION_COMPAT_UI = "studio-completion-v151";
+const AUTH_EDITOR_COMPAT_STALE_REASON = "service-worker-stale-shell-v162";
+const AUTH_EDITOR_COMPAT_ACTIVATION_REASON = "service-worker-activated-auth-editor-v162";
 const LEGACY_ACTIVATION_REASON = "service-worker-activated-auth-production-v153";
 const PRODUCTION_ENTRY_COMPAT_REASON = "service-worker-activated-production-entry-v154";
 const PRODUCTION_ENTRY_COMPAT_STALE_REASON = "service-worker-stale-shell-v154";
@@ -83,6 +85,8 @@ function versionPayload(type) {
     release: CACHE_RELEASE,
     routeRecoveryCompatRelease: ROUTE_RECOVERY_COMPAT_RELEASE,
     authEditorCompatRelease: AUTH_EDITOR_COMPAT_RELEASE,
+    authEditorCompatStaleReason: AUTH_EDITOR_COMPAT_STALE_REASON,
+    authEditorCompatActivationReason: AUTH_EDITOR_COMPAT_ACTIVATION_REASON,
     contentWorkflowCompatRelease: CONTENT_WORKFLOW_COMPAT_RELEASE,
     studioUiCompatRelease: STUDIO_UI_COMPAT_RELEASE,
     productionEntryCompatRelease: PRODUCTION_ENTRY_COMPAT_RELEASE,
