@@ -1,0 +1,9 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-auth-studio-route-v158",
+  "authHandoff": "/studio",
+  "studioRoutes": ["/studio", "/dashboard", "/workspace"],
+  "sessionPersistence": true,
+  "legacyWhiteR4": false,
+  "shell": "react-dist-index"
+}
