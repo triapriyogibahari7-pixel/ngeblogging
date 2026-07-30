@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Model Kapasitas Login v162 · Ngeblogging</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#162033;background:#f4f7fb;color-scheme:light}*{box-sizing:border-box}body{margin:0;padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}main{width:min(1120px,100%);margin:auto;display:grid;gap:18px}header,.panel{background:white;border:1px solid #dfe7f2;border-radius:20px;padding:clamp(18px,3vw,30px);box-shadow:0 16px 44px rgba(33,52,84,.07)}h1,h2,p{margin-top:0}h1{font-size:clamp(28px,5vw,52px);line-height:1.02;overflow-wrap:anywhere}h2{font-size:clamp(20px,3vw,28px)}.warning{border-left:5px solid #d98d00;background:#fff8e8;padding:14px;border-radius:12px;line-height:1.55}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{min-width:0;border:1px solid #e1e8f2;border-radius:16px;padding:16px}.metric small{display:block;color:#68768c;margin-bottom:8px}.metric b{display:block;font-size:clamp(18px,2.7vw,30px);overflow-wrap:anywhere}.rows{display:grid;gap:12px}.row{display:grid;grid-template-columns:minmax(170px,.9fr) minmax(0,2fr) minmax(130px,.8fr);align-items:center;gap:14px}.bar-track{height:16px;background:#e8eef7;border-radius:999px;overflow:hidden}.bar{height:100%;width:var(--width);background:linear-gradient(90deg,#2d6edf,#6c52d9);border-radius:inherit}.row b,.row span{overflow-wrap:anywhere}.badge{display:inline-flex;padding:6px 10px;border-radius:999px;background:#eef4ff;color:#285bb3;font-weight:700;font-size:12px}.plan{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.plan article{border:1px solid #e1e8f2;border-radius:16px;padding:16px;min-width:0}.plan dl{display:grid;grid-template-columns:1fr auto;gap:8px;margin:14px 0 0}.plan dt{color:#68768c}.plan dd{margin:0;font-weight:700;overflow-wrap:anywhere}.foot{color:#637087;font-size:13px;line-height:1.55}@media(max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:1fr}.plan{grid-template-columns:1fr}}@media(max-width:430px){.grid{grid-template-columns:1fr}body{padding-inline:12px}.panel,header{border-radius:16px;padding:16px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="badge">MODEL, BUKAN KLAIM PRODUKSI</span>
+    <h1>Simulasi kapasitas login Ngeblogging v162</h1>
+    <p>Visualisasi ini memakai perhitungan BigInt. Tidak membuat akun massal, tidak memakai password pengguna, dan tidak mengirim beban besar ke provider autentikasi.</p>
+    <div id="warning" class="warning">Memuat batasan model…</div>
+  </header>
+  <section class="panel">
+    <h2>Interpretasi target</h2>
+    <div id="summary" class="grid"></div>
+  </section>
+  <section class="panel">
+    <h2>Kebutuhan request autentikasi per detik</h2>
+    <div id="activity" class="rows"></div>
+  </section>
+  <section class="panel">
+    <h2>Tahapan validasi yang aman</h2>
+    <div id="plans" class="plan"></div>
+  </section>
+  <p class="foot">Kapasitas nyata baru dapat dinyatakan setelah pengujian staging/produksi bertahap, izin penyedia, observability, quota, biaya, rate limiting, failover, dan evaluasi error rate serta latensi.</p>
+</main>
+<script type="module">
+  const format = (value) => {
+    try { return BigInt(value).toLocaleString("id-ID"); } catch { return String(value ?? "—"); }
+  };
+  const response = await fetch("/auth-capacity-v162.json", { cache: "no-store" });
+  const data = await response.json();
+  document.getElementById("warning").textContent = data.warning;
+  const summary = [
+    ["Target logical", format(data.interpretation.logicalUsers)],
+    ["Request per login", format(data.authFlowAssumption.requestsPerLogin)],
+    ["Status bukti", data.status],
+    ["Batas smoke publik", `${format(data.safetyPolicy.safePublicGetSmokeMaximumRequests)} GET`],
+  ];
+  document.getElementById("summary").innerHTML = summary.map(([label,value]) => `<article class="metric"><small>${label}</small><b>${value}</b></article>`).join("");
+  const activity = Object.entries(data.dailyActivityModels);
+  const maximum = Math.max(...activity.map(([,item]) => Math.log10(Number(item.authRequestsPerSecondCeil))));
+  document.getElementById("activity").innerHTML = activity.map(([name,item]) => {
+    const level = Math.log10(Number(item.authRequestsPerSecondCeil));
+    const width = Math.max(3, Math.round(level / maximum * 100));
+    const labels = {
+      allUsersOncePerDay:"100% aktif harian",
+      onePercentDaily:"1% aktif harian",
+      zeroPointZeroOnePercentDaily:"0,01% aktif harian",
+      zeroPointZeroZeroZeroOnePercentDaily:"0,0001% aktif harian",
+    };
+    return `<div class="row"><b>${labels[name] || name}</b><div class="bar-track"><div class="bar" style="--width:${width}%"></div></div><span>${format(item.authRequestsPerSecondCeil)} req/detik</span></div>`;
+  }).join("");
+  document.getElementById("plans").innerHTML = data.stagedValidationPlan.map((item) => `<article><span class="badge">${item.proof}</span><h3>${item.name}</h3><p>${item.description}</p><dl><dt>Login virtual</dt><dd>${format(item.virtualLogins)}</dd><dt>Request model</dt><dd>${format(item.requests)}</dd><dt>Concurrency</dt><dd>${format(item.concurrency)}</dd><dt>RPS model</dt><dd>${format(item.modeledRequestsPerSecond)}</dd></dl></article>`).join("");
+</script>
+</body>
+</html>
