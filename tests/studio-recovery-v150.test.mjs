@@ -38,7 +38,7 @@ test("production analytics backup is restored without enabling legacy navigation
 });
 
 test("new users receive complete first-site onboarding", () => {
-  for (const blueprint of blueprints) assert.ok(recovery.includes(`[\"${blueprint}\"`) || recovery.includes(`\"${blueprint}\",`), `missing ${blueprint}`);
+  for (const blueprint of blueprints) assert.ok(recovery.includes(`["${blueprint}"`) || recovery.includes(`"${blueprint}",`), `missing ${blueprint}`);
   assert.match(recovery, /Buat ruang digital Anda/);
   assert.match(recovery, /is_site_slug_available/);
   assert.match(recovery, /createUserSite/);
@@ -64,10 +64,19 @@ test("session is persisted and refreshed without clearing it on transient networ
 
 test("sidebar, equal Posts-Pages workflow, themes and Nara remain intact", () => {
   for (const label of sidebar) assert.ok(studio.includes(`>${label}<`), `missing ${label}`);
-  assert.match(studio, /view === "posts" && <ContentList/);
-  assert.match(studio, /view === "pages" && <ContentList/);
+  assert.ok(
+    studio.includes('view === "posts" && <StudioContentListV161')
+      || studio.includes('view === "posts" && <ContentList'),
+    "Posts workflow missing",
+  );
+  assert.ok(
+    studio.includes('view === "pages" && <StudioContentListV161')
+      || studio.includes('view === "pages" && <ContentList'),
+    "Pages workflow missing",
+  );
   assert.match(studio, /type="article"/);
   assert.match(studio, /type="page"/);
+  assert.ok(studio.includes("function ContentList"), "legacy ContentList fallback must remain available");
   assert.match(theme, /100 tema aktif/);
   assert.match(recovery, /Edit Tata Letak/);
   for (const marker of ["cameraInput", "imageInput", "fileInput", "startVoice", "SpeakerIcon", "nara-native-size-controls-v149"]) assert.ok(nara.includes(marker), `missing ${marker}`);

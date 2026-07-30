@@ -5,13 +5,16 @@ import test from "node:test";
 const serviceWorker = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
 const release = JSON.parse(readFileSync(new URL("../public/release-v159.json", import.meta.url), "utf8"));
 
-test("PWA v159 rotates stale Studio shells while preserving auth and editor compatibility", () => {
+test("PWA v161 rotates stale shells while preserving v159, auth and editor compatibility", () => {
   for (const marker of [
+    "ngeblogging-app-v161-content-workflow-20260730",
+    "content-workflow-cache-v161",
+    "studio-content-workflow-v161-20260730",
+    "service-worker-stale-shell-v161",
+    "service-worker-activated-content-workflow-v161",
     "ngeblogging-app-v159-studio-ui-contract-20260730",
     "studio-ui-contract-cache-v159",
     "studio-ui-contract-v159-20260730",
-    "service-worker-stale-shell-v159",
-    "service-worker-activated-studio-ui-contract-v159",
     "ngeblogging-app-v154-production-entry-20260730",
     "production-entry-cache-v154",
     "service-worker-activated-production-entry-v154",
@@ -31,7 +34,7 @@ test("PWA v159 rotates stale Studio shells while preserving auth and editor comp
   }
 });
 
-test("static v159 probe describes the complete UI contract", () => {
+test("static v159 probe remains available as a compatibility contract", () => {
   assert.equal(release.status, "ok");
   assert.equal(release.release, "2026.07.30-studio-ui-contract-v159");
   assert.equal(release.uiContract, "studio-ui-contract-v159-20260730");
