@@ -22,11 +22,16 @@ test("Netlify production publisher builds, unlocks, uploads, purges and verifies
   ]) assert.ok(workflow.includes(marker), `publisher missing ${marker}`);
 });
 
-test("publisher uses the same static release contract as the Netlify build", () => {
+test("publisher uses v160 static release while retaining old probe paths", () => {
   for (const marker of [
-    "2026.07.30-production-entry-v154",
-    "2026.07.30-auth-entry-v154",
+    "2026.07.30-production-authority-v160",
+    "2026.07.30-auth-entry-v158",
+    "2026.07.30-studio-route-v160",
+    "2026.07.30-studio-ui-contract-v160",
     "release-v154.json",
+    "release-v158.json",
+    "release-v159.json",
+    "release-v160.json",
     "legacyWhiteR4: false",
     "netlify-static-fallback",
   ]) assert.ok(buildBridge.includes(marker), `static build bridge missing ${marker}`);
