@@ -9,6 +9,7 @@ const STUDIO_COMPLETION_COMPAT_RELEASE = "studio-completion-cache-v151";
 const STUDIO_COMPLETION_COMPAT_UI = "studio-completion-v151";
 const LEGACY_ACTIVATION_REASON = "service-worker-activated-auth-production-v153";
 const PRODUCTION_ENTRY_COMPAT_REASON = "service-worker-activated-production-entry-v154";
+const PRODUCTION_ENTRY_COMPAT_STALE_REASON = "service-worker-stale-shell-v154";
 const AUTH_HANDOFF_RELEASE = "auth-entry-v154-20260730";
 const UI_CONTRACT_RELEASE = "studio-ui-contract-v159-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
@@ -70,6 +71,7 @@ async function notifyOpenWindows() {
         studioCompletionCompatUi: STUDIO_COMPLETION_COMPAT_UI,
         legacyActivationReason: LEGACY_ACTIVATION_REASON,
         productionEntryCompatReason: PRODUCTION_ENTRY_COMPAT_REASON,
+        productionEntryCompatStaleReason: PRODUCTION_ENTRY_COMPAT_STALE_REASON,
         authHandoffRelease: AUTH_HANDOFF_RELEASE,
         uiContractRelease: UI_CONTRACT_RELEASE,
         reason: "service-worker-activated-studio-ui-contract-v159",
@@ -108,6 +110,7 @@ self.addEventListener("message", (event) => {
       studioCompletionCompatUi: STUDIO_COMPLETION_COMPAT_UI,
       legacyActivationReason: LEGACY_ACTIVATION_REASON,
       productionEntryCompatReason: PRODUCTION_ENTRY_COMPAT_REASON,
+      productionEntryCompatStaleReason: PRODUCTION_ENTRY_COMPAT_STALE_REASON,
       authHandoffRelease: AUTH_HANDOFF_RELEASE,
       uiContractRelease: UI_CONTRACT_RELEASE,
     });
