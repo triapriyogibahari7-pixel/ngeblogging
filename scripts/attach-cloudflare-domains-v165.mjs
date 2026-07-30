@@ -55,8 +55,7 @@ async function attach(hostname) {
 }
 
 async function verify() {
-  const query = new URLSearchParams({ zone_name: ZONE_NAME }).toString();
-  const payload = await cloudflare(`?${query}`, { method: "GET" });
+  const payload = await cloudflare("", { method: "GET" });
   const domains = Array.isArray(payload.result) ? payload.result : [];
   const result = HOSTNAMES.map((hostname) => {
     const domain = domains.find((item) => item?.hostname === hostname);
