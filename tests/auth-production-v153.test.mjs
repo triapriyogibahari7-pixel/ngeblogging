@@ -65,19 +65,23 @@ test("Cloudflare auth gateway accepts production and preview surfaces", () => {
   assert.match(gateway, /responseHeaders\.set\("x-ngeblogging-auth-gateway"/);
 });
 
-test("Cloudflare deployment uses v160 while retaining auth v153 and entry v154 compatibility", () => {
+test("Cloudflare route v163 retains auth v153 and entry v154 compatibility", () => {
   for (const config of [cloudflareDefault, production]) {
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-authority-v160");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-authority-v163");
     assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
     assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-zone-route-v163");
     assert.equal(config.assets.run_worker_first, true);
-    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
+    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+    assert.ok(config.routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+    assert.ok(!config.routes.some((route) => route.custom_domain === true));
   }
   assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v69.mjs");
-  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-authority-v160");
+  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-route-authority-v163");
   assert.ok(entryWorker.includes('./worker-v67.mjs'));
+  assert.ok(entryWorker.includes("2026.07.30-production-route-authority-v163"));
   assert.ok(compatibilityWorker.includes("2026.07.30-production-entry-v154"));
 });
 
@@ -99,7 +103,7 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment rejects stale WHITE-R4 and probes authority v160 plus auth gateway v153", () => {
+test("deployment rejects stale WHITE-R4 while retaining v160 and auth v153 probes", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160", "2026.07.30-auth-gateway-v153",
     "WHITE-R4-2026.07.12", "/release-v160.json", "/studio",
