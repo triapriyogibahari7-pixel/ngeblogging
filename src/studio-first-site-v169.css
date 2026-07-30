@@ -1,0 +1,13 @@
+/* First-site onboarding v169: full-screen gate before Studio, 25-site quota, safe responsive fields. */
+.so169-shell,.so169-shell *{box-sizing:border-box;min-width:0;max-width:100%}
+.so169-shell{overflow-x:hidden}
+.so169-shell .so75-form select{width:100%;min-height:50px;border:1px solid #ccd6e4;border-radius:13px;background:#fbfcfe;padding:0 14px;color:#182640;font:700 13px "DM Sans",sans-serif;outline:none}
+.so169-shell .so75-form select:focus{border-color:#2d6edf;box-shadow:0 0 0 3px rgba(45,110,223,.11);background:#fff}
+.so169-shell .so75-types>button{min-width:0;overflow:hidden}
+.so169-shell .so75-types>button span,.so169-shell .so75-types small,.so169-shell .so75-preview b{overflow-wrap:anywhere;word-break:normal}
+.so169-shell .so75-progress span.active{background:#2d6edf;border-color:#2d6edf;color:#fff}
+.so169-shell .so75-preview i{white-space:nowrap}
+@media(max-width:1100px){.so169-shell .so75-hero{grid-template-columns:1fr}.so169-shell .so75-copy{position:static}.so169-shell .so75-types{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.so169-shell{padding-bottom:env(safe-area-inset-bottom)}.so169-shell .so75-topbar{padding-top:env(safe-area-inset-top);height:calc(64px + env(safe-area-inset-top))}.so169-shell .so75-hero{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}.so169-shell .so75-copy h1{font-size:clamp(38px,12vw,50px)}.so169-shell .so75-types{grid-template-columns:1fr}.so169-shell .so75-types>button{grid-template-columns:32px minmax(0,1fr) 20px;min-height:88px}.so169-shell .so75-fields{grid-template-columns:1fr}.so169-shell .so75-fields label.wide{grid-column:auto}.so169-shell .so75-preview{grid-template-columns:32px minmax(0,1fr);align-items:start}.so169-shell .so75-preview i{grid-column:1/-1;justify-self:start}.so169-shell .so75-submit{min-height:52px}.so169-shell .so75-form{overflow:hidden}}
+@media(max-width:390px){.so169-shell .so75-form{padding:18px 12px}.so169-shell .so75-domain-input{grid-template-columns:1fr}.so169-shell .so75-domain-input strong{min-height:36px;justify-content:flex-start}.so169-shell .so75-progress{gap:5px}.so169-shell .so75-copy>p{font-size:15px}.so169-shell .so75-promise{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.so169-shell *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
