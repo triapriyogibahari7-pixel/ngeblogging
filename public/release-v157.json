@@ -1,0 +1,7 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-system-shell-v157",
+  "authRelease": "2026.07.30-auth-shell-v157",
+  "legacyWhiteR4": false,
+  "shell": "react-dist-index"
+}
