@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v160
+name: Deploy Ngeblogging Production v165
 
 on:
   push:
@@ -19,6 +19,8 @@ jobs:
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_WORKER_SERVICE: ngeblogging
+      CLOUDFLARE_ZONE_NAME: ngeblogging.com
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
@@ -37,41 +39,47 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Validate deployment credentials
+      - name: Validate deployment credentials and authority
         shell: bash
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "CLOUDFLARE_ACCOUNT_ID_MISSING"; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+          test "$CLOUDFLARE_WORKER_SERVICE" = "ngeblogging" || { echo "CLOUDFLARE_WORKER_SERVICE_INVALID"; exit 1; }
+          test "$CLOUDFLARE_ZONE_NAME" = "ngeblogging.com" || { echo "CLOUDFLARE_ZONE_NAME_INVALID"; exit 1; }
           test -n "$VITE_SUPABASE_URL" || { echo "VITE_SUPABASE_URL_MISSING"; exit 1; }
           test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "VITE_SUPABASE_PUBLISHABLE_KEY_MISSING"; exit 1; }
 
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Studio, authentication, viewport and production contracts through v160
+      - name: Run Studio authentication viewport production and domain contracts through v165
         run: npm run test:production
 
       - name: Build production React assets
         run: npm run build
 
-      - name: Validate Cloudflare v160 bundle
+      - name: Validate Cloudflare v165 bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy React production authority v160
+      - name: Deploy React production authority v165
         run: npm run deploy:cloudflare
 
-      - name: Verify React, login, Studio, Custom Domain and auth gateway v160
+      - name: Attach apex and www to the current Worker service v165
+        run: npm run cloudflare:attach-domains
+
+      - name: Verify React login Studio domain attachment and auth gateway v165
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 48); do
             stamp=$(date +%s)
             root_code=$(curl -sS -D /tmp/root-headers.txt -o /tmp/root.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
+            www_code=$(curl -sS -D /tmp/www-headers.txt -o /tmp/www.html -w '%{http_code}' --max-time 20 "https://www.ngeblogging.com/?deploy_audit=$stamp" || true)
             login_code=$(curl -sS -D /tmp/login-headers.txt -o /tmp/login.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/login?deploy_audit=$stamp" || true)
             signup_code=$(curl -sS -D /tmp/signup-headers.txt -o /tmp/signup.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/signup?deploy_audit=$stamp" || true)
             studio_code=$(curl -sS -D /tmp/studio-headers.txt -o /tmp/studio.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/studio?deploy_audit=$stamp" || true)
-            release_code=$(curl -sS -D /tmp/release-headers.txt -o /tmp/release.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v160.json?deploy_audit=$stamp" || true)
+            release_code=$(curl -sS -D /tmp/release-headers.txt -o /tmp/release.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v165.json?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
             sw_code=$(curl -sS -o /tmp/sw.js -w '%{http_code}' --max-time 20 "https://ngeblogging.com/sw.js?deploy_audit=$stamp" || true)
             auth_code=$(curl -sS -D /tmp/auth-headers.txt -o /tmp/auth-body.txt -w '%{http_code}' --max-time 20 \
@@ -81,45 +89,59 @@ jobs:
               -H 'Access-Control-Request-Headers: apikey,content-type,x-client-info' || true)
 
             root=$(cat /tmp/root.html 2>/dev/null || true)
+            www=$(cat /tmp/www.html 2>/dev/null || true)
             login=$(cat /tmp/login.html 2>/dev/null || true)
             signup=$(cat /tmp/signup.html 2>/dev/null || true)
             studio=$(cat /tmp/studio.html 2>/dev/null || true)
             release=$(tr -d '\n\r ' < /tmp/release.json 2>/dev/null || true)
             health=$(cat /tmp/health.json 2>/dev/null || true)
-            worker=$(cat /tmp/sw.js 2>/dev/null || true)
+            service_worker=$(cat /tmp/sw.js 2>/dev/null || true)
             root_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/root-headers.txt 2>/dev/null || true)
+            www_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/www-headers.txt 2>/dev/null || true)
             login_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/login-headers.txt 2>/dev/null || true)
             signup_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/signup-headers.txt 2>/dev/null || true)
             studio_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/studio-headers.txt 2>/dev/null || true)
             auth_headers=$(tr '[:upper:]' '[:lower:]' < /tmp/auth-headers.txt 2>/dev/null || true)
 
-            if [[ "$root" == *"ngeblogging-production-authority-v160"* ]] \
-              && [[ "$login" == *"ngeblogging-production-authority-v160"* ]] \
-              && [[ "$signup" == *"ngeblogging-production-authority-v160"* ]] \
-              && [[ "$studio" == *"ngeblogging-production-authority-v160"* ]] \
+            if [[ "$root" == *"ngeblogging-production-domain-attach-v165"* ]] \
+              && [[ "$www" == *"ngeblogging-production-domain-attach-v165"* ]] \
+              && [[ "$login" == *"ngeblogging-production-domain-attach-v165"* ]] \
+              && [[ "$signup" == *"ngeblogging-production-domain-attach-v165"* ]] \
+              && [[ "$studio" == *"ngeblogging-production-domain-attach-v165"* ]] \
+              && [[ "$root" == *"ngeblogging-production-custom-domain-v164"* ]] \
+              && [[ "$login" == *"ngeblogging-auth-callback-singleflight-v162"* ]] \
               && [[ "$root" == *'id="root"'* ]] \
+              && [[ "$www" == *'id="root"'* ]] \
               && [[ "$login" == *'id="root"'* ]] \
               && [[ "$signup" == *'id="root"'* ]] \
               && [[ "$studio" == *'id="root"'* ]] \
               && [[ "$root" == *"/assets/"* ]] \
+              && [[ "$www" == *"/assets/"* ]] \
               && [[ "$login" == *"/assets/"* ]] \
               && [[ "$signup" == *"/assets/"* ]] \
               && [[ "$studio" == *"/assets/"* ]] \
               && [[ "$root" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$www" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$studio" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$release" == *"2026.07.30-production-authority-v160"* ]] \
+              && [[ "$release" == *'"productionDomainAttachRelease":"2026.07.30-production-domain-attach-v165"'* ]] \
+              && [[ "$release" == *'"routeAuthority":"cloudflare-custom-domain-v164"'* ]] \
+              && [[ "$release" == *'"domainAttachAuthority":"cloudflare-workers-domains-api-v165"'* ]] \
+              && [[ "$release" == *'"exactCustomDomains":["ngeblogging.com","www.ngeblogging.com"]'* ]] \
               && [[ "$release" == *'"legacyWhiteR4":false'* ]] \
-              && [[ "$release" == *'"customDomainAuthority":"worker-v69"'* ]] \
               && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
-              && [[ "$worker" == *"ngeblogging-app-v159-studio-ui-contract-20260730"* ]] \
-              && [[ "$root_headers" == *"x-ngeblogging-custom-domain-authority: worker-v69"* ]] \
+              && [[ "$service_worker" == *"ngeblogging-app-v162-auth-editor-20260730"* ]] \
+              && [[ "$root_headers" == *"x-ngeblogging-domain-attach: 2026.07.30-production-domain-attach-v165"* ]] \
+              && [[ "$www_headers" == *"x-ngeblogging-domain-attach: 2026.07.30-production-domain-attach-v165"* ]] \
+              && [[ "$root_headers" == *"x-ngeblogging-production-authority: 2026.07.30-production-custom-domain-authority-v164"* ]] \
+              && [[ "$root_headers" == *"x-ngeblogging-custom-domain-authority: worker-v69-custom-domain-v164"* ]] \
               && [[ "$login_headers" == *"x-ngeblogging-auth-entry: 2026.07.30-auth-entry-v158"* ]] \
               && [[ "$signup_headers" == *"x-ngeblogging-ui-contract: 2026.07.30-studio-ui-contract-v160"* ]] \
               && [[ "$studio_headers" == *"x-ngeblogging-studio-route: 2026.07.30-studio-route-v160"* ]] \
               && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]] \
               && [[ "$root_code" == "200" ]] \
+              && [[ "$www_code" == "200" ]] \
               && [[ "$login_code" == "200" ]] \
               && [[ "$signup_code" == "200" ]] \
               && [[ "$studio_code" == "200" ]] \
@@ -127,12 +149,12 @@ jobs:
               && [[ "$health_code" == "200" ]] \
               && [[ "$sw_code" == "200" ]] \
               && [[ "$auth_code" == "204" ]]; then
-              echo "Production authority, Studio UI, login and auth v160 verified on attempt $attempt."
+              echo "Production domains, React shell, Studio UI, login surface and auth v165 verified on attempt $attempt."
               exit 0
             fi
 
-            echo "Production authority v160 belum aktif (attempt $attempt/36); menunggu route dan propagasi."
+            echo "Production domain attachment v165 belum aktif (attempt $attempt/48); memeriksa propagasi kembali."
             sleep 10
           done
-          echo "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED"
+          echo "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED"
           exit 1

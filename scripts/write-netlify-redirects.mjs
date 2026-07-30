@@ -12,6 +12,7 @@ const AUTH_CALLBACK_COMPAT_RELEASE = "auth-callback-v162-20260730";
 const AUTH_CAPACITY_RELEASE = "auth-capacity-model-v162-20260730";
 const PRODUCTION_ROUTE_COMPAT_RELEASE = "2026.07.30-production-route-authority-v163";
 const PRODUCTION_ROUTE_RELEASE = "2026.07.30-production-custom-domain-authority-v164";
+const PRODUCTION_DOMAIN_ATTACH_RELEASE = "2026.07.30-production-domain-attach-v165";
 
 if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   const dist = resolve("dist");
@@ -38,6 +39,7 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   X-Ngeblogging-Auth-Capacity: ${AUTH_CAPACITY_RELEASE}
   X-Ngeblogging-Production-Route: ${PRODUCTION_ROUTE_RELEASE}
   X-Ngeblogging-Production-Authority: ${PRODUCTION_ROUTE_RELEASE}
+  X-Ngeblogging-Domain-Attach: ${PRODUCTION_DOMAIN_ATTACH_RELEASE}
   X-Ngeblogging-Custom-Domain-Authority: netlify-fallback-v164
 /index.html
   Cache-Control: no-store, max-age=0, must-revalidate
@@ -81,6 +83,8 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   Cache-Control: no-store, max-age=0
 /release-v164.json
   Cache-Control: no-store, max-age=0
+/release-v165.json
+  Cache-Control: no-store, max-age=0
 `,
     "utf8",
   );
@@ -98,8 +102,10 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
     authCapacityRelease: AUTH_CAPACITY_RELEASE,
     productionRouteCompatibility: PRODUCTION_ROUTE_COMPAT_RELEASE,
     productionRouteRelease: PRODUCTION_ROUTE_RELEASE,
+    productionDomainAttachRelease: PRODUCTION_DOMAIN_ATTACH_RELEASE,
     contentEditorRelease: "content-editor-v162-20260730",
     routeAuthority: "netlify-static-fallback-v164",
+    domainAttachAuthority: "cloudflare-workers-domains-api-v165",
     routePatterns: ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"],
     exactCustomDomains: ["ngeblogging.com", "www.ngeblogging.com"],
     tenantWildcardRoute: "*.ngeblogging.com/*",
@@ -129,7 +135,11 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
 
   const indexPath = resolve(dist, "index.html");
   let html = readFileSync(indexPath, "utf8");
-  if (!html.includes('name="ngeblogging-production-custom-domain-v164"') || !html.includes('name="ngeblogging-auth-callback-singleflight-v162"')) {
+  if (
+    !html.includes('name="ngeblogging-production-custom-domain-v164"')
+    || !html.includes('name="ngeblogging-production-domain-attach-v165"')
+    || !html.includes('name="ngeblogging-auth-callback-singleflight-v162"')
+  ) {
     const markers = [
       `<meta name="ngeblogging-production-authority-v160" content="${PRODUCTION_ENTRY_RELEASE}">`,
       `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}">`,
@@ -142,12 +152,14 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
       `<meta name="ngeblogging-auth-capacity-v162" content="${AUTH_CAPACITY_RELEASE}">`,
       `<meta name="ngeblogging-production-route-v163" content="${PRODUCTION_ROUTE_COMPAT_RELEASE}">`,
       `<meta name="ngeblogging-production-custom-domain-v164" content="${PRODUCTION_ROUTE_RELEASE}">`,
+      `<meta name="ngeblogging-production-domain-attach-v165" content="${PRODUCTION_DOMAIN_ATTACH_RELEASE}">`,
       '<meta name="ngeblogging-custom-domain-authority" content="netlify-fallback-v164">',
+      '<meta name="ngeblogging-domain-attach-authority" content="cloudflare-workers-domains-api-v165">',
       '<meta name="ngeblogging-legacy-white-r4" content="disabled">',
     ].join("");
     html = html.replace(/<head(\s[^>]*)?>/i, (match) => `${match}${markers}`);
     writeFileSync(indexPath, html, "utf8");
   }
 
-  console.log(`Netlify fallback ${PRODUCTION_ROUTE_RELEASE}, kompatibilitas ${PRODUCTION_ROUTE_COMPAT_RELEASE}, callback ${AUTH_CALLBACK_RELEASE}, model ${AUTH_CAPACITY_RELEASE}, auth/editor ${AUTH_EDITOR_RELEASE}, dan konten ${CONTENT_WORKFLOW_RELEASE} aktif; API diarahkan ke ${apiOrigin}`);
+  console.log(`Netlify fallback ${PRODUCTION_ROUTE_RELEASE}, pengikatan ${PRODUCTION_DOMAIN_ATTACH_RELEASE}, kompatibilitas ${PRODUCTION_ROUTE_COMPAT_RELEASE}, callback ${AUTH_CALLBACK_RELEASE}, model ${AUTH_CAPACITY_RELEASE}, auth/editor ${AUTH_EDITOR_RELEASE}, dan konten ${CONTENT_WORKFLOW_RELEASE} aktif; API diarahkan ke ${apiOrigin}`);
 }

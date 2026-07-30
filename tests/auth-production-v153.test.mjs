@@ -114,10 +114,16 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment rejects stale WHITE-R4 while retaining v160 and auth v153 probes", () => {
+test("deployment v165 rejects WHITE-R4 and verifies the real login domain authority", () => {
   for (const marker of [
-    "2026.07.30-production-authority-v160", "2026.07.30-auth-gateway-v153",
-    "WHITE-R4-2026.07.12", "/release-v160.json", "/studio",
-    "/api/auth-proxy/auth/v1/token", "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED",
+    "2026.07.30-production-domain-attach-v165",
+    "2026.07.30-production-custom-domain-authority-v164",
+    "2026.07.30-auth-gateway-v153",
+    "WHITE-R4-2026.07.12",
+    "/release-v165.json",
+    "/studio",
+    "/api/auth-proxy/auth/v1/token",
+    "npm run cloudflare:attach-domains",
+    "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 });

@@ -29,7 +29,7 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances through v164 without losing v151-v163 compatibility markers", () => {
+test("Cloudflare production advances through v165 without losing v151-v164 compatibility", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
@@ -38,8 +38,9 @@ test("Cloudflare production advances through v164 without losing v151-v163 compa
   assert.ok(production.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
   assert.ok(production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
   for (const marker of [
-    "Run Studio, authentication, viewport and production contracts through v160",
-    "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED",
+    "Run Studio authentication viewport production and domain contracts through v165",
+    "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED",
+    "2026.07.30-production-domain-attach-v165",
     "studio-completion-v151",
   ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker), `release chain missing ${marker}`);
 });
