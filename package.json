@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node --test --test-name-pattern=\"v160 is the single Worker entry\" tests/production-authority-v160.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "node --test --test-name-pattern=\"apex and www are Worker custom domains\" tests/production-authority-v160.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
