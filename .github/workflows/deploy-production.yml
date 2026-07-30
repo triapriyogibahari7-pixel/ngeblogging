@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v165
+name: Deploy Ngeblogging Production v166
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: ngeblogging-production
@@ -40,6 +41,7 @@ jobs:
           cache: npm
 
       - name: Validate deployment credentials and authority
+        id: credentials
         shell: bash
         run: |
           set -euo pipefail
@@ -51,24 +53,31 @@ jobs:
           test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" || { echo "VITE_SUPABASE_PUBLISHABLE_KEY_MISSING"; exit 1; }
 
       - name: Install pinned dependencies
+        id: dependencies
         run: npm ci --ignore-scripts
 
       - name: Run Studio authentication viewport production and domain contracts through v165
+        id: contracts
         run: npm run test:production
 
       - name: Build production React assets
+        id: build
         run: npm run build
 
       - name: Validate Cloudflare v165 bundle
+        id: dry_run
         run: npm run cloudflare:dry-run
 
       - name: Deploy React production authority v165
+        id: deploy_worker
         run: npm run deploy:cloudflare
 
       - name: Attach apex and www to the current Worker service v165
+        id: attach_domains
         run: npm run cloudflare:attach-domains
 
       - name: Verify React login Studio domain attachment and auth gateway v165
+        id: verify_production
         shell: bash
         run: |
           set -euo pipefail
@@ -158,3 +167,54 @@ jobs:
           done
           echo "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED"
           exit 1
+
+      - name: Publish production deployment status to issue 243
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          JOB_STATUS: ${{ job.status }}
+          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+          CONTRACTS_OUTCOME: ${{ steps.contracts.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          DRY_RUN_OUTCOME: ${{ steps.dry_run.outcome }}
+          DEPLOY_WORKER_OUTCOME: ${{ steps.deploy_worker.outcome }}
+          ATTACH_DOMAINS_OUTCOME: ${{ steps.attach_domains.outcome }}
+          VERIFY_PRODUCTION_OUTCOME: ${{ steps.verify_production.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = process.env.JOB_STATUS || "unknown";
+            const icon = status === "success" ? "✅" : "❌";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `## ${icon} Deployment produksi ${status}`,
+              "",
+              `- Commit: \`${context.sha}\``,
+              `- Run: ${runUrl}`,
+              `- Authority: \`2026.07.30-production-domain-attach-v165\``,
+              `- Waktu UTC: \`${new Date().toISOString()}\``,
+              "",
+              "### Hasil tahap",
+              "",
+              `- Kredensial: **${process.env.CREDENTIALS_OUTCOME || "not-run"}**`,
+              `- Dependensi: **${process.env.DEPENDENCIES_OUTCOME || "not-run"}**`,
+              `- Regression v147-v165: **${process.env.CONTRACTS_OUTCOME || "not-run"}**`,
+              `- Build React: **${process.env.BUILD_OUTCOME || "not-run"}**`,
+              `- Dry-run Cloudflare: **${process.env.DRY_RUN_OUTCOME || "not-run"}**`,
+              `- Deploy Worker: **${process.env.DEPLOY_WORKER_OUTCOME || "not-run"}**`,
+              `- Tautkan apex/www: **${process.env.ATTACH_DOMAINS_OUTCOME || "not-run"}**`,
+              `- Verifikasi root/login/Studio/auth: **${process.env.VERIFY_PRODUCTION_OUTCOME || "not-run"}**`,
+              "",
+              status === "success"
+                ? "Domain telah melewati verifikasi v165: React shell aktif, marker WHITE-R4 tidak muncul, dan auth gateway merespons sesuai kontrak."
+                : "Deployment belum boleh dinyatakan selesai. Buka tautan run untuk melihat tahap dan pesan kesalahan yang gagal.",
+            ].join("\n");
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 243,
+              body,
+              state: status === "success" ? "closed" : "open",
+              state_reason: status === "success" ? "completed" : undefined,
+            });
