@@ -1,5 +1,5 @@
 export const THEME_LAYOUT_RUNTIME_V170 = "theme-layout-v170-20260730";
-export const THEME_LAYOUT_RUNTIME_V171 = "mobile-public-layout-v171-20260730";
+export const THEME_LAYOUT_RUNTIME_V171 = "mobile-public-v171-20260730";
 
 const HEADER_AREAS = ["header-primary-left", "header-primary-right"];
 const TOP_AREAS = [
