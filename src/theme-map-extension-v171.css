@@ -1,4 +1,5 @@
 /* Theme map v171: preserves all 20 v170 areas and adds four real header/footer areas. */
+body.nara-fullscreen-open-v148{overflow:hidden!important;overscroll-behavior:none}
 .tn-studio[data-theme-layout-authority="theme-layout-v170-20260730"] .tn-layout-canvas-v170{
   grid-template-columns:repeat(6,minmax(0,1fr));
   grid-template-rows:68px 72px 70px repeat(3,minmax(76px,1fr)) 70px 72px 68px;
