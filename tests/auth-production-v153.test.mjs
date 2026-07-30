@@ -74,25 +74,26 @@ test("Cloudflare auth gateway accepts production and preview surfaces", () => {
   assert.match(gateway, /responseHeaders\.set\("x-ngeblogging-auth-gateway"/);
 });
 
-test("Cloudflare Custom Domain v164 retains auth v153 entry v154 and route v163 compatibility", () => {
-  for (const config of [cloudflareDefault, production]) {
+test("active route v168 retains auth v153 entry v154 and custom-domain v164 compatibility", () => {
+  for (const config of [cloudflareDefault, cloudflareDefault.env.production, production]) {
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-recovery-v168");
     assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_GATEWAY_RELEASE, "2026.07.30-auth-gateway-v153");
     assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
-    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-v164");
-    assert.equal(config.assets.run_worker_first, true);
-    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
-    assert.ok(config.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-route-takeover-v168");
+    assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+    assert.ok(config.routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
     assert.ok(config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(!config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
+    assert.ok(!config.routes.some((route) => route.custom_domain === true));
   }
-  assert.equal(cloudflareDefault.env.production.main, "./cloudflare/worker-v69.mjs");
-  assert.equal(cloudflareDefault.env.production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
+  assert.equal(cloudflareDefault.assets.run_worker_first, true);
+  assert.equal(production.assets.run_worker_first, true);
   assert.ok(entryWorker.includes('./worker-v67.mjs'));
   assert.ok(entryWorker.includes("2026.07.30-production-route-authority-v163"));
   assert.ok(entryWorker.includes("2026.07.30-production-custom-domain-authority-v164"));
+  assert.ok(entryWorker.includes("2026.07.30-production-route-recovery-v168"));
+  assert.ok(entryWorker.includes("first-site-onboarding-v169-20260730"));
   assert.ok(compatibilityWorker.includes("2026.07.30-production-entry-v154"));
 });
 
@@ -114,16 +115,19 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment v165 rejects WHITE-R4 and verifies the real login domain authority", () => {
+test("deployment v168-v169 rejects WHITE-R4 and verifies the real login plus onboarding authority", () => {
   for (const marker of [
-    "2026.07.30-production-domain-attach-v165",
-    "2026.07.30-production-custom-domain-authority-v164",
+    "2026.07.30-production-route-recovery-v168",
+    "first-site-onboarding-v169-20260730",
+    "site-policy-v169-20260730",
     "2026.07.30-auth-gateway-v153",
     "WHITE-R4-2026.07.12",
-    "/release-v165.json",
+    "/release-v168.json",
+    "/release-v169.json",
     "/studio",
     "/api/auth-proxy/auth/v1/token",
-    "npm run cloudflare:attach-domains",
-    "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED",
+    "npm run deploy:cloudflare",
+    "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
+  assert.ok(!workflow.includes("npm run cloudflare:attach-domains"));
 });
