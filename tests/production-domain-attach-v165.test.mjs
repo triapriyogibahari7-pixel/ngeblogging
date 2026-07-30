@@ -4,7 +4,8 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const attach = read("scripts/attach-cloudflare-domains-v165.mjs");
-const workflow = read(".github/workflows/deploy-production.yml");
+const finalizer = read("scripts/finalize-cloudflare-routes-v173.mjs");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const worker = read("cloudflare/worker-v69.mjs");
 const netlify = read("scripts/write-netlify-redirects.mjs");
 const release = JSON.parse(read("public/release-v165.json"));
@@ -36,15 +37,33 @@ test("v165 utility verifies every hostname points to service ngeblogging", () =>
   assert.match(attach, /const verified = await verify\(\)/);
 });
 
-test("v172 production deploy actively attaches exact domains after Worker deployment", () => {
+test("v173 production deploy attaches exact domains after Worker deployment and finalizes stale routes", () => {
   assert.equal(packageJson.scripts["cloudflare:attach-domains"], "node scripts/attach-cloudflare-domains-v165.mjs");
+  assert.equal(packageJson.scripts["cloudflare:finalize-routes"], "node scripts/finalize-cloudflare-routes-v173.mjs");
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-domain-attach-v165.test.mjs"));
   for (const marker of [
-    "Deploy Ngeblogging Production v172", "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains", "/release-v172.json",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "Ngeblogging Cloudflare production v173",
+    "Deploy Worker v172 assets and authority",
+    "finalize-cloudflare-routes-v173.mjs",
+    "/release-v172.json",
+    "PRODUCTION_ROUTE_FINALIZER_V173_VERIFY_FAILED",
   ]) assert.ok(workflow.includes(marker), `production workflow missing ${marker}`);
-  assert.ok(workflow.indexOf("npm run deploy:cloudflare") < workflow.indexOf("npm run cloudflare:attach-domains"));
+  assert.ok(workflow.indexOf("Deploy Worker v172 assets and authority") < workflow.indexOf("Attach exact Worker Domains and delete only legacy apex routes"));
+  assert.ok(workflow.indexOf("Attach exact Worker Domains and delete only legacy apex routes") < workflow.indexOf("Verify workers.dev apex www login Studio onboarding and tenant"));
+});
+
+test("v173 finalizer preserves exact domains and removes only legacy apex routes", () => {
+  for (const marker of [
+    'EXACT_HOSTNAMES = Object.freeze(["ngeblogging.com", "www.ngeblogging.com"])',
+    '"ngeblogging.com/*"',
+    '"www.ngeblogging.com/*"',
+    'TENANT_WILDCARD_PATTERN = "*.ngeblogging.com/*"',
+    "attachExactWorkerDomains",
+    "deleteLegacyExactRoutes",
+    "verifyFinalState",
+  ]) assert.ok(finalizer.includes(marker), `finalizer missing ${marker}`);
+  assert.match(finalizer, /if \(!LEGACY_EXACT_ROUTE_PATTERNS\.has\(pattern\)\) continue/);
+  assert.doesNotMatch(finalizer, /LEGACY_EXACT_ROUTE_PATTERNS[^;]*\*\.ngeblogging\.com\/\*/s);
 });
 
 test("active configs use exact Custom Domains while tenant wildcard remains a route", () => {
