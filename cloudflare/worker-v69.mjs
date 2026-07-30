@@ -11,6 +11,7 @@ export const AUTH_CALLBACK_COMPAT_RELEASE = "auth-callback-v162-20260730";
 export const AUTH_CAPACITY_RELEASE = "auth-capacity-model-v162-20260730";
 export const PRODUCTION_ROUTE_COMPAT_RELEASE = "2026.07.30-production-route-authority-v163";
 export const PRODUCTION_ROUTE_RELEASE = "2026.07.30-production-custom-domain-authority-v164";
+export const PRODUCTION_DOMAIN_ATTACH_RELEASE = "2026.07.30-production-domain-attach-v165";
 
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
 const SYSTEM_SHELL_PATHS = new Set([
@@ -42,6 +43,7 @@ const RELEASE_PATHS = new Set([
   "/release-v162.json",
   "/release-v163.json",
   "/release-v164.json",
+  "/release-v165.json",
 ]);
 const DIAGNOSTIC_ASSET_PATHS = new Set([
   "/auth-capacity-v162.json",
@@ -74,6 +76,7 @@ function releaseResponse(request) {
     authCapacityRelease: AUTH_CAPACITY_RELEASE,
     productionRouteCompatibility: PRODUCTION_ROUTE_COMPAT_RELEASE,
     productionRouteRelease: PRODUCTION_ROUTE_RELEASE,
+    productionDomainAttachRelease: PRODUCTION_DOMAIN_ATTACH_RELEASE,
     contentEditorRelease: "content-editor-v162-20260730",
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
     responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"],
@@ -91,6 +94,7 @@ function releaseResponse(request) {
     mobileEditorMinimumWidth: 320,
     wordLimit: 5000,
     routeAuthority: "cloudflare-custom-domain-v164",
+    domainAttachAuthority: "cloudflare-workers-domains-api-v165",
     routePatterns: ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"],
     exactCustomDomains: ["ngeblogging.com", "www.ngeblogging.com"],
     tenantWildcardRoute: "*.ngeblogging.com/*",
@@ -114,13 +118,18 @@ function releaseResponse(request) {
       "x-ngeblogging-auth-capacity": AUTH_CAPACITY_RELEASE,
       "x-ngeblogging-production-route": PRODUCTION_ROUTE_RELEASE,
       "x-ngeblogging-production-authority": PRODUCTION_ROUTE_RELEASE,
+      "x-ngeblogging-domain-attach": PRODUCTION_DOMAIN_ATTACH_RELEASE,
       "x-ngeblogging-custom-domain-authority": "worker-v69-custom-domain-v164",
     },
   });
 }
 
 function injectReleaseMarker(html) {
-  if (html.includes("ngeblogging-production-custom-domain-v164") && html.includes("ngeblogging-auth-callback-singleflight-v162")) return html;
+  if (
+    html.includes("ngeblogging-production-custom-domain-v164")
+    && html.includes("ngeblogging-production-domain-attach-v165")
+    && html.includes("ngeblogging-auth-callback-singleflight-v162")
+  ) return html;
   const marker = [
     `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}"/>`,
     `<meta name="ngeblogging-auth-entry" content="${AUTH_ENTRY_RELEASE}"/>`,
@@ -132,7 +141,9 @@ function injectReleaseMarker(html) {
     `<meta name="ngeblogging-auth-capacity-v162" content="${AUTH_CAPACITY_RELEASE}"/>`,
     `<meta name="ngeblogging-production-route-v163" content="${PRODUCTION_ROUTE_COMPAT_RELEASE}"/>`,
     `<meta name="ngeblogging-production-custom-domain-v164" content="${PRODUCTION_ROUTE_RELEASE}"/>`,
+    `<meta name="ngeblogging-production-domain-attach-v165" content="${PRODUCTION_DOMAIN_ATTACH_RELEASE}"/>`,
     '<meta name="ngeblogging-custom-domain-authority" content="worker-v69-custom-domain-v164"/>',
+    '<meta name="ngeblogging-domain-attach-authority" content="cloudflare-workers-domains-api-v165"/>',
     '<meta name="ngeblogging-legacy-white-r4" content="disabled"/>',
   ].join("");
   return /<head(?:\s[^>]*)?>/i.test(html)
@@ -148,6 +159,7 @@ async function serveStaticDiagnostic(request, env) {
   headers.set("cache-control", "no-store, max-age=0, must-revalidate");
   headers.set("x-ngeblogging-auth-capacity", AUTH_CAPACITY_RELEASE);
   headers.set("x-ngeblogging-production-authority", PRODUCTION_ROUTE_RELEASE);
+  headers.set("x-ngeblogging-domain-attach", PRODUCTION_DOMAIN_ATTACH_RELEASE);
   return new Response(request.method === "HEAD" ? null : response.body, {
     status: response.status,
     headers,
@@ -188,6 +200,7 @@ async function serveReactShell(request, env, context) {
   headers.set("x-ngeblogging-auth-capacity", AUTH_CAPACITY_RELEASE);
   headers.set("x-ngeblogging-production-route", PRODUCTION_ROUTE_RELEASE);
   headers.set("x-ngeblogging-production-authority", PRODUCTION_ROUTE_RELEASE);
+  headers.set("x-ngeblogging-domain-attach", PRODUCTION_DOMAIN_ATTACH_RELEASE);
   headers.set("x-ngeblogging-shell", "react-dist-index");
   headers.set("x-ngeblogging-custom-domain-authority", "worker-v69-custom-domain-v164");
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
