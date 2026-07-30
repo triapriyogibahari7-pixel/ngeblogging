@@ -15,8 +15,11 @@ export const PRODUCTION_DOMAIN_ATTACH_COMPAT_RELEASE = "2026.07.30-production-do
 export const PRODUCTION_RECOVERY_RELEASE = "2026.07.30-production-route-recovery-v168";
 export const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 export const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
-export const PRODUCTION_ROUTE_RELEASE = PRODUCTION_RECOVERY_RELEASE;
+export const PRODUCTION_CUSTOM_DOMAIN_RELEASE = "2026.07.30-production-custom-domain-v172";
+export const PRODUCTION_ROUTE_RELEASE = PRODUCTION_CUSTOM_DOMAIN_RELEASE;
 
+const PRODUCTION_CUSTOM_DOMAIN_AUTHORITY = "cloudflare-custom-domain-authority-v172";
+const WORKER_AUTHORITY = "worker-v69-custom-domain-v172";
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
 const SYSTEM_SHELL_PATHS = new Set([
   "/studio",
@@ -50,6 +53,7 @@ const RELEASE_PATHS = new Set([
   "/release-v165.json",
   "/release-v168.json",
   "/release-v169.json",
+  "/release-v172.json",
 ]);
 const DIAGNOSTIC_ASSET_PATHS = new Set([
   "/auth-capacity-v162.json",
@@ -71,7 +75,8 @@ function isSystemShellRequest(request, url) {
 function releaseResponse(request) {
   const body = JSON.stringify({
     status: "ok",
-    release: PRODUCTION_RECOVERY_RELEASE,
+    release: PRODUCTION_CUSTOM_DOMAIN_RELEASE,
+    productionCustomDomainRelease: PRODUCTION_CUSTOM_DOMAIN_RELEASE,
     firstSiteRelease: FIRST_SITE_RELEASE,
     sitePolicyRelease: SITE_POLICY_RELEASE,
     productionEntryRelease: PRODUCTION_ENTRY_RELEASE,
@@ -88,6 +93,8 @@ function releaseResponse(request) {
     productionDomainAttachCompatibility: PRODUCTION_DOMAIN_ATTACH_COMPAT_RELEASE,
     productionRecoveryRelease: PRODUCTION_RECOVERY_RELEASE,
     contentEditorRelease: "content-editor-v162-20260730",
+    mobilePublicRelease: "mobile-public-v171-20260730",
+    themeLayoutRelease: "theme-layout-v170-20260730",
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
     responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"],
     desktopVariants: ["laptop", "computer"],
@@ -111,13 +118,15 @@ function releaseResponse(request) {
     capacityVisualization: "/auth-capacity-v162.html",
     mobileEditorMinimumWidth: 320,
     wordLimit: 5000,
-    routeAuthority: "cloudflare-route-takeover-v168",
-    routePatterns: ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"],
-    apexRouteTakeover: true,
-    wwwRouteTakeover: true,
+    routeAuthority: PRODUCTION_CUSTOM_DOMAIN_AUTHORITY,
+    routePatterns: ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"],
+    apexCustomDomain: true,
+    wwwCustomDomain: true,
+    apexRouteTakeover: false,
+    wwwRouteTakeover: false,
     tenantWildcardPreserved: true,
     shell: "react-dist-index",
-    workerAuthority: "worker-v69-route-recovery-v168",
+    workerAuthority: WORKER_AUTHORITY,
     legacyWhiteR4: false,
     generatedAt: new Date().toISOString(),
   });
@@ -135,19 +144,22 @@ function releaseResponse(request) {
       "x-ngeblogging-auth-callback": AUTH_CALLBACK_RELEASE,
       "x-ngeblogging-auth-capacity": AUTH_CAPACITY_RELEASE,
       "x-ngeblogging-production-route": PRODUCTION_RECOVERY_RELEASE,
-      "x-ngeblogging-production-authority": PRODUCTION_RECOVERY_RELEASE,
+      "x-ngeblogging-production-authority": PRODUCTION_CUSTOM_DOMAIN_RELEASE,
       "x-ngeblogging-production-recovery": PRODUCTION_RECOVERY_RELEASE,
+      "x-ngeblogging-production-custom-domain": PRODUCTION_CUSTOM_DOMAIN_RELEASE,
       "x-ngeblogging-first-site": FIRST_SITE_RELEASE,
       "x-ngeblogging-site-policy": SITE_POLICY_RELEASE,
-      "x-ngeblogging-worker-authority": "worker-v69-route-recovery-v168",
+      "x-ngeblogging-mobile-public": "mobile-public-v171-20260730",
+      "x-ngeblogging-worker-authority": WORKER_AUTHORITY,
     },
   });
 }
 
 function injectReleaseMarker(html) {
   if (
-    html.includes("ngeblogging-production-route-recovery-v168")
+    html.includes("ngeblogging-production-custom-domain-v172")
     && html.includes("ngeblogging-first-site-v169")
+    && html.includes("ngeblogging-mobile-public-v171")
     && html.includes("ngeblogging-auth-callback-singleflight-v162")
   ) return html;
   const marker = [
@@ -165,7 +177,10 @@ function injectReleaseMarker(html) {
     `<meta name="ngeblogging-production-route-recovery-v168" content="${PRODUCTION_RECOVERY_RELEASE}"/>`,
     `<meta name="ngeblogging-first-site-v169" content="${FIRST_SITE_RELEASE}"/>`,
     `<meta name="ngeblogging-site-policy-v169" content="${SITE_POLICY_RELEASE}"/>`,
-    '<meta name="ngeblogging-worker-authority" content="worker-v69-route-recovery-v168"/>',
+    '<meta name="ngeblogging-theme-layout-v170" content="theme-layout-v170-20260730"/>',
+    '<meta name="ngeblogging-mobile-public-v171" content="mobile-public-v171-20260730"/>',
+    `<meta name="ngeblogging-production-custom-domain-v172" content="${PRODUCTION_CUSTOM_DOMAIN_RELEASE}"/>`,
+    `<meta name="ngeblogging-worker-authority" content="${WORKER_AUTHORITY}"/>`,
     '<meta name="ngeblogging-legacy-white-r4" content="disabled"/>',
   ].join("");
   return /<head(?:\s[^>]*)?>/i.test(html)
@@ -180,10 +195,12 @@ async function serveStaticDiagnostic(request, env) {
   const headers = new Headers(response.headers);
   headers.set("cache-control", "no-store, max-age=0, must-revalidate");
   headers.set("x-ngeblogging-auth-capacity", AUTH_CAPACITY_RELEASE);
-  headers.set("x-ngeblogging-production-authority", PRODUCTION_RECOVERY_RELEASE);
+  headers.set("x-ngeblogging-production-authority", PRODUCTION_CUSTOM_DOMAIN_RELEASE);
   headers.set("x-ngeblogging-production-recovery", PRODUCTION_RECOVERY_RELEASE);
+  headers.set("x-ngeblogging-production-custom-domain", PRODUCTION_CUSTOM_DOMAIN_RELEASE);
   headers.set("x-ngeblogging-first-site", FIRST_SITE_RELEASE);
   headers.set("x-ngeblogging-site-policy", SITE_POLICY_RELEASE);
+  headers.set("x-ngeblogging-mobile-public", "mobile-public-v171-20260730");
   return new Response(request.method === "HEAD" ? null : response.body, {
     status: response.status,
     headers,
@@ -223,12 +240,14 @@ async function serveReactShell(request, env, context) {
   headers.set("x-ngeblogging-auth-callback", AUTH_CALLBACK_RELEASE);
   headers.set("x-ngeblogging-auth-capacity", AUTH_CAPACITY_RELEASE);
   headers.set("x-ngeblogging-production-route", PRODUCTION_RECOVERY_RELEASE);
-  headers.set("x-ngeblogging-production-authority", PRODUCTION_RECOVERY_RELEASE);
+  headers.set("x-ngeblogging-production-authority", PRODUCTION_CUSTOM_DOMAIN_RELEASE);
   headers.set("x-ngeblogging-production-recovery", PRODUCTION_RECOVERY_RELEASE);
+  headers.set("x-ngeblogging-production-custom-domain", PRODUCTION_CUSTOM_DOMAIN_RELEASE);
   headers.set("x-ngeblogging-first-site", FIRST_SITE_RELEASE);
   headers.set("x-ngeblogging-site-policy", SITE_POLICY_RELEASE);
+  headers.set("x-ngeblogging-mobile-public", "mobile-public-v171-20260730");
   headers.set("x-ngeblogging-shell", "react-dist-index");
-  headers.set("x-ngeblogging-worker-authority", "worker-v69-route-recovery-v168");
+  headers.set("x-ngeblogging-worker-authority", WORKER_AUTHORITY);
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
 
   return new Response(request.method === "HEAD" ? null : html, {

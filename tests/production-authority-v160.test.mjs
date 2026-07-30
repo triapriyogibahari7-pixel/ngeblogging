@@ -17,31 +17,31 @@ function hasNoStoreBlock(source, path) {
   return source.includes(actualNewline) || source.includes(escapedNewline);
 }
 
-test("v160 Worker entry remains protected under active v168 route authority", () => {
+test("v160 Worker entry remains protected under active v172 Custom Domain authority", () => {
   for (const config of configs) {
     assert.equal(config.name, "ngeblogging");
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-recovery-v168");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
     assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
     assert.equal(config.vars.STUDIO_ROUTE_RELEASE, "2026.07.30-studio-route-v160");
-    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-route-takeover-v168");
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-authority-v172");
   }
   assert.equal(wrangler.assets.run_worker_first, true);
   assert.equal(production.assets.run_worker_first, true);
 });
 
-test("apex www and tenant wildcard use explicit zone routes during v168 recovery", () => {
+test("apex and www are exact Custom Domains while tenant wildcard stays a route", () => {
   for (const config of configs) {
     const routes = config.routes || [];
-    assert.ok(routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+    assert.ok(routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
+    assert.ok(routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
     assert.ok(routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(!routes.some((route) => route.custom_domain === true));
+    assert.ok(!routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
   }
 });
 
-test("Worker v69 still forces React for root auth and Studio routes", () => {
+test("Worker v69 forces React for root auth and Studio routes", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-auth-entry-v158",
@@ -50,8 +50,9 @@ test("Worker v69 still forces React for root auth and Studio routes", () => {
     "2026.07.30-production-route-authority-v163",
     "2026.07.30-production-custom-domain-authority-v164",
     "2026.07.30-production-route-recovery-v168",
+    "2026.07.30-production-custom-domain-v172",
     "react-dist-index",
-    "worker-v69-route-recovery-v168",
+    "worker-v69-custom-domain-v172",
     "legacyWhiteR4: false",
     "env.ASSETS.fetch",
     "no-store, max-age=0, must-revalidate",
@@ -61,7 +62,7 @@ test("Worker v69 still forces React for root auth and Studio routes", () => {
     "/studio", "/dashboard", "/workspace", "/login", "/signin", "/signup",
     "/forgot-password", "/reset-password", "/auth/callback", "/auth/recovery",
     "/release-v154.json", "/release-v158.json", "/release-v159.json", "/release-v160.json",
-    "/release-v163.json", "/release-v164.json", "/release-v168.json",
+    "/release-v163.json", "/release-v164.json", "/release-v168.json", "/release-v172.json",
   ]) assert.ok(worker.includes(`"${path}"`), `worker route missing ${path}`);
 
   assert.ok(worker.includes('if (url.pathname.startsWith("/api/")) return false'));

@@ -1,0 +1,30 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-production-custom-domain-v172",
+  "authority": "cloudflare-custom-domain-authority-v172",
+  "worker": "worker-v69-custom-domain-v172",
+  "apex": {
+    "hostname": "ngeblogging.com",
+    "customDomain": true,
+    "service": "ngeblogging"
+  },
+  "www": {
+    "hostname": "www.ngeblogging.com",
+    "customDomain": true,
+    "service": "ngeblogging"
+  },
+  "tenantWildcard": {
+    "pattern": "*.ngeblogging.com/*",
+    "routePreserved": true
+  },
+  "reactShell": true,
+  "legacyWhiteR4": false,
+  "firstSiteBeforeStudio": true,
+  "maxSitesPerAccount": 25,
+  "loginProviders": ["google", "linkedin", "email-password", "magic-link"],
+  "sessionPersistsUntilExplicitLogout": true,
+  "themeLayoutRelease": "theme-layout-v170-20260730",
+  "mobilePublicRelease": "mobile-public-v171-20260730",
+  "wordLimit": 5000,
+  "productionCapacityClaimed": false
+}
