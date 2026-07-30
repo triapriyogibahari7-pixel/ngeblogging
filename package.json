@@ -24,7 +24,7 @@
     "pretest": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json",
     "test": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/*.test.mjs",
     "pretest:production": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json",
-    "test:production": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/production-authority-v160.test.mjs tests/studio-platform-v160.test.mjs tests/studio-content-v161.test.mjs tests/studio-content-release-v161.test.mjs tests/auth-callback-v162.test.mjs tests/content-editor-v162.test.mjs tests/auth-editor-release-v162.test.mjs tests/auth-capacity-v162.test.mjs tests/production-route-v163.test.mjs tests/production-authority-v164.test.mjs tests/production-domain-attach-v165.test.mjs tests/production-route-recovery-v168.test.mjs tests/first-site-onboarding-v169.test.mjs"
+    "test:production": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/production-authority-v160.test.mjs tests/studio-platform-v160.test.mjs tests/studio-content-v161.test.mjs tests/studio-content-release-v161.test.mjs tests/auth-callback-v162.test.mjs tests/content-editor-v162.test.mjs tests/auth-editor-release-v162.test.mjs tests/auth-capacity-v162.test.mjs"
   },
   "engines": {"node": ">=22.12.0"},
   "dependencies": {
