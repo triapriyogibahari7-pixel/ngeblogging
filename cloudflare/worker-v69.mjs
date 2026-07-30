@@ -6,6 +6,7 @@ export const STUDIO_ROUTE_RELEASE = "2026.07.30-studio-route-v160";
 export const UI_CONTRACT_RELEASE = "2026.07.30-studio-ui-contract-v160";
 export const CONTENT_WORKFLOW_RELEASE = "2026.07.30-studio-content-workflow-v161";
 export const AUTH_EDITOR_RELEASE = "2026.07.30-auth-editor-v162";
+export const PRODUCTION_ROUTE_RELEASE = "2026.07.30-production-route-authority-v163";
 
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
 const SYSTEM_SHELL_PATHS = new Set([
@@ -35,6 +36,7 @@ const RELEASE_PATHS = new Set([
   "/release-v160.json",
   "/release-v161.json",
   "/release-v162.json",
+  "/release-v163.json",
 ]);
 
 function isSystemHost(url) {
@@ -58,6 +60,7 @@ function releaseResponse(request) {
     uiContractRelease: UI_CONTRACT_RELEASE,
     contentWorkflowRelease: CONTENT_WORKFLOW_RELEASE,
     authEditorRelease: AUTH_EDITOR_RELEASE,
+    productionRouteRelease: PRODUCTION_ROUTE_RELEASE,
     authCallbackRelease: "auth-callback-v162-20260730",
     contentEditorRelease: "content-editor-v162-20260730",
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
@@ -71,8 +74,10 @@ function releaseResponse(request) {
     emailPasswordSessionHandoff: true,
     mobileEditorMinimumWidth: 320,
     wordLimit: 5000,
+    routeAuthority: "cloudflare-zone-route-v163",
+    routePatterns: ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"],
     shell: "react-dist-index",
-    customDomainAuthority: "worker-v69",
+    customDomainAuthority: "worker-v69-zone-route",
     legacyWhiteR4: false,
     generatedAt: new Date().toISOString(),
   });
@@ -87,13 +92,14 @@ function releaseResponse(request) {
       "x-ngeblogging-ui-contract": UI_CONTRACT_RELEASE,
       "x-ngeblogging-content-workflow": CONTENT_WORKFLOW_RELEASE,
       "x-ngeblogging-auth-editor": AUTH_EDITOR_RELEASE,
-      "x-ngeblogging-custom-domain-authority": "worker-v69",
+      "x-ngeblogging-production-route": PRODUCTION_ROUTE_RELEASE,
+      "x-ngeblogging-custom-domain-authority": "worker-v69-zone-route",
     },
   });
 }
 
 function injectReleaseMarker(html) {
-  if (html.includes("ngeblogging-auth-editor-v162")) return html;
+  if (html.includes("ngeblogging-production-route-v163")) return html;
   const marker = [
     `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}"/>`,
     `<meta name="ngeblogging-auth-entry" content="${AUTH_ENTRY_RELEASE}"/>`,
@@ -101,7 +107,8 @@ function injectReleaseMarker(html) {
     `<meta name="ngeblogging-ui-contract" content="${UI_CONTRACT_RELEASE}"/>`,
     `<meta name="ngeblogging-studio-content-v161" content="${CONTENT_WORKFLOW_RELEASE}"/>`,
     `<meta name="ngeblogging-auth-editor-v162" content="${AUTH_EDITOR_RELEASE}"/>`,
-    '<meta name="ngeblogging-custom-domain-authority" content="worker-v69"/>',
+    `<meta name="ngeblogging-production-route-v163" content="${PRODUCTION_ROUTE_RELEASE}"/>`,
+    '<meta name="ngeblogging-custom-domain-authority" content="worker-v69-zone-route"/>',
     '<meta name="ngeblogging-legacy-white-r4" content="disabled"/>',
   ].join("");
   return /<head(?:\s[^>]*)?>/i.test(html)
@@ -139,8 +146,9 @@ async function serveReactShell(request, env, context) {
   headers.set("x-ngeblogging-ui-contract", UI_CONTRACT_RELEASE);
   headers.set("x-ngeblogging-content-workflow", CONTENT_WORKFLOW_RELEASE);
   headers.set("x-ngeblogging-auth-editor", AUTH_EDITOR_RELEASE);
+  headers.set("x-ngeblogging-production-route", PRODUCTION_ROUTE_RELEASE);
   headers.set("x-ngeblogging-shell", "react-dist-index");
-  headers.set("x-ngeblogging-custom-domain-authority", "worker-v69");
+  headers.set("x-ngeblogging-custom-domain-authority", "worker-v69-zone-route");
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
 
   return new Response(request.method === "HEAD" ? null : html, {
