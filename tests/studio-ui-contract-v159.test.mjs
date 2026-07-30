@@ -52,8 +52,8 @@ test("six responsive families and laptop/computer variants remain explicit", () 
   for (const mode of responsiveModes) assert.ok(device.includes(`"${mode}"`), `device mode missing ${mode}`);
   assert.ok(device.includes('return "laptop"'));
   assert.ok(device.includes('return "computer"'));
-  assert.ok(device.includes('return "small"'));
-  assert.ok(device.includes('return "large"'));
+  assert.ok(device.includes('? "small"'));
+  assert.ok(device.includes(': "large"'));
   for (const marker of [
     'data-device-mode="small"', "mobile-open", "76vw", "margin-left: 0",
     ".sn-mobile-menu-mark", ".sn-desktop-sidebar-icon",
