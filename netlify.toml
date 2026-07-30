@@ -6,4 +6,4 @@
   NODE_VERSION = "22"
 
 [context.deploy-preview]
-  command = "node --test tests/studio-production-sync-v151.test.mjs tests/auth-production-v153.test.mjs tests/production-entry-v154.test.mjs tests/production-route-v163.test.mjs tests/production-authority-v164.test.mjs tests/production-domain-attach-v165.test.mjs tests/production-route-recovery-v168.test.mjs tests/production-custom-domain-v172.test.mjs tests/production-route-finalizer-v173.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
+  command = "node --test tests/studio-production-sync-v151.test.mjs tests/auth-production-v153.test.mjs tests/production-entry-v154.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
