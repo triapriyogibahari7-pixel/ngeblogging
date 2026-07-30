@@ -11,37 +11,39 @@ const release = JSON.parse(read("public/release-v160.json"));
 
 const configs = [wrangler, wrangler.env.production, production];
 
-test("v160 is the single Worker entry in default and production configurations", () => {
+test("v160 Worker entry remains active under the v163 production route authority", () => {
   for (const config of configs) {
     assert.equal(config.name, "ngeblogging");
     assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-authority-v160");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-authority-v163");
     assert.equal(config.vars.UI_AUTHORITY_RELEASE, "2026.07.30-studio-ui-contract-v160");
     assert.equal(config.vars.AUTH_ENTRY_RELEASE, "2026.07.30-auth-entry-v158");
     assert.equal(config.vars.STUDIO_ROUTE_RELEASE, "2026.07.30-studio-route-v160");
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-zone-route-v163");
   }
   assert.equal(wrangler.assets.run_worker_first, true);
   assert.equal(production.assets.run_worker_first, true);
 });
 
-test("apex and www are Worker custom domains while tenant subdomains remain routed", () => {
+test("apex www and tenant subdomains are explicit zone routes to the same Worker", () => {
   for (const config of configs) {
     const routes = config.routes || [];
-    assert.ok(routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
-    assert.ok(routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
+    assert.ok(routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+    assert.ok(routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
     assert.ok(routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(!routes.some((route) => route.pattern === "ngeblogging.com/*"), "legacy apex Worker Route must be replaced by a Custom Domain");
+    assert.ok(!routes.some((route) => route.custom_domain === true), "v163 must not leave an older route in front of a Custom Domain");
   }
 });
 
-test("Worker v69 forces React for root, auth and Studio routes", () => {
+test("Worker v69 still forces React for root, auth and Studio routes", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-auth-entry-v158",
     "2026.07.30-studio-route-v160",
     "2026.07.30-studio-ui-contract-v160",
+    "2026.07.30-production-route-authority-v163",
     "react-dist-index",
-    "worker-v69",
+    "worker-v69-zone-route",
     "legacyWhiteR4: false",
     "env.ASSETS.fetch",
     "no-store, max-age=0, must-revalidate",
@@ -50,7 +52,7 @@ test("Worker v69 forces React for root, auth and Studio routes", () => {
   for (const path of [
     "/studio", "/dashboard", "/workspace", "/login", "/signin", "/signup",
     "/forgot-password", "/reset-password", "/auth/callback", "/auth/recovery",
-    "/release-v154.json", "/release-v158.json", "/release-v159.json", "/release-v160.json",
+    "/release-v154.json", "/release-v158.json", "/release-v159.json", "/release-v160.json", "/release-v163.json",
   ]) assert.ok(worker.includes(`"${path}"`), `worker route missing ${path}`);
 
   assert.ok(worker.includes('if (url.pathname.startsWith("/api/")) return false'));
@@ -58,15 +60,17 @@ test("Worker v69 forces React for root, auth and Studio routes", () => {
   assert.ok(!worker.includes("WHITE-R4-2026.07.12"));
 });
 
-test("Netlify fallback publishes identical v160 markers and no-cache system routes", () => {
+test("Netlify fallback preserves v160 compatibility and publishes the v163 marker", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-auth-entry-v158",
     "2026.07.30-studio-route-v160",
     "2026.07.30-studio-ui-contract-v160",
+    "2026.07.30-production-route-authority-v163",
     "release-v160.json",
+    "release-v163.json",
     "legacyWhiteR4: false",
-    "netlify-v160",
+    "netlify-fallback-v163",
     "/*       /index.html",
     "Cache-Control: no-store, max-age=0, must-revalidate",
   ]) assert.ok(netlify.includes(marker), `Netlify publisher missing ${marker}`);
@@ -76,7 +80,7 @@ test("Netlify fallback publishes identical v160 markers and no-cache system rout
   }
 });
 
-test("public release probe is truthful and rejects WHITE-R4", () => {
+test("public v160 probe remains available as a historical compatibility probe", () => {
   assert.equal(release.status, "ok");
   assert.equal(release.release, "2026.07.30-production-authority-v160");
   assert.equal(release.customDomainAuthority, "worker-v69");
