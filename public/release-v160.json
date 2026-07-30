@@ -13,5 +13,7 @@
   "safeArea": true,
   "naraNonmodalSmallMedium": true,
   "customDomainAuthority": "worker-v69",
+  "regressionSuite": "v147-v160",
+  "strictProductionBuild": true,
   "legacyWhiteR4": false
 }
