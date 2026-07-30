@@ -5,7 +5,8 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const bootstrap = read("src/auth-studio-bootstrap-v106.js");
 const helper = read("server/system-shell-authority-v157.mjs");
-const worker = read("cloudflare/worker-v68.mjs");
+const worker = read("cloudflare/worker-v69.mjs");
+const compatibilityWorker = read("cloudflare/worker-v68.mjs");
 const netlify = read("scripts/write-netlify-redirects.mjs");
 const auth = read("src/lib/supabase.js");
 const studio = read("src/StudioNext.jsx");
@@ -29,28 +30,31 @@ test("successful sessions leave login and landing through a dedicated Studio rou
 test("Cloudflare modern and legacy authorities serve every Studio route from React", () => {
   for (const route of studioRoutes) {
     assert.ok(helper.includes(`"${route}"`), `legacy helper missing ${route}`);
-    assert.ok(worker.includes(`"${route}"`), `worker v68 missing ${route}`);
+    assert.ok(worker.includes(`"${route}"`), `worker v69 missing ${route}`);
   }
   for (const marker of [
-    "2026.07.30-auth-studio-route-v158",
     "/release-v158.json",
     "react-dist-index",
     "no-store, max-age=0, must-revalidate",
     "legacyWhiteR4: false",
   ]) {
     assert.ok(helper.includes(marker), `legacy helper missing ${marker}`);
-    assert.ok(worker.includes(marker), `worker v68 missing ${marker}`);
+    assert.ok(worker.includes(marker), `worker v69 missing ${marker}`);
   }
+  assert.ok(helper.includes("2026.07.30-auth-studio-route-v158"));
+  assert.ok(compatibilityWorker.includes("2026.07.30-auth-studio-route-v158"));
+  assert.ok(worker.includes("2026.07.30-studio-route-v160"));
   assert.match(helper, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(worker, /url\.pathname\.startsWith\("\/api\/"\)/);
 });
 
-test("Netlify publishes Studio routes, no-cache headers and the v158 probe", () => {
+test("Netlify publishes Studio routes, no-cache headers and compatible probes", () => {
   for (const route of studioRoutes) assert.ok(netlify.includes(route), `Netlify missing ${route}`);
   for (const marker of [
     "X-Ngeblogging-Studio-Route",
     "release-v158.json",
-    "2026.07.30-auth-studio-route-v158",
+    "release-v160.json",
+    "2026.07.30-studio-route-v160",
     "legacyWhiteR4: false",
     "/*       /index.html",
   ]) assert.ok(netlify.includes(marker), `Netlify missing ${marker}`);
@@ -93,7 +97,7 @@ test("complete sidebar, onboarding, editor, comments and nonmodal Nara remain in
   assert.match(comments, /Belum ada komentar\. Jadilah yang pertama membuka diskusi\./);
 });
 
-test("static v158 probe describes the production handoff contract", () => {
+test("static v158 probe continues to describe the authentication handoff contract", () => {
   assert.equal(release.status, "ok");
   assert.equal(release.release, "2026.07.30-auth-studio-route-v158");
   assert.equal(release.authHandoff, "/studio");
