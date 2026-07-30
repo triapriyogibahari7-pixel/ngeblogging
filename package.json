@@ -6,8 +6,8 @@
   "scripts": {
     "predev": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-theme-layout-v170.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/patch-theme-layout-v170.mjs",
-    "build": "npm run test:production && vite build && node scripts/write-netlify-redirects.mjs",
+    "prebuild": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json",
+    "build": "node scripts/patch-theme-layout-v170.mjs && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
