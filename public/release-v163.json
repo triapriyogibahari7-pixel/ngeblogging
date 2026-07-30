@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-production-route-authority-v163",
+  "productionAuthorityCompatibility": "2026.07.30-production-authority-v160",
+  "authEditorCompatibility": "2026.07.30-auth-editor-v162",
+  "routeAuthority": "cloudflare-zone-route-v163",
+  "routePatterns": [
+    "ngeblogging.com/*",
+    "www.ngeblogging.com/*",
+    "*.ngeblogging.com/*"
+  ],
+  "apexRouteExplicit": true,
+  "wwwRouteExplicit": true,
+  "tenantWildcardPreserved": true,
+  "customDomainPreemptionRemoved": true,
+  "rootUsesReactShell": true,
+  "authUsesReactShell": true,
+  "studioUsesReactShell": true,
+  "apiDelegated": true,
+  "legacyWhiteR4": false
+}
