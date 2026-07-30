@@ -4,6 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const styleAuthority = read("src/studio-style-authority-v144.js");
+const platform = read("src/studio-platform-v160.js");
 const runtime = read("src/studio-ui-contract-v159.js");
 const css = read("src/studio-ui-contract-v159.css");
 const recovery = read("src/studio-recovery-v150.js");
@@ -31,8 +32,9 @@ function balanced(source, open, close) {
   assert.equal((source.match(open) || []).length, (source.match(close) || []).length);
 }
 
-test("v159 is loaded by the one active Studio style authority", () => {
-  assert.ok(styleAuthority.includes('import "./studio-ui-contract-v159.js"'));
+test("v159 remains loaded transitively by the active v160 Studio authority", () => {
+  assert.ok(styleAuthority.includes('import "./studio-platform-v160.js"'));
+  assert.ok(platform.includes('import "./studio-ui-contract-v159.js"'));
   assert.ok(runtime.includes('import "./studio-recovery-v150.js"'));
   assert.ok(runtime.includes('import "./studio-recovery-v150.css"'));
   assert.ok(runtime.includes('import "./studio-ui-contract-v159.css"'));
