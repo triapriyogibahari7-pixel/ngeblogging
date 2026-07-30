@@ -1,0 +1,24 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-production-domain-attach-v165",
+  "productionAuthorityCompatibility": "2026.07.30-production-authority-v160",
+  "productionRouteCompatibility": "2026.07.30-production-route-authority-v163",
+  "customDomainCompatibility": "2026.07.30-production-custom-domain-authority-v164",
+  "authEditorCompatibility": "2026.07.30-auth-editor-v162",
+  "domainAttachAuthority": "cloudflare-workers-domains-api-v165",
+  "workerService": "ngeblogging",
+  "zoneName": "ngeblogging.com",
+  "exactCustomDomains": [
+    "ngeblogging.com",
+    "www.ngeblogging.com"
+  ],
+  "tenantWildcardRoute": "*.ngeblogging.com/*",
+  "tenantWildcardUntouched": true,
+  "rootUsesReactShell": true,
+  "authUsesReactShell": true,
+  "studioUsesReactShell": true,
+  "pkceSingleFlight": true,
+  "sessionPersistsUntilExplicitLogout": true,
+  "wordLimit": 5000,
+  "legacyWhiteR4": false
+}
