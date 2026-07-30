@@ -2,9 +2,13 @@ import baseWorker from "./worker-v67.mjs";
 
 export const PRODUCTION_ENTRY_RELEASE = "2026.07.30-production-entry-v154";
 export const AUTH_ENTRY_RELEASE = "2026.07.30-auth-entry-v154";
+export const STUDIO_ROUTE_RELEASE = "2026.07.30-auth-studio-route-v158";
 
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
-const AUTH_PATHS = new Set([
+const SYSTEM_SHELL_PATHS = new Set([
+  "/studio",
+  "/dashboard",
+  "/workspace",
   "/login",
   "/signin",
   "/signup",
@@ -29,7 +33,8 @@ function isSystemHost(url) {
 function isSystemShellRequest(request, url) {
   if (!["GET", "HEAD"].includes(request.method) || !isSystemHost(url)) return false;
   if (url.pathname.startsWith("/api/")) return false;
-  if (url.pathname === "/" || AUTH_PATHS.has(url.pathname.replace(/\/+$/, "") || "/")) return true;
+  const path = url.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/" || SYSTEM_SHELL_PATHS.has(path)) return true;
   return url.searchParams.has("code") || AUTH_QUERY_MODES.has(url.searchParams.get("auth") || "");
 }
 
@@ -38,6 +43,8 @@ function releaseResponse(request) {
     status: "ok",
     release: PRODUCTION_ENTRY_RELEASE,
     authEntryRelease: AUTH_ENTRY_RELEASE,
+    studioRouteRelease: STUDIO_ROUTE_RELEASE,
+    studioRoutes: ["/studio", "/dashboard", "/workspace"],
     shell: "react-dist-index",
     legacyWhiteR4: false,
     generatedAt: new Date().toISOString(),
@@ -49,15 +56,17 @@ function releaseResponse(request) {
       "cache-control": "no-store, max-age=0",
       "x-ngeblogging-production-entry": PRODUCTION_ENTRY_RELEASE,
       "x-ngeblogging-auth-entry": AUTH_ENTRY_RELEASE,
+      "x-ngeblogging-studio-route": STUDIO_ROUTE_RELEASE,
     },
   });
 }
 
 function injectReleaseMarker(html) {
-  if (html.includes("ngeblogging-production-entry-v154")) return html;
+  if (html.includes("ngeblogging-studio-route-v158")) return html;
   const marker = [
     `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}"/>`,
     `<meta name="ngeblogging-auth-entry" content="${AUTH_ENTRY_RELEASE}"/>`,
+    `<meta name="ngeblogging-studio-route" content="${STUDIO_ROUTE_RELEASE}"/>`,
     `<meta name="ngeblogging-legacy-white-r4" content="disabled"/>`,
   ].join("");
   return /<head(?:\s[^>]*)?>/i.test(html)
@@ -91,6 +100,7 @@ async function serveReactShell(request, env, context) {
   headers.set("vary", "Accept-Encoding");
   headers.set("x-ngeblogging-production-entry", PRODUCTION_ENTRY_RELEASE);
   headers.set("x-ngeblogging-auth-entry", AUTH_ENTRY_RELEASE);
+  headers.set("x-ngeblogging-studio-route", STUDIO_ROUTE_RELEASE);
   headers.set("x-ngeblogging-shell", "react-dist-index");
   headers.set("x-ngeblogging-legacy-white-r4", "disabled");
 
@@ -104,7 +114,7 @@ export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
 
-    if (isSystemHost(url) && url.pathname === "/release-v154.json") {
+    if (isSystemHost(url) && ["/release-v154.json", "/release-v158.json"].includes(url.pathname)) {
       return releaseResponse(request);
     }
 
