@@ -6,4 +6,4 @@
   NODE_VERSION = "22"
 
 [context.deploy-preview]
-  command = "node --test --test-name-pattern='Studio navigation' tests/production-entry-v154.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
+  command = "node --test --test-name-pattern='PWA cache rotation|browser bridge' tests/production-entry-v154.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
