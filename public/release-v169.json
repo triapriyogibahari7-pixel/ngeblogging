@@ -1,0 +1,40 @@
+{
+  "status": "ok",
+  "release": "first-site-onboarding-v169-20260730",
+  "routeCompatibility": "2026.07.30-production-route-recovery-v168",
+  "sitePolicyRelease": "site-policy-v169-20260730",
+  "firstSiteBeforeStudio": true,
+  "firstSiteCreatedAutomaticallyFromEmail": false,
+  "maxSitesPerAccount": 25,
+  "siteTypes": [
+    "blog",
+    "website",
+    "news",
+    "portfolio",
+    "forum",
+    "community",
+    "landing",
+    "profile",
+    "diary",
+    "knowledge",
+    "general-knowledge"
+  ],
+  "requiredFields": [
+    "name",
+    "subdomain",
+    "description",
+    "blueprint",
+    "theme",
+    "language",
+    "timezone"
+  ],
+  "activeWorkspaceAfterCreate": true,
+  "autoPublishAfterCreate": false,
+  "installAppProfileAction": true,
+  "sessionPersistsUntilExplicitLogout": true,
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "wordLimit": 5000,
+  "legacyWhiteR4": false,
+  "createdAt": "2026-07-30T10:30:00Z"
+}
