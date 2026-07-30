@@ -16,7 +16,8 @@ const cloudflareDefault = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const pwa = read("src/pwa-runtime.js");
 const serviceWorker = read("public/sw.js");
-const workflow = read(".github/workflows/deploy-production.yml");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
+const finalizer = read("scripts/finalize-cloudflare-routes-v173.mjs");
 const index = read("index.html");
 
 const providers = ["google", "github", "linkedin_oidc"];
@@ -116,19 +117,29 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment v172 rejects WHITE-R4 and verifies login onboarding and mobile authority", () => {
+test("deployment v173 rejects WHITE-R4 while protecting login onboarding and mobile authority", () => {
   for (const marker of [
+    "Ngeblogging Cloudflare production v173",
+    "environment: cloudflare-production",
     "2026.07.30-production-custom-domain-v172",
-    "first-site-onboarding-v169-20260730",
-    "site-policy-v169-20260730",
-    "mobile-public-v171-20260730",
-    "2026.07.30-auth-gateway-v153",
-    "WHITE-R4-2026.07.12",
-    "/release-v172.json",
+    "finalize-cloudflare-routes-v173.mjs",
+    "release-v172.json",
+    "/login",
+    "/signup",
     "/studio",
-    "/api/auth-proxy/auth/v1/token",
-    "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "firstSiteBeforeStudio !== true",
+    "maxSitesPerAccount !== 25",
+    "sessionPersistsUntilExplicitLogout !== true",
+    "ngeblogging-mobile-public-v171",
+    "WHITE-R4-2026.07.12",
+    "PRODUCTION_ROUTE_FINALIZER_V173_VERIFY_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
+  for (const marker of [
+    'EXACT_HOSTNAMES = Object.freeze(["ngeblogging.com", "www.ngeblogging.com"])',
+    'TENANT_WILDCARD_PATTERN = "*.ngeblogging.com/*"',
+    '"ngeblogging.com/*"',
+    '"www.ngeblogging.com/*"',
+    "deleteLegacyExactRoutes",
+    "verifyFinalState",
+  ]) assert.ok(finalizer.includes(marker), `finalizer missing ${marker}`);
 });
