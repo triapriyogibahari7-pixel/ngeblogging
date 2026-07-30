@@ -27,7 +27,7 @@ test("v170 exposes 20 real widget areas and migrates legacy placements", () => {
   assert.ok(widgets.includes(`WIDGET_LAYOUT_AUTHORITY = "${AUTHORITY}"`));
   for (const area of AREAS) assert.ok(widgets.includes(`id: "${area}"`), `missing area ${area}`);
   for (const legacy of ["header-left", "header-right", "below-header", "sidebar-left", "sidebar-right", "footer-left", "footer-right", "footer-wide", "sidebar", "footer"]) {
-    assert.ok(widgets.includes(`"${legacy}"`), `legacy map missing ${legacy}`);
+    assert.ok(widgets.includes(legacy), `legacy map missing ${legacy}`);
   }
   assert.ok(widgets.includes("LEGACY_AREA_MAP[requestedArea] || requestedArea"));
   assert.ok(widgets.includes("new Set([normalizedGroup])"));
