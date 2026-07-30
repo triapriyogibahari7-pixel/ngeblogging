@@ -6,7 +6,7 @@
   "scripts": {
     "predev": "node scripts/patch-studio-content-v161.mjs",
     "dev": "vite",
-    "build": "node scripts/patch-studio-content-v161.mjs && node --test tests/studio-content-v161.test.mjs tests/studio-content-release-v161.test.mjs && vite build && node scripts/write-netlify-redirects.mjs",
+    "build": "npm run test:production && vite build && node scripts/write-netlify-redirects.mjs",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
