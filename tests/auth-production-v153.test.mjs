@@ -5,7 +5,8 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const client = read("src/lib/supabase.js");
 const modal = read("src/AuthModal.jsx");
-const callback = read("src/auth-callback-authority-v107.js");
+const callbackAuthority = read("src/auth-callback-authority-v107.js");
+const callbackConsumer = read("src/lib/auth-callback-v162.js");
 const bootstrap = read("src/auth-studio-bootstrap-v106.js");
 const gateway = read("server/auth-gateway-v108.mjs");
 const authWorker = read("cloudflare/worker-v67.mjs");
@@ -19,6 +20,10 @@ const workflow = read(".github/workflows/deploy-production.yml");
 const index = read("index.html");
 
 const providers = ["google", "github", "linkedin_oidc"];
+
+function occurrences(source, marker) {
+  return source.split(marker).length - 1;
+}
 
 test("all requested login buttons remain connected to real Supabase actions", () => {
   for (const provider of providers) {
@@ -49,9 +54,13 @@ test("legacy login and signup routes open the React auth surface", () => {
   assert.match(client, /\.auth-switch button/);
 });
 
-test("PKCE callbacks exchange the code before handing the session to Studio", () => {
-  assert.match(callback, /exchangeCodeForSession\(code\)/);
-  assert.match(callback, /ngeblogging:auth-session-ready/);
+test("PKCE callbacks retain v153 compatibility but exchange each code exactly once through v162", () => {
+  assert.equal(occurrences(callbackConsumer, "exchangeCodeForSession(code)"), 1);
+  assert.match(callbackConsumer, /auth-callback-singleflight-v162-20260730/);
+  assert.match(callbackConsumer, /Symbol\.for\("ngeblogging\.auth\.callbackOperationV162"\)/);
+  assert.doesNotMatch(callbackAuthority, /exchangeCodeForSession/);
+  assert.match(callbackAuthority, /consumeAuthCallbackV162/);
+  assert.match(callbackAuthority, /ngeblogging:auth-session-ready/);
   assert.match(bootstrap, /auth-callback-authority-v107\.js/);
   assert.ok(index.indexOf("auth-studio-bootstrap-v106.js") < index.indexOf("main.jsx"));
 });

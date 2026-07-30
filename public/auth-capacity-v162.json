@@ -1,0 +1,109 @@
+{
+  "status": "model-only",
+  "release": "auth-capacity-model-v162-20260730",
+  "generatedAt": "2026-07-30T00:00:00.000Z",
+  "interpretation": {
+    "phrase": "900 juta miliar pengguna",
+    "logicalUsers": "900000000000000000",
+    "formula": "900 × 1.000.000 × 1.000.000.000"
+  },
+  "warning": "Model ini tidak membuktikan infrastruktur produksi mampu melayani jumlah tersebut. Kapasitas hanya boleh diklaim setelah load test bertahap pada staging dan produksi dengan observability, quota, biaya, failover, serta persetujuan penyedia.",
+  "authFlowAssumption": {
+    "requestsPerLogin": "5",
+    "steps": [
+      "authorize",
+      "provider callback",
+      "PKCE token exchange",
+      "session/user verification",
+      "Studio handoff"
+    ]
+  },
+  "dailyActivityModels": {
+    "allUsersOncePerDay": {
+      "activeUsers": "900000000000000000",
+      "loginAttemptsPerSecondCeil": "10416666666667",
+      "authRequestsPerSecondCeil": "52083333333335",
+      "referenceShardsAt5000Rps": "10416666667"
+    },
+    "onePercentDaily": {
+      "activeUsers": "9000000000000000",
+      "loginAttemptsPerSecondCeil": "104166666667",
+      "authRequestsPerSecondCeil": "520833333335",
+      "referenceShardsAt5000Rps": "104166667"
+    },
+    "zeroPointZeroOnePercentDaily": {
+      "activeUsers": "90000000000000",
+      "loginAttemptsPerSecondCeil": "1041666667",
+      "authRequestsPerSecondCeil": "5208333335",
+      "referenceShardsAt5000Rps": "1041667"
+    },
+    "zeroPointZeroZeroZeroOnePercentDaily": {
+      "activeUsers": "900000000000",
+      "loginAttemptsPerSecondCeil": "10416667",
+      "authRequestsPerSecondCeil": "52083335",
+      "referenceShardsAt5000Rps": "10417"
+    }
+  },
+  "stagedValidationPlan": [
+    {
+      "name": "contract",
+      "description": "Satu callback sintetis; memastikan kode hanya ditukar sekali dan session diteruskan ke Studio.",
+      "virtualLogins": "1",
+      "requests": "5",
+      "concurrency": "1",
+      "assumedLatencyMs": "250",
+      "modeledRequestsPerSecond": "4",
+      "modeledDurationMs": "1250",
+      "proof": "model-only"
+    },
+    {
+      "name": "preview-safe",
+      "description": "Simulasi lokal/preview tanpa kredensial provider dan tanpa menyerang endpoint produksi.",
+      "virtualLogins": "100",
+      "requests": "500",
+      "concurrency": "20",
+      "assumedLatencyMs": "250",
+      "modeledRequestsPerSecond": "80",
+      "modeledDurationMs": "6250",
+      "proof": "model-only"
+    },
+    {
+      "name": "staging-ramp",
+      "description": "Target staging setelah quota dan observability tersedia.",
+      "virtualLogins": "10000",
+      "requests": "50000",
+      "concurrency": "500",
+      "assumedLatencyMs": "250",
+      "modeledRequestsPerSecond": "2000",
+      "modeledDurationMs": "25000",
+      "proof": "model-only"
+    },
+    {
+      "name": "regional-model",
+      "description": "Model per region; bukan pengujian yang sudah dijalankan.",
+      "virtualLogins": "1000000",
+      "requests": "5000000",
+      "concurrency": "10000",
+      "assumedLatencyMs": "250",
+      "modeledRequestsPerSecond": "40000",
+      "modeledDurationMs": "125000",
+      "proof": "model-only"
+    }
+  ],
+  "safetyPolicy": {
+    "realProviderPasswordsInCI": false,
+    "massAccountCreation": false,
+    "productionCredentialLoadTest": false,
+    "safePublicGetSmokeMaximumRequests": 200,
+    "requiresExplicitInfrastructureApprovalAbove": 200
+  },
+  "requiredArchitectureForExtremeScale": [
+    "regional identity edge and rate limiting",
+    "partitioned auth/session storage",
+    "queue-based onboarding and email delivery",
+    "multi-region database with tested failover",
+    "per-tenant quotas and abuse prevention",
+    "capacity-based autoscaling and cost controls",
+    "synthetic monitoring and SLO/error-budget enforcement"
+  ]
+}

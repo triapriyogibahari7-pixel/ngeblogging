@@ -12,11 +12,16 @@ const browserBridge = read("src/production-entry-v154.js");
 const styleAuthority = read("src/studio-style-authority-v144.js");
 const netlifyBuild = read("scripts/write-netlify-redirects.mjs");
 const auth = read("src/lib/supabase.js");
-const callback = read("src/auth-callback-authority-v107.js");
+const callbackAuthority = read("src/auth-callback-authority-v107.js");
+const callbackConsumer = read("src/lib/auth-callback-v162.js");
 const authModal = read("src/AuthModal.jsx");
 const studio = read("src/StudioNext.jsx");
 
 const activeEntryFiles = [worker, defaultConfig, productionConfig, serviceWorker, browserBridge, netlifyBuild];
+
+function occurrences(source, marker) {
+  return source.split(marker).length - 1;
+}
 
 test("production system routes remain forced to React while v154 compatibility is retained", () => {
   for (const marker of [
@@ -111,14 +116,17 @@ test("browser bridge verifies v154 and clears only legacy PWA guards", () => {
   assert.ok(styleAuthority.includes('import "./studio-platform-v160.js";'));
 });
 
-test("Google, LinkedIn, email, PKCE callback and persistent sessions remain wired", () => {
+test("Google LinkedIn email PKCE callback and persistent sessions remain wired through a single exchange owner", () => {
   for (const marker of [
     '"google"', '"linkedin_oidc"', "signInWithProvider", "signInWithPassword",
     "signInWithMagicLink", "persistSession: true", "autoRefreshToken: true",
     "AUTH_GATEWAY_PREFIX", "/api/auth-proxy",
   ]) assert.ok(auth.includes(marker), `auth source missing ${marker}`);
-  for (const marker of ["exchangeCodeForSession", "publishSession", "ngeblogging:auth-session-ready"]) {
-    assert.ok(callback.includes(marker), `callback authority missing ${marker}`);
+  assert.equal(occurrences(callbackConsumer, "exchangeCodeForSession(code)"), 1);
+  assert.match(callbackConsumer, /auth-callback-singleflight-v162-20260730/);
+  assert.doesNotMatch(callbackAuthority, /exchangeCodeForSession/);
+  for (const marker of ["consumeAuthCallbackV162", "publishToBootstrap", "ngeblogging:auth-session-ready"]) {
+    assert.ok(callbackAuthority.includes(marker), `callback authority missing ${marker}`);
   }
   for (const marker of ["Google", "LinkedIn", "Masuk dengan email", "Masuk tanpa password melalui email"]) {
     assert.ok(authModal.includes(marker), `auth modal missing ${marker}`);

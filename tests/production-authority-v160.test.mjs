@@ -11,6 +11,12 @@ const release = JSON.parse(read("public/release-v160.json"));
 
 const configs = [wrangler, wrangler.env.production, production];
 
+function hasNoStoreBlock(source, path) {
+  const actualNewline = `${path}\n  Cache-Control: no-store`;
+  const escapedNewline = String.raw`${path}\n  Cache-Control: no-store`;
+  return source.includes(actualNewline) || source.includes(escapedNewline);
+}
+
 test("v160 Worker entry remains active under the v163 production route authority", () => {
   for (const config of configs) {
     assert.equal(config.name, "ngeblogging");
@@ -35,7 +41,7 @@ test("apex www and tenant subdomains are explicit zone routes to the same Worker
   }
 });
 
-test("Worker v69 still forces React for root, auth and Studio routes", () => {
+test("Worker v69 still forces React for root auth and Studio routes", () => {
   for (const marker of [
     "2026.07.30-production-authority-v160",
     "2026.07.30-auth-entry-v158",
@@ -76,7 +82,7 @@ test("Netlify fallback preserves v160 compatibility and publishes the v163 marke
   ]) assert.ok(netlify.includes(marker), `Netlify publisher missing ${marker}`);
 
   for (const path of ["/", "/studio", "/dashboard", "/workspace", "/login", "/signin", "/signup"]) {
-    assert.ok(netlify.includes(String.raw`${path}\n  Cache-Control: no-store`), `no-store missing for ${path}`);
+    assert.ok(hasNoStoreBlock(netlify, path), `no-store missing for ${path}`);
   }
 });
 

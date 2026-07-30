@@ -18,8 +18,9 @@ const release = JSON.parse(read("public/release-v158.json"));
 
 const studioRoutes = ["/studio", "/dashboard", "/workspace"];
 
-test("successful sessions leave login and landing through a dedicated Studio route", () => {
-  assert.match(bootstrap, /AUTH_HANDOFF_RELEASE = "auth-studio-route-v158-20260730"/);
+test("successful sessions use the v162 handoff while preserving the dedicated v158 Studio route", () => {
+  assert.match(bootstrap, /AUTH_HANDOFF_RELEASE = "auth-studio-route-v162-20260730"/);
+  assert.match(bootstrap, /AUTH_SUCCESS_VALUE = "v162"/);
   assert.match(bootstrap, /const STUDIO_ROUTES = new Set\(\["\/studio", "\/dashboard", "\/workspace"\]\)/);
   assert.match(bootstrap, /new URL\("\/studio", window\.location\.origin\)/);
   assert.match(bootstrap, /target\.searchParams\.set\("auth_success", AUTH_SUCCESS_VALUE\)/);
@@ -48,7 +49,7 @@ test("Cloudflare modern and legacy authorities serve every Studio route from Rea
   assert.match(worker, /url\.pathname\.startsWith\("\/api\/"\)/);
 });
 
-test("Netlify publishes Studio routes, no-cache headers and compatible probes", () => {
+test("Netlify publishes Studio routes no-cache headers and compatible probes", () => {
   for (const route of studioRoutes) assert.ok(netlify.includes(route), `Netlify missing ${route}`);
   for (const marker of [
     "X-Ngeblogging-Studio-Route",
@@ -60,7 +61,7 @@ test("Netlify publishes Studio routes, no-cache headers and compatible probes", 
   ]) assert.ok(netlify.includes(marker), `Netlify missing ${marker}`);
 });
 
-test("Google, LinkedIn, email and persistent sessions remain enabled", () => {
+test("Google LinkedIn email and persistent sessions remain enabled", () => {
   for (const marker of [
     '"google"',
     '"linkedin_oidc"',
@@ -81,7 +82,7 @@ test("six responsive families plus laptop and computer variants remain protected
   assert.match(deviceModes, /return "computer"/);
 });
 
-test("complete sidebar, onboarding, editor, comments and nonmodal Nara remain intact", () => {
+test("complete sidebar onboarding editor comments and nonmodal Nara remain intact", () => {
   for (const label of [
     "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
     "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar",
@@ -97,7 +98,7 @@ test("complete sidebar, onboarding, editor, comments and nonmodal Nara remain in
   assert.match(comments, /Belum ada komentar\. Jadilah yang pertama membuka diskusi\./);
 });
 
-test("static v158 probe continues to describe the authentication handoff contract", () => {
+test("static v158 probe continues to describe the compatible authentication handoff contract", () => {
   assert.equal(release.status, "ok");
   assert.equal(release.release, "2026.07.30-auth-studio-route-v158");
   assert.equal(release.authHandoff, "/studio");
