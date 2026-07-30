@@ -1,21 +1,22 @@
-name: Deploy System Shell v157 Now
+name: Deploy Auth Studio Route v158 Now
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
-      - ".deploy-system-shell-v157"
+      - ".deploy-auth-studio-route-v158"
 
 permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-system-shell-v157-production
+  group: ngeblogging-auth-studio-route-v158-production
   cancel-in-progress: false
 
 jobs:
   deploy:
-    if: github.head_ref == 'deploy/system-shell-v157-now'
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'deploy/auth-studio-route-v158-now'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -49,7 +50,7 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run production contracts through v157
+      - name: Run production contracts through v158
         run: npm run test:production
 
       - name: Build React assets and patch legacy Workers
@@ -58,10 +59,10 @@ jobs:
       - name: Validate Cloudflare bundle
         run: npm run cloudflare:dry-run
 
-      - name: Deploy system shell v157 to Cloudflare production
+      - name: Deploy auth Studio route v158 to Cloudflare production
         run: npm run deploy:cloudflare
 
-      - name: Verify system shell, auth routes and gateway v157
+      - name: Verify auth handoff, Studio routes and gateway v158
         shell: bash
         run: |
           set -euo pipefail
@@ -69,8 +70,8 @@ jobs:
             stamp=$(date +%s)
             root_code=$(curl -sS -o /tmp/root.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/?deploy_audit=$stamp" || true)
             login_code=$(curl -sS -o /tmp/login.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/login?deploy_audit=$stamp" || true)
-            signup_code=$(curl -sS -o /tmp/signup.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/signup?deploy_audit=$stamp" || true)
-            release_code=$(curl -sS -o /tmp/release-v157.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v157.json?deploy_audit=$stamp" || true)
+            studio_code=$(curl -sS -o /tmp/studio.html -w '%{http_code}' --max-time 20 "https://ngeblogging.com/studio?auth_success=v158&deploy_audit=$stamp" || true)
+            release_code=$(curl -sS -o /tmp/release-v158.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/release-v158.json?deploy_audit=$stamp" || true)
             health_code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "https://ngeblogging.com/api/health?deploy_audit=$stamp" || true)
             auth_code=$(curl -sS -D /tmp/auth-headers.txt -o /tmp/auth-body.txt -w '%{http_code}' --max-time 20 \
               -X OPTIONS "https://ngeblogging.com/api/auth-proxy/auth/v1/token?grant_type=password&deploy_audit=$stamp" \
@@ -80,34 +81,33 @@ jobs:
 
             root=$(cat /tmp/root.html 2>/dev/null || true)
             login=$(cat /tmp/login.html 2>/dev/null || true)
-            signup=$(cat /tmp/signup.html 2>/dev/null || true)
-            release=$(cat /tmp/release-v157.json 2>/dev/null || true)
+            studio=$(cat /tmp/studio.html 2>/dev/null || true)
+            release=$(cat /tmp/release-v158.json 2>/dev/null || true)
             health=$(cat /tmp/health.json 2>/dev/null || true)
             auth_headers=$(cat /tmp/auth-headers.txt 2>/dev/null || true)
 
             if [[ "$root_code" == "200" ]] \
               && [[ "$login_code" == "200" ]] \
-              && [[ "$signup_code" == "200" ]] \
+              && [[ "$studio_code" == "200" ]] \
               && [[ "$release_code" == "200" ]] \
               && [[ "$health_code" == "200" ]] \
               && [[ "$auth_code" == "204" ]] \
-              && [[ "$root" == *"ngeblogging-system-shell"* ]] \
-              && [[ "$login" == *"ngeblogging-auth-shell"* ]] \
-              && [[ "$signup" == *"ngeblogging-auth-shell"* ]] \
               && [[ "$root" != *"WHITE-R4-2026.07.12"* ]] \
               && [[ "$login" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$signup" != *"WHITE-R4-2026.07.12"* ]] \
-              && [[ "$release" == *"2026.07.30-system-shell-v157"* ]] \
+              && [[ "$studio" != *"WHITE-R4-2026.07.12"* ]] \
+              && [[ "$studio" == *"ngeblogging-studio-route"* ]] \
+              && [[ "$release" == *"2026.07.30-auth-studio-route-v158"* ]] \
+              && [[ "$release" == *'"authHandoff":"/studio"'* || "$release" == *'"studioRouteRelease":"2026.07.30-auth-studio-route-v158"'* ]] \
               && [[ "$release" == *'"legacyWhiteR4":false'* ]] \
               && [[ "$health" == *"2026.07.30-auth-gateway-v153"* ]] \
               && [[ "$auth_headers" == *"2026.07.30-auth-gateway-v153"* ]]; then
-              echo "SYSTEM_SHELL_V157_PRODUCTION_VERIFIED"
+              echo "AUTH_STUDIO_ROUTE_V158_PRODUCTION_VERIFIED"
               exit 0
             fi
 
-            echo "Waiting for system shell v157 production propagation ($attempt/36)."
+            echo "Waiting for auth Studio route v158 production propagation ($attempt/36)."
             sleep 10
           done
 
-          echo "SYSTEM_SHELL_V157_PRODUCTION_VERIFY_FAILED"
+          echo "AUTH_STUDIO_ROUTE_V158_PRODUCTION_VERIFY_FAILED"
           exit 1
