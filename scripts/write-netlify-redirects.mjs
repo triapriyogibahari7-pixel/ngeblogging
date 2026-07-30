@@ -10,7 +10,8 @@ const AUTH_EDITOR_RELEASE = "2026.07.30-auth-editor-v162";
 const AUTH_CALLBACK_RELEASE = "auth-callback-singleflight-v162-20260730";
 const AUTH_CALLBACK_COMPAT_RELEASE = "auth-callback-v162-20260730";
 const AUTH_CAPACITY_RELEASE = "auth-capacity-model-v162-20260730";
-const PRODUCTION_ROUTE_RELEASE = "2026.07.30-production-route-authority-v163";
+const PRODUCTION_ROUTE_COMPAT_RELEASE = "2026.07.30-production-route-authority-v163";
+const PRODUCTION_ROUTE_RELEASE = "2026.07.30-production-custom-domain-authority-v164";
 
 if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   const dist = resolve("dist");
@@ -36,7 +37,8 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   X-Ngeblogging-Auth-Callback: ${AUTH_CALLBACK_RELEASE}
   X-Ngeblogging-Auth-Capacity: ${AUTH_CAPACITY_RELEASE}
   X-Ngeblogging-Production-Route: ${PRODUCTION_ROUTE_RELEASE}
-  X-Ngeblogging-Custom-Domain-Authority: netlify-fallback-v163
+  X-Ngeblogging-Production-Authority: ${PRODUCTION_ROUTE_RELEASE}
+  X-Ngeblogging-Custom-Domain-Authority: netlify-fallback-v164
 /index.html
   Cache-Control: no-store, max-age=0, must-revalidate
 /
@@ -77,6 +79,8 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
   Cache-Control: no-store, max-age=0
 /release-v163.json
   Cache-Control: no-store, max-age=0
+/release-v164.json
+  Cache-Control: no-store, max-age=0
 `,
     "utf8",
   );
@@ -92,10 +96,13 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
     authCallbackRelease: AUTH_CALLBACK_RELEASE,
     authCallbackCompatibility: AUTH_CALLBACK_COMPAT_RELEASE,
     authCapacityRelease: AUTH_CAPACITY_RELEASE,
+    productionRouteCompatibility: PRODUCTION_ROUTE_COMPAT_RELEASE,
     productionRouteRelease: PRODUCTION_ROUTE_RELEASE,
     contentEditorRelease: "content-editor-v162-20260730",
-    routeAuthority: "netlify-static-fallback-v163",
-    routePatterns: ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"],
+    routeAuthority: "netlify-static-fallback-v164",
+    routePatterns: ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"],
+    exactCustomDomains: ["ngeblogging.com", "www.ngeblogging.com"],
+    tenantWildcardRoute: "*.ngeblogging.com/*",
     studioRoutes: ["/studio", "/dashboard", "/workspace"],
     responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"],
     desktopVariants: ["laptop", "computer"],
@@ -112,7 +119,7 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
     productionCredentialLoadTest: false,
     wordLimit: 5000,
     shell: "react-vite-dist-index",
-    customDomainAuthority: "netlify-fallback-v163",
+    customDomainAuthority: "netlify-fallback-v164",
     legacyWhiteR4: false,
     deployment: "netlify-static-fallback",
   };
@@ -122,7 +129,7 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
 
   const indexPath = resolve(dist, "index.html");
   let html = readFileSync(indexPath, "utf8");
-  if (!html.includes('name="ngeblogging-production-route-v163"') || !html.includes('name="ngeblogging-auth-callback-singleflight-v162"')) {
+  if (!html.includes('name="ngeblogging-production-custom-domain-v164"') || !html.includes('name="ngeblogging-auth-callback-singleflight-v162"')) {
     const markers = [
       `<meta name="ngeblogging-production-authority-v160" content="${PRODUCTION_ENTRY_RELEASE}">`,
       `<meta name="ngeblogging-production-entry" content="${PRODUCTION_ENTRY_RELEASE}">`,
@@ -133,13 +140,14 @@ if (String(process.env.NETLIFY || "").toLowerCase() === "true") {
       `<meta name="ngeblogging-auth-editor-v162" content="${AUTH_EDITOR_RELEASE}">`,
       `<meta name="ngeblogging-auth-callback-singleflight-v162" content="${AUTH_CALLBACK_RELEASE}">`,
       `<meta name="ngeblogging-auth-capacity-v162" content="${AUTH_CAPACITY_RELEASE}">`,
-      `<meta name="ngeblogging-production-route-v163" content="${PRODUCTION_ROUTE_RELEASE}">`,
-      '<meta name="ngeblogging-custom-domain-authority" content="netlify-fallback-v163">',
+      `<meta name="ngeblogging-production-route-v163" content="${PRODUCTION_ROUTE_COMPAT_RELEASE}">`,
+      `<meta name="ngeblogging-production-custom-domain-v164" content="${PRODUCTION_ROUTE_RELEASE}">`,
+      '<meta name="ngeblogging-custom-domain-authority" content="netlify-fallback-v164">',
       '<meta name="ngeblogging-legacy-white-r4" content="disabled">',
     ].join("");
     html = html.replace(/<head(\s[^>]*)?>/i, (match) => `${match}${markers}`);
     writeFileSync(indexPath, html, "utf8");
   }
 
-  console.log(`Netlify fallback ${PRODUCTION_ROUTE_RELEASE}, callback ${AUTH_CALLBACK_RELEASE}, model ${AUTH_CAPACITY_RELEASE}, auth/editor ${AUTH_EDITOR_RELEASE}, dan konten ${CONTENT_WORKFLOW_RELEASE} aktif; API diarahkan ke ${apiOrigin}`);
+  console.log(`Netlify fallback ${PRODUCTION_ROUTE_RELEASE}, kompatibilitas ${PRODUCTION_ROUTE_COMPAT_RELEASE}, callback ${AUTH_CALLBACK_RELEASE}, model ${AUTH_CAPACITY_RELEASE}, auth/editor ${AUTH_EDITOR_RELEASE}, dan konten ${CONTENT_WORKFLOW_RELEASE} aktif; API diarahkan ke ${apiOrigin}`);
 }
