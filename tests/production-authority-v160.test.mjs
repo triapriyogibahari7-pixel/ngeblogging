@@ -72,7 +72,7 @@ test("Netlify fallback publishes identical v160 markers and no-cache system rout
   ]) assert.ok(netlify.includes(marker), `Netlify publisher missing ${marker}`);
 
   for (const path of ["/", "/studio", "/dashboard", "/workspace", "/login", "/signin", "/signup"]) {
-    assert.ok(netlify.includes(`${path}\n  Cache-Control: no-store`), `no-store missing for ${path}`);
+    assert.ok(netlify.includes(String.raw`${path}\n  Cache-Control: no-store`), `no-store missing for ${path}`);
   }
 });
 
