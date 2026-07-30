@@ -1,8 +1,9 @@
 import { loadAnalytics } from "./studio-analytics-v41.js";
-import { createUserSite, listUserSites, setActiveSiteId } from "./lib/studio-data.js";
+import { listUserSites, setActiveSiteId } from "./lib/studio-data.js";
+import { MAX_SITES_PER_ACCOUNT, createUserSiteWithPolicy, getSiteQuota } from "./lib/site-policy-v169.js";
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
 
-const RELEASE = "studio-recovery-v150-20260729";
+const RELEASE = "studio-recovery-v169-20260730";
 const ONBOARDING_PREFIX = "ngeblogging-first-site-v150:";
 const BLUEPRINTS = [
   ["blog", "Blog", "Artikel, kategori, tag, penulis, dan arsip."],
@@ -13,13 +14,33 @@ const BLUEPRINTS = [
   ["community", "Komunitas", "Anggota, aktivitas, konten, dan interaksi."],
   ["landing", "Landing page", "Kampanye, produk, formulir, dan konversi."],
   ["profile", "Profil", "Identitas pribadi atau profesional yang lengkap."],
+  ["diary", "Diary / jurnal", "Catatan harian, perjalanan, dan refleksi pribadi."],
   ["knowledge", "Knowledge base", "Dokumentasi, panduan, dan pusat bantuan."],
+  ["general-knowledge", "Pengetahuan umum", "Referensi, materi belajar, dan wawasan umum."],
+];
+const THEMES = [
+  ["editorial-clean", "Editorial bersih"], ["modern-blog", "Blog modern"],
+  ["news-grid", "Portal berita"], ["business-pro", "Bisnis profesional"],
+  ["portfolio-focus", "Portofolio fokus"], ["community-hub", "Komunitas"],
+  ["knowledge-docs", "Dokumentasi"], ["landing-conversion", "Landing page"],
 ];
 
 let frame = 0;
 let analyticsHost = null;
 let onboardingBusy = false;
 let sessionRefreshBusy = false;
+let installPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPrompt = event;
+  document.documentElement.dataset.pwaInstallReady = "true";
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  document.documentElement.dataset.pwaInstalled = "true";
+  document.documentElement.dataset.pwaInstallReady = "false";
+});
 
 function safeGet(key) {
   try { return localStorage.getItem(key) || ""; } catch { return ""; }
@@ -72,6 +93,30 @@ function openSettings() {
   closeProfileMenu();
 }
 
+async function installApplication() {
+  closeProfileMenu();
+  if (window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true) {
+    window.dispatchEvent(new CustomEvent("ngeblogging:toast", { detail: { type: "info", message: "Aplikasi Ngeblogging sudah terpasang pada perangkat ini." } }));
+    return;
+  }
+  if (installPrompt) {
+    const prompt = installPrompt;
+    installPrompt = null;
+    await prompt.prompt();
+    const choice = await prompt.userChoice.catch(() => null);
+    document.documentElement.dataset.pwaInstallChoice = choice?.outcome || "dismissed";
+    return;
+  }
+  window.dispatchEvent(new CustomEvent("ngeblogging:install-help", {
+    detail: {
+      title: "Dapatkan aplikasi Ngeblogging",
+      message: "Gunakan menu browser lalu pilih Tambahkan ke layar utama atau Instal aplikasi.",
+      release: RELEASE,
+    },
+  }));
+  window.alert("Untuk memasang Ngeblogging, buka menu browser lalu pilih ‘Tambahkan ke layar utama’ atau ‘Instal aplikasi’.");
+}
+
 function openProfileMenu(avatar) {
   const existing = document.querySelector(".sn-profile-menu-v150");
   if (existing) {
@@ -86,10 +131,12 @@ function openProfileMenu(avatar) {
   menu.innerHTML = `
     <button type="button" role="menuitem" data-action="profile"><span>Profil</span><small>Identitas dan biografi</small></button>
     <button type="button" role="menuitem" data-action="settings"><span>Pengaturan</span><small>Situs, bahasa, dan zona waktu</small></button>
+    <button type="button" role="menuitem" data-action="install"><span>Dapatkan aplikasi</span><small>Pasang PWA pada handphone atau komputer</small></button>
     <button type="button" role="menuitem" data-action="logout"><span>Keluar</span><small>Akhiri sesi pada perangkat ini</small></button>`;
   menu.addEventListener("click", (event) => {
     const action = event.target.closest("button")?.dataset.action;
     if (action === "profile" || action === "settings") openSettings();
+    if (action === "install") installApplication();
     if (action === "logout") {
       closeProfileMenu();
       document.querySelector(".sn-account-logout-v135")?.click();
@@ -143,15 +190,18 @@ function onboardingMarkup(defaultName, defaultSlug) {
   return `
     <div class="sn-onboarding-layer-v150" role="dialog" aria-modal="true" aria-label="Buat situs pertama">
       <section class="sn-onboarding-v150">
-        <header><small>LANGKAH PERTAMA</small><h1>Buat ruang digital Anda.</h1><p>Pilih tujuan situs. Semua pilihan tetap mendapat Posts, Pages, Tema, Media, Analitik, Anggota, Komentar, Domain, API Keys, serta Nara AI.</p></header>
+        <header><small>LANGKAH PERTAMA · MAKSIMAL ${MAX_SITES_PER_ACCOUNT} SITUS</small><h1>Buat ruang digital Anda.</h1><p>Pilih tujuan situs. Semua pilihan tetap mendapat Posts, Pages, Tema, Media, Analitik, Anggota, Komentar, Domain, API Keys, serta Nara AI.</p></header>
         <div class="sn-onboarding-blueprints-v150">${BLUEPRINTS.map(([id, label, description], index) => `<button type="button" data-blueprint="${id}" class="${index === 0 ? "active" : ""}"><b>${label}</b><span>${description}</span><i>✓</i></button>`).join("")}</div>
         <div class="sn-onboarding-fields-v150">
           <label>Nama situs<input name="name" value="${defaultName.replaceAll('"', '&quot;')}" maxlength="100"/></label>
           <label>Subdomain<div><input name="slug" value="${defaultSlug.replaceAll('"', '&quot;')}" maxlength="80"/><span>.ngeblogging.com</span></div></label>
+          <label>Tema awal<select name="theme">${THEMES.map(([value, label]) => `<option value="${value}">${label}</option>`).join("")}</select></label>
+          <label>Bahasa<select name="locale"><option value="id-ID">Bahasa Indonesia</option><option value="en-US">English</option><option value="ms-MY">Bahasa Melayu</option></select></label>
+          <label class="wide">Zona waktu<select name="timezone"><option value="Asia/Jakarta">WIB — Asia/Jakarta</option><option value="Asia/Makassar">WITA — Asia/Makassar</option><option value="Asia/Jayapura">WIT — Asia/Jayapura</option><option value="UTC">UTC</option></select></label>
           <label class="wide">Deskripsi<textarea name="description" maxlength="1000" placeholder="Jelaskan tujuan situs Anda."></textarea></label>
         </div>
         <p class="sn-onboarding-error-v150" role="alert"></p>
-        <footer><span>Gratis untuk memulai · HTTPS · sitemap · feed · schema</span><button type="button" class="primary">Buat dan buka Studio</button></footer>
+        <footer><span>Gratis untuk memulai · HTTPS · sitemap · feed · schema</span><button type="button" class="primary">Buat situs aktif dan buka Studio</button></footer>
       </section>
     </div>`;
 }
@@ -162,6 +212,9 @@ async function saveOnboarding(layer, user, sites) {
   const slug = slugify(layer.querySelector('[name="slug"]')?.value || name);
   const description = layer.querySelector('[name="description"]')?.value?.trim() || "";
   const blueprint = layer.querySelector("[data-blueprint].active")?.dataset.blueprint || "blog";
+  const themeKey = layer.querySelector('[name="theme"]')?.value || "editorial-clean";
+  const locale = layer.querySelector('[name="locale"]')?.value || "id-ID";
+  const timezone = layer.querySelector('[name="timezone"]')?.value || "Asia/Jakarta";
   const errorNode = layer.querySelector(".sn-onboarding-error-v150");
   const submit = layer.querySelector("footer button");
   if (name.length < 2) { errorNode.textContent = "Nama situs minimal 2 karakter."; return; }
@@ -172,19 +225,24 @@ async function saveOnboarding(layer, user, sites) {
   submit.textContent = "Membuat situs…";
   errorNode.textContent = "";
   try {
-    const latestSites = await listUserSites(user.id);
+    const quota = await getSiteQuota(user.id);
+    if (!quota.canCreate && !recentAutomaticSite(quota.sites)) throw new Error(`Setiap akun dapat memiliki maksimal ${MAX_SITES_PER_ACCOUNT} situs.`);
+    const latestSites = quota.sites;
     const automatic = recentAutomaticSite(latestSites) || recentAutomaticSite(sites);
     let selected;
     if (automatic) {
       const availability = await supabase.rpc("is_site_slug_available", { candidate: slug, excluding_site: automatic.id });
       if (availability.error) throw availability.error;
       if (!availability.data) throw new Error("Subdomain sudah digunakan atau termasuk nama sistem.");
-      const settings = { ...(automatic.settings || {}), onboarding: "complete-v150", onboarding_completed_at: new Date().toISOString() };
-      const result = await supabase.from("sites").update({ name, slug, description, blueprint, settings }).eq("id", automatic.id).select("id").single();
+      const settings = { ...(automatic.settings || {}), onboarding: "complete-v169", onboarding_completed_at: new Date().toISOString(), initial_theme: themeKey, locale, timezone, site_limit: MAX_SITES_PER_ACCOUNT };
+      const result = await supabase.from("sites").update({ name, slug, description, blueprint, theme_key: themeKey, locale, settings }).eq("id", automatic.id).select("id").single();
       if (result.error) throw result.error;
       selected = { id: automatic.id };
     } else {
-      selected = await createUserSite({ userId: user.id, name, slug, description, blueprint });
+      selected = await createUserSiteWithPolicy({ userId: user.id, name, slug, description, blueprint });
+      const settings = { ...(selected.settings || {}), onboarding: "complete-v169", onboarding_completed_at: new Date().toISOString(), initial_theme: themeKey, locale, timezone, site_limit: MAX_SITES_PER_ACCOUNT };
+      const configured = await supabase.from("sites").update({ theme_key: themeKey, locale, settings }).eq("id", selected.id).select("id").single();
+      if (configured.error) throw configured.error;
     }
     setActiveSiteId(selected.id);
     safeSet(`${ONBOARDING_PREFIX}${user.id}`, "complete");
@@ -193,7 +251,7 @@ async function saveOnboarding(layer, user, sites) {
   } catch (error) {
     errorNode.textContent = error.message || "Situs belum dapat dibuat. Periksa koneksi lalu coba lagi.";
     submit.disabled = false;
-    submit.textContent = "Buat dan buka Studio";
+    submit.textContent = "Buat situs aktif dan buka Studio";
   } finally {
     onboardingBusy = false;
   }
