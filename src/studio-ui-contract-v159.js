@@ -52,7 +52,9 @@ function syncSidebarContract() {
 
   shell.dataset.uiContract = RELEASE;
   nav.dataset.menuCenter = "true";
+  nav.setAttribute("data-menu-center", "true");
   footer.dataset.menuFooter = "true";
+  footer.setAttribute("data-menu-footer", "true");
   sidebar.setAttribute("aria-label", "Menu utama Ngeblogging Studio");
   ensureSidebarEdgeToggle();
 }
