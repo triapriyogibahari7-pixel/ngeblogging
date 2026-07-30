@@ -29,18 +29,14 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances through v163 without losing v151 compatibility markers", () => {
+test("Cloudflare production advances through v164 without losing v151-v163 compatibility markers", () => {
   assert.equal(production.assets.run_worker_first, true);
-  assert.match(production.vars.APP_RELEASE, /^2026\.07\.(?:29|30)-/);
+  assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
-  assert.ok([
-    "2026.07.29-studio-completion-v151",
-    "2026.07.30-auth-production-v153",
-    "2026.07.30-production-entry-v154",
-    "2026.07.30-production-authority-v160",
-    "2026.07.30-production-route-authority-v163",
-  ].includes(production.vars.APP_RELEASE));
-  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-zone-route-v163");
+  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-v164");
+  assert.ok(production.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
+  assert.ok(production.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
+  assert.ok(production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
   for (const marker of [
     "Run Studio, authentication, viewport and production contracts through v160",
     "DEPLOY_VERIFY_PRODUCTION_AUTHORITY_V160_FAILED",
