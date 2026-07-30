@@ -8,50 +8,15 @@ const production = JSON.parse(read("wrangler.production.jsonc"));
 const worker = read("cloudflare/worker-v69.mjs");
 const release = JSON.parse(read("public/release-v164.json"));
 
-const configs = [wrangler, wrangler.env.production, production];
-const expectedPatterns = ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"];
+const activeConfigs = [wrangler, wrangler.env.production, production];
+const historicalPatterns = ["ngeblogging.com", "www.ngeblogging.com", "*.ngeblogging.com/*"];
+const recoveryPatterns = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
-function assertProductionAuthority(config) {
-  assert.equal(config.main, "./cloudflare/worker-v69.mjs");
-  assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
-  assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-v164");
-  assert.equal(config.vars.CUSTOM_DOMAIN_PROVIDER, "cloudflare-worker-custom-domain-v164");
-  assert.deepEqual(config.routes.map((route) => route.pattern), expectedPatterns);
-
-  assert.equal(config.routes[0].custom_domain, true);
-  assert.equal(config.routes[0].zone_name, undefined);
-  assert.equal(config.routes[1].custom_domain, true);
-  assert.equal(config.routes[1].zone_name, undefined);
-  assert.equal(config.routes[2].custom_domain, undefined);
-  assert.equal(config.routes[2].zone_name, "ngeblogging.com");
-}
-
-test("v164 makes the current Worker the exact origin for apex and www", () => {
-  for (const config of configs) assertProductionAuthority(config);
-});
-
-test("v164 preserves tenant wildcard routing without pretending wildcard Custom Domains exist", () => {
-  for (const config of configs) {
-    assert.equal(config.routes[2].pattern, "*.ngeblogging.com/*");
-    assert.equal(config.routes[2].zone_name, "ngeblogging.com");
-    assert.notEqual(config.routes[2].custom_domain, true);
-  }
-});
-
-test("Worker and release probe expose the same production authority contract", () => {
-  for (const marker of [
-    "2026.07.30-production-custom-domain-authority-v164",
-    "cloudflare-custom-domain-v164",
-    "worker-v69-custom-domain-v164",
-    "ngeblogging-production-custom-domain-v164",
-    "x-ngeblogging-production-authority",
-    "/release-v164.json",
-  ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
-
+test("v164 Custom Domain contract remains published as historical compatibility", () => {
   assert.equal(release.status, "ok");
   assert.equal(release.release, "2026.07.30-production-custom-domain-authority-v164");
   assert.equal(release.routeAuthority, "cloudflare-custom-domain-v164");
-  assert.deepEqual(release.routePatterns, expectedPatterns);
+  assert.deepEqual(release.routePatterns, historicalPatterns);
   assert.deepEqual(release.exactCustomDomains, ["ngeblogging.com", "www.ngeblogging.com"]);
   assert.equal(release.tenantWildcardRoute, "*.ngeblogging.com/*");
   assert.equal(release.apexCustomDomain, true);
@@ -63,12 +28,39 @@ test("Worker and release probe expose the same production authority contract", (
   assert.equal(release.legacyWhiteR4, false);
 });
 
-test("v164 does not regress auth callback, editor, six modes, or explicit logout contracts", () => {
+test("active production may recover through v168 routes without deleting v164 evidence", () => {
+  for (const config of activeConfigs) {
+    assert.equal(config.main, "./cloudflare/worker-v69.mjs");
+    assert.equal(config.vars.APP_RELEASE, "2026.07.30-production-route-recovery-v168");
+    assert.equal(config.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-route-takeover-v168");
+    assert.deepEqual(config.routes.map((route) => route.pattern), recoveryPatterns);
+    for (const route of config.routes) {
+      assert.equal(route.zone_name, "ngeblogging.com");
+      assert.notEqual(route.custom_domain, true);
+    }
+  }
+});
+
+test("Worker keeps v164 markers while v168 becomes the active authority", () => {
+  for (const marker of [
+    "2026.07.30-production-custom-domain-authority-v164",
+    "ngeblogging-production-custom-domain-v164",
+    "2026.07.30-production-route-recovery-v168",
+    "cloudflare-route-takeover-v168",
+    "worker-v69-route-recovery-v168",
+    "x-ngeblogging-production-authority",
+    "/release-v164.json",
+    "/release-v168.json",
+  ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
+});
+
+test("v164 compatibility does not regress auth callback editor six modes or explicit logout", () => {
   for (const marker of [
     "auth-callback-singleflight-v162-20260730",
     "pkceSingleFlight: true",
     "callbackProcessors: 1",
     "emailPasswordSessionHandoff: true",
+    "sessionPersistsUntilExplicitLogout: true",
     "wordLimit: 5000",
     '["application", "phone", "mobile", "compact", "tablet", "desktop"]',
     "legacyWhiteR4: false",
