@@ -16,9 +16,9 @@ test("Netlify production publisher builds, unlocks, uploads, purges and verifies
     "/deploys",
     "NETLIFY_DEPLOY_READY_TIMEOUT",
     "/api/v1/purge",
-    "ngeblogging.netlify.app/release-v154.json",
+    "ngeblogging.netlify.app/release-v160.json",
     "WHITE-R4-2026.07.12",
-    "ngeblogging-production-entry",
+    "ngeblogging-production-authority-v160",
   ]) assert.ok(workflow.includes(marker), `publisher missing ${marker}`);
 });
 
