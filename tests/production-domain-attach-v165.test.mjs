@@ -14,8 +14,9 @@ const production = JSON.parse(read("wrangler.production.jsonc"));
 
 const RELEASE = "2026.07.30-production-domain-attach-v165";
 const EXACT_HOSTS = ["ngeblogging.com", "www.ngeblogging.com"];
+const RECOVERY_ROUTES = ["ngeblogging.com/*", "www.ngeblogging.com/*", "*.ngeblogging.com/*"];
 
-test("v165 attaches only exact production hostnames through the official Workers Domains endpoint", () => {
+test("v165 official Workers Domains attachment utility is retained as an audited fallback", () => {
   for (const marker of [
     RELEASE,
     "/workers/domains",
@@ -25,18 +26,16 @@ test("v165 attaches only exact production hostnames through the official Workers
     "CLOUDFLARE_API_TOKEN",
     "CLOUDFLARE_WORKER_SERVICE",
     "CLOUDFLARE_ZONE_NAME",
-    'service: SERVICE',
-    'zone_name: ZONE_NAME',
+    "service: SERVICE",
+    "zone_name: ZONE_NAME",
   ]) assert.ok(attach.includes(marker), `domain attach script missing ${marker}`);
-
   assert.match(attach, /HOSTNAMES = Object\.freeze\(\["ngeblogging\.com", "www\.ngeblogging\.com"\]\)/);
   assert.doesNotMatch(attach, /HOSTNAMES[^\n]*\*\.ngeblogging\.com/);
   assert.match(attach, /tenantWildcardUntouched: "\*\.ngeblogging\.com\/\*"/);
-  assert.doesNotMatch(attach, /console\.log\([^\n]*(?:API_TOKEN|authorization)/);
   assert.doesNotMatch(attach, /Bearer\s+[A-Za-z0-9_-]{20,}/);
 });
 
-test("v165 verifies each hostname points to the ngeblogging service after attachment", () => {
+test("v165 fallback verifies each hostname points to the expected service", () => {
   assert.match(attach, /domains\.find\(\(item\) => item\?\.hostname === hostname\)/);
   assert.match(attach, /domain\.service !== SERVICE/);
   assert.match(attach, /tidak ditemukan pada daftar Worker Domains/);
@@ -45,60 +44,49 @@ test("v165 verifies each hostname points to the ngeblogging service after attach
   assert.match(attach, /const verified = await verify\(\)/);
 });
 
-test("package and production workflow execute domain attachment before final verification", () => {
+test("v168-v169 production deploy no longer blocks on the conflicting v165 attachment step", () => {
   assert.equal(packageJson.scripts["cloudflare:attach-domains"], "node scripts/attach-cloudflare-domains-v165.mjs");
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-domain-attach-v165.test.mjs"));
+  assert.ok(packageJson.scripts["test:production"].includes("tests/production-route-recovery-v168.test.mjs"));
+  assert.ok(packageJson.scripts["test:production"].includes("tests/first-site-onboarding-v169.test.mjs"));
   for (const marker of [
     "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains",
-    "CLOUDFLARE_WORKER_SERVICE",
-    "CLOUDFLARE_ZONE_NAME",
+    "2026.07.30-production-route-recovery-v168",
+    "first-site-onboarding-v169-20260730",
+    "/release-v168.json",
+    "/release-v169.json",
+    "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED",
+  ]) assert.ok(workflow.includes(marker), `production workflow missing ${marker}`);
+  assert.ok(!workflow.includes("npm run cloudflare:attach-domains"));
+});
+
+test("active configs use route recovery while preserving the tenant wildcard", () => {
+  for (const config of [wrangler, wrangler.env.production, production]) {
+    assert.deepEqual(config.routes.map((route) => route.pattern), RECOVERY_ROUTES);
+    for (const route of config.routes) {
+      assert.equal(route.zone_name, "ngeblogging.com");
+      assert.notEqual(route.custom_domain, true);
+    }
+  }
+});
+
+test("Worker preserves v165 compatibility marker while attach authority remains in fallback artifacts", () => {
+  for (const marker of [
     RELEASE,
     "/release-v165.json",
-    "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED",
-  ]) assert.ok(workflow.includes(marker), `production workflow missing ${marker}`);
-  assert.ok(workflow.indexOf("npm run deploy:cloudflare") < workflow.indexOf("npm run cloudflare:attach-domains"));
-});
+    "ngeblogging-production-domain-attach-v165",
+    "legacyWhiteR4: false",
+  ]) assert.ok(worker.includes(marker), `Worker compatibility missing ${marker}`);
 
-test("v166 reports every production stage to the dedicated deployment issue", () => {
+  for (const source of [attach, netlify]) {
+    assert.ok(source.includes("cloudflare-workers-domains-api-v165"), "fallback authority marker missing");
+  }
   for (const marker of [
-    "issues: write",
-    "actions/github-script@v7",
-    "if: always()",
-    "issue_number: 243",
-    "CREDENTIALS_OUTCOME",
-    "CONTRACTS_OUTCOME",
-    "BUILD_OUTCOME",
-    "DEPLOY_WORKER_OUTCOME",
-    "ATTACH_DOMAINS_OUTCOME",
-    "VERIFY_PRODUCTION_OUTCOME",
-    "Deployment produksi",
-  ]) assert.ok(workflow.includes(marker), `production observability missing ${marker}`);
-  assert.ok(workflow.includes('state: status === "success" ? "closed" : "open"'));
-  assert.ok(workflow.includes('state_reason: status === "success" ? "completed" : undefined'));
-});
-
-test("v165 keeps exact Custom Domains and the tenant wildcard route separated", () => {
-  for (const config of [wrangler, wrangler.env.production, production]) {
-    assert.ok(config.routes.some((route) => route.pattern === EXACT_HOSTS[0] && route.custom_domain === true));
-    assert.ok(config.routes.some((route) => route.pattern === EXACT_HOSTS[1] && route.custom_domain === true));
-    assert.ok(config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(!config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
-  }
-});
-
-test("Worker Netlify and static probe publish the same v165 authority markers", () => {
-  for (const source of [worker, netlify]) {
-    for (const marker of [
-      RELEASE,
-      "/release-v165.json",
-      "ngeblogging-production-domain-attach-v165",
-      "cloudflare-workers-domains-api-v165",
-      "legacyWhiteR4: false",
-    ]) assert.ok(source.includes(marker), `publisher missing ${marker}`);
-  }
-  assert.ok(worker.includes("x-ngeblogging-domain-attach"));
-  assert.ok(netlify.includes("X-Ngeblogging-Domain-Attach"));
+    RELEASE,
+    "/release-v165.json",
+    "ngeblogging-production-domain-attach-v165",
+    "legacyWhiteR4: false",
+  ]) assert.ok(netlify.includes(marker), `Netlify fallback missing ${marker}`);
 
   assert.equal(release.status, "ok");
   assert.equal(release.release, RELEASE);

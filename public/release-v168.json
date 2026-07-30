@@ -1,0 +1,24 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-production-route-recovery-v168",
+  "workerService": "ngeblogging",
+  "zoneName": "ngeblogging.com",
+  "routeAuthority": "cloudflare-route-takeover-v168",
+  "routePatterns": [
+    "ngeblogging.com/*",
+    "www.ngeblogging.com/*",
+    "*.ngeblogging.com/*"
+  ],
+  "apexRouteTakeover": true,
+  "wwwRouteTakeover": true,
+  "tenantWildcardRoute": "*.ngeblogging.com/*",
+  "tenantWildcardPreserved": true,
+  "reactShell": true,
+  "pkceSingleFlight": true,
+  "sessionPersistsUntilExplicitLogout": true,
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "wordLimit": 5000,
+  "legacyWhiteR4": false,
+  "createdAt": "2026-07-30T08:45:00Z"
+}

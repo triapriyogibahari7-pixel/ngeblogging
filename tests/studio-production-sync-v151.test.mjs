@@ -11,6 +11,7 @@ const device = read("src/studio-device-mode-v140.js");
 const studio = read("src/StudioNext.jsx");
 const theme = read("src/ThemeStudio.jsx");
 const nara = read("src/NaraAssistant.jsx");
+const entryWorker = read("cloudflare/worker-v69.mjs");
 
 const menu = [
   "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
@@ -29,20 +30,27 @@ test("PWA controller and service worker retain Studio completion v151 compatibil
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("Cloudflare production advances through v165 without losing v151-v164 compatibility", () => {
+test("Cloudflare production advances through v169 without losing v151-v165 compatibility", () => {
   assert.equal(production.assets.run_worker_first, true);
-  assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-authority-v164");
+  assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-route-recovery-v168");
   assert.match(production.vars.UI_AUTHORITY_RELEASE, /^2026\.07\.(?:29|30)-/);
-  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-v164");
-  assert.ok(production.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
-  assert.ok(production.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
+  assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-route-takeover-v168");
+  assert.ok(production.routes.some((route) => route.pattern === "ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+  assert.ok(production.routes.some((route) => route.pattern === "www.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
   assert.ok(production.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
+  assert.ok(!production.routes.some((route) => route.custom_domain === true));
   for (const marker of [
-    "Run Studio authentication viewport production and domain contracts through v165",
-    "DEPLOY_VERIFY_PRODUCTION_DOMAIN_ATTACH_V165_FAILED",
-    "2026.07.30-production-domain-attach-v165",
+    "Run protected production contracts through v169",
+    "DEPLOY_VERIFY_PRODUCTION_V168_V169_FAILED",
+    "2026.07.30-production-route-recovery-v168",
+    "first-site-onboarding-v169-20260730",
     "studio-completion-v151",
-  ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker), `release chain missing ${marker}`);
+  ]) assert.ok(workflow.includes(marker) || pwa.includes(marker) || worker.includes(marker) || entryWorker.includes(marker), `release chain missing ${marker}`);
+  for (const marker of [
+    "2026.07.30-production-route-authority-v163",
+    "2026.07.30-production-custom-domain-authority-v164",
+    "2026.07.30-production-domain-attach-v165",
+  ]) assert.ok(entryWorker.includes(marker), `historical release missing ${marker}`);
 });
 
 test("all responsive modes, menus, Theme tools and Nara controls remain intact", () => {
