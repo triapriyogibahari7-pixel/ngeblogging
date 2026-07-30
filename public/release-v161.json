@@ -1,0 +1,18 @@
+{
+  "status": "ok",
+  "release": "2026.07.30-studio-content-workflow-v161",
+  "productionAuthority": "2026.07.30-production-authority-v160",
+  "contentWorkflow": "studio-content-workflow-v161-20260730",
+  "summaryRealCounts": true,
+  "summaryUnavailableUsesDash": true,
+  "postStatusFilters": ["draft", "review", "scheduled", "published", "archived"],
+  "postCategoryFilter": true,
+  "postAuthorFilter": true,
+  "postSorting": true,
+  "previewPublishedOnly": true,
+  "duplicateCreatesDraft": true,
+  "pagesUseSameWorkflow": true,
+  "wordLimitCompatibility": 5000,
+  "serviceWorker": "ngeblogging-app-v161-content-workflow-20260730",
+  "legacyWhiteR4": false
+}
