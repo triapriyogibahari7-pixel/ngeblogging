@@ -167,18 +167,26 @@ async function patchNaraNonModal() {
   const path = "src/NaraAssistant.jsx";
   let source = await read(path);
 
-  const oldLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">';
-  const newLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal={size === "full"} aria-label="Nara AI Assistant">';
-  if (!source.includes(newLayer)) {
+  if (!source.includes('aria-modal={size === "full"}')) {
+    const oldLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">';
+    const newLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal={size === "full"} aria-label="Nara AI Assistant">';
     if (!source.includes(oldLayer)) throw new Error("V183_NARA_LAYER_ANCHOR_MISSING");
     source = source.replace(oldLayer, newLayer);
   }
 
-  const oldBackdrop = '<button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />';
-  const newBackdrop = '<button className="nara-assistant-backdrop" hidden={size !== "full"} tabIndex={size === "full" ? 0 : -1} onClick={closeNara} aria-label="Tutup Nara" />';
-  if (!source.includes(newBackdrop)) {
-    if (!source.includes(oldBackdrop)) throw new Error("V183_NARA_BACKDROP_ANCHOR_MISSING");
-    source = source.replace(oldBackdrop, newBackdrop);
+  if (!source.includes('tabIndex={size === "full" ? 0 : -1}')) {
+    const candidates = [
+      '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
+      '<button className="nara-assistant-backdrop" hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
+      '<button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />',
+    ];
+    const anchor = candidates.find((candidate) => source.includes(candidate));
+    if (!anchor) throw new Error("V183_NARA_BACKDROP_ANCHOR_MISSING");
+    const replacement = anchor.replace(
+      'className="nara-assistant-backdrop"',
+      'className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1}',
+    );
+    source = source.replace(anchor, replacement);
   }
 
   await write(path, source);
