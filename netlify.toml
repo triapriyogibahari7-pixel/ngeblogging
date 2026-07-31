@@ -1,5 +1,5 @@
 [build]
-  command = "node --check scripts/patch-interaction-precision-v183.mjs && node --check scripts/patch-release-v183.mjs && node --check scripts/patch-service-worker-v183.mjs && mkdir -p dist && cp public/release-v183.json dist/index.html"
+  command = "npm run predev && node --test tests/studio-interaction-precision-v183.test.mjs && vite build && node scripts/write-netlify-redirects.mjs"
   publish = "dist"
 
 [build.environment]
