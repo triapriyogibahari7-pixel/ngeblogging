@@ -125,11 +125,25 @@ test("v179 loads last and protects the reported production regressions", () => {
   assert.match(v179css, /\.sn-media-tools>nav/);
   assert.match(studio, /bootstrap-partial-cloud-v179/);
   assert.match(studio, /setActiveSiteId\(primary\.id\)/);
+  assert.match(studio, /}, \[user\?\.id\]\);/);
   assert.match(studio, /window\.scrollTo\?\./);
   assert.match(auth, /direct-fallback-v179/);
   assert.match(auth, /direct-supabase-oauth/);
   assert.match(domain, /Situs aktif belum tersedia/);
+  assert.match(domain, /MAX_SITES_PER_ACCOUNT/);
+  assert.doesNotMatch(domain, /\/12 situs dalam akun/);
+  assert.doesNotMatch(domain, /sites\.length\}\/12/);
   assert.match(comments, /Koneksi komentar belum tersedia/);
   assert.match(serviceWorker, /ngeblogging-app-v179-production-stability-20260731/);
   assert.equal(release179.release, "studio-production-stability-v179-20260731");
+});
+
+test("v179 mobile geometry prevents per-letter titles and native checkbox overlap", () => {
+  assert.match(v179css, /overflow-wrap:break-word!important/);
+  assert.match(v179css, /word-break:normal!important/);
+  assert.doesNotMatch(v179css, /overflow-wrap:anywhere!important/);
+  assert.match(v179css, /font-size:clamp\(28px,8vw,38px\)!important/);
+  assert.match(v179css, /\.sv124-toggle-row input/);
+  assert.match(v179css, /opacity:0!important/);
+  assert.match(v179css, /\.sv124-toggle-row input:checked\+i/);
 });
