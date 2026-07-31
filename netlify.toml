@@ -1,5 +1,5 @@
 [build]
-  command = "npm run verify:v177 && node scripts/run-v180-diagnostic.mjs patch-success"
+  command = "npm run verify:v177 && node scripts/patch-service-worker-v179.mjs && node --test tests/studio-mobile-runtime-v179.test.mjs"
   publish = "dist"
 
 [build.environment]
