@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/patch-service-worker-v179.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
+  command = "node scripts/patch-service-worker-v179.mjs && node --test tests/studio-mobile-runtime-v179.test.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
   publish = "dist"
 
 [build.environment]
