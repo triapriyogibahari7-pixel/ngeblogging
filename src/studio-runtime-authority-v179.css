@@ -1,0 +1,518 @@
+/* Final runtime authority v179. Loaded after legacy Studio layers. */
+html[data-studio-runtime-authority-v179],
+html[data-studio-runtime-authority-v179] body,
+html[data-studio-runtime-authority-v179] #root {
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow-x:clip;
+}
+html[data-studio-runtime-authority-v179] *,
+html[data-studio-runtime-authority-v179] *::before,
+html[data-studio-runtime-authority-v179] *::after { box-sizing:border-box; }
+html[data-studio-runtime-authority-v179] :is(.sn-main,.sn-main>*,.sn-view-pad,.sv124-page,.mv176-page,.sn-api-page,.tn-studio,.ce-app) {
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-runtime-authority-v179] :is(img,video,iframe,canvas,svg) { max-width:100%; }
+html[data-studio-runtime-authority-v179] :is(h1,h2,h3,p,small,b,strong,span,label,code) {
+  min-width:0;
+  overflow-wrap:break-word;
+}
+
+/* Mobile drawer: the backdrop stays behind the drawer and never disables its menu. */
+html[data-studio-runtime-authority-v179] .sn-side-backdrop {
+  position:fixed!important;
+  inset:0!important;
+  z-index:2090!important;
+  display:block!important;
+  border:0!important;
+  background:rgba(15,31,54,.14)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  filter:none!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar.mobile-open {
+  z-index:2100!important;
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  filter:none!important;
+  pointer-events:auto!important;
+  transform:translateX(0)!important;
+  background:#fff!important;
+  color:#17253c!important;
+  box-shadow:18px 0 54px rgba(16,35,62,.2)!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar.mobile-open * {
+  pointer-events:auto!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar>.sn-logo {
+  flex:0 0 auto!important;
+  min-height:64px!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar>.sn-new {
+  flex:0 0 44px!important;
+  margin:5px 10px 5px!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar>nav {
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  gap:1px!important;
+  padding:2px 8px 6px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar>nav>button {
+  flex:0 0 42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+}
+html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar>.sn-account-footer {
+  position:static!important;
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  padding-bottom:max(8px,env(safe-area-inset-bottom))!important;
+  background:#fff!important;
+}
+html[data-studio-runtime-authority-v179] .sn-main[inert] {
+  pointer-events:auto!important;
+  user-select:auto!important;
+}
+html[data-studio-runtime-authority-v179] :is(.sn-mobile-menu-mark,.sn-logo-mark) {
+  position:relative!important;
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  color:#2869df!important;
+  text-align:center!important;
+  line-height:1!important;
+  filter:none!important;
+  opacity:1!important;
+}
+html[data-studio-runtime-authority-v179] :is(.sn-mobile-menu-mark,.sn-logo-mark)>strong {
+  position:static!important;
+  display:block!important;
+  margin:0!important;
+  color:#2869df!important;
+  line-height:1!important;
+  transform:none!important;
+}
+html[data-studio-runtime-authority-v179] :is(.sn-mobile-menu-mark,.sn-logo-mark)>i {
+  position:absolute!important;
+  right:18%!important;
+  bottom:18%!important;
+  color:#2869df!important;
+}
+
+/* Operational pages must stop cleanly instead of keeping a spinner forever. */
+html[data-studio-runtime-authority-v179] :is(.sv124-panel-loading,.mv176-loading,.sn-api-loading,.sn-loading) {
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-runtime-authority-v179] :is(.sv124-error,.mv176-error,.sn-api-error) {
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  transform:none!important;
+}
+
+/* Nara small and medium are true non-modal windows. */
+html[data-studio-runtime-authority-v179] .nara-assistant-layer[data-runtime-mode-v179="nonmodal"] {
+  position:fixed!important;
+  inset:0!important;
+  z-index:2050!important;
+  width:100vw!important;
+  height:100dvh!important;
+  padding:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-layer[data-runtime-mode-v179="nonmodal"]>.nara-assistant-backdrop {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-layer[data-runtime-mode-v179="nonmodal"]>.nara-assistant-shell {
+  position:fixed!important;
+  top:auto!important;
+  left:auto!important;
+  right:max(10px,env(safe-area-inset-right))!important;
+  bottom:max(78px,calc(env(safe-area-inset-bottom) + 70px))!important;
+  margin:0!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  filter:none!important;
+  overflow:hidden!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-shell[data-nara-size="small"] {
+  width:min(390px,calc(100vw - 20px))!important;
+  height:min(560px,calc(100dvh - 105px))!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-shell[data-nara-size="medium"] {
+  width:min(680px,calc(100vw - 20px))!important;
+  height:min(760px,calc(100dvh - 86px))!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-layer[data-runtime-mode-v179="modal"] {
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483400!important;
+  width:100vw!important;
+  height:100dvh!important;
+  pointer-events:auto!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-shell[data-nara-size="full"] {
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  border-radius:0!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-header {
+  position:relative!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) auto auto auto auto!important;
+  align-items:center!important;
+  gap:6px!important;
+  padding:9px!important;
+  overflow:visible!important;
+}
+html[data-studio-runtime-authority-v179] .nara-assistant-header>button,
+html[data-studio-runtime-authority-v179] .nara-size-controls-v147>button {
+  position:static!important;
+  flex:0 0 36px!important;
+  width:36px!important;
+  min-width:36px!important;
+  max-width:36px!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  transform:none!important;
+}
+html[data-studio-runtime-authority-v179] .nara-size-controls-v147 {
+  position:static!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  min-width:max-content!important;
+}
+html[data-studio-runtime-authority-v179] .nara-floating-button,
+html[data-studio-runtime-authority-v179] .nara-floating-button * {
+  animation:none!important;
+  transform:none!important;
+}
+html[data-studio-runtime-authority-v179] .nara-floating-button {
+  display:grid!important;
+  place-items:center!important;
+  overflow:hidden!important;
+}
+html[data-studio-runtime-authority-v179] .nara-floating-button>span {
+  display:grid!important;
+  place-items:center!important;
+  margin:auto!important;
+}
+
+/* The editor remains a full-width writing surface on every small device. */
+html[data-studio-runtime-authority-v179] .ce-app {
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+html[data-studio-runtime-authority-v179] .ce-titlebar,
+html[data-studio-runtime-authority-v179] .ce-tabs,
+html[data-studio-runtime-authority-v179] .ce-ribbon,
+html[data-studio-runtime-authority-v179] .ce-workspace,
+html[data-studio-runtime-authority-v179] .ce-paper-shell,
+html[data-studio-runtime-authority-v179] .ce-sidebar {
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-runtime-authority-v179] .ce-file,
+html[data-studio-runtime-authority-v179] .ce-file label {
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-runtime-authority-v179] .ce-file input {
+  min-width:0!important;
+  max-width:100%!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+}
+html[data-studio-runtime-authority-v179] .ce-ribbon {
+  overscroll-behavior-inline:contain!important;
+  scrollbar-width:thin!important;
+}
+html[data-studio-runtime-authority-v179] .ce-paper :is(img,video,table,pre) { max-width:100%!important; }
+html[data-studio-runtime-authority-v179] .ce-paper table { display:block!important;overflow-x:auto!important; }
+html[data-studio-runtime-authority-v179] .ce-word-status { flex-wrap:wrap!important; }
+
+/* Theme controls, layout map, code and preview always stay reachable. */
+html[data-studio-runtime-authority-v179] :is(.tn-hero-actions,.tn-theme-actions,.tn-active-actions) {
+  position:static!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  transform:none!important;
+}
+html[data-studio-runtime-authority-v179] :is(.tn-layout-studio,.tn-layout-map,.tn-layout-grid,.tn-widget-panel) {
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+}
+html[data-studio-runtime-authority-v179] :is(.tn-code-modal,.tn-html-modal,[class*="code-modal"]) {
+  max-width:100vw!important;
+  overflow:hidden!important;
+}
+
+@media(max-width:900px) {
+  html[data-studio-runtime-authority-v179] body.sn-mobile-sidebar-open { overflow:hidden!important; }
+  html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar.mobile-open {
+    top:0!important;
+    bottom:0!important;
+    left:0!important;
+    width:min(78vw,320px)!important;
+    max-width:calc(100vw - 56px)!important;
+    height:100dvh!important;
+    border-radius:0 18px 18px 0!important;
+  }
+  html[data-studio-runtime-authority-v179] .sn-main,
+  html[data-studio-runtime-authority-v179] .sn-side.collapsed+.sn-main {
+    width:100%!important;
+    margin-left:0!important;
+    transform:none!important;
+    filter:none!important;
+  }
+  html[data-studio-runtime-authority-v179] .nara-assistant-shell[data-nara-size="small"],
+  html[data-studio-runtime-authority-v179] .nara-assistant-shell[data-nara-size="medium"] {
+    right:8px!important;
+    bottom:max(72px,calc(env(safe-area-inset-bottom) + 66px))!important;
+    width:calc(100vw - 16px)!important;
+    max-width:calc(100vw - 16px)!important;
+    height:min(70dvh,610px)!important;
+    max-height:calc(100dvh - 88px)!important;
+    border-radius:18px!important;
+  }
+  html[data-studio-runtime-authority-v179] .nara-assistant-header {
+    grid-template-columns:36px minmax(0,1fr) auto auto auto!important;
+    gap:5px!important;
+  }
+  html[data-studio-runtime-authority-v179] .nara-size-controls-v147 {
+    grid-column:1/-1!important;
+    grid-row:2!important;
+    width:100%!important;
+    justify-content:flex-end!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-titlebar {
+    position:sticky!important;
+    top:0!important;
+    z-index:80!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:72px!important;
+    display:grid!important;
+    grid-template-columns:44px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    padding:8px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-back {
+    width:42px!important;
+    height:42px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-file>svg { display:none!important; }
+  html[data-studio-runtime-authority-v179] .ce-file input {
+    width:100%!important;
+    font-size:16px!important;
+    line-height:1.25!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-file small {
+    white-space:normal!important;
+    font-size:10px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-actions {
+    display:grid!important;
+    grid-template-columns:42px 42px!important;
+    gap:5px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-actions>button {
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    font-size:0!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-actions svg { width:19px!important;height:19px!important; }
+  html[data-studio-runtime-authority-v179] .ce-tabs {
+    position:sticky!important;
+    top:72px!important;
+    z-index:79!important;
+    width:100%!important;
+    height:48px!important;
+    gap:6px!important;
+    padding:0 8px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    white-space:nowrap!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-tabs>button {
+    flex:0 0 auto!important;
+    min-width:max-content!important;
+    height:48px!important;
+    padding:0 13px!important;
+    font-size:12px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-ribbon {
+    position:relative!important;
+    top:auto!important;
+    z-index:10!important;
+    width:100%!important;
+    min-height:84px!important;
+    display:flex!important;
+    align-items:stretch!important;
+    gap:3px!important;
+    padding:7px 6px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-ribbon>section {
+    flex:0 0 auto!important;
+    min-width:max-content!important;
+    padding:0 8px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-ribbon nav button,
+  html[data-studio-runtime-authority-v179] .ce-color-tool {
+    width:40px!important;
+    height:40px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-ribbon select {
+    height:40px!important;
+    max-width:132px!important;
+    font-size:12px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-nara {
+    flex:0 0 auto!important;
+    min-height:42px!important;
+    margin:auto 6px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-workspace {
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:start!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-paper-shell {
+    width:100%!important;
+    min-height:0!important;
+    padding:12px 8px 16px!important;
+    align-items:stretch!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-paper {
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:70dvh!important;
+    padding:28px 18px!important;
+    font-size:16px!important;
+    line-height:1.72!important;
+    overflow-wrap:break-word!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-paper h1 { font-size:clamp(30px,9vw,42px)!important; }
+  html[data-studio-runtime-authority-v179] .ce-paper h2 { font-size:clamp(25px,7vw,34px)!important; }
+  html[data-studio-runtime-authority-v179] .ce-paper h3 { font-size:clamp(21px,6vw,28px)!important; }
+  html[data-studio-runtime-authority-v179] .ce-word-status {
+    width:100%!important;
+    justify-content:flex-start!important;
+    gap:6px 12px!important;
+    padding:0 4px!important;
+    font-size:10px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-sidebar {
+    position:static!important;
+    top:auto!important;
+    width:100%!important;
+    max-height:none!important;
+    overflow:visible!important;
+    border-top:1px solid #dbe2eb!important;
+    border-left:0!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-sidebar section { padding:16px 12px!important; }
+  html[data-studio-runtime-authority-v179] .ce-field-grid { grid-template-columns:1fr!important; }
+  html[data-studio-runtime-authority-v179] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer) {
+    padding:0!important;
+    place-items:stretch!important;
+  }
+  html[data-studio-runtime-authority-v179] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section {
+    width:100vw!important;
+    height:100dvh!important;
+    max-width:none!important;
+    max-height:none!important;
+    border-radius:0!important;
+    padding-top:env(safe-area-inset-top)!important;
+    padding-bottom:env(safe-area-inset-bottom)!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-preview-canvas { padding:10px!important; }
+  html[data-studio-runtime-authority-v179] .ce-preview-canvas>article { width:100%!important; }
+  html[data-studio-runtime-authority-v179] .ce-preview-canvas article>main { padding:34px 18px!important; }
+  html[data-studio-runtime-authority-v179] :is(.tn-hero-actions,.tn-theme-actions,.tn-active-actions) {
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  html[data-studio-runtime-authority-v179] :is(.tn-hero-actions,.tn-theme-actions,.tn-active-actions)>:is(button,a) {
+    position:static!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important;
+    transform:none!important;
+  }
+  html[data-studio-runtime-authority-v179] :is(.tn-code-modal,.tn-html-modal,[class*="code-modal"]) :is(.tn-code-grid,.tn-code-workspace,[class*="code-grid"],[class*="code-workspace"]) {
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+
+@media(max-width:430px) {
+  html[data-studio-runtime-authority-v179] #ngeblogging-studio-sidebar.mobile-open {
+    width:min(82vw,304px)!important;
+    max-width:calc(100vw - 44px)!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-titlebar {
+    grid-template-columns:42px minmax(0,1fr) 88px!important;
+  }
+  html[data-studio-runtime-authority-v179] .ce-paper { padding:24px 14px!important; }
+  html[data-studio-runtime-authority-v179] :is(.tn-hero-actions,.tn-theme-actions,.tn-active-actions) {
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  html[data-studio-runtime-authority-v179] *,
+  html[data-studio-runtime-authority-v179] *::before,
+  html[data-studio-runtime-authority-v179] *::after {
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+}
