@@ -65,3 +65,6 @@ console.log(`Patched public/sw.js for ${RELEASE}`);
 await import("./patch-production-recovery-v180.mjs");
 await import("./patch-production-recovery-v180-legacy-markers.mjs");
 await import("./patch-production-recovery-v180-compat.mjs");
+
+// v181 adalah lapisan terakhir: rotasi cache tanpa memaksa navigasi login, callback, editor, atau Studio.
+await import("./patch-service-worker-v181.mjs");

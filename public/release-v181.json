@@ -1,0 +1,32 @@
+{
+  "release": "studio-mobile-hardening-v181-20260731",
+  "status": "candidate",
+  "basedOn": "production-recovery-v180-20260731",
+  "repairs": {
+    "v180LoadedDirectlyFromStudioEntry": true,
+    "operationalPagesNormalFlowOnMobile": true,
+    "contentEditorMobileGeometryBounded": true,
+    "navigationScrollReset": true,
+    "drawerRemainsInteractive": true,
+    "naraSmallMediumRemainNonmodal": true,
+    "naraCloseRemainsVisible": true,
+    "duplicateNaraLauncherRemoved": true,
+    "loadingWatchdogExpanded": true,
+    "sessionAndDraftsPreservedOnLoadingFailure": true,
+    "serviceWorkerCacheRotated": true,
+    "legacyFeaturesPreserved": true
+  },
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "authentication": {
+    "persistSessionPreserved": true,
+    "explicitLogoutOnly": true,
+    "providerEndToEndVerificationRequired": true
+  },
+  "capacity": {
+    "productionLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  },
+  "realDeviceVerification": "required-before-100-percent-claim"
+}
