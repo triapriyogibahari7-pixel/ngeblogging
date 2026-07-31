@@ -29,7 +29,9 @@ html[data-studio-production-stability-v179] .sn-main small,
 html[data-studio-production-stability-v179] .sn-main code {
   min-width:0!important;
   max-width:100%!important;
-  overflow-wrap:anywhere!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+  hyphens:none!important;
 }
 html[data-studio-production-stability-v179] .sn-main img,
 html[data-studio-production-stability-v179] .sn-main video,
@@ -105,6 +107,46 @@ html[data-studio-production-stability-v179] #ngeblogging-studio-sidebar>nav {
 }
 html[data-studio-production-stability-v179] #ngeblogging-studio-sidebar>nav>button { flex:0 0 43px!important;min-height:43px!important; }
 html[data-studio-production-stability-v179] #ngeblogging-studio-sidebar>.sn-account-footer { margin-top:auto!important; }
+
+/* Native checkbox lama tidak boleh membesar dan menimpa label Komentar. */
+html[data-studio-production-stability-v179] .sv124-toggle-row {
+  position:relative!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 48px!important;
+  align-items:center!important;
+  gap:12px!important;
+  overflow:hidden!important;
+}
+html[data-studio-production-stability-v179] .sv124-toggle-row input {
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+html[data-studio-production-stability-v179] .sv124-toggle-row>i {
+  position:relative!important;
+  width:46px!important;
+  height:26px!important;
+  display:block!important;
+  border-radius:999px!important;
+  background:#cbd5e1!important;
+}
+html[data-studio-production-stability-v179] .sv124-toggle-row>i::after {
+  content:""!important;
+  position:absolute!important;
+  top:3px!important;
+  left:3px!important;
+  width:20px!important;
+  height:20px!important;
+  border-radius:50%!important;
+  background:#fff!important;
+  box-shadow:0 2px 6px rgba(22,38,62,.24)!important;
+}
+html[data-studio-production-stability-v179] .sv124-toggle-row input:checked+i { background:#2d6edf!important; }
+html[data-studio-production-stability-v179] .sv124-toggle-row input:checked+i::after { transform:translateX(20px)!important; }
 
 /* Filter Media harus menjadi toolbar, bukan kotak overlay putih. */
 html[data-studio-production-stability-v179] .sn-media-tools {
@@ -245,21 +287,35 @@ html[data-studio-production-stability-v179] .nara-floating-button {
   html[data-studio-production-stability-v179] .sn-view-pad,
   html[data-studio-production-stability-v179] .sv124-page,
   html[data-studio-production-stability-v179] .mv176-page,
-  html[data-studio-production-stability-v179] .sn-api-page { padding-left:14px!important;padding-right:14px!important; }
+  html[data-studio-production-stability-v179] .sn-api-page {
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    padding-left:14px!important;
+    padding-right:14px!important;
+  }
   html[data-studio-production-stability-v179] .sn-page-title,
   html[data-studio-production-stability-v179] .sv124-page-title,
   html[data-studio-production-stability-v179] .mv176-title,
   html[data-studio-production-stability-v179] .sn-api-title {
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
     display:grid!important;
     grid-template-columns:1fr!important;
     gap:12px!important;
+    margin:0 0 18px!important;
   }
   html[data-studio-production-stability-v179] .sn-page-title h1,
   html[data-studio-production-stability-v179] .sv124-page-title h1,
   html[data-studio-production-stability-v179] .mv176-title h1,
   html[data-studio-production-stability-v179] .sn-api-title h1 {
-    font-size:clamp(30px,10vw,48px)!important;
-    line-height:1.04!important;
+    margin:4px 0 8px!important;
+    font-size:clamp(28px,8vw,38px)!important;
+    line-height:1.1!important;
+    letter-spacing:-.025em!important;
+    overflow-wrap:break-word!important;
+    word-break:normal!important;
   }
   html[data-studio-production-stability-v179] .sn-media-tools>nav {
     width:100%!important;
