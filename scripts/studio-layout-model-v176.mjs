@@ -26,6 +26,12 @@ export function desktopVariant(width) {
 
 function round(value) { return Math.round(value * 100) / 100; }
 
+function checksPassed(checks) {
+  return Object.entries(checks).every(([key, value]) => (
+    key === "horizontalOverflowExpected" ? value === false : Boolean(value)
+  ));
+}
+
 export function modelViewport(width, height, installed = false) {
   const family = familyFor(width, installed);
   const mobileSurface = ["application","phone","mobile","compact"].includes(family);
@@ -72,7 +78,7 @@ export function modelViewport(width, height, installed = false) {
       full: { width: round(fullNaraWidth), height: round(fullNaraHeight), modal: true },
     },
     checks,
-    passed: Object.values(checks).every(Boolean),
+    passed: checksPassed(checks),
   };
 }
 
