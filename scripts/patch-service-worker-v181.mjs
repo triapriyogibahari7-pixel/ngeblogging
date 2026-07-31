@@ -33,3 +33,6 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
+
+// v183 menjadi cache terakhir setelah v181 tanpa forced navigation pada login, callback, editor, atau Studio.
+await import("./patch-service-worker-v183.mjs");

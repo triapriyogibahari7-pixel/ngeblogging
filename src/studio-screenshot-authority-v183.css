@@ -1,0 +1,1135 @@
+/*
+ * Screenshot authority v183.
+ * Lapisan aditif terakhir untuk menjaga fitur lama sambil menutup regresi nyata:
+ * teks per huruf, drawer gelap/macet, profil membesar, dan Nara menutup halaman.
+ */
+
+html[data-studio-screenshot-authority-v183],
+html[data-studio-screenshot-authority-v183] body,
+html[data-studio-screenshot-authority-v183] #root,
+html[data-studio-screenshot-authority-v183] .sn-shell,
+html[data-studio-screenshot-authority-v183] .sn-main {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+html[data-studio-screenshot-authority-v183] *,
+html[data-studio-screenshot-authority-v183] *::before,
+html[data-studio-screenshot-authority-v183] *::after {
+  box-sizing: border-box;
+}
+
+html[data-studio-screenshot-authority-v183] :is(
+  .sn-main,
+  .sn-main > *,
+  .sn-view-pad,
+  .sn-view-pad > *,
+  .sv124-page,
+  .sv124-page > *,
+  .mv176-page,
+  .mv176-page > *,
+  .sn-api-page,
+  .sn-api-page > *,
+  .ce-app,
+  .ce-app > *,
+  .tn-studio,
+  .tn-studio > *
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(img, video, audio, iframe, canvas, svg) {
+  max-width: 100%;
+}
+
+/* Jangan pecah judul/tombol menjadi satu huruf per baris. */
+html[data-studio-screenshot-authority-v183] :is(h1, h2, h3, h4, p, span, small, label, button, a) {
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  hyphens: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] button,
+html[data-studio-screenshot-authority-v183] a {
+  max-width: 100%;
+}
+
+html[data-studio-screenshot-authority-v183] :is(pre, code, .sn-api-code, .sn-api-endpoint code, .sn-api-card code) {
+  max-width: 100% !important;
+  overflow: auto !important;
+  white-space: pre !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-table-wrap, .sn-api-table, .sv124-table-wrap, .mv176-table-wrap) {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overscroll-behavior-inline: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* ---------- Sidebar dan drawer ---------- */
+html[data-studio-screenshot-authority-v183] {
+  --v183-drawer-width: min(78vw, 320px);
+  --v183-sidebar-open: 264px;
+  --v183-sidebar-closed: 76px;
+}
+
+html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar,
+html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side {
+  min-width: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
+html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar > .sn-logo,
+html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side > .sn-logo {
+  flex: 0 0 auto !important;
+  min-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar > .sn-new,
+html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side > .sn-new {
+  flex: 0 0 46px !important;
+  min-height: 46px !important;
+  margin: 6px 10px 4px !important;
+}
+
+html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar > nav,
+html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side > nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-content: stretch !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 3px 8px 6px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar > nav > button,
+html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side > nav > button,
+html[data-studio-screenshot-authority-v183] .sn-account-footer > button {
+  position: relative !important;
+  flex: 0 0 43px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 43px !important;
+  max-height: 43px !important;
+  transform: none !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+html[data-studio-screenshot-authority-v183] .sn-account-footer {
+  position: static !important;
+  flex: 0 0 auto !important;
+  margin-top: auto !important;
+  padding: 6px 8px max(8px, env(safe-area-inset-bottom)) !important;
+  background: #fff !important;
+}
+
+/* Logo n mempunyai geometri dan warna sendiri, tidak mewarisi blur/warna latar. */
+html[data-studio-screenshot-authority-v183] :is(.sn-sidebar-toggle, .sn-mobile-menu-mark, .sn-logo-mark) {
+  filter: none !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-mobile-menu-mark, .sn-logo-mark) {
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #2564d8 !important;
+  line-height: 1 !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-mobile-menu-mark, .sn-logo-mark)::before,
+html[data-studio-screenshot-authority-v183] :is(.sn-mobile-menu-mark, .sn-logo-mark)::after {
+  content: none !important;
+  display: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-mobile-menu-mark, .sn-logo-mark) > strong {
+  position: static !important;
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 0 2px !important;
+  color: #2564d8 !important;
+  font: 900 31px/40px Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  transform: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-mobile-menu-mark, .sn-logo-mark) > i {
+  display: none !important;
+}
+
+/* ---------- Profil/topbar ---------- */
+html[data-studio-screenshot-authority-v183] .sn-top {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-top .sn-avatar, .sn-top-actions > .sn-avatar) {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sn-top .sn-avatar, .sn-top-actions > .sn-avatar) img {
+  width: 42px !important;
+  height: 42px !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+}
+
+body > .sn-profile-menu-v150,
+html[data-studio-screenshot-authority-v183] .sn-account-menu-v179 {
+  position: fixed !important;
+  z-index: 2147483400 !important;
+  top: max(68px, calc(env(safe-area-inset-top) + 62px)) !important;
+  right: max(10px, env(safe-area-inset-right)) !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: min(296px, calc(100vw - 20px)) !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 20px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 82px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-rows: auto !important;
+  align-content: start !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  overflow: auto !important;
+  border: 1px solid #dbe4ef !important;
+  border-radius: 15px !important;
+  background: #fff !important;
+  box-shadow: 0 20px 54px rgba(15, 34, 60, .2) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+body > .sn-profile-menu-v150 > button,
+html[data-studio-screenshot-authority-v183] .sn-account-menu-v179 > button {
+  position: static !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  max-height: none !important;
+  display: grid !important;
+  align-content: center !important;
+  justify-items: start !important;
+  gap: 3px !important;
+  padding: 8px 10px !important;
+  transform: none !important;
+  text-align: left !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+}
+
+/* ---------- Nara ---------- */
+html[data-studio-screenshot-authority-v183] .nara-floating-button {
+  position: fixed !important;
+  z-index: 2147481800 !important;
+  right: max(12px, env(safe-area-inset-right)) !important;
+  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  width: 54px !important;
+  min-width: 54px !important;
+  max-width: 54px !important;
+  height: 54px !important;
+  min-height: 54px !important;
+  max-height: 54px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border-radius: 17px !important;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  filter: none !important;
+  font-size: 0 !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-floating-button > span {
+  width: 36px !important;
+  height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-floating-button > span > svg {
+  width: 23px !important;
+  height: 23px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-floating-button > :is(b, small) {
+  display: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] body.v183-nara-open .nara-floating-button {
+  display: none !important;
+}
+
+/* Default aman: sebelum sinkronisasi JS, layer tidak boleh memutihkan atau mengunci halaman. */
+html[data-studio-screenshot-authority-v183] .nara-assistant-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147482700 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-layer > .nara-assistant-backdrop {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-layer[data-v183-nara-mode="nonmodal"] {
+  pointer-events: none !important;
+  background: transparent !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-layer[data-v183-nara-mode="nonmodal"] > .nara-assistant-shell {
+  pointer-events: auto !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-layer[data-v183-nara-mode="modal"] {
+  pointer-events: auto !important;
+  background: rgba(10, 24, 44, .42) !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-layer[data-v183-nara-mode="modal"] > .nara-assistant-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-shell {
+  position: fixed !important;
+  z-index: 1 !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 20px) !important;
+  max-height: calc(100dvh - 20px) !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+  filter: none !important;
+  animation: none !important;
+  transition: none !important;
+  contain: layout paint style !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="small"] {
+  right: max(12px, env(safe-area-inset-right)) !important;
+  bottom: max(76px, calc(env(safe-area-inset-bottom) + 70px)) !important;
+  left: auto !important;
+  top: auto !important;
+  width: min(390px, calc(100vw - 24px)) !important;
+  height: min(540px, calc(100dvh - 108px)) !important;
+  min-height: 340px !important;
+  border-radius: 19px !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="medium"] {
+  right: max(10px, env(safe-area-inset-right)) !important;
+  bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+  top: auto !important;
+  width: min(660px, calc(100vw - 20px)) !important;
+  height: min(760px, calc(100dvh - 20px)) !important;
+  min-height: 420px !important;
+  border-radius: 20px !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="full"] {
+  inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left)) !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 14px !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-header {
+  position: relative !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: 40px minmax(100px, 1fr) auto 36px 36px 36px !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 8px 10px !important;
+  overflow: visible !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-brand-orb {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-header > div:nth-child(2) {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-header > div:nth-child(2) > :is(span, small) {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.nara-size-controls-v147, .nara-native-size-controls-v149) {
+  position: static !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 3px !important;
+  min-width: max-content !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-header button,
+html[data-studio-screenshot-authority-v183] .nara-size-controls-v147 > button {
+  position: static !important;
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-header button svg,
+html[data-studio-screenshot-authority-v183] .nara-size-controls-v147 button svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-header button[data-v183-close="true"] {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  color: #273b55 !important;
+  background: #f3f6fa !important;
+  border: 1px solid #dce4ed !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(
+  .nara-context-bar,
+  .nara-assistant-messages,
+  .nara-quick-prompts,
+  .nara-composer,
+  .nara-composer-tools,
+  .nara-attachments,
+  .nara-message,
+  .nara-message > div,
+  .nara-message-content
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-assistant-messages {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-message-content :is(pre, code, table) {
+  max-width: 100% !important;
+  overflow: auto !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-quick-prompts {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-quick-prompts > button {
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+  white-space: nowrap !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-composer {
+  overflow: visible !important;
+  padding: 9px !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-composer textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 72px !important;
+  max-height: 150px !important;
+  resize: vertical !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-composer-tools {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-composer-tools > button {
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-select {
+  flex: 1 1 150px !important;
+  min-width: 132px !important;
+  max-width: 220px !important;
+}
+
+html[data-studio-screenshot-authority-v183] .nara-attachment-menu {
+  z-index: 10 !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+body.v183-nara-full {
+  overflow: hidden !important;
+}
+
+/* ---------- Halaman operasional ---------- */
+html[data-studio-screenshot-authority-v183] :is(
+  .sn-page-title,
+  .sv124-page-title,
+  .mv176-title,
+  .sn-api-title,
+  .sc161-hero,
+  .tn-hero
+) {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(
+  .sn-page-title,
+  .sv124-page-title,
+  .mv176-title,
+  .sn-api-title
+) h1 {
+  position: static !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 5px 0 8px !important;
+  font-size: clamp(30px, 6vw, 54px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -.025em !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(
+  .sn-api-metrics,
+  .sv124-metrics-grid,
+  .mv176-metrics,
+  .sn-settings-grid
+) {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(
+  .sn-api-card,
+  .sv124-card,
+  .mv176-card,
+  .sn-card,
+  .sn-api-metrics > article,
+  .sv124-metric,
+  .mv176-metrics > article
+) {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-inline: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sv124-toggle-row, .sn-toggle-row, .ce-toggle) {
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 48px !important;
+  align-items: center !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(.sv124-toggle-row, .sn-toggle-row, .ce-toggle) > input[type="checkbox"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ---------- Editor Post/Page ---------- */
+html[data-studio-screenshot-authority-v183] .ce-app {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+html[data-studio-screenshot-authority-v183] :is(
+  .ce-titlebar,
+  .ce-tabs,
+  .ce-ribbon,
+  .ce-workspace,
+  .ce-paper-shell,
+  .ce-paper,
+  .ce-sidebar,
+  .ce-field-grid
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-screenshot-authority-v183] .ce-paper :is(img, video, audio, pre, table) {
+  max-width: 100% !important;
+}
+
+html[data-studio-screenshot-authority-v183] .ce-paper table {
+  display: block !important;
+  overflow-x: auto !important;
+}
+
+@media (max-width: 1024px) {
+  html[data-studio-screenshot-authority-v183] :is(
+    .sn-api-metrics,
+    .sv124-metrics-grid,
+    .mv176-metrics,
+    .sn-settings-grid
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html[data-studio-screenshot-authority-v183] body {
+    overflow-x: hidden !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .sn-main,
+  html[data-studio-screenshot-authority-v183] .sn-side.collapsed + .sn-main {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side.mobile-open,
+  html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar.mobile-open {
+    position: fixed !important;
+    z-index: 2147483100 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: var(--v183-drawer-width) !important;
+    min-width: var(--v183-drawer-width) !important;
+    max-width: calc(100vw - 48px) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0) !important;
+    filter: none !important;
+    background: #fff !important;
+    color: #17253c !important;
+    box-shadow: 18px 0 50px rgba(15, 33, 58, .22) !important;
+    border-radius: 0 18px 18px 0 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side.mobile-open *,
+  html[data-studio-screenshot-authority-v183] #ngeblogging-studio-sidebar.mobile-open * {
+    pointer-events: auto !important;
+  }
+
+  /* Backdrop hanya menutup area di luar drawer. Drawer tidak pernah gelap atau macet. */
+  html[data-studio-screenshot-authority-v183] .sn-side-backdrop {
+    position: fixed !important;
+    z-index: 2147483000 !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: rgba(15, 31, 52, .22) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    clip-path: inset(0 0 0 var(--v183-drawer-width)) !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .sn-main[inert],
+  html[data-studio-screenshot-authority-v183] .sn-shell > .sn-side[inert] {
+    pointer-events: auto !important;
+    user-select: auto !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(.sn-view-pad, .sv124-page, .mv176-page, .sn-api-page, .tn-studio) {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 18px 12px max(94px, calc(env(safe-area-inset-bottom) + 80px)) !important;
+    transform: none !important;
+    zoom: 1 !important;
+    overflow: visible !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(.sn-view-pad, .sv124-page, .mv176-page, .sn-api-page, .tn-studio) > :is(header, section, article, div, form) {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform: none !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(
+    .sn-page-title,
+    .sv124-page-title,
+    .mv176-title,
+    .sn-api-title,
+    .sc161-hero,
+    .tn-hero
+  ) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    margin: 0 0 16px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(
+    .sn-page-title,
+    .sv124-page-title,
+    .mv176-title,
+    .sn-api-title
+  ) h1 {
+    width: 100% !important;
+    font-size: clamp(28px, 9vw, 42px) !important;
+    line-height: 1.08 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(
+    .sn-page-title,
+    .sv124-page-title,
+    .mv176-title,
+    .sn-api-title
+  ) :is(button, a) {
+    position: static !important;
+    min-height: 44px !important;
+    transform: none !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-app {
+    position: relative !important;
+    inset: auto !important;
+    min-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transform: none !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-titlebar {
+    position: relative !important;
+    inset: auto !important;
+    z-index: 30 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: 108px !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    grid-template-areas: "back file" "actions actions" !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 9px !important;
+    transform: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-back {
+    grid-area: back !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-file {
+    grid-area: file !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-file :is(label, input) {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-actions {
+    grid-area: actions !important;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-actions > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding-inline: 8px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(.ce-tabs, .ce-ribbon) {
+    position: relative !important;
+    inset: auto !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    overscroll-behavior-inline: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    min-height: 48px !important;
+    padding: 0 8px !important;
+    background: #fff !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-tabs > button {
+    flex: 0 0 auto !important;
+    min-width: max-content !important;
+    min-height: 44px !important;
+    white-space: nowrap !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-ribbon {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    min-height: 76px !important;
+    padding: 8px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-ribbon > * {
+    position: relative !important;
+    inset: auto !important;
+    flex: 0 0 auto !important;
+    transform: none !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-workspace {
+    position: relative !important;
+    inset: auto !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-paper-shell {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 12px 8px 22px !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-paper {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 62dvh !important;
+    margin: 0 !important;
+    padding: 26px 16px !important;
+    transform: none !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-sidebar {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    transform: none !important;
+    overflow: visible !important;
+    border-left: 0 !important;
+    border-top: 1px solid #dbe2eb !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-field-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="small"],
+  html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="medium"] {
+    right: 8px !important;
+    bottom: max(70px, calc(env(safe-area-inset-bottom) + 64px)) !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: min(70dvh, 610px) !important;
+    min-height: 330px !important;
+    max-height: calc(100dvh - 86px) !important;
+    border-radius: 18px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-header {
+    min-height: 88px !important;
+    grid-template-columns: 36px minmax(0, 1fr) 34px 34px 34px !important;
+    grid-template-rows: 42px 36px !important;
+    gap: 3px !important;
+    padding: 6px 8px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-brand-orb {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-header > div:nth-child(2) {
+    grid-column: 2 / 5 !important;
+    grid-row: 1 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-size-controls-v147 {
+    grid-column: 1 / 3 !important;
+    grid-row: 2 !important;
+    justify-self: start !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-auto-voice-v148 {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-header > button:nth-last-child(2) {
+    grid-column: 4 !important;
+    grid-row: 2 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-header > button:last-child {
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-composer-tools {
+    display: grid !important;
+    grid-template-columns: 38px 38px minmax(0, 1fr) !important;
+    align-items: center !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-composer-tools > .nara-select {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-composer-tools > .nara-select:last-of-type {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 430px) {
+  html[data-studio-screenshot-authority-v183] {
+    --v183-drawer-width: min(82vw, 304px);
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(.sn-view-pad, .sv124-page, .mv176-page, .sn-api-page, .tn-studio) {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] :is(
+    .sn-api-metrics,
+    .sv124-metrics-grid,
+    .mv176-metrics,
+    .sn-settings-grid
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .ce-paper {
+    padding: 24px 14px !important;
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-header > div:nth-child(2) > small {
+    display: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  html[data-studio-screenshot-authority-v183] {
+    --v183-drawer-width: min(86vw, 296px);
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="small"],
+  html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="medium"] {
+    min-height: 310px !important;
+    height: min(68dvh, 540px) !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-studio-screenshot-authority-v183] {
+    --v183-drawer-width: min(62vw, 340px);
+  }
+
+  html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="small"],
+  html[data-studio-screenshot-authority-v183] .nara-assistant-shell[data-nara-size="medium"] {
+    top: 6px !important;
+    right: 6px !important;
+    bottom: 6px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-studio-screenshot-authority-v183] *,
+  html[data-studio-screenshot-authority-v183] *::before,
+  html[data-studio-screenshot-authority-v183] *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

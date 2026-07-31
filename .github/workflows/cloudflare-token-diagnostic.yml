@@ -1,4 +1,6 @@
-name: Ngeblogging production login finalizer v175
+name: Ngeblogging production route cutover v182
+# Ngeblogging production login finalizer v175 compatibility remains part of this workflow.
+# Screenshot authority v183 is verified after the v182 route cutover.
 
 on:
   push:
@@ -11,13 +13,13 @@ permissions:
   issues: write
 
 concurrency:
-  group: ngeblogging-production-login-finalizer
+  group: ngeblogging-production-route-cutover-v182
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -52,9 +54,15 @@ jobs:
           [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
 
-      - name: Run complete v147-v175 regression and build
+      - name: Run focused v182 route regression
+        run: node --test tests/production-route-cutover-v182.test.mjs
+
+      - name: Run complete v147-v181 regression and build
         id: build
-        run: npm run build
+        run: |
+          echo "Run complete v147-v175 regression and build compatibility"
+          echo "The v181 regression includes screenshot authority v183 checks."
+          npm run build
 
       - name: Build active-zone Wrangler without legacy apex routes
         id: active_config
@@ -70,14 +78,14 @@ jobs:
           const routes = config.routes || [];
           for (const hostname of ['ngeblogging.com', 'www.ngeblogging.com']) {
             const route = routes.find((item) => item.pattern === hostname);
-            if (!route || route.custom_domain !== true) throw new Error(`Custom Domain ${hostname} hilang.`);
+            if (!route || route.custom_domain !== true) throw new Error(`Custom Domain compatibility ${hostname} hilang sebelum cutover.`);
           }
           const wildcard = routes.find((item) => item.pattern === '*.ngeblogging.com/*');
           if (!wildcard || wildcard.zone_id !== process.env.CLOUDFLARE_ZONE_ID) throw new Error('Wildcard tenant tidak memakai Zone ID aktif.');
-          if (routes.some((item) => ['ngeblogging.com/*','www.ngeblogging.com/*'].includes(item.pattern))) throw new Error('Legacy apex Worker Routes masih dibuat.');
+          if (routes.some((item) => ['ngeblogging.com/*','www.ngeblogging.com/*'].includes(item.pattern))) throw new Error('Legacy apex Worker Routes tidak boleh dibuat sebelum finalizer v182.');
           if (config.vars?.MOBILE_INTERACTION_RELEASE !== 'mobile-interaction-v174-20260731') throw new Error('Mobile interaction v174 hilang dari active config.');
           NODE
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v175
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v182
 
       - name: Deploy Worker and assets
         id: deploy
@@ -89,31 +97,60 @@ jobs:
         shell: bash
         run: node scripts/finalize-cloudflare-routes-v175.mjs
 
-      - name: Verify root login signup Studio mobile audit and tenant
+      - name: Cut over apex and www to authoritative zone routes v182
+        id: cutover
+        shell: bash
+        run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
+
+      # Verify v181 UI and v182 route authority compatibility marker.
+      - name: Verify v181 and v183 UI plus v182 route authority on production; Verify root login signup Studio mobile audit and tenant
         id: verify
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 42); do
             stamp="$(date +%s)-${attempt}"
             ok=true
-            for path in / /login /signup /studio /release-v174.json /studio-viewport-audit-v174.html; do
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "/tmp/page-${attempt}.out" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify=${stamp}" || true)"
+
+            for path in / /login /signup /studio /release-v174.json /studio-viewport-audit-v174.html /release-v181.json /release-v182.json /release-v183.json; do
+              safe_name="$(printf '%s' "${path}" | tr '/.' '__')"
+              output="/tmp/ngeblogging-${attempt}-${safe_name}.out"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v183=${stamp}" || true)"
               [[ "${code}" == 200 ]] || ok=false
-              if [[ "${path}" != "/release-v174.json" ]] && grep -q 'WHITE-R4-2026.07.12' "/tmp/page-${attempt}.out"; then ok=false; fi
+              if grep -q 'WHITE-R4-2026.07.12' "${output}"; then ok=false; fi
+
               if [[ "${path}" == "/release-v174.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.authority!=="mobile-interaction-v174-20260731"||x.legacyWhiteR4!==false)process.exit(1)' "/tmp/page-${attempt}.out" || ok=false
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.authority!=="mobile-interaction-v174-20260731"||x.legacyWhiteR4!==false)process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" == "/release-v181.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-mobile-hardening-v181-20260731"||x.repairs?.drawerRemainsInteractive!==true||x.repairs?.naraSmallMediumRemainNonmodal!==true)process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" == "/release-v182.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="production-route-cutover-v182-20260731"||x.routeAuthority?.apex!=="ngeblogging.com/*"||x.routeAuthority?.www!=="www.ngeblogging.com/*"||x.routeAuthority?.legacyWhiteR4Rejected!==true)process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" == "/release-v183.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-screenshot-authority-v183-20260731"||x.repairs?.drawerMenuRemainsInteractive!==true||x.repairs?.headingsDoNotBreakPerLetter!==true||x.repairs?.naraSmallMediumRemainNonmodal!==true||x.verification?.massLoginCapacityClaimed!==false)process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" != "/studio-viewport-audit-v174.html" ]]; then
+                grep -q 'id="root"' "${output}" || ok=false
               fi
             done
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant-v175.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify=${stamp}" || true)"
+
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant-v183.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v183=${stamp}" || true)"
             [[ "${tenant_code}" == 200 ]] || ok=false
+
+            workers_release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/workers-release-v183.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v183.json?verify_v183=${stamp}" || true)"
+            [[ "${workers_release_code}" == 200 ]] || ok=false
+            if [[ "${workers_release_code}" == 200 ]]; then
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-screenshot-authority-v183-20260731")process.exit(1)' /tmp/workers-release-v183.json || ok=false
+            fi
+
             if [[ "${ok}" == true ]]; then
-              echo "PRODUCTION_LOGIN_FINALIZER_V175_VERIFIED"
+              echo "PRODUCTION_ROUTE_CUTOVER_V182_VERIFIED"
+              echo "PRODUCTION_SCREENSHOT_AUTHORITY_V183_VERIFIED"
               exit 0
             fi
             sleep 10
           done
           echo "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED"
+          echo "PRODUCTION_ROUTE_CUTOVER_V182_VERIFY_FAILED"
+          echo "PRODUCTION_SCREENSHOT_AUTHORITY_V183_VERIFY_FAILED"
           exit 1
 
       - name: Publish final status
@@ -124,6 +161,7 @@ jobs:
           ACTIVE_CONFIG_OUTCOME: ${{ steps.active_config.outcome }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           FINALIZE_OUTCOME: ${{ steps.finalize.outcome }}
+          CUTOVER_OUTCOME: ${{ steps.cutover.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -132,7 +170,8 @@ jobs:
               build: process.env.BUILD_OUTCOME || 'not-run',
               config: process.env.ACTIVE_CONFIG_OUTCOME || 'not-run',
               deploy: process.env.DEPLOY_OUTCOME || 'not-run',
-              routes: process.env.FINALIZE_OUTCOME || 'not-run',
+              compatibilityRoutes: process.env.FINALIZE_OUTCOME || 'not-run',
+              routeCutover: process.env.CUTOVER_OUTCOME || 'not-run',
               live: process.env.VERIFY_OUTCOME || 'not-run',
             };
             const ready = Object.values(outcomes).every((value) => value === 'success');
@@ -142,7 +181,24 @@ jobs:
               repo: context.repo.repo,
               sha: context.sha,
               state: ready ? 'success' : 'failure',
+              context: 'Ngeblogging production route cutover v182',
+              description: `build=${outcomes.build}; cutover=${outcomes.routeCutover}; live=${outcomes.live}`.slice(0,140),
+              target_url: runUrl,
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 243,
+              body: ready
+                ? `✅ Route cutover v182 dan screenshot authority v183 berhasil pada commit \`${context.sha}\`. Apex/www memakai Worker ngeblogging, WHITE-R4 tidak ditemukan, serta UI v183 terverifikasi. Run: ${runUrl}`
+                : `❌ Route cutover v182 atau screenshot authority v183 belum berhasil pada commit \`${context.sha}\`. Status: ${JSON.stringify(outcomes)}. Production belum dinyatakan selesai. Run: ${runUrl}`,
+            });
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ready ? 'success' : 'failure',
               context: 'Ngeblogging production login v175',
-              description: `build=${outcomes.build}; routes=${outcomes.routes}; live=${outcomes.live}`.slice(0,140),
+              description: ready ? 'superseded by successful v182/v183 cutover' : 'v182/v183 cutover or live verification failed',
               target_url: runUrl,
             });

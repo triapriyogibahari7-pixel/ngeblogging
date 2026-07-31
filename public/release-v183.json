@@ -1,0 +1,70 @@
+{
+  "release": "studio-screenshot-authority-v183-20260731",
+  "status": "candidate",
+  "basedOn": [
+    "studio-mobile-hardening-v181-20260731",
+    "production-route-cutover-v182-20260731"
+  ],
+  "purpose": "Keep the current Studio UI usable across phone, mobile, installed application, compact device, tablet, laptop, desktop, and large-computer profiles after the production route cutover.",
+  "responsiveFamilies": {
+    "application": true,
+    "phone": true,
+    "mobile": true,
+    "compact": true,
+    "tablet": true,
+    "desktopFamily": {
+      "laptop": true,
+      "desktop": true,
+      "computer": true
+    }
+  },
+  "repairs": {
+    "drawerBackdropOutsideOnly": true,
+    "drawerMenuRemainsInteractive": true,
+    "mobileLogoNCenteredAndContrasted": true,
+    "profileMenuBounded": true,
+    "headingsDoNotBreakPerLetter": true,
+    "operationalPagesRemainInNormalFlow": true,
+    "postAndPageEditorUsesSingleMobileColumn": true,
+    "editorTabsAndToolbarScrollInternally": true,
+    "naraLauncherDoesNotFlicker": true,
+    "naraSmallMediumRemainNonmodal": true,
+    "naraFullRemainsClosableModal": true,
+    "naraHeaderAndComposerStayWithinViewport": true,
+    "rawNetworkErrorsAreContained": true,
+    "sessionIsNotClearedByUiRecovery": true
+  },
+  "preserved": {
+    "sidebarMenus": [
+      "Buat Post",
+      "Ringkasan",
+      "Posts",
+      "Pages",
+      "Tema",
+      "Media",
+      "Analitik",
+      "Anggota",
+      "Komentar",
+      "Domain",
+      "API Keys",
+      "Pengaturan",
+      "Keluar"
+    ],
+    "postsAndPages": true,
+    "themeStudio": true,
+    "media": true,
+    "analytics": true,
+    "members": true,
+    "comments": true,
+    "domains": true,
+    "apiKeys": true,
+    "naraAttachmentsMicrophoneSpeakerModelsIntelligence": true,
+    "explicitLogoutOnly": true
+  },
+  "verification": {
+    "providerLoginEndToEndStillRequiresRealProviderInteraction": true,
+    "realDeviceChecksStillRequired": true,
+    "massLoginCapacityClaimed": false,
+    "fakeStatisticsAdded": false
+  }
+}
