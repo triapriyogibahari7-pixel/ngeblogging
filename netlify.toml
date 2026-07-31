@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/diagnose-v177-anchors.mjs nara && npx vite build"
+  command = "npm run verify:v177 && npx vite build"
   publish = "dist"
 
 [build.environment]
