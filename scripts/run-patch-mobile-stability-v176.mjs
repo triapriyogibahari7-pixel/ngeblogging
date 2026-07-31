@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const RELEASE = "mobile-stability-v176-20260731";
+const WORKER_RELEASE = "2026.07.31-mobile-stability-v176";
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const write = (file, content) => fs.writeFileSync(path.join(root, file), content);
 
@@ -92,6 +93,98 @@ function patchServiceWorker() {
   write(file, source);
 }
 
+function patchWorker() {
+  const file = "cloudflare/worker-v69.mjs";
+  let source = read(file);
+  if (source.includes(`export const MOBILE_STABILITY_RELEASE = "${WORKER_RELEASE}";`)) return;
+
+  source = replaceRequired(
+    source,
+    'export const PRODUCTION_CUSTOM_DOMAIN_RELEASE = "2026.07.30-production-custom-domain-v172";',
+    `export const PRODUCTION_CUSTOM_DOMAIN_RELEASE = "2026.07.30-production-custom-domain-v172";\nexport const MOBILE_STABILITY_RELEASE = "${WORKER_RELEASE}";`,
+    "worker release v172",
+  );
+  source = replaceRequired(
+    source,
+    '  "/release-v172.json",\n]);',
+    '  "/release-v172.json",\n  "/release-v176.json",\n]);',
+    "worker release paths",
+  );
+  source = replaceRequired(
+    source,
+    '    mobilePublicRelease: "mobile-public-v171-20260730",',
+    '    mobilePublicRelease: "mobile-public-v171-20260730",\n    mobileStabilityRelease: MOBILE_STABILITY_RELEASE,',
+    "worker release body",
+  );
+  source = replaceRequired(
+    source,
+    '      "x-ngeblogging-mobile-public": "mobile-public-v171-20260730",',
+    '      "x-ngeblogging-mobile-public": "mobile-public-v171-20260730",\n      "x-ngeblogging-mobile-stability": MOBILE_STABILITY_RELEASE,',
+    "worker release header",
+  );
+  source = replaceRequired(
+    source,
+    '    && html.includes("ngeblogging-mobile-public-v171")',
+    '    && html.includes("ngeblogging-mobile-public-v171")\n    && html.includes("ngeblogging-mobile-stability-v176")',
+    "worker injected marker condition",
+  );
+  source = replaceRequired(
+    source,
+    '    \'<meta name="ngeblogging-mobile-public-v171" content="mobile-public-v171-20260730"/>\',',
+    '    \'<meta name="ngeblogging-mobile-public-v171" content="mobile-public-v171-20260730"/>\',\n    `<meta name="ngeblogging-mobile-stability-v176" content="${MOBILE_STABILITY_RELEASE}"/>`,',
+    "worker injected marker",
+  );
+  source = source.replaceAll(
+    '  headers.set("x-ngeblogging-mobile-public", "mobile-public-v171-20260730");',
+    '  headers.set("x-ngeblogging-mobile-public", "mobile-public-v171-20260730");\n  headers.set("x-ngeblogging-mobile-stability", MOBILE_STABILITY_RELEASE);',
+  );
+  write(file, source);
+}
+
+function patchNetlify() {
+  const file = "scripts/write-netlify-redirects.mjs";
+  let source = read(file);
+  if (source.includes(`const MOBILE_STABILITY_RELEASE = "${WORKER_RELEASE}";`)) return;
+
+  source = replaceRequired(
+    source,
+    'const PRODUCTION_DOMAIN_ATTACH_RELEASE = "2026.07.30-production-domain-attach-v165";',
+    `const PRODUCTION_DOMAIN_ATTACH_RELEASE = "2026.07.30-production-domain-attach-v165";\nconst MOBILE_STABILITY_RELEASE = "${WORKER_RELEASE}";`,
+    "netlify release constants",
+  );
+  source = replaceRequired(
+    source,
+    '  X-Ngeblogging-Domain-Attach: ${PRODUCTION_DOMAIN_ATTACH_RELEASE}',
+    '  X-Ngeblogging-Domain-Attach: ${PRODUCTION_DOMAIN_ATTACH_RELEASE}\n  X-Ngeblogging-Mobile-Stability: ${MOBILE_STABILITY_RELEASE}',
+    "netlify global header",
+  );
+  source = replaceRequired(
+    source,
+    '/release-v165.json\n  Cache-Control: no-store, max-age=0\n`,',
+    '/release-v165.json\n  Cache-Control: no-store, max-age=0\n/release-v176.json\n  Cache-Control: no-store, max-age=0\n`,',
+    "netlify release header path",
+  );
+  source = replaceRequired(
+    source,
+    '    productionDomainAttachRelease: PRODUCTION_DOMAIN_ATTACH_RELEASE,',
+    '    productionDomainAttachRelease: PRODUCTION_DOMAIN_ATTACH_RELEASE,\n    mobileStabilityRelease: MOBILE_STABILITY_RELEASE,',
+    "netlify release body",
+  );
+  source = replaceRequired(
+    source,
+    '    || !html.includes(\'name="ngeblogging-auth-callback-singleflight-v162"\')',
+    '    || !html.includes(\'name="ngeblogging-auth-callback-singleflight-v162"\')\n    || !html.includes(\'name="ngeblogging-mobile-stability-v176"\')',
+    "netlify marker condition",
+  );
+  source = replaceRequired(
+    source,
+    '      `<meta name="ngeblogging-production-domain-attach-v165" content="${PRODUCTION_DOMAIN_ATTACH_RELEASE}">`,',
+    '      `<meta name="ngeblogging-production-domain-attach-v165" content="${PRODUCTION_DOMAIN_ATTACH_RELEASE}">`,\n      `<meta name="ngeblogging-mobile-stability-v176" content="${MOBILE_STABILITY_RELEASE}">`,',
+    "netlify marker",
+  );
+  write(file, source);
+}
+
 function verify() {
   const checks = [
     ["src/main.jsx", 'import "./mobile-stability-v176.js";'],
@@ -105,6 +198,10 @@ function verify() {
     ["public/sw.js", "mobile-stability-cache-v176"],
     ["public/sw.js", 'url.pathname === "/login"'],
     ["public/sw.js", 'url.pathname.startsWith("/auth/")'],
+    ["cloudflare/worker-v69.mjs", '"/release-v176.json"'],
+    ["cloudflare/worker-v69.mjs", "x-ngeblogging-mobile-stability"],
+    ["scripts/write-netlify-redirects.mjs", "/release-v176.json"],
+    ["scripts/write-netlify-redirects.mjs", "X-Ngeblogging-Mobile-Stability"],
   ];
   const missing = checks.filter(([file, marker]) => !read(file).includes(marker));
   if (missing.length) throw new Error(`Patch v176 tidak lengkap: ${missing.map(([file, marker]) => `${file}:${marker}`).join(", ")}`);
@@ -113,5 +210,7 @@ function verify() {
 patchEntry();
 patchDeviceDetector();
 patchServiceWorker();
+patchWorker();
+patchNetlify();
 verify();
 console.log(`[${RELEASE}] patch applied exactly once and verified`);
