@@ -1,5 +1,5 @@
 [build]
-  command = "npm run verify:v177 && node scripts/run-v180-diagnostic.mjs studio-bootstrap"
+  command = "npm run verify:v177 && node scripts/run-v180-diagnostic.mjs service-worker-or-verification"
   publish = "dist"
 
 [build.environment]
