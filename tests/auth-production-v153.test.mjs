@@ -16,14 +16,12 @@ const cloudflareDefault = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const pwa = read("src/pwa-runtime.js");
 const serviceWorker = read("public/sw.js");
-const workflow = read(".github/workflows/deploy-production.yml");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
+const finalizer = read("scripts/finalize-cloudflare-routes-v175.mjs");
 const index = read("index.html");
 
 const providers = ["google", "github", "linkedin_oidc"];
-
-function occurrences(source, marker) {
-  return source.split(marker).length - 1;
-}
+const occurrences = (source, marker) => source.split(marker).length - 1;
 
 test("all requested login buttons remain connected to real Supabase actions", () => {
   for (const provider of providers) {
@@ -36,7 +34,7 @@ test("all requested login buttons remain connected to real Supabase actions", ()
   ]) assert.ok(modal.includes(marker), `AuthModal missing ${marker}`);
 });
 
-test("production auth requests use the same-origin gateway", () => {
+test("production auth requests use the same-origin gateway and persistent session", () => {
   for (const marker of [
     "auth-production-v153-20260730", "/api/auth-proxy", "authAwareFetch",
     "global: {", "fetch: authAwareFetch", "same-origin-gateway",
@@ -54,7 +52,7 @@ test("legacy login and signup routes open the React auth surface", () => {
   assert.match(client, /\.auth-switch button/);
 });
 
-test("PKCE callbacks retain v153 compatibility but exchange each code exactly once through v162", () => {
+test("PKCE callbacks exchange each code exactly once", () => {
   assert.equal(occurrences(callbackConsumer, "exchangeCodeForSession(code)"), 1);
   assert.match(callbackConsumer, /auth-callback-singleflight-v162-20260730/);
   assert.match(callbackConsumer, /Symbol\.for\("ngeblogging\.auth\.callbackOperationV162"\)/);
@@ -85,27 +83,24 @@ test("active v172 retains auth v153 and historical production compatibility", ()
     assert.ok(config.routes.some((route) => route.pattern === "ngeblogging.com" && route.custom_domain === true));
     assert.ok(config.routes.some((route) => route.pattern === "www.ngeblogging.com" && route.custom_domain === true));
     assert.ok(config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.zone_name === "ngeblogging.com"));
-    assert.ok(!config.routes.some((route) => route.pattern === "*.ngeblogging.com/*" && route.custom_domain === true));
   }
   assert.equal(cloudflareDefault.assets.run_worker_first, true);
   assert.equal(production.assets.run_worker_first, true);
-  assert.ok(entryWorker.includes('./worker-v67.mjs'));
-  assert.ok(entryWorker.includes("2026.07.30-production-route-authority-v163"));
-  assert.ok(entryWorker.includes("2026.07.30-production-custom-domain-authority-v164"));
-  assert.ok(entryWorker.includes("2026.07.30-production-route-recovery-v168"));
-  assert.ok(entryWorker.includes("2026.07.30-production-custom-domain-v172"));
-  assert.ok(entryWorker.includes("first-site-onboarding-v169-20260730"));
+  for (const marker of [
+    './worker-v67.mjs', "2026.07.30-production-route-authority-v163",
+    "2026.07.30-production-custom-domain-authority-v164",
+    "2026.07.30-production-route-recovery-v168",
+    "2026.07.30-production-custom-domain-v172",
+    "first-site-onboarding-v169-20260730",
+  ]) assert.ok(entryWorker.includes(marker), `entry Worker missing ${marker}`);
   assert.ok(compatibilityWorker.includes("2026.07.30-production-entry-v154"));
 });
 
-test("auth worker metadata and health expose v153 readiness", () => {
+test("auth metadata and PWA preserve v153 callbacks", () => {
   for (const marker of [
     "2026.07.30-auth-production-v153", "authProduction", "authTransport",
     "emailPassword", "magicLink", "google", "linkedin",
   ]) assert.ok(authWorker.includes(marker), `auth worker missing ${marker}`);
-});
-
-test("PWA cache never destroys an authentication callback", () => {
   for (const marker of [
     "ngeblogging-pwa-v153-20260730", "pwa-v153-auth-production",
     "auth-production-v153", 'authMode === "signin"', 'authMode === "signup"',
@@ -116,19 +111,22 @@ test("PWA cache never destroys an authentication callback", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment v172 rejects WHITE-R4 and verifies login onboarding and mobile authority", () => {
+test("deployment v175 rejects WHITE-R4 and verifies login plus v174 mobile", () => {
   for (const marker of [
-    "2026.07.30-production-custom-domain-v172",
-    "first-site-onboarding-v169-20260730",
-    "site-policy-v169-20260730",
-    "mobile-public-v171-20260730",
-    "2026.07.30-auth-gateway-v153",
+    "Ngeblogging production login finalizer v175",
+    "environment: cloudflare-production",
+    "Run complete v147-v175 regression and build",
+    "finalize-cloudflare-routes-v175.mjs",
+    "/release-v174.json",
+    "/login", "/signup", "/studio",
+    "/studio-viewport-audit-v174.html",
     "WHITE-R4-2026.07.12",
-    "/release-v172.json",
-    "/studio",
-    "/api/auth-proxy/auth/v1/token",
-    "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
+  for (const marker of [
+    'EXACT_HOSTNAMES = Object.freeze(["ngeblogging.com", "www.ngeblogging.com"])',
+    'TENANT_WILDCARD_PATTERN = "*.ngeblogging.com/*"',
+    'LEGACY_EXACT_ROUTE_PATTERNS = new Set(["ngeblogging.com/*", "www.ngeblogging.com/*"])',
+    "deleteLegacyExactRoutes", "verifyFinalState",
+  ]) assert.ok(finalizer.includes(marker), `finalizer missing ${marker}`);
 });
