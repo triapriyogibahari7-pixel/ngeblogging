@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-production-v183.js");
 const css = read("src/studio-production-v183.css");
+const controlsCss = read("src/studio-production-v183-controls.css");
 const patch = read("scripts/patch-studio-production-v183.mjs");
 const packageJson = JSON.parse(read("package.json"));
 const release = JSON.parse(read("public/release-v183.json"));
@@ -13,8 +14,10 @@ const release = JSON.parse(read("public/release-v183.json"));
 test("v183 is loaded after the existing mobile hardening authority", () => {
   const v181 = entry.indexOf('import "./studio-mobile-hardening-v181.js";');
   const v183 = entry.indexOf('import "./studio-production-v183.js";');
+  const controls = entry.indexOf('import "./studio-production-v183-controls.css";');
   assert.ok(v181 >= 0);
   assert.ok(v183 > v181);
+  assert.ok(controls > v183);
   assert.match(runtime, /studio-production-v183-20260801/);
 });
 
@@ -65,6 +68,13 @@ test("Nara small and medium are non-modal while full-screen remains modal", () =
   assert.match(css, /data-v183-mode="modal"/);
   assert.match(patch, /aria-modal=\{size === "full"\}/);
   assert.match(patch, /hidden=\{size !== "full"\}/);
+});
+
+test("Nara voice and model controls remain available on 390px phones", () => {
+  assert.match(controlsCss, /\.nara-auto-voice-v148[\s\S]*display:\s*grid\s*!important/);
+  assert.match(controlsCss, /\.nara-select\.model[\s\S]*display:\s*grid\s*!important/);
+  assert.match(controlsCss, /\.nara-select\.model[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+  assert.doesNotMatch(controlsCss, /\.nara-select\.model\s*\{[^}]*display:\s*none/);
 });
 
 test("active-site bootstrap uses a bounded deadline, cache and retries without logout", () => {
