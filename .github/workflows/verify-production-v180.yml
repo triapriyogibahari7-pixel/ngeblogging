@@ -1,0 +1,70 @@
+name: Verify Ngeblogging Production v180
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: verify-ngeblogging-production-v180
+  cancel-in-progress: true
+
+jobs:
+  verify-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for production deployment
+        run: sleep 45
+
+      - name: Verify root, authentication routes, Studio, and release authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            stamp="$(date +%s)-${attempt}"
+            root_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/root.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/?v180=${stamp}" || true)"
+            login_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/login.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/login?v180=${stamp}" || true)"
+            signup_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/signup.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/signup?v180=${stamp}" || true)"
+            studio_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/studio.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/studio?v180=${stamp}" || true)"
+            release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/release-v180.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v180.json?v180=${stamp}" || true)"
+
+            if [[ "${root_code}" == 200 && "${login_code}" == 200 && "${signup_code}" == 200 && "${studio_code}" == 200 && "${release_code}" == 200 ]]; then
+              if ! grep -R -q 'WHITE-R4-2026.07.12' /tmp/root.html /tmp/login.html /tmp/signup.html /tmp/studio.html \
+                && node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const release = JSON.parse(fs.readFileSync('/tmp/release-v180.json', 'utf8'));
+          if (release.release !== 'production-recovery-v180-20260731') process.exit(1);
+          if (release.productionAuthority?.requiredReleaseProbe !== '/release-v180.json') process.exit(1);
+          NODE
+              then
+                echo "PRODUCTION_RECOVERY_V180_VERIFIED"
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+
+          echo "Production masih belum memakai authority v180 atau marker WHITE-R4 masih aktif."
+          exit 1
+
+      - name: Publish commit status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const state = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state,
+              context: 'Ngeblogging production authority v180',
+              description: state === 'success' ? 'release-v180 aktif dan WHITE-R4 tidak ditemukan' : 'custom domain belum memakai release-v180',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });

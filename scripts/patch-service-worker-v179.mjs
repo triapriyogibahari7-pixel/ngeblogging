@@ -4,7 +4,18 @@ const file = new URL("../public/sw.js", import.meta.url);
 const RELEASE = "studio-mobile-runtime-v179-20260731";
 const VERSION = "ngeblogging-app-v179-mobile-runtime-20260731";
 const CACHE = "mobile-runtime-cache-v179";
-const COMPAT = `const FIRST_SITE_COMPAT_VERSION_V169 = "ngeblogging-app-v169-first-site-20260730";\nconst FIRST_SITE_COMPAT_CACHE_V169 = "first-site-cache-v169";\nconst MOBILE_RUNTIME_RELEASE = "${RELEASE}";`;
+const FIRST_SITE_VERSION = 'const FIRST_SITE_COMPAT_VERSION_V169 = "ngeblogging-app-v169-first-site-20260730";';
+const FIRST_SITE_CACHE = 'const FIRST_SITE_COMPAT_CACHE_V169 = "first-site-cache-v169";';
+const SCREENSHOT_VERSION = 'const SCREENSHOT_STABILITY_COMPAT_VERSION_V177 = "ngeblogging-app-v177-screenshot-stability-20260731";';
+const SCREENSHOT_CACHE = 'const SCREENSHOT_STABILITY_COMPAT_CACHE_V177 = "screenshot-stability-cache-v177";';
+const MOBILE_RUNTIME = `const MOBILE_RUNTIME_RELEASE = "${RELEASE}";`;
+
+function insertAfterVersion(source, line) {
+  if (source.includes(line)) return source;
+  const next = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
+  if (next === source) throw new Error(`Patch service worker v179 tidak menemukan VERSION untuk ${line}.`);
+  return next;
+}
 
 let source = await readFile(file, "utf8");
 source = source.replace(/^const VERSION = ".*";$/m, `const VERSION = "${VERSION}";`);
@@ -12,17 +23,36 @@ source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE =
 source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "mobile-runtime-v179";');
 source = source.replaceAll("NGE_BLOGGING_FORCE_RELOAD_V169", "NGE_BLOGGING_UPDATE_AVAILABLE_V179");
 
-if (!source.includes("FIRST_SITE_COMPAT_VERSION_V169")) {
-  source = source.replace(/^(const VERSION = .*;\n)/m, `$1${COMPAT}\n`);
+for (const legacyEvent of [
+  "NGE_BLOGGING_FORCE_RELOAD_V174",
+  "NGE_BLOGGING_FORCE_RELOAD_V176",
+  "NGE_BLOGGING_FORCE_RELOAD_V177",
+]) {
+  source = source.replaceAll(legacyEvent, "NGE_BLOGGING_UPDATE_AVAILABLE_V179");
 }
 
+source = insertAfterVersion(source, FIRST_SITE_VERSION);
+source = insertAfterVersion(source, FIRST_SITE_CACHE);
+source = insertAfterVersion(source, SCREENSHOT_VERSION);
+source = insertAfterVersion(source, SCREENSHOT_CACHE);
+source = insertAfterVersion(source, MOBILE_RUNTIME);
+
 source = source.replace(
-  /\n\s*await refreshStaleWindow\(client, url\);/,
+  /\n\s*await refreshStaleWindow\(client, url\);/g,
   "\n      // v179 memberi tahu tab lama tanpa navigasi paksa; pengguna tidak dikeluarkan dari editor atau callback autentikasi.",
 );
 
-if (!source.includes(VERSION) || !source.includes(CACHE) || !source.includes(RELEASE)) {
-  throw new Error("Patch service worker v179 tidak lengkap.");
+for (const marker of [
+  VERSION,
+  CACHE,
+  RELEASE,
+  FIRST_SITE_VERSION,
+  FIRST_SITE_CACHE,
+  SCREENSHOT_VERSION,
+  SCREENSHOT_CACHE,
+  MOBILE_RUNTIME,
+]) {
+  if (!source.includes(marker)) throw new Error(`Patch service worker v179 tidak lengkap: ${marker}`);
 }
 if (/await refreshStaleWindow\(client, url\);/.test(source)) {
   throw new Error("Navigasi paksa tab lama masih aktif.");
@@ -30,3 +60,8 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
+
+// v180 berjalan sinkron sesudah authority v179; kompatibilitas lama dipertahankan tanpa mengembalikan bug.
+await import("./patch-production-recovery-v180.mjs");
+await import("./patch-production-recovery-v180-legacy-markers.mjs");
+await import("./patch-production-recovery-v180-compat.mjs");
