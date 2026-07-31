@@ -1,0 +1,75 @@
+{
+  "status": "ok",
+  "release": "studio-screenshot-stability-v177-20260731",
+  "responsiveFamilies": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "desktop"
+  ],
+  "desktopVariants": [
+    "laptop",
+    "computer"
+  ],
+  "viewports": [
+    "320x568",
+    "360x640",
+    "375x667",
+    "390x844",
+    "412x915",
+    "430x932",
+    "600x960",
+    "768x1024",
+    "820x1180",
+    "1024x768",
+    "1280x720",
+    "1366x768",
+    "1440x900",
+    "1920x1080"
+  ],
+  "drawerClickable": true,
+  "drawerBackdropOutsideOnly": true,
+  "drawerInertSingleAuthority": true,
+  "mobileLogoGlyphVisible": true,
+  "mobileLogoCentered": true,
+  "menuStartsBelowCreatePost": true,
+  "menuFooterReachable": true,
+  "profileBounded": true,
+  "mediaScaleBounded": true,
+  "naraLauncherStable": true,
+  "naraNativeSmallFirst": true,
+  "naraSmallMediumNonmodal": true,
+  "naraCloseAlwaysVisible": true,
+  "naraFullscreenOnlyModal": true,
+  "serviceWorkerCache": "screenshot-stability-cache-v177",
+  "auth": {
+    "providersConfigured": [
+      "google",
+      "github",
+      "linkedin_oidc",
+      "email_password",
+      "email_magic_link"
+    ],
+    "flow": "pkce-singleflight",
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "detectSessionInUrl": false,
+    "sameOriginGateway": true,
+    "googleBackendSessionObserved": true,
+    "linkedinEndToEndVerified": false,
+    "emailPasswordEndToEndVerified": false,
+    "reasonUnverified": "Pengujian akun nyata memerlukan kredensial dan tindakan pengguna; tidak diklaim dari simulasi."
+  },
+  "capacity": {
+    "status": "model-only",
+    "logicalUsers": "900000000000000000",
+    "productionCredentialLoadTest": false,
+    "massAccountCreation": false,
+    "claim": "not-claimed",
+    "model": "/auth-capacity-v162.json"
+  },
+  "legacyFeaturesPreserved": true,
+  "legacyWhiteR4": false
+}
