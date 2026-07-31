@@ -72,5 +72,7 @@ await import("./patch-service-worker-v181.mjs");
 // v182 mengunci batas 25 situs, loading Domain yang terbatas, dan tombol Lihat situs Ringkasan.
 await import("./patch-site-limit-summary-v182.mjs");
 
-// v183 adalah authority screenshot-driven untuk drawer, editor, Nara, profil, dan bootstrap jaringan mobile.
+// v183 memperbaiki markup drawer/Nara/editor, pesan jaringan, dan marker hosting sebelum cache final diputar.
+await import("./patch-interaction-precision-v183.mjs");
+await import("./patch-release-v183.mjs");
 await import("./patch-service-worker-v183.mjs");
