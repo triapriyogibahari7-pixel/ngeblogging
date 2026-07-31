@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs",
+    "predev": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-stability-v174.mjs",
     "dev": "vite",
     "prebuild": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json",
     "build": "npm run test:production && vite build && node scripts/write-netlify-redirects.mjs",
@@ -25,11 +25,12 @@
     "verify:v171": "node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node --test tests/mobile-public-layout-v171.test.mjs",
     "verify:v172": "node --test tests/production-custom-domain-v172.test.mjs",
     "verify:v173": "node --test tests/production-route-finalizer-v173.test.mjs",
+    "verify:v174": "node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-stability-v174.mjs && node --test tests/mobile-stability-v174.test.mjs",
     "check": "npm test && vite build",
     "pretest": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json",
-    "test": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node --test tests/*.test.mjs",
+    "test": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-stability-v174.mjs && node --test tests/*.test.mjs",
     "pretest:production": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json",
-    "test:production": "node --test tests/production-route-finalizer-v173.test.mjs"
+    "test:production": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-stability-v174.mjs && node --test tests/*.test.mjs"
   },
   "engines": {"node": ">=22.12.0"},
   "dependencies": {
