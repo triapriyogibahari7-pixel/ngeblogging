@@ -71,3 +71,6 @@ await import("./patch-service-worker-v181.mjs");
 
 // v182 mengunci batas 25 situs, loading Domain yang terbatas, dan tombol Lihat situs Ringkasan.
 await import("./patch-site-limit-summary-v182.mjs");
+
+// v183 memperbaiki drawer, editor mobile, halaman operasional, Nara non-modal, bootstrap situs aktif, dan cache produksi.
+await import("./patch-studio-production-v183.mjs");
