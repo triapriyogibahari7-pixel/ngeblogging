@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const authority = read("src/studio-style-authority-v144.js");
 const runtime = read("src/studio-platform-v160.js");
 const css = read("src/studio-platform-v160.css");
+const inertPatch = read("scripts/patch-drawer-inert-v177.mjs");
 const v159 = read("src/studio-ui-contract-v159.js");
 const v159Css = read("src/studio-ui-contract-v159.css");
 const studio = read("src/StudioNext.jsx");
@@ -50,11 +51,12 @@ test("sidebar open or closed preference persists and remains accessible", () => 
   assert.ok(v159.includes("sn-sidebar-edge-toggle-v159"));
 });
 
-test("mobile drawer and profile menu have keyboard and focus recovery", () => {
+test("mobile drawer keeps keyboard recovery but no longer races inert state", () => {
   for (const marker of [
     "syncDrawerAccessibility",
     "aria-hidden",
-    "toggleAttribute(\"inert\"",
+    'main.removeAttribute("inert")',
+    "drawerInteractionV177",
     "lastSidebarButton",
     'event.key !== "Escape"',
     "syncProfileKeyboard",
@@ -63,6 +65,9 @@ test("mobile drawer and profile menu have keyboard and focus recovery", () => {
     'event.key === "Home"',
     'event.key === "End"',
   ]) assert.ok(runtime.includes(marker), `interaction missing ${marker}`);
+  assert.doesNotMatch(runtime, /main\.toggleAttribute\("inert",\s*mobileOpen\)/);
+  assert.match(inertPatch, /PATCH_DRAWER_INERT_V177_INCOMPLETE/);
+  assert.match(inertPatch, /main\.removeAttribute\(\\"inert\\"\)/);
   assert.ok(studio.includes("sn-side-backdrop"));
   assert.ok(studio.includes("sn-side-close"));
 });
