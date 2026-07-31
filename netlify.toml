@@ -1,5 +1,5 @@
 [build]
-  command = "npm run test:production && npx vite build && node --check cloudflare/worker-v69.mjs && node scripts/write-netlify-redirects.mjs"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
