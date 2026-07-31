@@ -9,6 +9,8 @@ const css = read("src/studio-mobile-runtime-v179.css");
 const naraCss = read("src/studio-mobile-nara-v179.css");
 const studio = read("src/StudioNext.jsx");
 const editor = read("src/ContentEditor.jsx");
+const swPatch = read("scripts/patch-service-worker-v179.mjs");
+const serviceWorker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v179.json"));
 
 const mandatoryMenu = [
@@ -114,6 +116,19 @@ test("loading watchdog gives a retry state and never logs the user out", () => {
   assert.doesNotMatch(runtime, /localStorage\.clear\s*\(/);
   assert.equal(release.repairs.loadingWatchdog, true);
   assert.equal(release.repairs.sessionPreservedOnLoadingFailure, true);
+});
+
+test("service worker gets a new cache identity without forcing open tabs to navigate", () => {
+  assert.match(swPatch, /ngeblogging-app-v179-mobile-runtime-20260731/);
+  assert.match(swPatch, /mobile-runtime-cache-v179/);
+  assert.match(swPatch, /FIRST_SITE_COMPAT_VERSION_V169/);
+  assert.match(swPatch, /replaceAll\("NGE_BLOGGING_FORCE_RELOAD_V169"/);
+  assert.match(swPatch, /Navigasi paksa tab lama masih aktif/);
+  assert.match(serviceWorker, /ngeblogging-app-v179-mobile-runtime-20260731/);
+  assert.match(serviceWorker, /mobile-runtime-cache-v179/);
+  assert.match(serviceWorker, /ngeblogging-app-v169-first-site-20260730/);
+  assert.match(serviceWorker, /first-site-cache-v169/);
+  assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
 });
 
 test("release makes no unsupported login or mass-capacity claim", () => {
