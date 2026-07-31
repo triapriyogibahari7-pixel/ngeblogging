@@ -66,5 +66,8 @@ await import("./patch-production-recovery-v180.mjs");
 await import("./patch-production-recovery-v180-legacy-markers.mjs");
 await import("./patch-production-recovery-v180-compat.mjs");
 
-// v181 adalah lapisan terakhir: rotasi cache tanpa memaksa navigasi login, callback, editor, atau Studio.
+// v181 adalah lapisan hardening layout dan rotasi cache tanpa forced navigation.
 await import("./patch-service-worker-v181.mjs");
+
+// v182 mengunci batas 25 situs, loading Domain yang terbatas, dan tombol Lihat situs Ringkasan.
+await import("./patch-site-limit-summary-v182.mjs");
