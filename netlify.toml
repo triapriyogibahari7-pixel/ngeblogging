@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run verify:v177 && npx vite build && node scripts/write-netlify-redirects.mjs"
   publish = "dist"
 
 [build.environment]
