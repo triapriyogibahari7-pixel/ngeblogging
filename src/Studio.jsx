@@ -19,5 +19,7 @@ import "./studio-operations-v41.css";
 import "./studio-recovery-v150.css";
 import "./studio-completion-v151.css";
 import "./studio-continuity-v152.css";
+import "./studio-mobile-interaction-v162.css";
+import "./studio-mobile-interaction-v162.js";
 
 export default StudioFastGate;
