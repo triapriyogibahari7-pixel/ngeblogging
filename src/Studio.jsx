@@ -24,5 +24,6 @@ import "./studio-screenshot-stability-v177.js";
 import "./studio-finalization-v178.js";
 import "./studio-production-stability-v179.js";
 import "./studio-mobile-panels-v179.js";
+import "./studio-runtime-authority-v179.js";
 
 export default StudioFastGate;
