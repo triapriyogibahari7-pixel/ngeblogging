@@ -6,7 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const wrangler = JSON.parse(read("wrangler.jsonc"));
 const production = JSON.parse(read("wrangler.production.jsonc"));
 const worker = read("cloudflare/worker-v69.mjs");
-const workflow = read(".github/workflows/deploy-production.yml");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const serviceWorker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v168.json"));
 
@@ -47,46 +47,37 @@ test("active v172 exact Custom Domains supersede v168 apex routes and preserve t
   for (const config of configs) verifyActiveV172(config);
 });
 
-test("Worker retains all v168 evidence while publishing v172 as active authority", () => {
+test("Worker retains v168 evidence while publishing v172 and v174 authorities", () => {
   for (const marker of [
-    RELEASE,
-    "worker-v69-custom-domain-v172",
-    "2026.07.30-production-custom-domain-v172",
-    "/release-v168.json",
-    "/release-v172.json",
-    "ngeblogging-production-route-recovery-v168",
-    "ngeblogging-production-custom-domain-v172",
-    "auth-callback-singleflight-v162-20260730",
-    "sessionPersistsUntilExplicitLogout: true",
-    "wordLimit: 5000",
-    "legacyWhiteR4: false",
+    RELEASE, "worker-v69-custom-domain-v172", "2026.07.30-production-custom-domain-v172",
+    "/release-v168.json", "/release-v172.json",
+    "ngeblogging-production-route-recovery-v168", "ngeblogging-production-custom-domain-v172",
+    "auth-callback-singleflight-v162-20260730", "sessionPersistsUntilExplicitLogout: true",
+    "wordLimit: 5000", "legacyWhiteR4: false",
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
   assert.ok(worker.includes('responsiveFamilies: ["application", "phone", "mobile", "compact", "tablet", "desktop"]'));
   assert.ok(worker.includes('desktopVariants: ["laptop", "computer"]'));
 });
 
-test("v172 production workflow deploys, attaches exact domains, and verifies compatibility", () => {
+test("v175 workflow deploys, finalizes exact domains, and verifies compatibility", () => {
   for (const marker of [
-    "Deploy Ngeblogging Production v172",
-    "npm run test:production",
-    "npm run cloudflare:dry-run",
-    "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains",
-    "/release-v172.json",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "Ngeblogging production login finalizer v175",
+    "Run complete v147-v175 regression and build",
+    "Deploy Worker and assets",
+    "finalize-cloudflare-routes-v175.mjs",
+    "/release-v174.json",
+    "/studio-viewport-audit-v174.html",
+    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
     "WHITE-R4-2026.07.12",
-    "x-ngeblogging-production-custom-domain",
-    "x-ngeblogging-first-site",
-    "x-ngeblogging-mobile-public",
-    "maxSitesPerAccount",
-    "issue_number: 243",
+    "CLOUDFLARE_ZONE_ID",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 });
 
-test("active v171 cache preserves v168 and v169 compatibility without caching auth callbacks", () => {
+test("active v174 cache preserves v168 and auth compatibility", () => {
   for (const marker of [
+    "ngeblogging-app-v174-mobile-interaction-20260731",
+    "mobile-interaction-cache-v174",
     "ngeblogging-app-v171-mobile-public-20260730",
-    "mobile-public-cache-v171",
     "ngeblogging-app-v170-theme-layout-20260730",
     "ngeblogging-app-v169-first-site-20260730",
     "ngeblogging-app-v168-route-recovery-20260730",
