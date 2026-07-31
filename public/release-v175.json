@@ -1,0 +1,15 @@
+{
+  "status": "ready-for-production-verification",
+  "release": "2026.07.31-production-login-finalizer-v175",
+  "customDomainAuthority": "2026.07.30-production-custom-domain-v172",
+  "mobileInteractionAuthority": "mobile-interaction-v174-20260731",
+  "loginProviders": ["google", "linkedin", "email-password", "magic-link"],
+  "sessionPersistsUntilExplicitLogout": true,
+  "exactWorkerDomains": ["ngeblogging.com", "www.ngeblogging.com"],
+  "legacyApexRoutesToRemove": ["ngeblogging.com/*", "www.ngeblogging.com/*"],
+  "tenantWildcardPreserved": "*.ngeblogging.com/*",
+  "liveVerificationRequired": ["/", "/login", "/signup", "/studio", "/release-v174.json", "/studio-viewport-audit-v174.html"],
+  "productionLoginAllProvidersClaimed": false,
+  "productionCapacityClaimed": false,
+  "legacyWhiteR4": false
+}
