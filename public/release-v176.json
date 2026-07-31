@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "release": "mobile-stability-v176-20260731",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "viewports": [
+    "320x568", "360x640", "375x667", "390x844", "412x915", "430x932",
+    "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768", "1440x900", "1920x1080"
+  ],
+  "drawerClickable": true,
+  "backdropExcludesDrawer": true,
+  "menuStartsBelowCreatePost": true,
+  "mobileLogoCentered": true,
+  "profileBounded": true,
+  "mediaScaleBounded": true,
+  "naraLauncherStable": true,
+  "naraSmallMediumNonmodal": true,
+  "layoutWidthStable": true,
+  "sessionPreserved": true,
+  "legacyFeaturesPreserved": true,
+  "capacityClaim": "not-claimed",
+  "capacityNote": "900 miliar login tidak diklaim. Kapasitas harus dibuktikan dengan load test bertahap pada infrastruktur produksi yang disediakan khusus."
+}
