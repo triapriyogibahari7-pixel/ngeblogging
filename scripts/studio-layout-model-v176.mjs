@@ -29,11 +29,13 @@ function round(value) { return Math.round(value * 100) / 100; }
 export function modelViewport(width, height, installed = false) {
   const family = familyFor(width, installed);
   const mobileSurface = ["application","phone","mobile","compact"].includes(family);
+  const tabletSurface = family === "tablet";
+  const desktopSurface = family === "desktop";
   const drawerRatio = width <= 360 ? .86 : width <= 560 ? .82 : .78;
   const drawerWidth = mobileSurface ? Math.min(width * drawerRatio, width <= 360 ? 300 : 332) : 0;
   const contentWidthClosed = width;
-  const contentWidthOpen = mobileSurface ? width : width - 232;
-  const contentWidthCollapsed = mobileSurface ? width : width - 76;
+  const contentWidthOpen = desktopSurface ? width - 232 : tabletSurface ? width - 76 : width;
+  const contentWidthCollapsed = desktopSurface ? width - 76 : width;
   const smallNaraWidth = width <= 560 ? width - 16 : Math.min(380, width - 24);
   const smallNaraHeight = width <= 560 ? Math.min(500, height - 88) : Math.min(520, height - 112);
   const mediumNaraWidth = width <= 560 ? width - 12 : Math.min(620, width - 24);
@@ -43,8 +45,9 @@ export function modelViewport(width, height, installed = false) {
   const checks = {
     drawerInsideViewport: !mobileSurface || drawerWidth > 0 && drawerWidth <= width - 42,
     drawerOverlayDoesNotShiftContent: contentWidthClosed === width,
-    desktopOpenContentPositive: mobileSurface || contentWidthOpen >= 792,
-    desktopCollapsedContentWider: mobileSurface || contentWidthCollapsed > contentWidthOpen,
+    desktopOpenContentPositive: !desktopSurface || contentWidthOpen >= 792,
+    desktopCollapsedContentWider: !desktopSurface || contentWidthCollapsed > contentWidthOpen,
+    tabletCompactContentPositive: !tabletSurface || contentWidthOpen >= 692,
     smallNaraInsideViewport: smallNaraWidth > 0 && smallNaraWidth <= width && smallNaraHeight > 0 && smallNaraHeight <= height,
     mediumNaraInsideViewport: mediumNaraWidth > 0 && mediumNaraWidth <= width && mediumNaraHeight > 0 && mediumNaraHeight <= height,
     fullNaraInsideViewport: fullNaraWidth > 0 && fullNaraWidth <= width && fullNaraHeight > 0 && fullNaraHeight <= height,
@@ -56,9 +59,9 @@ export function modelViewport(width, height, installed = false) {
     width,
     height,
     family,
-    desktopVariant: family === "desktop" ? desktopVariant(width) : null,
+    desktopVariant: desktopSurface ? desktopVariant(width) : null,
     installed,
-    navigation: mobileSurface ? "overlay-drawer" : "collapsible-sidebar",
+    navigation: mobileSurface ? "overlay-drawer" : tabletSurface ? "compact-sidebar" : "collapsible-sidebar",
     drawerWidth: round(drawerWidth),
     contentWidthClosed: round(contentWidthClosed),
     contentWidthOpen: round(contentWidthOpen),
