@@ -102,6 +102,7 @@ jobs:
         shell: bash
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
+      # Verify v181 UI and v182 route authority compatibility marker.
       - name: Verify v181 and v183 UI plus v182 route authority on production; Verify root login signup Studio mobile audit and tenant
         id: verify
         shell: bash
