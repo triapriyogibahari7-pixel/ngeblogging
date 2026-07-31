@@ -34,7 +34,10 @@ test("OAuth callback exchanges once and hands the session to Studio", () => {
   assert.match(callback, /Symbol\.for\("ngeblogging\.auth\.callbackOperationV162"\)/);
   assert.match(callback, /recovered-consumed-code/);
   assert.match(callback, /url\.pathname = recovery \? "\/reset-password" : success \? "\/studio"/);
-  assert.match(handoff, /\/studio\?auth_success=v158/);
+  assert.match(handoff, /const target = new URL\("\/studio", window\.location\.origin\)/);
+  assert.match(handoff, /target\.searchParams\.set\("auth_success", AUTH_SUCCESS_VALUE\)/);
+  assert.match(handoff, /const AUTH_SUCCESS_VALUE = "v158"/);
+  assert.match(handoff, /window\.location\.replace\(`\$\{target\.pathname\}\$\{target\.search\}`\)/);
 });
 
 test("release reports evidence honestly instead of claiming all providers verified", () => {
