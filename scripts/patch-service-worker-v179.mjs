@@ -6,6 +6,8 @@ const VERSION = "ngeblogging-app-v179-mobile-runtime-20260731";
 const CACHE = "mobile-runtime-cache-v179";
 const FIRST_SITE_VERSION = 'const FIRST_SITE_COMPAT_VERSION_V169 = "ngeblogging-app-v169-first-site-20260730";';
 const FIRST_SITE_CACHE = 'const FIRST_SITE_COMPAT_CACHE_V169 = "first-site-cache-v169";';
+const SCREENSHOT_VERSION = 'const SCREENSHOT_STABILITY_COMPAT_VERSION_V177 = "ngeblogging-app-v177-screenshot-stability-20260731";';
+const SCREENSHOT_CACHE = 'const SCREENSHOT_STABILITY_COMPAT_CACHE_V177 = "screenshot-stability-cache-v177";';
 const MOBILE_RUNTIME = `const MOBILE_RUNTIME_RELEASE = "${RELEASE}";`;
 
 function insertAfterVersion(source, line) {
@@ -31,6 +33,8 @@ for (const legacyEvent of [
 
 source = insertAfterVersion(source, FIRST_SITE_VERSION);
 source = insertAfterVersion(source, FIRST_SITE_CACHE);
+source = insertAfterVersion(source, SCREENSHOT_VERSION);
+source = insertAfterVersion(source, SCREENSHOT_CACHE);
 source = insertAfterVersion(source, MOBILE_RUNTIME);
 
 source = source.replace(
@@ -38,7 +42,16 @@ source = source.replace(
   "\n      // v179 memberi tahu tab lama tanpa navigasi paksa; pengguna tidak dikeluarkan dari editor atau callback autentikasi.",
 );
 
-for (const marker of [VERSION, CACHE, RELEASE, FIRST_SITE_VERSION, FIRST_SITE_CACHE, MOBILE_RUNTIME]) {
+for (const marker of [
+  VERSION,
+  CACHE,
+  RELEASE,
+  FIRST_SITE_VERSION,
+  FIRST_SITE_CACHE,
+  SCREENSHOT_VERSION,
+  SCREENSHOT_CACHE,
+  MOBILE_RUNTIME,
+]) {
   if (!source.includes(marker)) throw new Error(`Patch service worker v179 tidak lengkap: ${marker}`);
 }
 if (/await refreshStaleWindow\(client, url\);/.test(source)) {
