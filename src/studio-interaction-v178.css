@@ -1,0 +1,592 @@
+/* Mobile/Auth Interaction v178 — authority terakhir setelah v177. */
+html[data-studio-interaction-v178],
+html[data-studio-interaction-v178] body,
+html[data-studio-interaction-v178] #root,
+html[data-studio-interaction-v178] .sn-shell {
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:clip!important;
+  -webkit-text-size-adjust:100%!important;
+  text-size-adjust:100%!important;
+}
+html[data-studio-interaction-v178] .sn-shell,
+html[data-studio-interaction-v178] .sn-shell * { box-sizing:border-box!important; }
+
+/* Tombol n: satu kotak, satu glyph, selalu tepat di tengah. */
+html[data-studio-interaction-v178] .sn-sidebar-toggle {
+  position:relative!important;
+  flex:0 0 46px!important;
+  width:46px!important;
+  min-width:46px!important;
+  max-width:46px!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:1px solid #d7e1ed!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  color:#2867d5!important;
+  box-shadow:none!important;
+  transform:none!important;
+  opacity:1!important;
+  filter:none!important;
+}
+html[data-studio-interaction-v178] .sn-sidebar-toggle::before,
+html[data-studio-interaction-v178] .sn-sidebar-toggle::after,
+html[data-studio-interaction-v178] .sn-mobile-menu-mark::before,
+html[data-studio-interaction-v178] .sn-mobile-menu-mark::after,
+html[data-studio-interaction-v178] .sn-logo-mark::before,
+html[data-studio-interaction-v178] .sn-logo-mark::after { display:none!important;content:none!important; }
+html[data-studio-interaction-v178] .sn-mobile-menu-mark {
+  position:static!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#2867d5!important;
+  overflow:hidden!important;
+}
+html[data-studio-interaction-v178] .sn-mobile-menu-mark strong {
+  position:static!important;
+  display:block!important;
+  width:auto!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  color:inherit!important;
+  font:800 30px/1 Arial,sans-serif!important;
+  letter-spacing:0!important;
+  transform:none!important;
+  opacity:1!important;
+}
+html[data-studio-interaction-v178] .sn-mobile-menu-mark i,
+html[data-studio-interaction-v178] .sn-desktop-sidebar-icon { display:none!important; }
+
+/* Drawer dan backdrop tidak lagi saling menutup. */
+html[data-studio-interaction-v178] .sn-main[inert] {
+  pointer-events:auto!important;
+  user-select:auto!important;
+}
+html[data-studio-interaction-v178] .sn-side-backdrop {
+  position:fixed!important;
+  z-index:2147482400!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:var(--sm178-drawer-width)!important;
+  width:calc(100vw - var(--sm178-drawer-width))!important;
+  height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:rgba(17,34,57,.18)!important;
+  opacity:1!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  isolation:isolate!important;
+}
+html[data-studio-interaction-v178] .sn-side-backdrop::before,
+html[data-studio-interaction-v178] .sn-side-backdrop::after { display:none!important;content:none!important; }
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.sn-side,
+html[data-studio-device-mode="small"][data-studio-interaction-v178] #ngeblogging-studio-sidebar.sn-side {
+  position:fixed!important;
+  z-index:2147482500!important;
+  inset:0 auto 0 0!important;
+  width:var(--sm178-drawer-width)!important;
+  min-width:var(--sm178-drawer-width)!important;
+  max-width:calc(100vw - 36px)!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  display:flex!important;
+  flex-direction:column!important;
+  padding:0!important;
+  border-radius:0 17px 17px 0!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  opacity:1!important;
+  filter:none!important;
+  isolation:isolate!important;
+  box-shadow:16px 0 44px rgba(17,34,57,.20)!important;
+}
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.sn-side:not(.mobile-open),
+html[data-studio-device-mode="small"][data-studio-interaction-v178] #ngeblogging-studio-sidebar.sn-side:not(.mobile-open) {
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:translateX(-105%)!important;
+}
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.sn-side.mobile-open,
+html[data-studio-device-mode="small"][data-studio-interaction-v178] #ngeblogging-studio-sidebar.sn-side.mobile-open {
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translateX(0)!important;
+}
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar.sn-side.mobile-open,
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar.sn-side.mobile-open * {
+  opacity:1!important;
+  filter:none!important;
+  pointer-events:auto!important;
+}
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar .sn-logo {
+  flex:0 0 64px!important;
+  width:100%!important;
+  min-height:64px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:8px 10px!important;
+  overflow:hidden!important;
+}
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar .sn-logo-mark {
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border:1px solid #d7e1ed!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#2867d5!important;
+  overflow:hidden!important;
+}
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar .sn-logo-mark strong {
+  margin:0!important;
+  padding:0!important;
+  color:inherit!important;
+  font:800 28px/1 Arial,sans-serif!important;
+  letter-spacing:0!important;
+  transform:none!important;
+}
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar .sn-logo-mark i { display:none!important; }
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar .sn-logo>b {
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+}
+html[data-studio-interaction-v178] #ngeblogging-studio-sidebar .sn-side-close {
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  margin-left:auto!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border-radius:11px!important;
+}
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar>.sn-new {
+  flex:0 0 48px!important;
+  width:auto!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  margin:8px 10px 3px!important;
+  padding:0 14px!important;
+  justify-content:flex-start!important;
+  font-size:13px!important;
+}
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar>nav {
+  flex:1 1 auto!important;
+  min-height:0!important;
+  width:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-content:stretch!important;
+  gap:1px!important;
+  padding:2px 9px 7px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin!important;
+}
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar>nav>button,
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar>.sn-account-footer>button {
+  flex:0 0 43px!important;
+  width:100%!important;
+  min-height:43px!important;
+  max-height:43px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:11px!important;
+  padding:0 12px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+}
+html[data-studio-interaction-v178] .sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar>.sn-account-footer {
+  flex:0 0 auto!important;
+  width:100%!important;
+  display:grid!important;
+  gap:1px!important;
+  padding:6px 9px max(8px,env(safe-area-inset-bottom))!important;
+  background:#fff!important;
+}
+body.sm178-drawer-open { overflow:hidden!important;overscroll-behavior:none!important; }
+
+/* Mobile topbar: n kiri, profil kanan, tidak ada duplikasi workspace. */
+@media(max-width:820px){
+  html[data-studio-interaction-v178] .sn-main {
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin-left:0!important;
+  }
+  html[data-studio-interaction-v178] .sn-top {
+    position:relative!important;
+    z-index:1200!important;
+    width:100%!important;
+    min-height:66px!important;
+    height:66px!important;
+    display:grid!important;
+    grid-template-columns:46px minmax(0,1fr) 46px!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left))!important;
+    background:#fff!important;
+    overflow:visible!important;
+  }
+  html[data-studio-interaction-v178] .sn-top>.sn-sidebar-toggle { grid-column:1!important;display:grid!important; }
+  html[data-studio-interaction-v178] .sn-top>.sn-workspace,
+  html[data-studio-interaction-v178] .sn-top>.sn-cloud { display:none!important; }
+  html[data-studio-interaction-v178] .sn-top>.sn-top-actions {
+    grid-column:3!important;
+    width:46px!important;
+    min-width:46px!important;
+    display:flex!important;
+    justify-content:flex-end!important;
+    margin:0!important;
+  }
+  html[data-studio-interaction-v178] .sn-top>.sn-top-actions>:not(.sn-avatar) { display:none!important; }
+  html[data-studio-interaction-v178] .sn-avatar {
+    flex:0 0 46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    display:grid!important;
+    place-items:center!important;
+    padding:0!important;
+    border-radius:50%!important;
+    overflow:hidden!important;
+    font-size:13px!important;
+    line-height:1!important;
+  }
+}
+
+/* Dropdown hanya Profil, Pengaturan, Keluar; setiap tujuan terpisah. */
+html[data-studio-interaction-v178] .sn-profile-menu-v150 {
+  z-index:2147483000!important;
+  width:min(310px,calc(100vw - 20px))!important;
+  min-width:0!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:calc(100dvh - 82px)!important;
+  padding:8px!important;
+  overflow:auto!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  transform:none!important;
+}
+html[data-studio-interaction-v178] .sn-profile-menu-v150>[data-action="install"],
+html[data-studio-interaction-v178] .sn-profile-menu-v150>[data-action="avatar"],
+html[data-studio-interaction-v178] .sn-profile-menu-v150>.sm176-avatar-action { display:none!important; }
+html[data-studio-interaction-v178] .sn-profile-menu-v150>button[data-action] {
+  width:100%!important;
+  min-height:52px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-content:center!important;
+  gap:3px!important;
+  padding:8px 11px!important;
+  border-radius:10px!important;
+  text-align:left!important;
+}
+html[data-studio-interaction-v178] .sn-profile-menu-v150>button[data-action]>span { font-size:14px!important;font-weight:850!important; }
+html[data-studio-interaction-v178] .sn-profile-menu-v150>button[data-action]>small { color:#7d8a9d!important;font-size:10px!important;line-height:1.35!important; }
+
+/* Panel Profil berdiri sendiri, tidak bercampur dengan Pengaturan. */
+.sm178-profile-layer {
+  position:fixed!important;
+  z-index:2147483400!important;
+  inset:0!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))!important;
+}
+.sm178-profile-backdrop { position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border:0!important;background:rgba(17,34,57,.28)!important;backdrop-filter:none!important; }
+.sm178-profile-panel {
+  position:relative!important;
+  z-index:1!important;
+  width:min(620px,100%)!important;
+  max-height:calc(100dvh - 24px)!important;
+  overflow:auto!important;
+  border:1px solid #dce5ef!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  box-shadow:0 24px 80px rgba(17,34,57,.22)!important;
+}
+.sm178-profile-panel>header { display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;gap:12px!important;align-items:start!important;padding:20px!important;border-bottom:1px solid #e4eaf1!important; }
+.sm178-profile-panel>header small { color:#2d6edf!important;font-size:10px!important;font-weight:900!important;letter-spacing:.14em!important; }
+.sm178-profile-panel>header h2 { margin:5px 0!important;font:600 clamp(24px,5vw,34px)/1.1 "Playfair Display",serif!important; }
+.sm178-profile-panel>header p { margin:0!important;color:#738197!important;font-size:13px!important; }
+.sm178-profile-panel>header button { width:44px!important;height:44px!important;display:grid!important;place-items:center!important;padding:0!important;border:1px solid #dce5ef!important;border-radius:12px!important;background:#fff!important;font-size:24px!important; }
+.sm178-profile-state { margin:18px!important;padding:13px!important;border-radius:11px!important;background:#f2f6fb!important;color:#53667f!important;font-size:13px!important; }
+.sm178-profile-panel form { display:grid!important;gap:14px!important;padding:20px!important; }
+.sm178-profile-panel form[hidden],.sm178-profile-state[hidden] { display:none!important; }
+.sm178-profile-panel label { display:grid!important;gap:7px!important;color:#425873!important;font-size:12px!important;font-weight:800!important; }
+.sm178-profile-panel input,.sm178-profile-panel textarea { width:100%!important;min-width:0!important;max-width:100%!important;border:1px solid #d8e2ed!important;border-radius:11px!important;padding:12px!important;background:#fff!important;color:#1d304b!important;font:inherit!important; }
+.sm178-profile-panel footer { display:flex!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:9px!important; }
+.sm178-profile-panel footer button { min-height:44px!important;border:1px solid #d9e2ec!important;border-radius:11px!important;padding:0 16px!important;background:#fff!important;color:#52657d!important;font-weight:800!important; }
+.sm178-profile-panel footer button.primary { border-color:#2d6edf!important;background:#2d6edf!important;color:#fff!important; }
+
+/* Launcher Nara hanya ikon, tidak berkedip dan tidak ada tulisan yang keluar. */
+html[data-studio-interaction-v178] .nara-floating-button {
+  position:fixed!important;
+  z-index:1900!important;
+  right:max(12px,env(safe-area-inset-right))!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+  width:54px!important;
+  min-width:54px!important;
+  max-width:54px!important;
+  height:54px!important;
+  min-height:54px!important;
+  max-height:54px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border-radius:17px!important;
+  font-size:0!important;
+  line-height:0!important;
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+  opacity:1!important;
+  filter:none!important;
+  contain:layout paint style!important;
+}
+html[data-studio-interaction-v178] .nara-floating-button::before,
+html[data-studio-interaction-v178] .nara-floating-button::after { display:none!important;content:none!important; }
+html[data-studio-interaction-v178] .nara-floating-button>span {
+  width:36px!important;
+  height:36px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  border-radius:11px!important;
+}
+html[data-studio-interaction-v178] .nara-floating-button>span svg { width:23px!important;height:23px!important;max-width:23px!important; }
+html[data-studio-interaction-v178] .nara-floating-button>b,
+html[data-studio-interaction-v178] .nara-floating-button>small { display:none!important; }
+
+/* Nara small/medium nonmodal; full saja yang modal. */
+html[data-studio-interaction-v178] .nara-assistant-layer {
+  position:fixed!important;
+  z-index:2300!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  animation:none!important;
+  transition:none!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-layer[data-nara-interaction-v178="nonmodal"] .nara-assistant-backdrop {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-layer[data-nara-interaction-v178="modal"] {
+  pointer-events:auto!important;
+  background:rgba(15,29,49,.42)!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-layer[data-nara-interaction-v178="modal"] .nara-assistant-backdrop {
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  pointer-events:auto!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-shell {
+  position:absolute!important;
+  pointer-events:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  overflow:hidden!important;
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+  contain:layout paint style!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-shell[data-nara-size="small"] {
+  right:max(12px,env(safe-area-inset-right))!important;
+  bottom:max(76px,calc(env(safe-area-inset-bottom) + 68px))!important;
+  width:min(390px,calc(100vw - 24px))!important;
+  height:min(520px,calc(100dvh - 104px))!important;
+  min-height:340px!important;
+  max-height:calc(100dvh - 104px)!important;
+  border-radius:20px!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-shell[data-nara-size="medium"] {
+  right:max(12px,env(safe-area-inset-right))!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+  width:min(640px,calc(100vw - 24px))!important;
+  height:min(780px,calc(100dvh - 24px))!important;
+  min-height:420px!important;
+  max-height:calc(100dvh - 24px)!important;
+  border-radius:20px!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-shell[data-nara-size="full"] {
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  border-radius:0!important;
+}
+body.sm178-nara-full { overflow:hidden!important; }
+
+html[data-studio-interaction-v178] .nara-assistant-header {
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:visible!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-header>div:nth-child(2) { min-width:0!important;overflow:hidden!important; }
+html[data-studio-interaction-v178] .nara-assistant-header>div:nth-child(2)>span,
+html[data-studio-interaction-v178] .nara-assistant-header>div:nth-child(2)>small { max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important; }
+html[data-studio-interaction-v178] .nara-size-controls-v147 { min-width:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important; }
+html[data-studio-interaction-v178] .nara-size-controls-v147 button {
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:36px!important;
+  min-height:36px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  padding:0 8px!important;
+}
+html[data-studio-interaction-v178] .nara-size-controls-v147 button::after { font-size:10px!important;font-weight:850!important;line-height:1!important; }
+html[data-studio-interaction-v178] .nara-size-controls-v147 button[data-size="small"]::after { content:"Kecil"!important; }
+html[data-studio-interaction-v178] .nara-size-controls-v147 button[data-size="medium"]::after { content:"Medium"!important; }
+html[data-studio-interaction-v178] .nara-size-controls-v147 button[data-size="full"]::after { content:"Penuh"!important; }
+html[data-studio-interaction-v178] .nara-assistant-header>[data-nara-close-v178],
+html[data-studio-interaction-v178] .nara-assistant-header>.nara-close-v177 {
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  z-index:4!important;
+}
+html[data-studio-interaction-v178] .nara-assistant-messages { min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important; }
+html[data-studio-interaction-v178] .nara-quick-prompts { max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important; }
+html[data-studio-interaction-v178] .nara-quick-prompts button { flex:0 0 auto!important;white-space:nowrap!important; }
+html[data-studio-interaction-v178] .nara-composer,
+html[data-studio-interaction-v178] .nara-composer-tools { min-width:0!important;max-width:100%!important; }
+
+@media(max-width:560px){
+  html[data-studio-interaction-v178] .sn-profile-menu-v150 { top:calc(env(safe-area-inset-top) + 64px)!important;right:max(8px,env(safe-area-inset-right))!important;left:auto!important; }
+  html[data-studio-interaction-v178] .nara-assistant-shell[data-nara-size="small"] {
+    right:10px!important;
+    bottom:max(70px,calc(env(safe-area-inset-bottom) + 66px))!important;
+    width:calc(100vw - 20px)!important;
+    max-width:360px!important;
+    height:min(440px,calc(100dvh - 104px))!important;
+    min-height:320px!important;
+    max-height:calc(100dvh - 104px)!important;
+    border-radius:18px!important;
+  }
+  html[data-studio-interaction-v178] .nara-assistant-shell[data-nara-size="medium"] {
+    inset:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom)) auto!important;
+    width:calc(100vw - 20px)!important;
+    max-width:430px!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    border-radius:18px!important;
+  }
+  html[data-studio-interaction-v178] .nara-assistant-header {
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) 34px 34px 34px!important;
+    grid-template-areas:"orb brand voice reset close" "sizes sizes sizes sizes sizes"!important;
+    gap:5px!important;
+    align-items:center!important;
+    padding:8px!important;
+  }
+  html[data-studio-interaction-v178] .nara-assistant-header>.nara-brand-orb { grid-area:orb!important;width:34px!important;height:34px!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header>div:nth-child(2) { grid-area:brand!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header>.nara-size-controls-v147 { grid-area:sizes!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header>.nara-auto-voice-v148 { grid-area:voice!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header>.nara-reset-v177,
+  html[data-studio-interaction-v178] .nara-assistant-header>button:nth-last-child(2) { grid-area:reset!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header>[data-nara-close-v178],
+  html[data-studio-interaction-v178] .nara-assistant-header>.nara-close-v177 { grid-area:close!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header>div:nth-child(2)>small { display:none!important; }
+  html[data-studio-interaction-v178] .nara-context-bar { min-height:38px!important;padding:5px 10px!important; }
+  html[data-studio-interaction-v178] .nara-composer { padding:8px!important; }
+  html[data-studio-interaction-v178] .nara-composer textarea { min-height:72px!important;max-height:150px!important;font-size:14px!important;resize:none!important; }
+  html[data-studio-interaction-v178] .nara-composer-tools {
+    display:grid!important;
+    grid-template-columns:40px 40px minmax(0,1fr) 40px!important;
+    grid-template-areas:"attach mic intelligence send" "model model model model"!important;
+    gap:6px!important;
+    align-items:center!important;
+  }
+  html[data-studio-interaction-v178] .nara-attachment-menu-wrap { grid-area:attach!important; }
+  html[data-studio-interaction-v178] .nara-attachment-menu-wrap+button { grid-area:mic!important; }
+  html[data-studio-interaction-v178] .nara-select.intelligence { grid-area:intelligence!important; }
+  html[data-studio-interaction-v178] .nara-select.model { grid-area:model!important;width:100%!important; }
+  html[data-studio-interaction-v178] .nara-send { grid-area:send!important; }
+  html[data-studio-interaction-v178] .nara-select { width:100%!important;min-width:0!important;max-width:100%!important; }
+  html[data-studio-interaction-v178] .nara-select select { width:100%!important;min-width:0!important;height:38px!important;font-size:11px!important; }
+}
+
+@media(max-width:360px){
+  html[data-studio-interaction-v178] .nara-size-controls-v147 button::after { display:none!important; }
+  html[data-studio-interaction-v178] .nara-assistant-header { grid-template-columns:32px minmax(0,1fr) 32px 32px 32px!important; }
+}
+
+@media(orientation:landscape) and (max-height:600px){
+  html[data-studio-interaction-v178] .nara-assistant-shell[data-nara-size="small"] {
+    right:10px!important;
+    bottom:10px!important;
+    width:min(400px,calc(100vw - 20px))!important;
+    height:calc(100dvh - 20px)!important;
+    max-height:none!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-studio-interaction-v178] *,
+  html[data-studio-interaction-v178] *::before,
+  html[data-studio-interaction-v178] *::after { animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important; }
+}
