@@ -1,4 +1,5 @@
-const VERSION = "ngeblogging-app-v169-first-site-20260730";
+const VERSION = "ngeblogging-app-v177-screenshot-fixes-20260731";
+const FIRST_SITE_COMPAT_VERSION = "ngeblogging-app-v169-first-site-20260730";
 const ROUTE_RECOVERY_COMPAT_VERSION = "ngeblogging-app-v168-route-recovery-20260730";
 const AUTH_EDITOR_COMPAT_VERSION = "ngeblogging-app-v162-auth-editor-20260730";
 const CONTENT_WORKFLOW_COMPAT_VERSION = "ngeblogging-app-v161-content-workflow-20260730";
@@ -6,7 +7,8 @@ const STUDIO_UI_COMPAT_VERSION = "ngeblogging-app-v159-studio-ui-contract-202607
 const PRODUCTION_ENTRY_COMPAT_VERSION = "ngeblogging-app-v154-production-entry-20260730";
 const LEGACY_VERSION = "ngeblogging-app-v153-auth-production-20260730";
 const STUDIO_COMPLETION_COMPAT_VERSION = "ngeblogging-app-v151-studio-completion-20260729";
-const CACHE_RELEASE = "first-site-cache-v169";
+const CACHE_RELEASE = "screenshot-fixes-cache-v177";
+const FIRST_SITE_COMPAT_RELEASE = "first-site-cache-v169";
 const ROUTE_RECOVERY_COMPAT_RELEASE = "route-recovery-cache-v168";
 const AUTH_EDITOR_COMPAT_RELEASE = "auth-editor-cache-v162";
 const CONTENT_WORKFLOW_COMPAT_RELEASE = "content-workflow-cache-v161";
@@ -28,8 +30,9 @@ const CONTENT_EDITOR_RELEASE = "content-editor-v162-20260730";
 const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
+const SCREENSHOT_FIXES_RELEASE = "studio-screenshot-fixes-v177-20260731";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "first-site-v169";
+const FORCE_REFRESH_VALUE = "screenshot-fixes-v177";
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
 const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
@@ -63,7 +66,7 @@ function isAuthSurface(url) {
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
-  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v169");
+  url.searchParams.set("recovery_reason", "service-worker-stale-shell-v177");
   try {
     await client.navigate(url.href);
   } catch {
@@ -75,6 +78,7 @@ function versionPayload(type) {
   return {
     type,
     version: VERSION,
+    firstSiteCompatVersion: FIRST_SITE_COMPAT_VERSION,
     routeRecoveryCompatVersion: ROUTE_RECOVERY_COMPAT_VERSION,
     authEditorCompatVersion: AUTH_EDITOR_COMPAT_VERSION,
     contentWorkflowCompatVersion: CONTENT_WORKFLOW_COMPAT_VERSION,
@@ -83,6 +87,7 @@ function versionPayload(type) {
     legacyVersion: LEGACY_VERSION,
     studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
     release: CACHE_RELEASE,
+    firstSiteCompatRelease: FIRST_SITE_COMPAT_RELEASE,
     routeRecoveryCompatRelease: ROUTE_RECOVERY_COMPAT_RELEASE,
     authEditorCompatRelease: AUTH_EDITOR_COMPAT_RELEASE,
     authEditorCompatStaleReason: AUTH_EDITOR_COMPAT_STALE_REASON,
@@ -104,6 +109,7 @@ function versionPayload(type) {
     productionRecoveryRelease: PRODUCTION_RECOVERY_RELEASE,
     firstSiteRelease: FIRST_SITE_RELEASE,
     sitePolicyRelease: SITE_POLICY_RELEASE,
+    screenshotFixesRelease: SCREENSHOT_FIXES_RELEASE,
   };
 }
 
@@ -114,8 +120,8 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_FORCE_RELOAD_V169"),
-        reason: "service-worker-activated-first-site-v169",
+        ...versionPayload("NGE_BLOGGING_FORCE_RELOAD_V177"),
+        reason: "service-worker-activated-screenshot-fixes-v177",
       });
       await refreshStaleWindow(client, url);
     } catch {
