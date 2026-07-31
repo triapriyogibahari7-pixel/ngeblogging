@@ -56,7 +56,7 @@ test("profile menu shows registered name and provides a real avatar upload", () 
 
 test("Nara launcher and all three window sizes are stable and nonmodal until full screen", () => {
   assert.match(runtime, /forceSmallNara/);
-  assert.match(runtime, /data-nara-interaction-v176/);
+  assert.match(runtime, /dataset\.naraInteractionV176/);
   assert.match(runtime, /full \? "modal" : "nonmodal"/);
   assert.match(runtime, /aria-modal/);
   assert.match(css, /\.nara-floating-button/);
