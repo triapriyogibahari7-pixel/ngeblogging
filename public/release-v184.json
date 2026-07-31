@@ -1,0 +1,47 @@
+{
+  "release": "production-route-cutover-v184-20260801",
+  "status": "candidate",
+  "basedOn": "studio-production-v183-20260801",
+  "purpose": "Expose the current React Studio build by replacing stale apex and www Worker Domain bindings with authoritative zone routes while preserving the v182 site policy and v183 UI authority.",
+  "routeAuthority": {
+    "workerService": "ngeblogging",
+    "apex": "ngeblogging.com/*",
+    "www": "www.ngeblogging.com/*",
+    "tenantWildcard": "*.ngeblogging.com/*",
+    "workerDomainsDetachedBeforeVerification": true,
+    "exactRoutesPointToCurrentWorker": true,
+    "legacyWhiteR4Rejected": true
+  },
+  "preserved": {
+    "siteLimitSummaryV182": true,
+    "maxSitesPerAccount": 25,
+    "summaryViewSiteAction": true,
+    "studioProductionV183": true,
+    "sixResponsiveFamilies": true,
+    "postsAndPages": true,
+    "themeStudio": true,
+    "media": true,
+    "analytics": true,
+    "members": true,
+    "comments": true,
+    "domains": true,
+    "apiKeys": true,
+    "naraSmallMediumFull": true,
+    "sessionUntilExplicitLogout": true,
+    "tenantWildcard": true
+  },
+  "authentication": {
+    "providerEndToEndVerificationRequired": true,
+    "massLoginCapacityClaimed": false
+  },
+  "productionVerificationRequired": [
+    "/",
+    "/login",
+    "/signup",
+    "/studio",
+    "/release-v181.json",
+    "/release-v182.json",
+    "/release-v183.json",
+    "/release-v184.json"
+  ]
+}
