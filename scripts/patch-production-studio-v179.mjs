@@ -21,7 +21,7 @@ function patchStudio() {
     const end = source.indexOf(nextMarker, start);
     if (start < 0 || end < 0) throw new Error("PATCH_V179_STUDIO_BOOTSTRAP_ANCHOR_MISSING");
     const replacement = `  useEffect(() => {
-    if (!user?.id || !supabaseConfigured) { setDataMode("local"); return; }
+    if (!user?.id || !supabaseConfigured) { setDataMode("local"); return undefined; }
     let cancelled = false;
     setDataMode("connecting");
     document.documentElement.dataset.studioBootstrapV179 = "bootstrap-partial-cloud-v179";
@@ -49,7 +49,7 @@ function patchStudio() {
       }).catch((error) => console.warn("Profil belum dapat dimuat tanpa memblokir situs", error));
     })();
     return () => { cancelled = true; };
-  };`;
+  }, [user?.id]);`;
     source = `${source.slice(0, start)}${replacement}${source.slice(end)}`;
   }
 
@@ -65,12 +65,22 @@ function patchStudio() {
 function patchOperationalLoading() {
   const domainFile = "src/DomainPanelV124.jsx";
   let domain = read(domainFile);
+  if (!domain.includes('from "./lib/site-policy-v169.js"')) {
+    domain = replaceOnce(
+      domain,
+      'import { setSitePublication } from "./lib/studio-data.js";',
+      'import { setSitePublication } from "./lib/studio-data.js";\nimport { MAX_SITES_PER_ACCOUNT } from "./lib/site-policy-v169.js";',
+      "DOMAIN_SITE_POLICY_IMPORT",
+    );
+  }
   domain = replaceOnce(
     domain,
     '    if (!site?.id) return;\n    if (!quiet) setLoading(true);',
     '    if (!site?.id) { setLoading(false); setError("Situs aktif belum tersedia. Muat ulang Studio atau pilih Workspace."); return; }\n    if (!quiet) setLoading(true);',
     "DOMAIN_NO_SITE",
   );
+  domain = domain.replace('{sites.length}/12 situs dalam akun', '{sites.length}/{MAX_SITES_PER_ACCOUNT} situs dalam akun');
+  domain = domain.replace('value={`${sites.length}/12`}', 'value={`${sites.length}/${MAX_SITES_PER_ACCOUNT}`}');
   write(domainFile, domain);
 
   const commentsFile = "src/CommentsPanelV124.jsx";
@@ -149,8 +159,10 @@ function verify() {
   const checks = [
     ["src/Studio.jsx", "studio-production-stability-v179.js"],
     ["src/StudioNext.jsx", "bootstrap-partial-cloud-v179"],
+    ["src/StudioNext.jsx", "}, [user?.id]);"],
     ["src/StudioNext.jsx", "scrollTo?.({ top: 0"],
     ["src/DomainPanelV124.jsx", "Situs aktif belum tersedia"],
+    ["src/DomainPanelV124.jsx", "MAX_SITES_PER_ACCOUNT"],
     ["src/CommentsPanelV124.jsx", "Koneksi komentar belum tersedia"],
     ["src/lib/supabase.js", "direct-fallback-v179"],
     ["src/lib/supabase.js", "direct-supabase-oauth"],
@@ -158,6 +170,10 @@ function verify() {
   ];
   const missing = checks.filter(([file, marker]) => !read(file).includes(marker));
   if (missing.length) throw new Error(`PATCH_V179_INCOMPLETE:${missing.map(([file, marker]) => `${file}:${marker}`).join(",")}`);
+  const domain = read("src/DomainPanelV124.jsx");
+  if (domain.includes("/12 situs dalam akun") || domain.includes("${sites.length}/12")) {
+    throw new Error("PATCH_V179_DOMAIN_LEGACY_LIMIT_REMAINS");
+  }
 }
 
 patchStudio();
@@ -165,4 +181,4 @@ patchOperationalLoading();
 patchAuthFallback();
 patchEntryAndCache();
 verify();
-console.log(`[${RELEASE}] source, auth, loading, scroll, and cache patches verified`);
+console.log(`[${RELEASE}] source, auth, loading, scroll, quota, and cache patches verified`);
