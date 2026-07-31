@@ -11,6 +11,7 @@ const studio = read("src/StudioNext.jsx");
 const editor = read("src/ContentEditor.jsx");
 const swPatch = read("scripts/patch-service-worker-v179.mjs");
 const recoveryPatch = read("scripts/patch-production-recovery-v180.mjs");
+const recoveryCompat = read("scripts/patch-production-recovery-v180-compat.mjs");
 const recoveryRuntime = read("src/studio-production-recovery-v180.js");
 const recoveryCss = read("src/studio-production-recovery-v180.css");
 const auth = read("src/lib/supabase.js");
@@ -166,13 +167,14 @@ test("Domain and Comments stop loading when no active site exists", () => {
   assert.equal(release180.repairs.commentsLoadingHasTerminalState, true);
 });
 
-test("service worker gets v180 cache identity without forcing open tabs to navigate", () => {
+test("service worker keeps the proven v179 cache identity and carries the v180 marker", () => {
   assert.match(swPatch, /ngeblogging-app-v179-mobile-runtime-20260731/);
   assert.match(swPatch, /patch-production-recovery-v180\.mjs/);
-  assert.match(recoveryPatch, /ngeblogging-app-v180-production-recovery-20260731/);
-  assert.match(recoveryPatch, /production-recovery-cache-v180/);
-  assert.match(serviceWorker, /ngeblogging-app-v180-production-recovery-20260731/);
-  assert.match(serviceWorker, /production-recovery-cache-v180/);
+  assert.match(swPatch, /patch-production-recovery-v180-compat\.mjs/);
+  assert.match(recoveryCompat, /ngeblogging-app-v179-mobile-runtime-20260731/);
+  assert.match(recoveryCompat, /mobile-runtime-cache-v179/);
+  assert.match(serviceWorker, /ngeblogging-app-v179-mobile-runtime-20260731/);
+  assert.match(serviceWorker, /mobile-runtime-cache-v179/);
   assert.match(serviceWorker, /PRODUCTION_RECOVERY_RELEASE_V180/);
   assert.match(serviceWorker, /ngeblogging-app-v169-first-site-20260730/);
   assert.match(serviceWorker, /first-site-cache-v169/);
