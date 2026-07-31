@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/patch-studio-mobile-v176.mjs && vite build"
+    "build": "node scripts/patch-studio-mobile-v176.mjs && node --test tests/studio-mobile-stability-v176.test.mjs && vite build"
   },
   "engines": {"node": ">=22.12.0"},
   "dependencies": {
