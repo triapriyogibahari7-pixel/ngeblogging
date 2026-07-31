@@ -1,0 +1,52 @@
+{
+  "status": "candidate",
+  "release": "studio-mobile-auth-v180-20260731",
+  "basedOn": "studio-mobile-runtime-v179-20260731",
+  "source": "screenshot-driven stuck-overlay, editor-reflow, Nara and authentication-build repair",
+  "responsiveFamilies": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "desktop"
+  ],
+  "desktopVariants": [
+    "laptop",
+    "desktop",
+    "computer"
+  ],
+  "repairs": {
+    "closedDrawerBackdropHidden": true,
+    "drawerBackdropOutsideOnly": true,
+    "drawerContentClickable": true,
+    "pageInteractionRestoredAfterDrawerClose": true,
+    "mobileLogoCentered": true,
+    "naraLauncherStable": true,
+    "naraSmallMediumNonmodal": true,
+    "naraFullModalOnly": true,
+    "naraCloseAlwaysVisible": true,
+    "naraMobileControlsReflow": true,
+    "postPageEditorMobileReflow": true,
+    "operationalPagesBounded": true,
+    "netlifyUsesCompleteProductionBuild": true,
+    "pkceCallbackPatchIncludedInNetlifyBuild": true
+  },
+  "legacyFeaturesPreserved": true,
+  "fakeStatisticsAdded": false,
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "pkceCallbackBuildPathRepaired": true,
+    "googleEndToEndVerifiedByThisRelease": false,
+    "linkedinEndToEndVerifiedByThisRelease": false,
+    "emailPasswordEndToEndVerifiedByThisRelease": false,
+    "note": "Build path diperbaiki agar patch callback PKCE dijalankan. Verifikasi provider nyata tetap memerlukan kredensial dan pengujian produksi."
+  },
+  "capacity": {
+    "productionLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  },
+  "realDeviceVerification": "required-before-100-percent-claim"
+}
