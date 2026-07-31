@@ -1,0 +1,34 @@
+{
+  "status": "ready",
+  "release": "studio-production-v183-20260801",
+  "serviceWorkerVersion": "ngeblogging-app-v183-production-ui-20260801",
+  "responsiveFamilies": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "desktop"
+  ],
+  "desktopVariants": [
+    "laptop",
+    "computer"
+  ],
+  "repairs": {
+    "drawerMenuClickable": true,
+    "drawerBackdropBelowMenu": true,
+    "mobileEditorNoVerticalText": true,
+    "mediaFiltersStayInline": true,
+    "membersControlsDoNotOverlap": true,
+    "themeActionsVisible": true,
+    "themeCodeEditorStacksOnMobile": true,
+    "naraLauncherCentered": true,
+    "naraSmallMediumNonModal": true,
+    "naraFullScreenModal": true,
+    "naraCloseVisible": true,
+    "loadingTimeoutHasRetry": true,
+    "activeSiteBootstrapResilient": true,
+    "sessionPersistsUntilExplicitLogout": true,
+    "forcedServiceWorkerNavigationDisabled": true
+  }
+}
