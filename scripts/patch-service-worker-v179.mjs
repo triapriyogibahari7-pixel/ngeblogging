@@ -30,3 +30,6 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
+
+// v180 berjalan sesudah authority v179 selesai agar tidak ada race condition atau beforeExit patch.
+await import("./patch-production-recovery-v180.mjs");
