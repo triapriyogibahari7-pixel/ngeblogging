@@ -72,9 +72,9 @@ patchFile("src/studio-recovery-v150.js", (input) => {
   let source = input;
   source = replaceOnce(
     source,
-    '    <button type="button" role="menuitem" data-action="install"><span>Dapatkan aplikasi</span><small>Pasang PWA pada handphone atau komputer</small></button>\n',
-    "",
-    "PROFILE_REMOVE_INSTALL",
+    'function openProfileMenu(avatar) {',
+    'window.addEventListener("ngeblogging:install-app-request", () => { installApplication(); });\n\nfunction openProfileMenu(avatar) {',
+    "INSTALL_EVENT",
   );
   source = replaceOnce(
     source,
@@ -82,7 +82,7 @@ patchFile("src/studio-recovery-v150.js", (input) => {
     '    if (action === "profile") { closeProfileMenu(); window.dispatchEvent(new CustomEvent("ngeblogging:open-profile")); }\n    if (action === "settings") { closeProfileMenu(); window.dispatchEvent(new CustomEvent("ngeblogging:open-settings")); }',
     "PROFILE_ACTIONS",
   );
-  if (!source.includes("ngeblogging:open-profile") || !source.includes("ngeblogging:open-settings")) {
+  if (!source.includes("ngeblogging:open-profile") || !source.includes("ngeblogging:open-settings") || !source.includes("ngeblogging:install-app-request")) {
     throw new Error("PATCH_V177_PROFILE_MENU_INCOMPLETE");
   }
   return source;
