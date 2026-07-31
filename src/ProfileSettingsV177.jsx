@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Camera, Check, Globe2, LoaderCircle, Save, UserRound } from "lucide-react";
+import { Camera, Check, Download, Globe2, LoaderCircle, Save, UserRound } from "lucide-react";
 import { supabase } from "./lib/supabase.js";
 import { updateUserProfile } from "./lib/studio-data.js";
 import "./studio-screenshot-fixes-v177.css";
@@ -90,6 +90,8 @@ export function ProfileViewV177({ site, profile, setProfile, user, setToast }) {
     }
   };
 
+  const requestInstall = () => window.dispatchEvent(new CustomEvent("ngeblogging:install-app-request"));
+
   return <div className="sn-view-pad sp177-page" data-profile-page-release="v177">
     <header className="sn-page-title sp177-title">
       <div><small>AKUN NGEBLOGGING</small><h1>Profil</h1><p>Identitas pribadi dipisahkan dari pengaturan situs agar mudah dipahami dan tidak tercampur.</p></div>
@@ -102,6 +104,7 @@ export function ProfileViewV177({ site, profile, setProfile, user, setToast }) {
         <div><h2>{draft.displayName || "Akun Ngeblogging"}</h2><p>{user?.email || "Email akun tidak ditampilkan"}</p></div>
         <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif" hidden onChange={uploadAvatar}/>
         <button type="button" onClick={() => fileInput.current?.click()} disabled={avatarBusy}><Camera/>{avatarBusy ? "Mengunggah…" : "Ganti avatar"}</button>
+        <button type="button" onClick={requestInstall}><Download/>Dapatkan aplikasi</button>
       </section>
       <section className="sp177-form-card">
         <h2><UserRound/> Identitas</h2>
