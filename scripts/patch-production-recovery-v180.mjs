@@ -6,22 +6,36 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 
-function replaceSection(source, startNeedle, endNeedle, replacement, label) {
-  if (source.includes(replacement)) return source;
-  const anchor = source.indexOf(startNeedle);
-  if (anchor < 0) throw new Error(`V180_${label}_START_MISSING`);
-  const start = source.lastIndexOf("  useEffect(() => {", anchor);
-  const end = source.indexOf(endNeedle, anchor);
-  if (start < 0 || end < 0) throw new Error(`V180_${label}_RANGE_MISSING`);
-  return `${source.slice(0, start)}${replacement}${source.slice(end)}`;
+function replaceEffectContaining(source, needle, nextEffect, label) {
+  if (source.includes("production-recovery-bootstrap-v180")) return source;
+  const needleIndex = source.indexOf(needle);
+  if (needleIndex < 0) throw new Error(`V180_${label}_START_MISSING`);
+  const effectStart = source.lastIndexOf("  useEffect(() => {", needleIndex);
+  const nextEffectStart = source.indexOf("\n\n  useEffect(() => {", needleIndex);
+  if (effectStart < 0 || nextEffectStart < 0) throw new Error(`V180_${label}_RANGE_MISSING`);
+  return `${source.slice(0, effectStart)}${nextEffect}${source.slice(nextEffectStart)}`;
+}
+
+function patchChooseView(source) {
+  const marker = "production-recovery-navigation-v180";
+  if (source.includes(marker)) return source;
+
+  const lines = source.split("\n");
+  const index = lines.findIndex((line) => line.includes("const chooseView = (next) =>"));
+  if (index < 0) throw new Error("V180_CHOOSE_VIEW_ANCHOR_MISSING");
+
+  const line = lines[index];
+  const closing = line.lastIndexOf("};");
+  if (closing < 0) throw new Error("V180_CHOOSE_VIEW_LINE_UNSUPPORTED");
+  const reset = ' requestAnimationFrame(() => { const main = document.querySelector(".sn-main"); main?.scrollTo?.({ top: 0, left: 0, behavior: "auto" }); window.scrollTo?.({ top: 0, left: 0, behavior: "auto" }); document.documentElement.dataset.studioNavigationV180 = "production-recovery-navigation-v180"; });';
+  lines[index] = `${line.slice(0, closing)}${reset} ${line.slice(closing)}`;
+  return lines.join("\n");
 }
 
 async function patchStudioBootstrap() {
   const path = "src/StudioNext.jsx";
   let source = await read(path);
-
-  if (!source.includes("production-recovery-bootstrap-v180")) {
-    const bootstrap = `  useEffect(() => {
+  const bootstrap = `  useEffect(() => {
     if (!user?.id || !supabaseConfigured) { setDataMode("local"); return undefined; }
     let cancelled = false;
     setDataMode("connecting");
@@ -55,22 +69,13 @@ async function patchStudioBootstrap() {
     return () => { cancelled = true; };
   }, [user?.id]);`;
 
-    source = replaceSection(
-      source,
-      "Promise.all([getOrCreatePrimarySite(user), listUserSites(user.id), getUserProfile(user.id)])",
-      "\n\n  useEffect(() => {\n    if (dataMode !== \"cloud\"",
-      bootstrap,
-      "STUDIO_BOOTSTRAP",
-    );
-  }
-
-  const oldChoose = '  const chooseView = (next) => { setView(next); setMobileSidebar(false); if (["posts", "pages"].includes(next)) setQuery(""); };';
-  const newChoose = '  const chooseView = (next) => { setView(next); setMobileSidebar(false); if (["posts", "pages"].includes(next)) setQuery(""); requestAnimationFrame(() => { const main = document.querySelector(".sn-main"); main?.scrollTo?.({ top: 0, left: 0, behavior: "auto" }); window.scrollTo?.({ top: 0, left: 0, behavior: "auto" }); }); };';
-  if (!source.includes(newChoose)) {
-    if (!source.includes(oldChoose)) throw new Error("V180_CHOOSE_VIEW_ANCHOR_MISSING");
-    source = source.replace(oldChoose, newChoose);
-  }
-
+  source = replaceEffectContaining(
+    source,
+    "Promise.all([getOrCreatePrimarySite(user), listUserSites(user.id), getUserProfile(user.id)])",
+    bootstrap,
+    "STUDIO_BOOTSTRAP",
+  );
+  source = patchChooseView(source);
   await write(path, source);
 }
 
@@ -99,8 +104,8 @@ async function patchOperationalLoading() {
 async function patchAuthentication() {
   const path = "src/lib/supabase.js";
   let source = await read(path);
-  source = source.replace('const AUTH_RELEASE = "auth-production-v153-20260730";', 'const AUTH_RELEASE = "auth-production-recovery-v180-20260731";');
-  source = source.replace('"x-client-info": "ngeblogging-web-v153"', '"x-client-info": "ngeblogging-web-v180"');
+  source = source.replace(/const AUTH_RELEASE = ".*?";/, 'const AUTH_RELEASE = "auth-production-recovery-v180-20260731";');
+  source = source.replace(/"x-client-info": "ngeblogging-web-v\d+"/, '"x-client-info": "ngeblogging-web-v180"');
 
   if (!source.includes("direct-fallback-v180")) {
     const start = source.indexOf("async function authAwareFetch(input, init) {");
@@ -136,15 +141,17 @@ async function patchAuthentication() {
     source = `${source.slice(0, start)}${replacement}${source.slice(end + 2)}`;
   }
 
-  const providerStart = source.indexOf("function providerDestination(value) {");
-  const providerEnd = source.indexOf("\n}\n\nexport async function signInWithProvider", providerStart);
-  if (providerStart < 0 || providerEnd < 0) throw new Error("V180_PROVIDER_RANGE_MISSING");
-  const providerReplacement = `function providerDestination(value) {
+  if (!source.includes("direct-supabase-oauth")) {
+    const providerStart = source.indexOf("function providerDestination(value) {");
+    const providerEnd = source.indexOf("\n}\n\nexport async function signInWithProvider", providerStart);
+    if (providerStart < 0 || providerEnd < 0) throw new Error("V180_PROVIDER_RANGE_MISSING");
+    const providerReplacement = `function providerDestination(value) {
   const direct = new URL(value);
   if (typeof document !== "undefined") document.documentElement.dataset.authProviderTransportV180 = "direct-supabase-oauth";
   return direct.toString();
 }`;
-  source = `${source.slice(0, providerStart)}${providerReplacement}${source.slice(providerEnd + 2)}`;
+    source = `${source.slice(0, providerStart)}${providerReplacement}${source.slice(providerEnd + 2)}`;
+  }
 
   await write(path, source);
 }
@@ -181,7 +188,7 @@ async function verify() {
   const checks = [
     ["src/StudioNext.jsx", "production-recovery-bootstrap-v180"],
     ["src/StudioNext.jsx", "setActiveSiteId(primary.id)"],
-    ["src/StudioNext.jsx", 'scrollTo?.({ top: 0, left: 0, behavior: "auto" })'],
+    ["src/StudioNext.jsx", "production-recovery-navigation-v180"],
     ["src/DomainPanelV124.jsx", "Situs aktif belum tersedia"],
     ["src/CommentsPanelV124.jsx", "Koneksi komentar belum tersedia"],
     ["src/lib/supabase.js", "direct-fallback-v180"],
