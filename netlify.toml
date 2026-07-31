@@ -1,5 +1,5 @@
 [build]
-  command = "npm run verify:v177 && npx vite build"
+  command = "node scripts/netlify-v177-diagnostic.mjs"
   publish = "dist"
 
 [build.environment]
