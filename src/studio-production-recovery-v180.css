@@ -1,0 +1,54 @@
+/* Final production recovery guard. v179 remains the visual authority. */
+html[data-studio-production-recovery-v180],
+html[data-studio-production-recovery-v180] body,
+html[data-studio-production-recovery-v180] #root {
+  min-width:0;
+  max-width:100%;
+  overflow-x:clip;
+}
+
+html[data-studio-production-recovery-v180] .sn-main,
+html[data-studio-production-recovery-v180] .sn-main>*,
+html[data-studio-production-recovery-v180] .sn-view-pad,
+html[data-studio-production-recovery-v180] .sv124-page,
+html[data-studio-production-recovery-v180] .sn-api-page,
+html[data-studio-production-recovery-v180] .mv176-page {
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+html[data-studio-production-recovery-v180] table {
+  max-width:100%;
+}
+
+html[data-studio-production-recovery-v180] img,
+html[data-studio-production-recovery-v180] video,
+html[data-studio-production-recovery-v180] iframe {
+  max-width:100%;
+}
+
+@media(max-width:820px) {
+  html[data-studio-production-recovery-v180] .sn-shell>.sn-side.mobile-open {
+    pointer-events:auto!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+
+  html[data-studio-production-recovery-v180] .sn-shell>.sn-side.mobile-open * {
+    pointer-events:auto!important;
+  }
+
+  html[data-studio-production-recovery-v180] .sn-main {
+    width:100%!important;
+    margin:0!important;
+    transform:none!important;
+  }
+
+  html[data-studio-production-recovery-v180] .sv124-error,
+  html[data-studio-production-recovery-v180] .sn-error,
+  html[data-studio-production-recovery-v180] .v179-loading-stalled {
+    width:100%!important;
+    max-width:100%!important;
+    overflow-wrap:anywhere;
+  }
+}
