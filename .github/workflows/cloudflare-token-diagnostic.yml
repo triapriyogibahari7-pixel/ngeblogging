@@ -45,6 +45,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Validate Cloudflare credentials
+        id: credentials
         shell: bash
         run: |
           set -euo pipefail
@@ -55,12 +56,15 @@ jobs:
           echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
 
       - name: Run v183 and v184 regression
+        id: regression
         run: node --test tests/studio-production-v183.test.mjs tests/production-route-cutover-v184.test.mjs
 
       - name: Build production application
+        id: build
         run: npm run build
 
       - name: Build active-zone Wrangler configuration
+        id: config
         shell: bash
         run: |
           set -euo pipefail
@@ -68,15 +72,19 @@ jobs:
           npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v184
 
       - name: Deploy Worker and assets
+        id: deploy
         run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
       - name: Preserve compatibility routing before cutover
+        id: compatibility
         run: node scripts/finalize-cloudflare-routes-v175.mjs
 
       - name: Cut over apex and www to authoritative zone routes v184
+        id: cutover
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
       - name: Verify live apex, auth routes, Studio and release markers
+        id: verify
         shell: bash
         run: |
           set -euo pipefail
@@ -114,3 +122,40 @@ jobs:
           done
           echo "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED"
           exit 1
+
+      - name: Publish production status
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
+          REGRESSION_OUTCOME: ${{ steps.regression.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          CONFIG_OUTCOME: ${{ steps.config.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          COMPATIBILITY_OUTCOME: ${{ steps.compatibility.outcome }}
+          CUTOVER_OUTCOME: ${{ steps.cutover.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const outcomes = {
+              credentials: process.env.CREDENTIALS_OUTCOME || 'not-run',
+              regression: process.env.REGRESSION_OUTCOME || 'not-run',
+              build: process.env.BUILD_OUTCOME || 'not-run',
+              config: process.env.CONFIG_OUTCOME || 'not-run',
+              deploy: process.env.DEPLOY_OUTCOME || 'not-run',
+              compatibility: process.env.COMPATIBILITY_OUTCOME || 'not-run',
+              cutover: process.env.CUTOVER_OUTCOME || 'not-run',
+              verify: process.env.VERIFY_OUTCOME || 'not-run',
+            };
+            const ready = Object.values(outcomes).every((value) => value === 'success');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ready ? 'success' : 'failure',
+              context: 'Ngeblogging production route cutover v184',
+              description: `build=${outcomes.build}; cutover=${outcomes.cutover}; verify=${outcomes.verify}`.slice(0, 140),
+              target_url: runUrl,
+            });
