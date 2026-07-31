@@ -1,0 +1,35 @@
+{
+  "release": "production-recovery-v180-20260731",
+  "status": "candidate",
+  "basedOn": "studio-mobile-runtime-v179-20260731",
+  "repairs": {
+    "activeSiteBootstrapIndependentFromProfile": true,
+    "activeSitePersistedImmediately": true,
+    "navigationScrollReset": true,
+    "domainLoadingHasTerminalState": true,
+    "commentsLoadingHasTerminalState": true,
+    "authGatewayDirectFallback": true,
+    "oauthUsesDirectSupabaseAuthorization": true,
+    "sessionPersistsUntilExplicitLogout": true,
+    "drawerAndNaraV179Preserved": true,
+    "legacyFeaturesPreserved": true
+  },
+  "productionAuthority": {
+    "expectedHostname": "ngeblogging.com",
+    "requiredReleaseProbe": "/release-v180.json",
+    "rejectMarkers": ["WHITE-R4-2026.07.12"],
+    "customDomainCutoverVerified": false
+  },
+  "authentication": {
+    "googleEndToEndVerifiedByThisRelease": false,
+    "linkedinEndToEndVerifiedByThisRelease": false,
+    "emailPasswordEndToEndVerifiedByThisRelease": false,
+    "reason": "Provider nyata memerlukan interaksi pengguna dan deployment custom domain terbaru."
+  },
+  "capacity": {
+    "productionLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  },
+  "realDeviceVerification": "required-before-100-percent-claim"
+}
