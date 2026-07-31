@@ -1,0 +1,48 @@
+{
+  "status": "candidate",
+  "release": "2026.07.31-mobile-auth-interaction-v179",
+  "basedOn": ["studio-screenshot-stability-v177-20260731", "studio-finalization-v178-20260731"],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "drawer": {
+    "backdropOutsideOnly": true,
+    "menuClickable": true,
+    "mainInert": false,
+    "navigationStartsBelowCreatePost": true,
+    "closesOnMenuBackdropEscape": true
+  },
+  "mobileTopbar": {
+    "singleCenteredN": true,
+    "profileRight": true,
+    "workspaceDuplicationHidden": true
+  },
+  "profile": {
+    "authority": "studio-finalization-v178-20260731",
+    "actions": ["profile", "settings", "logout"],
+    "profileSeparatedFromSettings": true
+  },
+  "nara": {
+    "launcherIconOnly": true,
+    "launcherAnimation": false,
+    "sizes": ["small", "medium", "full"],
+    "smallMediumNonmodal": true,
+    "fullModal": true,
+    "closeAlwaysVisible": true,
+    "stopSpeechAndMicrophoneOnClose": true
+  },
+  "authentication": {
+    "providers": ["google", "github", "linkedin_oidc", "email_password", "magic_link"],
+    "oauthAuthorizeDirectTransport": true,
+    "gatewayDirectNetworkFallback": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "backendSessionAndRefreshObserved": true,
+    "freshProviderCredentialTestRequired": true
+  },
+  "capacity": {
+    "modelOnly": true,
+    "productionCredentialLoadTest": false,
+    "nineHundredBillionClaim": false
+  },
+  "legacyFeaturesPreserved": true
+}
