@@ -16,9 +16,6 @@ if (!source.includes('main.removeAttribute("inert")') || !source.includes("drawe
 writeFileSync(path, source, "utf8");
 console.log(`Drawer inert authority ${RELEASE} aktif.`);
 
-let v179Applied = false;
-process.on("beforeExit", async () => {
-  if (v179Applied) return;
-  v179Applied = true;
+setImmediate(async () => {
   await import("./patch-production-studio-v179.mjs");
 });
