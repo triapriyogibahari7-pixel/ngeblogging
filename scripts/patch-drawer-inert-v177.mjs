@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -16,7 +17,18 @@ if (!source.includes('main.removeAttribute("inert")') || !source.includes("drawe
 writeFileSync(path, source, "utf8");
 console.log(`Drawer inert authority ${RELEASE} aktif.`);
 
-setImmediate(async () => {
-  await import("./patch-production-studio-v179.mjs");
-  await import("./patch-v179-compat.mjs");
+/*
+ * The v177 runner imports this module before applying its own synchronous patch.
+ * beforeExit therefore runs only after v177 has completed. Child processes are
+ * synchronous, so tests/build cannot begin while v179 is still being written.
+ */
+process.once("beforeExit", () => {
+  execFileSync(process.execPath, [resolve("scripts/patch-production-studio-v179.mjs")], {
+    cwd: resolve("."),
+    stdio: "inherit",
+  });
+  execFileSync(process.execPath, [resolve("scripts/patch-v179-compat.mjs")], {
+    cwd: resolve("."),
+    stdio: "inherit",
+  });
 });
