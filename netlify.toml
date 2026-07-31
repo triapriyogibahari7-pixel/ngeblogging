@@ -1,5 +1,5 @@
 [build]
-  command = "npm run verify:v181 && npm run verify:v182"
+  command = "npm run test:production"
   publish = "public"
 
 [build.environment]
