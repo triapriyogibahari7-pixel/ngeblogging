@@ -1,4 +1,4 @@
-name: Verify Ngeblogging Production v181
+name: Verify Ngeblogging Production v182
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: verify-ngeblogging-production-v181
+  group: verify-ngeblogging-production-v182
   cancel-in-progress: true
 
 jobs:
@@ -22,20 +22,21 @@ jobs:
       - name: Wait for production deployment
         run: sleep 45
 
-      - name: Verify root, auth routes, Studio, v180 foundation, and v181 UI authority
+      - name: Verify root, auth routes, Studio, and release authorities v180-v182
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 30); do
             stamp="$(date +%s)-${attempt}"
-            root_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/root.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/?v181=${stamp}" || true)"
-            login_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/login.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/login?v181=${stamp}" || true)"
-            signup_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/signup.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/signup?v181=${stamp}" || true)"
-            studio_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/studio.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/studio?v181=${stamp}" || true)"
-            release180_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/release-v180.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v180.json?v181=${stamp}" || true)"
-            release181_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/release-v181.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v181.json?v181=${stamp}" || true)"
+            root_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/root.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/?v182=${stamp}" || true)"
+            login_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/login.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/login?v182=${stamp}" || true)"
+            signup_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/signup.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/signup?v182=${stamp}" || true)"
+            studio_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/studio.html -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/studio?v182=${stamp}" || true)"
+            release180_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/release-v180.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v180.json?v182=${stamp}" || true)"
+            release181_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/release-v181.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v181.json?v182=${stamp}" || true)"
+            release182_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/release-v182.json -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v182.json?v182=${stamp}" || true)"
 
-            if [[ "${root_code}" == 200 && "${login_code}" == 200 && "${signup_code}" == 200 && "${studio_code}" == 200 && "${release180_code}" == 200 && "${release181_code}" == 200 ]]; then
+            if [[ "${root_code}" == 200 && "${login_code}" == 200 && "${signup_code}" == 200 && "${studio_code}" == 200 && "${release180_code}" == 200 && "${release181_code}" == 200 && "${release182_code}" == 200 ]]; then
               if ! grep -R -q 'WHITE-R4-2026.07.12' /tmp/root.html /tmp/login.html /tmp/signup.html /tmp/studio.html \
                 && grep -q 'id="root"' /tmp/root.html \
                 && grep -q 'id="root"' /tmp/login.html \
@@ -45,26 +46,29 @@ jobs:
           import fs from 'node:fs';
           const v180 = JSON.parse(fs.readFileSync('/tmp/release-v180.json', 'utf8'));
           const v181 = JSON.parse(fs.readFileSync('/tmp/release-v181.json', 'utf8'));
+          const v182 = JSON.parse(fs.readFileSync('/tmp/release-v182.json', 'utf8'));
           if (v180.release !== 'production-recovery-v180-20260731') process.exit(1);
           if (v180.productionAuthority?.requiredReleaseProbe !== '/release-v180.json') process.exit(1);
           if (v181.release !== 'studio-mobile-hardening-v181-20260731') process.exit(1);
-          if (v181.status !== 'candidate') process.exit(1);
-          if (v181.basedOn !== 'production-recovery-v180-20260731') process.exit(1);
           if (v181.repairs?.contentEditorMobileGeometryBounded !== true) process.exit(1);
           if (v181.repairs?.operationalPagesNormalFlowOnMobile !== true) process.exit(1);
           if (v181.repairs?.drawerRemainsInteractive !== true) process.exit(1);
-          if (v181.repairs?.naraSmallMediumRemainNonmodal !== true) process.exit(1);
-          if (v181.repairs?.loadingWatchdogExpanded !== true) process.exit(1);
+          if (v182.release !== 'site-limit-summary-v182-20260731') process.exit(1);
+          if (v182.maxSitesPerAccount !== 25) process.exit(1);
+          if (v182.repairs?.siteManagerPreventsTwentySixthSite !== true) process.exit(1);
+          if (v182.repairs?.domainLoadingStopsWithoutActiveSite !== true) process.exit(1);
+          if (v182.repairs?.summaryViewSiteActionPreserved !== true) process.exit(1);
+          if (v182.repairs?.topbarViewSiteActionPreserved !== true) process.exit(1);
           NODE
               then
-                echo "PRODUCTION_MOBILE_HARDENING_V181_VERIFIED"
+                echo "PRODUCTION_SITE_LIMIT_SUMMARY_V182_VERIFIED"
                 exit 0
               fi
             fi
             sleep 20
           done
 
-          echo "Production belum memakai authority v181, release probe belum aktif, atau WHITE-R4 masih ditemukan."
+          echo "Production belum memakai release v182, release probe belum aktif, atau WHITE-R4 masih ditemukan."
           exit 1
 
       - name: Publish commit and issue status
@@ -80,10 +84,10 @@ jobs:
               repo: context.repo.repo,
               sha: context.sha,
               state,
-              context: 'Ngeblogging production authority v181',
+              context: 'Ngeblogging production authority v182',
               description: state === 'success'
-                ? 'release-v180/v181 aktif dan WHITE-R4 tidak ditemukan'
-                : 'custom domain belum memakai release-v181',
+                ? 'release-v180/v181/v182 aktif; 25 situs; WHITE-R4 tidak ditemukan'
+                : 'custom domain belum memakai release-v182',
               target_url: runUrl,
             });
             await github.rest.issues.createComment({
@@ -91,6 +95,6 @@ jobs:
               repo: context.repo.repo,
               issue_number: 243,
               body: state === 'success'
-                ? `✅ Production probe v181 lulus pada commit \`${context.sha}\`. Root, login, signup, Studio, release-v180, dan release-v181 HTTP 200; WHITE-R4 tidak ditemukan. Run: ${runUrl}`
-                : `❌ Production probe v181 belum lulus pada commit \`${context.sha}\`. Source tetap tidak dinyatakan selesai sampai custom domain menampilkan release-v181. Run: ${runUrl}`,
+                ? `✅ Production probe v182 lulus pada commit \`${context.sha}\`. Root/login/signup/Studio dan release v180-v182 HTTP 200, batas 25 situs terverifikasi, serta WHITE-R4 tidak ditemukan. Run: ${runUrl}`
+                : `❌ Production probe v182 belum lulus pada commit \`${context.sha}\`. Source tidak dinyatakan selesai sampai custom domain menampilkan release-v182. Run: ${runUrl}`,
             });
