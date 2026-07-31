@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json && npm run predev && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/auth-production-v153.test.mjs"
+  command = "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json && npm run predev && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/studio-interface-v147.test.mjs tests/studio-interface-v148.test.mjs tests/studio-interface-v149.test.mjs tests/studio-recovery-v150.test.mjs tests/studio-completion-v151.test.mjs tests/studio-production-sync-v151.test.mjs tests/studio-continuity-v152.test.mjs"
   publish = "dist"
 
 [build.environment]
