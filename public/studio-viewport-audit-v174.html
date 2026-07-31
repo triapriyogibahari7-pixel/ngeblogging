@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Audit Viewport Studio v174</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif;background:#eef3f9;color:#172840}body{padding:18px}header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between;max-width:1500px;margin:auto auto 14px}h1{margin:0;font-size:clamp(24px,4vw,38px)}p{margin:6px 0;color:#5d6e84;max-width:850px;line-height:1.5}.controls{display:flex;flex-wrap:wrap;gap:7px;max-width:1500px;margin:0 auto 14px}.controls button{min-height:42px;padding:0 12px;border:1px solid #c9d5e5;border-radius:10px;background:#fff;color:#324b6b;font-weight:750;cursor:pointer}.controls button.active{background:#2465d2;color:#fff;border-color:#2465d2}.stage{max-width:1500px;margin:auto;min-height:600px;padding:18px;border:1px solid #d5dfeb;border-radius:18px;background:linear-gradient(135deg,#dce6f3,#f7f9fc);overflow:auto}.device{position:relative;margin:auto;background:#111827;border:10px solid #111827;border-radius:24px;box-shadow:0 20px 60px rgba(17,35,60,.25);transform-origin:top center}.device::before{content:attr(data-label);position:absolute;top:-38px;left:50%;transform:translateX(-50%);padding:5px 10px;border-radius:999px;background:#172840;color:#fff;font-size:12px;white-space:nowrap}.device iframe{display:block;width:100%;height:100%;border:0;border-radius:14px;background:#fff}.note{max-width:1500px;margin:14px auto 0;padding:12px 14px;border-radius:12px;background:#fff;border:1px solid #d5dfeb;font-size:13px;line-height:1.5}@media(max-width:700px){body{padding:10px}.stage{padding:42px 6px 10px}.device{transform:scale(var(--audit-scale,.78));margin-bottom:calc((1 - var(--audit-scale,.78))*-100%);}}
+  </style>
+</head>
+<body>
+  <header><div><small>NGEBLOGGING QA</small><h1>Visualisasi 14 viewport v174</h1><p>Audit manual satu-per-satu untuk drawer, logo n, profil, Media, Tema, editor dan Nara. Halaman ini menggunakan sesi login origin yang sama; tidak membuat akun atau data palsu.</p></div></header>
+  <nav class="controls" aria-label="Ukuran viewport"></nav>
+  <main class="stage"><div class="device" data-label=""><iframe title="Preview Studio" src="/studio?ui_audit=v174"></iframe></div></main>
+  <div class="note"><b>Catatan:</b> visualisasi ini membantu pemeriksaan layout dan interaksi. Ia bukan klaim kapasitas 900 juta miliar pengguna. Model kapasitas autentikasi tetap bersifat model-only dan pengujian beban nyata wajib dilakukan pada infrastruktur terisolasi.</div>
+  <script>
+    const sizes=[[320,568],[360,640],[375,667],[390,844],[412,915],[430,932],[600,960],[768,1024],[820,1180],[1024,768],[1280,720],[1366,768],[1440,900],[1920,1080]];
+    const controls=document.querySelector('.controls');
+    const device=document.querySelector('.device');
+    function choose(width,height,button){
+      document.querySelectorAll('.controls button').forEach(item=>item.classList.remove('active'));
+      button?.classList.add('active');
+      device.style.width=width+'px';device.style.height=height+'px';device.dataset.label=width+' × '+height;
+      const available=Math.max(280,document.querySelector('.stage').clientWidth-24);device.style.setProperty('--audit-scale',String(Math.min(1,available/width)));
+    }
+    sizes.forEach(([width,height],index)=>{const button=document.createElement('button');button.textContent=width+'×'+height;button.onclick=()=>choose(width,height,button);controls.append(button);if(index===3)choose(width,height,button)});
+    addEventListener('resize',()=>document.querySelector('.controls button.active')?.click(),{passive:true});
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "release": "2026.07.31-mobile-interaction-v174",
+  "authority": "mobile-interaction-v174-20260731",
+  "baseCompatibility": ["mobile-public-v171-20260730", "production-custom-domain-v172-20260730"],
+  "fixes": {
+    "drawerClickable": true,
+    "drawerBackdropBelowSidebar": true,
+    "menuStartsNearCreatePost": true,
+    "mobileLogoCentered": true,
+    "profileDropdownBounded": true,
+    "mediaScaleBounded": true,
+    "naraLauncherBounded": true,
+    "naraSmallMediumNonmodal": true,
+    "naraAnimationDisabled": true
+  },
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "viewportAudit": "/studio-viewport-audit-v174.html",
+  "legacyWhiteR4": false
+}
