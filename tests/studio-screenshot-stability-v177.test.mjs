@@ -10,6 +10,7 @@ const css = read("src/studio-screenshot-stability-v177.css");
 const nara = read("src/NaraAssistant.jsx");
 const platform = read("src/studio-platform-v160.js");
 const patch = read("scripts/run-patch-screenshot-stability-v177.mjs");
+const drawerPatch = read("scripts/patch-drawer-inert-v177.mjs");
 const packageJson = JSON.parse(read("package.json"));
 const serviceWorker = read("public/sw.js");
 const worker = read("cloudflare/worker-v69.mjs");
@@ -117,5 +118,5 @@ test("patch is idempotent and preserves prior v176 authority", () => {
   assert.match(patch, /if \(!source\.includes\('data-nara-native-interaction="v177"'\)\)/);
   assert.match(patch, /if \(source\.includes\('const VERSION = "ngeblogging-app-v177-screenshot-stability-20260731";'\)\) return/);
   assert.match(patch, /MOBILE_STABILITY_COMPAT_VERSION/);
-  assert.match(patch, /PATCH_DRAWER_INERT_V177_INCOMPLETE/);
+  assert.match(drawerPatch, /PATCH_DRAWER_INERT_V177_INCOMPLETE/);
 });
