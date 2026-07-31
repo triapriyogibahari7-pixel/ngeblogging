@@ -1,0 +1,39 @@
+/* Keep every Nara control available on narrow phones; arrange controls instead of hiding them. */
+@media (max-width: 390px) {
+  html[data-studio-production-v183] .nara-assistant-header {
+    grid-template-columns: 34px minmax(0,1fr) auto auto !important;
+    grid-auto-rows: minmax(34px,auto) !important;
+  }
+
+  html[data-studio-production-v183] .nara-auto-voice-v148 {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  html[data-studio-production-v183] .nara-composer-tools {
+    grid-template-columns: 40px 40px minmax(0,1fr) 42px !important;
+    grid-auto-flow: row !important;
+    align-items: stretch !important;
+  }
+
+  html[data-studio-production-v183] .nara-select.intelligence {
+    grid-column: 3 / 4 !important;
+  }
+
+  html[data-studio-production-v183] .nara-select.model {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    min-height: 42px !important;
+  }
+
+  html[data-studio-production-v183] .nara-select.model select {
+    display: block !important;
+    width: 100% !important;
+  }
+}
