@@ -52,19 +52,19 @@ if (!recovery.includes("onboarding-check-v176")) {
     const sessionResult = await supabase.auth.getSession().catch(() => ({ data: {} }));
     const user = sessionResult.data?.session?.user;
     if (!user) return;
-    if (safeGet(\`${ONBOARDING_PREFIX}\${user.id}\`) === "complete") {
+    if (safeGet(ONBOARDING_PREFIX + user.id) === "complete") {
       onboardingResolvedUser = user.id;
       return;
     }
     const sites = await listUserSites(user.id).catch(() => []);
     if (sites.length && !recentAutomaticSite(sites)) {
-      safeSet(\`${ONBOARDING_PREFIX}\${user.id}\`, "complete");
+      safeSet(ONBOARDING_PREFIX + user.id, "complete");
       onboardingResolvedUser = user.id;
       return;
     }
     const baseName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Situs Saya";
-    const defaultName = \`${baseName} — Ngeblogging\`;
-    const defaultSlug = \`${slugify(baseName) || "situs"}-\${String(user.id).replaceAll("-", "").slice(0, 6)}\`;
+    const defaultName = baseName + " — Ngeblogging";
+    const defaultSlug = (slugify(baseName) || "situs") + "-" + String(user.id).replaceAll("-", "").slice(0, 6);
     document.body.insertAdjacentHTML("beforeend", onboardingMarkup(defaultName, defaultSlug));
     const layer = document.querySelector(".sn-onboarding-layer-v150");
     if (!layer) return;
