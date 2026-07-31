@@ -1,5 +1,5 @@
 [build]
-  command = "npm run verify:v177"
+  command = "npm run verify:v177 && mkdir -p dist && printf '<!doctype html><title>v177 regression passed</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
