@@ -19,7 +19,14 @@ try {
   output.name = error?.name || "Error";
   output.message = error?.message || String(error);
   output.stack = String(error?.stack || "").slice(0, 12000);
-  if (output.message.startsWith("V180_")) output.classification = "v180-anchor-or-verification";
+
+  if (/V180_STUDIO_BOOTSTRAP/.test(output.message)) output.classification = "studio-bootstrap";
+  else if (/V180_CHOOSE_VIEW/.test(output.message)) output.classification = "choose-view";
+  else if (/V180_DOMAIN|V180_COMMENTS/.test(output.message)) output.classification = "operational-loading";
+  else if (/V180_AUTH|V180_PROVIDER/.test(output.message)) output.classification = "authentication";
+  else if (/V180_STUDIO_ENTRY/.test(output.message)) output.classification = "studio-entry";
+  else if (/V180_FORCED|V180_VERIFY/.test(output.message)) output.classification = "service-worker-or-verification";
+  else if (output.message.startsWith("V180_")) output.classification = "other-v180";
   else if (/service worker v179|Navigasi paksa/i.test(output.message)) output.classification = "v179-service-worker";
   else output.classification = "other";
 }
