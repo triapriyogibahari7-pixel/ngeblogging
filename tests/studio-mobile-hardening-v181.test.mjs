@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import "./studio-interaction-precision-v183.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
@@ -66,6 +67,9 @@ test("loading states become bounded retry states without logging the user out", 
 test("service worker rotates cache after v180 and keeps forced navigation disabled", () => {
   assert.match(sw179, /patch-service-worker-v181\.mjs/);
   assert.match(sw179, /patch-site-limit-summary-v182\.mjs/);
+  assert.match(sw179, /patch-interaction-precision-v183\.mjs/);
+  assert.match(sw179, /patch-release-v183\.mjs/);
+  assert.match(sw179, /patch-service-worker-v183\.mjs/);
   assert.match(sw181, /ngeblogging-app-v181-mobile-hardening-20260731/);
   assert.match(sw181, /mobile-hardening-cache-v181/);
   assert.match(sw181, /NGE_BLOGGING_UPDATE_AVAILABLE_V181/);
