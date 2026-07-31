@@ -19,9 +19,9 @@ let source = await readFile(file, "utf8");
 source = source.replace(/^const VERSION = ".*";$/m, `const VERSION = "${VERSION}";`);
 source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${CACHE}";`);
 source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "mobile-runtime-v179";');
+source = source.replaceAll("NGE_BLOGGING_FORCE_RELOAD_V169", "NGE_BLOGGING_UPDATE_AVAILABLE_V179");
 
 for (const legacyEvent of [
-  "NGE_BLOGGING_FORCE_RELOAD_V169",
   "NGE_BLOGGING_FORCE_RELOAD_V174",
   "NGE_BLOGGING_FORCE_RELOAD_V176",
   "NGE_BLOGGING_FORCE_RELOAD_V177",
