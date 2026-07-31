@@ -1,42 +1,25 @@
 {
-  "release": "production-route-cutover-v182-20260731",
+  "release": "site-limit-summary-v182-20260731",
   "status": "candidate",
   "basedOn": "studio-mobile-hardening-v181-20260731",
-  "purpose": "Expose the current React Studio build by replacing stale apex and www Worker Domain bindings with authoritative zone routes.",
-  "routeAuthority": {
-    "workerService": "ngeblogging",
-    "apex": "ngeblogging.com/*",
-    "www": "www.ngeblogging.com/*",
-    "tenantWildcard": "*.ngeblogging.com/*",
-    "workerDomainsDetachedBeforeVerification": true,
-    "exactRoutesPointToCurrentWorker": true,
-    "legacyWhiteR4Rejected": true
-  },
-  "preserved": {
-    "studioMobileHardeningV181": true,
-    "sixResponsiveFamilies": true,
-    "postsAndPages": true,
-    "themeStudio": true,
-    "media": true,
-    "analytics": true,
-    "members": true,
-    "comments": true,
-    "domains": true,
-    "apiKeys": true,
-    "naraSmallMediumFull": true,
-    "sessionUntilExplicitLogout": true,
-    "tenantWildcard": true
+  "maxSitesPerAccount": 25,
+  "repairs": {
+    "domainCapacityUsesAccountPolicy": true,
+    "siteManagerPreventsTwentySixthSite": true,
+    "backendLimitRemainsRequired": true,
+    "domainLoadingStopsWithoutActiveSite": true,
+    "summaryViewSiteActionPreserved": true,
+    "topbarViewSiteActionPreserved": true,
+    "legacyFeaturesPreserved": true
   },
   "authentication": {
-    "providerEndToEndVerificationRequired": true,
-    "massLoginCapacityClaimed": false
+    "persistSessionPreserved": true,
+    "explicitLogoutOnly": true,
+    "providerEndToEndVerificationRequired": true
   },
-  "productionVerificationRequired": [
-    "/",
-    "/login",
-    "/signup",
-    "/studio",
-    "/release-v181.json",
-    "/release-v182.json"
-  ]
+  "capacity": {
+    "productionLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  }
 }
