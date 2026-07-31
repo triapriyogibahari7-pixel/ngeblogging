@@ -1,0 +1,52 @@
+{
+  "status": "candidate",
+  "release": "studio-mobile-runtime-v179-20260731",
+  "basedOn": "studio-finalization-v178-20260731",
+  "source": "screenshot-driven mobile runtime repair",
+  "responsiveFamilies": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "desktop"
+  ],
+  "desktopVariants": [
+    "laptop",
+    "desktop",
+    "computer"
+  ],
+  "repairs": {
+    "drawerClickable": true,
+    "drawerBackdropOutsideOnly": true,
+    "mobileLogoCentered": true,
+    "profileSettingsLogoutSeparated": true,
+    "naraSmallMediumNonmodal": true,
+    "naraFullModal": true,
+    "naraCloseAlwaysVisible": true,
+    "contentEditorMobileReflow": true,
+    "apiKeysMobileReflow": true,
+    "domainMobileReflow": true,
+    "commentsMobileReflow": true,
+    "membersMobileReflow": true,
+    "settingsMobileReflow": true,
+    "loadingWatchdog": true,
+    "sessionPreservedOnLoadingFailure": true
+  },
+  "legacyFeaturesPreserved": true,
+  "fakeStatisticsAdded": false,
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "googleEndToEndVerifiedByThisRelease": false,
+    "linkedinEndToEndVerifiedByThisRelease": false,
+    "emailPasswordEndToEndVerifiedByThisRelease": false,
+    "note": "Release UI ini tidak membuat klaim login provider tanpa pengujian kredensial nyata."
+  },
+  "capacity": {
+    "productionLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  },
+  "realDeviceVerification": "required-before-100-percent-claim"
+}
