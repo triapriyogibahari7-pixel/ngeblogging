@@ -36,7 +36,8 @@ test("OAuth callback exchanges once and hands the session to Studio", () => {
   assert.match(callback, /url\.pathname = recovery \? "\/reset-password" : success \? "\/studio"/);
   assert.match(handoff, /const target = new URL\("\/studio", window\.location\.origin\)/);
   assert.match(handoff, /target\.searchParams\.set\("auth_success", AUTH_SUCCESS_VALUE\)/);
-  assert.match(handoff, /const AUTH_SUCCESS_VALUE = "v158"/);
+  // Source dasar tetap kompatibel dengan handoff v158; pipeline produksi menaikkannya ke v162.
+  assert.match(handoff, /const AUTH_SUCCESS_VALUE = "v(?:158|162)"/);
   assert.match(handoff, /window\.location\.replace\(`\$\{target\.pathname\}\$\{target\.search\}`\)/);
 });
 
