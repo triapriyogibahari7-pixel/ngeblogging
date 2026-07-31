@@ -1,0 +1,25 @@
+{
+  "release": "site-limit-summary-v182-20260731",
+  "status": "candidate",
+  "basedOn": "studio-mobile-hardening-v181-20260731",
+  "maxSitesPerAccount": 25,
+  "repairs": {
+    "domainCapacityUsesAccountPolicy": true,
+    "siteManagerPreventsTwentySixthSite": true,
+    "backendLimitRemainsRequired": true,
+    "domainLoadingStopsWithoutActiveSite": true,
+    "summaryViewSiteActionPreserved": true,
+    "topbarViewSiteActionPreserved": true,
+    "legacyFeaturesPreserved": true
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "explicitLogoutOnly": true,
+    "providerEndToEndVerificationRequired": true
+  },
+  "capacity": {
+    "productionLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  }
+}
