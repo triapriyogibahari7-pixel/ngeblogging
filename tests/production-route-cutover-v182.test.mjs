@@ -4,8 +4,10 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const finalizer = read("scripts/finalize-cloudflare-route-cutover-v182.mjs");
+const activation = read("scripts/activate-cloudflare-routes-v182.mjs");
 const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const studioEntry = read("src/Studio.jsx");
+const packageJson = JSON.parse(read("package.json"));
 const release181 = JSON.parse(read("public/release-v181.json"));
 const release182 = JSON.parse(read("public/release-v182.json"));
 const release183 = JSON.parse(read("public/release-v183.json"));
@@ -25,6 +27,23 @@ test("v182 detaches stale Worker Domains and installs exact zone routes", () => 
   assert.ok(finalizer.indexOf("detachExactWorkerDomains()") < finalizer.indexOf("installAuthoritativeRoutes()"));
   assert.match(finalizer, /if \(String\(route\.script \|\| ""\) !== SERVICE\)/);
   assert.doesNotMatch(finalizer, /console\.log\([^)]*API_TOKEN/);
+});
+
+test("Cloudflare Git Integration receives exact routes from mandatory postbuild", () => {
+  for (const marker of [
+    RELEASE,
+    '"ngeblogging.com/*"',
+    '"www.ngeblogging.com/*"',
+    '"*.ngeblogging.com/*"',
+    "cloudflare-zone-route-cutover-v182",
+    "V182_STALE_CUSTOM_DOMAIN_REMAINS",
+    "wrangler.jsonc",
+    "wrangler.production.jsonc",
+  ]) assert.ok(activation.includes(marker), `build activation missing ${marker}`);
+  assert.equal(packageJson.scripts.postbuild, "node scripts/activate-cloudflare-routes-v182.mjs");
+  assert.equal(packageJson.scripts["cloudflare:cutover-routes"], "node scripts/finalize-cloudflare-route-cutover-v182.mjs");
+  assert.ok(packageJson.scripts["verify:v182"].includes("tests/production-route-cutover-v182.test.mjs"));
+  assert.ok(packageJson.scripts["test:production"].includes("tests/production-route-cutover-v182.test.mjs"));
 });
 
 test("v182 deploy workflow runs after v175 compatibility finalizer and verifies v183 on the live domain", () => {
