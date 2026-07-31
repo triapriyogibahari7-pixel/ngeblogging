@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Audit Viewport Studio v178</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif;background:#eef3f9;color:#172840}body{padding:18px}header,.controls,.stage,.checklist{max-width:1500px;margin-inline:auto}header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-bottom:14px}h1{margin:0;font-size:clamp(25px,4vw,40px)}p{max-width:900px;margin:7px 0;color:#5e7086;line-height:1.55}.controls{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}.controls button{min-height:42px;padding:0 12px;border:1px solid #cbd7e6;border-radius:10px;background:#fff;color:#324b6b;font-weight:800;cursor:pointer}.controls button.active{border-color:#2869d8;background:#2869d8;color:#fff}.stage{min-height:620px;padding:46px 18px 18px;border:1px solid #d4dfec;border-radius:18px;background:linear-gradient(135deg,#dce7f4,#f9fbfd);overflow:auto}.device{position:relative;margin:auto;border:10px solid #111827;border-radius:24px;background:#111827;box-shadow:0 22px 65px rgba(17,35,60,.25);transform-origin:top center}.device:before{content:attr(data-label);position:absolute;top:-40px;left:50%;transform:translateX(-50%);padding:5px 10px;border-radius:999px;background:#172840;color:#fff;font-size:12px;white-space:nowrap}.device iframe{display:block;width:100%;height:100%;border:0;border-radius:14px;background:#fff}.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px;margin-top:14px}.checklist article{padding:12px;border:1px solid #d6e0ed;border-radius:12px;background:#fff;font-size:13px;line-height:1.5}.checklist b{display:block;margin-bottom:3px}.note{grid-column:1/-1;background:#fff9e8!important;border-color:#ecd9a8!important}@media(max-width:700px){body{padding:10px}.stage{padding:45px 6px 10px}.device{transform:scale(var(--audit-scale,.76));margin-bottom:calc((1 - var(--audit-scale,.76))*-100%)}}
+  </style>
+</head>
+<body>
+  <header><div><small>NGEBLOGGING QA · v178</small><h1>Visualisasi 14 viewport</h1><p>Membuka Studio pada origin yang sama untuk memeriksa logo n, drawer, Profil terpisah, API Keys, Domain, Posts, Pages dan Nara. Halaman ini tidak membuat akun, data, atau statistik palsu.</p></div></header>
+  <nav class="controls" aria-label="Ukuran viewport"></nav>
+  <main class="stage"><div class="device" data-label=""><iframe title="Preview Studio v178" src="/studio?ui_audit=v178"></iframe></div></main>
+  <section class="checklist">
+    <article><b>Drawer</b>Tekan logo n, lalu pastikan seluruh menu dapat diklik dan backdrop hanya berada di luar drawer.</article>
+    <article><b>Profil</b>Buka avatar, pilih Profil, dan pastikan dialog identitas berbeda dari halaman Pengaturan situs.</article>
+    <article><b>Operasional</b>Buka API Keys dan Domain; tidak boleh ada tombol raksasa, teks bertumpuk, atau overflow horizontal.</article>
+    <article><b>Nara</b>Kecil dan Medium harus nonmodal; Penuh boleh modal. Tombol X selalu terlihat.</article>
+    <article class="note"><b>Batas bukti</b>Visualisasi ini membantu audit layout, tetapi bukan pengganti login provider nyata, pengujian perangkat fisik, atau load test produksi.</article>
+  </section>
+  <script>
+    const sizes=[[320,568],[360,640],[375,667],[390,844],[412,915],[430,932],[600,960],[768,1024],[820,1180],[1024,768],[1280,720],[1366,768],[1440,900],[1920,1080]];
+    const controls=document.querySelector('.controls');const device=document.querySelector('.device');
+    function choose(w,h,button){device.style.width=`${w+20}px`;device.style.height=`${h+20}px`;device.dataset.label=`${w} × ${h}`;document.documentElement.style.setProperty('--audit-scale',String(Math.min(.82,(innerWidth-32)/(w+20))));controls.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===button));}
+    sizes.forEach(([w,h],index)=>{const button=document.createElement('button');button.textContent=`${w}×${h}`;button.onclick=()=>choose(w,h,button);controls.append(button);if(index===1)choose(w,h,button)});
+  </script>
+</body>
+</html>

@@ -21,5 +21,6 @@ import "./studio-completion-v151.css";
 import "./studio-continuity-v152.css";
 import "./studio-mobile-stability-v176.js";
 import "./studio-screenshot-stability-v177.js";
+import "./studio-finalization-v178.js";
 
 export default StudioFastGate;

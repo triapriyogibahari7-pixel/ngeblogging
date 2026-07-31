@@ -1,0 +1,34 @@
+{
+  "status": "candidate",
+  "release": "studio-finalization-v178-20260731",
+  "basedOn": "studio-screenshot-stability-v177-20260731",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "profileSeparatedFromSettings": true,
+  "profileFields": ["display_name", "email_read_only", "bio", "website", "avatar_url"],
+  "profileKeyboardAccessible": true,
+  "profilePersistsToSupabase": true,
+  "apiKeysViewportBounded": true,
+  "domainViewportBounded": true,
+  "postsPagesViewportBounded": true,
+  "naraV177Preserved": true,
+  "drawerV177Preserved": true,
+  "mobileLogoV177Preserved": true,
+  "serviceWorkerRelease": "screenshot-stability-cache-v177",
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "googleBackendSessionObserved": true,
+    "linkedinEndToEndVerified": false,
+    "emailPasswordEndToEndVerified": false,
+    "reasonUnverified": "LinkedIn dan email/password memerlukan tindakan serta kredensial akun nyata. Kandidat ini tidak mengklaim keberhasilan end-to-end sebelum bukti tersebut tersedia."
+  },
+  "capacity": {
+    "status": "model-only",
+    "productionCredentialLoadTest": false,
+    "massAccountCreation": false,
+    "claim": "not-claimed"
+  },
+  "realDeviceVerification": "required-before-100-percent-claim",
+  "legacyFeaturesPreserved": true
+}
