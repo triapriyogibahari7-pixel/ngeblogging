@@ -18,4 +18,5 @@ console.log(`Drawer inert authority ${RELEASE} aktif.`);
 
 setImmediate(async () => {
   await import("./patch-production-studio-v179.mjs");
+  await import("./patch-v179-compat.mjs");
 });
