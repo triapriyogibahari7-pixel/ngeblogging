@@ -10,7 +10,13 @@ const recovery = read("src/studio-recovery-v150.js");
 const studio = read("src/StudioNext.jsx");
 const auth = read("src/lib/supabase.js");
 const v177 = read("src/studio-screenshot-stability-v177.js");
+const v179 = read("src/studio-production-stability-v179.js");
+const v179css = read("src/studio-production-stability-v179.css");
+const domain = read("src/DomainPanelV124.jsx");
+const comments = read("src/CommentsPanelV124.jsx");
+const serviceWorker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v178.json"));
+const release179 = JSON.parse(read("public/release-v179.json"));
 const audit = read("public/studio-viewport-audit-v178.html");
 
 const menuLabels = [
@@ -105,4 +111,25 @@ test("the visual audit exposes every requested viewport without fake load data",
   assert.match(audit, /API Keys/);
   assert.match(audit, /Nara/);
   assert.match(audit, /bukan pengganti login provider nyata/);
+});
+
+test("v179 loads last and protects the reported production regressions", () => {
+  const v178Index = entry.indexOf('import "./studio-finalization-v178.js"');
+  const v179Index = entry.indexOf('import "./studio-production-stability-v179.js"');
+  assert.ok(v179Index > v178Index, "v179 must load after v178");
+  assert.match(v179, /studio-production-stability-v179-20260731/);
+  assert.match(v179, /profile\.parentElement !== document\.body/);
+  assert.match(v179, /data\.naraInteractionV179|naraInteractionV179/);
+  assert.match(v179css, /body>\.sn-profile-menu-v150/);
+  assert.match(v179css, /data-nara-interaction-v179="nonmodal"/);
+  assert.match(v179css, /\.sn-media-tools>nav/);
+  assert.match(studio, /bootstrap-partial-cloud-v179/);
+  assert.match(studio, /setActiveSiteId\(primary\.id\)/);
+  assert.match(studio, /window\.scrollTo\?\./);
+  assert.match(auth, /direct-fallback-v179/);
+  assert.match(auth, /direct-supabase-oauth/);
+  assert.match(domain, /Situs aktif belum tersedia/);
+  assert.match(comments, /Koneksi komentar belum tersedia/);
+  assert.match(serviceWorker, /ngeblogging-app-v179-production-stability-20260731/);
+  assert.equal(release179.release, "studio-production-stability-v179-20260731");
 });
