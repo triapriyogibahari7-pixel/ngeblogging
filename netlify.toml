@@ -1,6 +1,6 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+  command = "npm run verify:v181 && npm run verify:v182"
+  publish = "public"
 
 [build.environment]
   NODE_VERSION = "22"
