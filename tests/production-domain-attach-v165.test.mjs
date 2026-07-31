@@ -4,7 +4,8 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const attach = read("scripts/attach-cloudflare-domains-v165.mjs");
-const workflow = read(".github/workflows/deploy-production.yml");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
+const finalizer = read("scripts/finalize-cloudflare-routes-v175.mjs");
 const worker = read("cloudflare/worker-v69.mjs");
 const netlify = read("scripts/write-netlify-redirects.mjs");
 const release = JSON.parse(read("public/release-v165.json"));
@@ -36,15 +37,19 @@ test("v165 utility verifies every hostname points to service ngeblogging", () =>
   assert.match(attach, /const verified = await verify\(\)/);
 });
 
-test("v172 production deploy actively attaches exact domains after Worker deployment", () => {
+test("v175 production attaches exact domains after deployment and preserves v165 utility", () => {
   assert.equal(packageJson.scripts["cloudflare:attach-domains"], "node scripts/attach-cloudflare-domains-v165.mjs");
+  assert.equal(packageJson.scripts["cloudflare:finalize-login-routes"], "node scripts/finalize-cloudflare-routes-v175.mjs");
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-domain-attach-v165.test.mjs"));
   for (const marker of [
-    "Deploy Ngeblogging Production v172", "npm run deploy:cloudflare",
-    "npm run cloudflare:attach-domains", "/release-v172.json",
-    "DEPLOY_VERIFY_PRODUCTION_CUSTOM_DOMAIN_V172_FAILED",
+    "Deploy Worker and assets", "Attach exact Worker Domains and remove only conflicting apex routes",
+    "finalize-cloudflare-routes-v175.mjs", "/release-v174.json",
+    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
   ]) assert.ok(workflow.includes(marker), `production workflow missing ${marker}`);
-  assert.ok(workflow.indexOf("npm run deploy:cloudflare") < workflow.indexOf("npm run cloudflare:attach-domains"));
+  assert.ok(workflow.indexOf("Deploy Worker and assets") < workflow.indexOf("Attach exact Worker Domains"));
+  for (const marker of ["/workers/domains", 'method: "PUT"', "attachExactWorkerDomains", "verifyFinalState"]) {
+    assert.ok(finalizer.includes(marker), `v175 finalizer missing ${marker}`);
+  }
 });
 
 test("active configs use exact Custom Domains while tenant wildcard remains a route", () => {
@@ -57,14 +62,12 @@ test("active configs use exact Custom Domains while tenant wildcard remains a ro
   }
 });
 
-test("v165 compatibility release remains factual under v172 authority", () => {
+test("v165 compatibility release remains factual under v172-v175 authority", () => {
   for (const marker of [
     RELEASE, "/release-v165.json", "ngeblogging-production-domain-attach-v165",
     "2026.07.30-production-custom-domain-v172", "legacyWhiteR4: false",
   ]) assert.ok(worker.includes(marker), `Worker compatibility missing ${marker}`);
-  for (const source of [attach, netlify]) {
-    assert.ok(source.includes("cloudflare-workers-domains-api-v165"), "domain attachment authority marker missing");
-  }
+  for (const source of [attach, netlify]) assert.ok(source.includes("cloudflare-workers-domains-api-v165"), "domain attachment authority marker missing");
   assert.equal(release.status, "ok");
   assert.equal(release.release, RELEASE);
   assert.equal(release.domainAttachAuthority, "cloudflare-workers-domains-api-v165");
