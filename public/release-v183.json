@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "release": "2026.07.31-studio-interaction-precision-v183",
+  "uiAuthority": "studio-interaction-precision-v183-20260731",
+  "serviceWorker": "ngeblogging-app-v183-interaction-precision-20260731",
+  "cache": "interaction-precision-cache-v183",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "drawerClickable": true,
+  "drawerBackdropOutsideOnly": true,
+  "mobileMenuCompact": true,
+  "mobileLogoCentered": true,
+  "editorMobileNoCharacterWrap": true,
+  "naraSmallMediumNonmodal": true,
+  "naraCloseAlwaysVisible": true,
+  "naraLauncherCentered": true,
+  "profileSettingsSeparated": true,
+  "sessionPersistsUntilExplicitLogout": true,
+  "rawFailedToFetchHidden": true,
+  "legacyFeaturesPreserved": true
+}
