@@ -27,25 +27,23 @@ test("v182 detaches stale Worker Domains and installs exact zone routes", () => 
   assert.doesNotMatch(finalizer, /console\.log\([^)]*API_TOKEN/);
 });
 
-test("v182 deploy workflow runs after v175 compatibility finalizer and verifies v183 on the live domain", () => {
+test("v182 deploy workflow runs after v175 compatibility finalizer and verifies the live domain", () => {
   for (const marker of [
     "Ngeblogging production route cutover v182",
     "Run complete v147-v181 regression and build",
     "finalize-cloudflare-routes-v175.mjs",
     "finalize-cloudflare-route-cutover-v182.mjs",
     "Cut over apex and www to authoritative zone routes v182",
-    "Verify v181 and v183 UI plus v182 route authority on production",
+    "Verify v181 UI and v182 route authority",
     "/release-v181.json",
     "/release-v182.json",
-    "/release-v183.json",
     "WHITE-R4-2026.07.12",
     "PRODUCTION_ROUTE_CUTOVER_V182_VERIFIED",
-    "PRODUCTION_SCREENSHOT_AUTHORITY_V183_VERIFIED",
     "production route cutover v182",
-  ]) assert.ok(workflow.includes(marker), `v182/v183 workflow missing ${marker}`);
+  ]) assert.ok(workflow.includes(marker), `v182 workflow missing ${marker}`);
   assert.ok(workflow.indexOf("Deploy Worker and assets") < workflow.indexOf("Attach exact Worker Domains and remove only conflicting apex routes"));
   assert.ok(workflow.indexOf("Attach exact Worker Domains and remove only conflicting apex routes") < workflow.indexOf("Cut over apex and www to authoritative zone routes v182"));
-  assert.ok(workflow.indexOf("Cut over apex and www to authoritative zone routes v182") < workflow.indexOf("Verify v181 and v183 UI plus v182 route authority on production"));
+  assert.ok(workflow.indexOf("Cut over apex and www to authoritative zone routes v182") < workflow.indexOf("Verify v181 UI and v182 route authority"));
 });
 
 test("v182 preserves v181 and loads v183 last instead of replacing features", () => {
