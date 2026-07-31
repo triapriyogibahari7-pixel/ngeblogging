@@ -1,0 +1,32 @@
+name: Verify Studio Mobile Hardening v181
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fix/studio-mobile-hardening-v181]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-studio-mobile-hardening-v181-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run focused regression
+        run: node --test tests/studio-mobile-hardening-v181.test.mjs
+      - name: Run complete production build
+        run: npm run build
