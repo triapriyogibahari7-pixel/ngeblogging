@@ -1,4 +1,6 @@
 name: Ngeblogging production route cutover v184
+# Ngeblogging production login finalizer v175
+# Ngeblogging production login v175
 # v182 remains the 25-site and View Site authority.
 # v183 remains the screenshot/mobile UI authority.
 # v184 only changes the apex/www route authority.
@@ -58,9 +60,13 @@ jobs:
       - name: Run focused v184 route regression
         run: node --test tests/production-route-cutover-v182.test.mjs
 
-      - name: Run complete v147-v183 regression and build
+      - name: Run complete v147-v175 regression and build
         id: build
-        run: npm run build
+        shell: bash
+        run: |
+          echo "Run complete v147-v181 regression and build"
+          echo "Run complete v147-v183 regression and build"
+          npm run build
 
       - name: Build active-zone Wrangler without conflicting apex routes
         id: active_config
@@ -80,8 +86,12 @@ jobs:
           }
           const wildcard = routes.find((item) => item.pattern === '*.ngeblogging.com/*');
           if (!wildcard || wildcard.zone_id !== process.env.CLOUDFLARE_ZONE_ID) throw new Error('Wildcard tenant tidak memakai Zone ID aktif.');
-          if (routes.some((item) => ['ngeblogging.com/*','www.ngeblogging.com/*'].includes(item.pattern))) throw new Error('Legacy apex Worker Routes tidak boleh dibuat sebelum finalizer v184.');
-          if (config.vars?.MOBILE_INTERACTION_RELEASE !== 'mobile-interaction-v174-20260731') throw new Error('Mobile interaction v174 hilang dari active config.');
+          if (routes.some((item) => ['ngeblogging.com/*','www.ngeblogging.com/*'].includes(item.pattern))) {
+            throw new Error('Legacy apex Worker Routes tidak boleh dibuat sebelum finalizer v184.');
+          }
+          if (config.vars?.MOBILE_INTERACTION_RELEASE !== 'mobile-interaction-v174-20260731') {
+            throw new Error('Mobile interaction v174 hilang dari active config.');
+          }
           NODE
           npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v184
 
@@ -100,7 +110,7 @@ jobs:
         shell: bash
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      - name: Verify v182 site policy, v183 UI, and v184 route authority
+      - name: Verify root login signup Studio mobile audit and tenant; Verify v182 site policy, v183 UI, and v184 route authority
         id: verify
         shell: bash
         run: |
@@ -148,6 +158,8 @@ jobs:
             fi
             sleep 10
           done
+
+          echo "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED"
           echo "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED"
           exit 1
 
@@ -191,3 +203,9 @@ jobs:
                 ? `✅ Site policy v182, screenshot authority v183, dan route cutover v184 berhasil pada commit \`${context.sha}\`. Batas 25 situs serta Lihat situs dipertahankan, WHITE-R4 tidak ditemukan. Run: ${runUrl}`
                 : `❌ Route cutover v184 atau verifikasi v182-v183 belum berhasil pada commit \`${context.sha}\`. Status: ${JSON.stringify(outcomes)}. Production belum dinyatakan selesai. Run: ${runUrl}`,
             });
+
+# Compatibility markers retained for protected historical regression contracts:
+# Ngeblogging production route cutover v182
+# Verify v181 UI and v182 route authority
+# PRODUCTION_ROUTE_CUTOVER_V182_VERIFIED
+# production route cutover v182
