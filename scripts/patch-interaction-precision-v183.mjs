@@ -20,7 +20,7 @@ async function patchNara() {
   source = replaceOnce(source, [
     '<div className="nara-assistant-layer" data-nara-layer-size={size} role="dialog" aria-modal={size === "full"} data-nara-native-interaction="v177" data-nara-interaction-native={size === "full" ? "modal" : "nonmodal"} aria-label="Nara AI Assistant">',
     '<div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">',
-  ], '<div className="nara-assistant-layer" data-nara-layer-size={size} data-nara-release-v183={RELEASE} role="dialog" aria-modal={size === "full"} data-nara-native-interaction="v177" data-nara-interaction-native={size === "full" ? "modal" : "nonmodal"} aria-label="Nara AI Assistant">', "nara-layer");
+  ], '<div className="nara-assistant-layer" data-nara-layer-size={size} data-nara-release-v183="studio-interaction-precision-v183-20260731" role="dialog" aria-modal={size === "full"} data-nara-native-interaction="v177" data-nara-interaction-native={size === "full" ? "modal" : "nonmodal"} aria-label="Nara AI Assistant">', "nara-layer");
 
   source = replaceOnce(source, [
     '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
@@ -34,7 +34,7 @@ async function patchNara() {
 
   if (!source.includes('const MAX_ATTACHMENTS = 4;')) throw new Error("V183_NARA_FEATURES_MISSING");
   for (const marker of [
-    "data-nara-release-v183={RELEASE}",
+    'data-nara-release-v183="studio-interaction-precision-v183-20260731"',
     'aria-modal={size === "full"}',
     'inert={size !== "full" ? "" : undefined}',
     'className="nara-close-v177 nara-close-v183"',
