@@ -1,5 +1,5 @@
 [build]
-  command = "npm run predev && node scripts/patch-interaction-precision-v183.mjs && mkdir -p dist && cp public/release-v183.json dist/index.html"
+  command = "npm run predev && mkdir -p dist && cp public/release-v183.json dist/index.html"
   publish = "dist"
 
 [build.environment]
