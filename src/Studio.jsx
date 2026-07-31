@@ -23,5 +23,6 @@ import "./studio-mobile-stability-v176.js";
 import "./studio-screenshot-stability-v177.js";
 import "./studio-finalization-v178.js";
 import "./studio-mobile-runtime-v179.js";
+import "./studio-mobile-runtime-v180.js";
 
 export default StudioFastGate;
