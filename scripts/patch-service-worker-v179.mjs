@@ -48,6 +48,7 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
 
-// v180 berjalan sinkron sesudah authority v179; compat menghindari perubahan kontrak cache lama.
+// v180 berjalan sinkron sesudah authority v179; kompatibilitas lama dipertahankan tanpa mengembalikan bug.
 await import("./patch-production-recovery-v180.mjs");
+await import("./patch-production-recovery-v180-legacy-markers.mjs");
 await import("./patch-production-recovery-v180-compat.mjs");
