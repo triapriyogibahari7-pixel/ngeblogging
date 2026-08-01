@@ -1,6 +1,6 @@
 [build]
   # Temporary PR diagnostic: classify v190 TAP failure. Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && DIAG_MATCH='not ok.*(v190 is activated|desktop-site phones|mobile drawer|n logo and Nara launcher|Members and Analytics)' node scripts/probe-v190-failure.mjs && mkdir -p dist && printf '<!doctype html><title>v190 TAP classifier</title>' > dist/index.html"
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && DIAG_MATCH='not ok.*(Nara small and medium remain|Studio data uses|transient onboarding continuity|v190 service worker identity|release contract covers)' node scripts/probe-v190-failure.mjs && mkdir -p dist && printf '<!doctype html><title>v190 TAP classifier</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
