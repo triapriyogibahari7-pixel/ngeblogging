@@ -1,0 +1,13 @@
+/* Narrow-phone corrections loaded after the primary v189 authority. */
+@media (max-width: 430px) {
+  html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar {
+    width: var(--v189-drawer-width) !important;
+    max-width: calc(var(--v189-physical-width) - 34px) !important;
+  }
+
+  html[data-studio-physical-mobile-v189="true"] .sn-side-backdrop {
+    left: var(--v189-drawer-width) !important;
+    right: 0 !important;
+    width: auto !important;
+  }
+}
