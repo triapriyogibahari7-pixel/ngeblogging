@@ -1,5 +1,5 @@
 [build]
-  command = "V189_DIAGNOSTIC_SKIP=1 node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf 'v179-v188 chain passed' > dist/index.html"
+  command = "bash scripts/netlify-v192-diagnostic.sh"
   publish = "dist"
 
 [build.environment]
