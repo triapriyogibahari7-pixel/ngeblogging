@@ -20,11 +20,10 @@
     "naraLauncherStableNoBlink": true,
     "naraSmallMediumNonModal": true,
     "naraCloseAlwaysVisible": true,
-    "naraCloseStopsMicrophoneAndSpeech": true,
     "supabaseDataGatewayFirst": true,
     "supabaseDirectFallback": true,
     "sessionPreservedOnTransientNetworkFailure": true,
-    "cachedWorkspaceBoundToUser": true,
+    "cachedWorkspaceContinuityV186Preserved": true,
     "serviceWorkerRotatedWithoutForcedNavigation": true
   },
   "preserved": [
@@ -50,6 +49,7 @@
     ],
     "providerLogin": "Must be confirmed against deployed Supabase provider configuration and real callback URLs.",
     "physicalDevices": "Static and simulated viewport validation do not replace real-device verification after deployment.",
+    "naraMicrophoneClose": "Requires interactive browser verification before claiming microphone shutdown on every supported browser.",
     "capacity": "Capacity model is a planning simulation only; no 900-million-user claim is made without distributed load testing and provider capacity evidence."
   },
   "dataPolicy": "No fabricated production analytics, member counts, comments, traffic, login success, or capacity claims."
