@@ -9,6 +9,7 @@ const chain = read("scripts/patch-production-v191.mjs");
 const auth = read("src/lib/supabase.js");
 const dataGateway = read("server/data-gateway-v110.mjs");
 const worker = read("public/sw.js");
+const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const release = JSON.parse(read("public/release-v192.json"));
 
 test("v192 runs after v191 and records a factual release", () => {
@@ -74,4 +75,15 @@ test("v192 service worker rotates cache without forced navigation", () => {
   assert.match(worker, /data-bootstrap-cache-v192/);
   assert.match(worker, /DATA_BOOTSTRAP_RELEASE_V192/);
   assert.doesNotMatch(worker, /await refreshStaleWindow\(client, url\);/);
+});
+
+test("production deployment cannot report success without the v192 live marker", () => {
+  assert.match(workflow, /npm run verify:v192/);
+  assert.match(workflow, /\/release-v192\.json/);
+  assert.match(workflow, /studio-data-bootstrap-v192-20260801/);
+  assert.match(workflow, /membershipQueryIsCriticalPath/);
+  assert.match(workflow, /dataGatewayTimeoutFallsBackDirect/);
+  assert.match(workflow, /PRODUCTION_STUDIO_V192_VERIFIED/);
+  assert.match(workflow, /Ngeblogging production Studio v192/);
+  assert.match(workflow, /WHITE-R4-2026\.07\.12/);
 });
