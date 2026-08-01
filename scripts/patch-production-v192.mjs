@@ -54,8 +54,6 @@ async function patchOnboardingGate() {
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      // Membership data is the critical path. Do not block an already-authenticated
-      // Studio user behind a redundant remote getUser() call.
       try {
         const directSites = await readMembership(userId);
         if (directSites.length > 0) {
@@ -76,9 +74,6 @@ async function patchOnboardingGate() {
         lastError = membershipError;
       }
 
-      // An empty membership result can also happen while the persisted Supabase
-      // session is still hydrating. Verify once, then repeat the membership query
-      // before deciding that this is genuinely a first-time account.
       const verified = await withDeadline(
         getVerifiedSession({ force: attempt > 0 }),
         AUTH_RECOVERY_TIMEOUT_V192,
@@ -132,6 +127,72 @@ async function patchOnboardingGate() {
   await write(path, source);
 }
 
+async function patchAuthDataGateway() {
+  const path = "src/lib/supabase.js";
+  let source = await read(path);
+
+  if (!source.includes("GATEWAY_TIMEOUT_MS_V192")) {
+    const anchor = "const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);";
+    if (!source.includes(anchor)) throw new Error("V192_GATEWAY_CONSTANT_ANCHOR_MISSING");
+    source = source.replace(anchor, `${anchor}\nconst GATEWAY_TIMEOUT_MS_V192 = 2_500;`);
+  }
+
+  if (!source.includes("async function fetchGatewayWithTimeoutV192")) {
+    const anchor = "async function gatewayFirstV190(input, init, proxy, kind) {";
+    const index = source.indexOf(anchor);
+    if (index < 0) throw new Error("V192_GATEWAY_HELPER_ANCHOR_MISSING");
+    const helper = `async function fetchGatewayWithTimeoutV192(input, init) {
+  const controller = new AbortController();
+  const upstreamSignal = init?.signal || null;
+  const abortFromUpstream = () => controller.abort(upstreamSignal?.reason);
+  if (upstreamSignal?.aborted) abortFromUpstream();
+  else upstreamSignal?.addEventListener?.("abort", abortFromUpstream, { once: true });
+  const timer = globalThis.setTimeout(() => controller.abort("ngeblogging-data-gateway-timeout-v192"), GATEWAY_TIMEOUT_MS_V192);
+  try {
+    return await nativeFetch(input, { ...(init || {}), signal: controller.signal });
+  } finally {
+    globalThis.clearTimeout(timer);
+    upstreamSignal?.removeEventListener?.("abort", abortFromUpstream);
+  }
+}
+
+`;
+    source = `${source.slice(0, index)}${helper}${source.slice(index)}`;
+  }
+
+  const gatewayReplacement = `async function gatewayFirstV190(input, init, proxy, kind) {
+  /* ${RELEASE}:GATEWAY_TIMEOUT */
+  const directInput = directRequestV190(input);
+  try {
+    const response = await fetchGatewayWithTimeoutV192(proxyRequestV190(input, proxy), init);
+    const gatewayHeader = kind === "auth"
+      ? response.headers.get("x-ngeblogging-auth-gateway")
+      : response.headers.get("x-ngeblogging-data-gateway");
+    const staleUnauthorized = [401, 403].includes(response.status) && !gatewayHeader;
+    if (!GATEWAY_FALLBACK_STATUSES.has(response.status) && !staleUnauthorized) {
+      if (typeof document !== "undefined") {
+        if (kind === "auth") document.documentElement.dataset.authTransportV190 = "same-origin-gateway";
+        else document.documentElement.dataset.dataTransportV190 = "same-origin-data-gateway";
+      }
+      return response;
+    }
+    console.warn(`Gateway ${kind} mengembalikan ${response.status}; mencoba Supabase langsung.`);
+  } catch (error) {
+    console.warn(`Gateway ${kind} lambat atau tidak terjangkau; mencoba Supabase langsung.`, error);
+  }
+  if (typeof document !== "undefined") {
+    if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback-v192";
+    else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback-v192";
+  }
+  return nativeFetch(directInput, init);
+}`;
+
+  source = replaceFunction(source, "async function gatewayFirstV190(input, init, proxy, kind) {", gatewayReplacement, "GATEWAY_TIMEOUT");
+  if (!source.includes("fetchGatewayWithTimeoutV192")) throw new Error("V192_GATEWAY_TIMEOUT_HELPER_MISSING");
+  if (!source.includes("direct-supabase-fallback-v192")) throw new Error("V192_DIRECT_DATA_FALLBACK_MISSING");
+  await write(path, source);
+}
+
 async function patchServiceWorker() {
   const path = "public/sw.js";
   let source = await read(path);
@@ -158,6 +219,9 @@ async function verify() {
     ["src/StudioOnboardingGate.jsx", "getVerifiedSession({ force: false })"],
     ["src/lib/supabase.js", "persistSession: true"],
     ["src/lib/supabase.js", "autoRefreshToken: true"],
+    ["src/lib/supabase.js", "GATEWAY_TIMEOUT_MS_V192 = 2_500"],
+    ["src/lib/supabase.js", "fetchGatewayWithTimeoutV192"],
+    ["src/lib/supabase.js", "direct-supabase-fallback-v192"],
     ["public/sw.js", "ngeblogging-app-v192-data-bootstrap-20260801"],
     ["public/sw.js", "data-bootstrap-cache-v192"],
     ["public/release-v192.json", RELEASE],
@@ -180,6 +244,13 @@ async function verify() {
   if (/localStorage\.clear\s*\(|signOut\s*\(/.test(gate)) {
     throw new Error("V192_SESSION_DESTRUCTION_REINTRODUCED");
   }
+
+  const auth = await read("src/lib/supabase.js");
+  const gatewayStart = auth.indexOf("async function gatewayFirstV190");
+  const gatewayEnd = auth.indexOf("\n}\n", gatewayStart);
+  const gateway = auth.slice(gatewayStart, gatewayEnd);
+  if (!gateway.includes("fetchGatewayWithTimeoutV192")) throw new Error("V192_GATEWAY_REMAINS_UNBOUNDED");
+  if (!gateway.includes("return nativeFetch(directInput, init)")) throw new Error("V192_DIRECT_FALLBACK_REMOVED");
 }
 
 function STARTUP_MARKER() {
@@ -187,6 +258,7 @@ function STARTUP_MARKER() {
 }
 
 await patchOnboardingGate();
+await patchAuthDataGateway();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
