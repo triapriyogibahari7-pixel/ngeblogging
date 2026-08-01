@@ -1,0 +1,48 @@
+{
+  "release": "auth-studio-bootstrap-v192-20260801",
+  "status": "candidate",
+  "purpose": "Prevent valid authenticated sessions from being trapped on the Studio connection screen when the same-origin data route or an already-consumed OAuth callback is transiently stale.",
+  "authentication": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "oauthReplayRecovery": true,
+    "oauthReplayRecoveryCondition": "Only when a valid persisted session already exists after a consumed/expired OAuth state callback.",
+    "explicitLogoutOnly": true,
+    "providerEndToEndVerificationStillRequired": true
+  },
+  "studioBootstrap": {
+    "firstSessionCheckUsesCachedVerifiedSession": true,
+    "forcedSessionVerificationReservedForRetry": true,
+    "criticalMembershipTransport": "direct Supabase REST with user bearer token and RLS",
+    "membershipFallback": "existing Supabase client/gateway path",
+    "onlineEventRetriesAutomatically": true,
+    "activeSiteSnapshot": "ngeblogging-active-site-snapshot-v192",
+    "createsSiteFromEmailAutomatically": false
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v192-auth-studio-bootstrap-20260801",
+    "cache": "auth-studio-bootstrap-cache-v192",
+    "forcedNavigation": false,
+    "sessionDestruction": false
+  },
+  "preserved": {
+    "sixResponsiveFamilies": true,
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "sidebarMenus": ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"],
+    "postsPagesWordLimit": 5000,
+    "naraSmallMediumNonModal": true,
+    "themeStudio": true,
+    "media": true,
+    "analytics": true,
+    "members": true,
+    "comments": true,
+    "domain": true,
+    "apiKeys": true
+  },
+  "evidence": {
+    "productionAuthLogsObserved": "Google PKCE token exchange and /user returned HTTP 200; separate replay callbacks were observed with OAuth state not found or expired.",
+    "productionDataLogsObserved": "Android requests for site_members, profiles, contents, analytics, comments and media returned HTTP 200.",
+    "massCapacityClaimed": false,
+    "physicalDeviceVerificationRequiredBefore100PercentClaim": true
+  }
+}

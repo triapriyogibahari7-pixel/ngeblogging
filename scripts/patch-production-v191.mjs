@@ -90,4 +90,5 @@ async function verify() {
 await patchStudioEntry();
 await patchServiceWorker();
 await verify();
-console.log(`Applied ${RELEASE}`);
+await import("./patch-auth-studio-bootstrap-v192.mjs");
+console.log(`Applied ${RELEASE} + auth Studio bootstrap v192`);
