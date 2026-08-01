@@ -31,6 +31,10 @@ elif [[ "$group" == "recent-b" ]]; then
   node --test \
     tests/studio-production-mobile-v189.test.mjs tests/studio-real-device-v190.test.mjs \
     tests/studio-screenshot-recovery-v191.test.mjs tests/studio-data-bootstrap-v192.test.mjs
+elif [[ "$group" == "recent-b1" ]]; then
+  node --test tests/studio-production-mobile-v189.test.mjs tests/studio-real-device-v190.test.mjs
+elif [[ "$group" == "recent-b2" ]]; then
+  node --test tests/studio-screenshot-recovery-v191.test.mjs tests/studio-data-bootstrap-v192.test.mjs
 elif [[ "$group" == "legacy-a" ]]; then
   node --test \
     tests/studio-interface-v147.test.mjs tests/studio-interface-v148.test.mjs tests/studio-interface-v149.test.mjs \
