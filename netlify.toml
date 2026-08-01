@@ -1,5 +1,6 @@
 [build]
-  command = "npm run build"
+  # Temporary PR diagnostic: full production regression suite only. Restore to `npm run build` before merge.
+  command = "npm run test:production && mkdir -p dist && printf '<!doctype html><title>production regression</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
