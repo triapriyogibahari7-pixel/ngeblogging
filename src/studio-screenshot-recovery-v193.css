@@ -1,0 +1,166 @@
+/* Studio screenshot recovery v193 — final visual authority after v191/v192.
+   Targets the concrete Android screenshots: Theme Studio text collisions, drawer
+   interaction/blur, off-center n mark, Nara small/medium geometry, and generic
+   horizontal overflow. It does not remove existing pages or features. */
+
+html[data-studio-screenshot-recovery-v193] *,
+html[data-studio-screenshot-recovery-v193] *::before,
+html[data-studio-screenshot-recovery-v193] *::after { box-sizing:border-box !important; }
+
+html[data-studio-screenshot-recovery-v193] :is(
+  .sn-shell,.sn-main,.sn-view-pad,.sn-view-pad>*,
+  .tn-studio,.tn-studio>*,.tn-library,.tn-library>*,.tn-layout-studio,.tn-layout-studio>*,
+  .tn-code-workspace,.tn-code-workspace>*,.tn-customizer,.tn-customizer>*,
+  .ce-app,.ce-app>*,.sn-media-library,.op41-host,.mv176-page,.sv124-page,.sn-api-page
+) { min-width:0 !important; max-width:100% !important; }
+
+html[data-studio-screenshot-recovery-v193] :is(img,video,canvas,iframe){max-width:100% !important;height:auto;}
+html[data-studio-screenshot-recovery-v193] :is(.sn-table-wrap,.op41-table-wrap,.mv176-table-wrap,.sn-api-table-wrap){max-width:100% !important;overflow-x:auto !important;overscroll-behavior-x:contain;}
+
+/* Mobile logo/drawer: no blur or dark overlay over the menu itself. */
+html[data-studio-physical-mobile-v193="true"] .sn-sidebar-toggle{
+  width:48px !important;height:48px !important;min-width:48px !important;min-height:48px !important;
+  display:grid !important;place-items:center !important;padding:0 !important;overflow:hidden !important;
+  background:#fff !important;color:#2869df !important;opacity:1 !important;filter:none !important;transform:none !important;
+}
+html[data-studio-physical-mobile-v193="true"] .sn-mobile-menu-mark,
+html[data-studio-physical-mobile-v193="true"] .sn-mobile-menu-mark>strong{
+  position:static !important;inset:auto !important;width:100% !important;height:100% !important;
+  display:grid !important;place-items:center !important;margin:0 !important;padding:0 !important;
+  color:#2869df !important;opacity:1 !important;filter:none !important;transform:none !important;
+}
+html[data-studio-physical-mobile-v193="true"] .sn-mobile-menu-mark>strong{font:900 28px/1 system-ui,-apple-system,"Segoe UI",sans-serif !important;text-align:center !important;}
+html[data-studio-physical-mobile-v193="true"] .sn-mobile-menu-mark>i{display:none !important;}
+html[data-studio-physical-mobile-v193="true"] #ngeblogging-studio-sidebar{
+  z-index:2147483600 !important;pointer-events:auto !important;filter:none !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+  background:#fff !important;color:#172b46 !important;opacity:1 !important;
+}
+html[data-studio-physical-mobile-v193="true"] #ngeblogging-studio-sidebar.mobile-open *{pointer-events:auto !important;filter:none !important;}
+html[data-studio-physical-mobile-v193="true"] #ngeblogging-studio-sidebar>.sn-new{margin-bottom:3px !important;}
+html[data-studio-physical-mobile-v193="true"] #ngeblogging-studio-sidebar>nav{
+  justify-content:flex-start !important;margin-top:0 !important;padding-top:4px !important;overflow-y:auto !important;overflow-x:hidden !important;
+}
+html[data-studio-physical-mobile-v193="true"] #ngeblogging-studio-sidebar>.sn-account-footer{margin-top:auto !important;position:static !important;background:#fff !important;}
+html[data-studio-physical-mobile-v193="true"] .sn-side-backdrop{
+  z-index:2147483500 !important;background:transparent !important;opacity:1 !important;filter:none !important;
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+}
+html[data-studio-physical-mobile-v193="true"] body.sn-mobile-sidebar-open,
+html[data-studio-physical-mobile-v193="true"] body.sn-mobile-sidebar-open .sn-main{filter:none !important;opacity:1 !important;transform:none !important;}
+
+/* Theme Studio screenshot repair. Every heading/search/action is back in normal
+   document flow, including physical phones that expose a synthetic desktop viewport. */
+html[data-studio-physical-mobile-v193="true"] .tn-studio{
+  width:100% !important;max-width:100% !important;margin:0 !important;padding:18px 12px 96px !important;
+  overflow-x:clip !important;transform:none !important;filter:none !important;
+}
+html[data-studio-physical-mobile-v193="true"] :is(.tn-hero,.tn-command,.tn-layout-studio,.tn-customizer,.tn-code-workspace){
+  grid-template-columns:minmax(0,1fr) !important;width:100% !important;max-width:100% !important;
+}
+html[data-studio-physical-mobile-v193="true"] :is(.tn-hero-copy,.tn-active-stage,.tn-command,.tn-blueprints,.tn-library,.tn-layout-studio){
+  position:relative !important;inset:auto !important;width:100% !important;max-width:100% !important;
+  transform:none !important;filter:none !important;overflow:hidden !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header,
+html[data-studio-physical-mobile-v193="true"] .tn-layout-studio-header{
+  position:static !important;inset:auto !important;width:100% !important;max-width:100% !important;
+  display:flex !important;flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important;
+  gap:12px !important;height:auto !important;min-height:0 !important;margin:0 !important;padding:0 !important;
+  transform:none !important;filter:none !important;overflow:visible !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header>div,
+html[data-studio-physical-mobile-v193="true"] .tn-layout-studio-header>div{
+  position:static !important;width:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;padding:0 !important;transform:none !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header :is(small,h2,p),
+html[data-studio-physical-mobile-v193="true"] .tn-layout-studio-header :is(small,h2,p){
+  position:static !important;inset:auto !important;display:block !important;width:100% !important;max-width:100% !important;
+  transform:none !important;filter:none !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+  overflow-wrap:anywhere !important;word-break:normal !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header h2,
+html[data-studio-physical-mobile-v193="true"] .tn-layout-studio-header h2{
+  margin:6px 0 !important;font:600 clamp(26px,8vw,36px)/1.08 "Playfair Display",serif !important;letter-spacing:-.02em !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header p,
+html[data-studio-physical-mobile-v193="true"] .tn-layout-studio-header p{margin:0 !important;font-size:12px !important;line-height:1.55 !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header label{
+  position:static !important;width:100% !important;min-width:0 !important;max-width:100% !important;height:48px !important;
+  display:flex !important;align-items:center !important;margin:0 !important;transform:none !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-library>header label input{min-width:0 !important;width:100% !important;flex:1 1 auto !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-layout-studio-header>button{position:static !important;width:100% !important;min-height:44px !important;transform:none !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-device-switch{width:100% !important;max-width:100% !important;overflow-x:auto !important;overflow-y:hidden !important;justify-content:flex-start !important;scrollbar-width:thin;}
+html[data-studio-physical-mobile-v193="true"] .tn-device-switch button{flex:0 0 40px !important;min-width:40px !important;padding:0 !important;justify-content:center !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-device-switch button span{display:none !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-theme-grid,
+html[data-studio-physical-mobile-v193="true"] .tn-blueprint-list,
+html[data-studio-physical-mobile-v193="true"] .tn-audit-strip,
+html[data-studio-physical-mobile-v193="true"] .tn-widget-grid,
+html[data-studio-physical-mobile-v193="true"] .tn-widget-settings{
+  grid-template-columns:minmax(0,1fr) !important;width:100% !important;max-width:100% !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-layout-canvas-v170{
+  grid-template-columns:minmax(0,1fr) !important;grid-template-rows:none !important;grid-auto-rows:minmax(58px,auto) !important;
+  grid-template-areas:
+    "top-left-1" "top-left-2" "top-left-3" "top-right-1" "top-right-2" "top-right-3"
+    "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "content-main"
+    "sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "after-content"
+    "bottom-left-1" "bottom-left-2" "bottom-left-3" "bottom-right-1" "bottom-right-2" "bottom-right-3" !important;
+  min-height:0 !important;width:100% !important;max-width:100% !important;padding:8px !important;gap:7px !important;overflow:visible !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-layout-slot-v170{position:relative !important;inset:auto !important;min-width:0 !important;width:100% !important;max-width:100% !important;transform:none !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-layout-slot-v170.content-main{min-height:140px !important;}
+
+/* Theme code editor: desktop 50:50 remains handled by existing desktop CSS;
+   handhelds always receive a readable vertical editor + preview. */
+html[data-studio-physical-mobile-v193="true"] .tn-code-workspace{display:grid !important;grid-template-columns:minmax(0,1fr) !important;height:auto !important;min-height:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-code-pane{min-height:50dvh !important;height:50dvh !important;border-right:0 !important;border-bottom:1px solid #dfe6ef !important;overflow:hidden !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-code-pane textarea{min-width:0 !important;width:100% !important;overflow:auto !important;white-space:pre !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-code-preview-pane{min-width:0 !important;width:100% !important;min-height:50dvh !important;overflow:hidden !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-code-preview-pane>header{position:static !important;height:auto !important;min-height:58px !important;display:flex !important;flex-direction:column !important;align-items:stretch !important;gap:8px !important;padding:10px !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-frame-shell{min-width:0 !important;width:100% !important;max-width:100% !important;padding:8px !important;overflow:auto !important;}
+html[data-studio-physical-mobile-v193="true"] .tn-frame-shell iframe{display:block !important;max-width:100% !important;min-width:0 !important;}
+
+/* Nara small/medium are genuine non-modal windows. They cannot white-out or
+   block the Studio behind them. Full screen remains intentionally modal. */
+.nara-assistant-layer[aria-modal="false"]{pointer-events:none !important;background:transparent !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+.nara-assistant-layer[aria-modal="false"]>.nara-assistant-backdrop{display:none !important;visibility:hidden !important;pointer-events:none !important;background:transparent !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+.nara-assistant-layer[aria-modal="false"]>.nara-assistant-shell{pointer-events:auto !important;position:fixed !important;inset:auto !important;right:max(10px,env(safe-area-inset-right)) !important;bottom:max(10px,env(safe-area-inset-bottom)) !important;max-width:calc(100vw - 20px) !important;max-height:calc(100dvh - 20px) !important;border:1px solid #dfe6ef !important;border-radius:22px !important;box-shadow:0 22px 70px rgba(13,31,58,.24) !important;overflow:hidden !important;}
+.nara-assistant-layer[aria-modal="false"]>.nara-assistant-shell[data-nara-size="small"]{width:min(420px,calc(100vw - 20px)) !important;height:min(68dvh,620px) !important;}
+.nara-assistant-layer[aria-modal="false"]>.nara-assistant-shell[data-nara-size="medium"]{width:min(620px,calc(100vw - 20px)) !important;height:min(82dvh,760px) !important;}
+.nara-assistant-layer[aria-modal="true"]>.nara-assistant-shell[data-nara-size="full"]{position:fixed !important;inset:0 !important;width:100vw !important;height:100dvh !important;max-width:none !important;max-height:none !important;border:0 !important;border-radius:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-floating-button{width:58px !important;height:58px !important;min-width:58px !important;min-height:58px !important;display:grid !important;grid-template-columns:1fr !important;grid-template-rows:1fr !important;place-items:center !important;padding:0 !important;border-radius:18px !important;animation:none !important;transition:none !important;transform:none !important;opacity:1 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-floating-button>span{grid-area:1/1 !important;width:42px !important;height:42px !important;display:grid !important;place-items:center !important;margin:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-floating-button>b,
+html[data-studio-physical-mobile-v193="true"] .nara-floating-button>small{display:none !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-assistant-header{
+  height:auto !important;min-height:104px !important;display:grid !important;
+  grid-template-columns:42px minmax(0,1fr) 36px 36px !important;grid-template-rows:52px 42px !important;
+  grid-template-areas:"brand title voice close" "sizes sizes reset reset" !important;gap:5px 7px !important;padding:6px 10px !important;overflow:visible !important;
+}
+html[data-studio-physical-mobile-v193="true"] .nara-brand-orb{grid-area:brand !important;width:40px !important;height:40px !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-assistant-header>div:nth-child(2){grid-area:title !important;min-width:0 !important;overflow:hidden !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-size-controls-v147{grid-area:sizes !important;display:grid !important;grid-template-columns:repeat(3,34px) !important;gap:5px !important;justify-content:start !important;align-items:center !important;min-width:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-size-controls-v147>button{width:34px !important;height:34px !important;min-width:34px !important;display:grid !important;place-items:center !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-auto-voice-v148{grid-area:voice !important;width:34px !important;height:34px !important;align-self:center !important;justify-self:center !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-assistant-header>button:nth-last-child(2){grid-area:reset !important;width:34px !important;height:34px !important;justify-self:end !important;align-self:center !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-assistant-header>button:last-child{grid-area:close !important;width:34px !important;height:34px !important;display:grid !important;place-items:center !important;visibility:visible !important;opacity:1 !important;align-self:center !important;justify-self:center !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-composer{min-width:0 !important;width:100% !important;padding:8px !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-composer-tools{height:auto !important;min-height:52px !important;display:grid !important;grid-template-columns:40px 40px minmax(0,1fr) 40px !important;gap:5px !important;overflow:visible !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-select.intelligence{grid-column:3 !important;width:100% !important;min-width:0 !important;margin:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-select.model{grid-column:1/-1 !important;width:100% !important;min-width:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-send{grid-column:4 !important;grid-row:1 !important;margin:0 !important;}
+html[data-studio-physical-mobile-v193="true"] .nara-quick-prompts{max-width:100% !important;overflow-x:auto !important;}
+
+/* Profile dropdowns created by the existing Studio controller stay inside the viewport. */
+html[data-studio-screenshot-recovery-v193] :is(.sn-profile-menu-v147,.sn-profile-menu-v150){position:fixed !important;left:auto !important;right:max(8px,env(safe-area-inset-right)) !important;top:max(64px,calc(env(safe-area-inset-top) + 56px)) !important;width:min(230px,calc(100vw - 16px)) !important;max-width:calc(100vw - 16px) !important;z-index:2147483400 !important;overflow:hidden !important;}
+
+@media(max-width:760px){
+  html[data-studio-screenshot-recovery-v193] .tn-library>header,
+  html[data-studio-screenshot-recovery-v193] .tn-layout-studio-header{position:static !important;height:auto !important;display:flex !important;flex-direction:column !important;align-items:stretch !important;gap:12px !important;}
+  html[data-studio-screenshot-recovery-v193] .tn-library>header h2,
+  html[data-studio-screenshot-recovery-v193] .tn-layout-studio-header h2{position:static !important;transform:none !important;white-space:normal !important;overflow-wrap:anywhere !important;line-height:1.08 !important;}
+}
+
+@media(prefers-reduced-motion:reduce){html[data-studio-screenshot-recovery-v193] *,html[data-studio-screenshot-recovery-v193] *::before,html[data-studio-screenshot-recovery-v193] *::after{scroll-behavior:auto !important;animation-duration:.001ms !important;animation-iteration-count:1 !important;}}
