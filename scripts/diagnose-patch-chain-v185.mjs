@@ -15,12 +15,7 @@ for (const step of [
   "./patch-service-worker-v179.mjs",
 ]) await import(step);
 
-const tests = [
-  "tests/studio-interface-v147.test.mjs",
-  "tests/studio-interface-v148.test.mjs",
-  "tests/studio-interface-v149.test.mjs",
-];
-const result = spawnSync(process.execPath, ["--test", ...tests], { cwd: process.cwd(), stdio: "inherit", env: process.env });
+const result = spawnSync(process.execPath, ["--test", "tests/studio-recovery-v150.test.mjs"], { cwd: process.cwd(), stdio: "inherit", env: process.env });
 if (result.status !== 0) process.exit(result.status || 1);
 await mkdir("dist", { recursive: true });
-await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSION_V147_V149_OK</h1></body></html>", "utf8");
+await writeFile("dist/index.html", "<!doctype html><html><body><h1>STUDIO_RECOVERY_V150_OK</h1></body></html>", "utf8");
