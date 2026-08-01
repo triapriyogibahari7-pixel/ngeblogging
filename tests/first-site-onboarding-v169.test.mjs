@@ -64,9 +64,10 @@ test("v169 enforces a factual maximum of 25 owned sites in UI data layer and dat
 
 test("v169 makes the created site active but does not publish it without consent", () => {
   for (const marker of [
-    "publishActiveSite(selected)", "setActiveSiteId(site.id)", "active-site-ready", "active-site-change",
+    "setActiveSiteId(site.id)", "active-site-ready", "active-site-change",
     "tetap berstatus draf dan privat", "tidak dipublikasikan tanpa persetujuan",
   ]) assert.ok(gate.toLowerCase().includes(marker.toLowerCase()), `active-site contract missing ${marker}`);
+  assert.match(gate, /publishActiveSite\(selected(?:,\s*user\?\.id)?\)/);
 });
 
 test("profile dropdown contains a working install-app path and explicit logout", () => {
@@ -101,10 +102,11 @@ test("production probe and Worker publish the v169 contract", () => {
   ]) assert.ok(worker.includes(marker), `worker missing ${marker}`);
 });
 
-test("PWA cache is upgraded without caching auth callbacks", () => {
+test("PWA cache keeps the v169 first-site contract under v192 auth/bootstrap authority without caching auth callbacks", () => {
   for (const marker of [
-    "ngeblogging-app-v169-first-site-20260730", "first-site-cache-v169",
-    "first-site-onboarding-v169-20260730", "site-policy-v169-20260730",
+    "ngeblogging-app-v192-auth-studio-bootstrap-20260801", "auth-studio-bootstrap-cache-v192",
+    "AUTH_STUDIO_BOOTSTRAP_RELEASE_V192", "first-site-onboarding-v169-20260730", "site-policy-v169-20260730",
     'url.pathname === "/login"', 'url.pathname.startsWith("/auth/")', "networkFirst(request",
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
+  assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
 });
