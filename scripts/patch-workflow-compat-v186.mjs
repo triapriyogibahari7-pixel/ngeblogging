@@ -4,6 +4,8 @@ const file = new URL("../.github/workflows/cloudflare-token-diagnostic.yml", imp
 let source = await readFile(file, "utf8");
 const RELEASE = "workflow-history-compat-v186";
 const concurrencyAnchors = [
+  "concurrency:\n  group: ngeblogging-production-studio-v196",
+  "concurrency:\n  group: ngeblogging-production-studio-v195",
   "concurrency:\n  group: ngeblogging-production-studio-v192",
   "concurrency:\n  group: ngeblogging-production-studio-v191",
   "concurrency:\n  group: ngeblogging-production-route-cutover-v184",
@@ -34,6 +36,8 @@ if (!source.includes("branches:\n      - production")) throw new Error("V186_V18
 if (!source.includes("Cut over apex and www to authoritative zone routes v184")) throw new Error("V186_V184_CUTOVER_MISSING");
 if (!source.includes("studio-screenshot-recovery-v191-20260801")) throw new Error("V186_V191_RELEASE_GATE_MISSING");
 if (!source.includes("auth-studio-bootstrap-v192-20260801")) throw new Error("V186_V192_RELEASE_GATE_MISSING");
+if (!source.includes("studio-bootstrap-session-first-v195-20260801")) throw new Error("V186_V195_RELEASE_GATE_MISSING");
+if (!source.includes("studio-bootstrap-live-recovery-v196-20260802")) throw new Error("V186_V196_RELEASE_GATE_MISSING");
 
 await writeFile(file, source);
-console.log(`Applied ${RELEASE}; v184/v191 compatibility and v192 production gate remain authoritative.`);
+console.log(`Applied ${RELEASE}; historical v184/v191/v192 gates remain and v195/v196 are accepted.`);
