@@ -31,6 +31,7 @@ import "./studio-mobile-authority-v185.js";
 import "./studio-production-authority-v187.js";
 import "./studio-physical-mobile-v188.js";
 import "./studio-production-mobile-v189.js";
+import "./studio-production-mobile-v189-account.js";
 import "./studio-production-mobile-v189-fix.css";
 
 export default StudioFastGate;
