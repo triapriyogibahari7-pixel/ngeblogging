@@ -31,21 +31,55 @@ async function patchNaraSource() {
   const path = "src/NaraAssistant.jsx";
   let source = await read(path);
 
-  const launcherCurrent = '<button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant">';
-  const launcherV194 = '<button className="nara-floating-button" onClick={() => { changeSize("small"); setOpen(true); }} aria-label="Buka Nara AI Assistant">';
-  source = replaceOnce(source, launcherCurrent, launcherV194, "NARA_SMALL_FIRST");
+  if (!source.includes('changeSize("small"); setOpen(true)')) {
+    source = replaceOnce(
+      source,
+      '<button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant">',
+      '<button className="nara-floating-button" onClick={() => { changeSize("small"); setOpen(true); }} aria-label="Buka Nara AI Assistant">',
+      "NARA_SMALL_FIRST",
+    );
+  }
 
-  const layerCurrent = '<div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">';
-  const layerV194 = '<div className="nara-assistant-layer" role="dialog" aria-modal={size === "full"} data-nara-react-modal-v194={size === "full" ? "modal" : "nonmodal"} aria-label="Nara AI Assistant">';
-  source = replaceOnce(source, layerCurrent, layerV194, "NARA_REACT_MODAL_STATE");
+  if (!source.includes("data-nara-react-modal-v194")) {
+    const layer = source.match(/<div className="nara-assistant-layer"[^>]*>/)?.[0];
+    if (!layer) throw new Error("V194_NARA_LAYER_MISSING");
+    let replacement = layer;
+    if (!replacement.includes('aria-modal={size === "full"}')) {
+      replacement = replacement.replace('aria-modal="true"', 'aria-modal={size === "full"}');
+    }
+    replacement = replacement.includes('aria-label="Nara AI Assistant"')
+      ? replacement.replace('aria-label="Nara AI Assistant"', 'data-nara-react-modal-v194={size === "full" ? "modal" : "nonmodal"} aria-label="Nara AI Assistant"')
+      : replacement.replace(/>$/, ' data-nara-react-modal-v194={size === "full" ? "modal" : "nonmodal"}>');
+    source = source.replace(layer, replacement);
+  }
 
-  const backdropCurrent = '<button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />';
-  const backdropV194 = '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} tabIndex={size === "full" ? 0 : -1} onClick={closeNara} aria-label="Tutup Nara" />';
-  source = replaceOnce(source, backdropCurrent, backdropV194, "NARA_BACKDROP_FIRST_PAINT");
+  if (!source.includes('hidden={size !== "full"}')) {
+    const backdrop = source.match(/<button className="nara-assistant-backdrop"[^>]*\/>/)?.[0];
+    if (!backdrop) throw new Error("V194_NARA_BACKDROP_MISSING");
+    source = source.replace(
+      backdrop,
+      backdrop.replace('className="nara-assistant-backdrop"', 'className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"}'),
+    );
+  }
+  if (!source.includes('tabIndex={size === "full" ? 0 : -1}')) {
+    const backdrop = source.match(/<button className="nara-assistant-backdrop"[^>]*\/>/)?.[0];
+    if (!backdrop) throw new Error("V194_NARA_BACKDROP_TABINDEX_MISSING");
+    source = source.replace(
+      backdrop,
+      backdrop.replace('className="nara-assistant-backdrop"', 'className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1}'),
+    );
+  }
 
-  const shellCurrent = '<aside className="nara-assistant-shell" aria-busy={busy} data-nara-size={size} data-nara-native-size="v149">';
-  const shellV194 = '<aside className="nara-assistant-shell" aria-busy={busy} aria-modal={size === "full"} data-nara-size={size} data-nara-native-size="v149" data-nara-controls="single-row-v194">';
-  source = replaceOnce(source, shellCurrent, shellV194, "NARA_SHELL_MODAL_STATE");
+  if (!source.includes('data-nara-controls="single-row-v194"')) {
+    const shell = source.match(/<aside className="nara-assistant-shell"[^>]*>/)?.[0];
+    if (!shell) throw new Error("V194_NARA_SHELL_MISSING");
+    let replacement = shell;
+    if (!replacement.includes('aria-modal={size === "full"}')) {
+      replacement = replacement.replace('aria-busy={busy}', 'aria-busy={busy} aria-modal={size === "full"}');
+    }
+    replacement = replacement.replace(/>$/, ' data-nara-controls="single-row-v194">');
+    source = source.replace(shell, replacement);
+  }
 
   if (!source.includes("recognition.current = null;")) {
     const closeCurrent = `  const closeNara = () => {\n    stopSpeech();\n    setOpen(false);\n  };`;
@@ -67,6 +101,9 @@ async function patchOlderNaraObservers() {
       '    backdrop.setAttribute("aria-hidden", String(!full));',
       '    if (backdrop.getAttribute("aria-hidden") !== String(!full)) backdrop.setAttribute("aria-hidden", String(!full));',
     );
+    if (/^\s*layer\.setAttribute\("aria-modal", String\(full\)\);/m.test(source)) {
+      throw new Error(`V194_NON_IDEMPOTENT_LAYER_ARIA_REMAINS:${path}`);
+    }
     await write(path, source);
   }
 }
@@ -109,6 +146,7 @@ async function verify() {
     ["src/NaraAssistant.jsx", 'changeSize("small"); setOpen(true)'],
     ["src/NaraAssistant.jsx", 'aria-modal={size === "full"}'],
     ["src/NaraAssistant.jsx", 'hidden={size !== "full"}'],
+    ["src/NaraAssistant.jsx", 'data-nara-controls="single-row-v194"'],
     ["src/NaraAssistant.jsx", "recognition.current = null;"],
     ["src/lib/supabase.js", "persistSession: true"],
     ["src/lib/supabase.js", "autoRefreshToken: true"],
