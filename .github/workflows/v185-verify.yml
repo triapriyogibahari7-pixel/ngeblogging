@@ -2,37 +2,33 @@ name: Verify Studio v185
 
 on:
   pull_request:
-    branches: [main]
-    paths:
-      - "src/Studio.jsx"
-      - "src/studio-mobile-authority-v185.js"
-      - "src/studio-mobile-authority-v185.css"
-      - "tests/studio-source-v185.test.mjs"
-      - ".github/workflows/v185-verify.yml"
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: v185-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  verify:
+  verify-studio-v185:
+    name: Build and regression
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.12.0"
+          node-version: 22
           cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Run focused regression test
-        run: node --test tests/studio-source-v185.test.mjs
-      - name: Run production build
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Studio v185 regression
+        run: npm run verify:v185
+
+      - name: Run complete production build
         run: npm run build
