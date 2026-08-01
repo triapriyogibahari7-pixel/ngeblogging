@@ -1,13 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
 import { createAppUrl } from "./site-url.js";
 
-const AUTH_RELEASE = "auth-resilience-v189-20260801";
+const AUTH_RELEASE = "auth-resilience-v190-20260801";
 const AUTH_LEGACY_RELEASE = "auth-production-v153-20260730";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
+const DATA_GATEWAY_PREFIX = "/api/data-proxy";
+const DATA_TRANSPORT_RELEASE_V190 = "studio-data-gateway-v190-20260801";
+const DATA_GATEWAY_PATHS_V190 = ["/rest/v1/", "/storage/v1/"];
 const OAUTH_PROVIDERS = new Set(["google", "github", "linkedin_oidc"]);
 const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
-/* Historical build-patch compatibility markers. v189 implements both behaviors
-   natively, so v186 must not replace these functions during production builds. */
+/* Historical build-patch compatibility markers. v190 implements these behaviors
+   natively, so v186 must not replace the transport during production builds. */
 const AUTH_V186_COMPAT = "direct-fallback-v186 direct-supabase-oauth-v186";
 const browserEnv = import.meta.env || {};
 const url = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
@@ -35,44 +38,73 @@ function gatewayHost() {
     || hostname.endsWith(".workers.dev");
 }
 
-function proxiedAuthUrl(value) {
-  if (!gatewayHost() || typeof window === "undefined") return null;
-  let target;
+function requestUrlV190(value) {
   try {
-    target = new URL(value instanceof Request ? value.url : String(value), window.location.origin);
+    return new URL(
+      value instanceof Request ? value.url : String(value),
+      typeof window === "undefined" ? undefined : window.location.origin,
+    );
   } catch {
     return null;
   }
-  if (target.origin !== supabaseOrigin() || !target.pathname.startsWith("/auth/v1/")) return null;
+}
+
+function proxiedAuthUrl(value) {
+  if (!gatewayHost() || typeof window === "undefined") return null;
+  const target = requestUrlV190(value);
+  if (!target || target.origin !== supabaseOrigin() || !target.pathname.startsWith("/auth/v1/")) return null;
   return new URL(`${AUTH_GATEWAY_PREFIX}${target.pathname}${target.search}`, window.location.origin);
+}
+
+function proxiedDataUrlV190(value) {
+  if (!gatewayHost() || typeof window === "undefined") return null;
+  const target = requestUrlV190(value);
+  if (!target || target.origin !== supabaseOrigin()) return null;
+  if (!DATA_GATEWAY_PATHS_V190.some((prefix) => target.pathname.startsWith(prefix))) return null;
+  return new URL(`${DATA_GATEWAY_PREFIX}${target.pathname}${target.search}`, window.location.origin);
+}
+
+function proxyRequestV190(input, target) {
+  return input instanceof Request ? new Request(target.toString(), input.clone()) : target.toString();
+}
+
+function directRequestV190(input) {
+  return input instanceof Request ? input.clone() : input;
+}
+
+async function gatewayFirstV190(input, init, proxy, kind) {
+  const directInput = directRequestV190(input);
+  try {
+    const response = await nativeFetch(proxyRequestV190(input, proxy), init);
+    const gatewayHeader = kind === "auth"
+      ? response.headers.get("x-ngeblogging-auth-gateway")
+      : response.headers.get("x-ngeblogging-data-gateway");
+    const staleUnauthorized = kind === "auth" && [401, 403].includes(response.status) && !gatewayHeader;
+    if (!GATEWAY_FALLBACK_STATUSES.has(response.status) && !staleUnauthorized) {
+      if (typeof document !== "undefined") {
+        if (kind === "auth") document.documentElement.dataset.authTransportV190 = "same-origin-gateway";
+        else document.documentElement.dataset.dataTransportV190 = "same-origin-data-gateway";
+      }
+      return response;
+    }
+    console.warn(`Gateway ${kind} mengembalikan ${response.status}; mencoba Supabase langsung.`);
+  } catch (error) {
+    console.warn(`Gateway ${kind} tidak terjangkau; mencoba Supabase langsung.`, error);
+  }
+  if (typeof document !== "undefined") {
+    if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback";
+    else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback";
+  }
+  return nativeFetch(directInput, init);
 }
 
 async function authAwareFetch(input, init) {
   if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada browser ini.");
-  const proxy = proxiedAuthUrl(input);
-  if (!proxy) return nativeFetch(input, init);
-
-  const directInput = input instanceof Request ? input.clone() : input;
-  const proxyRequest = input instanceof Request ? new Request(proxy.toString(), input) : proxy.toString();
-  try {
-    const response = await nativeFetch(proxyRequest, init);
-    if (!GATEWAY_FALLBACK_STATUSES.has(response.status)) {
-      if (typeof document !== "undefined") {
-        document.documentElement.dataset.authTransportV189 = response.headers.get("x-ngeblogging-auth-gateway")
-          ? "same-origin-gateway"
-          : "same-origin-response";
-      }
-      return response;
-    }
-    console.warn(`Gateway autentikasi mengembalikan ${response.status}; mencoba Supabase langsung.`);
-  } catch (error) {
-    console.warn("Gateway autentikasi tidak terjangkau; mencoba Supabase langsung.", error);
-  }
-
-  if (typeof document !== "undefined") {
-    document.documentElement.dataset.authTransportV189 = "direct-supabase-fallback";
-  }
-  return nativeFetch(directInput, init);
+  const dataProxyV190 = proxiedDataUrlV190(input);
+  if (dataProxyV190) return gatewayFirstV190(input, init, dataProxyV190, "data");
+  const authProxyV190 = proxiedAuthUrl(input);
+  if (authProxyV190) return gatewayFirstV190(input, init, authProxyV190, "auth");
+  return nativeFetch(input, init);
 }
 
 export const supabase = supabaseConfigured
@@ -86,16 +118,17 @@ export const supabase = supabaseConfigured
       global: {
         fetch: authAwareFetch,
         headers: {
-          "x-client-info": "ngeblogging-web-v189",
+          "x-client-info": "ngeblogging-web-v190",
         },
       },
     })
   : null;
 
 if (typeof document !== "undefined") {
-  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-resilience-v189" : "not-configured";
+  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v190" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
   document.documentElement.dataset.authLegacyRelease = AUTH_LEGACY_RELEASE;
+  document.documentElement.dataset.dataTransportReleaseV190 = DATA_TRANSPORT_RELEASE_V190;
 }
 
 const configuredSiteUrl = browserEnv.VITE_PUBLIC_SITE_URL;
@@ -115,6 +148,7 @@ function providerDestination(value) {
   const direct = new URL(value);
   if (typeof document !== "undefined") {
     document.documentElement.dataset.authProviderTransportV189 = "direct-supabase-oauth";
+    document.documentElement.dataset.authProviderTransportV190 = "direct-supabase-oauth";
   }
   return direct.toString();
 }
@@ -137,6 +171,7 @@ export async function signInWithProvider(provider) {
   const destination = providerDestination(data.url);
   if (typeof window !== "undefined") {
     document.documentElement.dataset.authProviderV189 = normalizedProvider;
+    document.documentElement.dataset.authProviderV190 = normalizedProvider;
     window.location.assign(destination);
   }
   return { ...data, url: destination };
@@ -242,6 +277,7 @@ function installAuthEntryBridge() {
   const requested = requestedAuthMode();
   if (!requested) return;
   document.documentElement.dataset.authEntryV189 = requested;
+  document.documentElement.dataset.authEntryV190 = requested;
   let opened = false;
   let switched = false;
   let observer;
@@ -282,4 +318,13 @@ function installAuthEntryBridge() {
 
 installAuthEntryBridge();
 
-export { AUTH_RELEASE, AUTH_LEGACY_RELEASE, AUTH_GATEWAY_PREFIX, AUTH_V186_COMPAT, authAwareFetch, installAuthEntryBridge };
+export {
+  AUTH_RELEASE,
+  AUTH_LEGACY_RELEASE,
+  AUTH_GATEWAY_PREFIX,
+  DATA_GATEWAY_PREFIX,
+  DATA_TRANSPORT_RELEASE_V190,
+  AUTH_V186_COMPAT,
+  authAwareFetch,
+  installAuthEntryBridge,
+};
