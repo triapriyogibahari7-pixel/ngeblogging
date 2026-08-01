@@ -1,5 +1,7 @@
 [build]
-  command = "npm run build"
+  # Temporary PR diagnostic: full patch chain + compile, without regression suite.
+  # Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && vite build"
   publish = "dist"
 
 [build.environment]
