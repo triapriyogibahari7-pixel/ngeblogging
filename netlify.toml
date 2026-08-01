@@ -1,6 +1,6 @@
 [build]
-  # Temporary PR diagnostic: complete v190 regression serialized. Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && node --test --test-concurrency=1 tests/studio-real-device-v190.test.mjs && vite build"
+  # Temporary PR diagnostic: publish exact v190 test stdout/stderr. Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && node scripts/capture-v190-test-log.mjs"
   publish = "dist"
 
 [build.environment]
