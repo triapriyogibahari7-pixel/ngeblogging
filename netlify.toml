@@ -1,6 +1,6 @@
 [build]
-  # Temporary PR diagnostic: v192 patch only. Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-studio-bootstrap-v192.mjs && mkdir -p dist && printf '<!doctype html><title>v192 diagnostic</title>' > dist/index.html"
+  # Temporary PR diagnostic: full patch chain only. Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf '<!doctype html><title>v192 chain diagnostic</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
