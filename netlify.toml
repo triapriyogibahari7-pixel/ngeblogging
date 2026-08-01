@@ -1,5 +1,7 @@
 [build]
-  command = "npm run build"
+  # TEMP v195 draft diagnostic: isolate session-first patch + focused regressions + Vite compile.
+  # Must be restored to `npm run build` before merge.
+  command = "npm run verify:v195 && npx vite build"
   publish = "dist"
 
 [build.environment]
