@@ -14,6 +14,11 @@ const comments = read("src/CommentsPanelV124.jsx");
 const nara = read("src/NaraAssistant.jsx");
 const serviceWorker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v186.json"));
+const physicalPatch = read("scripts/patch-production-physical-mobile-v188.mjs");
+const physicalRuntime = read("src/studio-physical-mobile-v188.js");
+const physicalCss = read("src/studio-physical-mobile-v188.css");
+const deviceMode = read("src/studio-device-mode-v140.js");
+const physicalRelease = JSON.parse(read("public/release-v188.json"));
 
 test("v186 runs after the existing v185 visual authority", () => {
   assert.match(chain, /patch-studio-production-v183\.mjs/);
@@ -67,14 +72,16 @@ test("Nara small and medium are non-modal in React source", () => {
   assert.match(nara, /tabIndex=\{size === "full" \? 0 : -1\}/);
 });
 
-test("v186 protections remain while the final cache is rotated by v187", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v187-production-authority-20260801/);
-  assert.match(serviceWorker, /production-authority-cache-v187/);
+test("v186 and v187 protections remain while the final cache is rotated by v188", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v188-physical-mobile-20260801/);
+  assert.match(serviceWorker, /physical-mobile-cache-v188/);
   assert.match(serviceWorker, /PRODUCTION_DATA_RELEASE_V186/);
   assert.match(serviceWorker, /PRODUCTION_AUTHORITY_RELEASE_V187/);
+  assert.match(serviceWorker, /PHYSICAL_MOBILE_RELEASE_V188/);
   assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
   assert.doesNotMatch(patch, /signOut\s*\(/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(/);
+  assert.doesNotMatch(physicalPatch, /signOut\s*\(|localStorage\.clear\s*\(/);
 });
 
 test("release and production scripts include v186", () => {
@@ -86,11 +93,45 @@ test("release and production scripts include v186", () => {
   assert.equal(release.repairs.naraSmallMediumNonModalAtSource, true);
 });
 
-test("v187 production authority is applied after v186 in every production build", () => {
+test("v187 production authority remains before physical mobile v188", () => {
   assert.match(chain, /patch-production-ui-v187\.mjs/);
+  assert.match(chain, /patch-production-physical-mobile-v188\.mjs/);
   assert.ok(chain.indexOf("patch-production-data-v186.mjs") < chain.indexOf("patch-production-ui-v187.mjs"));
-  assert.match(read("src/Studio.jsx"), /studio-production-authority-v187\.js/);
-  assert.match(read("public/sw.js"), /ngeblogging-app-v187-production-authority-20260801/);
+  assert.ok(chain.indexOf("patch-production-ui-v187.mjs") < chain.indexOf("patch-production-physical-mobile-v188.mjs"));
+  const entry = read("src/Studio.jsx");
+  assert.match(entry, /studio-production-authority-v187\.js/);
+  assert.match(entry, /studio-physical-mobile-v188\.js/);
+  assert.ok(entry.indexOf("studio-production-authority-v187.js") < entry.indexOf("studio-physical-mobile-v188.js"));
   assert.match(read("src/StudioNext.jsx"), /SIDEBAR_STATE_V187/);
   assert.match(read("src/StudioNext.jsx"), /documentWordCountV187\(active\.content\)/);
+});
+
+test("v188 detects a physical phone even with Android desktop-site viewport", () => {
+  assert.match(deviceMode, /view\.layoutWidth > view\.physicalViewportWidth \* 1\.35/);
+  assert.doesNotMatch(deviceMode, /Math\.max\(TABLET_MAX, view\.physicalViewportWidth \* 1\.35\)/);
+  assert.match(physicalRuntime, /studioDesktopSiteCompensationV188/);
+  assert.match(physicalRuntime, /layoutWidth \/ state\.physicalWidth/);
+  assert.match(physicalRuntime, /appRoot\.style\.setProperty\("zoom"/);
+  assert.match(physicalRuntime, /--v188-drawer-width/);
+});
+
+test("v188 physical mobile layout keeps drawer, operational pages, editor, Media and Nara contained", () => {
+  assert.match(physicalCss, /data-studio-physical-mobile-v188="true"/);
+  assert.match(physicalCss, /data-studio-desktop-site-phone="true"/);
+  assert.match(physicalCss, /\.sn-side-backdrop[\s\S]*inset: 0 0 0 var\(--v188-drawer-width\)/);
+  assert.match(physicalCss, /#ngeblogging-studio-sidebar\.mobile-open[\s\S]*pointer-events: auto/);
+  assert.match(physicalCss, /\.sn-media-tools>nav[\s\S]*overflow-x: auto/);
+  assert.match(physicalCss, /\.sv124-toggle-row[\s\S]*grid-template-columns: minmax\(0,1fr\) 48px/);
+  assert.match(physicalCss, /\.ce-workspace[\s\S]*grid-template-columns: minmax\(0,1fr\)/);
+  assert.match(physicalCss, /data-physical-nara-mode-v188="nonmodal"[\s\S]*pointer-events: none/);
+  assert.match(physicalRuntime, /backdrop\.hidden = !full/);
+  assert.match(physicalRuntime, /close\.setAttribute\("aria-label", "Tutup Nara AI"\)/);
+});
+
+test("v188 release records verifiable scope without mass-capacity claims", () => {
+  assert.equal(physicalRelease.release, "studio-physical-mobile-v188-20260801");
+  assert.equal(physicalRelease.repairs.androidDesktopSiteCompensated, true);
+  assert.equal(physicalRelease.repairs.drawerItemsClickable, true);
+  assert.equal(physicalRelease.repairs.naraSmallMediumNonModal, true);
+  assert.match(physicalRelease.claims.capacity, /No mass-user capacity claim/);
 });
