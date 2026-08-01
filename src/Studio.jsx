@@ -33,5 +33,6 @@ import "./studio-physical-mobile-v188.js";
 import "./studio-production-mobile-v189.js";
 import "./studio-production-mobile-v189-account.js";
 import "./studio-production-mobile-v189-fix.css";
+import "./studio-real-device-v190.js";
 
 export default StudioFastGate;
