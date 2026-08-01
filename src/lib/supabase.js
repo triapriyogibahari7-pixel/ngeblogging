@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createAppUrl } from "./site-url.js";
 
 const AUTH_RELEASE = "auth-resilience-v189-20260801";
+const AUTH_LEGACY_RELEASE = "auth-production-v153-20260730";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const OAUTH_PROVIDERS = new Set(["google", "github", "linkedin_oidc"]);
 const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
@@ -94,6 +95,7 @@ export const supabase = supabaseConfigured
 if (typeof document !== "undefined") {
   document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-resilience-v189" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
+  document.documentElement.dataset.authLegacyRelease = AUTH_LEGACY_RELEASE;
 }
 
 const configuredSiteUrl = browserEnv.VITE_PUBLIC_SITE_URL;
@@ -280,4 +282,4 @@ function installAuthEntryBridge() {
 
 installAuthEntryBridge();
 
-export { AUTH_RELEASE, AUTH_GATEWAY_PREFIX, AUTH_V186_COMPAT, authAwareFetch, installAuthEntryBridge };
+export { AUTH_RELEASE, AUTH_LEGACY_RELEASE, AUTH_GATEWAY_PREFIX, AUTH_V186_COMPAT, authAwareFetch, installAuthEntryBridge };
