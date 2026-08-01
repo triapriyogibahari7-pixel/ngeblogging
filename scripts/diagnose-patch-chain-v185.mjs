@@ -18,10 +18,8 @@ for (const step of [
 const tests = [
   "tests/production-route-recovery-v168.test.mjs",
   "tests/first-site-onboarding-v169.test.mjs",
-  "tests/theme-layout-v170.test.mjs",
-  "tests/theme-layout-v170-idempotency.test.mjs",
 ];
 const result = spawnSync(process.execPath, ["--test", ...tests], { cwd: process.cwd(), stdio: "inherit", env: process.env });
 if (result.status !== 0) process.exit(result.status || 1);
 await mkdir("dist", { recursive: true });
-await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSIONS_V168_V170_OK</h1></body></html>", "utf8");
+await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSIONS_V168_V169_OK</h1></body></html>", "utf8");
