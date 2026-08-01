@@ -13,6 +13,7 @@ const patch = read("scripts/patch-production-mobile-v189.mjs");
 const auth = read("src/lib/supabase.js");
 const fastGate = read("src/StudioFastGate.jsx");
 const deviceMode = read("src/studio-device-mode-v140.js");
+const productionEnv = read(".env.production");
 
 test("v189 is the last Studio authority and runs after data, UI, and physical-mobile patches", () => {
   assert.match(entry, /studio-production-mobile-v189\.js/);
@@ -37,6 +38,12 @@ test("six responsive families and desktop laptop/computer variants remain enable
   assert.match(deviceMode, /return "laptop"/);
   assert.match(deviceMode, /return "computer"/);
   assert.match(deviceMode, /display-mode: standalone/);
+});
+
+test("production Vite build always receives the public Supabase browser configuration", () => {
+  assert.match(productionEnv, /^VITE_SUPABASE_URL=https:\/\/[^\s]+\.supabase\.co$/m);
+  assert.match(productionEnv, /^VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[^\s]+$/m);
+  assert.doesNotMatch(productionEnv, /SERVICE_ROLE|service_role|SUPABASE_SERVICE_ROLE_KEY/);
 });
 
 test("authentication is resilient at source and provider destinations are never routed through the auth proxy", () => {
