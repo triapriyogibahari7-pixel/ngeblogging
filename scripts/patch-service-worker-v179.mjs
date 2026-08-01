@@ -55,4 +55,4 @@ await import("./patch-studio-screenshot-v193.mjs");
 await import("./patch-studio-nara-theme-v194.mjs");
 await import("./patch-studio-bootstrap-v195-publish-fix.mjs");
 await import("./patch-studio-bootstrap-v195.mjs");
-// TEMP DIAGNOSTIC: compatibility layer remains disabled until v195 core passes.
+await import("./patch-studio-bootstrap-v195-compat.mjs");
