@@ -126,7 +126,7 @@ function rememberActiveSiteV195(site, userId) {
 
       if (rejectedToken && attempt === 0) {
         const refreshed = await withDeadline(
-          getVerifiedSession({ force: true }),
+          getVerifiedSession({ force: Boolean(rejectedToken) }),
           CHECK_TIMEOUT_MS,
           "Pembaruan sesi melewati batas waktu.",
         );
@@ -199,11 +199,6 @@ function rememberActiveSiteV195(site, userId) {
     source = replaceOnce(source, current, next, "FAST_SCOPED_CACHE");
   }
 
-  source = source.replace(
-    'document.documentElement.dataset.studioMembershipTransportV192 = "direct-supabase-rls";',
-    'document.documentElement.dataset.studioMembershipTransportV192 = "direct-supabase-rls";',
-  );
-
   await write(path, source);
 }
 
@@ -274,9 +269,12 @@ async function verify() {
   const loadEnd = gate.indexOf("\n}\n", loadStart);
   const load = gate.slice(loadStart, loadEnd + 3);
   if (!load.includes("readLocalStudioSessionV195")) throw new Error("V195_LOCAL_SESSION_NOT_FIRST");
-  if (load.indexOf("readLocalStudioSessionV195") > load.indexOf("getVerifiedSession({ force: true })")) {
+  const conditionalRefresh = "getVerifiedSession({ force: Boolean(rejectedToken) })";
+  if (!load.includes(conditionalRefresh)) throw new Error("V195_CONDITIONAL_REFRESH_MISSING");
+  if (load.indexOf("readLocalStudioSessionV195") > load.indexOf(conditionalRefresh)) {
     throw new Error("V195_REMOTE_AUTH_PRECEDES_LOCAL_SESSION");
   }
+  if (/getVerifiedSession\(\{ force: true \}\)/.test(gate)) throw new Error("V195_UNCONDITIONAL_FORCE_TRUE_REINTRODUCED");
   if (/service_role|SUPABASE_SERVICE_ROLE/.test(gate)) throw new Error("V195_BROWSER_PRIVILEGED_KEY_FORBIDDEN");
 
   const worker = await read("public/sw.js");
