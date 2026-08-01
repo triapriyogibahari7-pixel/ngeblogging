@@ -90,4 +90,5 @@ async function verify() {
 await patchStudioEntry();
 await patchServiceWorker();
 await verify();
-console.log(`Applied ${RELEASE}`);
+await import("./patch-production-v192.mjs");
+console.log(`Applied ${RELEASE} + Studio data bootstrap v192`);
