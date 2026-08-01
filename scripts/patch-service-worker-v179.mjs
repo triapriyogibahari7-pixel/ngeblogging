@@ -77,3 +77,4 @@ await import("./patch-production-mobile-v189.mjs");
 await import("./patch-studio-screenshot-v193.mjs");
 await import("./patch-studio-nara-theme-v194.mjs");
 await import("./patch-studio-bootstrap-v195.mjs");
+await import("./patch-studio-bootstrap-v195-compat.mjs");
