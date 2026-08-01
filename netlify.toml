@@ -1,6 +1,5 @@
 [build]
-  # TEMP v195 draft validation: focused regressions + real Vite compile. Restore to npm run build before merge.
-  command = "npm run verify:v195 && npx vite build"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
