@@ -80,3 +80,6 @@ await import("./patch-studio-production-v183.mjs");
 
 // v185 memperbaiki sumber autentikasi, situs aktif, loading panel, onboarding offline, dan Nara non-modal.
 await import("./patch-production-v185.mjs");
+
+// Test historis v151-v175 tetap terbaca tanpa mengubah workflow produksi v184 yang tersimpan di Git.
+await import("./patch-workflow-compat-v185.mjs");
