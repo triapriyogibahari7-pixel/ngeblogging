@@ -1,4 +1,4 @@
-name: Ngeblogging production route cutover v184 — Studio v191/v192
+name: Ngeblogging production route cutover v184 — Studio v191/v192/v195
 
 on:
   push:
@@ -56,9 +56,9 @@ jobs:
           echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
           echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
 
-      - name: Run v183 and v184 regression — v190/v191/v192 continuation
+      - name: Run v183 and v184 regression — v190/v191/v192/v195 continuation
         id: regression
-        run: npm run verify:v191 && node --test tests/auth-studio-bootstrap-v192.test.mjs
+        run: npm run verify:v195
 
       - name: Build production application
         id: build
@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v192
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v195
 
       - name: Deploy Worker and assets
         id: deploy
@@ -84,8 +84,8 @@ jobs:
         id: cutover
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      # Historical v184/v191 release markers remain contract-visible for regression tests:
-      # /release-v182.json /release-v183.json /release-v184.json /release-v190.json /release-v191.json
+      # Historical v184/v191/v192 markers remain contract-visible for regression tests:
+      # /release-v182.json /release-v183.json /release-v184.json /release-v190.json /release-v191.json /release-v192.json
       - name: Verify live apex, auth routes, Studio and release markers
         id: verify
         shell: bash
@@ -95,11 +95,11 @@ jobs:
             stamp="$(date +%s)-${attempt}"
             ok=true
 
-            for path in / /login /signup /studio /release-v190.json /release-v191.json /release-v192.json; do
+            for path in / /login /signup /studio /release-v190.json /release-v191.json /release-v192.json /release-v194.json /release-v195.json; do
               safe_name="$(printf '%s' "${path}" | tr '/.' '__')"
-              output="/tmp/ngeblogging-v192-${attempt}-${safe_name}.out"
-              headers="/tmp/ngeblogging-v192-${attempt}-${safe_name}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v192=${stamp}" || true)"
+              output="/tmp/ngeblogging-v195-${attempt}-${safe_name}.out"
+              headers="/tmp/ngeblogging-v195-${attempt}-${safe_name}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v195=${stamp}" || true)"
               [[ "${code}" == 200 ]] || ok=false
               if grep -q 'WHITE-R4-2026.07.12' "${output}" "${headers}"; then ok=false; fi
 
@@ -109,24 +109,30 @@ jobs:
                 node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-screenshot-recovery-v191-20260801"||x.repairs?.androidDesktopSiteRootScaleRemoved!==true||x.repairs?.drawerMenuClickable!==true||x.repairs?.naraSmallMediumNonModal!==true||x.repairs?.legacyWhiteR4RejectedByDeployment!==true)process.exit(1)' "${output}" || ok=false
               elif [[ "${path}" == "/release-v192.json" ]]; then
                 node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="auth-studio-bootstrap-v192-20260801"||x.authentication?.oauthReplayRecovery!==true||x.studioBootstrap?.firstSessionCheckUsesCachedVerifiedSession!==true||x.serviceWorker?.forcedNavigation!==false)process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" == "/release-v194.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-nara-theme-v194-20260801")process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" == "/release-v195.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-bootstrap-session-first-v195-20260801"||x.authentication?.localSessionFirst!==true||x.authentication?.remoteVerificationOnlyAfterTokenRejection!==true||x.studioBootstrap?.cachedResumeRequiresMatchingUser!==true||x.serviceWorker?.forcedNavigation!==false)process.exit(1)' "${output}" || ok=false
               else
                 grep -q 'id="root"' "${output}" || ok=false
               fi
             done
 
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant-v192.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v192=${stamp}" || true)"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant-v195.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v195=${stamp}" || true)"
             [[ "${tenant_code}" == 200 ]] || ok=false
 
-            workers_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/workers-v192.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v192.json?verify_v192=${stamp}" || true)"
+            workers_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/workers-v195.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v195.json?verify_v195=${stamp}" || true)"
             [[ "${workers_code}" == 200 ]] || ok=false
             if [[ "${workers_code}" == 200 ]]; then
-              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="auth-studio-bootstrap-v192-20260801")process.exit(1)' /tmp/workers-v192.json || ok=false
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-bootstrap-session-first-v195-20260801")process.exit(1)' /tmp/workers-v195.json || ok=false
             fi
 
             if [[ "${ok}" == true ]]; then
               echo "PRODUCTION_ROUTE_CUTOVER_V184_VERIFIED"
               echo "PRODUCTION_STUDIO_V191_VERIFIED"
               echo "PRODUCTION_AUTH_STUDIO_V192_VERIFIED"
+              echo "PRODUCTION_STUDIO_NARA_THEME_V194_VERIFIED"
+              echo "PRODUCTION_STUDIO_BOOTSTRAP_V195_VERIFIED"
               exit 0
             fi
             sleep 10
@@ -134,6 +140,7 @@ jobs:
           echo "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED"
           echo "PRODUCTION_STUDIO_V191_VERIFY_FAILED"
           echo "PRODUCTION_AUTH_STUDIO_V192_VERIFY_FAILED"
+          echo "PRODUCTION_STUDIO_BOOTSTRAP_V195_VERIFY_FAILED"
           exit 1
 
       - name: Publish production status
@@ -168,7 +175,7 @@ jobs:
               repo: context.repo.repo,
               sha: context.sha,
               state: ready ? 'success' : 'failure',
-              context: 'Ngeblogging production Studio v192',
+              context: 'Ngeblogging production Studio v195',
               description: `build=${outcomes.build}; cutover=${outcomes.cutover}; verify=${outcomes.verify}`.slice(0, 140),
               target_url: runUrl,
             });

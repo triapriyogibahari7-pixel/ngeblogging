@@ -22,42 +22,19 @@ source = source.replace(/^const VERSION = ".*";$/m, `const VERSION = "${VERSION}
 source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${CACHE}";`);
 source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "mobile-runtime-v179";');
 source = source.replaceAll("NGE_BLOGGING_FORCE_RELOAD_V169", "NGE_BLOGGING_UPDATE_AVAILABLE_V179");
-
-for (const legacyEvent of [
-  "NGE_BLOGGING_FORCE_RELOAD_V174",
-  "NGE_BLOGGING_FORCE_RELOAD_V176",
-  "NGE_BLOGGING_FORCE_RELOAD_V177",
-]) {
+for (const legacyEvent of ["NGE_BLOGGING_FORCE_RELOAD_V174", "NGE_BLOGGING_FORCE_RELOAD_V176", "NGE_BLOGGING_FORCE_RELOAD_V177"]) {
   source = source.replaceAll(legacyEvent, "NGE_BLOGGING_UPDATE_AVAILABLE_V179");
 }
-
 source = insertAfterVersion(source, FIRST_SITE_VERSION);
 source = insertAfterVersion(source, FIRST_SITE_CACHE);
 source = insertAfterVersion(source, SCREENSHOT_VERSION);
 source = insertAfterVersion(source, SCREENSHOT_CACHE);
 source = insertAfterVersion(source, MOBILE_RUNTIME);
-
-source = source.replace(
-  /\n\s*await refreshStaleWindow\(client, url\);/g,
-  "\n      // v179 memberi tahu tab lama tanpa navigasi paksa; pengguna tidak dikeluarkan dari editor atau callback autentikasi.",
-);
-
-for (const marker of [
-  VERSION,
-  CACHE,
-  RELEASE,
-  FIRST_SITE_VERSION,
-  FIRST_SITE_CACHE,
-  SCREENSHOT_VERSION,
-  SCREENSHOT_CACHE,
-  MOBILE_RUNTIME,
-]) {
+source = source.replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v179 memberi tahu tab lama tanpa navigasi paksa; pengguna tidak dikeluarkan dari editor atau callback autentikasi.");
+for (const marker of [VERSION, CACHE, RELEASE, FIRST_SITE_VERSION, FIRST_SITE_CACHE, SCREENSHOT_VERSION, SCREENSHOT_CACHE, MOBILE_RUNTIME]) {
   if (!source.includes(marker)) throw new Error(`Patch service worker v179 tidak lengkap: ${marker}`);
 }
-if (/await refreshStaleWindow\(client, url\);/.test(source)) {
-  throw new Error("Navigasi paksa tab lama masih aktif.");
-}
-
+if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("Navigasi paksa tab lama masih aktif.");
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
 
@@ -76,3 +53,6 @@ await import("./patch-production-physical-mobile-v188.mjs");
 await import("./patch-production-mobile-v189.mjs");
 await import("./patch-studio-screenshot-v193.mjs");
 await import("./patch-studio-nara-theme-v194.mjs");
+await import("./patch-studio-bootstrap-v195-publish-fix.mjs");
+await import("./patch-studio-bootstrap-v195.mjs");
+await import("./patch-studio-bootstrap-v195-compat.mjs");
