@@ -74,3 +74,6 @@ await import("./patch-site-limit-summary-v182.mjs");
 
 // v183 memperbaiki drawer, editor mobile, halaman operasional, Nara non-modal, bootstrap situs aktif, dan cache produksi.
 await import("./patch-studio-production-v183.mjs");
+
+// v185 memperbaiki sumber autentikasi, situs aktif, loading panel, onboarding offline, dan Nara non-modal.
+await import("./patch-production-v185.mjs");
