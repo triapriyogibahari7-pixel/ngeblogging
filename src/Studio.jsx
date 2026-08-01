@@ -25,5 +25,8 @@ import "./studio-finalization-v178.js";
 import "./studio-mobile-runtime-v179.js";
 import "./studio-production-recovery-v180.js";
 import "./studio-mobile-hardening-v181.js";
+import "./studio-production-v183.js";
+import "./studio-production-v183-controls.css";
+import "./studio-mobile-authority-v185.js";
 
 export default StudioFastGate;
