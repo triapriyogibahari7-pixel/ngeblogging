@@ -5,6 +5,7 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const builder = read("scripts/build-active-zone-wrangler.mjs");
 const finalizer = read("scripts/finalize-cloudflare-routes-v175.mjs");
+const cutover = read("scripts/finalize-cloudflare-route-cutover-v182.mjs");
 const activeWorkflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const fallbackWorkflow = read(".github/workflows/deploy-production.yml");
 const wrangler = JSON.parse(read("wrangler.production.jsonc"));
@@ -27,7 +28,7 @@ test("active-zone builder preserves exact domains, wildcard tenant and v174 UI",
   assert.ok(!builder.includes("config.routes = requiredPatterns.map"));
 });
 
-test("finalizer attaches exact domains before deleting only legacy apex routes", () => {
+test("v175 finalizer attaches exact domains before deleting only legacy apex routes", () => {
   for (const marker of [
     RELEASE,
     'EXACT_HOSTNAMES = Object.freeze(["ngeblogging.com", "www.ngeblogging.com"])',
@@ -41,21 +42,33 @@ test("finalizer attaches exact domains before deleting only legacy apex routes",
   assert.match(finalizer, /if \(!wildcard\) throw new Error\("Wildcard tenant/);
 });
 
-test("only v175 workflow mutates production automatically", () => {
-  assert.ok(activeWorkflow.includes("push:\n    branches: [main]"));
+test("v184 workflow owns automatic production mutation while preserving v175 compatibility finalization", () => {
+  assert.ok(activeWorkflow.includes("push:\n    branches:\n      - production"));
   assert.ok(activeWorkflow.includes("environment: cloudflare-production"));
   for (const marker of [
-    "Run complete v147-v175 regression and build",
+    "Ngeblogging production route cutover v184",
+    "Run v183 and v184 regression",
+    "Build production application",
     "build-active-zone-wrangler.mjs",
+    "Deploy Worker and assets",
+    "Preserve compatibility routing before cutover",
     "finalize-cloudflare-routes-v175.mjs",
-    "/release-v174.json",
-    "/studio-viewport-audit-v174.html",
+    "Cut over apex and www to authoritative zone routes v184",
+    "finalize-cloudflare-route-cutover-v182.mjs",
+    "Verify live apex, auth routes, Studio and release markers",
+    "/release-v183.json",
+    "/release-v184.json",
     "WHITE-R4-2026.07.12",
-    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
-    "Ngeblogging production login v175",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
   ]) assert.ok(activeWorkflow.includes(marker), `workflow missing ${marker}`);
-  assert.ok(activeWorkflow.indexOf("Deploy Worker and assets") < activeWorkflow.indexOf("Attach exact Worker Domains"));
-  assert.ok(activeWorkflow.indexOf("Attach exact Worker Domains") < activeWorkflow.indexOf("Verify root login signup Studio"));
+  assert.ok(activeWorkflow.indexOf("Deploy Worker and assets") < activeWorkflow.indexOf("Preserve compatibility routing before cutover"));
+  assert.ok(activeWorkflow.indexOf("Preserve compatibility routing before cutover") < activeWorkflow.indexOf("Cut over apex and www to authoritative zone routes v184"));
+  assert.ok(activeWorkflow.indexOf("Cut over apex and www to authoritative zone routes v184") < activeWorkflow.indexOf("Verify live apex, auth routes, Studio and release markers"));
+
+  for (const marker of ["detachExactWorkerDomains", "installAuthoritativeRoutes", "verifyFinalState", "EXACT_ROUTES", "TENANT_ROUTE"]) {
+    assert.ok(cutover.includes(marker), `cutover missing ${marker}`);
+  }
+
   assert.ok(fallbackWorkflow.includes("manual fallback"));
   assert.ok(fallbackWorkflow.includes("workflow_dispatch"));
   assert.ok(!fallbackWorkflow.includes("push:\n    branches"));
@@ -70,7 +83,7 @@ test("standalone Wrangler keeps v172 exact domains and wildcard", () => {
   assert.ok(!wrangler.routes.some((item) => ["ngeblogging.com/*", "www.ngeblogging.com/*"].includes(item.pattern)));
 });
 
-test("v174 UI release is the live verification target without fake scale claims", () => {
+test("v174 UI compatibility release remains factual without fake scale claims", () => {
   assert.equal(release174.authority, "mobile-interaction-v174-20260731");
   assert.equal(release174.legacyWhiteR4, false);
   assert.equal(release174.viewportAudit, "/studio-viewport-audit-v174.html");
@@ -78,8 +91,9 @@ test("v174 UI release is the live verification target without fake scale claims"
   assert.ok(!JSON.stringify(release174).includes("900 juta"));
 });
 
-test("v175 regression and finalizer command are mandatory", () => {
+test("v175 regression and finalizer command remain mandatory", () => {
   assert.equal(packageJson.scripts["cloudflare:finalize-login-routes"], "node scripts/finalize-cloudflare-routes-v175.mjs");
+  assert.equal(packageJson.scripts["cloudflare:cutover-routes"], "node scripts/finalize-cloudflare-route-cutover-v182.mjs");
   assert.ok(packageJson.scripts["verify:v175"].includes("tests/production-login-finalizer-v175.test.mjs"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-login-finalizer-v175.test.mjs"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/mobile-interaction-v174.test.mjs"));
