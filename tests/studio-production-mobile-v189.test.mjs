@@ -10,6 +10,9 @@ const css = read("src/studio-production-mobile-v189.css");
 const narrowFix = read("src/studio-production-mobile-v189-fix.css");
 const pipeline = read("scripts/patch-service-worker-v179.mjs");
 const patch = read("scripts/patch-production-mobile-v189.mjs");
+const auth = read("src/lib/supabase.js");
+const fastGate = read("src/StudioFastGate.jsx");
+const deviceMode = read("src/studio-device-mode-v140.js");
 
 test("v189 is the last Studio authority and runs after data, UI, and physical-mobile patches", () => {
   assert.match(entry, /studio-production-mobile-v189\.js/);
@@ -25,6 +28,39 @@ test("v189 is the last Studio authority and runs after data, UI, and physical-mo
   assert.ok(pipeline.indexOf("patch-production-data-v186.mjs") < pipeline.indexOf("patch-production-ui-v187.mjs"));
   assert.ok(pipeline.indexOf("patch-production-ui-v187.mjs") < pipeline.indexOf("patch-production-physical-mobile-v188.mjs"));
   assert.ok(pipeline.indexOf("patch-production-physical-mobile-v188.mjs") < pipeline.indexOf("patch-production-mobile-v189.mjs"));
+});
+
+test("six responsive families and desktop laptop/computer variants remain enabled", () => {
+  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) {
+    assert.match(deviceMode, new RegExp(`"${mode}"`));
+  }
+  assert.match(deviceMode, /return "laptop"/);
+  assert.match(deviceMode, /return "computer"/);
+  assert.match(deviceMode, /display-mode: standalone/);
+});
+
+test("authentication is resilient at source and provider destinations are never routed through the auth proxy", () => {
+  assert.match(auth, /auth-resilience-v189/);
+  assert.match(auth, /persistSession:\s*true/);
+  assert.match(auth, /autoRefreshToken:\s*true/);
+  assert.match(auth, /GATEWAY_FALLBACK_STATUSES = new Set\(\[404, 502, 503, 504\]\)/);
+  assert.match(auth, /direct-supabase-fallback/);
+  assert.match(auth, /direct-fallback-v186/);
+  assert.match(auth, /direct-supabase-oauth-v186/);
+  const providerStart = auth.indexOf("function providerDestination");
+  const providerEnd = auth.indexOf("export async function signInWithProvider", providerStart);
+  assert.ok(providerStart >= 0 && providerEnd > providerStart);
+  assert.doesNotMatch(auth.slice(providerStart, providerEnd), /proxiedAuthUrl/);
+  assert.match(auth.slice(providerStart, providerEnd), /direct-supabase-oauth/);
+  assert.match(auth, /linkedin_oidc/);
+});
+
+test("authenticated users can resume a cached workspace before a temporary network failure completes", () => {
+  assert.match(fastGate, /studio-fast-entry-v189/);
+  assert.match(fastGate, /ngeblogging-active-site-snapshot-v186/);
+  assert.match(fastGate, /ngeblogging-active-site-snapshot-v185/);
+  assert.match(fastGate, /ngeblogging-active-site-snapshot-v183/);
+  assert.match(fastGate, /resume-known-site/);
 });
 
 test("Android desktop-site compensation does not clip a zoomed root inside a physical-width body", () => {
@@ -75,6 +111,7 @@ test("MutationObserver repairs are idempotent and do not rewrite equal text or a
   assert.match(runtime, /function setAttributeIfChanged/);
   assert.match(runtime, /function setBooleanPropertyIfChanged/);
   assert.match(runtime, /function setTextIfChanged/);
+  assert.doesNotMatch(runtime, /attributeFilter:[\s\S]*"style"/);
   assert.match(account, /if \(node && node\.textContent !== value\)/);
   assert.match(account, /textNode\.textContent !== value/);
 });
