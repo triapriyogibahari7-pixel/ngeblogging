@@ -3,13 +3,22 @@ import StudioOnboardingGate from "./StudioOnboardingGate.jsx";
 import StudioSecure from "./StudioSecure.jsx";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 
-const RELEASE = "studio-fast-entry-v136-20260729";
+const RELEASE = "studio-fast-entry-v189-20260801";
+const SNAPSHOT_KEYS = [
+  "ngeblogging-active-site-snapshot-v186",
+  "ngeblogging-active-site-snapshot-v185",
+  "ngeblogging-active-site-snapshot-v183",
+];
 
 function hasKnownSite() {
   try {
     if (window.__ngebloggingActiveSite?.id) return true;
     if (document.documentElement.dataset.activeSiteId) return true;
-    return Boolean(localStorage.getItem(ACTIVE_SITE_STORAGE_KEY));
+    if (localStorage.getItem(ACTIVE_SITE_STORAGE_KEY)) return true;
+    return SNAPSHOT_KEYS.some((key) => {
+      try { return Boolean(JSON.parse(localStorage.getItem(key) || "null")?.id); }
+      catch { return false; }
+    });
   } catch {
     return Boolean(window.__ngebloggingActiveSite?.id);
   }
