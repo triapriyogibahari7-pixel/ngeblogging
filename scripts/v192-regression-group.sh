@@ -19,15 +19,18 @@ node scripts/patch-service-worker-v179.mjs
 group="${1:-recent}"
 if [[ "$group" == "recent" ]]; then
   node --test \
-    tests/studio-mobile-runtime-v179.test.mjs \
-    tests/studio-mobile-hardening-v181.test.mjs \
-    tests/studio-production-v183.test.mjs \
-    tests/studio-source-v185.test.mjs \
-    tests/production-data-v186.test.mjs \
-    tests/studio-production-mobile-v189.test.mjs \
-    tests/studio-real-device-v190.test.mjs \
-    tests/studio-screenshot-recovery-v191.test.mjs \
-    tests/studio-data-bootstrap-v192.test.mjs
+    tests/studio-mobile-runtime-v179.test.mjs tests/studio-mobile-hardening-v181.test.mjs \
+    tests/studio-production-v183.test.mjs tests/studio-source-v185.test.mjs tests/production-data-v186.test.mjs \
+    tests/studio-production-mobile-v189.test.mjs tests/studio-real-device-v190.test.mjs \
+    tests/studio-screenshot-recovery-v191.test.mjs tests/studio-data-bootstrap-v192.test.mjs
+elif [[ "$group" == "recent-a" ]]; then
+  node --test \
+    tests/studio-mobile-runtime-v179.test.mjs tests/studio-mobile-hardening-v181.test.mjs \
+    tests/studio-production-v183.test.mjs tests/studio-source-v185.test.mjs tests/production-data-v186.test.mjs
+elif [[ "$group" == "recent-b" ]]; then
+  node --test \
+    tests/studio-production-mobile-v189.test.mjs tests/studio-real-device-v190.test.mjs \
+    tests/studio-screenshot-recovery-v191.test.mjs tests/studio-data-bootstrap-v192.test.mjs
 elif [[ "$group" == "legacy-a" ]]; then
   node --test \
     tests/studio-interface-v147.test.mjs tests/studio-interface-v148.test.mjs tests/studio-interface-v149.test.mjs \
