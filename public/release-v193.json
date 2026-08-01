@@ -1,0 +1,45 @@
+{
+  "release": "studio-screenshot-recovery-v193-20260801",
+  "date": "2026-08-01",
+  "scope": "screenshot-driven final visual authority layered after auth Studio bootstrap v192",
+  "repairs": {
+    "themeStudioMobileHeadingNormalFlow": true,
+    "themeLibrarySearchContained": true,
+    "themeLayoutMapPhysicalMobile": true,
+    "themeCodeEditorVerticalOnHandheld": true,
+    "drawerClickableAndUnblurred": true,
+    "mobileNCenteredAndOpaque": true,
+    "naraSmallMediumNonModal": true,
+    "naraCloseAlwaysVisible": true,
+    "naraMobileControlsDeterministic": true,
+    "genericOperationalPageContainment": true,
+    "profileDropdownViewportContained": true
+  },
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "previewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]
+  },
+  "preserved": {
+    "authentication": "v192 OAuth replay recovery, persistent session, RLS membership bootstrap",
+    "sidebarMenus": ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"],
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "themeEditors": ["HTML", "CSS", "JavaScript", "Preview"],
+    "naraCapabilities": ["camera", "photo", "file", "microphone", "speaker", "model", "intelligence", "small", "medium", "full"]
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v193-screenshot-recovery-20260801",
+    "cache": "screenshot-recovery-cache-v193",
+    "forcedNavigation": false,
+    "sessionStorageCleared": false
+  },
+  "validation": {
+    "regressionRequired": true,
+    "productionBuildRequired": true,
+    "physicalDeviceVerificationStillRequired": true,
+    "loginProviderInteractionStillRequired": true,
+    "massCapacityClaimed": false,
+    "note": "Viewport regression and source contracts are not a substitute for a real Google/LinkedIn/email login or distributed load testing."
+  }
+}
