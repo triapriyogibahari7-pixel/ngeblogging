@@ -1,0 +1,50 @@
+{
+  "release": "studio-nara-theme-v194-20260801",
+  "date": "2026-08-01",
+  "scope": "remaining screenshot failures in Theme Studio and Nara mobile controls",
+  "repairs": {
+    "themeStudioGlobalHeaderLeakIsolated": true,
+    "themeLibraryHeadingNormalFlowWithoutPhysicalFlag": true,
+    "layoutMapHeadingNormalFlowWithoutPhysicalFlag": true,
+    "layoutMapOneColumnOnNarrowScreens": true,
+    "themeCodeEditorVerticalOnHandheld": true,
+    "naraOpensSmallFirst": true,
+    "naraFirstPaintNonModalForSmallMedium": true,
+    "naraTopControlsSingleRow": true,
+    "naraComposerControlsSingleRow": true,
+    "naraLauncherAnimationDisabledOnMobile": true,
+    "naraCloseStopsMicrophoneAndSpeech": true,
+    "olderNaraObserverAriaWritesMadeIdempotent": true,
+    "drawerRemainsClickableWithoutBlur": true
+  },
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "previewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
+    "sidebarMenus": ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"],
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "naraModels": ["Nara Mini", "Nara Writer", "Nara Vision", "Nara Max"],
+    "naraIntelligence": ["Instan", "Sedang", "Tinggi", "Maksimal"],
+    "naraAttachments": ["camera", "photo", "file", "microphone", "speaker"]
+  },
+  "authentication": {
+    "preservesV192Bootstrap": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "networkTimeoutDoesNotMeanLogout": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v194-nara-theme-20260801",
+    "cache": "nara-theme-cache-v194",
+    "forcedNavigation": false,
+    "sessionStorageCleared": false
+  },
+  "validation": {
+    "regressionRequired": true,
+    "productionBuildRequired": true,
+    "physicalDeviceVerificationStillRequired": true,
+    "realProviderLoginStillRequiredFor100PercentLoginClaim": true,
+    "massCapacityClaimed": false
+  }
+}
