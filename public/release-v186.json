@@ -1,0 +1,26 @@
+{
+  "release": "production-data-source-v186-20260801",
+  "generatedAt": "2026-08-01T09:25:00+07:00",
+  "scope": "source-level authentication, active-site bootstrap, bounded operational loading and Nara modality",
+  "repairs": {
+    "activeSiteBootstrapNonBlocking": true,
+    "profileFailureDoesNotClearWorkspace": true,
+    "authenticatedStarterContentDisabled": true,
+    "cachedSiteRetainedOffline": true,
+    "sessionRetainedOnTransientNetworkFailure": true,
+    "authGatewayDirectFallback": true,
+    "oauthUsesDirectProviderDestination": true,
+    "domainLoadingBounded": true,
+    "commentsLoadingBounded": true,
+    "naraSmallMediumNonModalAtSource": true,
+    "serviceWorkerForcedNavigationDisabled": true
+  },
+  "evidenceRequiredAfterDeploy": [
+    "email-password login",
+    "Google OAuth",
+    "LinkedIn OAuth",
+    "active workspace restoration",
+    "Domain and Comments retry states",
+    "Nara small medium full interaction"
+  ]
+}
