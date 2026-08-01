@@ -1,0 +1,32 @@
+name: Studio v194 PR build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Patch and verify v194
+        run: node scripts/patch-service-worker-v179.mjs
+      - name: Run focused v194 regression
+        run: node --test tests/auth-studio-bootstrap-v192.test.mjs tests/studio-screenshot-recovery-v193.test.mjs tests/studio-nara-theme-v194.test.mjs
+      - name: Build application
+        run: npm run build
