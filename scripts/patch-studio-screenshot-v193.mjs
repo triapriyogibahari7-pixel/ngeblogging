@@ -7,6 +7,8 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-screenshot-recovery-v193-20260801";
 const VERSION = "ngeblogging-app-v193-screenshot-recovery-20260801";
 const CACHE = "screenshot-recovery-cache-v193";
+const V192_VERSION = 'const AUTH_STUDIO_COMPAT_VERSION_V192 = "ngeblogging-app-v192-auth-studio-bootstrap-20260801";';
+const V192_CACHE = 'const AUTH_STUDIO_COMPAT_CACHE_V192 = "auth-studio-bootstrap-cache-v192";';
 
 async function patchStudioEntry() {
   const path = "src/Studio.jsx";
@@ -15,8 +17,13 @@ async function patchStudioEntry() {
     const anchor = 'import "./studio-screenshot-recovery-v191-hotfix.css";';
     if (!source.includes(anchor)) throw new Error("V193_STUDIO_ENTRY_ANCHOR_MISSING");
     source = source.replace(anchor, `${anchor}\nimport "./studio-screenshot-recovery-v193.js";`);
-    await write(path, source);
   }
+  if (!source.includes('import "./studio-screenshot-recovery-v193-hotfix.css";')) {
+    const anchor = 'import "./studio-screenshot-recovery-v193.js";';
+    if (!source.includes(anchor)) throw new Error("V193_HOTFIX_ENTRY_ANCHOR_MISSING");
+    source = source.replace(anchor, `${anchor}\nimport "./studio-screenshot-recovery-v193-hotfix.css";`);
+  }
+  await write(path, source);
 }
 
 async function patchServiceWorker() {
@@ -25,6 +32,10 @@ async function patchServiceWorker() {
   source = source.replace(/^const VERSION = ".*";$/m, `const VERSION = "${VERSION}";`);
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${CACHE}";`);
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "screenshot-recovery-v193";');
+
+  for (const line of [V192_VERSION, V192_CACHE]) {
+    if (!source.includes(line)) source = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
+  }
   if (!source.includes("SCREENSHOT_RECOVERY_RELEASE_V193")) {
     source = source.replace(
       /^(const VERSION = .*;\n)/m,
@@ -46,6 +57,7 @@ async function patchServiceWorker() {
 async function verify() {
   const checks = [
     ["src/Studio.jsx", "studio-screenshot-recovery-v193.js"],
+    ["src/Studio.jsx", "studio-screenshot-recovery-v193-hotfix.css"],
     ["src/studio-screenshot-recovery-v193.js", RELEASE],
     ["src/studio-screenshot-recovery-v193.js", "recoverThemeStudioV193"],
     ["src/studio-screenshot-recovery-v193.js", "recoverDrawerV193"],
@@ -55,6 +67,7 @@ async function verify() {
     ["src/studio-screenshot-recovery-v193.css", ".tn-layout-canvas-v170"],
     ["src/studio-screenshot-recovery-v193.css", '.nara-assistant-layer[aria-modal="false"]'],
     ["src/studio-screenshot-recovery-v193.css", ".sn-mobile-menu-mark>strong"],
+    ["src/studio-screenshot-recovery-v193-hotfix.css", ".tn-frame-shell iframe"],
     ["src/lib/supabase.js", "persistSession: true"],
     ["src/lib/supabase.js", "autoRefreshToken: true"],
     ["src/StudioOnboardingGate.jsx", "listUserSitesDirectV192"],
@@ -79,6 +92,11 @@ async function verify() {
     "grid-template-columns:minmax(0,1fr) !important",
   ]) {
     if (!css.includes(marker)) throw new Error(`V193_CSS_CONTRACT_MISSING:${marker}`);
+  }
+
+  const worker = await read("public/sw.js");
+  for (const marker of [VERSION, CACHE, RELEASE, V192_VERSION, V192_CACHE]) {
+    if (!worker.includes(marker)) throw new Error(`V193_SERVICE_WORKER_MARKER_MISSING:${marker}`);
   }
 }
 
