@@ -1,5 +1,5 @@
 [build]
-  command = "bash scripts/v192-regression-group.sh recent-b2 && mkdir -p dist && printf 'v191-v192 regression pair passed' > dist/index.html"
+  command = "npm run test:production && mkdir -p dist && printf 'v192 production regression passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
