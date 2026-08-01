@@ -5,9 +5,12 @@ let source = await readFile(file, "utf8");
 const mode = 'data-nara-mode={size === "full" ? "modal" : "nonmodal"}';
 
 if (!source.includes(mode)) {
-  const anchor = 'aria-modal={size === "full"} aria-label="Nara AI Assistant"';
-  if (!source.includes(anchor)) throw new Error("V186_NARA_MODE_ANCHOR_MISSING");
-  source = source.replace(anchor, `aria-modal={size === "full"} ${mode} aria-label="Nara AI Assistant"`);
+  const layer = source.match(/<div className="nara-assistant-layer"[^>]*>/)?.[0];
+  if (!layer) throw new Error("V186_NARA_MODE_LAYER_MISSING");
+  const replacement = layer.includes('aria-label="Nara AI Assistant"')
+    ? layer.replace('aria-label="Nara AI Assistant"', `${mode} aria-label="Nara AI Assistant"`)
+    : layer.replace(/>$/, ` ${mode}>`);
+  source = source.replace(layer, replacement);
 }
 
 if (!source.includes('hidden={size !== "full"}')) {
