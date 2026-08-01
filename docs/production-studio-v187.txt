@@ -1,0 +1,17 @@
+NGEBLOGGING STUDIO PRODUCTION AUTHORITY V187
+Tanggal: 2026-08-01
+
+Fokus:
+- 6 keluarga layout dan 3 varian desktop
+- drawer mobile dapat diklik
+- sidebar buka/tutup tersimpan
+- situs aktif dipertahankan
+- editor mobile satu kolom
+- batas 5.000 kata tanpa memotong draf
+- tindakan Tema lengkap
+- Nara kecil/medium non-modal
+- Media tanpa overlay putih
+- cache PWA baru tanpa logout paksa
+
+Catatan kejujuran:
+Kapasitas pengguna sangat besar belum boleh diklaim tanpa uji beban nyata dan infrastruktur produksi yang terukur.
