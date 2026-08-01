@@ -1,0 +1,823 @@
+/* Studio production mobile v189: fixes real-device clipping, drawer interaction, page flow, Media, Comments, and Nara. */
+
+html[data-studio-production-mobile-v189],
+html[data-studio-production-mobile-v189] body,
+html[data-studio-production-mobile-v189] #root,
+html[data-studio-production-mobile-v189] .sn-shell,
+html[data-studio-production-mobile-v189] .sn-main {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+html[data-studio-production-mobile-v189] *,
+html[data-studio-production-mobile-v189] *::before,
+html[data-studio-production-mobile-v189] *::after {
+  box-sizing: border-box !important;
+}
+
+/* v188 clipped a zoomed root inside a body constrained to the physical width. */
+html[data-studio-desktop-site-phone-v189="true"],
+html[data-studio-desktop-site-phone-v189="true"] body {
+  width: 100vw !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+}
+
+html[data-studio-desktop-site-phone-v189="true"] #root {
+  margin: 0 !important;
+  transform-origin: top left !important;
+  overflow: visible !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] body::before,
+html[data-studio-physical-mobile-v189="true"] body::after,
+html[data-studio-physical-mobile-v189="true"] body.sn-mobile-sidebar-open::before,
+html[data-studio-physical-mobile-v189="true"] body.sn-mobile-sidebar-open::after {
+  display: none !important;
+  content: none !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-shell,.sn-main,.sn-main>*,.sn-view-pad,.sn-view-pad>*,
+  .sv124-page,.sv124-page>*,.mv176-page,.mv176-page>*,
+  .sn-api-page,.sn-api-page>*,.sn-media-library,.sn-media-library>*,
+  .sc161-summary,.sc161-summary>*,.sc161-content-page,.sc161-content-page>*,
+  .tn-studio,.tn-studio>*,.ce-app,.ce-app>*
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  h1,h2,h3,h4,p,small,b,strong,span,label,time,code
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(img,video,iframe,canvas) {
+  max-width: 100% !important;
+  height: auto;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(table,pre) {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-shell {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow-x: clip !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(.sn-main,.sn-side.collapsed+.sn-main) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  filter: none !important;
+  overflow-x: clip !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-top {
+  position: sticky !important;
+  inset: 0 auto auto 0 !important;
+  z-index: 3900 !important;
+  width: 100% !important;
+  min-height: 66px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: max(8px,env(safe-area-inset-top)) 10px 8px !important;
+  overflow: visible !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-sidebar-toggle {
+  flex: 0 0 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border-radius: 13px !important;
+  background: #fff !important;
+  color: #2869df !important;
+  opacity: 1 !important;
+  filter: none !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-desktop-sidebar-icon { display: none !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-mobile-menu-mark {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  color: #2869df !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-mobile-menu-mark>strong {
+  position: static !important;
+  display: block !important;
+  margin: 0 !important;
+  color: #2869df !important;
+  font-size: 28px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark)>i { display: none !important; }
+
+html[data-studio-physical-mobile-v189="true"] .sn-workspace {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 108px) !important;
+  overflow: hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-workspace>div { min-width: 0 !important; overflow: hidden !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-workspace b { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+html[data-studio-physical-mobile-v189="true"] :is(.sn-cloud,.sn-top-actions>:not(.sn-avatar)) { display: none !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-top-actions { flex: 0 0 auto !important; margin-left: auto !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-avatar {
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+
+/* Drawer always sits above the dimmer. The dimmer never covers the drawer itself. */
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  z-index: 2147483100 !important;
+  isolation: isolate !important;
+  width: var(--v189-drawer-width) !important;
+  max-width: calc(var(--v189-physical-width) - 44px) !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom)) !important;
+  border-radius: 0 18px 18px 0 !important;
+  background: #fff !important;
+  color: #172b46 !important;
+  box-shadow: 18px 0 54px rgba(18,38,68,.22) !important;
+  opacity: 1 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  transform: translate3d(-105%,0,0) !important;
+  transition: transform .18s ease,visibility 0s linear .18s !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar.mobile-open {
+  visibility: visible !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: translate3d(0,0,0) !important;
+  transition: transform .18s ease !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar.mobile-open * {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-logo {
+  flex: 0 0 56px !important;
+  min-height: 56px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 4px 6px !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar .sn-logo-mark {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar .sn-logo-mark>strong {
+  color: #2869df !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-new {
+  flex: 0 0 48px !important;
+  width: calc(100% - 8px) !important;
+  min-height: 48px !important;
+  margin: 2px 4px 4px !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 4px 8px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>nav>button,
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-account-footer>button {
+  position: relative !important;
+  flex: 0 0 43px !important;
+  width: 100% !important;
+  min-height: 43px !important;
+  max-height: 43px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  padding: 0 12px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>nav>button>span,
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-account-footer>button>span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-account-footer {
+  position: static !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin-top: auto !important;
+  padding: 6px 4px 0 !important;
+  background: #fff !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-side-backdrop {
+  position: fixed !important;
+  inset: 0 0 0 var(--v189-drawer-width) !important;
+  z-index: 2147483000 !important;
+  width: auto !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: rgba(18,34,57,.16) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  clip-path: inset(0 0 0 0) !important;
+}
+
+/* Every operational page returns to normal document flow on real mobile devices. */
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-view-pad,.sv124-page,.mv176-page,.sn-api-page,.sn-media-library,.tn-studio
+) {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 16px 12px calc(92px + env(safe-area-inset-bottom)) !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-page-title,.sv124-page-title,.mv176-title,.sn-api-title
+) {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 10px !important;
+  margin: 0 0 16px !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-page-title h1,.sv124-page-title h1,.mv176-title h1,.sn-api-title h1
+) {
+  position: static !important;
+  width: 100% !important;
+  margin: 4px 0 7px !important;
+  font-size: clamp(28px,8vw,40px) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.025em !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-page-title>button,.sv124-page-title>button,.sn-api-title>button,.mv176-title-actions
+) {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-title-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 8px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-title-actions>button { width: 100% !important; min-width: 0 !important; }
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-metrics,.sn-home-grid,.sn-info-grid,.sn-settings-grid,.sn-api-metrics,
+  .sv124-metrics-grid,.sv124-toggle-grid,.sv124-comment-columns,
+  .mv176-metrics,.mv176-grid,.sc161-metrics,.sc161-dashboard-grid
+) {
+  grid-template-columns: minmax(0,1fr) !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Summary cards and rows must never use desktop absolute geometry on a phone. */
+html[data-studio-physical-mobile-v189="true"] .sc161-hero {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+  width: 100% !important;
+  padding: 20px 16px !important;
+  overflow: hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-hero h1 {
+  position: static !important;
+  margin: 8px 0 !important;
+  font-size: clamp(30px,9vw,43px) !important;
+  line-height: 1.08 !important;
+  overflow-wrap: break-word !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-hero-actions {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: none !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-hero-actions>* { width: 100% !important; min-width: 0 !important; }
+html[data-studio-physical-mobile-v189="true"] :is(.sc161-metric,.sc161-card,.sc161-nara) {
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-card>header {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin: 0 0 12px !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.sc161-recent,.sc161-drafts)>button {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-height: 62px !important;
+  height: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-recent>button {
+  display: grid !important;
+  grid-template-columns: 36px minmax(0,1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-recent>button>* {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sc161-recent>button>div { min-width: 0 !important; overflow: hidden !important; }
+html[data-studio-physical-mobile-v189="true"] .sc161-recent>button b,
+html[data-studio-physical-mobile-v189="true"] .sc161-recent>button small {
+  display: block !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Comments: replace the enlarged native checkboxes with a stable accessible switch. */
+html[data-studio-physical-mobile-v189="true"] .sv124-settings-card>header {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 10px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-settings-card>header>button { width: 100% !important; }
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 8px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row {
+  position: relative !important;
+  min-height: 68px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) 46px !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 11px 12px !important;
+  overflow: hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row>span { min-width: 0 !important; }
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row b {
+  display: block !important;
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row small {
+  display: block !important;
+  margin-top: 3px !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row>input {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row>i {
+  position: relative !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  width: 44px !important;
+  height: 26px !important;
+  display: block !important;
+  border-radius: 999px !important;
+  background: #cbd6e5 !important;
+  box-shadow: inset 0 0 0 1px rgba(33,56,85,.12) !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row>i::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 3px !important;
+  left: 3px !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  box-shadow: 0 2px 6px rgba(21,43,70,.24) !important;
+  transition: transform .16s ease !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row>input:checked+i { background: #2d73e8 !important; }
+html[data-studio-physical-mobile-v189="true"] .sv124-toggle-row>input:checked+i::after { transform: translateX(18px) !important; }
+
+/* Media filters are a compact horizontal toolbar, never a white overlay. */
+html[data-studio-physical-mobile-v189="true"] .sn-media-tools {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 9px !important;
+  margin: 12px 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-media-tools>label,
+html[data-studio-physical-mobile-v189="true"] .sn-media-tools>label input {
+  position: static !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-media-tools>nav {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 0 2px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-media-tools>nav>button {
+  position: static !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-media-tools>span {
+  position: static !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-upload-zone {
+  position: static !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+/* Nara launcher and panel geometry. */
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button {
+  position: fixed !important;
+  right: max(10px,env(safe-area-inset-right)) !important;
+  bottom: max(68px,calc(env(safe-area-inset-bottom) + 60px)) !important;
+  z-index: 4200 !important;
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 17px !important;
+  animation: none !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button>:is(b,small) { display: none !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button>span {
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button svg {
+  width: 25px !important;
+  height: 25px !important;
+  margin: 0 !important;
+  place-self: center !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] body.nara-open-v189 .nara-floating-button { display: none !important; }
+
+html[data-studio-production-mobile-v189] .nara-assistant-layer[data-v189-nara-mode="nonmodal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483200 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-layer[data-v189-nara-mode="nonmodal"]>.nara-assistant-backdrop {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-layer[data-v189-nara-mode="nonmodal"]>.nara-assistant-shell {
+  position: fixed !important;
+  inset: auto max(8px,env(safe-area-inset-right)) max(72px,calc(env(safe-area-inset-bottom) + 66px)) auto !important;
+  width: min(420px,calc(100vw - 16px)) !important;
+  max-width: calc(100vw - 16px) !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+  transform: none !important;
+  filter: none !important;
+  border-radius: 18px !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-shell[data-nara-size="small"] { height: min(64dvh,560px) !important; }
+html[data-studio-production-mobile-v189] .nara-assistant-shell[data-nara-size="medium"] { width: min(720px,calc(100vw - 16px)) !important; height: min(82dvh,760px) !important; }
+html[data-studio-production-mobile-v189] .nara-assistant-layer[data-v189-nara-mode="modal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483300 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  pointer-events: auto !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-layer[data-v189-nara-mode="modal"]>.nara-assistant-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-header {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(0,1fr) 36px 36px 36px !important;
+  grid-auto-rows: minmax(36px,auto) !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 8px !important;
+  overflow: visible !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-header>.nara-brand-orb { grid-column: 1 !important; grid-row: 1 !important; }
+html[data-studio-production-mobile-v189] .nara-assistant-header>.nara-brand-orb+div { grid-column: 2 !important; grid-row: 1 !important; min-width: 0 !important; overflow: hidden !important; }
+html[data-studio-production-mobile-v189] .nara-assistant-header>.nara-auto-voice-v148 { grid-column: 3 !important; grid-row: 1 !important; }
+html[data-studio-production-mobile-v189] .nara-assistant-header>button[title="Percakapan baru"] { grid-column: 4 !important; grid-row: 1 !important; }
+html[data-studio-production-mobile-v189] .nara-assistant-header>button[title="Tutup"],
+html[data-studio-production-mobile-v189] .nara-assistant-header>button[aria-label="Tutup Nara AI"] { grid-column: 5 !important; grid-row: 1 !important; display: grid !important; visibility: visible !important; }
+html[data-studio-production-mobile-v189] .nara-size-controls-v147 {
+  position: static !important;
+  grid-column: 1/-1 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+html[data-studio-production-mobile-v189] :is(.nara-assistant-header>button,.nara-size-controls-v147>button) {
+  position: static !important;
+  flex: 0 0 36px !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+html[data-studio-production-mobile-v189] .nara-context-bar {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+html[data-studio-production-mobile-v189] .nara-assistant-messages {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+html[data-studio-production-mobile-v189] .nara-quick-prompts {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+html[data-studio-production-mobile-v189] .nara-quick-prompts>button { flex: 0 0 auto !important; min-width: max-content !important; }
+html[data-studio-production-mobile-v189] .nara-composer {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+html[data-studio-production-mobile-v189] .nara-composer>textarea { width: 100% !important; min-width: 0 !important; max-width: 100% !important; }
+html[data-studio-production-mobile-v189] .nara-composer-tools {
+  display: grid !important;
+  grid-template-columns: 40px 40px minmax(0,1fr) 40px !important;
+  grid-auto-rows: 40px !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+html[data-studio-production-mobile-v189] .nara-composer-tools>.nara-attachment-menu-wrap { grid-column: 1 !important; grid-row: 1 !important; }
+html[data-studio-production-mobile-v189] .nara-composer-tools>button[aria-label*="mikrofon" i] { grid-column: 2 !important; grid-row: 1 !important; }
+html[data-studio-production-mobile-v189] .nara-composer-tools>.nara-select.intelligence { grid-column: 3 !important; grid-row: 1 !important; width: 100% !important; min-width: 0 !important; }
+html[data-studio-production-mobile-v189] .nara-composer-tools>.nara-send { grid-column: 4 !important; grid-row: 1 / span 2 !important; align-self: stretch !important; height: auto !important; }
+html[data-studio-production-mobile-v189] .nara-composer-tools>.nara-select.model { grid-column: 1 / 4 !important; grid-row: 2 !important; width: 100% !important; min-width: 0 !important; }
+html[data-studio-production-mobile-v189] .nara-select>span { min-width: 0 !important; overflow: hidden !important; white-space: nowrap !important; text-overflow: ellipsis !important; }
+html[data-studio-production-mobile-v189] .nara-attachment-menu {
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: calc(100% + 8px) !important;
+  width: min(300px,calc(100vw - 32px)) !important;
+  max-height: min(320px,50dvh) !important;
+  overflow-y: auto !important;
+}
+
+/* Profile is a distinct focused surface; Settings keeps the complete form. */
+html[data-studio-account-view-v189="profile"] .sn-settings-grid>section:not(:first-child),
+html[data-studio-account-view-v189="profile"] .sn-settings-extras,
+html[data-studio-account-view-v189="profile"] .sn-backup-host {
+  display: none !important;
+}
+html[data-studio-account-view-v189="profile"] .sn-settings-grid {
+  grid-template-columns: minmax(0,1fr) !important;
+}
+
+@media (min-width:600px) and (max-width:1180px) {
+  html[data-studio-responsive-mode="tablet"] .sc161-metrics,
+  html[data-studio-responsive-mode="tablet"] .sv124-metrics-grid,
+  html[data-studio-responsive-mode="tablet"] .mv176-metrics {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
+
+@media (max-width:430px) {
+  html[data-studio-physical-mobile-v189="true"] :is(.sn-view-pad,.sv124-page,.mv176-page,.sn-api-page,.sn-media-library,.tn-studio) {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar {
+    width: min(84vw,330px) !important;
+    max-width: calc(100vw - 34px) !important;
+  }
+  html[data-studio-physical-mobile-v189="true"] .sn-side-backdrop {
+    inset-left: min(84vw,330px) !important;
+  }
+  html[data-studio-production-mobile-v189] .nara-assistant-layer[data-v189-nara-mode="nonmodal"]>.nara-assistant-shell {
+    right: 6px !important;
+    width: calc(100vw - 12px) !important;
+    max-width: calc(100vw - 12px) !important;
+  }
+  html[data-studio-production-mobile-v189] .nara-assistant-header {
+    grid-template-columns: 34px minmax(0,1fr) 34px 34px 34px !important;
+    gap: 4px !important;
+    padding: 7px !important;
+  }
+  html[data-studio-production-mobile-v189] :is(.nara-assistant-header>button,.nara-size-controls-v147>button) {
+    flex-basis: 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-studio-production-mobile-v189] *,
+  html[data-studio-production-mobile-v189] *::before,
+  html[data-studio-production-mobile-v189] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

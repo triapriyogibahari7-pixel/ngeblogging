@@ -1,0 +1,26 @@
+{
+  "release": "studio-production-mobile-v189-20260801",
+  "date": "2026-08-01",
+  "base": "studio-physical-mobile-v188",
+  "repairs": {
+    "androidDesktopSiteRootNotClipped": true,
+    "drawerAboveOutsideDimmer": true,
+    "drawerItemsClickable": true,
+    "mobileLogoCentered": true,
+    "summaryRowsContained": true,
+    "commentsToggleContained": true,
+    "mediaFiltersInline": true,
+    "naraSmallMediumNonModal": true,
+    "naraCloseVisible": true,
+    "profileSeparatedFromSettings": true,
+    "activeSiteSignalRestored": true,
+    "authFallbackPipelinePreserved": true
+  },
+  "sessionPolicy": "Persist until explicit logout or a validated permanent session failure.",
+  "dataPolicy": "No fabricated production analytics or user counts.",
+  "claims": {
+    "physicalDeviceValidation": "Required after deploy; not inferred from static source checks.",
+    "providerLoginValidation": "Requires configured Google, LinkedIn OIDC, and email providers in the deployed Supabase project.",
+    "capacity": "No 900-million-user or other mass-capacity claim without provider and load-test evidence."
+  }
+}
