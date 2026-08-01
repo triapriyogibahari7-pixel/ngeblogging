@@ -1,0 +1,33 @@
+name: Validate Ngeblogging v192 pull request
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Apply and verify v192 chain
+        run: npm run verify:v191 && node --test tests/auth-studio-bootstrap-v192.test.mjs
+      - name: Full production regression and build
+        run: npm run build
