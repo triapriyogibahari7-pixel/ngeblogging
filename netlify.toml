@@ -1,5 +1,5 @@
 [build]
-  command = "npm run predev"
+  command = "node scripts/diagnose-patch-chain-v185.mjs"
   publish = "dist"
 
 [build.environment]
