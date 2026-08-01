@@ -21,6 +21,14 @@ async function patchStudioEntry() {
     'import "./studio-physical-mobile-v188.js";\nimport "./studio-production-mobile-v189.js";',
     "STUDIO_ENTRY",
   );
+  if (!source.includes('import "./studio-production-mobile-v189-fix.css";')) {
+    source = replaceOnce(
+      source,
+      'import "./studio-production-mobile-v189.js";',
+      'import "./studio-production-mobile-v189.js";\nimport "./studio-production-mobile-v189-fix.css";',
+      "NARROW_FIX_ENTRY",
+    );
+  }
   await write(path, source);
 }
 
@@ -51,6 +59,7 @@ async function patchServiceWorker() {
 async function verify() {
   const checks = [
     ["src/Studio.jsx", "studio-production-mobile-v189.js"],
+    ["src/Studio.jsx", "studio-production-mobile-v189-fix.css"],
     ["src/studio-production-mobile-v189.js", "studio-production-mobile-v189-20260801"],
     ["src/studio-production-mobile-v189.js", "studioDesktopSiteCompensationV189"],
     ["src/studio-production-mobile-v189.js", "nara-open-v189"],
@@ -59,12 +68,14 @@ async function verify() {
     ["src/studio-production-mobile-v189.css", "sv124-toggle-row>input:checked+i"],
     ["src/studio-production-mobile-v189.css", ".sn-media-tools>nav"],
     ["src/studio-production-mobile-v189.css", "data-v189-nara-mode"],
+    ["src/studio-production-mobile-v189-fix.css", "left: var(--v189-drawer-width)"],
     ["src/StudioNext.jsx", "studio-bootstrap-resilient-v186"],
     ["src/lib/supabase.js", "direct-fallback-v186"],
     ["src/lib/supabase.js", "direct-supabase-oauth-v186"],
     ["src/NaraAssistant.jsx", 'aria-modal={size === "full"}'],
     ["public/sw.js", "ngeblogging-app-v189-production-mobile-20260801"],
     ["public/sw.js", "production-mobile-cache-v189"],
+    ["public/release-v189.json", "studio-production-mobile-v189-20260801"],
   ];
   for (const [path, marker] of checks) {
     const source = await read(path);
