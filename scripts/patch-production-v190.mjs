@@ -17,6 +17,28 @@ async function patchStudioEntry() {
   }
 }
 
+async function patchNaraClose() {
+  const path = "src/NaraAssistant.jsx";
+  let source = await read(path);
+  const current = `  const closeNara = () => {
+    stopSpeech();
+    setOpen(false);
+  };`;
+  const hardened = `  const closeNara = () => {
+    recognition.current?.stop?.();
+    recognition.current = null;
+    setListening(false);
+    stopSpeech();
+    setAttachmentMenu(false);
+    setOpen(false);
+  };`;
+  if (!source.includes("recognition.current = null;")) {
+    if (!source.includes(current)) throw new Error("V190_NARA_CLOSE_ANCHOR_MISSING");
+    source = source.replace(current, hardened);
+    await write(path, source);
+  }
+}
+
 async function patchServiceWorker() {
   const path = "public/sw.js";
   let source = await read(path);
@@ -43,6 +65,8 @@ async function verify() {
     ["src/lib/supabase.js", "proxiedDataUrlV190"],
     ["src/lib/supabase.js", "same-origin-data-gateway"],
     ["src/StudioFastGate.jsx", "ngeblogging-active-site-snapshot-v190"],
+    ["src/NaraAssistant.jsx", "recognition.current = null"],
+    ["src/NaraAssistant.jsx", "setListening(false)"],
     ["public/release-v190.json", "studio-real-device-v190-20260801"],
     ["public/sw.js", "ngeblogging-app-v190-real-device-20260801"],
     ["public/sw.js", "real-device-cache-v190"],
@@ -63,6 +87,7 @@ async function verify() {
 }
 
 await patchStudioEntry();
+await patchNaraClose();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
