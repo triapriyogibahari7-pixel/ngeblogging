@@ -74,3 +74,4 @@ await import("./patch-workflow-compat-v186.mjs");
 await import("./patch-production-ui-v187.mjs");
 await import("./patch-production-physical-mobile-v188.mjs");
 await import("./patch-production-mobile-v189.mjs");
+await import("./patch-studio-screenshot-v193.mjs");
