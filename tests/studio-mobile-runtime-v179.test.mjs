@@ -118,16 +118,18 @@ test("loading watchdog gives a retry state and never logs the user out", () => {
   assert.equal(release.repairs.sessionPreservedOnLoadingFailure, true);
 });
 
-test("service worker gets a new cache identity without forcing open tabs to navigate", () => {
+test("v179 service-worker compatibility remains while the final cache is v189", () => {
   assert.match(swPatch, /ngeblogging-app-v179-mobile-runtime-20260731/);
   assert.match(swPatch, /mobile-runtime-cache-v179/);
   assert.match(swPatch, /FIRST_SITE_COMPAT_VERSION_V169/);
   assert.match(swPatch, /replaceAll\("NGE_BLOGGING_FORCE_RELOAD_V169"/);
   assert.match(swPatch, /Navigasi paksa tab lama masih aktif/);
-  assert.match(serviceWorker, /ngeblogging-app-v179-mobile-runtime-20260731/);
-  assert.match(serviceWorker, /mobile-runtime-cache-v179/);
+  assert.match(serviceWorker, /MOBILE_RUNTIME_RELEASE/);
+  assert.match(serviceWorker, /studio-mobile-runtime-v179-20260731/);
   assert.match(serviceWorker, /ngeblogging-app-v169-first-site-20260730/);
   assert.match(serviceWorker, /first-site-cache-v169/);
+  assert.match(serviceWorker, /ngeblogging-app-v189-production-mobile-20260801/);
+  assert.match(serviceWorker, /production-mobile-cache-v189/);
   assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
 });
 
