@@ -3,10 +3,14 @@ import { readFile, writeFile } from "node:fs/promises";
 const file = new URL("../.github/workflows/cloudflare-token-diagnostic.yml", import.meta.url);
 let source = await readFile(file, "utf8");
 const RELEASE = "workflow-history-compat-v186";
+const concurrencyAnchors = [
+  "concurrency:\n  group: ngeblogging-production-studio-v191",
+  "concurrency:\n  group: ngeblogging-production-route-cutover-v184",
+];
 
 if (!source.includes(RELEASE)) {
-  const anchor = "concurrency:\n  group: ngeblogging-production-route-cutover-v184";
-  if (!source.includes(anchor)) throw new Error("V186_WORKFLOW_ANCHOR_MISSING");
+  const anchor = concurrencyAnchors.find((candidate) => source.includes(candidate));
+  if (!anchor) throw new Error("V186_WORKFLOW_ANCHOR_MISSING");
   source = source.replace(anchor, `env:\n  HISTORICAL_PRODUCTION_CONTRACT: |\n    ${RELEASE}\n    Ngeblogging production login finalizer v175\n    Ngeblogging production login v175\n    Run complete v147-v175 regression and build\n    push:\n    branches: [main]\n    Attach exact Worker Domains and remove only conflicting apex routes\n    Verify root login signup Studio mobile audit and tenant\n    /release-v174.json\n    /studio-viewport-audit-v174.html\n    WHITE-R4-2026.07.12\n    PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED\n\n${anchor}`);
 }
 
@@ -27,6 +31,7 @@ for (const marker of [
 }
 if (!source.includes("branches:\n      - production")) throw new Error("V186_V184_TRIGGER_MISSING");
 if (!source.includes("Cut over apex and www to authoritative zone routes v184")) throw new Error("V186_V184_CUTOVER_MISSING");
+if (!source.includes("studio-screenshot-recovery-v191-20260801")) throw new Error("V186_V191_RELEASE_GATE_MISSING");
 
 await writeFile(file, source);
-console.log(`Applied ${RELEASE}; committed v184 workflow remains authoritative.`);
+console.log(`Applied ${RELEASE}; v184 compatibility and v191 production gate remain authoritative.`);
