@@ -1,6 +1,6 @@
 [build]
-  # TEMP v195 draft diagnostic: onboarding-gate patch stage only. Restore before merge.
-  command = "V195_DIAGNOSTIC_STAGE=gate node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf '<!doctype html><div id=\"root\"></div>' > dist/index.html"
+  # TEMP v195 draft diagnostic: prove the exact v192/v194 anchors v195 expects.
+  command = "node scripts/patch-service-worker-v179.mjs && grep -Fq 'ACTIVE_SITE_SNAPSHOT_V192' src/StudioOnboardingGate.jsx && grep -Fq 'async function listUserSitesDirectV192' src/StudioOnboardingGate.jsx && grep -Fq 'function publishActiveSite(site, userId = \"\")' src/StudioOnboardingGate.jsx && grep -Fq 'rememberActiveSiteV192(site, userId);' src/StudioOnboardingGate.jsx && grep -Fq 'ngeblogging-active-site-snapshot-v192' src/StudioFastGate.jsx && grep -Fq 'studio-fast-entry-v192-20260801' src/StudioFastGate.jsx && mkdir -p dist && printf '<!doctype html><div id=\"root\"></div>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
