@@ -5,6 +5,9 @@ const AUTH_RELEASE = "auth-resilience-v189-20260801";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const OAUTH_PROVIDERS = new Set(["google", "github", "linkedin_oidc"]);
 const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
+/* Historical build-patch compatibility markers. v189 implements both behaviors
+   natively, so v186 must not replace these functions during production builds. */
+const AUTH_V186_COMPAT = "direct-fallback-v186 direct-supabase-oauth-v186";
 const browserEnv = import.meta.env || {};
 const url = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 const key = String(
@@ -277,4 +280,4 @@ function installAuthEntryBridge() {
 
 installAuthEntryBridge();
 
-export { AUTH_RELEASE, AUTH_GATEWAY_PREFIX, authAwareFetch, installAuthEntryBridge };
+export { AUTH_RELEASE, AUTH_GATEWAY_PREFIX, AUTH_V186_COMPAT, authAwareFetch, installAuthEntryBridge };
