@@ -11,11 +11,13 @@ const narrowFix = read("src/studio-production-mobile-v189-fix.css");
 const pipeline = read("scripts/patch-service-worker-v179.mjs");
 const patch = read("scripts/patch-production-mobile-v189.mjs");
 
-test("v189 is the last Studio authority and runs after data, UI, and physical-mobile patches", () => {
+test("v189 remains the compatibility authority immediately before v190", () => {
   assert.match(entry, /studio-production-mobile-v189\.js/);
   assert.match(entry, /studio-production-mobile-v189-account\.js/);
   assert.match(entry, /studio-production-mobile-v189-fix\.css/);
+  assert.match(entry, /studio-real-device-v190\.js/);
   assert.ok(entry.indexOf("studio-physical-mobile-v188.js") < entry.indexOf("studio-production-mobile-v189.js"));
+  assert.ok(entry.indexOf("studio-production-mobile-v189-fix.css") < entry.indexOf("studio-real-device-v190.js"));
   for (const file of [
     "patch-production-data-v186.mjs",
     "patch-production-ui-v187.mjs",
@@ -25,9 +27,10 @@ test("v189 is the last Studio authority and runs after data, UI, and physical-mo
   assert.ok(pipeline.indexOf("patch-production-data-v186.mjs") < pipeline.indexOf("patch-production-ui-v187.mjs"));
   assert.ok(pipeline.indexOf("patch-production-ui-v187.mjs") < pipeline.indexOf("patch-production-physical-mobile-v188.mjs"));
   assert.ok(pipeline.indexOf("patch-production-physical-mobile-v188.mjs") < pipeline.indexOf("patch-production-mobile-v189.mjs"));
+  assert.match(patch, /patch-production-v190\.mjs/);
 });
 
-test("Android desktop-site compensation does not clip a zoomed root inside a physical-width body", () => {
+test("Android desktop-site v189 compatibility does not clip a zoomed root inside a physical-width body", () => {
   assert.match(runtime, /body\.style\.setProperty\("width", "100vw"/);
   assert.match(runtime, /appRoot\.style\.setProperty\("width", `\$\{state\.physicalWidth\}px`/);
   assert.match(runtime, /appRoot\.style\.setProperty\("zoom", String\(ratio\)/);
@@ -35,7 +38,7 @@ test("Android desktop-site compensation does not clip a zoomed root inside a phy
   assert.match(css, /data-studio-desktop-site-phone-v189="true"[\s\S]*width: 100vw/);
 });
 
-test("mobile drawer remains above a dimmer that only covers the outside area", () => {
+test("mobile drawer remains above its outside close target", () => {
   assert.match(css, /#ngeblogging-studio-sidebar[\s\S]*z-index: 2147483100/);
   assert.match(css, /\.sn-side-backdrop[\s\S]*z-index: 2147483000/);
   assert.match(css, /\.sn-side-backdrop[\s\S]*inset: 0 0 0 var\(--v189-drawer-width\)/);
@@ -81,8 +84,10 @@ test("MutationObserver repairs are idempotent and do not rewrite equal text or a
   assert.match(account, /textNode\.textContent !== value/);
 });
 
-test("v189 patch rotates cache without destructive session actions", () => {
+test("v189 patch rotates its compatibility cache without destructive session actions", () => {
   assert.match(patch, /ngeblogging-app-v189-production-mobile-20260801/);
   assert.match(patch, /production-mobile-cache-v189/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(|signOut\s*\(/);
 });
+
+await import("./studio-real-device-v190.test.mjs");
