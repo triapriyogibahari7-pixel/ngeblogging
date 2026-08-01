@@ -90,5 +90,7 @@ async function verify() {
 await patchStudioEntry();
 await patchServiceWorker();
 await verify();
-await import("./patch-production-v192.mjs");
-console.log(`Applied ${RELEASE} + Studio data bootstrap v192`);
+if (String(process.env.V192_DIAGNOSTIC_SKIP || "") !== "1") {
+  await import("./patch-production-v192.mjs");
+}
+console.log(`Applied ${RELEASE}${String(process.env.V192_DIAGNOSTIC_SKIP || "") === "1" ? " diagnostic:skip-v192" : " + Studio data bootstrap v192"}`);
