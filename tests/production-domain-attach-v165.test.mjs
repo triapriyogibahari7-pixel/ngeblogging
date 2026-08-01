@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const attach = read("scripts/attach-cloudflare-domains-v165.mjs");
 const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const finalizer = read("scripts/finalize-cloudflare-routes-v175.mjs");
+const cutover = read("scripts/finalize-cloudflare-route-cutover-v182.mjs");
 const worker = read("cloudflare/worker-v69.mjs");
 const netlify = read("scripts/write-netlify-redirects.mjs");
 const release = JSON.parse(read("public/release-v165.json"));
@@ -37,19 +38,38 @@ test("v165 utility verifies every hostname points to service ngeblogging", () =>
   assert.match(attach, /const verified = await verify\(\)/);
 });
 
-test("v175 production attaches exact domains after deployment and preserves v165 utility", () => {
+test("v184 production preserves v165/v175 domain utilities before authoritative route cutover", () => {
   assert.equal(packageJson.scripts["cloudflare:attach-domains"], "node scripts/attach-cloudflare-domains-v165.mjs");
   assert.equal(packageJson.scripts["cloudflare:finalize-login-routes"], "node scripts/finalize-cloudflare-routes-v175.mjs");
+  assert.equal(packageJson.scripts["cloudflare:cutover-routes"], "node scripts/finalize-cloudflare-route-cutover-v182.mjs");
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-domain-attach-v165.test.mjs"));
+
   for (const marker of [
-    "Deploy Worker and assets", "Attach exact Worker Domains and remove only conflicting apex routes",
-    "finalize-cloudflare-routes-v175.mjs", "/release-v174.json",
-    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
+    "Deploy Worker and assets",
+    "Preserve compatibility routing before cutover",
+    "finalize-cloudflare-routes-v175.mjs",
+    "Cut over apex and www to authoritative zone routes v184",
+    "finalize-cloudflare-route-cutover-v182.mjs",
+    "/release-v183.json",
+    "/release-v184.json",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
   ]) assert.ok(workflow.includes(marker), `production workflow missing ${marker}`);
-  assert.ok(workflow.indexOf("Deploy Worker and assets") < workflow.indexOf("Attach exact Worker Domains"));
+
+  assert.ok(workflow.indexOf("Deploy Worker and assets") < workflow.indexOf("Preserve compatibility routing before cutover"));
+  assert.ok(workflow.indexOf("Preserve compatibility routing before cutover") < workflow.indexOf("Cut over apex and www to authoritative zone routes v184"));
+
   for (const marker of ["/workers/domains", 'method: "PUT"', "attachExactWorkerDomains", "verifyFinalState"]) {
     assert.ok(finalizer.includes(marker), `v175 finalizer missing ${marker}`);
   }
+  for (const marker of [
+    "PRODUCTION_ROUTE_CUTOVER_RELEASE",
+    "EXACT_ROUTES",
+    "detachExactWorkerDomains",
+    "installAuthoritativeRoutes",
+    "verifyFinalState",
+    "ngeblogging.com/*",
+    "www.ngeblogging.com/*",
+  ]) assert.ok(cutover.includes(marker), `v184 route cutover missing ${marker}`);
 });
 
 test("active configs use exact Custom Domains while tenant wildcard remains a route", () => {
@@ -62,7 +82,7 @@ test("active configs use exact Custom Domains while tenant wildcard remains a ro
   }
 });
 
-test("v165 compatibility release remains factual under v172-v175 authority", () => {
+test("v165 compatibility release remains factual under v172-v184 authority", () => {
   for (const marker of [
     RELEASE, "/release-v165.json", "ngeblogging-production-domain-attach-v165",
     "2026.07.30-production-custom-domain-v172", "legacyWhiteR4: false",
