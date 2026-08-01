@@ -53,4 +53,6 @@ await import("./patch-production-physical-mobile-v188.mjs");
 await import("./patch-production-mobile-v189.mjs");
 await import("./patch-studio-screenshot-v193.mjs");
 await import("./patch-studio-nara-theme-v194.mjs");
-// TEMP DIAGNOSTIC: stop at healthy v194 chain.
+await import("./patch-studio-bootstrap-v195-publish-fix.mjs");
+await import("./patch-studio-bootstrap-v195.mjs");
+// TEMP DIAGNOSTIC: compatibility layer remains disabled until v195 core passes.
