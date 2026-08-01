@@ -176,9 +176,9 @@ async function patchAuthDataGateway() {
       }
       return response;
     }
-    console.warn(`Gateway ${kind} mengembalikan ${response.status}; mencoba Supabase langsung.`);
+    console.warn("Gateway " + kind + " mengembalikan " + response.status + "; mencoba Supabase langsung.");
   } catch (error) {
-    console.warn(`Gateway ${kind} lambat atau tidak terjangkau; mencoba Supabase langsung.`, error);
+    console.warn("Gateway " + kind + " lambat atau tidak terjangkau; mencoba Supabase langsung.", error);
   }
   if (typeof document !== "undefined") {
     if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback-v192";
@@ -235,7 +235,7 @@ async function verify() {
   const membershipStart = gate.indexOf("async function loadStudioMembership(userId)");
   const membershipEnd = gate.indexOf("\n}\n", membershipStart);
   const membership = gate.slice(membershipStart, membershipEnd);
-  if (membership.indexOf("listUserSites(userId)") > membership.indexOf("getVerifiedSession({ force:")) {
+  if (membership.indexOf("readMembership(userId)") > membership.indexOf("getVerifiedSession({ force:")) {
     throw new Error("V192_MEMBERSHIP_NOT_FIRST");
   }
   if (/getVerifiedSession\(\{ force: true \}\)/.test(membership)) {
