@@ -1,0 +1,42 @@
+{
+  "release": "studio-production-stability-v189-20260801",
+  "date": "2026-08-01",
+  "scope": "authentication, persisted Studio entry, physical-mobile desktop-site geometry, drawer interaction, operational pages, Nara AI and account surfaces",
+  "repairs": {
+    "authGatewayDirectFallback": true,
+    "oauthProviderDirectDestination": true,
+    "persistSession": true,
+    "cachedWorkspaceFastResume": true,
+    "androidDesktopSiteNoBodyClip": true,
+    "drawerMenuClickable": true,
+    "drawerBackdropDoesNotCoverMenu": true,
+    "mobileLogoCentered": true,
+    "membersActionsNormalFlow": true,
+    "analyticsPhysicalMobileSingleColumn": true,
+    "postPageEditorContained": true,
+    "naraLauncherStable": true,
+    "naraSmallMediumNonModal": true,
+    "naraNativeSizeControlsContained": true,
+    "naraCloseStopsVoiceMicRequest": true,
+    "profileSeparatedFromSettings": true,
+    "serviceWorkerNoForcedNavigation": true
+  },
+  "claims": {
+    "capacity900BUsers": false,
+    "reason": "Capacity requires real distributed load testing and infrastructure measurements; it is not claimed from UI simulation.",
+    "productionData": "No fabricated analytics or member counts are introduced by this release."
+  },
+  "requiredPostDeployEvidence": [
+    "email/password login",
+    "Google OAuth",
+    "LinkedIn OAuth",
+    "refresh with retained session",
+    "Android Chrome normal mobile mode",
+    "Android Chrome Situs desktop mode",
+    "mobile drawer click-through",
+    "Members page without button overlap",
+    "Analytics page without clipping",
+    "Nara small/medium/full controls",
+    "Profile versus Settings separation"
+  ]
+}
