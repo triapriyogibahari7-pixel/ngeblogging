@@ -1,6 +1,5 @@
 [build]
-  # Temporary PR diagnostic: full v190 regression after v192 compatibility update. Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && node --test tests/studio-real-device-v190.test.mjs && mkdir -p dist && printf '<!doctype html><title>v190 full regression</title>' > dist/index.html"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
