@@ -76,4 +76,5 @@ await import("./patch-production-physical-mobile-v188.mjs");
 await import("./patch-production-mobile-v189.mjs");
 await import("./patch-studio-screenshot-v193.mjs");
 await import("./patch-studio-nara-theme-v194.mjs");
-// TEMP DIAGNOSTIC: v195 imports disabled to prove whether the pre-v195 chain remains healthy.
+await import("./patch-studio-bootstrap-v195.mjs");
+// TEMP DIAGNOSTIC: compatibility layer disabled to isolate v195 core.
