@@ -1,9 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { createAppUrl } from "./site-url.js";
 
-const AUTH_RELEASE = "auth-production-v153-20260730";
+const AUTH_RELEASE = "auth-resilience-v189-20260801";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const OAUTH_PROVIDERS = new Set(["google", "github", "linkedin_oidc"]);
+const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
 const browserEnv = import.meta.env || {};
 const url = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 const key = String(
@@ -47,16 +48,27 @@ async function authAwareFetch(input, init) {
   const proxy = proxiedAuthUrl(input);
   if (!proxy) return nativeFetch(input, init);
 
-  const request = input instanceof Request
-    ? new Request(proxy.toString(), input)
-    : proxy.toString();
-  const response = await nativeFetch(request, init);
-  if (typeof document !== "undefined") {
-    document.documentElement.dataset.authTransportV153 = response.headers.get("x-ngeblogging-auth-gateway")
-      ? "same-origin-gateway"
-      : "same-origin-response";
+  const directInput = input instanceof Request ? input.clone() : input;
+  const proxyRequest = input instanceof Request ? new Request(proxy.toString(), input) : proxy.toString();
+  try {
+    const response = await nativeFetch(proxyRequest, init);
+    if (!GATEWAY_FALLBACK_STATUSES.has(response.status)) {
+      if (typeof document !== "undefined") {
+        document.documentElement.dataset.authTransportV189 = response.headers.get("x-ngeblogging-auth-gateway")
+          ? "same-origin-gateway"
+          : "same-origin-response";
+      }
+      return response;
+    }
+    console.warn(`Gateway autentikasi mengembalikan ${response.status}; mencoba Supabase langsung.`);
+  } catch (error) {
+    console.warn("Gateway autentikasi tidak terjangkau; mencoba Supabase langsung.", error);
   }
-  return response;
+
+  if (typeof document !== "undefined") {
+    document.documentElement.dataset.authTransportV189 = "direct-supabase-fallback";
+  }
+  return nativeFetch(directInput, init);
 }
 
 export const supabase = supabaseConfigured
@@ -70,14 +82,14 @@ export const supabase = supabaseConfigured
       global: {
         fetch: authAwareFetch,
         headers: {
-          "x-client-info": "ngeblogging-web-v153",
+          "x-client-info": "ngeblogging-web-v189",
         },
       },
     })
   : null;
 
 if (typeof document !== "undefined") {
-  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-gateway-v153" : "not-configured";
+  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-resilience-v189" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
 }
 
@@ -96,8 +108,10 @@ function normalizeEmail(email) {
 
 function providerDestination(value) {
   const direct = new URL(value);
-  const proxy = proxiedAuthUrl(direct.toString());
-  return proxy?.toString() || direct.toString();
+  if (typeof document !== "undefined") {
+    document.documentElement.dataset.authProviderTransportV189 = "direct-supabase-oauth";
+  }
+  return direct.toString();
 }
 
 export async function signInWithProvider(provider) {
@@ -117,7 +131,7 @@ export async function signInWithProvider(provider) {
 
   const destination = providerDestination(data.url);
   if (typeof window !== "undefined") {
-    document.documentElement.dataset.authProviderV153 = normalizedProvider;
+    document.documentElement.dataset.authProviderV189 = normalizedProvider;
     window.location.assign(destination);
   }
   return { ...data, url: destination };
@@ -205,15 +219,15 @@ export async function signOut() {
 
 function requestedAuthMode() {
   if (typeof window === "undefined") return "";
-  const url = new URL(window.location.href);
-  const path = url.pathname.replace(/\/+$/, "") || "/";
+  const current = new URL(window.location.href);
+  const path = current.pathname.replace(/\/+$/, "") || "/";
   const routeMode = path === "/signup" ? "signup" : ["/login", "/signin"].includes(path) ? "signin" : "";
-  const queryMode = url.searchParams.get("auth") || "";
+  const queryMode = current.searchParams.get("auth") || "";
   const mode = routeMode || (["signin", "signup", "session-expired", "callback-error"].includes(queryMode) ? (queryMode === "signup" ? "signup" : "signin") : "");
   if (routeMode) {
-    url.pathname = "/";
-    url.searchParams.set("auth", routeMode);
-    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    current.pathname = "/";
+    current.searchParams.set("auth", routeMode);
+    window.history.replaceState(window.history.state, "", `${current.pathname}${current.search}${current.hash}`);
   }
   return mode;
 }
@@ -222,7 +236,7 @@ function installAuthEntryBridge() {
   if (typeof document === "undefined") return;
   const requested = requestedAuthMode();
   if (!requested) return;
-  document.documentElement.dataset.authEntryV153 = requested;
+  document.documentElement.dataset.authEntryV189 = requested;
   let opened = false;
   let switched = false;
   let observer;
