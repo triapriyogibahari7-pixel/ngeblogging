@@ -18,6 +18,7 @@ const pwa = read("src/pwa-runtime.js");
 const serviceWorker = read("public/sw.js");
 const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const finalizer = read("scripts/finalize-cloudflare-routes-v175.mjs");
+const cutover = read("scripts/finalize-cloudflare-route-cutover-v182.mjs");
 const index = read("index.html");
 
 const providers = ["google", "github", "linkedin_oidc"];
@@ -111,17 +112,22 @@ test("auth metadata and PWA preserve v153 callbacks", () => {
   ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
 });
 
-test("deployment v175 rejects WHITE-R4 and verifies login plus v174 mobile", () => {
+test("deployment v184 rejects WHITE-R4 and verifies auth plus current Studio releases", () => {
   for (const marker of [
-    "Ngeblogging production login finalizer v175",
+    "Ngeblogging production route cutover v184",
     "environment: cloudflare-production",
-    "Run complete v147-v175 regression and build",
+    "Run v183 and v184 regression",
+    "Build production application",
+    "Deploy Worker and assets",
+    "Preserve compatibility routing before cutover",
     "finalize-cloudflare-routes-v175.mjs",
-    "/release-v174.json",
+    "Cut over apex and www to authoritative zone routes v184",
+    "finalize-cloudflare-route-cutover-v182.mjs",
+    "Verify live apex, auth routes, Studio and release markers",
+    "/release-v183.json", "/release-v184.json",
     "/login", "/signup", "/studio",
-    "/studio-viewport-audit-v174.html",
     "WHITE-R4-2026.07.12",
-    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
   for (const marker of [
     'EXACT_HOSTNAMES = Object.freeze(["ngeblogging.com", "www.ngeblogging.com"])',
@@ -129,4 +135,7 @@ test("deployment v175 rejects WHITE-R4 and verifies login plus v174 mobile", () 
     'LEGACY_EXACT_ROUTE_PATTERNS = new Set(["ngeblogging.com/*", "www.ngeblogging.com/*"])',
     "deleteLegacyExactRoutes", "verifyFinalState",
   ]) assert.ok(finalizer.includes(marker), `finalizer missing ${marker}`);
+  for (const marker of ["EXACT_ROUTES", "TENANT_ROUTE", "detachExactWorkerDomains", "installAuthoritativeRoutes", "verifyFinalState"]) {
+    assert.ok(cutover.includes(marker), `cutover missing ${marker}`);
+  }
 });
