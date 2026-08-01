@@ -1,5 +1,5 @@
-const RELEASE = "studio-device-mode-v147-20260729";
-const LEGACY_RELEASE = "studio-device-mode-v145-20260729";
+const RELEASE = "studio-device-mode-v188-20260801";
+const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
@@ -88,8 +88,8 @@ function touchHandheldSignal(view) {
   const finePointer = mediaMatches("(any-pointer: fine)");
   const compactPhysicalScreen = view.physicalShortSide <= HANDHELD_MAX && view.density >= 1.1;
 
-  // Fallback ini hanya untuk telepon yang menyamarkan user-agent ketika "Situs desktop" aktif.
-  // Layar sentuh laptop tidak masuk karena masih memiliki pointer halus dan sisi fisik lebih besar.
+  // Fallback untuk telepon yang menyamarkan user-agent ketika mode Situs desktop aktif.
+  // Laptop sentuh tidak masuk karena sisi fisiknya lebih besar dan tetap memiliki pointer halus.
   return touchPoints > 1
     && coarsePointer
     && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
@@ -157,7 +157,7 @@ function applyDeviceMode() {
   const responsiveMode = classifyResponsiveMode(view, handheld);
   const nextLayoutMode = layoutMode(responsiveMode);
   const variant = desktopVariant(view, responsiveMode);
-  const desktopSitePhone = handheld && view.layoutWidth > Math.max(TABLET_MAX, view.physicalViewportWidth * 1.35);
+  const desktopSitePhone = handheld && view.layoutWidth > view.physicalViewportWidth * 1.35;
   const signature = [responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
   const previousMode = root.dataset.studioResponsiveMode || "";
 

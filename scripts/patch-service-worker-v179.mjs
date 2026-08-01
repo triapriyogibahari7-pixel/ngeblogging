@@ -72,3 +72,4 @@ await import("./patch-production-data-v186-nara-fix.mjs");
 await import("./patch-production-data-v186.mjs");
 await import("./patch-workflow-compat-v186.mjs");
 await import("./patch-production-ui-v187.mjs");
+await import("./patch-production-physical-mobile-v188.mjs");

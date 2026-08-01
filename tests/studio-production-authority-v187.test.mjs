@@ -15,17 +15,21 @@ const css = read("src/studio-production-authority-v187.css");
 const sw = read("public/sw.js");
 const release = JSON.parse(read("public/release-v187.json"));
 
-test("v187 patch runs after v186", () => {
+test("v187 patch runs after v186 and before v188", () => {
   assert.match(chain, /patch-production-data-v186\.mjs/);
   assert.match(chain, /patch-production-ui-v187\.mjs/);
+  assert.match(chain, /patch-production-physical-mobile-v188\.mjs/);
   assert.ok(chain.indexOf("patch-production-data-v186.mjs") < chain.indexOf("patch-production-ui-v187.mjs"));
+  assert.ok(chain.indexOf("patch-production-ui-v187.mjs") < chain.indexOf("patch-production-physical-mobile-v188.mjs"));
   assert.match(patch, /studio-production-authority-v187-20260801/);
 });
 
-test("Studio entry loads final v187 authority", () => {
+test("Studio entry loads v187 before the physical mobile authority", () => {
   assert.match(entry, /studio-mobile-authority-v185\.js/);
   assert.match(entry, /studio-production-authority-v187\.js/);
+  assert.match(entry, /studio-physical-mobile-v188\.js/);
   assert.ok(entry.indexOf("studio-production-authority-v187.js") > entry.indexOf("studio-mobile-authority-v185.js"));
+  assert.ok(entry.indexOf("studio-physical-mobile-v188.js") > entry.indexOf("studio-production-authority-v187.js"));
 });
 
 test("sidebar state and active site survive render and navigation", () => {
@@ -86,10 +90,11 @@ test("six responsive families and desktop variants are explicit", () => {
   assert.match(css, /data-studio-device-variant="computer"/);
 });
 
-test("service worker rotates without forced logout or navigation", () => {
-  assert.match(sw, /ngeblogging-app-v187-production-authority-20260801/);
-  assert.match(sw, /production-authority-cache-v187/);
+test("v187 protection remains after v188 service-worker rotation", () => {
+  assert.match(sw, /ngeblogging-app-v188-physical-mobile-20260801/);
+  assert.match(sw, /physical-mobile-cache-v188/);
   assert.match(sw, /PRODUCTION_AUTHORITY_RELEASE_V187/);
+  assert.match(sw, /PHYSICAL_MOBILE_RELEASE_V188/);
   assert.doesNotMatch(sw, /await refreshStaleWindow\(client, url\);/);
   assert.doesNotMatch(patch, /signOut\s*\(/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(/);
