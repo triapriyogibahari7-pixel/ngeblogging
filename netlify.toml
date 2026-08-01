@@ -1,5 +1,5 @@
 [build]
-  command = "npm run predev && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/legacy-worker-entry-v157.test.mjs tests/release-v157-probe.test.mjs && mkdir -p dist && printf '<!doctype html><html><body><h1>LEGACY_WORKER_V157_OK</h1></body></html>' > dist/index.html"
+  command = "npm run predev && node scripts/patch-legacy-worker-entry-v157.mjs && node --test tests/auth-studio-route-v158.test.mjs tests/studio-ui-contract-v159.test.mjs tests/studio-pwa-v159.test.mjs tests/production-authority-v160.test.mjs tests/studio-platform-v160.test.mjs tests/studio-content-v161.test.mjs tests/studio-content-release-v161.test.mjs tests/auth-callback-v162.test.mjs tests/content-editor-v162.test.mjs tests/auth-editor-release-v162.test.mjs tests/auth-capacity-v162.test.mjs && mkdir -p dist && printf '<!doctype html><html><body><h1>REGRESSIONS_V158_V162_OK</h1></body></html>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
