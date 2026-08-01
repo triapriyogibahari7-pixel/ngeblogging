@@ -1,5 +1,5 @@
 [build]
-  command = "V192_DIAGNOSTIC_STAGE=service-worker node scripts/patch-production-v192.mjs && mkdir -p dist && printf 'v192 service worker patch passed' > dist/index.html"
+  command = "node scripts/patch-production-v192.mjs && mkdir -p dist && printf 'v192 complete patch passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
