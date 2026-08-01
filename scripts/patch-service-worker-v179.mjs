@@ -73,4 +73,6 @@ await import("./patch-production-data-v186.mjs");
 await import("./patch-workflow-compat-v186.mjs");
 await import("./patch-production-ui-v187.mjs");
 await import("./patch-production-physical-mobile-v188.mjs");
-await import("./patch-production-mobile-v189.mjs");
+if (String(process.env.V189_DIAGNOSTIC_SKIP || "") !== "1") {
+  await import("./patch-production-mobile-v189.mjs");
+}
