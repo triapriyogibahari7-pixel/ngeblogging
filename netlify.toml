@@ -1,6 +1,6 @@
 [build]
-  # Temporary PR diagnostic: publish exact v190 test stdout/stderr. Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && node scripts/capture-v190-test-log.mjs"
+  # Temporary PR diagnostic: classify the failing v190 subtest. Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && DIAG_MATCH='not ok.*(v190 is activated|desktop-site phones|mobile drawer|n logo and Nara launcher|Members and Analytics)' node scripts/probe-v190-failure.mjs && mkdir -p dist && printf '<!doctype html><title>v190 classifier</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
