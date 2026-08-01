@@ -1,6 +1,15 @@
 const RELEASE = "studio-production-mobile-v189-account-20260801";
 let frame = 0;
 
+function setTextIfChanged(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
+function setButtonTextIfChanged(button, value) {
+  const textNode = button?.lastChild;
+  if (textNode && textNode.textContent !== value) textNode.textContent = value;
+}
+
 function syncAccountSurface() {
   frame = 0;
   const mode = document.documentElement.dataset.studioAccountViewV189 || "settings";
@@ -13,16 +22,16 @@ function syncAccountSurface() {
   const save = page.querySelector(".sn-save-settings");
 
   if (mode === "profile") {
-    if (title) title.textContent = "Profil";
-    if (description) description.textContent = "Kelola identitas, biografi, avatar, dan informasi publik akun Anda.";
-    if (save) save.lastChild.textContent = " Simpan profil";
+    setTextIfChanged(title, "Profil");
+    setTextIfChanged(description, "Kelola identitas, biografi, avatar, dan informasi publik akun Anda.");
+    setButtonTextIfChanged(save, " Simpan profil");
   } else {
-    if (title) title.textContent = "Profil & pengaturan";
-    if (description) description.textContent = "Identitas pengguna dan situs aktif.";
-    if (save) save.lastChild.textContent = " Simpan perubahan";
+    setTextIfChanged(title, "Profil & pengaturan");
+    setTextIfChanged(description, "Identitas pengguna dan situs aktif.");
+    setButtonTextIfChanged(save, " Simpan perubahan");
   }
 
-  page.dataset.accountSurfaceV189 = mode;
+  if (page.dataset.accountSurfaceV189 !== mode) page.dataset.accountSurfaceV189 = mode;
   document.documentElement.dataset.studioAccountSurfaceReleaseV189 = RELEASE;
 }
 
