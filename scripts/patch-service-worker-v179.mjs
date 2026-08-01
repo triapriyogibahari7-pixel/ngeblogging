@@ -68,5 +68,6 @@ await import("./patch-service-worker-v181.mjs");
 await import("./patch-site-limit-summary-v182.mjs");
 await import("./patch-studio-production-v183.mjs");
 await import("./patch-production-data-v186-bootstrap-fix.mjs");
+await import("./patch-production-data-v186-nara-fix.mjs");
 await import("./patch-production-data-v186.mjs");
 await import("./patch-workflow-compat-v186.mjs");
