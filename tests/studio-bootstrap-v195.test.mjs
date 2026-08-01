@@ -50,8 +50,8 @@ test("fast resume cache is bound to the authenticated user", () => {
 });
 
 test("transient bootstrap failures cannot clear or sign out the session", () => {
-  const patch = read("scripts/patch-studio-bootstrap-v195.mjs");
-  assert.doesNotMatch(patch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  assert.doesNotMatch(gate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|supabase\.auth\.signOut\s*\(/);
+  assert.doesNotMatch(worker, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
   assert.match(auth, /retainSessionDuringNetworkFailure/);
   assert.match(gate, /Sesi login tetap disimpan dan tidak ada logout otomatis/);
 });
