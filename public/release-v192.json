@@ -3,8 +3,8 @@
   "release": "studio-data-bootstrap-v192-20260801",
   "basedOn": "studio-screenshot-recovery-v191-20260801",
   "problem": {
-    "observed": "Studio can remain on Menyambungkan Studio and then show Koneksi data belum selesai even while the authenticated browser can reach Supabase data successfully.",
-    "rootCause": "The onboarding gate can block membership loading behind redundant remote session verification and repeat that verification on retry.",
+    "observed": "Studio can remain on Menyambungkan Studio and then show Koneksi data belum selesai even while Google PKCE and Supabase user verification return HTTP 200.",
+    "rootCause": "The onboarding gate can block membership loading behind redundant remote session verification, while the same-origin data gateway can wait too long before the direct Supabase fallback gets a chance to run.",
     "screenshots": "real Android browser screenshots supplied by the user on 2026-08-01"
   },
   "repairs": {
@@ -12,6 +12,9 @@
     "remoteGetUserDoesNotBlockKnownMembership": true,
     "emptyMembershipRequiresSessionRecoveryBeforeOnboarding": true,
     "cachedActiveSiteCanResumeDuringTransientNetworkFailure": true,
+    "dataGatewayTimeoutMilliseconds": 2500,
+    "dataGatewayTimeoutFallsBackDirect": true,
+    "staleGatewayUnauthorizedWithoutAuthorityHeaderFallsBackDirect": true,
     "sessionPreservedDuringTransientFailure": true,
     "noAutomaticSiteFromEmail": true,
     "boundedStartup": true,
@@ -19,11 +22,17 @@
     "serviceWorkerRotated": true,
     "forcedNavigationDisabled": true
   },
+  "productionEvidence": {
+    "googlePkceTokenObservedHttp200": true,
+    "googleCallbackObservedSuccessful": true,
+    "supabaseUserVerificationObservedHttp200": true,
+    "note": "These logs prove the observed Google authentication path reached Supabase successfully; they do not replace post-deployment physical-device verification of the entire Studio UI flow."
+  },
   "authentication": {
     "persistSession": true,
     "autoRefreshToken": true,
     "explicitLogoutOnly": true,
-    "googleEndToEndPhysicalVerificationRequired": true,
+    "googleEndToEndPhysicalVerificationRequiredAfterV192Deploy": true,
     "linkedinEndToEndPhysicalVerificationRequired": true,
     "emailPasswordEndToEndPhysicalVerificationRequired": true
   },
