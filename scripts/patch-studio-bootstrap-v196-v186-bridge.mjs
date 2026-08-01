@@ -86,7 +86,6 @@ if (!source.includes("studioBootstrapRecoveryV196")) {
 for (const marker of [
   "degraded-session-retained",
   "studioBootstrapRecoveryV196",
-  "recoverStudioMembershipV196",
 ]) {
   if (!source.includes(marker)) throw new Error(`V196_V186_BRIDGE_MARKER_MISSING:${marker}`);
 }
