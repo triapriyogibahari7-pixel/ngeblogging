@@ -50,8 +50,8 @@ async function verify() {
     ["src/lib/supabase.js", "persistSession: true"],
     ["src/lib/supabase.js", "autoRefreshToken: true"],
     ["src/lib/supabase.js", "direct-supabase-oauth"],
-    ["src/main.jsx", "finishAuth = (nextSession = null)"],
-    ["src/AuthModal.jsx", "onAuthenticated(data.session)"],
+    ["scripts/patch-auth-callback-v162.mjs", "finishAuth = (nextSession = null)"],
+    ["scripts/patch-auth-callback-v162.mjs", "onAuthenticated(data.session)"],
     ["public/release-v191.json", RELEASE],
   ];
   for (const [path, marker] of checks) {
