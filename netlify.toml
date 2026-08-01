@@ -1,6 +1,6 @@
 [build]
-  # Temporary PR diagnostic. Restore to `npm run build` and delete diagnostic script before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/diagnose-v192-chain.mjs"
+  # Temporary PR diagnostic: v186 + v192 only. Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-production-data-v186.mjs && node scripts/patch-auth-studio-bootstrap-v192.mjs && mkdir -p dist && printf '<!doctype html><title>v186-v192 diagnostic</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
