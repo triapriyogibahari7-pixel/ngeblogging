@@ -19,15 +19,17 @@ test("v195 is chained after v194 in every production patch run", () => {
   assert.ok(chain.indexOf("patch-studio-nara-theme-v194.mjs") < chain.indexOf("patch-studio-bootstrap-v195.mjs"));
 });
 
-test("Studio startup reads the persisted browser session before forcing network verification", () => {
+test("Studio startup reads the persisted browser session before conditional network verification", () => {
   assert.match(gate, /readLocalStudioSessionV195/);
   assert.match(gate, /supabase\.auth\.getSession\(\)/);
   assert.match(gate, /local-session-first-v195/);
   const start = gate.indexOf("async function loadStudioMembership(userId)");
   const end = gate.indexOf("\n}\n", start);
   const body = gate.slice(start, end + 3);
+  const conditionalRefresh = "getVerifiedSession({ force: Boolean(rejectedToken) })";
   assert.ok(body.indexOf("readLocalStudioSessionV195") >= 0);
-  assert.ok(body.indexOf("getVerifiedSession({ force: true })") > body.indexOf("readLocalStudioSessionV195"));
+  assert.ok(body.indexOf(conditionalRefresh) > body.indexOf("readLocalStudioSessionV195"));
+  assert.doesNotMatch(body, /getVerifiedSession\(\{ force: true \}\)/);
   assert.match(supabase, /persistSession: true/);
   assert.match(supabase, /autoRefreshToken: true/);
 });
@@ -36,7 +38,7 @@ test("critical membership read remains user-token RLS and only refreshes after r
   assert.match(gate, /listUserSitesDirectV192\(userId, accessToken\)/);
   assert.match(gate, /studioMembershipTransportV195 = "direct-supabase-rls"/);
   assert.match(gate, /directStatus === 401 \|\| directStatus === 403/);
-  assert.match(gate, /getVerifiedSession\(\{ force: true \}\)/);
+  assert.match(gate, /getVerifiedSession\(\{ force: Boolean\(rejectedToken\) \}\)/);
   assert.match(gate, /supabase-client-fallback/);
   assert.doesNotMatch(gate, /service_role|SUPABASE_SERVICE_ROLE/);
 });
