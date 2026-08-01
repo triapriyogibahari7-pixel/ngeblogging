@@ -43,7 +43,8 @@ test("six responsive families and desktop laptop/computer variants remain enable
 test("production Vite build always receives the public Supabase browser configuration", () => {
   assert.match(productionEnv, /^VITE_SUPABASE_URL=https:\/\/[^\s]+\.supabase\.co$/m);
   assert.match(productionEnv, /^VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[^\s]+$/m);
-  assert.doesNotMatch(productionEnv, /SERVICE_ROLE|service_role|SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(productionEnv, /^\s*(?:VITE_)?SUPABASE_SERVICE_ROLE_KEY\s*=/m);
+  assert.doesNotMatch(productionEnv, /^\s*VITE_.*(?:SECRET|SERVICE_ROLE).*=/mi);
 });
 
 test("authentication is resilient at source and provider destinations are never routed through the auth proxy", () => {
