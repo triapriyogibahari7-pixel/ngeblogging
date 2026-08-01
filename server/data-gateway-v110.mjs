@@ -1,6 +1,8 @@
 export const DATA_GATEWAY_RELEASE = "2026.07.28-data-gateway-v110";
+export const DATA_GATEWAY_BOOTSTRAP_RELEASE_V192 = "studio-data-bootstrap-v192-20260801";
 const PREFIX = "/api/data-proxy";
 const MAX_DECLARED_BODY_BYTES = 96 * 1024 * 1024;
+const UPSTREAM_TIMEOUT_MS_V192 = 2_500;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]);
 const ALLOWED_PATH_PREFIXES = ["/rest/v1/", "/storage/v1/"];
 const FORWARDED_REQUEST_HEADERS = new Set([
@@ -55,6 +57,7 @@ function json(status, payload, requestId) {
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",
       "x-ngeblogging-data-gateway": DATA_GATEWAY_RELEASE,
+      "x-ngeblogging-data-bootstrap": DATA_GATEWAY_BOOTSTRAP_RELEASE_V192,
       "x-request-id": requestId,
     },
   });
@@ -80,10 +83,11 @@ function corsHeaders(origin, requestId) {
       "if-match", "if-none-match", "x-supabase-api-version",
     ].join(", "),
     "access-control-allow-methods": "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",
-    "access-control-expose-headers": "content-range, preference-applied, location, etag, x-request-id, x-ngeblogging-data-gateway",
+    "access-control-expose-headers": "content-range, preference-applied, location, etag, x-request-id, x-ngeblogging-data-gateway, x-ngeblogging-data-bootstrap",
     "access-control-max-age": "86400",
     "cache-control": "no-store",
     "x-ngeblogging-data-gateway": DATA_GATEWAY_RELEASE,
+    "x-ngeblogging-data-bootstrap": DATA_GATEWAY_BOOTSTRAP_RELEASE_V192,
     "x-request-id": requestId,
   };
 }
@@ -126,12 +130,15 @@ export async function handleDataGatewayRequest(request, env, requestId) {
   if (!headers.has("apikey")) headers.set("apikey", publishableKey);
   headers.set("cache-control", "no-store");
 
+  const controller = new AbortController();
+  const upstreamTimeout = setTimeout(() => controller.abort("ngeblogging-data-upstream-timeout-v192"), UPSTREAM_TIMEOUT_MS_V192);
   try {
     const upstream = await fetch(target, {
       method: request.method,
       headers,
       body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
       redirect: "manual",
+      signal: controller.signal,
     });
     const responseHeaders = new Headers(corsHeaders(origin, requestId));
     for (const [name, value] of upstream.headers.entries()) {
@@ -139,16 +146,22 @@ export async function handleDataGatewayRequest(request, env, requestId) {
     }
     responseHeaders.set("x-content-type-options", "nosniff");
     responseHeaders.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
+    responseHeaders.set("x-ngeblogging-data-bootstrap", DATA_GATEWAY_BOOTSTRAP_RELEASE_V192);
     return new Response(request.method === "HEAD" ? null : upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
       headers: responseHeaders,
     });
   } catch (error) {
-    return json(502, {
-      code: "DATA_UPSTREAM_UNREACHABLE",
-      error: "Layanan data belum dapat dijangkau melalui gateway. Sesi pengguna tetap dipertahankan.",
-      detail: error?.name || "NetworkError",
+    const timedOut = controller.signal.aborted;
+    return json(timedOut ? 502 : 502, {
+      code: timedOut ? "DATA_UPSTREAM_TIMEOUT" : "DATA_UPSTREAM_UNREACHABLE",
+      error: timedOut
+        ? "Gateway data melewati batas waktu. Client dapat mencoba jalur Supabase langsung tanpa menghapus sesi pengguna."
+        : "Layanan data belum dapat dijangkau melalui gateway. Sesi pengguna tetap dipertahankan.",
+      detail: timedOut ? "TimeoutError" : (error?.name || "NetworkError"),
     }, requestId);
+  } finally {
+    clearTimeout(upstreamTimeout);
   }
 }

@@ -9,12 +9,16 @@ const runtime = read("src/studio-screenshot-recovery-v191.js");
 const css = read("src/studio-screenshot-recovery-v191.css");
 const hotfix = read("src/studio-screenshot-recovery-v191-hotfix.css");
 const supabase = read("src/lib/supabase.js");
+const dataGateway = read("server/data-gateway-v110.mjs");
 const authPatch = read("scripts/patch-auth-callback-v162.mjs");
 const modal = read("src/AuthModal.jsx");
 const release = JSON.parse(read("public/release-v191.json"));
+const release192 = JSON.parse(read("public/release-v192.json"));
+const gate = read("src/StudioOnboardingGate.jsx");
+const patch192 = read("scripts/patch-production-v192.mjs");
 const workflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 
-test("v191 is the final Studio authority and removes desktop-site root scaling", () => {
+test("v191 remains the visual Studio authority and removes desktop-site root scaling", () => {
   assert.match(studio, /studio-screenshot-recovery-v191\.js/);
   assert.match(runtime, /studio-screenshot-recovery-v191-20260801/);
   assert.match(runtime, /full-synthetic-width-no-root-scale/);
@@ -81,10 +85,36 @@ test("auth remains persistent and build patch hands the verified session into St
   assert.match(modal, /signInWithPassword/);
 });
 
+test("v192 does not block valid Studio membership behind redundant auth verification", () => {
+  const start = gate.indexOf("async function loadStudioMembership(userId)");
+  const end = gate.indexOf("\n}\n", start);
+  const membership = gate.slice(start, end);
+  assert.match(patch192, /studio-data-bootstrap-v192-20260801/);
+  assert.equal(release192.release, "studio-data-bootstrap-v192-20260801");
+  assert.equal(release192.repairs.membershipQueryIsCriticalPath, true);
+  assert.match(membership, /membership-first-cloud-ready/);
+  assert.match(membership, /session-recovered-cloud-ready/);
+  assert.match(membership, /cached-site-session-retained/);
+  assert.ok(membership.indexOf("readMembership(userId)") < membership.indexOf("getVerifiedSession({ force: false })"));
+  assert.doesNotMatch(membership, /getVerifiedSession\(\{ force: true \}\)/);
+  assert.doesNotMatch(gate, /localStorage\.clear\s*\(|signOut\s*\(/);
+});
+
+test("v192 bounds the Cloudflare data upstream while keeping existing client fallback", () => {
+  assert.match(dataGateway, /UPSTREAM_TIMEOUT_MS_V192\s*=\s*2_500/);
+  assert.match(dataGateway, /DATA_UPSTREAM_TIMEOUT/);
+  assert.match(dataGateway, /controller\.abort\("ngeblogging-data-upstream-timeout-v192"\)/);
+  assert.match(dataGateway, /signal:\s*controller\.signal/);
+  assert.match(supabase, /return nativeFetch\(directInput, init\)/);
+  assert.equal(release192.repairs.dataGatewayTimeoutMilliseconds, 2500);
+  assert.equal(release192.repairs.dataGatewayTimeoutFallsBackDirect, true);
+});
+
 test("release is truthful and deployment rejects stale WHITE-R4", () => {
   assert.equal(release.release, "studio-screenshot-recovery-v191-20260801");
   assert.equal(release.repairs.legacyWhiteR4RejectedByDeployment, true);
   assert.match(release.validation.capacity, /No 900-million-user/i);
+  assert.equal(release192.validation.massCapacityClaimed, false);
   assert.match(workflow, /WHITE-R4-2026\.07\.12/);
   assert.match(workflow, /release-v191\.json/);
   assert.match(workflow, /studio-screenshot-recovery-v191-20260801/);

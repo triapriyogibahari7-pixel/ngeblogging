@@ -1,0 +1,61 @@
+{
+  "status": "candidate",
+  "release": "studio-data-bootstrap-v192-20260801",
+  "basedOn": "studio-screenshot-recovery-v191-20260801",
+  "problem": {
+    "observed": "Studio can remain on Menyambungkan Studio and then show Koneksi data belum selesai even while Google PKCE and Supabase user verification return HTTP 200.",
+    "rootCause": "The onboarding gate can block membership loading behind redundant remote session verification, while the same-origin data gateway can wait too long before the direct Supabase fallback gets a chance to run.",
+    "screenshots": "real Android browser screenshots supplied by the user on 2026-08-01"
+  },
+  "repairs": {
+    "membershipQueryIsCriticalPath": true,
+    "remoteGetUserDoesNotBlockKnownMembership": true,
+    "emptyMembershipRequiresSessionRecoveryBeforeOnboarding": true,
+    "cachedActiveSiteCanResumeDuringTransientNetworkFailure": true,
+    "dataGatewayTimeoutMilliseconds": 2500,
+    "dataGatewayTimeoutFallsBackDirect": true,
+    "staleGatewayUnauthorizedWithoutAuthorityHeaderFallsBackDirect": true,
+    "sessionPreservedDuringTransientFailure": true,
+    "noAutomaticSiteFromEmail": true,
+    "boundedStartup": true,
+    "retryRemainsAvailable": true,
+    "serviceWorkerRotated": true,
+    "forcedNavigationDisabled": true
+  },
+  "productionEvidence": {
+    "googlePkceTokenObservedHttp200": true,
+    "googleCallbackObservedSuccessful": true,
+    "supabaseUserVerificationObservedHttp200": true,
+    "note": "These logs prove the observed Google authentication path reached Supabase successfully; they do not replace post-deployment physical-device verification of the entire Studio UI flow."
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "explicitLogoutOnly": true,
+    "googleEndToEndPhysicalVerificationRequiredAfterV192Deploy": true,
+    "linkedinEndToEndPhysicalVerificationRequired": true,
+    "emailPasswordEndToEndPhysicalVerificationRequired": true
+  },
+  "preserved": {
+    "sixResponsiveFamilies": true,
+    "sidebarAndMobileDrawer": true,
+    "postsAndPages": true,
+    "themeStudio": true,
+    "media": true,
+    "analytics": true,
+    "members": true,
+    "comments": true,
+    "domains": true,
+    "apiKeys": true,
+    "nara": true,
+    "wordLimit": 5000
+  },
+  "validation": {
+    "productionBuildRequired": true,
+    "deployPreviewRequired": true,
+    "liveCloudflareVerificationRequired": true,
+    "physicalAndroidRetestRequired": true,
+    "massCapacityClaimed": false,
+    "capacityNote": "No 900-million-or-larger concurrent-login claim is made without distributed load testing and production capacity evidence."
+  }
+}
