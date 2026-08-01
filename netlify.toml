@@ -1,5 +1,6 @@
 [build]
-  command = "npm run build"
+  # Temporary PR diagnostic: v186/v189 compatibility regressions only. Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && node --test tests/production-data-v186.test.mjs tests/studio-production-mobile-v189.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
