@@ -118,12 +118,8 @@ async function patchOnboardingGate() {
     'Sesi akun tetap aktif. Studio memeriksa keanggotaan situs terlebih dahulu dan hanya memulihkan autentikasi bila diperlukan. Tidak ada situs yang dibuat otomatis dari alamat email.',
   );
 
-  if (/getVerifiedSession\(\{ force: true \}\)/.test(source)) {
-    throw new Error("V192_BLOCKING_FORCE_TRUE_REINTRODUCED");
-  }
-  if (/localStorage\.clear\s*\(|signOut\s*\(/.test(source)) {
-    throw new Error("V192_DESTRUCTIVE_SESSION_ACTION_FOUND");
-  }
+  if (/getVerifiedSession\(\{ force: true \}\)/.test(source)) throw new Error("V192_BLOCKING_FORCE_TRUE_REINTRODUCED");
+  if (/localStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V192_DESTRUCTIVE_SESSION_ACTION_FOUND");
   await write(path, source);
 }
 
@@ -134,10 +130,7 @@ async function patchServiceWorker() {
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, 'const CACHE_RELEASE = "data-bootstrap-cache-v192";');
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "data-bootstrap-v192";');
   if (!source.includes("DATA_BOOTSTRAP_RELEASE_V192")) {
-    source = source.replace(
-      /^(const VERSION = .*;\n)/m,
-      '$1const DATA_BOOTSTRAP_RELEASE_V192 = "studio-data-bootstrap-v192-20260801";\n',
-    );
+    source = source.replace(/^(const VERSION = .*;\n)/m, '$1const DATA_BOOTSTRAP_RELEASE_V192 = "studio-data-bootstrap-v192-20260801";\n');
   }
   source = source
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V191", "NGE_BLOGGING_UPDATE_AVAILABLE_V192")
@@ -172,28 +165,12 @@ async function verify() {
   const membershipStart = gate.indexOf("async function loadStudioMembership(userId)");
   const membershipEnd = gate.indexOf("\n}\n", membershipStart);
   const membership = gate.slice(membershipStart, membershipEnd);
-  if (membership.indexOf("readMembership(userId)") > membership.indexOf("getVerifiedSession({ force:")) {
-    throw new Error("V192_MEMBERSHIP_NOT_FIRST");
-  }
-  if (/getVerifiedSession\(\{ force: true \}\)/.test(membership)) {
-    throw new Error("V192_FORCE_TRUE_REINTRODUCED");
-  }
-  if (/localStorage\.clear\s*\(|signOut\s*\(/.test(gate)) {
-    throw new Error("V192_SESSION_DESTRUCTION_REINTRODUCED");
-  }
+  if (membership.indexOf("readMembership(userId)") > membership.indexOf("getVerifiedSession({ force:")) throw new Error("V192_MEMBERSHIP_NOT_FIRST");
+  if (/getVerifiedSession\(\{ force: true \}\)/.test(membership)) throw new Error("V192_FORCE_TRUE_REINTRODUCED");
+  if (/localStorage\.clear\s*\(|signOut\s*\(/.test(gate)) throw new Error("V192_SESSION_DESTRUCTION_REINTRODUCED");
 }
 
-const diagnosticStage = String(process.env.V192_DIAGNOSTIC_STAGE || "").trim();
-if (diagnosticStage === "onboarding") {
-  await patchOnboardingGate();
-} else if (diagnosticStage === "service-worker") {
-  await patchServiceWorker();
-} else if (diagnosticStage === "patches") {
-  await patchOnboardingGate();
-  await patchServiceWorker();
-} else {
-  await patchOnboardingGate();
-  await patchServiceWorker();
-  await verify();
-}
-console.log(`Applied ${RELEASE}${diagnosticStage ? ` diagnostic:${diagnosticStage}` : ""}`);
+await patchOnboardingGate();
+await patchServiceWorker();
+await verify();
+console.log(`Applied ${RELEASE}`);
