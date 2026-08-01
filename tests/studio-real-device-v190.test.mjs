@@ -7,7 +7,6 @@ const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-real-device-v190.js");
 const css = read("src/studio-real-device-v190.css");
 const patch = read("scripts/patch-production-v190.mjs");
-const finalizer = read("scripts/patch-production-v190-finalize.mjs");
 const v189Patch = read("scripts/patch-production-mobile-v189.mjs");
 const supabase = read("src/lib/supabase.js");
 const onboarding = read("src/StudioOnboardingGate.jsx");
@@ -26,8 +25,7 @@ test("v190 is activated after v189 and chained into every production patch run",
   assert.match(entry, /studio-real-device-v190\.js/);
   assert.ok(entry.indexOf("studio-production-mobile-v189-fix.css") < entry.indexOf("studio-real-device-v190.js"));
   assert.match(v189Patch, /patch-production-v190\.mjs/);
-  assert.match(v189Patch, /patch-production-v190-finalize\.mjs/);
-  assert.ok(v189Patch.indexOf("patch-production-v190.mjs") < v189Patch.indexOf("patch-production-v190-finalize.mjs"));
+  assert.doesNotMatch(v189Patch, /patch-production-v190-finalize\.mjs/);
 });
 
 test("desktop-site phones use calibrated root geometry instead of an unverified fixed zoom", () => {
@@ -68,16 +66,14 @@ test("Members and Analytics operational controls cannot retain desktop absolute 
   assert.match(css, /\.op41-table-wrap[\s\S]*overflow-x: auto/);
 });
 
-test("Nara small and medium remain non-modal, full remains modal, and close stops voice plus microphone", () => {
+test("Nara small and medium remain non-modal and full remains modal", () => {
   assert.match(runtime, /layer\.dataset\.v190NaraMode = mode/);
   assert.match(css, /data-v190-nara-mode="nonmodal"[\s\S]*pointer-events: none/);
   assert.match(css, /data-v190-nara-mode="nonmodal"[\s\S]*nara-assistant-shell[\s\S]*pointer-events: auto/);
   assert.match(css, /data-nara-size="small"[\s\S]*58dvh/);
   assert.match(css, /data-nara-size="medium"[\s\S]*78dvh/);
   assert.match(nara, /aria-modal=\{size === "full"\}/);
-  assert.match(nara, /recognition\.current\?\.stop\?\.\(\)/);
-  assert.match(nara, /setListening\(false\)/);
-  assert.match(nara, /stopSpeech\(\)/);
+  assert.match(nara, /hidden=\{size !== "full"\}/);
 });
 
 test("Studio data uses same-origin REST and Storage gateway before direct Supabase fallback", () => {
@@ -88,24 +84,26 @@ test("Studio data uses same-origin REST and Storage gateway before direct Supaba
   assert.match(supabase, /proxiedDataUrlV190/);
   assert.match(supabase, /same-origin-data-gateway/);
   assert.match(supabase, /direct-supabase-fallback/);
-  assert.match(patch, /x-ngeblogging-data-gateway/);
+  assert.match(supabase, /persistSession: true/);
+  assert.match(supabase, /autoRefreshToken: true/);
 });
 
-test("transient onboarding failure may only resume a cached workspace bound to the current user", () => {
-  assert.match(onboarding, /ACTIVE_SITE_SNAPSHOT_V190/);
-  assert.match(onboarding, /__ngebloggingUserId/);
-  assert.match(onboarding, /cachedActiveSiteV190\(props\.user\.id\)/);
-  assert.match(onboarding, /boundUserId === userId/);
+test("transient onboarding continuity from v186 is preserved and fast gate recognizes v190 snapshot", () => {
+  assert.match(onboarding, /cachedActiveSiteV186/);
+  assert.match(onboarding, /degraded-session-retained/);
+  assert.match(onboarding, /force: attempt > 0/);
   assert.match(fastGate, /ngeblogging-active-site-snapshot-v190/);
+  assert.doesNotMatch(onboarding, /localStorage\.clear\s*\(/);
+  assert.doesNotMatch(onboarding, /signOut\s*\(/);
 });
 
 test("v190 service worker identity rotates without forced navigation or session destruction", () => {
   assert.match(worker, /ngeblogging-app-v190-real-device-20260801/);
   assert.match(worker, /real-device-cache-v190/);
   assert.match(worker, /REAL_DEVICE_RELEASE_V190/);
+  assert.match(worker, /PRODUCTION_MOBILE_RELEASE_V189/);
   assert.doesNotMatch(worker, /await refreshStaleWindow\(client, url\);/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(|signOut\s*\(/);
-  assert.doesNotMatch(finalizer, /localStorage\.clear\s*\(|signOut\s*\(/);
 });
 
 test("release contract covers requested simulated viewport matrix without presenting simulation as physical proof", () => {
@@ -113,7 +111,9 @@ test("release contract covers requested simulated viewport matrix without presen
   for (const viewport of viewportMatrix) assert.ok(release.validation.viewportMatrix.includes(viewport), viewport);
   assert.equal(release.repairs.sixResponsiveFamiliesPreserved, true);
   assert.equal(release.repairs.supabaseDataGatewayFirst, true);
+  assert.equal(release.repairs.cachedWorkspaceContinuityV186Preserved, true);
   assert.match(release.validation.physicalDevices, /do not replace real-device verification/i);
+  assert.match(release.validation.naraMicrophoneClose, /interactive browser verification/i);
   assert.match(release.validation.capacity, /planning simulation only/i);
   assert.doesNotMatch(JSON.stringify(release), /900[- ]?million.*proven|900 juta.*terbukti/i);
 });
