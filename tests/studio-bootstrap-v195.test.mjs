@@ -13,11 +13,13 @@ const release = JSON.parse(read("public/release-v195.json"));
 
 const RELEASE = "studio-bootstrap-session-first-v195-20260801";
 
-test("v195 is chained after v194 and its v192 compatibility guard", () => {
+test("v195 is chained after v194, repairs active-site publication, then applies compatibility guard", () => {
   assert.match(chain, /patch-studio-nara-theme-v194\.mjs/);
+  assert.match(chain, /patch-studio-bootstrap-v195-publish-fix\.mjs/);
   assert.match(chain, /patch-studio-bootstrap-v195\.mjs/);
   assert.match(chain, /patch-studio-bootstrap-v195-compat\.mjs/);
-  assert.ok(chain.indexOf("patch-studio-nara-theme-v194.mjs") < chain.indexOf("patch-studio-bootstrap-v195.mjs"));
+  assert.ok(chain.indexOf("patch-studio-nara-theme-v194.mjs") < chain.indexOf("patch-studio-bootstrap-v195-publish-fix.mjs"));
+  assert.ok(chain.indexOf("patch-studio-bootstrap-v195-publish-fix.mjs") < chain.indexOf("patch-studio-bootstrap-v195.mjs"));
   assert.ok(chain.indexOf("patch-studio-bootstrap-v195.mjs") < chain.indexOf("patch-studio-bootstrap-v195-compat.mjs"));
 });
 
@@ -40,10 +42,22 @@ test("Studio startup reads the persisted browser session before conditional netw
 test("critical membership read remains user-token RLS and refreshes only after rejection", () => {
   assert.match(gate, /listUserSitesDirectV192\(userId, accessToken\)/);
   assert.match(gate, /studioMembershipTransportV195 = "direct-supabase-rls"/);
+  assert.match(gate, /studioMembershipTransportV192 = "client-gateway-fallback"/);
   assert.match(gate, /directStatus === 401 \|\| directStatus === 403/);
   assert.match(gate, /refreshRejectedSessionV195\(rejectedToken\)/);
   assert.match(gate, /supabase-client-fallback/);
   assert.doesNotMatch(gate, /service_role|SUPABASE_SERVICE_ROLE/);
+});
+
+test("active-site publication actually writes the user-scoped v192 and v195 snapshots", () => {
+  assert.match(gate, /function publishActiveSite\(site, userId = ""\)/);
+  assert.match(gate, /rememberActiveSiteV192\(site, userId\);/);
+  assert.match(gate, /rememberActiveSiteV195\(site, userId\);/);
+  const publishStart = gate.indexOf('function publishActiveSite(site, userId = "")');
+  const publishEnd = gate.indexOf("\n}\n", publishStart);
+  const publishBody = gate.slice(publishStart, publishEnd + 3);
+  assert.ok(publishBody.indexOf("rememberActiveSiteV192(site, userId);") >= 0);
+  assert.ok(publishBody.indexOf("rememberActiveSiteV195(site, userId);") > publishBody.indexOf("rememberActiveSiteV192(site, userId);"));
 });
 
 test("fast resume cache is bound to the authenticated user", () => {
