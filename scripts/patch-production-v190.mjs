@@ -90,4 +90,5 @@ await patchStudioEntry();
 await patchNaraClose();
 await patchServiceWorker();
 await verify();
-console.log(`Applied ${RELEASE}`);
+await import("./patch-production-v191.mjs");
+console.log(`Applied ${RELEASE} + Studio screenshot recovery v191`);

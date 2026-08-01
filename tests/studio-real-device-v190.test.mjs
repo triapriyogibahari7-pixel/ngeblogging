@@ -97,9 +97,10 @@ test("transient onboarding continuity from v186 is preserved and fast gate recog
   assert.doesNotMatch(onboarding, /signOut\s*\(/);
 });
 
-test("v190 service worker identity rotates without forced navigation or session destruction", () => {
-  assert.match(worker, /ngeblogging-app-v190-real-device-20260801/);
-  assert.match(worker, /real-device-cache-v190/);
+test("v190 service-worker guarantees remain preserved after the v191 cache rotation", () => {
+  assert.match(worker, /ngeblogging-app-v191-screenshot-recovery-20260801/);
+  assert.match(worker, /screenshot-recovery-cache-v191/);
+  assert.match(worker, /SCREENSHOT_RECOVERY_RELEASE_V191/);
   assert.match(worker, /REAL_DEVICE_RELEASE_V190/);
   assert.match(worker, /PRODUCTION_MOBILE_RELEASE_V189/);
   assert.doesNotMatch(worker, /await refreshStaleWindow\(client, url\);/);
