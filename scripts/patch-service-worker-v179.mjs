@@ -75,6 +75,4 @@ await import("./patch-production-ui-v187.mjs");
 await import("./patch-production-physical-mobile-v188.mjs");
 await import("./patch-production-mobile-v189.mjs");
 await import("./patch-studio-screenshot-v193.mjs");
-// Diagnostic v194: runtime/CSS remain loaded by Studio.jsx while the build patch
-// is temporarily isolated. Re-enable after the external preview proves which
-// layer caused the failure.
+await import("./patch-studio-nara-theme-v194.mjs");
