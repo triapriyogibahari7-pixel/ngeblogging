@@ -23,6 +23,22 @@ function rootLength(name, fallback) {
   }
 }
 
+function setAttributeIfChanged(node, name, value) {
+  if (!node) return;
+  const next = String(value);
+  if (node.getAttribute(name) !== next) node.setAttribute(name, next);
+}
+
+function setBooleanPropertyIfChanged(node, name, value) {
+  if (!node) return;
+  const next = Boolean(value);
+  if (node[name] !== next) node[name] = next;
+}
+
+function setTextIfChanged(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
 function ensureViewportMeta() {
   let viewport = document.querySelector('meta[name="viewport"]');
   if (!viewport) {
@@ -30,7 +46,8 @@ function ensureViewportMeta() {
     viewport.name = "viewport";
     document.head.prepend(viewport);
   }
-  viewport.content = "width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content";
+  const content = "width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content";
+  if (viewport.content !== content) viewport.content = content;
 }
 
 function profile() {
@@ -122,7 +139,7 @@ function normalizeDrawer(state) {
 
   if (sidebar) {
     sidebar.dataset.productionDrawerV189 = open ? "open" : "closed";
-    sidebar.setAttribute("aria-hidden", String(!open));
+    setAttributeIfChanged(sidebar, "aria-hidden", String(!open));
     sidebar.style.setProperty("z-index", "2147483100", "important");
     sidebar.style.setProperty("opacity", "1", "important");
     sidebar.style.setProperty("filter", "none", "important");
@@ -138,8 +155,8 @@ function normalizeDrawer(state) {
   }
 
   if (backdrop) {
-    backdrop.hidden = !open;
-    backdrop.setAttribute("aria-hidden", String(!open));
+    setBooleanPropertyIfChanged(backdrop, "hidden", !open);
+    setAttributeIfChanged(backdrop, "aria-hidden", String(!open));
     backdrop.style.setProperty("z-index", "2147483000", "important");
     backdrop.style.setProperty("left", `${state.drawerWidth}px`, "important");
     backdrop.style.setProperty("right", "0", "important");
@@ -171,23 +188,23 @@ function normalizeNara(state) {
   layer.dataset.naraMode = mode;
   layer.dataset.physicalNaraModeV188 = mode;
   layer.dataset.productionNaraModeV187 = mode;
-  layer.setAttribute("aria-modal", String(full));
-  shell.setAttribute("aria-modal", String(full));
+  setAttributeIfChanged(layer, "aria-modal", String(full));
+  setAttributeIfChanged(shell, "aria-modal", String(full));
 
   const backdrop = layer.querySelector(":scope > .nara-assistant-backdrop");
   if (backdrop) {
-    backdrop.hidden = !full;
-    backdrop.inert = !full;
-    backdrop.tabIndex = full ? 0 : -1;
-    backdrop.setAttribute("aria-hidden", String(!full));
+    setBooleanPropertyIfChanged(backdrop, "hidden", !full);
+    setBooleanPropertyIfChanged(backdrop, "inert", !full);
+    if (backdrop.tabIndex !== (full ? 0 : -1)) backdrop.tabIndex = full ? 0 : -1;
+    setAttributeIfChanged(backdrop, "aria-hidden", String(!full));
   }
 
   const close = shell.querySelector('button[aria-label="Tutup Nara AI"],button[title="Tutup"],button[aria-label="Tutup Nara"]');
   if (close) {
-    close.hidden = false;
-    close.disabled = false;
-    close.removeAttribute("aria-hidden");
-    close.setAttribute("aria-label", "Tutup Nara AI");
+    setBooleanPropertyIfChanged(close, "hidden", false);
+    setBooleanPropertyIfChanged(close, "disabled", false);
+    if (close.hasAttribute("aria-hidden")) close.removeAttribute("aria-hidden");
+    setAttributeIfChanged(close, "aria-label", "Tutup Nara AI");
   }
 
   if (!full) {
@@ -243,24 +260,24 @@ function normalizeFlow(state) {
     node.style.removeProperty("inset");
     node.style.removeProperty("transform");
     node.style.removeProperty("filter");
-    node.removeAttribute("inert");
+    if (node.hasAttribute("inert")) node.removeAttribute("inert");
   });
 }
 
 function profileMenuAction(event) {
-  const profile = event.target.closest?.(".sn-profile-menu-v147 button[data-action='profile'],.sn-profile-menu-v150 button[data-action='profile']");
-  const settings = event.target.closest?.(".sn-profile-menu-v147 button[data-action='settings'],.sn-profile-menu-v150 button[data-action='settings'],.sn-account-settings-v135");
-  if (!profile && !settings) return;
+  const profileButton = event.target.closest?.(".sn-profile-menu-v147 button[data-action='profile'],.sn-profile-menu-v150 button[data-action='profile']");
+  const settingsButton = event.target.closest?.(".sn-profile-menu-v147 button[data-action='settings'],.sn-profile-menu-v150 button[data-action='settings'],.sn-account-settings-v135");
+  if (!profileButton && !settingsButton) return;
 
-  document.documentElement.dataset.studioAccountViewV189 = profile ? "profile" : "settings";
-  if (!profile) return;
+  document.documentElement.dataset.studioAccountViewV189 = profileButton ? "profile" : "settings";
+  if (!profileButton) return;
 
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
   document.querySelectorAll(".sn-profile-menu-v147,.sn-profile-menu-v150").forEach((menu) => menu.remove());
-  const settingsButton = document.querySelector(".sn-account-settings-v135");
-  settingsButton?.click();
+  const sidebarSettings = document.querySelector(".sn-account-settings-v135");
+  sidebarSettings?.click();
   requestAnimationFrame(normalizeProfileSurface);
 }
 
@@ -269,8 +286,8 @@ function normalizeProfileSurface() {
   const page = document.querySelector(".sn-settings-grid")?.closest(".sn-view-pad");
   const title = page?.querySelector(".sn-page-title h1");
   const description = page?.querySelector(".sn-page-title p");
-  if (title) title.textContent = "Profil";
-  if (description) description.textContent = "Kelola identitas, biografi, avatar, dan informasi publik akun Anda.";
+  setTextIfChanged(title, "Profil");
+  setTextIfChanged(description, "Kelola identitas, biografi, avatar, dan informasi publik akun Anda.");
 }
 
 function sync() {
