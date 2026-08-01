@@ -1,0 +1,98 @@
+/* Final screenshot corrections loaded after the primary v189 authority. */
+
+/* Analytics/operations v41 used desktop grids even when Android Chrome requested
+   "Situs desktop". Key these rules to the physical-mobile signal, not media width. */
+html[data-studio-physical-mobile-v189="true"] :is(
+  .op41-host,.op41-panel,.op41-toolbar,.op41-active-site,.op41-metrics,
+  .op41-chart-grid,.op41-chart-grid.equal,.op41-member-grid,.op41-form,
+  .op41-readiness,.op41-card,.op41-table-wrap
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-panel {
+  width: 100% !important;
+  overflow-x: clip !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  .op41-toolbar,.op41-active-site,.op41-metrics,.op41-chart-grid,
+  .op41-chart-grid.equal,.op41-member-grid,.op41-form,.op41-readiness
+) {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 10px !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-toolbar-actions {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  justify-content: stretch !important;
+  gap: 8px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .op41-toolbar-actions > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-active-site dl,
+html[data-studio-physical-mobile-v189="true"] .op41-donut-wrap {
+  grid-template-columns: minmax(0,1fr) !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-card,
+html[data-studio-physical-mobile-v189="true"] .op41-metrics article {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-card header {
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-line {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-table-wrap {
+  width: 100% !important;
+  overflow-x: auto !important;
+  overscroll-behavior-inline: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+html[data-studio-physical-mobile-v189="true"] .op41-table {
+  width: max-content !important;
+  min-width: 720px !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .op41-bar {
+  grid-template-columns: minmax(72px,.7fr) minmax(70px,1.3fr) auto !important;
+}
+
+@media (max-width: 430px) {
+  html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar {
+    width: var(--v189-drawer-width) !important;
+    max-width: calc(var(--v189-physical-width) - 34px) !important;
+  }
+
+  html[data-studio-physical-mobile-v189="true"] .sn-side-backdrop {
+    left: var(--v189-drawer-width) !important;
+    right: 0 !important;
+    width: auto !important;
+  }
+
+  html[data-studio-physical-mobile-v189="true"] .op41-toolbar-actions {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}

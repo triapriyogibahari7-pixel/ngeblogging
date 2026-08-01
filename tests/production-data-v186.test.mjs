@@ -72,36 +72,43 @@ test("Nara small and medium are non-modal in React source", () => {
   assert.match(nara, /tabIndex=\{size === "full" \? 0 : -1\}/);
 });
 
-test("v186 and v187 protections remain while the final cache is rotated by v188", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v188-physical-mobile-20260801/);
-  assert.match(serviceWorker, /physical-mobile-cache-v188/);
+test("v186, v187, and v188 protections remain while the final cache is rotated by v189", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v189-production-mobile-20260801/);
+  assert.match(serviceWorker, /production-mobile-cache-v189/);
   assert.match(serviceWorker, /PRODUCTION_DATA_RELEASE_V186/);
   assert.match(serviceWorker, /PRODUCTION_AUTHORITY_RELEASE_V187/);
   assert.match(serviceWorker, /PHYSICAL_MOBILE_RELEASE_V188/);
+  assert.match(serviceWorker, /PRODUCTION_MOBILE_RELEASE_V189/);
   assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
   assert.doesNotMatch(patch, /signOut\s*\(/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(/);
   assert.doesNotMatch(physicalPatch, /signOut\s*\(|localStorage\.clear\s*\(/);
 });
 
-test("release and production scripts include v186", () => {
+test("release and production scripts include v186 and v189", () => {
   assert.match(packageJson.scripts["verify:v186"], /production-data-v186\.test\.mjs/);
+  assert.match(packageJson.scripts["verify:v189"], /studio-production-mobile-v189\.test\.mjs/);
   assert.match(packageJson.scripts["test:production"], /production-data-v186\.test\.mjs/);
+  assert.match(packageJson.scripts["test:production"], /studio-production-mobile-v189\.test\.mjs/);
   assert.equal(release.release, "production-data-source-v186-20260801");
   assert.equal(release.repairs.activeSiteBootstrapNonBlocking, true);
   assert.equal(release.repairs.authGatewayDirectFallback, true);
   assert.equal(release.repairs.naraSmallMediumNonModalAtSource, true);
 });
 
-test("v187 production authority remains before physical mobile v188", () => {
+test("v187 production authority remains before physical mobile v188 and production mobile v189", () => {
   assert.match(chain, /patch-production-ui-v187\.mjs/);
   assert.match(chain, /patch-production-physical-mobile-v188\.mjs/);
+  assert.match(chain, /patch-production-mobile-v189\.mjs/);
   assert.ok(chain.indexOf("patch-production-data-v186.mjs") < chain.indexOf("patch-production-ui-v187.mjs"));
   assert.ok(chain.indexOf("patch-production-ui-v187.mjs") < chain.indexOf("patch-production-physical-mobile-v188.mjs"));
+  assert.ok(chain.indexOf("patch-production-physical-mobile-v188.mjs") < chain.indexOf("patch-production-mobile-v189.mjs"));
   const entry = read("src/Studio.jsx");
   assert.match(entry, /studio-production-authority-v187\.js/);
   assert.match(entry, /studio-physical-mobile-v188\.js/);
+  assert.match(entry, /studio-production-mobile-v189\.js/);
   assert.ok(entry.indexOf("studio-production-authority-v187.js") < entry.indexOf("studio-physical-mobile-v188.js"));
+  assert.ok(entry.indexOf("studio-physical-mobile-v188.js") < entry.indexOf("studio-production-mobile-v189.js"));
   assert.match(read("src/StudioNext.jsx"), /SIDEBAR_STATE_V187/);
   assert.match(read("src/StudioNext.jsx"), /documentWordCountV187\(active\.content\)/);
 });
