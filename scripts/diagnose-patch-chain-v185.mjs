@@ -15,7 +15,17 @@ for (const step of [
   "./patch-service-worker-v179.mjs",
 ]) await import(step);
 
-const result = spawnSync(process.execPath, ["--test", "tests/production-domain-attach-v165.test.mjs"], { cwd: process.cwd(), stdio: "inherit", env: process.env });
+const tests = [
+  "tests/production-route-recovery-v168.test.mjs",
+  "tests/first-site-onboarding-v169.test.mjs",
+  "tests/theme-layout-v170.test.mjs",
+  "tests/theme-layout-v170-idempotency.test.mjs",
+  "tests/mobile-public-layout-v171.test.mjs",
+  "tests/production-custom-domain-v172.test.mjs",
+  "tests/mobile-interaction-v174.test.mjs",
+  "tests/production-login-finalizer-v175.test.mjs",
+];
+const result = spawnSync(process.execPath, ["--test", ...tests], { cwd: process.cwd(), stdio: "inherit", env: process.env });
 if (result.status !== 0) process.exit(result.status || 1);
 await mkdir("dist", { recursive: true });
-await writeFile("dist/index.html", "<!doctype html><html><body><h1>PRODUCTION_DOMAIN_ATTACH_V165_OK</h1></body></html>", "utf8");
+await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSIONS_V168_V175_OK</h1></body></html>", "utf8");
