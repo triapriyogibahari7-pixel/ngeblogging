@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const match = String(process.env.DIAG_MATCH || "");
-const result = spawnSync(process.execPath, ["--test", "tests/studio-real-device-v190.test.mjs"], {
+const result = spawnSync(process.execPath, ["--test", "--test-reporter=tap", "tests/studio-real-device-v190.test.mjs"], {
   cwd: process.cwd(),
   encoding: "utf8",
   env: process.env,
