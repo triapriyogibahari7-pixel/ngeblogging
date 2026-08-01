@@ -3,8 +3,9 @@ import StudioOnboardingGate from "./StudioOnboardingGate.jsx";
 import StudioSecure from "./StudioSecure.jsx";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 
-const RELEASE = "studio-fast-entry-v189-20260801";
+const RELEASE = "studio-fast-entry-v190-20260801";
 const SNAPSHOT_KEYS = [
+  "ngeblogging-active-site-snapshot-v190",
   "ngeblogging-active-site-snapshot-v186",
   "ngeblogging-active-site-snapshot-v185",
   "ngeblogging-active-site-snapshot-v183",

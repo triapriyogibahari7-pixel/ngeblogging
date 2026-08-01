@@ -47,11 +47,13 @@ test("transient startup failures preserve session and cached site", () => {
   assert.doesNotMatch(gate, /signOut\s*\(/);
 });
 
-test("auth gateway failure falls back to direct Supabase and OAuth is not proxied", () => {
+test("auth and data gateways fall back safely without proxying OAuth provider destinations", () => {
   assert.match(auth, /direct-fallback-v186/);
-  assert.match(auth, /\[404, 502, 503, 504\]/);
+  assert.match(auth, /404, 502, 503, 504/);
   assert.match(auth, /return nativeFetch\(directInput, init\)/);
   assert.match(auth, /direct-supabase-oauth-v186/);
+  assert.match(auth, /DATA_TRANSPORT_RELEASE_V190/);
+  assert.match(auth, /same-origin-data-gateway/);
   const providerStart = auth.indexOf("function providerDestination");
   const providerEnd = auth.indexOf("export async function signInWithProvider", providerStart);
   assert.doesNotMatch(auth.slice(providerStart, providerEnd), /proxiedAuthUrl/);
@@ -72,20 +74,21 @@ test("Nara small and medium are non-modal in React source", () => {
   assert.match(nara, /tabIndex=\{size === "full" \? 0 : -1\}/);
 });
 
-test("v186, v187, and v188 protections remain while the final cache is rotated by v189", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v189-production-mobile-20260801/);
-  assert.match(serviceWorker, /production-mobile-cache-v189/);
+test("v186, v187, v188, and v189 protections remain while the final cache is rotated by v190", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v190-real-device-20260801/);
+  assert.match(serviceWorker, /real-device-cache-v190/);
   assert.match(serviceWorker, /PRODUCTION_DATA_RELEASE_V186/);
   assert.match(serviceWorker, /PRODUCTION_AUTHORITY_RELEASE_V187/);
   assert.match(serviceWorker, /PHYSICAL_MOBILE_RELEASE_V188/);
   assert.match(serviceWorker, /PRODUCTION_MOBILE_RELEASE_V189/);
+  assert.match(serviceWorker, /REAL_DEVICE_RELEASE_V190/);
   assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
   assert.doesNotMatch(patch, /signOut\s*\(/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(/);
   assert.doesNotMatch(physicalPatch, /signOut\s*\(|localStorage\.clear\s*\(/);
 });
 
-test("release and production scripts include v186 and v189", () => {
+test("release and production scripts include v186 and v189 compatibility gates", () => {
   assert.match(packageJson.scripts["verify:v186"], /production-data-v186\.test\.mjs/);
   assert.match(packageJson.scripts["verify:v189"], /studio-production-mobile-v189\.test\.mjs/);
   assert.match(packageJson.scripts["test:production"], /production-data-v186\.test\.mjs/);
@@ -107,8 +110,10 @@ test("v187 production authority remains before physical mobile v188 and producti
   assert.match(entry, /studio-production-authority-v187\.js/);
   assert.match(entry, /studio-physical-mobile-v188\.js/);
   assert.match(entry, /studio-production-mobile-v189\.js/);
+  assert.match(entry, /studio-real-device-v190\.js/);
   assert.ok(entry.indexOf("studio-production-authority-v187.js") < entry.indexOf("studio-physical-mobile-v188.js"));
   assert.ok(entry.indexOf("studio-physical-mobile-v188.js") < entry.indexOf("studio-production-mobile-v189.js"));
+  assert.ok(entry.indexOf("studio-production-mobile-v189-fix.css") < entry.indexOf("studio-real-device-v190.js"));
   assert.match(read("src/StudioNext.jsx"), /SIDEBAR_STATE_V187/);
   assert.match(read("src/StudioNext.jsx"), /documentWordCountV187\(active\.content\)/);
 });

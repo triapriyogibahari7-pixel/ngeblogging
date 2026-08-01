@@ -1,0 +1,56 @@
+{
+  "release": "studio-real-device-v190-20260801",
+  "date": "2026-08-01",
+  "base": "studio-production-mobile-v189",
+  "scope": "real-device mobile stability, auth/data continuity, drawer, operational pages, Nara",
+  "repairs": {
+    "sixResponsiveFamiliesPreserved": true,
+    "desktopVariantsPreserved": true,
+    "androidDesktopSiteCalibration": true,
+    "blankRightViewportGuard": true,
+    "mobileLogoCentered": true,
+    "drawerMenuClickable": true,
+    "drawerBackdropTransparent": true,
+    "drawerMainMenuVerticallyCenteredWhenSpaceAllows": true,
+    "drawerShortViewportScrollable": true,
+    "operationalCardsNoAbsoluteOverlap": true,
+    "membersActionsContained": true,
+    "analyticsCardsContained": true,
+    "themeAndEditorHorizontalContainment": true,
+    "naraLauncherStableNoBlink": true,
+    "naraSmallMediumNonModal": true,
+    "naraCloseAlwaysVisible": true,
+    "supabaseDataGatewayFirst": true,
+    "supabaseDirectFallback": true,
+    "sessionPreservedOnTransientNetworkFailure": true,
+    "cachedWorkspaceContinuityV186Preserved": true,
+    "serviceWorkerRotatedWithoutForcedNavigation": true
+  },
+  "preserved": [
+    "Posts",
+    "Pages",
+    "5000-word guard",
+    "SEO editor",
+    "Theme Studio and 100 themes",
+    "Media",
+    "Analytics",
+    "Members",
+    "Comments",
+    "Domains",
+    "API Keys",
+    "profile/settings separation",
+    "Nara attachments, camera, photo, microphone, speaker, model and intelligence controls"
+  ],
+  "validation": {
+    "viewportMatrix": [
+      "320x568", "360x640", "375x667", "390x844", "412x915", "430x932",
+      "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768",
+      "1440x900", "1920x1080"
+    ],
+    "providerLogin": "Must be confirmed against deployed Supabase provider configuration and real callback URLs.",
+    "physicalDevices": "Static and simulated viewport validation do not replace real-device verification after deployment.",
+    "naraMicrophoneClose": "Requires interactive browser verification before claiming microphone shutdown on every supported browser.",
+    "capacity": "Capacity model is a planning simulation only; no 900-million-user claim is made without distributed load testing and provider capacity evidence."
+  },
+  "dataPolicy": "No fabricated production analytics, member counts, comments, traffic, login success, or capacity claims."
+}
