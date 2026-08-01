@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/patch-production-v192.mjs && mkdir -p dist && printf 'v192 complete patch passed' > dist/index.html"
+  command = "node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf 'v179-v192 patch chain passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
