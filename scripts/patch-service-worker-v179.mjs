@@ -9,19 +9,12 @@ const FIRST_SITE_CACHE = 'const FIRST_SITE_COMPAT_CACHE_V169 = "first-site-cache
 const SCREENSHOT_VERSION = 'const SCREENSHOT_STABILITY_COMPAT_VERSION_V177 = "ngeblogging-app-v177-screenshot-stability-20260731";';
 const SCREENSHOT_CACHE = 'const SCREENSHOT_STABILITY_COMPAT_CACHE_V177 = "screenshot-stability-cache-v177";';
 const MOBILE_RUNTIME = `const MOBILE_RUNTIME_RELEASE = "${RELEASE}";`;
-const DIAGNOSTIC_STOP = String(process.env.PATCH_DIAGNOSTIC_STOP || "").trim();
 
 function insertAfterVersion(source, line) {
   if (source.includes(line)) return source;
   const next = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
   if (next === source) throw new Error(`Patch service worker v179 tidak menemukan VERSION untuk ${line}.`);
   return next;
-}
-
-function diagnosticStop(label) {
-  if (DIAGNOSTIC_STOP !== label) return;
-  console.log(`PATCH_DIAGNOSTIC_STOP:${label}:SUCCESS`);
-  process.exit(0);
 }
 
 let source = await readFile(file, "utf8");
@@ -67,27 +60,17 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
-diagnosticStop("v179");
 
 await import("./patch-production-recovery-v180.mjs");
 await import("./patch-production-recovery-v180-legacy-markers.mjs");
 await import("./patch-production-recovery-v180-compat.mjs");
-diagnosticStop("v180");
 await import("./patch-service-worker-v181.mjs");
-diagnosticStop("v181");
 await import("./patch-site-limit-summary-v182.mjs");
-diagnosticStop("v182");
 await import("./patch-studio-production-v183.mjs");
-diagnosticStop("v183");
 await import("./patch-production-data-v186-bootstrap-fix.mjs");
 await import("./patch-production-data-v186-nara-fix.mjs");
 await import("./patch-production-data-v186.mjs");
 await import("./patch-workflow-compat-v186.mjs");
-diagnosticStop("v186");
 await import("./patch-production-ui-v187.mjs");
-diagnosticStop("v187");
 await import("./patch-production-physical-mobile-v188.mjs");
-diagnosticStop("v188");
-if (String(process.env.V189_DIAGNOSTIC_SKIP || "") !== "1") {
-  await import("./patch-production-mobile-v189.mjs");
-}
+await import("./patch-production-mobile-v189.mjs");
