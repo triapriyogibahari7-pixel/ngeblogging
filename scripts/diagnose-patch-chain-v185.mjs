@@ -15,7 +15,11 @@ for (const step of [
   "./patch-service-worker-v179.mjs",
 ]) await import(step);
 
-const result = spawnSync(process.execPath, ["--test", "tests/production-custom-domain-v172.test.mjs"], { cwd: process.cwd(), stdio: "inherit", env: process.env });
+const tests = [
+  "tests/mobile-interaction-v174.test.mjs",
+  "tests/production-login-finalizer-v175.test.mjs",
+];
+const result = spawnSync(process.execPath, ["--test", ...tests], { cwd: process.cwd(), stdio: "inherit", env: process.env });
 if (result.status !== 0) process.exit(result.status || 1);
 await mkdir("dist", { recursive: true });
-await writeFile("dist/index.html", "<!doctype html><html><body><h1>PRODUCTION_CUSTOM_DOMAIN_V172_OK</h1></body></html>", "utf8");
+await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSIONS_V174_V175_OK</h1></body></html>", "utf8");
