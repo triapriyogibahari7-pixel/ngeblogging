@@ -1,0 +1,24 @@
+{
+  "release": "studio-production-authority-v187-20260801",
+  "date": "2026-08-01",
+  "scope": "Studio responsive, editor, active-site continuity, Theme Studio, Nara AI, and PWA cache",
+  "repairs": {
+    "sixResponsiveFamilies": true,
+    "desktopLaptopComputerVariants": true,
+    "drawerMenuClickable": true,
+    "sidebarStatePersisted": true,
+    "activeSiteSnapshotPersisted": true,
+    "mobileEditorSingleColumn": true,
+    "wordLimitWithoutTruncation": true,
+    "themeActionsVisible": true,
+    "naraSmallMediumNonModal": true,
+    "mediaFiltersNonOverlay": true,
+    "operationalPanelsNoInfiniteSpinner": true,
+    "serviceWorkerNoForcedLogout": true
+  },
+  "claims": {
+    "productionCapacity": "Not claimed without real load testing",
+    "data": "Production values only; simulation must be labeled",
+    "completion": "Requires CI, deployment, and physical-device verification"
+  }
+}
