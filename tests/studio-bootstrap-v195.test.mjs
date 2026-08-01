@@ -13,32 +13,35 @@ const release = JSON.parse(read("public/release-v195.json"));
 
 const RELEASE = "studio-bootstrap-session-first-v195-20260801";
 
-test("v195 is chained after v194 in every production patch run", () => {
+test("v195 is chained after v194 and its v192 compatibility guard", () => {
   assert.match(chain, /patch-studio-nara-theme-v194\.mjs/);
   assert.match(chain, /patch-studio-bootstrap-v195\.mjs/);
+  assert.match(chain, /patch-studio-bootstrap-v195-compat\.mjs/);
   assert.ok(chain.indexOf("patch-studio-nara-theme-v194.mjs") < chain.indexOf("patch-studio-bootstrap-v195.mjs"));
+  assert.ok(chain.indexOf("patch-studio-bootstrap-v195.mjs") < chain.indexOf("patch-studio-bootstrap-v195-compat.mjs"));
 });
 
 test("Studio startup reads the persisted browser session before conditional network verification", () => {
   assert.match(gate, /readLocalStudioSessionV195/);
   assert.match(gate, /supabase\.auth\.getSession\(\)/);
   assert.match(gate, /local-session-first-v195/);
+  assert.match(gate, /async function refreshRejectedSessionV195/);
+  assert.match(gate, /getVerifiedSession\(\{ force: attempt > 0 \}\)/);
   const start = gate.indexOf("async function loadStudioMembership(userId)");
   const end = gate.indexOf("\n}\n", start);
   const body = gate.slice(start, end + 3);
-  const conditionalRefresh = "getVerifiedSession({ force: Boolean(rejectedToken) })";
   assert.ok(body.indexOf("readLocalStudioSessionV195") >= 0);
-  assert.ok(body.indexOf(conditionalRefresh) > body.indexOf("readLocalStudioSessionV195"));
-  assert.doesNotMatch(body, /getVerifiedSession\(\{ force: true \}\)/);
+  assert.ok(body.indexOf("refreshRejectedSessionV195(rejectedToken)") > body.indexOf("readLocalStudioSessionV195"));
+  assert.doesNotMatch(gate, /getVerifiedSession\(\{ force: true \}\)/);
   assert.match(supabase, /persistSession: true/);
   assert.match(supabase, /autoRefreshToken: true/);
 });
 
-test("critical membership read remains user-token RLS and only refreshes after rejection", () => {
+test("critical membership read remains user-token RLS and refreshes only after rejection", () => {
   assert.match(gate, /listUserSitesDirectV192\(userId, accessToken\)/);
   assert.match(gate, /studioMembershipTransportV195 = "direct-supabase-rls"/);
   assert.match(gate, /directStatus === 401 \|\| directStatus === 403/);
-  assert.match(gate, /getVerifiedSession\(\{ force: Boolean\(rejectedToken\) \}\)/);
+  assert.match(gate, /refreshRejectedSessionV195\(rejectedToken\)/);
   assert.match(gate, /supabase-client-fallback/);
   assert.doesNotMatch(gate, /service_role|SUPABASE_SERVICE_ROLE/);
 });
