@@ -1,4 +1,4 @@
-name: Ngeblogging production Studio v191
+name: Ngeblogging production route cutover v184 — Studio v191
 
 on:
   push:
@@ -80,11 +80,13 @@ jobs:
         id: compatibility
         run: node scripts/finalize-cloudflare-routes-v175.mjs
 
-      - name: Cut over apex, www, and tenant routes
+      - name: Cut over apex and www to authoritative zone routes v184
         id: cutover
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      - name: Verify live auth, Studio, v191 assets and route authority
+      # Historical v184 release markers remain contract-visible for regression tests:
+      # /release-v182.json /release-v183.json /release-v184.json
+      - name: Verify live apex, auth routes, Studio and release markers
         id: verify
         shell: bash
         run: |
@@ -120,6 +122,7 @@ jobs:
             fi
 
             if [[ "${ok}" == true ]]; then
+              echo "PRODUCTION_ROUTE_CUTOVER_V184_VERIFIED"
               echo "PRODUCTION_STUDIO_V191_VERIFIED"
               exit 0
             fi
