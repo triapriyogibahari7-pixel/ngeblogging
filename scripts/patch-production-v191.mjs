@@ -90,9 +90,5 @@ async function verify() {
 await patchStudioEntry();
 await patchServiceWorker();
 await verify();
-if (process.env.SKIP_V192 !== "1") {
-  await import("./patch-auth-studio-bootstrap-v192.mjs");
-  console.log(`Applied ${RELEASE} + auth Studio bootstrap v192`);
-} else {
-  console.log(`Applied ${RELEASE}; v192 intentionally skipped for PR diagnostic only`);
-}
+await import("./patch-auth-studio-bootstrap-v192.mjs");
+console.log(`Applied ${RELEASE} + auth Studio bootstrap v192`);
