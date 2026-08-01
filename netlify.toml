@@ -1,6 +1,6 @@
 [build]
-  # TEMP v195 draft diagnostic: check v192 gate constants/helper only.
-  command = "node scripts/patch-service-worker-v179.mjs && grep -Fq 'ACTIVE_SITE_SNAPSHOT_V192' src/StudioOnboardingGate.jsx && grep -Fq 'async function listUserSitesDirectV192' src/StudioOnboardingGate.jsx && mkdir -p dist && printf '<!doctype html><div id=\"root\"></div>' > dist/index.html"
+  # TEMP v195 draft diagnostic: check exact publish anchor expected by v195.
+  command = "node scripts/patch-service-worker-v179.mjs && grep -Fq 'function publishActiveSite(site, userId = \"\")' src/StudioOnboardingGate.jsx && grep -Fq 'rememberActiveSiteV192(site, userId);' src/StudioOnboardingGate.jsx && mkdir -p dist && printf '<!doctype html><div id=\"root\"></div>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
