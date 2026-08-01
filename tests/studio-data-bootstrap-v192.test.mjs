@@ -7,6 +7,7 @@ const gate = read("src/StudioOnboardingGate.jsx");
 const patch = read("scripts/patch-production-v192.mjs");
 const chain = read("scripts/patch-production-v191.mjs");
 const auth = read("src/lib/supabase.js");
+const dataGateway = read("server/data-gateway-v110.mjs");
 const worker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v192.json"));
 
@@ -52,15 +53,12 @@ test("transient failures retain cached workspace and never destroy login", () =>
   assert.match(auth, /autoRefreshToken: true/);
 });
 
-test("same-origin data gateway is bounded and falls back directly", () => {
-  assert.match(auth, /GATEWAY_TIMEOUT_MS_V192 = 2_500/);
-  assert.match(auth, /fetchGatewayWithTimeoutV192/);
-  assert.match(auth, /direct-supabase-fallback-v192/);
-  const start = auth.indexOf("async function gatewayFirstV190");
-  const end = auth.indexOf("\n}\n", start);
-  const gateway = auth.slice(start, end);
-  assert.match(gateway, /fetchGatewayWithTimeoutV192/);
-  assert.match(gateway, /return nativeFetch\(directInput, init\)/);
+test("Cloudflare data gateway is bounded while client direct fallback stays intact", () => {
+  assert.match(dataGateway, /UPSTREAM_TIMEOUT_MS_V192 = 2_500/);
+  assert.match(dataGateway, /DATA_UPSTREAM_TIMEOUT/);
+  assert.match(dataGateway, /controller\.abort\("ngeblogging-data-upstream-timeout-v192"\)/);
+  assert.match(dataGateway, /signal:\s*controller\.signal/);
+  assert.match(auth, /return nativeFetch\(directInput, init\)/);
 });
 
 test("startup is bounded and does not loop forever", () => {
