@@ -1,5 +1,5 @@
 [build]
-  command = "PATCH_DIAGNOSTIC_STOP=v183 node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf 'v179-v183 chain passed' > dist/index.html"
+  command = "PATCH_DIAGNOSTIC_STOP=v181 node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf 'v179-v181 chain passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
