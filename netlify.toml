@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run test:production && mkdir -p dist && printf '<!doctype html><html><body><h1>PRODUCTION_TEST_SUITE_OK</h1></body></html>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
