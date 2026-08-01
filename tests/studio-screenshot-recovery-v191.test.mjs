@@ -99,6 +99,19 @@ test("v192 does not block valid Studio membership behind redundant auth verifica
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|signOut\s*\(/);
 });
 
+test("v192 bounds same-origin data gateway and preserves direct Supabase fallback", () => {
+  assert.match(supabase, /GATEWAY_TIMEOUT_MS_V192\s*=\s*2_500/);
+  assert.match(supabase, /fetchGatewayWithTimeoutV192/);
+  assert.match(supabase, /direct-supabase-fallback-v192/);
+  const start = supabase.indexOf("async function gatewayFirstV190");
+  const end = supabase.indexOf("\n}\n", start);
+  const gateway = supabase.slice(start, end);
+  assert.match(gateway, /fetchGatewayWithTimeoutV192/);
+  assert.match(gateway, /return nativeFetch\(directInput, init\)/);
+  assert.equal(release192.repairs.dataGatewayTimeoutMilliseconds, 2500);
+  assert.equal(release192.repairs.dataGatewayTimeoutFallsBackDirect, true);
+});
+
 test("release is truthful and deployment rejects stale WHITE-R4", () => {
   assert.equal(release.release, "studio-screenshot-recovery-v191-20260801");
   assert.equal(release.repairs.legacyWhiteR4RejectedByDeployment, true);
