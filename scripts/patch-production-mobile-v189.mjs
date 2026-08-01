@@ -101,5 +101,7 @@ async function verify() {
 await patchStudioEntry();
 await patchServiceWorker();
 await verify();
-await import("./patch-production-v190.mjs");
-console.log(`Applied ${RELEASE} + Studio real-device v190`);
+if (String(process.env.V190_DIAGNOSTIC_SKIP || "") !== "1") {
+  await import("./patch-production-v190.mjs");
+}
+console.log(`Applied ${RELEASE}${String(process.env.V190_DIAGNOSTIC_SKIP || "") === "1" ? " diagnostic:skip-v190" : " + Studio real-device v190"}`);
