@@ -1,6 +1,7 @@
 [build]
-  # Temporary PR diagnostic: v186 baseline only. Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-production-data-v186.mjs && mkdir -p dist && printf '<!doctype html><title>v186 baseline diagnostic</title>' > dist/index.html"
+  # Temporary PR diagnostic: complete historical chain through v191, v192 intentionally skipped.
+  # Restore to `npm run build` before merge.
+  command = "SKIP_V192=1 node scripts/patch-auth-callback-v162.mjs && SKIP_V192=1 node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf '<!doctype html><title>v191 chain diagnostic</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
