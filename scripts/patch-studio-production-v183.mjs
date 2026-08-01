@@ -174,19 +174,20 @@ async function patchNaraNonModal() {
     source = source.replace(oldLayer, newLayer);
   }
 
-  if (!source.includes('tabIndex={size === "full" ? 0 : -1}')) {
+  const canonicalBackdrop = '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} tabIndex={size === "full" ? 0 : -1} onClick={closeNara} aria-label="Tutup Nara" />';
+  if (!source.includes(canonicalBackdrop)) {
     const candidates = [
+      '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} tabIndex={size === "full" ? 0 : -1} onClick={closeNara} aria-label="Tutup Nara" />',
+      '<button className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1} hidden={size !== "full"} aria-hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
       '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
+      '<button className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1} hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
       '<button className="nara-assistant-backdrop" hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
+      '<button className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1} onClick={closeNara} aria-label="Tutup Nara" />',
       '<button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />',
     ];
     const anchor = candidates.find((candidate) => source.includes(candidate));
     if (!anchor) throw new Error("V183_NARA_BACKDROP_ANCHOR_MISSING");
-    const replacement = anchor.replace(
-      'className="nara-assistant-backdrop"',
-      'className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1}',
-    );
-    source = source.replace(anchor, replacement);
+    source = source.replace(anchor, canonicalBackdrop);
   }
 
   await write(path, source);
@@ -234,6 +235,8 @@ async function verify() {
     ["src/StudioNext.jsx", "ngeblogging:active-site-ready"],
     ["src/NaraAssistant.jsx", 'aria-modal={size === "full"}'],
     ["src/NaraAssistant.jsx", 'hidden={size !== "full"}'],
+    ["src/NaraAssistant.jsx", 'aria-hidden={size !== "full"}'],
+    ["src/NaraAssistant.jsx", 'tabIndex={size === "full" ? 0 : -1}'],
     ["src/Studio.jsx", "studio-production-v183.js"],
     ["src/DomainPanelV124.jsx", "Situs aktif belum tersedia"],
     ["src/CommentsPanelV124.jsx", "Koneksi komentar belum tersedia"],
