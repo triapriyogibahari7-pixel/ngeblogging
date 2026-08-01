@@ -94,7 +94,7 @@ test("v192 does not block valid Studio membership behind redundant auth verifica
   assert.match(membership, /membership-first-cloud-ready/);
   assert.match(membership, /session-recovered-cloud-ready/);
   assert.match(membership, /cached-site-session-retained/);
-  assert.ok(membership.indexOf("listUserSites(userId)") < membership.indexOf("getVerifiedSession({ force: false })"));
+  assert.ok(membership.indexOf("readMembership(userId)") < membership.indexOf("getVerifiedSession({ force: false })"));
   assert.doesNotMatch(membership, /getVerifiedSession\(\{ force: true \}\)/);
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|signOut\s*\(/);
 });
