@@ -15,8 +15,32 @@ function replaceOnce(source, search, replacement, label) {
 async function patchAuthCallback() {
   const path = "src/lib/auth-callback-v162.js";
   let source = await read(path);
-  const current = `  const oauthError = callbackErrorFromUrl(url);\n  if (oauthError) {\n    cleanCallbackUrl();\n    return callbackResult("error", { error: oauthError, mode });\n  }`;
-  const hardened = `  const oauthError = callbackErrorFromUrl(url);\n  if (oauthError) {\n    // A provider callback can be replayed after Supabase already consumed its OAuth/PKCE state.\n    // If the browser already owns a valid persisted session, recover that session instead of\n    // presenting a false login failure. A real provider error without a session still fails.\n    if (isConsumedCodeError(oauthError)) {\n      const recovered = await currentSession().catch(() => null);\n      if (recovered?.access_token && recovered?.refresh_token) {\n        writeMarker({ codeFingerprint, mode, status: "recovered-provider-replay-v192", session: recovered });\n        cleanCallbackUrl({ success: true, recovery: mode === "recovery" });\n        announce("recovered-provider-replay-v192", recovered, mode);\n        return callbackResult("recovered", { session: recovered, mode, singleFlight: true, replayRecovered: true });\n      }\n    }\n    cleanCallbackUrl();\n    return callbackResult("error", { error: oauthError, mode });\n  }`;
+  const current = [
+    '  const oauthError = callbackErrorFromUrl(url);',
+    '  if (oauthError) {',
+    '    cleanCallbackUrl();',
+    '    return callbackResult("error", { error: oauthError, mode });',
+    '  }',
+  ].join("\n");
+  const hardened = [
+    '  const oauthError = callbackErrorFromUrl(url);',
+    '  if (oauthError) {',
+    '    // A provider callback can be replayed after Supabase already consumed its OAuth/PKCE state.',
+    '    // If the browser already owns a valid persisted session, recover that session instead of',
+    '    // presenting a false login failure. A real provider error without a session still fails.',
+    '    if (isConsumedCodeError(oauthError)) {',
+    '      const recovered = await currentSession().catch(() => null);',
+    '      if (recovered?.access_token && recovered?.refresh_token) {',
+    '        writeMarker({ codeFingerprint, mode, status: "recovered-provider-replay-v192", session: recovered });',
+    '        cleanCallbackUrl({ success: true, recovery: mode === "recovery" });',
+    '        announce("recovered-provider-replay-v192", recovered, mode);',
+    '        return callbackResult("recovered", { session: recovered, mode, singleFlight: true, replayRecovered: true });',
+    '      }',
+    '    }',
+    '    cleanCallbackUrl();',
+    '    return callbackResult("error", { error: oauthError, mode });',
+    '  }',
+  ].join("\n");
   source = replaceOnce(source, current, hardened, "CALLBACK_REPLAY_RECOVERY");
   if (!source.includes("AUTH_CALLBACK_BOOTSTRAP_V192")) {
     source = source.replace(
@@ -42,9 +66,67 @@ async function patchOnboardingGate() {
 
   const helperAnchor = "async function loadStudioMembership(userId) {";
   if (!source.includes("async function listUserSitesDirectV192")) {
-    const helper = `async function listUserSitesDirectV192(userId, accessToken) {\n  const env = import.meta.env || {};\n  const base = String(env.VITE_SUPABASE_URL || "").trim().replace(/\\/$/, "");\n  const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim();\n  if (!base || !key || !accessToken) {\n    throw Object.assign(new Error("Jalur data langsung belum siap."), { code: "DATA_DIRECT_NOT_CONFIGURED" });\n  }\n\n  const endpoint = new URL(\`${base}/rest/v1/site_members\`);\n  endpoint.searchParams.set("select", "site_id,role,joined_at,sites(id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at)");\n  endpoint.searchParams.set("user_id", \`eq.${userId}\`);\n  endpoint.searchParams.set("order", "joined_at.asc");\n  endpoint.searchParams.set("limit", "100");\n\n  const response = await withDeadline(fetch(endpoint.toString(), {\n    method: "GET",\n    cache: "no-store",\n    headers: {\n      apikey: key,\n      Authorization: \`Bearer ${accessToken}\`,\n      Accept: "application/json",\n      "x-client-info": "ngeblogging-studio-bootstrap-v192",\n    },\n  }), DIRECT_MEMBERSHIP_TIMEOUT_MS, "Jalur data langsung melewati batas waktu.");\n\n  if (!response.ok) {\n    const detail = await response.text().catch(() => "");\n    const error = new Error(detail || \`Data membership gagal (${response.status}).\`);\n    error.status = response.status;\n    error.code = response.status === 401 || response.status === 403\n      ? "SESSION_REAUTH_REQUIRED"\n      : "DATA_DIRECT_HTTP_ERROR";\n    throw error;\n  }\n\n  const rows = await response.json();\n  return (Array.isArray(rows) ? rows : []).map((record) => {\n    const nested = Array.isArray(record?.sites) ? record.sites[0] : record?.sites;\n    return nested ? { ...nested, role: record.role } : null;\n  }).filter(Boolean);\n}\n\nfunction rememberActiveSiteV192(site, userId) {\n  if (!site?.id || !site?.slug || !userId) return;\n  try {\n    localStorage.setItem(ACTIVE_SITE_SNAPSHOT_V192, JSON.stringify({\n      ...site,\n      __userId: userId,\n      __release: "auth-studio-bootstrap-v192-20260801",\n      __savedAt: Date.now(),\n    }));\n  } catch {\n    // Storage privat tidak boleh memblokir Studio.\n  }\n}\n\n`;
+    const helper = [
+      'async function listUserSitesDirectV192(userId, accessToken) {',
+      '  const env = import.meta.env || {};',
+      '  const base = String(env.VITE_SUPABASE_URL || "").trim().replace(/\\/$/, "");',
+      '  const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim();',
+      '  if (!base || !key || !accessToken) {',
+      '    throw Object.assign(new Error("Jalur data langsung belum siap."), { code: "DATA_DIRECT_NOT_CONFIGURED" });',
+      '  }',
+      '',
+      '  const endpoint = new URL(`${base}/rest/v1/site_members`);',
+      '  endpoint.searchParams.set("select", "site_id,role,joined_at,sites(id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at)");',
+      '  endpoint.searchParams.set("user_id", `eq.${userId}`);',
+      '  endpoint.searchParams.set("order", "joined_at.asc");',
+      '  endpoint.searchParams.set("limit", "100");',
+      '',
+      '  const response = await withDeadline(fetch(endpoint.toString(), {',
+      '    method: "GET",',
+      '    cache: "no-store",',
+      '    headers: {',
+      '      apikey: key,',
+      '      Authorization: `Bearer ${accessToken}`,',
+      '      Accept: "application/json",',
+      '      "x-client-info": "ngeblogging-studio-bootstrap-v192",',
+      '    },',
+      '  }), DIRECT_MEMBERSHIP_TIMEOUT_MS, "Jalur data langsung melewati batas waktu.");',
+      '',
+      '  if (!response.ok) {',
+      '    const detail = await response.text().catch(() => "");',
+      '    const error = new Error(detail || `Data membership gagal (${response.status}).`);',
+      '    error.status = response.status;',
+      '    error.code = response.status === 401 || response.status === 403',
+      '      ? "SESSION_REAUTH_REQUIRED"',
+      '      : "DATA_DIRECT_HTTP_ERROR";',
+      '    throw error;',
+      '  }',
+      '',
+      '  const rows = await response.json();',
+      '  return (Array.isArray(rows) ? rows : []).map((record) => {',
+      '    const nested = Array.isArray(record?.sites) ? record.sites[0] : record?.sites;',
+      '    return nested ? { ...nested, role: record.role } : null;',
+      '  }).filter(Boolean);',
+      '}',
+      '',
+      'function rememberActiveSiteV192(site, userId) {',
+      '  if (!site?.id || !site?.slug || !userId) return;',
+      '  try {',
+      '    localStorage.setItem(ACTIVE_SITE_SNAPSHOT_V192, JSON.stringify({',
+      '      ...site,',
+      '      __userId: userId,',
+      '      __release: "auth-studio-bootstrap-v192-20260801",',
+      '      __savedAt: Date.now(),',
+      '    }));',
+      '  } catch {',
+      '    // Storage privat tidak boleh memblokir Studio.',
+      '  }',
+      '}',
+      '',
+      '',
+    ].join("\n");
     if (!source.includes(helperAnchor)) throw new Error("V192_DIRECT_MEMBERSHIP_HELPER_ANCHOR_MISSING");
-    source = source.replace(helperAnchor, `${helper}${helperAnchor}`);
+    source = source.replace(helperAnchor, helper + helperAnchor);
   }
 
   // v186 already converts force:true to force:attempt>0 during production builds.
@@ -55,7 +137,25 @@ async function patchOnboardingGate() {
   );
 
   const membershipLine = '      const sites = await withDeadline(listUserSites(verified.user.id || userId), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu.");';
-  const membershipBlock = `      if (!verified?.session?.access_token) {\n        throw Object.assign(new Error("Token sesi belum tersedia. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });\n      }\n\n      // Bootstrap membership is a critical read. Prefer direct Supabase REST with the\n      // current user's bearer token so a stale same-origin Worker/data gateway cannot\n      // trap a valid session on the connection screen. Supabase RLS remains authoritative.\n      let sites;\n      try {\n        sites = await listUserSitesDirectV192(verified.user.id || userId, verified.session.access_token);\n        document.documentElement.dataset.studioMembershipTransportV192 = "direct-supabase-rls";\n      } catch (directError) {\n        if (isSessionReauthError(directError)) throw directError;\n        lastError = directError;\n        sites = await withDeadline(listUserSites(verified.user.id || userId), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu.");\n        document.documentElement.dataset.studioMembershipTransportV192 = "client-gateway-fallback";\n      }`;
+  const membershipBlock = [
+    '      if (!verified?.session?.access_token) {',
+    '        throw Object.assign(new Error("Token sesi belum tersedia. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });',
+    '      }',
+    '',
+    '      // Bootstrap membership is a critical read. Prefer direct Supabase REST with the',
+    '      // current user bearer token so a stale same-origin Worker/data gateway cannot',
+    '      // trap a valid session on the connection screen. Supabase RLS remains authoritative.',
+    '      let sites;',
+    '      try {',
+    '        sites = await listUserSitesDirectV192(verified.user.id || userId, verified.session.access_token);',
+    '        document.documentElement.dataset.studioMembershipTransportV192 = "direct-supabase-rls";',
+    '      } catch (directError) {',
+    '        if (isSessionReauthError(directError)) throw directError;',
+    '        lastError = directError;',
+    '        sites = await withDeadline(listUserSites(verified.user.id || userId), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu.");',
+    '        document.documentElement.dataset.studioMembershipTransportV192 = "client-gateway-fallback";',
+    '      }',
+  ].join("\n");
   if (!source.includes("studioMembershipTransportV192")) {
     source = replaceOnce(source, membershipLine, membershipBlock, "MEMBERSHIP_TRANSPORT");
   }
