@@ -90,5 +90,7 @@ await patchStudioEntry();
 await patchNaraClose();
 await patchServiceWorker();
 await verify();
-await import("./patch-production-v191.mjs");
-console.log(`Applied ${RELEASE} + Studio screenshot recovery v191`);
+if (String(process.env.V191_DIAGNOSTIC_SKIP || "") !== "1") {
+  await import("./patch-production-v191.mjs");
+}
+console.log(`Applied ${RELEASE}${String(process.env.V191_DIAGNOSTIC_SKIP || "") === "1" ? " diagnostic:skip-v191" : " + Studio screenshot recovery v191"}`);
