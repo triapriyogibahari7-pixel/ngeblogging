@@ -20,16 +20,35 @@ test("PWA v151 compatibility remains", () => {
   for (const marker of ["ngeblogging-app-v151-studio-completion-20260729", "studio-completion-cache-v151", "function isAuthSurface", "refreshStaleWindow"]) assert.ok(worker.includes(marker));
 });
 
-test("v175 preserves the historical production chain", () => {
+test("v184 extends the historical production chain without deleting earlier authorities", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
   assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-authority-v172");
-  for (const marker of ["Run complete v147-v175 regression and build", "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED", "/release-v174.json", "/studio-viewport-audit-v174.html", "WHITE-R4-2026.07.12"]) assert.ok(workflow.includes(marker));
-  for (const marker of ["2026.07.30-production-route-authority-v163", "2026.07.30-production-custom-domain-authority-v164", "2026.07.30-production-domain-attach-v165", "2026.07.30-production-route-recovery-v168", "2026.07.30-production-custom-domain-v172", "first-site-onboarding-v169-20260730", "mobile-public-v171-20260730"]) assert.ok(entryWorker.includes(marker));
+
+  for (const marker of [
+    "Ngeblogging production route cutover v184",
+    "Run v183 and v184 regression",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
+    "/release-v183.json",
+    "/release-v184.json",
+    "Cut over apex and www to authoritative zone routes v184",
+    "WHITE-R4-2026.07.12",
+  ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
+
+  for (const marker of [
+    "2026.07.30-production-route-authority-v163",
+    "2026.07.30-production-custom-domain-authority-v164",
+    "2026.07.30-production-domain-attach-v165",
+    "2026.07.30-production-route-recovery-v168",
+    "2026.07.30-production-custom-domain-v172",
+    "first-site-onboarding-v169-20260730",
+    "mobile-public-v171-20260730",
+  ]) assert.ok(entryWorker.includes(marker), `worker chain missing ${marker}`);
+
   assert.ok(worker.includes("mobile-interaction-v174-20260731"));
 });
 
-test("responsive modes menus Theme and Nara remain", () => {
+test("responsive modes, complete menu, Theme Studio and Nara remain", () => {
   for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop", "laptop", "computer"]) assert.ok(device.includes(`"${mode}"`), `device missing ${mode}`);
   for (const label of menu) assert.ok(studio.includes(`>${label}<`), `menu missing ${label}`);
   for (const marker of ["function LayoutMap", "WIDGET TERPILIH", "tn-code-preview-pane", "PREVIEW LANGSUNG"]) assert.ok(theme.includes(marker));
