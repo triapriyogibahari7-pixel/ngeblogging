@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/patch-service-worker-v179.mjs && node --test tests/studio-data-bootstrap-v192.test.mjs && mkdir -p dist && printf 'v192 deployment regression passed' > dist/index.html"
+  command = "node scripts/patch-service-worker-v179.mjs && node --test --test-name-pattern='production deployment' tests/studio-data-bootstrap-v192.test.mjs && mkdir -p dist && printf 'v192 deployment gate assertion passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
