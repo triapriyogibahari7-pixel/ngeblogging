@@ -181,7 +181,17 @@ async function verify() {
   }
 }
 
-await patchOnboardingGate();
-await patchServiceWorker();
-await verify();
-console.log(`Applied ${RELEASE}`);
+const diagnosticStage = String(process.env.V192_DIAGNOSTIC_STAGE || "").trim();
+if (diagnosticStage === "onboarding") {
+  await patchOnboardingGate();
+} else if (diagnosticStage === "service-worker") {
+  await patchServiceWorker();
+} else if (diagnosticStage === "patches") {
+  await patchOnboardingGate();
+  await patchServiceWorker();
+} else {
+  await patchOnboardingGate();
+  await patchServiceWorker();
+  await verify();
+}
+console.log(`Applied ${RELEASE}${diagnosticStage ? ` diagnostic:${diagnosticStage}` : ""}`);
