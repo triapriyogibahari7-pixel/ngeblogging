@@ -1,0 +1,54 @@
+{
+  "status": "candidate",
+  "release": "studio-bootstrap-session-first-v195-20260801",
+  "basedOn": "studio-nara-theme-v194-20260801",
+  "problem": {
+    "symptom": "Authenticated users can remain on Menyambungkan Studio and then see Koneksi data belum selesai even while production Auth/Data requests are healthy.",
+    "rootCauseTargeted": "Studio startup performed remote verification and critical membership loading on the blocking path; slow gateway or auth verification could exhaust the UI deadline before a valid local session and RLS membership read completed."
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "localSessionFirst": true,
+    "remoteVerificationOnlyAfterTokenRejection": true,
+    "logoutOnTransientNetworkFailure": false,
+    "googleProviderPreserved": true,
+    "linkedinProviderPreserved": true,
+    "emailPasswordPreserved": true
+  },
+  "studioBootstrap": {
+    "sessionSource": "persisted Supabase browser session first",
+    "criticalMembershipTransport": "direct Supabase REST with current user bearer token and RLS",
+    "gatewayFallback": true,
+    "scopedActiveSiteCache": "user-bound v195 snapshot",
+    "cachedResumeRequiresMatchingUser": true,
+    "networkFailureDoesNotDestroySession": true,
+    "onlineRetryPreserved": true,
+    "newUserOnboardingPreserved": true,
+    "automaticSiteFromEmail": false
+  },
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "sidebarMenus": ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"],
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "naraSmallMediumNonModal": true,
+    "commentsEmojiCount": 10,
+    "commentsReactionCount": 10,
+    "productionDataOnly": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v195-session-first-20260801",
+    "cache": "studio-bootstrap-session-first-cache-v195",
+    "forcedNavigation": false,
+    "sessionStorageDestruction": false
+  },
+  "evidence": {
+    "databaseMembershipOrphansObservedBeforeRelease": 0,
+    "productionAuthAndDataLogsShowSuccessfulRequests": true,
+    "massCapacityClaimed": false,
+    "physicalDeviceVerificationRequiredBefore100PercentClaim": true,
+    "providerEndToEndVerificationRequiredBefore100PercentClaim": true
+  }
+}
