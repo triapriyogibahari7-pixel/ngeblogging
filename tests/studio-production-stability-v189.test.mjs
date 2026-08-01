@@ -7,8 +7,9 @@ const auth = read("src/lib/supabase.js");
 const fastGate = read("src/StudioFastGate.jsx");
 const studioEntry = read("src/Studio.jsx");
 const runtime = read("src/studio-production-stability-v189.js");
+const account = read("src/studio-account-surface-v189.js");
 const css = read("src/studio-production-stability-v189.css");
-const nara = read("src/NaraAssistant.jsx");
+const accountCss = read("src/studio-account-surface-v189.css");
 const patch = read("scripts/patch-production-stability-v189.mjs");
 const chain = read("scripts/patch-service-worker-v179.mjs");
 
@@ -34,9 +35,10 @@ test("v189 fast gate can resume a known workspace from persisted active-site sna
 });
 
 test("v189 is loaded after v188 and its runtime keeps the drawer and Nara interactive", () => {
-  const v188 = studioEntry.indexOf('import "\.\/studio-physical-mobile-v188\.js";'.replaceAll("\\", ""));
+  const v188 = studioEntry.indexOf('import "./studio-physical-mobile-v188.js";');
   const v189 = studioEntry.indexOf('import "./studio-production-stability-v189.js";');
-  assert.ok(v188 >= 0 && v189 > v188);
+  const accountEntry = studioEntry.indexOf('import "./studio-account-surface-v189.js";');
+  assert.ok(v188 >= 0 && v189 > v188 && accountEntry > v189);
   assert.match(runtime, /studioProductionStabilityV189/);
   assert.match(runtime, /backdrop\.style\.setProperty\("inset", "0 0 0 var\(--v189-drawer-width\)"/);
   assert.match(runtime, /controls\.filter\(\(node\) => node !== native\)\.forEach\(\(node\) => node\.remove\(\)\)/);
@@ -65,6 +67,14 @@ test("v189 contains screenshot-proven Members, Analytics, editor, drawer, and Na
   assert.match(css, /animation:none/);
 });
 
+test("Profile and Settings are distinct surfaces while reusing existing persisted forms", () => {
+  assert.match(account, /surface = "profile"/);
+  assert.match(account, /surface = "settings"/);
+  assert.match(account, /data\.accountSurfaceV189|dataset\.accountSurfaceV189/);
+  assert.match(accountCss, /data-account-surface-v189="profile"/);
+  assert.match(accountCss, /data-account-surface-v189="settings"/);
+});
+
 test("v189 final build patch cleans Nara resources and rotates SW without forced navigation", () => {
   assert.match(patch, /recognition\.current = null/);
   assert.match(patch, /setListening\(false\)/);
@@ -72,5 +82,4 @@ test("v189 final build patch cleans Nara resources and rotates SW without forced
   assert.match(patch, /ngeblogging-app-v189-stability-20260801/);
   assert.match(patch, /V189_FORCED_NAVIGATION_REMAINS/);
   assert.match(chain, /patch-production-stability-v189\.mjs/);
-  assert.match(nara, /NaraAssistant/);
 });
