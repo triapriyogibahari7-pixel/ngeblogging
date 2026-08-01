@@ -5,13 +5,6 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-production-v183-20260801";
-const DIAGNOSTIC_STOP = String(process.env.V183_DIAGNOSTIC_STOP || "").trim();
-
-function diagnosticStop(label) {
-  if (DIAGNOSTIC_STOP !== label) return;
-  console.log(`V183_DIAGNOSTIC_STOP:${label}:SUCCESS`);
-  process.exit(0);
-}
 
 function replaceEffectContaining(source, marker, replacement, label) {
   if (source.includes("studio-bootstrap-resilient-v183")) return source;
@@ -32,18 +25,13 @@ async function patchStudioBootstrap() {
       ? "const MAX_SITES_PER_ACCOUNT = 25;"
       : 'const LOCAL_STORE = "ngeblogging-studio-v3";';
     if (!source.includes(anchor)) throw new Error("V183_STUDIO_CONSTANT_ANCHOR_MISSING");
-    source = source.replace(
-      anchor,
-      `${anchor}\nconst ACTIVE_SITE_SNAPSHOT_V183 = "ngeblogging-active-site-snapshot-v183";`,
-    );
+    source = source.replace(anchor, `${anchor}\nconst ACTIVE_SITE_SNAPSHOT_V183 = "ngeblogging-active-site-snapshot-v183";`);
   }
 
   if (!source.includes("function withStudioDeadlineV183")) {
     const anchor = "function relativeTime(value) {";
     if (!source.includes(anchor)) throw new Error("V183_STUDIO_HELPER_ANCHOR_MISSING");
-    source = source.replace(
-      anchor,
-      `function withStudioDeadlineV183(promise, milliseconds = 12000, label = "Permintaan Studio") {
+    source = source.replace(anchor, `function withStudioDeadlineV183(promise, milliseconds = 12000, label = "Permintaan Studio") {
   let timer = 0;
   return Promise.race([
     promise,
@@ -56,8 +44,7 @@ async function patchStudioBootstrap() {
   ]).finally(() => window.clearTimeout(timer));
 }
 
-${anchor}`,
-    );
+${anchor}`);
   }
 
   const bootstrap = `  useEffect(() => {
@@ -105,11 +92,7 @@ ${anchor}`,
       else if (!quiet) setDataMode("connecting");
 
       try {
-        const primary = await withStudioDeadlineV183(
-          getOrCreatePrimarySite(user),
-          12000,
-          "Pemilihan situs aktif",
-        );
+        const primary = await withStudioDeadlineV183(getOrCreatePrimarySite(user), 12000, "Pemilihan situs aktif");
         if (cancelled) return;
         publishSite(primary, [primary], "cloud");
         attempt = 0;
@@ -153,12 +136,7 @@ ${anchor}`,
     };
   }, [user?.id]);`;
 
-  source = replaceEffectContaining(
-    source,
-    "production-recovery-bootstrap-v180",
-    bootstrap,
-    "BOOTSTRAP",
-  );
+  source = replaceEffectContaining(source, "production-recovery-bootstrap-v180", bootstrap, "BOOTSTRAP");
 
   const oldSelect = '  const selectSite = (next) => { setActiveSiteId(next.id); setSite(next); setSiteManager(false); setDocs([]); setView("home"); setToast(`Workspace ${next.name} aktif`); };';
   const newSelect = '  const selectSite = (next) => { setActiveSiteId(next.id); setSite(next); setSiteManager(false); setDocs([]); setView("home"); try { localStorage.setItem(ACTIVE_SITE_SNAPSHOT_V183, JSON.stringify(next)); } catch { /* optional */ } window.__ngebloggingActiveSite = next; document.documentElement.dataset.activeSiteId = next.id; setToast(`Workspace ${next.name} aktif`); };';
@@ -181,20 +159,20 @@ async function patchNaraNonModal() {
     source = source.replace(oldLayer, newLayer);
   }
 
-  if (!source.includes('tabIndex={size === "full" ? 0 : -1}')) {
-    const candidates = [
-      '<button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
-      '<button className="nara-assistant-backdrop" hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />',
-      '<button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />',
-    ];
-    const anchor = candidates.find((candidate) => source.includes(candidate));
-    if (!anchor) throw new Error("V183_NARA_BACKDROP_ANCHOR_MISSING");
-    const replacement = anchor.replace(
-      'className="nara-assistant-backdrop"',
-      'className="nara-assistant-backdrop" tabIndex={size === "full" ? 0 : -1}',
-    );
-    source = source.replace(anchor, replacement);
+  const backdropPattern = /<button className="nara-assistant-backdrop"([^>]*)\/>/;
+  const backdrop = source.match(backdropPattern);
+  if (!backdrop) throw new Error("V183_NARA_BACKDROP_ANCHOR_MISSING");
+  let attributes = backdrop[1] || "";
+  if (!attributes.includes('tabIndex={size === "full" ? 0 : -1}')) {
+    attributes += ' tabIndex={size === "full" ? 0 : -1}';
   }
+  if (!attributes.includes('hidden={size !== "full"}')) {
+    attributes += ' hidden={size !== "full"}';
+  }
+  if (!attributes.includes('aria-hidden={size !== "full"}')) {
+    attributes += ' aria-hidden={size !== "full"}';
+  }
+  source = source.replace(backdrop[0], `<button className="nara-assistant-backdrop"${attributes} />`);
 
   await write(path, source);
 }
@@ -218,18 +196,10 @@ async function patchServiceWorker() {
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, 'const CACHE_RELEASE = "production-ui-cache-v183";');
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "production-ui-v183";');
   source = source.replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V181", "NGE_BLOGGING_UPDATE_AVAILABLE_V183");
-
   if (!source.includes("PRODUCTION_UI_RELEASE_V183")) {
-    source = source.replace(
-      /^(const VERSION = .*;\n)/m,
-      '$1const PRODUCTION_UI_RELEASE_V183 = "studio-production-v183-20260801";\n',
-    );
+    source = source.replace(/^(const VERSION = .*;\n)/m, '$1const PRODUCTION_UI_RELEASE_V183 = "studio-production-v183-20260801";\n');
   }
-
-  if (/await refreshStaleWindow\(client, url\);/.test(source)) {
-    throw new Error("V183_FORCED_NAVIGATION_MUST_REMAIN_DISABLED");
-  }
-
+  if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V183_FORCED_NAVIGATION_MUST_REMAIN_DISABLED");
   await write(path, source);
 }
 
@@ -241,27 +211,23 @@ async function verify() {
     ["src/StudioNext.jsx", "ngeblogging:active-site-ready"],
     ["src/NaraAssistant.jsx", 'aria-modal={size === "full"}'],
     ["src/NaraAssistant.jsx", 'hidden={size !== "full"}'],
+    ["src/NaraAssistant.jsx", 'aria-hidden={size !== "full"}'],
+    ["src/NaraAssistant.jsx", 'tabIndex={size === "full" ? 0 : -1}'],
     ["src/Studio.jsx", "studio-production-v183.js"],
     ["src/DomainPanelV124.jsx", "Situs aktif belum tersedia"],
     ["src/CommentsPanelV124.jsx", "Koneksi komentar belum tersedia"],
     ["public/sw.js", "ngeblogging-app-v183-production-ui-20260801"],
     ["public/sw.js", "production-ui-cache-v183"],
   ];
-
-  for (const [path, marker] of checks) {
-    const source = await read(path);
-    if (!source.includes(marker)) throw new Error(`V183_VERIFY_FAILED:${path}:${marker}`);
+  for (const [file, marker] of checks) {
+    const source = await read(file);
+    if (!source.includes(marker)) throw new Error(`V183_VERIFY_FAILED:${file}:${marker}`);
   }
 }
 
 await patchStudioBootstrap();
-diagnosticStop("bootstrap");
 await patchNaraNonModal();
-diagnosticStop("nara");
 await patchStudioEntry();
-diagnosticStop("entry");
 await patchServiceWorker();
-diagnosticStop("service-worker");
 await verify();
-diagnosticStop("verify");
 console.log(`Applied ${RELEASE}`);
