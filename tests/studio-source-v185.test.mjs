@@ -4,32 +4,26 @@ import { readFileSync } from "node:fs";
 
 const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
 
-test("v185 patch is chained into development and production validation", () => {
-  const chain = read("scripts/patch-service-worker-v179.mjs");
-  assert.match(chain, /patch-studio-source-v185\.mjs/);
+test("v185 loads directly after the established v183 production authority", () => {
+  const entry = read("src/Studio.jsx");
+  const v183 = entry.indexOf('import "./studio-production-v183-controls.css";');
+  const v185 = entry.indexOf('import "./studio-mobile-authority-v185.js";');
+  assert.ok(v183 >= 0);
+  assert.ok(v185 > v183);
 });
 
-test("v185 preserves v180 and v183 production authorities", () => {
-  const patch = read("scripts/patch-studio-source-v185.mjs");
-  for (const marker of [
-    "studio-bootstrap-resilient-v183",
-    "Promise.allSettled",
-    "direct-fallback-v180",
-    "direct-supabase-oauth",
-    "Koneksi komentar belum tersedia",
-    "Situs aktif belum tersedia",
-  ]) assert.ok(patch.includes(marker), `missing compatibility marker ${marker}`);
+test("v180 and v183 continue to own auth, active-site bootstrap and loading recovery", () => {
+  const v180 = read("scripts/patch-production-recovery-v180.mjs");
+  const v183 = read("scripts/patch-studio-production-v183.mjs");
+  for (const marker of ["direct-fallback-v180", "direct-supabase-oauth", "Situs aktif belum tersedia", "Koneksi komentar belum tersedia"]) {
+    assert.ok(v180.includes(marker), `missing v180 authority ${marker}`);
+  }
+  for (const marker of ["studio-bootstrap-resilient-v183", "Promise.allSettled", "ACTIVE_SITE_SNAPSHOT_V183", "ngeblogging:active-site-ready"]) {
+    assert.ok(v183.includes(marker), `missing v183 authority ${marker}`);
+  }
 });
 
-test("v185 resumes onboarding from the cached active workspace on transient failures", () => {
-  const patch = read("scripts/patch-studio-source-v185.mjs");
-  assert.match(patch, /window\.__ngebloggingActiveSite/);
-  assert.match(patch, /cached-window-site-v185/);
-  assert.match(patch, /isTransientStudioError/);
-  assert.doesNotMatch(patch, /signOut\s*\(/);
-});
-
-test("v185 mobile authority protects drawer, editor, media, themes, and Nara", () => {
+test("v185 mobile authority protects drawer, editor, media, themes and Nara", () => {
   const css = read("src/studio-mobile-authority-v185.css");
   const runtime = read("src/studio-mobile-authority-v185.js");
   for (const marker of [
@@ -49,9 +43,8 @@ test("v185 mobile authority protects drawer, editor, media, themes, and Nara", (
   ]) assert.ok(runtime.includes(marker), `missing runtime contract ${marker}`);
 });
 
-test("v185 rotates cache without forced navigation", () => {
-  const patch = read("scripts/patch-studio-source-v185.mjs");
-  assert.match(patch, /ngeblogging-app-v185-mobile-authority-20260801/);
-  assert.match(patch, /mobile-authority-cache-v185/);
-  assert.match(patch, /FORCED_NAVIGATION_MUST_REMAIN_DISABLED/);
+test("v185 does not reintroduce a forced service-worker navigation", () => {
+  const chain = read("scripts/patch-service-worker-v179.mjs");
+  assert.doesNotMatch(chain, /patch-studio-source-v185/);
+  assert.doesNotMatch(chain, /await refreshStaleWindow\(client, url\);/);
 });
