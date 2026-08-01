@@ -61,9 +61,15 @@ test("v184 production preserves v165/v175 domain utilities before authoritative 
   for (const marker of ["/workers/domains", 'method: "PUT"', "attachExactWorkerDomains", "verifyFinalState"]) {
     assert.ok(finalizer.includes(marker), `v175 finalizer missing ${marker}`);
   }
-  for (const marker of ["ngeblogging.com/*", "www.ngeblogging.com/*", "verifyZoneRoutes", "PRODUCTION_ROUTE_CUTOVER_V184_VERIFIED"]) {
-    assert.ok(cutover.includes(marker), `v184 route cutover missing ${marker}`);
-  }
+  for (const marker of [
+    "PRODUCTION_ROUTE_CUTOVER_RELEASE",
+    "EXACT_ROUTES",
+    "detachExactWorkerDomains",
+    "installAuthoritativeRoutes",
+    "verifyFinalState",
+    "ngeblogging.com/*",
+    "www.ngeblogging.com/*",
+  ]) assert.ok(cutover.includes(marker), `v184 route cutover missing ${marker}`);
 });
 
 test("active configs use exact Custom Domains while tenant wildcard remains a route", () => {
