@@ -139,7 +139,9 @@ async function patchServiceWorker() {
       '$1const DATA_BOOTSTRAP_RELEASE_V192 = "studio-data-bootstrap-v192-20260801";\n',
     );
   }
-  source = source.replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V191", "NGE_BLOGGING_UPDATE_AVAILABLE_V192");
+  source = source
+    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V191", "NGE_BLOGGING_UPDATE_AVAILABLE_V192")
+    .replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v192: tab lama diberi notifikasi versi tanpa navigasi paksa atau logout.");
   if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V192_FORCED_NAVIGATION_REMAINS");
   await write(path, source);
 }
