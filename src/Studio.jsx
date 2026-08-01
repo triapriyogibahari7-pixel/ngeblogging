@@ -38,6 +38,6 @@ import "./studio-screenshot-recovery-v191.js";
 import "./studio-screenshot-recovery-v191-hotfix.css";
 import "./studio-screenshot-recovery-v193.js";
 import "./studio-screenshot-recovery-v193-hotfix.css";
-import "./studio-nara-theme-v194.js";
+// v194 import temporarily isolated to distinguish parser/runtime build failures.
 
 export default StudioFastGate;
