@@ -129,8 +129,6 @@ async function patchOnboardingGate() {
     source = source.replace(helperAnchor, helper + helperAnchor);
   }
 
-  // v186 already converts force:true to force:attempt>0 during production builds.
-  // Keep this idempotent so v192 also works when invoked against the unpatched source.
   source = source.replace(
     'getVerifiedSession({ force: true })',
     'getVerifiedSession({ force: attempt > 0 })',
@@ -222,7 +220,8 @@ async function patchServiceWorker() {
   }
   source = source
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V191", "NGE_BLOGGING_UPDATE_AVAILABLE_V192")
-    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V190", "NGE_BLOGGING_UPDATE_AVAILABLE_V192");
+    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V190", "NGE_BLOGGING_UPDATE_AVAILABLE_V192")
+    .replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v192 tidak pernah memaksa navigasi tab; sesi/callback tetap utuh.");
   if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V192_FORCED_NAVIGATION_REMAINS");
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) {
     throw new Error("V192_SESSION_DESTRUCTIVE_ACTION_FOUND");
