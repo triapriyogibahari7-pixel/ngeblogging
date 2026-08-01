@@ -5,6 +5,7 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-production-mobile-v189.js");
+const account = read("src/studio-production-mobile-v189-account.js");
 const css = read("src/studio-production-mobile-v189.css");
 const narrowFix = read("src/studio-production-mobile-v189-fix.css");
 const pipeline = read("scripts/patch-service-worker-v179.mjs");
@@ -12,6 +13,7 @@ const patch = read("scripts/patch-production-mobile-v189.mjs");
 
 test("v189 is the last Studio authority and runs after data, UI, and physical-mobile patches", () => {
   assert.match(entry, /studio-production-mobile-v189\.js/);
+  assert.match(entry, /studio-production-mobile-v189-account\.js/);
   assert.match(entry, /studio-production-mobile-v189-fix\.css/);
   assert.ok(entry.indexOf("studio-physical-mobile-v188.js") < entry.indexOf("studio-production-mobile-v189.js"));
   for (const file of [
@@ -53,8 +55,8 @@ test("summary, comments, and Media are constrained to normal mobile flow", () =>
 
 test("Nara small and medium remain non-modal with visible close and stable controls", () => {
   assert.match(runtime, /layer\.dataset\.v189NaraMode = mode/);
-  assert.match(runtime, /backdrop\.hidden = !full/);
-  assert.match(runtime, /close\.setAttribute\("aria-label", "Tutup Nara AI"\)/);
+  assert.match(runtime, /setBooleanPropertyIfChanged\(backdrop, "hidden", !full\)/);
+  assert.match(runtime, /setAttributeIfChanged\(close, "aria-label", "Tutup Nara AI"\)/);
   assert.match(css, /data-v189-nara-mode="nonmodal"[\s\S]*pointer-events: none/);
   assert.match(css, /data-v189-nara-mode="nonmodal"[\s\S]*\.nara-assistant-shell[\s\S]*pointer-events: auto/);
   assert.match(css, /\.nara-size-controls-v147[\s\S]*grid-row: 2/);
@@ -62,9 +64,19 @@ test("Nara small and medium remain non-modal with visible close and stable contr
 });
 
 test("profile and settings are distinct without deleting the complete settings form", () => {
-  assert.match(runtime, /studioAccountViewV189 = profile \? "profile" : "settings"/);
+  assert.match(runtime, /studioAccountViewV189 = profileButton \? "profile" : "settings"/);
   assert.match(css, /data-studio-account-view-v189="profile"[\s\S]*\.sn-settings-grid>section:not\(:first-child\)/);
-  assert.match(runtime, /settingsButton\?\.click\(\)/);
+  assert.match(runtime, /sidebarSettings\?\.click\(\)/);
+  assert.match(account, /Simpan profil/);
+  assert.match(account, /Simpan perubahan/);
+});
+
+test("MutationObserver repairs are idempotent and do not rewrite equal text or attributes", () => {
+  assert.match(runtime, /function setAttributeIfChanged/);
+  assert.match(runtime, /function setBooleanPropertyIfChanged/);
+  assert.match(runtime, /function setTextIfChanged/);
+  assert.match(account, /if \(node && node\.textContent !== value\)/);
+  assert.match(account, /textNode\.textContent !== value/);
 });
 
 test("v189 patch rotates cache without destructive session actions", () => {
