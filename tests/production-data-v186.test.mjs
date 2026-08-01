@@ -84,3 +84,12 @@ test("release and production scripts include v186", () => {
   assert.equal(release.repairs.authGatewayDirectFallback, true);
   assert.equal(release.repairs.naraSmallMediumNonModalAtSource, true);
 });
+
+test("v187 production authority is applied after v186 in every production build", () => {
+  assert.match(chain, /patch-production-ui-v187\.mjs/);
+  assert.ok(chain.indexOf("patch-production-data-v186.mjs") < chain.indexOf("patch-production-ui-v187.mjs"));
+  assert.match(read("src/Studio.jsx"), /studio-production-authority-v187\.js/);
+  assert.match(read("public/sw.js"), /ngeblogging-app-v187-production-authority-20260801/);
+  assert.match(read("src/StudioNext.jsx"), /SIDEBAR_STATE_V187/);
+  assert.match(read("src/StudioNext.jsx"), /documentWordCountV187\(active\.content\)/);
+});
