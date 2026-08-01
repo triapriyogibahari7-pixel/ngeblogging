@@ -116,6 +116,7 @@ function rememberActiveSiteV195(site, userId) {
         "Pemeriksaan Workspace langsung melewati batas waktu.",
       );
       document.documentElement.dataset.studioMembershipTransportV195 = "direct-supabase-rls";
+      document.documentElement.dataset.studioMembershipTransportV192 = "direct-supabase-rls";
       return { verified: localSession, sites };
     } catch (directError) {
       lastError = directError;
@@ -150,6 +151,7 @@ function rememberActiveSiteV195(site, userId) {
           "Jalur data cadangan melewati batas waktu.",
         );
         document.documentElement.dataset.studioMembershipTransportV195 = "supabase-client-fallback";
+        document.documentElement.dataset.studioMembershipTransportV192 = "client-gateway-fallback";
         return { verified: localSession, sites };
       } catch (clientError) {
         lastError = clientError;
@@ -248,6 +250,7 @@ async function verify() {
     ["src/StudioOnboardingGate.jsx", "local-session-first-v195"],
     ["src/StudioOnboardingGate.jsx", "studioMembershipTransportV195"],
     ["src/StudioOnboardingGate.jsx", "direct-supabase-rls"],
+    ["src/StudioOnboardingGate.jsx", "client-gateway-fallback"],
     ["src/StudioOnboardingGate.jsx", "session-first-cache-v195"],
     ["src/StudioOnboardingGate.jsx", "rememberActiveSiteV195"],
     ["src/StudioFastGate.jsx", "ngeblogging-active-site-snapshot-v195"],
@@ -269,9 +272,13 @@ async function verify() {
   const loadEnd = gate.indexOf("\n}\n", loadStart);
   const load = gate.slice(loadStart, loadEnd + 3);
   if (!load.includes("readLocalStudioSessionV195")) throw new Error("V195_LOCAL_SESSION_NOT_FIRST");
-  const conditionalRefresh = "getVerifiedSession({ force: Boolean(rejectedToken) })";
-  if (!load.includes(conditionalRefresh)) throw new Error("V195_CONDITIONAL_REFRESH_MISSING");
-  if (load.indexOf("readLocalStudioSessionV195") > load.indexOf(conditionalRefresh)) {
+  const directConditionalRefresh = "getVerifiedSession({ force: Boolean(rejectedToken) })";
+  const compatConditionalRefresh = "refreshRejectedSessionV195(rejectedToken)";
+  const refreshIndex = load.includes(directConditionalRefresh)
+    ? load.indexOf(directConditionalRefresh)
+    : load.indexOf(compatConditionalRefresh);
+  if (refreshIndex < 0) throw new Error("V195_CONDITIONAL_REFRESH_MISSING");
+  if (load.indexOf("readLocalStudioSessionV195") > refreshIndex) {
     throw new Error("V195_REMOTE_AUTH_PRECEDES_LOCAL_SESSION");
   }
   if (/getVerifiedSession\(\{ force: true \}\)/.test(gate)) throw new Error("V195_UNCONDITIONAL_FORCE_TRUE_REINTRODUCED");
