@@ -56,3 +56,4 @@ await import("./patch-studio-nara-theme-v194.mjs");
 await import("./patch-studio-bootstrap-v195-publish-fix.mjs");
 await import("./patch-studio-bootstrap-v195.mjs");
 await import("./patch-studio-bootstrap-v195-compat.mjs");
+await import("./patch-studio-bootstrap-v196.mjs");
