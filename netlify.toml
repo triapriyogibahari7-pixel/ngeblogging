@@ -1,6 +1,6 @@
 [build]
   # Temporary PR diagnostic: narrow failing patch family. Restore to `npm run build` before merge.
-  command = "SKIP_V192=1 node scripts/patch-auth-callback-v162.mjs && DIAG_MATCH='V179_|V180_|V181_|V182_|V183_|PATCH_' SKIP_V192=1 node scripts/probe-v192-chain-error.mjs"
+  command = "SKIP_V192=1 node scripts/patch-auth-callback-v162.mjs && DIAG_MATCH='V179_|V180_|V181_|PATCH_' SKIP_V192=1 node scripts/probe-v192-chain-error.mjs"
   publish = "dist"
 
 [build.environment]
