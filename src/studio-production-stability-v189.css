@@ -1,0 +1,627 @@
+/* Screenshot-driven production authority v189.
+   Loaded after v188 to repair physical-phone desktop-site clipping, mobile
+   operational flow, drawer interaction, and Nara geometry without deleting
+   any React-owned feature or data. */
+
+html[data-studio-production-stability-v189],
+html[data-studio-production-stability-v189] *,
+html[data-studio-production-stability-v189] *::before,
+html[data-studio-production-stability-v189] *::after {
+  box-sizing: border-box !important;
+}
+
+html[data-studio-production-stability-v189] :is(
+  .sn-shell,.sn-main,.sn-main>*,.sn-view-pad,.sv124-page,.mv176-page,
+  .sn-api-page,.tn-studio,.sn-media-library,.ce-app,.op41-host,.op41-panel
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-studio-production-stability-v189] :is(
+  h1,h2,h3,h4,p,small,b,strong,span,label,time,code,pre
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+html[data-studio-production-stability-v189] :is(img,video,iframe,canvas,svg) {
+  max-width: 100% !important;
+}
+
+/* Android Chrome "Situs desktop": the browser may expose ~980 CSS px while
+   the physical phone is ~360-430 px. v188 clipped body to physical width and
+   then zoomed the app, which produced the exact half-page/blank-right screenshots.
+   Keep the synthetic viewport as the clipping boundary; only the app root is
+   rendered at physical width and scaled to occupy that viewport. */
+html[data-studio-desktop-site-phone-v189="true"] body {
+  width: var(--v189-layout-width) !important;
+  min-width: var(--v189-layout-width) !important;
+  max-width: var(--v189-layout-width) !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+}
+
+html[data-studio-desktop-site-phone-v189="true"] #root {
+  width: var(--v189-physical-width) !important;
+  min-width: 0 !important;
+  max-width: var(--v189-physical-width) !important;
+  zoom: var(--v189-desktop-site-zoom) !important;
+  transform: none !important;
+  transform-origin: top left !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-shell {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow-x: clip !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(.sn-main,.sn-side.collapsed+.sn-main) {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  filter: none !important;
+  overflow-x: clip !important;
+}
+
+/* Mobile topbar and the single n launcher. */
+html[data-studio-physical-mobile-v189="true"] .sn-top {
+  position: sticky !important;
+  inset: 0 0 auto 0 !important;
+  z-index: 6000 !important;
+  width: 100% !important;
+  min-height: 66px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: max(8px,env(safe-area-inset-top)) 10px 8px !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-sidebar-toggle {
+  position: relative !important;
+  flex: 0 0 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] .sn-desktop-sidebar-icon { display:none !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-mobile-menu-mark { display:grid !important; }
+html[data-studio-physical-mobile-v189="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #2869df !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark)>strong {
+  position: static !important;
+  display: block !important;
+  margin: 0 !important;
+  color: #2869df !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  transform: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark)>i { display:none !important; }
+
+html[data-studio-physical-mobile-v189="true"] .sn-workspace {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 108px) !important;
+  overflow: hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-workspace div { min-width:0 !important; overflow:hidden !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-workspace :is(b,small) {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.sn-cloud,.sn-top-actions>:not(.sn-avatar)) { display:none !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-top-actions { flex:0 0 auto !important; margin-left:auto !important; }
+html[data-studio-physical-mobile-v189="true"] .sn-avatar {
+  width:44px !important; height:44px !important; min-width:44px !important; min-height:44px !important;
+}
+
+/* Mobile drawer: menu remains clickable. Backdrop starts after the drawer, so
+   it can close the sheet without covering any menu item. */
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  z-index: 6110 !important;
+  width: var(--v189-drawer-width) !important;
+  max-width: calc(var(--v189-physical-width) - 48px) !important;
+  height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom)) !important;
+  border-radius: 0 18px 18px 0 !important;
+  background: #fff !important;
+  color: #16243a !important;
+  box-shadow: 18px 0 50px rgba(18,38,68,.16) !important;
+  visibility: hidden !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  transform: translateX(-105%) !important;
+  filter: none !important;
+  transition: transform .16s ease,visibility 0s linear .16s !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar.mobile-open {
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateX(0) !important;
+  transition: transform .16s ease !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar.mobile-open * {
+  pointer-events: auto !important;
+  filter: none !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-logo {
+  position:relative !important;
+  flex:0 0 56px !important;
+  min-height:56px !important;
+  display:grid !important;
+  grid-template-columns:40px minmax(0,1fr) 38px !important;
+  align-items:center !important;
+  gap:7px !important;
+  padding:4px 6px !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-logo .sn-logo-mark {
+  position:relative !important;
+  inset:auto !important;
+  width:40px !important;
+  height:40px !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-new {
+  flex:0 0 46px !important;
+  width:calc(100% - 8px) !important;
+  min-height:46px !important;
+  margin:2px 4px 4px !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>nav {
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  gap:2px !important;
+  padding:0 4px 8px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>nav>button,
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-account-footer>button {
+  position:relative !important;
+  flex:0 0 43px !important;
+  width:100% !important;
+  min-height:43px !important;
+  max-height:43px !important;
+  justify-content:flex-start !important;
+  white-space:normal !important;
+  overflow:hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] #ngeblogging-studio-sidebar>.sn-account-footer {
+  position:static !important;
+  flex:0 0 auto !important;
+  width:100% !important;
+  margin-top:auto !important;
+  padding:6px 4px 0 !important;
+  background:#fff !important;
+}
+html[data-studio-physical-mobile-v189="true"] .sn-side-backdrop {
+  position:fixed !important;
+  inset:0 0 0 var(--v189-drawer-width) !important;
+  z-index:6100 !important;
+  width:auto !important;
+  height:100dvh !important;
+  border:0 !important;
+  background:rgba(16,31,53,.08) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  filter:none !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+
+/* Physical-mobile page flow. */
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-view-pad,.sv124-page,.mv176-page,.sn-api-page,.tn-studio,.sn-media-library
+) {
+  position:relative !important;
+  inset:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  margin:0 !important;
+  padding:16px 12px calc(92px + env(safe-area-inset-bottom)) !important;
+  transform:none !important;
+  filter:none !important;
+  overflow-x:clip !important;
+}
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-page-title,.sv124-page-title,.mv176-title,.sn-api-title,.op41-toolbar
+) {
+  position:static !important;
+  inset:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:10px !important;
+  margin:0 0 16px !important;
+  transform:none !important;
+  filter:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-page-title h1,.sv124-page-title h1,.mv176-title h1,.sn-api-title h1,.op41-toolbar h1,.op41-toolbar h2
+) {
+  width:100% !important;
+  margin:4px 0 7px !important;
+  font-size:clamp(28px,8vw,40px) !important;
+  line-height:1.08 !important;
+  letter-spacing:-.025em !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+
+/* Members: fixes the screenshot where Muat ulang / Tambah anggota float over
+   the site strip and cards. */
+html[data-studio-physical-mobile-v189="true"] .mv176-title { align-items:stretch !important; }
+html[data-studio-physical-mobile-v189="true"] .mv176-title-actions {
+  position:static !important;
+  inset:auto !important;
+  width:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:8px !important;
+  transform:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-title-actions>button {
+  position:static !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:44px !important;
+  transform:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-site-strip {
+  position:static !important;
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:42px minmax(0,1fr) auto !important;
+  gap:10px !important;
+  margin:0 0 12px !important;
+  transform:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-metrics {
+  width:100% !important;
+  grid-template-columns:minmax(0,1fr) !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-tools {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+}
+html[data-studio-physical-mobile-v189="true"] .mv176-tools :is(label,select) { width:100% !important; min-width:0 !important; }
+html[data-studio-physical-mobile-v189="true"] .mv176-tools>span { margin-left:0 !important; }
+html[data-studio-physical-mobile-v189="true"] .mv176-list { max-width:100% !important; overflow-x:auto !important; }
+
+/* Restored production analytics and operational surfaces. */
+html[data-studio-physical-mobile-v189="true"] :is(
+  .op41-active-site,.op41-metrics,.op41-chart-grid,.op41-chart-grid.equal,
+  .op41-member-grid,.op41-readiness,.op41-form,.op41-toolbar-actions
+) {
+  position:static !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:10px !important;
+  transform:none !important;
+  filter:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .op41-active-site dl {
+  grid-template-columns:minmax(0,1fr) !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.op41-card,.op41-metrics article) {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+html[data-studio-physical-mobile-v189="true"] .op41-table-wrap {
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+html[data-studio-physical-mobile-v189="true"] .op41-table { width:max-content !important; min-width:720px !important; }
+
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-metrics,.sn-home-grid,.sn-info-grid,.sn-settings-grid,.sn-api-metrics,
+  .sv124-metrics-grid,.sv124-toggle-grid,.sv124-comment-columns,.sc161-metrics,.sc161-dashboard-grid
+) {
+  grid-template-columns:minmax(0,1fr) !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-content-card,.sv124-card,.mv176-card,.sn-api-card,.sn-upload-zone
+) {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(
+  .sn-api-table,.op41-table-wrap,.sv124-comment-workspace,.mv176-list,.ce-paper table
+) {
+  max-width:100% !important;
+  overflow-x:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+
+/* Editor Posts / Pages: one-column physical-mobile layout with contained tabs. */
+html[data-studio-physical-mobile-v189="true"] .ce-app {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:100dvh !important;
+  overflow-x:clip !important;
+}
+html[data-studio-physical-mobile-v189="true"] .ce-titlebar {
+  position:sticky !important;
+  top:0 !important;
+  z-index:80 !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:72px !important;
+  display:grid !important;
+  grid-template-columns:44px minmax(0,1fr) 89px !important;
+  gap:8px !important;
+  padding:max(8px,env(safe-area-inset-top)) 8px 8px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .ce-file,
+html[data-studio-physical-mobile-v189="true"] .ce-file label { width:100% !important; min-width:0 !important; }
+html[data-studio-physical-mobile-v189="true"] .ce-file input {
+  width:100% !important; min-width:0 !important; max-width:100% !important;
+  overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important;
+}
+html[data-studio-physical-mobile-v189="true"] .ce-tabs,
+html[data-studio-physical-mobile-v189="true"] .ce-ribbon {
+  width:100% !important;
+  min-width:0 !important;
+  display:flex !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  overscroll-behavior-inline:contain !important;
+}
+html[data-studio-physical-mobile-v189="true"] .ce-tabs>button { flex:0 0 auto !important; }
+html[data-studio-physical-mobile-v189="true"] .ce-workspace {
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+}
+html[data-studio-physical-mobile-v189="true"] .ce-paper-shell { width:100% !important; padding:10px !important; }
+html[data-studio-physical-mobile-v189="true"] .ce-paper {
+  width:100% !important;
+  min-width:0 !important;
+  min-height:70dvh !important;
+  padding:28px 17px !important;
+  font-size:16px !important;
+  line-height:1.72 !important;
+}
+html[data-studio-physical-mobile-v189="true"] .ce-sidebar {
+  position:static !important;
+  width:100% !important;
+  max-height:none !important;
+  overflow:visible !important;
+  border-left:0 !important;
+  border-top:1px solid #dbe2eb !important;
+}
+
+/* Nara launcher: a single stable icon, centered, no blink. */
+html[data-studio-production-stability-v189] .nara-floating-button,
+html[data-studio-production-stability-v189] .nara-floating-button * {
+  animation:none !important;
+  transition:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button {
+  position:fixed !important;
+  right:max(10px,env(safe-area-inset-right)) !important;
+  bottom:max(68px,calc(env(safe-area-inset-bottom) + 60px)) !important;
+  z-index:6040 !important;
+  width:58px !important;
+  height:58px !important;
+  min-width:58px !important;
+  min-height:58px !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border-radius:17px !important;
+  transform:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button>:is(b,small) { display:none !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button>span {
+  width:100% !important; height:100% !important; display:grid !important; place-items:center !important; margin:0 !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-floating-button svg {
+  width:26px !important; height:26px !important; margin:auto !important; transform:none !important;
+}
+
+/* Small/medium Nara are true non-modal windows. */
+html[data-studio-production-stability-v189] .nara-assistant-layer[data-production-nara-mode-v189="nonmodal"] {
+  position:fixed !important;
+  inset:0 !important;
+  z-index:6050 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  padding:0 !important;
+  pointer-events:none !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+html[data-studio-production-stability-v189] .nara-assistant-layer[data-production-nara-mode-v189="nonmodal"]>.nara-assistant-backdrop {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-assistant-layer[data-production-nara-mode-v189="nonmodal"]>.nara-assistant-shell {
+  position:fixed !important;
+  inset:auto 8px max(72px,calc(env(safe-area-inset-bottom) + 66px)) auto !important;
+  width:calc(var(--v189-physical-width) - 16px) !important;
+  max-width:calc(var(--v189-physical-width) - 16px) !important;
+  margin:0 !important;
+  pointer-events:auto !important;
+  overflow:hidden !important;
+  transform:none !important;
+  filter:none !important;
+  border-radius:18px !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-assistant-shell[data-nara-size="small"] {
+  height:min(58dvh,520px) !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-assistant-shell[data-nara-size="medium"] {
+  height:min(78dvh,720px) !important;
+}
+html[data-studio-production-stability-v189] .nara-assistant-layer[data-production-nara-mode-v189="modal"] {
+  position:fixed !important;
+  inset:0 !important;
+  z-index:2147483400 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  pointer-events:auto !important;
+}
+html[data-studio-production-stability-v189] .nara-assistant-shell[data-nara-size="full"] {
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  max-width:none !important;
+  max-height:none !important;
+  border-radius:0 !important;
+}
+
+/* Keep all Nara header controls inside the panel instead of a detached box. */
+html[data-studio-physical-mobile-v189="true"] .nara-assistant-header {
+  position:relative !important;
+  display:grid !important;
+  grid-template-columns:36px minmax(0,1fr) 36px 36px 36px !important;
+  grid-template-rows:auto 38px !important;
+  align-items:center !important;
+  gap:5px !important;
+  padding:8px !important;
+  overflow:visible !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-brand-orb { grid-column:1 !important; grid-row:1 !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-brand-orb+div { grid-column:2 !important; grid-row:1 !important; min-width:0 !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-native-size-controls-v149 {
+  position:static !important;
+  grid-column:1/-1 !important;
+  grid-row:2 !important;
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,36px) !important;
+  justify-content:end !important;
+  gap:4px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-size-controls-v147:not(.nara-native-size-controls-v149) { display:none !important; }
+html[data-studio-physical-mobile-v189="true"] :is(
+  .nara-assistant-header>button,.nara-native-size-controls-v149>button
+) {
+  position:static !important;
+  width:36px !important; min-width:36px !important; height:36px !important; min-height:36px !important;
+  display:grid !important; place-items:center !important; padding:0 !important; transform:none !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-context-bar { min-height:40px !important; padding:6px 10px !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-assistant-messages { min-height:0 !important; overflow-y:auto !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-quick-prompts {
+  display:flex !important; flex-wrap:nowrap !important; overflow-x:auto !important; overflow-y:hidden !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-quick-prompts>button { flex:0 0 auto !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-composer { min-width:0 !important; max-width:100% !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-composer-tools {
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:40px 40px minmax(72px,1fr) minmax(86px,1.18fr) 40px !important;
+  gap:5px !important;
+  align-items:center !important;
+}
+html[data-studio-physical-mobile-v189="true"] .nara-composer-tools>:is(button,label,div) { min-width:0 !important; max-width:100% !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-select { width:100% !important; overflow:hidden !important; }
+html[data-studio-physical-mobile-v189="true"] .nara-select>span {
+  min-width:0 !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important;
+}
+
+/* Theme code editor remains 50:50 on desktop; on physical mobile it stacks. */
+html[data-studio-physical-mobile-v189="true"] .tn-code-workspace {
+  width:100% !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  max-width:100% !important;
+  overflow:auto !important;
+}
+html[data-studio-physical-mobile-v189="true"] :is(.tn-code-pane,.tn-code-preview-pane) {
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:46dvh !important;
+}
+
+@media (max-width:380px) {
+  html[data-studio-physical-mobile-v189="true"] .nara-composer-tools {
+    grid-template-columns:38px 38px minmax(64px,1fr) minmax(72px,1fr) 38px !important;
+    gap:3px !important;
+  }
+  html[data-studio-physical-mobile-v189="true"] .nara-select { font-size:9px !important; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  html[data-studio-production-stability-v189] *,
+  html[data-studio-production-stability-v189] *::before,
+  html[data-studio-production-stability-v189] *::after {
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
