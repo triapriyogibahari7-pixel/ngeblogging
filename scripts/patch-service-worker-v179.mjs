@@ -72,6 +72,9 @@ await import("./patch-service-worker-v181.mjs");
 // v182 mengunci batas 25 situs, loading Domain yang terbatas, dan tombol Lihat situs Ringkasan.
 await import("./patch-site-limit-summary-v182.mjs");
 
+// Normalisasi sumber Nara sebelum v183/v185 agar urutan atribut lama tidak mematahkan patch produksi.
+await import("./patch-nara-v185-prep.mjs");
+
 // v183 memperbaiki drawer, editor mobile, halaman operasional, Nara non-modal, bootstrap situs aktif, dan cache produksi.
 await import("./patch-studio-production-v183.mjs");
 
