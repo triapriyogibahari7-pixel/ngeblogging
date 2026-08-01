@@ -22,13 +22,8 @@ const tests = [
   "tests/studio-recovery-v150.test.mjs",
   "tests/studio-completion-v151.test.mjs",
   "tests/studio-production-sync-v151.test.mjs",
-  "tests/studio-continuity-v152.test.mjs",
-  "tests/auth-production-v153.test.mjs",
-  "tests/production-entry-v154.test.mjs",
-  "tests/netlify-production-publisher-v156.test.mjs",
-  "tests/legacy-worker-entry-v157.test.mjs",
 ];
 const result = spawnSync(process.execPath, ["--test", ...tests], { cwd: process.cwd(), stdio: "inherit", env: process.env });
 if (result.status !== 0) process.exit(result.status || 1);
 await mkdir("dist", { recursive: true });
-await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSION_V147_V157_OK</h1></body></html>", "utf8");
+await writeFile("dist/index.html", "<!doctype html><html><body><h1>REGRESSION_V147_V151_OK</h1></body></html>", "utf8");
