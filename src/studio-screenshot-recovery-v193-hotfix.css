@@ -1,0 +1,11 @@
+/* v193 follow-up: media containment must never collapse Theme Studio preview iframes. */
+html[data-studio-screenshot-recovery-v193] .tn-frame-shell iframe{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  height:100% !important;
+  min-height:490px !important;
+}
+html[data-studio-physical-mobile-v193="true"] .tn-code-preview-pane .tn-frame-shell iframe{
+  min-height:46dvh !important;
+}
