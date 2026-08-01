@@ -288,8 +288,21 @@ async function verify() {
   if (/await refreshStaleWindow\(client, url\);/.test(worker)) throw new Error("V195_FORCED_NAVIGATION_REINTRODUCED");
 }
 
+const diagnosticStage = String(process.env.V195_DIAGNOSTIC_STAGE || "").trim().toLowerCase();
 await patchOnboardingGate();
-await patchFastGate();
-await patchServiceWorker();
-await verify();
-console.log(`Applied ${RELEASE}`);
+if (diagnosticStage === "gate") {
+  console.log(`Applied ${RELEASE} diagnostic stage=gate`);
+} else {
+  await patchFastGate();
+  if (diagnosticStage === "fast-gate") {
+    console.log(`Applied ${RELEASE} diagnostic stage=fast-gate`);
+  } else {
+    await patchServiceWorker();
+    if (diagnosticStage === "service-worker") {
+      console.log(`Applied ${RELEASE} diagnostic stage=service-worker`);
+    } else {
+      await verify();
+      console.log(`Applied ${RELEASE}`);
+    }
+  }
+}
