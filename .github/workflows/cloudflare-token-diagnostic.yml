@@ -3,8 +3,8 @@ name: Ngeblogging production route cutover v184 — Studio v191
 on:
   push:
     branches:
-      - main
       - production
+      - main
   workflow_dispatch:
 
 permissions:
@@ -56,7 +56,7 @@ jobs:
           echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
           echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
 
-      - name: Run v190 and v191 regression
+      - name: Run v183 and v184 regression — v190/v191 continuation
         id: regression
         run: npm run verify:v191
 
@@ -128,6 +128,7 @@ jobs:
             fi
             sleep 10
           done
+          echo "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED"
           echo "PRODUCTION_STUDIO_V191_VERIFY_FAILED"
           exit 1
 
