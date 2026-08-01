@@ -1,0 +1,518 @@
+/* Studio/Nara v194 — screenshot authority.
+   Loaded after v193. Repairs two remaining real-device failures:
+   1) generic landing-page `header` styles leaking into Theme Studio,
+   2) Nara mobile controls wasting two rows / flashing modal state before runtime correction.
+   No feature is removed. */
+
+html[data-studio-nara-theme-v194] *,
+html[data-studio-nara-theme-v194] *::before,
+html[data-studio-nara-theme-v194] *::after { box-sizing:border-box !important; }
+
+/* --------------------------------------------------------------------------
+   THEME STUDIO — isolate it from the global landing-page `header` selector.
+   These rules intentionally do NOT depend on a physical-mobile data attribute,
+   therefore they also work when Android/Opera requests "Situs desktop".
+   -------------------------------------------------------------------------- */
+html[data-studio-nara-theme-v194] .tn-studio {
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-x:clip !important;
+  isolation:isolate !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio :is(
+  .tn-library>header,
+  .tn-layout-studio-header,
+  .tn-code-preview-pane>header,
+  .tn-active-stage>header,
+  .tn-command>header
+) {
+  position:static !important;
+  inset:auto !important;
+  top:auto !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:auto !important;
+  width:100% !important;
+  max-width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  z-index:auto !important;
+  transform:none !important;
+  filter:none !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio :is(.tn-library>header,.tn-layout-studio-header) {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+  gap:12px !important;
+  padding:0 !important;
+  margin:0 !important;
+  overflow:visible !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio :is(.tn-library>header,.tn-layout-studio-header)>div {
+  position:static !important;
+  inset:auto !important;
+  min-width:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:0 !important;
+  transform:none !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio :is(.tn-library>header,.tn-layout-studio-header) :is(small,h1,h2,h3,p) {
+  position:static !important;
+  inset:auto !important;
+  float:none !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  height:auto !important;
+  transform:none !important;
+  filter:none !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio .tn-library>header h2,
+html[data-studio-nara-theme-v194] .tn-studio .tn-layout-studio-header h2 {
+  margin:5px 0 0 !important;
+  font-size:clamp(27px,5vw,44px) !important;
+  line-height:1.08 !important;
+  letter-spacing:-.025em !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio :is(.tn-library>header,.tn-layout-studio-header) p {
+  margin:0 !important;
+  line-height:1.55 !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio .tn-library>header label {
+  position:relative !important;
+  inset:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  height:48px !important;
+  margin:0 !important;
+  transform:none !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio .tn-library>header label input {
+  min-width:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio .tn-layout-studio-header>button {
+  position:static !important;
+  inset:auto !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-height:44px !important;
+  margin:0 !important;
+  transform:none !important;
+}
+html[data-studio-nara-theme-v194] .tn-studio :is(
+  .tn-layout-studio,.tn-layout-studio>*,.tn-layout-canvas-v170,.tn-layout-canvas-v170>*,
+  .tn-library,.tn-library>*,.tn-theme-grid,.tn-theme-grid>*,
+  .tn-code-workspace,.tn-code-workspace>*,.tn-code-pane,.tn-code-preview-pane,
+  .tn-widget-studio,.tn-widget-grid,.tn-widget-grid>*
+) { min-width:0 !important; max-width:100% !important; }
+html[data-studio-nara-theme-v194] .tn-studio .tn-device-switch {
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  overscroll-behavior-x:contain !important;
+}
+
+/* Physical phone / narrow browser.  The selectors work both with a real
+   narrow viewport and with Ngeblogging's physical-mobile flags. */
+@media(max-width:900px) {
+  html[data-studio-nara-theme-v194] .tn-studio {
+    width:100% !important;
+    margin:0 !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio :is(.tn-hero,.tn-command,.tn-layout-studio,.tn-customizer,.tn-code-workspace) {
+    grid-template-columns:minmax(0,1fr) !important;
+    width:100% !important;
+    max-width:100% !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio :is(.tn-theme-grid,.tn-blueprint-list,.tn-audit-strip,.tn-widget-grid,.tn-widget-settings-v170) {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-layout-canvas-v170 {
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-rows:none !important;
+    grid-auto-rows:minmax(58px,auto) !important;
+    grid-template-areas:
+      "top-left-1" "top-left-2" "top-left-3" "top-right-1" "top-right-2" "top-right-3"
+      "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "content-main"
+      "sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "after-content"
+      "bottom-left-1" "bottom-left-2" "bottom-left-3" "bottom-right-1" "bottom-right-2" "bottom-right-3" !important;
+    min-height:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    gap:7px !important;
+    padding:8px !important;
+    overflow:visible !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-layout-slot-v170 {
+    position:relative !important;
+    inset:auto !important;
+    min-width:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    transform:none !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-layout-slot-v170.content-main { min-height:140px !important; }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-code-workspace {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    height:auto !important;
+    min-height:0 !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-code-pane {
+    width:100% !important;
+    min-height:48dvh !important;
+    height:48dvh !important;
+    border-right:0 !important;
+    border-bottom:1px solid #dfe6ef !important;
+    overflow:hidden !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-code-preview-pane {
+    width:100% !important;
+    min-height:48dvh !important;
+    overflow:hidden !important;
+  }
+  html[data-studio-nara-theme-v194] .tn-studio .tn-code-preview-pane>header {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:8px !important;
+    min-height:58px !important;
+    padding:10px !important;
+  }
+}
+
+/* Synthetic desktop viewport on a physical phone can report >900 CSS px.
+   The physical-mobile datasets provide the fallback to the same safe layout. */
+html[data-studio-physical-mobile-v191="true"][data-studio-nara-theme-v194] .tn-studio :is(.tn-hero,.tn-command,.tn-layout-studio,.tn-customizer,.tn-code-workspace) {
+  grid-template-columns:minmax(0,1fr) !important;
+}
+html[data-studio-physical-mobile-v191="true"][data-studio-nara-theme-v194] .tn-studio :is(.tn-library>header,.tn-layout-studio-header) {
+  position:static !important;
+  display:flex !important;
+  flex-direction:column !important;
+  height:auto !important;
+  gap:12px !important;
+}
+
+/* --------------------------------------------------------------------------
+   NARA — no modal flash + one compact header control row + one composer row.
+   :has() makes the non-modal state correct on the first paint, before any
+   recovery observer runs. Chromium/Safari/Firefox current releases support it.
+   -------------------------------------------------------------------------- */
+.nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="small"]),
+.nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="medium"]) {
+  pointer-events:none !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="small"]) > .nara-assistant-backdrop,
+.nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="medium"]) > .nara-assistant-backdrop {
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="small"]) > .nara-assistant-shell,
+.nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="medium"]) > .nara-assistant-shell {
+  pointer-events:auto !important;
+  animation:none !important;
+  transition:none !important;
+}
+
+@media(max-width:760px) {
+  .nara-floating-button {
+    width:58px !important;
+    height:58px !important;
+    min-width:58px !important;
+    min-height:58px !important;
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    grid-template-rows:1fr !important;
+    place-items:center !important;
+    padding:0 !important;
+    border-radius:18px !important;
+    animation:none !important;
+    transition:none !important;
+    transform:none !important;
+    filter:none !important;
+    opacity:1 !important;
+  }
+  .nara-floating-button>span {
+    grid-area:1/1 !important;
+    width:42px !important;
+    height:42px !important;
+    display:grid !important;
+    place-items:center !important;
+    margin:0 !important;
+  }
+  .nara-floating-button>b,.nara-floating-button>small { display:none !important; }
+
+  .nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="small"]) > .nara-assistant-shell {
+    position:fixed !important;
+    inset:auto max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) auto !important;
+    width:min(430px,calc(100vw - 16px)) !important;
+    height:min(72dvh,650px) !important;
+    max-width:calc(100vw - 16px) !important;
+    max-height:calc(100dvh - 16px) !important;
+    border:1px solid #dfe6ef !important;
+    border-radius:20px !important;
+    overflow:hidden !important;
+  }
+  .nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="medium"]) > .nara-assistant-shell {
+    position:fixed !important;
+    inset:auto max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) auto !important;
+    width:min(620px,calc(100vw - 12px)) !important;
+    height:min(88dvh,790px) !important;
+    max-width:calc(100vw - 12px) !important;
+    max-height:calc(100dvh - 12px) !important;
+    border:1px solid #dfe6ef !important;
+    border-radius:20px !important;
+    overflow:hidden !important;
+  }
+  .nara-assistant-layer:has(> .nara-assistant-shell[data-nara-size="full"]) > .nara-assistant-shell {
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100dvh !important;
+    max-width:none !important;
+    max-height:none !important;
+    border:0 !important;
+    border-radius:0 !important;
+    animation:none !important;
+  }
+
+  /* Top: Nara title + small/medium/full + speaker + new chat + close, ONE row. */
+  .nara-assistant-header {
+    position:relative !important;
+    inset:auto !important;
+    flex:0 0 58px !important;
+    width:100% !important;
+    height:58px !important;
+    min-height:58px !important;
+    display:grid !important;
+    grid-template-columns:minmax(62px,1fr) auto 30px 30px 30px !important;
+    grid-template-rows:58px !important;
+    grid-template-areas:"title sizes voice reset close" !important;
+    align-items:center !important;
+    gap:4px !important;
+    padding:0 8px !important;
+    overflow:hidden !important;
+    transform:none !important;
+    filter:none !important;
+  }
+  .nara-brand-orb { display:none !important; }
+  .nara-assistant-header>div:nth-child(2) {
+    grid-area:title !important;
+    min-width:0 !important;
+    overflow:hidden !important;
+  }
+  .nara-assistant-header>div:nth-child(2)>span {
+    min-width:0 !important;
+    gap:4px !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+  }
+  .nara-assistant-header>div:nth-child(2)>span>b { font-size:15px !important; }
+  .nara-assistant-header>div:nth-child(2)>small { display:none !important; }
+  .nara-size-controls-v147 {
+    grid-area:sizes !important;
+    position:static !important;
+    inset:auto !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,28px) !important;
+    align-items:center !important;
+    justify-content:end !important;
+    gap:3px !important;
+    width:auto !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    transform:none !important;
+  }
+  .nara-size-controls-v147>button,
+  .nara-assistant-header>button {
+    width:28px !important;
+    height:28px !important;
+    min-width:28px !important;
+    min-height:28px !important;
+    display:grid !important;
+    place-items:center !important;
+    margin:0 !important;
+    padding:0 !important;
+    border-radius:8px !important;
+    transform:none !important;
+    visibility:visible !important;
+    opacity:1 !important;
+  }
+  .nara-size-controls-v147>button svg,
+  .nara-assistant-header>button svg { width:15px !important;height:15px !important; }
+  .nara-auto-voice-v148 { grid-area:voice !important; }
+  .nara-assistant-header>button:nth-last-child(2) { grid-area:reset !important; }
+  .nara-assistant-header>button:last-child { grid-area:close !important; }
+
+  .nara-context-bar {
+    flex:0 0 38px !important;
+    height:38px !important;
+    min-height:38px !important;
+    padding:0 10px !important;
+  }
+  .nara-assistant-messages {
+    min-height:0 !important;
+    padding:14px 10px !important;
+    scroll-behavior:auto !important;
+  }
+  .nara-quick-prompts {
+    flex:0 0 auto !important;
+    min-height:42px !important;
+    max-width:100% !important;
+    padding:6px 8px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+  }
+
+  .nara-composer {
+    flex:0 0 auto !important;
+    min-width:0 !important;
+    width:100% !important;
+    padding:6px 8px max(8px,env(safe-area-inset-bottom)) !important;
+  }
+  .nara-composer>textarea {
+    min-height:64px !important;
+    max-height:128px !important;
+    padding:10px 11px 5px !important;
+  }
+
+  /* Bottom: +, microphone, intelligence, model, send, ONE row. */
+  .nara-composer-tools {
+    width:100% !important;
+    min-width:0 !important;
+    height:44px !important;
+    min-height:44px !important;
+    display:grid !important;
+    grid-template-columns:30px 30px minmax(58px,.82fr) minmax(72px,1fr) 32px !important;
+    grid-template-rows:34px !important;
+    align-items:center !important;
+    gap:4px !important;
+    padding:5px 6px !important;
+    overflow:visible !important;
+  }
+  .nara-attachment-menu-wrap {
+    position:relative !important;
+    grid-column:1 !important;
+    grid-row:1 !important;
+    width:30px !important;
+    min-width:30px !important;
+    flex:0 0 30px !important;
+  }
+  .nara-attachment-menu-wrap>button,
+  .nara-composer-tools>button {
+    width:30px !important;
+    height:30px !important;
+    min-width:30px !important;
+    min-height:30px !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+  .nara-composer-tools>button:nth-child(2) { grid-column:2 !important;grid-row:1 !important; }
+  .nara-select.intelligence {
+    grid-column:3 !important;
+    grid-row:1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:30px !important;
+    margin:0 !important;
+    padding:0 5px !important;
+  }
+  .nara-select.model {
+    grid-column:4 !important;
+    grid-row:1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:30px !important;
+    margin:0 !important;
+    padding:0 5px !important;
+  }
+  .nara-select span {
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+  .nara-send {
+    grid-column:5 !important;
+    grid-row:1 !important;
+    width:32px !important;
+    min-width:32px !important;
+    height:32px !important;
+    margin:0 !important;
+  }
+  .nara-attachment-menu {
+    left:0 !important;
+    right:auto !important;
+    bottom:38px !important;
+    width:min(230px,calc(100vw - 30px)) !important;
+    max-width:calc(100vw - 30px) !important;
+  }
+}
+
+@media(max-width:340px) {
+  .nara-assistant-header {
+    grid-template-columns:minmax(46px,1fr) auto 27px 27px 27px !important;
+    gap:2px !important;
+    padding:0 5px !important;
+  }
+  .nara-size-controls-v147 { grid-template-columns:repeat(3,26px) !important;gap:2px !important; }
+  .nara-size-controls-v147>button,.nara-assistant-header>button { width:26px !important;height:26px !important;min-width:26px !important;min-height:26px !important; }
+  .nara-composer-tools {
+    grid-template-columns:28px 28px minmax(52px,.78fr) minmax(64px,1fr) 30px !important;
+    gap:2px !important;
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
+  .nara-select { font-size:7.5px !important; }
+}
+
+/* Drawer remains fully clickable. The outside-click layer is transparent and
+   never blurs/dims the content; only the region outside the drawer receives it. */
+html[data-studio-nara-theme-v194] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-nara-theme-v194] #ngeblogging-studio-sidebar.mobile-open * {
+  pointer-events:auto !important;
+  filter:none !important;
+  opacity:1 !important;
+}
+html[data-studio-nara-theme-v194] .sn-side-backdrop {
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  filter:none !important;
+}
+html[data-studio-nara-theme-v194] body.sn-mobile-sidebar-open .sn-main {
+  filter:none !important;
+  opacity:1 !important;
+  transform:none !important;
+}
+
+@media(prefers-reduced-motion:reduce) {
+  html[data-studio-nara-theme-v194] .nara-assistant-shell,
+  html[data-studio-nara-theme-v194] .nara-floating-button { animation:none !important;transition:none !important; }
+}
