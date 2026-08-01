@@ -1,7 +1,6 @@
 [build]
-  # Temporary PR diagnostic: full patch chain + compile, without regression suite.
-  # Restore to `npm run build` before merge.
-  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && vite build"
+  # Temporary PR diagnostic: late regression family only. Restore to `npm run build` before merge.
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-service-worker-v179.mjs && node --test tests/studio-finalization-v178.test.mjs tests/studio-mobile-runtime-v179.test.mjs tests/studio-mobile-hardening-v181.test.mjs tests/studio-production-v183.test.mjs tests/studio-source-v185.test.mjs tests/production-data-v186.test.mjs tests/studio-production-mobile-v189.test.mjs tests/studio-real-device-v190.test.mjs tests/studio-screenshot-recovery-v191.test.mjs tests/auth-studio-bootstrap-v192.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
