@@ -1,0 +1,33 @@
+{
+  "release": "studio-physical-mobile-v188-20260801",
+  "date": "2026-08-01",
+  "scope": "Physical mobile detection, Android desktop-site compensation, drawer interaction, operational pages, editor, Media, and Nara",
+  "repairs": {
+    "physicalPhoneNotViewportOnly": true,
+    "androidDesktopSiteCompensated": true,
+    "applicationPhoneMobileCompactAuthority": true,
+    "drawerBackdropOutsideMenu": true,
+    "drawerItemsClickable": true,
+    "logoNCentered": true,
+    "operationalPagesSingleColumn": true,
+    "commentsSettingsContained": true,
+    "mediaFiltersInlineScrollable": true,
+    "editorMobileSingleColumn": true,
+    "naraSmallMediumNonModal": true,
+    "naraControlsVisible": true,
+    "serviceWorkerNoForcedNavigation": true,
+    "sessionNotCleared": true
+  },
+  "validation": {
+    "sourceRegression": "Required",
+    "productionBuild": "Required",
+    "deployPreview": "Required",
+    "physicalDevice": "Required before 100% completion claim",
+    "providerLogin": "Requires real Google, LinkedIn, and email interactions"
+  },
+  "claims": {
+    "capacity": "No mass-user capacity claim without measured load testing",
+    "statistics": "No fabricated production statistics",
+    "completion": "Not complete until deployment and physical-device verification pass"
+  }
+}
