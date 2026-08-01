@@ -36,5 +36,6 @@ import "./studio-production-mobile-v189-fix.css";
 import "./studio-real-device-v190.js";
 import "./studio-screenshot-recovery-v191.js";
 import "./studio-screenshot-recovery-v191-hotfix.css";
+import "./studio-screenshot-recovery-v193.js";
 
 export default StudioFastGate;
