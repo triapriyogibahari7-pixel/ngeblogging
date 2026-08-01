@@ -1,5 +1,5 @@
 [build]
-  command = "V183_DIAGNOSTIC_STOP=bootstrap node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf 'v183 bootstrap passed' > dist/index.html"
+  command = "V183_DIAGNOSTIC_STOP=nara node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf 'v183 nara passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
