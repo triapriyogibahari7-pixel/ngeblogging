@@ -1,6 +1,6 @@
 [build]
-  # TEMP v195 draft diagnostic: patch-chain only. Restore before merge.
-  command = "node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf '<!doctype html><div id=\"root\"></div>' > dist/index.html"
+  # TEMP v195 draft diagnostic: onboarding-gate patch stage only. Restore before merge.
+  command = "V195_DIAGNOSTIC_STAGE=gate node scripts/patch-service-worker-v179.mjs && mkdir -p dist && printf '<!doctype html><div id=\"root\"></div>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
