@@ -1,0 +1,64 @@
+{
+  "status": "candidate",
+  "release": "studio-bootstrap-live-recovery-v196-20260802",
+  "basedOn": "studio-bootstrap-session-first-v195-20260801",
+  "problem": {
+    "symptom": "Authenticated mobile users can remain on Menyambungkan Studio and then see Koneksi data belum selesai even though the account session and production database are healthy.",
+    "rootCause": "A transient or stale frontend data route can still exhaust the blocking Studio membership path before the active workspace is selected. Production routing can also remain on an older Worker if Cloudflare cutover does not complete."
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "logoutOnlyOnExplicitOrDefinitiveInvalidSession": true,
+    "googlePreserved": true,
+    "linkedinOidcPreserved": true,
+    "emailPasswordPreserved": true,
+    "transientNetworkFailureDoesNotLogout": true
+  },
+  "studioBootstrap": {
+    "v195LocalSessionFirstPreserved": true,
+    "v195DirectUserTokenRlsPreserved": true,
+    "automaticRecovery": true,
+    "automaticRecoveryDelaysMs": [650, 1400, 2800],
+    "recoveryDirectTimeoutMs": 12000,
+    "recoveryClientTimeoutMs": 8000,
+    "recoveryRefreshesTokenOnlyAfter401Or403": true,
+    "userBoundActiveSiteCachePreserved": true,
+    "newUserOnboardingPreserved": true,
+    "automaticSiteFromEmail": false
+  },
+  "productionRoute": {
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "apexMustServeCurrentReactShell": true,
+    "loginMustServeCurrentReactShell": true,
+    "studioMustServeCurrentReactShell": true,
+    "releaseMarkerRequired": "/release-v196.json",
+    "workersDevReleaseMarkerRequired": true
+  },
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "sidebarMenus": ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"],
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "naraSmallMediumNonModal": true,
+    "naraFullScreenModal": true,
+    "commentsEmojiCount": 10,
+    "commentsReactionCount": 10,
+    "productionDataOnly": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v196-live-recovery-20260802",
+    "cache": "studio-bootstrap-live-recovery-cache-v196",
+    "forcedNavigation": false,
+    "sessionStorageDestruction": false
+  },
+  "validation": {
+    "databaseMembershipOrphansObserved": 0,
+    "productionAuthDataHealthyAtInvestigation": true,
+    "providerIdentitiesObserved": ["email", "google", "linkedin_oidc"],
+    "realDeviceVerificationRequiredBefore100PercentClaim": true,
+    "providerEndToEndVerificationRequiredBefore100PercentClaim": true,
+    "massCapacityClaimed": false
+  }
+}
