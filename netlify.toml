@@ -1,5 +1,5 @@
 [build]
-  command = "bash scripts/v192-regression-group.sh v189 && mkdir -p dist && printf 'v189 regression passed' > dist/index.html"
+  command = "bash scripts/v192-regression-group.sh v190 && mkdir -p dist && printf 'v190 regression passed' > dist/index.html"
   publish = "dist"
 
 [build.environment]
