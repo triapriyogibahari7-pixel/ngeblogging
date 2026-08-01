@@ -9,6 +9,7 @@ const runtime = read("src/studio-screenshot-recovery-v191.js");
 const css = read("src/studio-screenshot-recovery-v191.css");
 const hotfix = read("src/studio-screenshot-recovery-v191-hotfix.css");
 const supabase = read("src/lib/supabase.js");
+const dataGateway = read("server/data-gateway-v110.mjs");
 const authPatch = read("scripts/patch-auth-callback-v162.mjs");
 const modal = read("src/AuthModal.jsx");
 const release = JSON.parse(read("public/release-v191.json"));
@@ -99,15 +100,12 @@ test("v192 does not block valid Studio membership behind redundant auth verifica
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|signOut\s*\(/);
 });
 
-test("v192 bounds same-origin data gateway and preserves direct Supabase fallback", () => {
-  assert.match(supabase, /GATEWAY_TIMEOUT_MS_V192\s*=\s*2_500/);
-  assert.match(supabase, /fetchGatewayWithTimeoutV192/);
-  assert.match(supabase, /direct-supabase-fallback-v192/);
-  const start = supabase.indexOf("async function gatewayFirstV190");
-  const end = supabase.indexOf("\n}\n", start);
-  const gateway = supabase.slice(start, end);
-  assert.match(gateway, /fetchGatewayWithTimeoutV192/);
-  assert.match(gateway, /return nativeFetch\(directInput, init\)/);
+test("v192 bounds the Cloudflare data upstream while keeping existing client fallback", () => {
+  assert.match(dataGateway, /UPSTREAM_TIMEOUT_MS_V192\s*=\s*2_500/);
+  assert.match(dataGateway, /DATA_UPSTREAM_TIMEOUT/);
+  assert.match(dataGateway, /controller\.abort\("ngeblogging-data-upstream-timeout-v192"\)/);
+  assert.match(dataGateway, /signal:\s*controller\.signal/);
+  assert.match(supabase, /return nativeFetch\(directInput, init\)/);
   assert.equal(release192.repairs.dataGatewayTimeoutMilliseconds, 2500);
   assert.equal(release192.repairs.dataGatewayTimeoutFallsBackDirect, true);
 });
