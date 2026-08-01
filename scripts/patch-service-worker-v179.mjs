@@ -61,15 +61,9 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 await writeFile(file, source);
 console.log(`Patched public/sw.js for ${RELEASE}`);
 
-// v180 memperbaiki autentikasi, situs aktif dan loading tanpa menghapus sesi.
 await import("./patch-production-recovery-v180.mjs");
 await import("./patch-production-recovery-v180-legacy-markers.mjs");
 await import("./patch-production-recovery-v180-compat.mjs");
-
-// v181 mengunci layout, editor, drawer dan Nara serta memutar cache tanpa navigasi paksa.
 await import("./patch-service-worker-v181.mjs");
-
-// v182 mengunci batas 25 situs, loading Domain terbatas, dan tombol Lihat situs Ringkasan.
 await import("./patch-site-limit-summary-v182.mjs");
-
-// Runtime v183 dan authority v185 dimuat langsung dari src/Studio.jsx. Build web tidak menulis ulang source React lagi.
+await import("./patch-studio-production-v183.mjs");
