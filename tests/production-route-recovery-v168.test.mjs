@@ -47,7 +47,7 @@ test("active v172 exact Custom Domains supersede v168 apex routes and preserve t
   for (const config of configs) verifyActiveV172(config);
 });
 
-test("Worker retains v168 evidence while publishing v172 and v174 authorities", () => {
+test("Worker retains v168 evidence while publishing later authorities", () => {
   for (const marker of [
     RELEASE, "worker-v69-custom-domain-v172", "2026.07.30-production-custom-domain-v172",
     "/release-v168.json", "/release-v172.json",
@@ -59,21 +59,25 @@ test("Worker retains v168 evidence while publishing v172 and v174 authorities", 
   assert.ok(worker.includes('desktopVariants: ["laptop", "computer"]'));
 });
 
-test("v175 workflow deploys, finalizes exact domains, and verifies compatibility", () => {
+test("v184 workflow deploys, preserves compatibility, cuts over routes, and verifies live authorities", () => {
   for (const marker of [
-    "Ngeblogging production login finalizer v175",
-    "Run complete v147-v175 regression and build",
+    "Ngeblogging production route cutover v184",
+    "Run v183 and v184 regression",
+    "Build production application",
     "Deploy Worker and assets",
+    "Preserve compatibility routing before cutover",
     "finalize-cloudflare-routes-v175.mjs",
-    "/release-v174.json",
-    "/studio-viewport-audit-v174.html",
-    "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
+    "Cut over apex and www to authoritative zone routes v184",
+    "finalize-cloudflare-route-cutover-v182.mjs",
+    "/release-v183.json",
+    "/release-v184.json",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
     "WHITE-R4-2026.07.12",
     "CLOUDFLARE_ZONE_ID",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 });
 
-test("active v174 cache preserves v168 and auth compatibility", () => {
+test("active cache preserves v168 and auth compatibility", () => {
   for (const marker of [
     "ngeblogging-app-v174-mobile-interaction-20260731",
     "mobile-interaction-cache-v174",

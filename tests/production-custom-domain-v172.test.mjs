@@ -9,6 +9,7 @@ const worker = read("cloudflare/worker-v69.mjs");
 const fallbackWorkflow = read(".github/workflows/deploy-production.yml");
 const activeWorkflow = read(".github/workflows/cloudflare-token-diagnostic.yml");
 const attach = read("scripts/attach-cloudflare-domains-v165.mjs");
+const cutover = read("scripts/finalize-cloudflare-route-cutover-v182.mjs");
 const release = JSON.parse(read("public/release-v172.json"));
 const packageJson = JSON.parse(read("package.json"));
 
@@ -51,21 +52,34 @@ test("v172 Worker still publishes React auth Studio onboarding and mobile author
   assert.doesNotMatch(worker, /WHITE-R4-2026\.07\.12/);
 });
 
-test("v172 deployment is retained as manual validation while v175 owns production mutation", () => {
+test("v172 deployment remains available while v184 owns production route mutation", () => {
   assert.ok(fallbackWorkflow.includes("Deploy Ngeblogging Production v172 manual fallback"));
   assert.ok(fallbackWorkflow.includes("workflow_dispatch"));
   assert.ok(!fallbackWorkflow.includes("branches: [main]"));
   assert.ok(!fallbackWorkflow.includes("npm run deploy:cloudflare"));
+
   for (const marker of [
-    "Ngeblogging production login finalizer v175", "environment: cloudflare-production",
-    "Run complete v147-v175 regression and build", "Deploy Worker and assets",
-    "Attach exact Worker Domains and remove only conflicting apex routes",
-    "Verify root login signup Studio mobile audit and tenant",
-    "/release-v174.json", "/studio-viewport-audit-v174.html",
-    "WHITE-R4-2026.07.12", "PRODUCTION_LOGIN_FINALIZER_V175_VERIFY_FAILED",
+    "Ngeblogging production route cutover v184",
+    "environment: cloudflare-production",
+    "Run v183 and v184 regression",
+    "Build production application",
+    "Deploy Worker and assets",
+    "Preserve compatibility routing before cutover",
+    "Cut over apex and www to authoritative zone routes v184",
+    "Verify live apex, auth routes, Studio and release markers",
+    "/release-v183.json",
+    "/release-v184.json",
+    "WHITE-R4-2026.07.12",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
   ]) assert.ok(activeWorkflow.includes(marker), `active workflow missing ${marker}`);
-  assert.ok(activeWorkflow.indexOf("Deploy Worker and assets") < activeWorkflow.indexOf("Attach exact Worker Domains"));
-  assert.ok(activeWorkflow.indexOf("Attach exact Worker Domains") < activeWorkflow.indexOf("Verify root login signup Studio"));
+
+  assert.ok(activeWorkflow.indexOf("Deploy Worker and assets") < activeWorkflow.indexOf("Preserve compatibility routing before cutover"));
+  assert.ok(activeWorkflow.indexOf("Preserve compatibility routing before cutover") < activeWorkflow.indexOf("Cut over apex and www to authoritative zone routes v184"));
+  assert.ok(activeWorkflow.indexOf("Cut over apex and www to authoritative zone routes v184") < activeWorkflow.indexOf("Verify live apex, auth routes, Studio and release markers"));
+
+  for (const marker of ["EXACT_ROUTES", "TENANT_ROUTE", "detachExactWorkerDomains", "installAuthoritativeRoutes", "verifyFinalState"]) {
+    assert.ok(cutover.includes(marker), `route cutover missing ${marker}`);
+  }
 });
 
 test("v172 audited Workers Domains utility remains available without touching wildcard", () => {
@@ -96,8 +110,9 @@ test("v172 release remains factual and makes no unsupported production capacity 
   assert.equal(release.productionCapacityClaimed, false);
 });
 
-test("v172 regression remains mandatory under v175", () => {
+test("v172 regression remains mandatory under later production authorities", () => {
   assert.ok(packageJson.scripts["verify:v172"].includes("tests/production-custom-domain-v172.test.mjs"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/production-custom-domain-v172.test.mjs"));
   assert.equal(packageJson.scripts["cloudflare:attach-domains"], "node scripts/attach-cloudflare-domains-v165.mjs");
+  assert.equal(packageJson.scripts["cloudflare:cutover-routes"], "node scripts/finalize-cloudflare-route-cutover-v182.mjs");
 });
