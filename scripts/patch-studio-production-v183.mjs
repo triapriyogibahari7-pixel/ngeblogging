@@ -5,6 +5,13 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-production-v183-20260801";
+const DIAGNOSTIC_STOP = String(process.env.V183_DIAGNOSTIC_STOP || "").trim();
+
+function diagnosticStop(label) {
+  if (DIAGNOSTIC_STOP !== label) return;
+  console.log(`V183_DIAGNOSTIC_STOP:${label}:SUCCESS`);
+  process.exit(0);
+}
 
 function replaceEffectContaining(source, marker, replacement, label) {
   if (source.includes("studio-bootstrap-resilient-v183")) return source;
@@ -248,8 +255,13 @@ async function verify() {
 }
 
 await patchStudioBootstrap();
+diagnosticStop("bootstrap");
 await patchNaraNonModal();
+diagnosticStop("nara");
 await patchStudioEntry();
+diagnosticStop("entry");
 await patchServiceWorker();
+diagnosticStop("service-worker");
 await verify();
+diagnosticStop("verify");
 console.log(`Applied ${RELEASE}`);
