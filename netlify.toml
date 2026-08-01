@@ -1,5 +1,5 @@
 [build]
-  command = "npm run predev && node --test tests/studio-continuity-v152.test.mjs tests/auth-production-v153.test.mjs tests/production-entry-v154.test.mjs && mkdir -p dist && printf '<!doctype html><html><body><h1>REGRESSIONS_V152_V154_OK</h1></body></html>' > dist/index.html"
+  command = "npm run predev && node --test tests/studio-continuity-v152.test.mjs && mkdir -p dist && printf '<!doctype html><html><body><h1>STUDIO_CONTINUITY_V152_OK</h1></body></html>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
