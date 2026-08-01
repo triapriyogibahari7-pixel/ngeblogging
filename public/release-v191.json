@@ -1,0 +1,60 @@
+{
+  "release": "studio-screenshot-recovery-v191-20260801",
+  "date": "2026-08-01",
+  "base": "studio-real-device-v190",
+  "scope": "screenshot-driven mobile geometry, drawer interaction, account separation, Nara stability, auth/deployment verification",
+  "repairs": {
+    "sixResponsiveFamiliesPreserved": true,
+    "desktopVariantsPreserved": true,
+    "androidDesktopSiteRootScaleRemoved": true,
+    "blankRightViewportGuard": true,
+    "physicalMobileRulesIgnoreSyntheticDesktopWidth": true,
+    "mobileLogoCenteredAndOpaque": true,
+    "drawerMenuStartsNearCreatePost": true,
+    "drawerMenuClickable": true,
+    "drawerBackdropTransparentNoBlur": true,
+    "drawerFooterPreserved": true,
+    "summaryRowsContained": true,
+    "membersActionsContained": true,
+    "membersCardsContained": true,
+    "analyticsCardsContained": true,
+    "commentsDomainApiContained": true,
+    "themeAndEditorHorizontalContainment": true,
+    "profileSeparatedFromSettings": true,
+    "naraLauncherCenteredNoBlink": true,
+    "naraSmallMediumNonModal": true,
+    "naraCloseAlwaysVisible": true,
+    "naraControlsDeterministic": true,
+    "sessionPersistenceRequired": true,
+    "providerSessionHandoffRequired": true,
+    "legacyWhiteR4RejectedByDeployment": true
+  },
+  "preserved": [
+    "Posts",
+    "Pages",
+    "5000-word publication guard",
+    "SEO editor",
+    "Theme Studio and 100 themes",
+    "layout map and widgets",
+    "HTML CSS JavaScript and preview",
+    "Media",
+    "Analytics",
+    "Members",
+    "Comments and public comments",
+    "Domains",
+    "API Keys",
+    "onboarding",
+    "Nara attachments camera photo microphone speaker model intelligence"
+  ],
+  "validation": {
+    "viewportMatrix": [
+      "320x568", "360x640", "375x667", "390x844", "412x915", "430x932",
+      "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768",
+      "1440x900", "1920x1080"
+    ],
+    "providerLogin": "Production login must be confirmed against the deployed Supabase Google, LinkedIn OIDC, and email configuration plus real callback URLs.",
+    "physicalDevices": "Static regression and viewport simulation do not replace verification on real Android, iPhone, PWA, and desktop browsers after deployment.",
+    "capacity": "No 900-million-user or other mass-capacity claim is made without distributed load testing, provider quotas, database capacity evidence, and production observability."
+  },
+  "dataPolicy": "Do not fabricate analytics, member counts, comments, traffic, provider success, or scalability claims."
+}
