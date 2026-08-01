@@ -5,6 +5,8 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-screenshot-recovery-v191-20260801";
+const V190_COMPAT_VERSION = "ngeblogging-app-v190-real-device-20260801";
+const V190_COMPAT_CACHE = "real-device-cache-v190";
 
 async function patchStudioEntry() {
   const path = "src/Studio.jsx";
@@ -23,6 +25,13 @@ async function patchServiceWorker() {
   source = source.replace(/^const VERSION = ".*";$/m, 'const VERSION = "ngeblogging-app-v191-screenshot-recovery-20260801";');
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, 'const CACHE_RELEASE = "screenshot-recovery-cache-v191";');
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "screenshot-recovery-v191";');
+  const compatibility = [
+    'const REAL_DEVICE_COMPAT_VERSION_V190 = "ngeblogging-app-v190-real-device-20260801";',
+    'const REAL_DEVICE_COMPAT_CACHE_V190 = "real-device-cache-v190";',
+  ];
+  for (const line of compatibility) {
+    if (!source.includes(line)) source = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
+  }
   if (!source.includes("SCREENSHOT_RECOVERY_RELEASE_V191")) {
     source = source.replace(
       /^(const VERSION = .*;\n)/m,
@@ -57,6 +66,11 @@ async function verify() {
   for (const [path, marker] of checks) {
     const source = await read(path);
     if (!source.includes(marker)) throw new Error(`V191_VERIFY_FAILED:${path}:${marker}`);
+  }
+
+  const worker = await read("public/sw.js");
+  if (!worker.includes(V190_COMPAT_VERSION) || !worker.includes(V190_COMPAT_CACHE)) {
+    throw new Error("V191_V190_CACHE_COMPATIBILITY_MARKERS_MISSING");
   }
 
   const runtime = await read("src/studio-screenshot-recovery-v191.js");
