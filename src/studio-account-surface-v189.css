@@ -1,0 +1,18 @@
+/* Profile and Settings use the same proven form plumbing but expose distinct,
+   understandable surfaces instead of presenting both sections at once. */
+.sn-view-pad[data-account-surface-v189="profile"] .sn-settings-grid>section:nth-child(2) { display:none !important; }
+.sn-view-pad[data-account-surface-v189="settings"] .sn-settings-grid>section:nth-child(1) { display:none !important; }
+.sn-view-pad[data-account-surface-v189] .sn-settings-grid {
+  grid-template-columns:minmax(0,1fr) !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+.sn-view-pad[data-account-surface-v189] .sn-settings-grid>section {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+@media(max-width:760px){
+  .sn-view-pad[data-account-surface-v189] .sn-settings-grid { display:grid !important; grid-template-columns:minmax(0,1fr) !important; }
+}
