@@ -101,4 +101,5 @@ async function verify() {
 await patchStudioEntry();
 await patchServiceWorker();
 await verify();
-console.log(`Applied ${RELEASE}`);
+await import("./patch-production-v190.mjs");
+console.log(`Applied ${RELEASE} + Studio real-device v190`);
