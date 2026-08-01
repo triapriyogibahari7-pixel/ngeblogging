@@ -15,6 +15,7 @@ test("v192 runs after v191 and records a factual release", () => {
   assert.match(patch, /studio-data-bootstrap-v192-20260801/);
   assert.equal(release.release, "studio-data-bootstrap-v192-20260801");
   assert.equal(release.repairs.membershipQueryIsCriticalPath, true);
+  assert.equal(release.repairs.dataGatewayTimeoutFallsBackDirect, true);
   assert.equal(release.validation.massCapacityClaimed, false);
 });
 
@@ -24,10 +25,11 @@ test("Studio membership is checked before remote auth re-verification", () => {
   const membership = gate.slice(start, end);
   assert.ok(start >= 0, "membership function missing");
   assert.match(membership, /membership-first-cloud-ready/);
-  assert.match(membership, /listUserSites\(userId\)/);
+  assert.match(membership, /readMembership\(userId\)/);
+  assert.match(membership, /listUserSites\(id\)/);
   assert.match(membership, /getVerifiedSession\(\{ force: false \}\)/);
   assert.ok(
-    membership.indexOf("listUserSites(userId)") < membership.indexOf("getVerifiedSession({ force: false })"),
+    membership.indexOf("readMembership(userId)") < membership.indexOf("getVerifiedSession({ force: false })"),
     "remote verification must not block a successful membership query",
   );
   assert.doesNotMatch(membership, /getVerifiedSession\(\{ force: true \}\)/);
@@ -48,6 +50,17 @@ test("transient failures retain cached workspace and never destroy login", () =>
   assert.doesNotMatch(gate, /signOut\s*\(/);
   assert.match(auth, /persistSession: true/);
   assert.match(auth, /autoRefreshToken: true/);
+});
+
+test("same-origin data gateway is bounded and falls back directly", () => {
+  assert.match(auth, /GATEWAY_TIMEOUT_MS_V192 = 2_500/);
+  assert.match(auth, /fetchGatewayWithTimeoutV192/);
+  assert.match(auth, /direct-supabase-fallback-v192/);
+  const start = auth.indexOf("async function gatewayFirstV190");
+  const end = auth.indexOf("\n}\n", start);
+  const gateway = auth.slice(start, end);
+  assert.match(gateway, /fetchGatewayWithTimeoutV192/);
+  assert.match(gateway, /return nativeFetch\(directInput, init\)/);
 });
 
 test("startup is bounded and does not loop forever", () => {
