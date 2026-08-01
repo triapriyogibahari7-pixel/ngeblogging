@@ -21,11 +21,19 @@ async function patchStudioEntry() {
     'import "./studio-physical-mobile-v188.js";\nimport "./studio-production-mobile-v189.js";',
     "STUDIO_ENTRY",
   );
-  if (!source.includes('import "./studio-production-mobile-v189-fix.css";')) {
+  if (!source.includes('import "./studio-production-mobile-v189-account.js";')) {
     source = replaceOnce(
       source,
       'import "./studio-production-mobile-v189.js";',
-      'import "./studio-production-mobile-v189.js";\nimport "./studio-production-mobile-v189-fix.css";',
+      'import "./studio-production-mobile-v189.js";\nimport "./studio-production-mobile-v189-account.js";',
+      "ACCOUNT_ENTRY",
+    );
+  }
+  if (!source.includes('import "./studio-production-mobile-v189-fix.css";')) {
+    source = replaceOnce(
+      source,
+      'import "./studio-production-mobile-v189-account.js";',
+      'import "./studio-production-mobile-v189-account.js";\nimport "./studio-production-mobile-v189-fix.css";',
       "NARROW_FIX_ENTRY",
     );
   }
@@ -59,11 +67,13 @@ async function patchServiceWorker() {
 async function verify() {
   const checks = [
     ["src/Studio.jsx", "studio-production-mobile-v189.js"],
+    ["src/Studio.jsx", "studio-production-mobile-v189-account.js"],
     ["src/Studio.jsx", "studio-production-mobile-v189-fix.css"],
     ["src/studio-production-mobile-v189.js", "studio-production-mobile-v189-20260801"],
     ["src/studio-production-mobile-v189.js", "studioDesktopSiteCompensationV189"],
     ["src/studio-production-mobile-v189.js", "nara-open-v189"],
     ["src/studio-production-mobile-v189.js", "studioAccountViewV189"],
+    ["src/studio-production-mobile-v189-account.js", "studio-production-mobile-v189-account-20260801"],
     ["src/studio-production-mobile-v189.css", "data-studio-desktop-site-phone-v189"],
     ["src/studio-production-mobile-v189.css", "sv124-toggle-row>input:checked+i"],
     ["src/studio-production-mobile-v189.css", ".sn-media-tools>nav"],
