@@ -1,0 +1,6 @@
+/* v191 narrow-screen correction: keep the transparent outside-click layer aligned with the drawer. */
+@media (max-width:430px) {
+  html[data-studio-physical-mobile-v191="true"] .sn-side-backdrop {
+    left: min(82vw,326px) !important;
+  }
+}
