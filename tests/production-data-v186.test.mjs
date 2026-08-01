@@ -67,10 +67,11 @@ test("Nara small and medium are non-modal in React source", () => {
   assert.match(nara, /tabIndex=\{size === "full" \? 0 : -1\}/);
 });
 
-test("v186 cache rotates without forced navigation or logout", () => {
-  assert.match(serviceWorker, /ngeblogging-app-v186-production-data-20260801/);
-  assert.match(serviceWorker, /production-data-cache-v186/);
+test("v186 protections remain while the final cache is rotated by v187", () => {
+  assert.match(serviceWorker, /ngeblogging-app-v187-production-authority-20260801/);
+  assert.match(serviceWorker, /production-authority-cache-v187/);
   assert.match(serviceWorker, /PRODUCTION_DATA_RELEASE_V186/);
+  assert.match(serviceWorker, /PRODUCTION_AUTHORITY_RELEASE_V187/);
   assert.doesNotMatch(serviceWorker, /await refreshStaleWindow\(client, url\);/);
   assert.doesNotMatch(patch, /signOut\s*\(/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(/);
@@ -83,4 +84,13 @@ test("release and production scripts include v186", () => {
   assert.equal(release.repairs.activeSiteBootstrapNonBlocking, true);
   assert.equal(release.repairs.authGatewayDirectFallback, true);
   assert.equal(release.repairs.naraSmallMediumNonModalAtSource, true);
+});
+
+test("v187 production authority is applied after v186 in every production build", () => {
+  assert.match(chain, /patch-production-ui-v187\.mjs/);
+  assert.ok(chain.indexOf("patch-production-data-v186.mjs") < chain.indexOf("patch-production-ui-v187.mjs"));
+  assert.match(read("src/Studio.jsx"), /studio-production-authority-v187\.js/);
+  assert.match(read("public/sw.js"), /ngeblogging-app-v187-production-authority-20260801/);
+  assert.match(read("src/StudioNext.jsx"), /SIDEBAR_STATE_V187/);
+  assert.match(read("src/StudioNext.jsx"), /documentWordCountV187\(active\.content\)/);
 });
