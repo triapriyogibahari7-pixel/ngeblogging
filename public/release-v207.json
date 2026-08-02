@@ -2,7 +2,7 @@
   "release": "studio-production-v207-20260802",
   "status": "candidate",
   "basedOn": "studio-production-v206-20260802",
-  "scope": "Repair the remaining real-device screenshot regressions: readable physical-mobile Theme layout map, stable two-row Nara composer, single-mount Theme preview after cloud state, and authoritative v207 production deployment verification.",
+  "scope": "Repair the remaining real-device screenshot regressions: readable physical-mobile Theme layout map, stable two-row Nara composer, single-mount Theme preview after cloud state, a fourth functional left widget area, and authoritative v207 production deployment verification.",
   "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
   "desktopVariants": ["laptop", "desktop", "computer"],
   "repairs": {
@@ -11,6 +11,9 @@
     "physicalMobileLayoutMapReadableHorizontal": true,
     "physicalMobileLayoutMapNoVerticalLetterWrapping": true,
     "layoutMapTwentyRealAreasPreserved": true,
+    "layoutMapLegacyTwentyRealAreasPreserved": true,
+    "layoutMapTotalRealAreas": 21,
+    "sidebarLeftFourthAreaFunctional": true,
     "widgetStudioAndChecksPreserved": true,
     "themeLayoutActionSingleVisibleLabel": true,
     "themeCodeActionSingleVisibleLabel": true,
