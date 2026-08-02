@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "bash -lc 'set -euo pipefail; [[ \"${CLOUDFLARE_ACCOUNT_ID:-}\" =~ ^[a-fA-F0-9]{32}$ ]]; [[ \"${CLOUDFLARE_ZONE_ID:-}\" =~ ^[a-fA-F0-9]{32}$ ]]; test -n \"${CLOUDFLARE_API_TOKEN:-}\"; mkdir -p dist; printf \"<!doctype html><meta charset=utf-8><title>Cloudflare deploy probe</title><p>CLOUDFLARE_DEPLOY_CREDENTIALS_PRESENT</p>\" > dist/index.html'"
   publish = "dist"
 
 [build.environment]
