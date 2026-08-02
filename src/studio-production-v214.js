@@ -4,6 +4,7 @@ const RELEASE = "studio-production-v214-20260802";
 const RESPONSIVE_MODES = new Set(["application", "phone", "mobile", "compact", "tablet", "desktop"]);
 const SMALL_MODES = new Set(["application", "phone", "mobile", "compact"]);
 let frame = 0;
+let profileMenuNode = null;
 
 function mode() {
   const root = document.documentElement;
@@ -101,25 +102,72 @@ function normalizeLayoutMap() {
   });
 }
 
+function closeProfileMenu() {
+  profileMenuNode?.remove();
+  profileMenuNode = null;
+  document.documentElement.dataset.studioV214ProfileMenu = "closed";
+  const avatar = document.querySelector(".sn-avatar");
+  avatar?.setAttribute("aria-expanded", "false");
+}
+
+function navigateSettings(section) {
+  const root = document.documentElement;
+  root.dataset.studioV214SettingsSection = section;
+  const button = document.querySelector(".sn-account-settings-v135");
+  if (!button) return;
+  button.dataset.v214RequestedSection = section;
+  button.click();
+  queueMicrotask(() => { delete button.dataset.v214RequestedSection; schedule(); });
+}
+
+function openProfileMenu() {
+  closeProfileMenu();
+  const avatar = document.querySelector(".sn-avatar");
+  if (!avatar) return;
+  const menu = document.createElement("div");
+  menu.id = "ngeblogging-profile-menu-v214";
+  menu.className = "sn-profile-menu-v214";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "Menu profil");
+  menu.innerHTML = `
+    <button type="button" role="menuitem" data-v214-profile-action="profile"><span aria-hidden="true">P</span><b>Profil</b></button>
+    <button type="button" role="menuitem" data-v214-profile-action="settings"><span aria-hidden="true">⚙</span><b>Pengaturan</b></button>
+    <button type="button" role="menuitem" class="danger" data-v214-profile-action="logout"><span aria-hidden="true">↪</span><b>Keluar</b></button>`;
+  document.body.append(menu);
+  profileMenuNode = menu;
+  document.documentElement.dataset.studioV214ProfileMenu = "open";
+  avatar.setAttribute("aria-expanded", "true");
+  requestAnimationFrame(() => menu.querySelector("button")?.focus({ preventScroll:true }));
+}
+
+function normalizeSettingsSection() {
+  const grid = document.querySelector(".sn-settings-grid");
+  if (!grid) return;
+  const root = document.documentElement;
+  const section = root.dataset.studioV214SettingsSection === "profile" ? "profile" : "site";
+  const page = grid.closest(".sn-view-pad");
+  if (!page) return;
+  page.dataset.v214SettingsSection = section;
+  const title = page.querySelector(":scope > .sn-page-title h1");
+  const description = page.querySelector(":scope > .sn-page-title p");
+  if (title) title.textContent = section === "profile" ? "Profil" : "Pengaturan";
+  if (description) description.textContent = section === "profile"
+    ? "Identitas akun, biografi, website, avatar, bahasa, dan zona waktu."
+    : "Konfigurasi situs aktif dipisahkan dari identitas profil Anda.";
+  const save = page.querySelector(".sn-save-settings");
+  if (save) save.dataset.v214SaveSection = section;
+}
+
 function normalizeProfileMenu() {
-  document.querySelectorAll(".sn-profile-menu-wrap").forEach((wrap) => {
-    wrap.dataset.v214Profile = "separated";
-    const trigger = wrap.querySelector(":scope > .sn-avatar");
-    const menu = wrap.querySelector(":scope > .sn-profile-menu");
-    if (trigger) {
-      trigger.setAttribute("aria-haspopup", "menu");
-      trigger.setAttribute("aria-controls", "ngeblogging-profile-menu-v214");
-      trigger.setAttribute("aria-expanded", String(Boolean(menu)));
-    }
-    if (menu) {
-      menu.id = "ngeblogging-profile-menu-v214";
-      menu.setAttribute("role", "menu");
-      menu.querySelectorAll("button").forEach((button) => {
-        button.setAttribute("role", "menuitem");
-        button.removeAttribute("inert");
-      });
-    }
-  });
+  const avatar = document.querySelector(".sn-avatar");
+  if (avatar) {
+    avatar.dataset.v214ProfileTrigger = "true";
+    avatar.setAttribute("aria-label", "Buka menu profil");
+    avatar.setAttribute("aria-haspopup", "menu");
+    avatar.setAttribute("aria-controls", "ngeblogging-profile-menu-v214");
+    avatar.setAttribute("aria-expanded", String(Boolean(profileMenuNode)));
+  }
+  normalizeSettingsSection();
 }
 
 function normalizeNara() {
@@ -181,11 +229,55 @@ for (const eventName of ["pageshow", "resize", "orientationchange", "online"]) {
 }
 window.visualViewport?.addEventListener?.("resize", schedule, { passive:true });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
+
 document.addEventListener("click", (event) => {
-  if (!event.target.closest('.tn-layout-canvas-v170[data-v212-layout-map] > .content-main')) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target) return;
+
+  if (target.closest('.tn-layout-canvas-v170[data-v212-layout-map] > .content-main')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+
+  const avatar = target.closest(".sn-avatar");
+  if (avatar) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (profileMenuNode) closeProfileMenu(); else openProfileMenu();
+    return;
+  }
+
+  const action = target.closest("[data-v214-profile-action]")?.dataset.v214ProfileAction;
+  if (action) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeProfileMenu();
+    if (action === "profile") navigateSettings("profile");
+    else if (action === "settings") navigateSettings("site");
+    else if (action === "logout") document.querySelector(".sn-account-logout-v135")?.click();
+    return;
+  }
+
+  const settingsButton = target.closest(".sn-account-settings-v135");
+  if (settingsButton) {
+    const requested = settingsButton.dataset.v214RequestedSection;
+    document.documentElement.dataset.studioV214SettingsSection = requested === "profile" ? "profile" : "site";
+    closeProfileMenu();
+    requestAnimationFrame(schedule);
+    return;
+  }
+
+  if (profileMenuNode && !target.closest(".sn-profile-menu-v214")) closeProfileMenu();
 }, true);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && profileMenuNode) {
+    event.preventDefault();
+    closeProfileMenu();
+    document.querySelector(".sn-avatar")?.focus({ preventScroll:true });
+  }
+});
 
 sync();
 
@@ -198,7 +290,11 @@ export {
   normalizeSidebar,
   normalizeLayoutMap,
   normalizeProfileMenu,
+  normalizeSettingsSection,
   normalizeNara,
   normalizeContainment,
+  openProfileMenu,
+  closeProfileMenu,
+  navigateSettings,
   sync,
 };
