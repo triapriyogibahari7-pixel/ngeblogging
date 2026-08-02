@@ -76,8 +76,8 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // 4-left + large center + 4-right layout, Nara and Domain authority.
 // v213 tightens small-device map readability plus factual browser/bot/entry analytics.
 // v214 only normalizes screenshot geometry/visibility without replacing production
-// data/auth/themes/widgets. v215 then patches the generated React auth handoff so
-// a stale duplicate OAuth callback cannot replace an already verified session.
+// data/auth/themes/widgets. v215 patches late OAuth handoff. v216 is the final
+// physical-device geometry authority for Theme code/layout, Nara, Domain and charts.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -96,3 +96,4 @@ await import("./patch-production-v212.mjs");
 await import("./patch-production-v213.mjs");
 await import("./patch-production-v214.mjs");
 await import("./patch-auth-late-callback-v215.mjs");
+await import("./patch-production-v216.mjs");

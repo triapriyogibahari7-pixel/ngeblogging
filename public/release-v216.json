@@ -1,0 +1,41 @@
+{
+  "release": "studio-production-v216-20260802",
+  "status": "candidate",
+  "scope": "physical-device Theme editor, layout map, Nara attachment visibility, Domain mobile, analytics presentation, sidebar stability and production route verification",
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themeCount": 100,
+    "widgetCount": 26,
+    "fourLeftAndFourRightWidgetAreas": true,
+    "customHtmlJavascriptWidget": true,
+    "postPageWordLimit": 5000,
+    "persistentSession": true,
+    "automaticRefreshToken": true,
+    "publicSiteSingleInitialRenderV209": true
+  },
+  "repairs": {
+    "physicalSmallDeviceThemeEditorPreviewAboveCode": true,
+    "largeDeviceThemeEditorSplit5050": true,
+    "themeCodeLineNumbersOneToTenThousand": true,
+    "themeCodeLightReadableSurface": true,
+    "layoutMapPhysicalSmallNormalFlow": true,
+    "layoutMapFourLeftFourRightLarge": true,
+    "naraSmallMediumNonModal": true,
+    "naraSmallLargeDeviceBoundedHeight": true,
+    "naraCameraPhotoFileMenuEscapesClipping": true,
+    "naraCloseStopsMicrophoneAndSpeech": true,
+    "domainMobileActionsHorizontalFullWidth": true,
+    "sidebarAndNaraLauncherAnimationDisabled": true,
+    "analyticsUsesLargerRealSeriesPresentation": true,
+    "legacyWhiteR4MustBeRejectedByDeployment": true
+  },
+  "validation": {
+    "fakeProductionAnalyticsAdded": false,
+    "syntheticHistoricBrowserCountryBotValuesAdded": false,
+    "massCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "physicalDeviceVerificationStillRequiredBeforeHundredPercentClaim": true
+  }
+}

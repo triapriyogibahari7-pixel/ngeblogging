@@ -4,6 +4,7 @@ import test from "node:test";
 import { BUILT_IN_THEMES, THEME_COUNT } from "../src/theme-catalog.js";
 import { BUILT_IN_WIDGETS, LAYOUT_AREAS, WIDGET_COUNT } from "../src/widget-system.js";
 import "./studio-production-v214-clean.test.mjs";
+import "./studio-production-v216.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
