@@ -10,11 +10,12 @@ permissions:
   contents: read
   statuses: write
 
-# Serialize against the historical production cutover workflow so two jobs never
-# mutate the apex route at the same time.
+# v213 deploys the same current `ngeblogging` Worker targeted by the historical
+# pipeline, but must not wait behind an obsolete v210 verification queue.
+# Multiple v213 pushes collapse to the newest production commit.
 concurrency:
-  group: ngeblogging-production-studio-v197
-  cancel-in-progress: false
+  group: ngeblogging-production-studio-v213
+  cancel-in-progress: true
 
 jobs:
   deploy-v213:
