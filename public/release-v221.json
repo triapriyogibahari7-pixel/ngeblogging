@@ -1,0 +1,72 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v221-20260802",
+  "basedOn": "studio-production-v220-20260802",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "physicalSmallWinsOverStaleDesktopDataset": true,
+    "explicitBrowserDesktopSiteRemainsLarge": true,
+    "tabletAndDesktopUseLargeGeometry": true
+  },
+  "theme": {
+    "builtInThemesRequired": 100,
+    "customThemeRetained": true,
+    "widgetCountRequired": 26,
+    "greenReferenceSemanticMap": true,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "allMapBoxesAreaAware": true,
+    "customHtmlJavascriptWidgetRetained": true,
+    "codeLineLimitSupported": 10000,
+    "actualLineNumbers": true,
+    "smallEditor": "preview-above-code",
+    "largeEditor": "code-left-preview-right-50-50",
+    "codeSurface": "light-readable-grid-gutter"
+  },
+  "nara": {
+    "launcherSquareIcon": true,
+    "smallMediumNonModal": true,
+    "fullModal": true,
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphoneRetained": true,
+    "speakerRetained": true,
+    "modelsRetained": true,
+    "intelligenceRetained": true,
+    "attachmentMenuForcedVisibleWhenOpen": true,
+    "singleRowComposerControls": true,
+    "launcherAnimationDisabled": true
+  },
+  "domain": {
+    "smallDeviceHorizontalActions": true,
+    "verticalButtonTextPrevented": true
+  },
+  "analytics": {
+    "productionRpcRetained": true,
+    "largerTimeSeries": true,
+    "largerHumanBotChart": true,
+    "fakeProductionStatisticsAdded": false
+  },
+  "auth": {
+    "persistSessionRetained": true,
+    "autoRefreshTokenRetained": true,
+    "forcedLogoutAdded": false,
+    "providerEndToEndClaimedByThisRelease": false
+  },
+  "publicSite": {
+    "atomicBootstrapV218Retained": true,
+    "doubleInitialThemeRenderIntended": false
+  },
+  "deployment": {
+    "legacyWhiteR4MustBeRejected": true,
+    "liveApexMustServeV221BeforeSuccess": true
+  },
+  "claims": {
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionUsersProven": false,
+    "requiresRealLoadTestForCapacityClaim": true,
+    "requiresRealDeviceVerificationBeforeHundredPercentClaim": true
+  }
+}
