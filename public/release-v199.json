@@ -4,12 +4,12 @@
   "date": "2026-08-02",
   "basedOn": "studio-persisted-session-recovery-v198-20260802",
   "scope": [
-    "production login bootstrap when browser build variables are absent but the same-origin Worker gateway is configured",
     "mobile drawer interaction and centered white n logo",
     "Theme Studio card containment and duplicate action normalization",
     "mobile layout-map readability",
     "profile and settings surface separation",
-    "Nara small/medium non-modal geometry and compact controls"
+    "Nara small/medium non-modal geometry and compact controls",
+    "authentication continuity regression guard without replacing the working production auth transport"
   ],
   "responsive": {
     "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop-family"],
@@ -27,13 +27,16 @@
     "settingsAndLogoutPreserved": true
   },
   "authentication": {
-    "persistSession": true,
-    "autoRefreshToken": true,
-    "sameOriginGatewayBootstrapFallback": true,
-    "browserPlaceholderKeyNeverOverridesServerProjectKey": true,
+    "transportRewrittenByV199": false,
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "authStateListenerRequired": true,
+    "sessionRestoreRequired": true,
     "transientNetworkFailureMustNotLogout": true,
-    "providerConfigurationStillRequiredOnSupabase": true,
-    "workerSupabaseEnvironmentStillRequired": true
+    "googleUiPreserved": true,
+    "linkedinUiPreserved": true,
+    "emailPasswordUiPreserved": true,
+    "magicLinkUiPreserved": true
   },
   "themeStudio": {
     "themeMinimumPreserved": 100,
@@ -73,7 +76,7 @@
   "validation": {
     "staticRegressionRequired": true,
     "productionBuildRequired": true,
-    "providerLoginRequiresLiveProviderCallbackTest": true,
+    "liveAuthLogsShouldBeCheckedBeforeChangingAuthTransport": true,
     "physicalDeviceVerificationRequiredBefore100PercentClaim": true,
     "massCapacityClaimed": false
   }
