@@ -1,0 +1,49 @@
+{
+  "release": "studio-production-v214-20260802",
+  "date": "2026-08-02",
+  "scope": "six responsive Studio families, adaptive Theme map, separated Profile Settings Logout",
+  "responsiveModes": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "desktop"
+  ],
+  "desktopVariants": ["laptop", "computer"],
+  "preserved": {
+    "allSidebarMenus": true,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "postPageWordLimit": 5000,
+    "naraSmallMediumNonModal": true,
+    "naraNativeAttachments": true,
+    "analyticsFactualV213": true,
+    "publicSiteSingleInitialRenderV209": true,
+    "persistSession": true,
+    "autoRefreshToken": true
+  },
+  "repairs": {
+    "applicationSafeArea": true,
+    "phoneThemeMapSingleColumn": true,
+    "mobileThemeMapPaired": true,
+    "compactThemeMapPaired": true,
+    "tabletLargeLayout": true,
+    "desktopLargeLayout": true,
+    "laptopDesktopVariant": true,
+    "computerDesktopVariant": true,
+    "mobileDrawerDoesNotShiftMain": true,
+    "mobileDrawerNoBlurLock": true,
+    "sidebarNavigationCentered": true,
+    "profileDropdown": true,
+    "profileSeparatedFromSiteSettings": true,
+    "logoutOnlyOnExplicitLogoutAction": true,
+    "layoutMainContentNotWidgetClickable": true
+  },
+  "validation": {
+    "fakeAnalytics": false,
+    "massCapacityClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceRequiredBeforeHundredPercentClaim": true
+  }
+}
