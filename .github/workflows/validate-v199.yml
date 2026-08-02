@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - "src/**"
-      - "server/**"
       - "scripts/**"
       - "public/**"
       - "package.json"
@@ -48,9 +47,8 @@ jobs:
         run: |
           set -euo pipefail
           grep -q 'studio-current-screenshot-v199-20260802' public/release-v199.json
-          grep -q 'ngeblogging-app-v199-mobile-auth-ui-20260802' public/sw.js
-          grep -q 'sameOriginGatewayOnlyV199' src/lib/supabase.js
-          grep -q '2026.08.02-auth-gateway-v199' server/auth-gateway-v108.mjs
-          grep -q '2026.08.02-data-gateway-v199' server/data-gateway-v110.mjs
+          grep -q 'ngeblogging-app-v199-mobile-ui-20260802' public/sw.js
+          grep -q 'persistSession: true' src/lib/supabase.js
+          grep -q 'autoRefreshToken: true' src/lib/supabase.js
           grep -q 'nara-mobile-direct-tools-v199' src/NaraAssistant.jsx
           grep -q 'studio-current-screenshot-v199.js' src/Studio.jsx
