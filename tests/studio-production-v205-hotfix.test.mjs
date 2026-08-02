@@ -6,7 +6,6 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-production-v205-hotfix.js");
 const css = read("src/studio-production-v205-hotfix.css");
-const callback = read("src/lib/auth-callback-v162.js");
 const supabase = read("src/lib/supabase.js");
 const nara = read("src/NaraAssistant.jsx");
 const patch = read("scripts/patch-production-v205-hotfix.mjs");
@@ -41,7 +40,7 @@ test("Theme layout and code controls cannot remain hidden inert or unclickable",
   assert.match(runtime, /layout\.disabled = false/);
   assert.match(runtime, /layout\.removeAttribute\("inert"\)/);
   assert.match(runtime, /layout\.removeAttribute\("aria-hidden"\)/);
-  assert.match(runtime, /layout\.scrollIntoView|target\.scrollIntoView/);
+  assert.match(runtime, /target\.scrollIntoView/);
   assert.match(runtime, /code\.hidden = false/);
   assert.match(runtime, /code\.disabled = false/);
   assert.match(css, /data-v205-hotfix-theme-action[\s\S]*pointer-events: auto !important/);
@@ -60,16 +59,10 @@ test("Nara keeps Camera Foto File inside + and compact controls do not blink", (
   assert.match(runtime, /Tambah kamera, foto, atau file/);
 });
 
-test("stale OAuth callback replay keeps an already valid persisted session", () => {
-  assert.match(callback, /AUTH_CALLBACK_REPLAY_RECOVERY_V205/);
-  assert.match(callback, /recoverExistingSessionFromReplay/);
-  assert.match(callback, /recovered-provider-state-replay/);
-  assert.match(callback, /providerStateReplayRecovered: true/);
-  assert.match(callback, /isConsumedCodeError\(oauthError\)/);
-  assert.equal((callback.match(/exchangeCodeForSession\(code\)/g) || []).length, 1);
-  assert.doesNotMatch(callback, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
+test("validated auth persistence remains untouched by the UI hotfix", () => {
   assert.match(supabase, /persistSession: true/);
   assert.match(supabase, /autoRefreshToken: true/);
+  assert.doesNotMatch(runtime, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
 test("v205.1 rotates service-worker cache without forced navigation or session destruction", () => {
@@ -91,11 +84,11 @@ test("release stays v205 for production gate and records only supported evidence
   assert.equal(release.repairs.mobileNLogoClosedWhiteOnBlue, true);
   assert.equal(release.repairs.mobileNLogoOpenBlueOnWhite, true);
   assert.equal(release.repairs.themeLayoutAndCodeActionsForceClickable, true);
-  assert.equal(release.repairs.oauthExpiredStateReplayKeepsValidSession, true);
   assert.equal(release.productionEvidence.googlePkceToken200ObservedOn20260802, true);
   assert.equal(release.validation.googleLoginEndToEndClaimed, false);
   assert.equal(release.validation.linkedinLoginEndToEndClaimed, false);
   assert.equal(release.validation.emailPasswordEndToEndClaimed, false);
+  assert.equal(release.validation.oauthStateReplayRecoveryClaimed, false);
   assert.equal(release.validation.nineHundredMillionUserCapacityClaimed, false);
   assert.equal(release.validation.realDeviceRequiredBeforeHundredPercentClaim, true);
 });
