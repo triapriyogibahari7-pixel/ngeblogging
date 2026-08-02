@@ -39,6 +39,26 @@ async function patchStudioEntry() {
   }
 }
 
+async function patchLegacyObserverOnce() {
+  const path = "src/studio-screenshot-recovery-v193.js";
+  let source = await read(path);
+  const oldBlock = `  attributeFilter: [
+    "class", "hidden", "inert", "aria-hidden", "data-nara-size",
+    "data-studio-responsive-mode", "data-studio-handheld", "data-studio-physical-mobile-v191",
+  ],`;
+  const newBlock = `  /* v202 finalizer: v193 writes hidden/inert/aria-hidden itself. Observing those
+     writes creates a mutation -> requestAnimationFrame -> mutation loop on phones. */
+  attributeFilter: [
+    "class", "data-nara-size",
+    "data-studio-responsive-mode", "data-studio-handheld", "data-studio-physical-mobile-v191",
+  ],`;
+  if (!source.includes("v202 finalizer: v193 writes hidden/inert/aria-hidden itself")) {
+    if (!source.includes(oldBlock)) throw new Error("V202_V193_OBSERVER_ANCHOR_MISSING");
+    source = source.replace(oldBlock, newBlock);
+    await write(path, source);
+  }
+}
+
 async function patchServiceWorker() {
   const path = "public/sw.js";
   let source = await read(path);
@@ -76,11 +96,20 @@ async function verify() {
     ["src/studio-production-v202.css", ".nara-composer-tools"],
     ["src/studio-production-v202.css", "flex-flow: row nowrap"],
     ["src/studio-production-v202.css", ".sn-api-empty"],
+    ["src/studio-screenshot-recovery-v193.js", "v202 finalizer: v193 writes hidden/inert/aria-hidden itself"],
     ["public/release-v202.json", RELEASE],
   ];
   for (const [path, marker] of checks) {
     const source = await read(path);
     if (!source.includes(marker)) throw new Error(`V202_VERIFY_FAILED:${path}:${marker}`);
+  }
+
+  const v193 = await read("src/studio-screenshot-recovery-v193.js");
+  const observerStart = v193.indexOf("new MutationObserver(scheduleV193)");
+  const observerEnd = v193.indexOf("});", observerStart);
+  const observer = observerStart >= 0 && observerEnd > observerStart ? v193.slice(observerStart, observerEnd + 3) : "";
+  if (!observer || /"hidden"|"inert"|"aria-hidden"/.test(observer)) {
+    throw new Error("V202_V193_SELF_OBSERVED_ATTRIBUTE_REMAINS");
   }
 
   const runtime = await read("src/studio-production-v202.js");
@@ -100,6 +129,7 @@ async function verify() {
 }
 
 await patchStudioEntry();
+await patchLegacyObserverOnce();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
