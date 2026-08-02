@@ -4,17 +4,25 @@ on:
   push:
     branches:
       - production
+  pull_request:
+    branches:
+      - production
+    types:
+      - opened
+      - synchronize
+      - reopened
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-studio-v197
-  cancel-in-progress: false
+  group: ngeblogging-production-v216-pr-trigger-20260802
+  cancel-in-progress: true
 
 jobs:
   deploy-v216:
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'agent/production-v216-pr-deploy-trigger')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: cloudflare-production
@@ -31,7 +39,7 @@ jobs:
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
 
     steps:
-      - name: Checkout production commit
+      - name: Checkout production candidate
         uses: actions/checkout@v4
 
       - name: Setup Node.js
