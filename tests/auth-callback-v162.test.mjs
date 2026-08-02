@@ -21,6 +21,12 @@ function occurrences(source, marker) {
   return source.split(marker).length - 1;
 }
 
+function v215RecoveryBlock() {
+  const start = main.indexOf("const authLateCallbackRecoveryV215");
+  const end = main.indexOf('setAuthMode("signin")', start);
+  return start >= 0 && end > start ? main.slice(start, end) : "";
+}
+
 test("PKCE callback v162 has exactly one exchange owner with a global single-flight lock", () => {
   assert.match(callback, /auth-callback-singleflight-v162-20260730/);
   assert.match(callback, /Symbol\.for\("ngeblogging\.auth\.callbackOperationV162"\)/);
@@ -102,8 +108,10 @@ test("v215 keeps v162 single-flight but lets an already verified session win ove
   assert.match(main, /retainedSession\?\.access_token/);
   assert.match(main, /retainedSession\?\.refresh_token/);
   assert.equal(occurrences(callback, "exchangeCodeForSession(code)"), 1);
-  assert.doesNotMatch(lateRecovery, /exchangeCodeForSession/);
-  assert.doesNotMatch(lateRecovery, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
+  const recovery = v215RecoveryBlock();
+  assert.ok(recovery, "v215 recovery block must exist in generated main.jsx");
+  assert.doesNotMatch(recovery, /exchangeCodeForSession/);
+  assert.doesNotMatch(recovery, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
 test("v215 rotates cache without forced navigation and records only observed provider evidence", () => {
