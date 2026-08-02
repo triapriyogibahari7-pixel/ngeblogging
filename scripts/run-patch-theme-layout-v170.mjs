@@ -26,32 +26,21 @@ const before = inspect();
 const presentCount = before.filter((entry) => entry.present).length;
 
 if (presentCount === checks.length) {
-  console.log("[theme-layout-v170-20260730] patch already complete; preserving existing source");
-} else if (presentCount > 0) {
+  console.log("[theme-layout-v170-20260730] patch already complete; no source mutation required");
+  process.exit(0);
+}
+
+if (presentCount > 0) {
   const missing = before.filter((entry) => !entry.present).map((entry) => `${entry.file}: ${entry.marker}`);
   throw new Error(`Patch v170 berada pada keadaan parsial. Hentikan untuk mencegah duplikasi. Marker hilang:\n- ${missing.join("\n- ")}`);
-} else {
-  await import("./patch-theme-layout-v170.mjs");
-  const after = inspect();
-  const missingAfterPatch = after.filter((entry) => !entry.present);
-  if (missingAfterPatch.length) {
-    throw new Error(`Patch v170 tidak lengkap setelah dijalankan:\n- ${missingAfterPatch.map((entry) => `${entry.file}: ${entry.marker}`).join("\n- ")}`);
-  }
-  console.log("[theme-layout-v170-20260730] patch applied exactly once and verified");
 }
 
-await import("./patch-theme-layout-v210.mjs");
+await import("./patch-theme-layout-v170.mjs");
 
-const v210Checks = [
-  ["src/widget-system.js", 'WIDGET_LAYOUT_V210 = "theme-layout-v210-20260802"'],
-  ["src/widget-system.js", 'id: "sidebar-left-4"'],
-  ["src/widget-system.js", 'id: "sidebar-right-4"'],
-  ["src/ThemeStudio.jsx", 'data-theme-layout-v210="theme-layout-v210-20260802"'],
-  ["src/ThemeStudio.jsx", "tn-widget-code-v210"],
-  ["src/ThemeStudio.jsx", "widgetAreaV210"],
-];
-const missingV210 = v210Checks.filter(([file, marker]) => !read(file).includes(marker));
-if (missingV210.length) {
-  throw new Error(`Patch v210 tidak lengkap:\n- ${missingV210.map(([file, marker]) => `${file}: ${marker}`).join("\n- ")}`);
+const after = inspect();
+const missingAfterPatch = after.filter((entry) => !entry.present);
+if (missingAfterPatch.length) {
+  throw new Error(`Patch v170 tidak lengkap setelah dijalankan:\n- ${missingAfterPatch.map((entry) => `${entry.file}: ${entry.marker}`).join("\n- ")}`);
 }
-console.log("[theme-layout-v210-20260802] four-left/four-right layout and custom code widgets verified");
+
+console.log("[theme-layout-v170-20260730] patch applied exactly once and verified");
