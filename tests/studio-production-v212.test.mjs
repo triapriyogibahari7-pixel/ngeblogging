@@ -63,13 +63,16 @@ test("layout map has four real left and four real right widget areas around a la
   assert.match(css, /background:linear-gradient\(145deg,#1268e8,#0755c7\)/);
 });
 
-test("100 themes and custom HTML JavaScript widget remain synchronized with Theme Studio", () => {
+test("100 themes and custom HTML JavaScript widget remain synchronized with the v209 area-aware Theme Studio", () => {
   assert.equal(THEME_COUNT, 100);
   assert.equal(BUILT_IN_THEMES.length, 100);
   assert.equal(new Set(BUILT_IN_THEMES.map((theme) => theme.id)).size, 100);
   assert.equal(WIDGET_COUNT, 26);
   assert.ok(BUILT_IN_WIDGETS.some((widget) => widget.id === "custom-html"));
-  assert.match(themeStudio, /Peta tata letak 22 area widget/);
+  assert.match(themeStudio, /data-v212-layout-areas="22"/);
+  assert.match(themeStudio, /empat widget kiri dan empat widget kanan/);
+  assert.match(themeStudio, /preferredArea=\{widgetArea\}/);
+  assert.match(themeStudio, /tn-widget-custom-code-v209/);
 });
 
 test("Nara small and medium remain non-modal and plus exposes Camera Photo File with model and intelligence controls", () => {
