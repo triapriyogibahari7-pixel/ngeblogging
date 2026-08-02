@@ -2,6 +2,7 @@ import "./studio-production-v204.css";
 
 const RELEASE = "studio-production-v204-20260802";
 let frame = 0;
+let lastOnlineRetry = 0;
 
 function mobileLike() {
   const root = document.documentElement;
@@ -79,14 +80,46 @@ function normalizeProfileMenu() {
   });
 }
 
-function normalizeStartupState() {
-  const startup = document.querySelector(".so75-startup");
-  if (!startup) return;
-  const userKnown = Boolean(
+function verifiedUserKnown() {
+  return Boolean(
     window.__ngebloggingVerifiedSession?.user?.id
     || window.__ngebloggingVerifiedSession?.session?.user?.id
   );
+}
+
+function normalizeStartupState() {
+  const startup = document.querySelector(".so75-startup");
+  if (!startup) return;
+  const userKnown = verifiedUserKnown();
   startup.dataset.sessionContinuityV204 = userKnown ? "retained" : "checking";
+  if (!userKnown) return;
+
+  const heading = startup.querySelector("section > h1");
+  const kicker = startup.querySelector("section > small");
+  const retry = startup.querySelector("section > button");
+  if (retry && heading?.textContent?.includes("Koneksi data belum selesai")) {
+    heading.textContent = "Sinkronisasi data belum selesai.";
+    if (kicker) kicker.textContent = "LOGIN AKTIF · MENYAMBUNGKAN DATA STUDIO";
+    retry.dataset.v204Retry = "session-retained";
+  }
+
+  let note = startup.querySelector(".v204-session-retained-note");
+  if (retry && !note) {
+    note = document.createElement("p");
+    note.className = "v204-session-retained-note";
+    note.textContent = "Sesi login masih aktif. Gangguan ini berada pada sinkronisasi data ruang kerja; akun tidak dikeluarkan otomatis.";
+    retry.insertAdjacentElement("beforebegin", note);
+  }
+}
+
+function retryStartupWhenOnline() {
+  if (!verifiedUserKnown()) return;
+  const now = Date.now();
+  if (now - lastOnlineRetry < 5_000) return;
+  const retry = document.querySelector('.so75-startup section > button[data-v204-retry="session-retained"]');
+  if (!retry || retry.disabled) return;
+  lastOnlineRetry = now;
+  retry.click();
 }
 
 function sync() {
@@ -117,12 +150,21 @@ new MutationObserver(schedule).observe(document.documentElement, {
   ],
 });
 
-for (const name of ["pageshow", "resize", "orientationchange", "online"]) {
+for (const name of ["pageshow", "resize", "orientationchange"]) {
   window.addEventListener(name, schedule, { passive: true });
 }
+window.addEventListener("online", () => { schedule(); requestAnimationFrame(retryStartupWhenOnline); }, { passive: true });
 window.visualViewport?.addEventListener("resize", schedule, { passive: true });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
 
 sync();
 
-export { RELEASE, mobileLike, normalizeTopbar, normalizeProfileMenu, normalizeStartupState, sync };
+export {
+  RELEASE,
+  mobileLike,
+  normalizeTopbar,
+  normalizeProfileMenu,
+  normalizeStartupState,
+  retryStartupWhenOnline,
+  sync,
+};
