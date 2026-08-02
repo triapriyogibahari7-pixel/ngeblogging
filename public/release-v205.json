@@ -3,7 +3,7 @@
   "hotfix": "studio-production-v205-hotfix-logo-auth-20260802",
   "status": "candidate",
   "basedOn": "studio-production-v204-20260802",
-  "scope": "Fix current real-device screenshot regressions in Theme Studio, physical-mobile layout/code editing, Nara native attachment controls, logo/drawer stability, retained-session Studio startup behavior, and stale OAuth callback replay after a successful persisted login.",
+  "scope": "Fix current real-device screenshot regressions in Theme Studio, physical-mobile layout/code editing, Nara native attachment controls, logo/drawer stability, and retained-session Studio startup behavior without replacing the validated v205 authentication callback.",
   "repairs": {
     "themeLayoutActionSingleVisibleLabel": true,
     "themeHeroActionsContainedOnPhysicalMobile": true,
@@ -24,7 +24,6 @@
     "mobileDrawerRemainsClickableWithoutBlur": true,
     "verifiedSessionStartupDoesNotPresentAsLoginFailure": true,
     "verifiedSessionStartupRetryIsBounded": true,
-    "oauthExpiredStateReplayKeepsValidSession": true,
     "noAutomaticLogoutOnTransientDataFailure": true
   },
   "productionEvidence": {
@@ -45,6 +44,7 @@
     "googleLoginEndToEndClaimed": false,
     "linkedinLoginEndToEndClaimed": false,
     "emailPasswordEndToEndClaimed": false,
+    "oauthStateReplayRecoveryClaimed": false,
     "massLoginCapacityClaimed": false,
     "nineHundredMillionUserCapacityClaimed": false
   }
