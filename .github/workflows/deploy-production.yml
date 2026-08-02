@@ -2,7 +2,7 @@ name: Deploy Ngeblogging Production v201
 
 on:
   push:
-    branches: [main]
+    branches: [main, production]
     paths:
       - "src/**"
       - "public/**"
@@ -35,7 +35,7 @@ jobs:
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
 
     steps:
-      - name: Checkout main
+      - name: Checkout deployment branch
         uses: actions/checkout@v4
 
       - name: Setup Node.js
