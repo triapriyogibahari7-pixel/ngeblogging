@@ -1,0 +1,125 @@
+/* v214 profile/settings separation. */
+html[data-studio-production-v214] .sn-profile-menu-wrap {
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0 !important;
+}
+html[data-studio-production-v214] .sn-profile-menu-wrap > .sn-avatar {
+  position:relative !important;
+  z-index:2 !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown {
+  position:absolute !important;
+  top:calc(100% + 10px) !important;
+  right:0 !important;
+  left:auto !important;
+  z-index:2147483400 !important;
+  width:min(310px,calc(100vw - 24px)) !important;
+  min-width:250px !important;
+  max-width:calc(100vw - 24px) !important;
+  display:grid !important;
+  gap:5px !important;
+  padding:8px !important;
+  border:1px solid #d8e2ee !important;
+  border-radius:16px !important;
+  background:#fff !important;
+  color:#22364e !important;
+  box-shadow:0 22px 60px rgba(15,35,62,.22) !important;
+  overflow:hidden !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button {
+  width:100% !important;
+  min-width:0 !important;
+  min-height:56px !important;
+  display:grid !important;
+  grid-template-columns:38px minmax(0,1fr) !important;
+  align-items:center !important;
+  gap:10px !important;
+  padding:9px 10px !important;
+  border:0 !important;
+  border-radius:12px !important;
+  background:transparent !important;
+  color:inherit !important;
+  text-align:left !important;
+  cursor:pointer !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button:hover,
+html[data-studio-production-v214] .sn-profile-dropdown > button:focus-visible {
+  background:#f0f5fb !important;
+  outline:none !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button.danger {
+  color:#a72d38 !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button > svg {
+  width:20px !important;
+  height:20px !important;
+  justify-self:center !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button > span {
+  min-width:0 !important;
+  display:grid !important;
+  gap:2px !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button b,
+html[data-studio-production-v214] .sn-profile-dropdown > button small {
+  min-width:0 !important;
+  max-width:100% !important;
+  white-space:normal !important;
+  word-break:normal !important;
+  overflow-wrap:break-word !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button b {
+  font-size:14px !important;
+  line-height:1.2 !important;
+}
+html[data-studio-production-v214] .sn-profile-dropdown > button small {
+  color:#75859a !important;
+  font-size:11px !important;
+  line-height:1.3 !important;
+}
+html[data-studio-production-v214] .sn-profile-grid-v214,
+html[data-studio-production-v214] .sn-site-settings-v214 {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+html[data-studio-production-v214] .sn-profile-note-v214,
+html[data-studio-production-v214] .sn-setting-domain-v214 {
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-wrap:break-word !important;
+}
+html[data-studio-production-v214] .sn-setting-domain-v214 {
+  display:grid !important;
+  gap:5px !important;
+  margin-top:8px !important;
+  padding:14px !important;
+  border:1px solid #d9e4f0 !important;
+  border-radius:14px !important;
+  background:#f7faff !important;
+}
+html[data-studio-production-v214] .sn-setting-domain-v214 b {
+  font-size:14px !important;
+  overflow-wrap:anywhere !important;
+}
+@media(max-width:760px) {
+  html[data-studio-production-v214] .sn-profile-dropdown {
+    position:fixed !important;
+    top:max(66px,calc(env(safe-area-inset-top) + 58px)) !important;
+    right:10px !important;
+    left:auto !important;
+    width:min(300px,calc(100vw - 20px)) !important;
+    min-width:0 !important;
+    max-height:calc(100dvh - 86px - env(safe-area-inset-bottom)) !important;
+    overflow:auto !important;
+  }
+  html[data-studio-production-v214] .sn-profile-grid-v214,
+  html[data-studio-production-v214] .sn-site-settings-v214 {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+}
