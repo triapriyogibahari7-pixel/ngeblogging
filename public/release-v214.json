@@ -35,6 +35,9 @@
     "retainedSessionScopedSiteCacheFallback": true,
     "drawerDoesNotBlurPage": true,
     "sidebarFlickerDisabled": true,
+    "profileDropdownHasProfileSettingsLogout": true,
+    "profileSeparatedFromSiteSettings": true,
+    "profileDropdownStylesWiredIntoStudio": true,
     "serviceWorkerForcedNavigationDisabled": true
   },
   "validation": {
