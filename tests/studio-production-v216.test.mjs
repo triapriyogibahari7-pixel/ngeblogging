@@ -107,11 +107,19 @@ test("Domain stays horizontal and analytics uses only the existing real RPC with
   assert.equal(release.validation.fakeProductionAnalyticsAdded, false);
 });
 
-test("login persistence and public single-render protections remain unchanged", () => {
+test("login persistence and public site atomic single-render protections remain unchanged", () => {
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.match(auth, /flowType:\s*"pkce"/);
-  assert.match(publicSite, /PUBLIC_SITE_SINGLE_RENDER_V209/);
+  assert.match(publicSite, /PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218/);
+  assert.match(publicSite, /const \[pageRows,postPage,item\]=await Promise\.all/);
+  const bootstrap = publicSite.indexOf("const [pageRows,postPage,item]=await Promise.all");
+  const pagesReady = publicSite.indexOf("setPages(orderedPages)", bootstrap);
+  const postsReady = publicSite.indexOf("setPosts(postPage.contents)", bootstrap);
+  const contentReady = publicSite.indexOf("setContent(item)", bootstrap);
+  const sitePublished = publicSite.indexOf("setSite(resolved)", bootstrap);
+  assert.ok(bootstrap >= 0 && pagesReady > bootstrap && postsReady > bootstrap && contentReady > bootstrap);
+  assert.ok(sitePublished > pagesReady && sitePublished > postsReady && sitePublished > contentReady);
   assert.doesNotMatch(runtime, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
