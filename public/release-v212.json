@@ -1,0 +1,29 @@
+{
+  "release": "studio-production-v212-20260802",
+  "version": "ngeblogging-app-v212-layout-code-nara-analytics-20260802",
+  "scope": [
+    "locked central Post/Page layout surface",
+    "four real left widget slots and four real right widget slots",
+    "responsive HTML CSS JavaScript editor with live preview and panel swap",
+    "native Nara Camera Photo File attachment menu",
+    "Nara small and medium non-modal geometry",
+    "Domain handheld horizontal actions",
+    "larger smooth production analytics visualization",
+    "physical handheld and large-tablet authority",
+    "session and public-site single-render compatibility"
+  ],
+  "claims": {
+    "fakeAnalytics": false,
+    "fakeCapacity": false,
+    "massLoginCapacityProven": false,
+    "allOAuthProvidersEndToEndProven": false
+  },
+  "requiresPostDeployValidation": [
+    "real provider login replay",
+    "Chrome Android physical device",
+    "Safari iPhone physical device",
+    "desktop browser family",
+    "PWA installed mode",
+    "production Cloudflare route and cache"
+  ]
+}
