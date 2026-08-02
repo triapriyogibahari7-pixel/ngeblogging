@@ -62,7 +62,9 @@ await import("./patch-studio-bootstrap-v196.mjs");
 await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
-await import("./patch-current-screenshot-v199.mjs");
-await import("./patch-mobile-flicker-v200.mjs");
-await import("./patch-production-v201.mjs");
+
+// v199-v201 remain available as historical source/runtime authorities, but their
+// build-time source mutators are intentionally not executed. v198 is the last
+// deployment that proved green; v202 applies the required screenshot recovery
+// once, deterministically, after that stable bootstrap/session baseline.
 await import("./patch-production-v202.mjs");
