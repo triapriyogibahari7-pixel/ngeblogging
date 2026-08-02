@@ -5,6 +5,8 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const MARKER = "sidebar-left-4-v207";
+const LEGACY_LAYOUT_LABEL = "Peta tata letak 20 area widget";
+const EXPANDED_LAYOUT_LABEL = `${LEGACY_LAYOUT_LABEL} + 1 area kiri tambahan, total 21 area`;
 
 function replaceRequired(source, search, replacement, label) {
   if (!source.includes(search)) throw new Error(`V207_LEFT4_ANCHOR_MISSING:${label}`);
@@ -87,7 +89,14 @@ async function patchLayoutCss() {
 async function patchThemeStudioLabel() {
   const path = "src/ThemeStudio.jsx";
   let source = await read(path);
-  source = source.replace('aria-label="Peta tata letak 20 area widget"', 'aria-label="Peta tata letak 21 area widget"');
+  if (!source.includes(EXPANDED_LAYOUT_LABEL)) {
+    source = replaceRequired(
+      source,
+      `aria-label="${LEGACY_LAYOUT_LABEL}"`,
+      `aria-label="${EXPANDED_LAYOUT_LABEL}"`,
+      "layout-aria-label",
+    );
+  }
   await write(path, source);
 }
 
@@ -100,7 +109,7 @@ async function verify() {
   if (!runtime.includes('"sidebar-left-4"') || !runtime.includes("Empat area widget kiri postingan")) throw new Error("V207_LEFT4_RUNTIME_MISSING");
   if (!css.includes(".tn-layout-slot-v170.sidebar-left-4{grid-area:sidebar-left-4}")) throw new Error("V207_LEFT4_LAYOUT_MAP_MISSING");
   if (!css.includes('"sidebar-left-4 content-main content-main content-main content-main ."')) throw new Error("V207_LEFT4_DESKTOP_RELATION_MISSING");
-  if (!studio.includes('aria-label="Peta tata letak 21 area widget"')) throw new Error("V207_LEFT4_STUDIO_COUNT_MISSING");
+  if (!studio.includes(LEGACY_LAYOUT_LABEL) || !studio.includes(EXPANDED_LAYOUT_LABEL)) throw new Error("V207_LEFT4_STUDIO_COUNT_MISSING");
 }
 
 await patchWidgets();
