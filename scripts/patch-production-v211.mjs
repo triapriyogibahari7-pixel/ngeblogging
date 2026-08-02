@@ -74,7 +74,7 @@ async function patchNaraAttachmentSource() {
     source = replaceRequired(
       source,
       '<div className="nara-attachment-menu">\n                      <button onClick={() => cameraInput.current?.click()}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button>\n                      <button onClick={() => imageInput.current?.click()}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button>\n                      <button onClick={() => fileInput.current?.click()}><File /><span><b>File teks</b><small>TXT, Markdown, CSV, atau JSON</small></span></button>\n                    </div>',
-      '<div id="nara-attachment-menu-v211" className="nara-attachment-menu" role="menu" aria-label="Pilihan lampiran">\n                      <button type="button" role="menuitem" onClick={() => { setAttachmentMenu(false); cameraInput.current?.click(); }}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button>\n                      <button type="button" role="menuitem" onClick={() => { setAttachmentMenu(false); imageInput.current?.click(); }}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button>\n                      <button type="button" role="menuitem" onClick={() => { setAttachmentMenu(false); fileInput.current?.click(); }}><File /><span><b>File</b><small>TXT, Markdown, CSV, atau JSON</small></span></button>\n                    </div>',
+      '<div id="nara-attachment-menu-v211" className="nara-attachment-menu" role="menu" aria-label="Pilihan lampiran">\n                      <button type="button" role="menuitem" onClick={() => { setAttachmentMenu(false); cameraInput.current?.click(); }}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button>\n                      <button type="button" role="menuitem" onClick={() => { setAttachmentMenu(false); imageInput.current?.click(); }}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button>\n                      <button type="button" role="menuitem" onClick={() => { setAttachmentMenu(false); fileInput.current?.click(); }}><File /><span><b>File teks</b><small>TXT, Markdown, CSV, atau JSON</small></span></button>\n                    </div>',
       "nara-attachment-menu",
     );
     await write(path, source);
@@ -120,6 +120,7 @@ async function verify() {
     [themeStudio, 'from "react-dom"', "React portal import"],
     [nara, 'aria-controls="nara-attachment-menu-v211"', "Nara attachment trigger"],
     [nara, 'role="menu"', "Nara attachment menu semantics"],
+    [nara, '<File /><span><b>File teks</b>', "Nara legacy File teks label retained"],
     [runtime, "studio-production-v211-20260802", "v211 runtime"],
     [runtime, "studioMobileV211", "physical mobile data marker"],
     [runtime, "camera-photo-file", "Nara attachment runtime"],
