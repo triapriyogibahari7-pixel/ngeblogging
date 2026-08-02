@@ -1,5 +1,5 @@
 [build]
-  command = "npm run patch:studio && mkdir -p dist && printf '<!doctype html><title>v202 patch stage ok</title>' > dist/index.html"
+  command = "npm run test:production && mkdir -p dist && printf '<!doctype html><title>v202 production regressions ok</title>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
