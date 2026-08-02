@@ -1,4 +1,4 @@
-name: Validate Studio v199
+name: Validate Studio v199-v200
 
 on:
   pull_request:
@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-studio-v199-${{ github.ref }}
+  group: validate-studio-v199-v200-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -42,13 +42,16 @@ jobs:
       - name: Build browser bundle
         run: npx vite build
 
-      - name: Verify v199 artifacts
+      - name: Verify v199-v200 artifacts
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'studio-current-screenshot-v199-20260802' public/release-v199.json
-          grep -q 'ngeblogging-app-v199-mobile-ui-20260802' public/sw.js
+          grep -q 'studio-mobile-flicker-v200-20260802' public/release-v200.json
+          grep -q 'ngeblogging-app-v200-mobile-flicker-20260802' public/sw.js
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
           grep -q 'nara-mobile-direct-tools-v199' src/NaraAssistant.jsx
           grep -q 'studio-current-screenshot-v199.js' src/Studio.jsx
+          grep -q 'studio-mobile-flicker-v200.js' src/Studio.jsx
+          grep -q 'v200: do not observe hidden/inert/aria-hidden' src/studio-screenshot-recovery-v193.js
