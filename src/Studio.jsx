@@ -43,5 +43,6 @@ import "./studio-current-screenshot-v199.js";
 import "./studio-mobile-flicker-v200.js";
 import "./studio-production-v201.js";
 import "./studio-production-v202.js";
+import "./studio-production-v203.js";
 
 export default StudioFastGate;
