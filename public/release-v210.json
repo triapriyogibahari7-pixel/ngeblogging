@@ -1,0 +1,34 @@
+{
+  "release": "studio-production-v210-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v209-20260802",
+  "repairs": {
+    "currentActiveSiteResume": true,
+    "naraSmallMediumNonModal": true,
+    "naraAttachmentCameraPhotoFileVisible": true,
+    "naraSmallMediumFullDistinct": true,
+    "themeCodeEditorVisible": true,
+    "themeCodeDesktopSplit5050": true,
+    "themeCodeMobileStacked": true,
+    "themeLayoutFourLeftFourRight": true,
+    "customHtmlJavascriptWidgetEditable": true,
+    "domainPublicationActionHorizontal": true,
+    "domainLongSubdomainContained": true,
+    "drawerBackdropNoBlur": true
+  },
+  "preserved": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "sessionUntilExplicitLogout": true,
+    "wordLimit": 5000,
+    "productionDataOnly": true
+  },
+  "validation": {
+    "realProviderLoginStillRequiresInteractiveProviderCallback": true,
+    "realDeviceVerificationRequired": true,
+    "massCapacityClaimed": false,
+    "reason": "A UI/build regression suite cannot prove hundreds of millions of concurrent logins; production load testing is required."
+  }
+}

@@ -68,9 +68,11 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // Nara and retained-session authority. v205.1 closes the logo/action gaps, v206
 // adds native Theme/two-row Nara/RLS recovery, v207 closes the remaining
 // screenshot geometry/live authority gap, then left4 extends the real widget map.
-// v208 preserves its screenshot compatibility; v209 is the final authority for
-// area-aware Theme editing, the fourth right slot, Nara attachments, Domain mobile
-// containment and in-place retained-session recovery without a second hard reload.
+// v208 preserves its screenshot compatibility; v209 owns the area-aware Theme,
+// public-site single initial render and in-place retained-session recovery.
+// v210 runs last: it keeps v209 functionality, fixes the code modal visibility,
+// Nara Camera/Photo/File geometry, Domain mobile wrapping, and rotates cache
+// without destructive logout or forced navigation.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -83,3 +85,4 @@ await import("./patch-production-v208.mjs");
 await import("./patch-production-v209.mjs");
 await import("./patch-production-v209-compat.mjs");
 await import("./patch-public-site-v209.mjs");
+await import("./patch-production-v210.mjs");
