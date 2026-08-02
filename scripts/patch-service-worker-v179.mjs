@@ -65,11 +65,13 @@ await import("./patch-studio-persisted-session-v198.mjs");
 
 // v199-v201 remain historical source/runtime authorities. v202-v204 keep their
 // proven compatibility contracts; v205 is the validated physical-mobile Theme,
-// Nara and retained-session authority. v205.1 closes the logo/action gaps, and
-// v206 is the final native Theme + two-row Nara + real-membership recovery layer.
+// Nara and retained-session authority. v205.1 closes the logo/action gaps, v206
+// adds native Theme/two-row Nara/RLS recovery, and v207 closes the remaining
+// screenshot geometry plus live production authority gap.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
 await import("./patch-production-v205.mjs");
 await import("./patch-production-v205-hotfix.mjs");
 await import("./patch-production-v206.mjs");
+await import("./patch-production-v207.mjs");
