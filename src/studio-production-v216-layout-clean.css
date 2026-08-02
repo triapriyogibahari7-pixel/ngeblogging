@@ -1,0 +1,47 @@
+/* v216 layout-map copy cleanup.
+   The user asked for the layout system/design to remain, but the long explanatory
+   sentence above the map must not consume the mobile viewport. */
+html[data-studio-production-v216] .tn-layout-studio-header > div > h2,
+html[data-studio-production-v216] .tn-layout-studio-header > div > p {
+  display:none !important;
+}
+html[data-studio-production-v216] .tn-layout-studio-header {
+  min-width:0 !important;
+  max-width:100% !important;
+  align-items:center !important;
+  gap:10px !important;
+}
+html[data-studio-production-v216] .tn-layout-studio-header > div {
+  min-width:0 !important;
+  max-width:100% !important;
+}
+html[data-studio-production-v216] .tn-layout-studio-header > div > small {
+  display:block !important;
+  margin:0 !important;
+  line-height:1.2 !important;
+  letter-spacing:.12em !important;
+}
+html[data-studio-production-v216] .tn-layout-studio-header > button {
+  min-height:46px !important;
+  white-space:nowrap !important;
+}
+html[data-studio-production-v216][data-studio-v216-physical-family="small"] .tn-layout-studio-header {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  padding:10px 0 !important;
+}
+html[data-studio-production-v216][data-studio-v216-physical-family="small"] .tn-layout-studio-header > button {
+  width:auto !important;
+  min-width:118px !important;
+  max-width:min(44vw,176px) !important;
+  padding-inline:12px !important;
+}
+@media (max-width:340px) {
+  html[data-studio-production-v216][data-studio-v216-physical-family="small"] .tn-layout-studio-header {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  html[data-studio-production-v216][data-studio-v216-physical-family="small"] .tn-layout-studio-header > button {
+    width:100% !important;
+    max-width:100% !important;
+  }
+}
