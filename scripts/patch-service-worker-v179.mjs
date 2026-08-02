@@ -90,3 +90,4 @@ await import("./patch-production-v210.mjs");
 await import("./patch-production-v211.mjs");
 await import("./patch-production-v212.mjs");
 await import("./patch-production-v212-css-fix.mjs");
+await import("./patch-production-v212-compat.mjs");
