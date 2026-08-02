@@ -1,31 +1,20 @@
-name: Deploy Ngeblogging Production v201
+name: Deploy Ngeblogging Production v172 manual fallback
 
 on:
-  push:
-    branches: [main, production]
-    paths:
-      - "src/**"
-      - "public/**"
-      - "scripts/**"
-      - "cloudflare/**"
-      - "api/**"
-      - "package.json"
-      - "package-lock.json"
-      - "wrangler.production.jsonc"
-      - ".github/workflows/deploy-production.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
-  group: ngeblogging-production-v201
+  group: ngeblogging-production-v172-manual-fallback
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  validate-only:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -35,7 +24,7 @@ jobs:
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
 
     steps:
-      - name: Checkout deployment branch
+      - name: Checkout main
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -47,39 +36,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Validate production regressions and build
+      - name: Validate complete production source
         run: npm run build
 
-      - name: Verify v201 build markers
-        shell: bash
+      - name: Explain fallback behavior
         run: |
-          set -euo pipefail
-          grep -q 'studio-production-v201-20260802' public/release-v201.json
-          grep -q 'ngeblogging-app-v201-production-ui-20260802' public/sw.js
-          grep -q 'ngeblogging-pwa-v201-20260802' src/pwa-runtime.js
-          grep -q 'studio-production-v201.js' src/Studio.jsx
-          test -d dist
-          test -f dist/index.html
-
-      - name: Deploy Worker and static assets to Cloudflare production
-        run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
-
-      - name: Verify live release marker
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 12); do
-            if curl -fsS --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v201.json?verify=${GITHUB_SHA}" | grep -q 'studio-production-v201-20260802'; then
-              echo "Live release v201 confirmed."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Production did not expose release-v201.json after deployment." >&2
-          exit 1
-
-      - name: Verify live service worker version
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?verify=${GITHUB_SHA}" | grep -q 'ngeblogging-app-v201-production-ui-20260802'
+          echo "This workflow is validation-only and manual."
+          echo "Use Ngeblogging production route cutover v184 for automatic deployment, route cutover, and live verification."
