@@ -1,0 +1,60 @@
+{
+  "status": "production-candidate",
+  "release": "studio-production-v201-20260802",
+  "date": "2026-08-02",
+  "reason": "Production was still serving an older Cloudflare Worker/static bundle after repository fixes had been merged.",
+  "productionAuthority": "cloudflare-worker-with-dist-assets",
+  "fixes": {
+    "automaticCloudflareDeploymentWorkflow": true,
+    "pwaControllerRecoveryVersionRotated": true,
+    "serviceWorkerCacheVersionRotated": true,
+    "noForcedNavigationDuringAuthOrEditor": true,
+    "mobileLogoWhiteCentered": true,
+    "mobileDrawerInteractive": true,
+    "themeDuplicateLayoutActionsCollapsed": true,
+    "themeHtmlCssJavascriptSingleEntry": true,
+    "themePaintContained": true,
+    "apiKeysMobileNormalFlow": true,
+    "naraSmallMediumNonModal": true,
+    "naraCompactHeaderControls": true,
+    "naraCompactComposerControls": true
+  },
+  "responsive": {
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop-family"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themePreviewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]
+  },
+  "preserved": [
+    "Ringkasan",
+    "Posts",
+    "Pages",
+    "5000-word guard",
+    "SEO",
+    "100-theme library",
+    "Edit Tata Letak",
+    "HTML/CSS/JavaScript editor",
+    "Media",
+    "Analytics",
+    "Members",
+    "Comments",
+    "Domains",
+    "API Keys",
+    "Nara attachments",
+    "Nara microphone",
+    "Nara speaker",
+    "Nara models",
+    "Nara intelligence levels"
+  ],
+  "authentication": {
+    "transportRewritten": false,
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "transientNetworkFailureMustNotLogout": true
+  },
+  "validation": {
+    "liveProductionMustServeThisReleaseFile": true,
+    "liveServiceWorkerMustReportV201": true,
+    "physicalDeviceVerificationRequired": true,
+    "massCapacityClaimed": false
+  }
+}
