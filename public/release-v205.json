@@ -18,6 +18,7 @@
     "naraSmallMediumRemainNonModal": true,
     "naraCloseAlwaysVisible": true,
     "naraControlAnimationsDisabled": true,
+    "mobileNLogoForcedWhiteOnBlue": true,
     "mobileNLogoClosedWhiteOnBlue": true,
     "mobileNLogoOpenBlueOnWhite": true,
     "mobileDrawerRemainsClickableWithoutBlur": true,
