@@ -35,7 +35,9 @@ test("layout map keeps Post or Page as a locked large central surface", () => {
   assert.match(theme, /sidebar-right-4/);
   assert.match(css, /\.tn-layout-post-grid-v212/);
   assert.match(css, /\.tn-layout-content-main-v212/);
-  assert.doesNotMatch(theme, /tn-layout-content-main-v212[^]*onClick=/);
+  const openingTag = theme.match(/<div className="tn-layout-content-main-v212"[^>]*>/)?.[0] || "";
+  assert.ok(openingTag, "locked content opening tag missing");
+  assert.doesNotMatch(openingTag, /onClick=/);
 });
 
 test("all four left and four right slots remain real widget areas and custom code remains available", () => {
@@ -71,7 +73,7 @@ test("Nara keeps native Camera Photo File menu and small/medium non-modal author
 
 test("Domain handheld actions are horizontal full-width and analytics stays production-backed", () => {
   assert.match(css, /writing-mode:horizontal-tb/);
-  assert.match(css, /data-studio-v212-device="handheld"[^]*\.op41-domain button/);
+  assert.match(css, /data-studio-v212-device="handheld"[\s\S]*\.op41-domain button/);
   assert.match(analytics, /get_site_analytics_dashboard/);
   assert.match(analytics, /lineSvgV212/);
   assert.match(analytics, /op41-line-v212/);
