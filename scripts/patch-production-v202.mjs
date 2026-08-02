@@ -10,6 +10,7 @@ const SW_CACHE = "mobile-theme-nara-cache-v202";
 const SW_REFRESH = "mobile-theme-nara-v202";
 const SW_MARKER = `const STUDIO_PRODUCTION_RELEASE_V202 = "${RELEASE}";`;
 const SW_COMPAT = [
+  'const THEME_LAYOUT_COMPAT_EVENT_V170 = "NGE_BLOGGING_FORCE_RELOAD_V170";',
   'const STUDIO_PRODUCTION_COMPAT_VERSION_V198 = "ngeblogging-app-v198-persisted-session-20260802";',
   'const STUDIO_PRODUCTION_COMPAT_CACHE_V198 = "studio-persisted-session-cache-v198";',
   'const STUDIO_PRODUCTION_COMPAT_VERSION_V199 = "ngeblogging-app-v199-mobile-ui-20260802";',
@@ -66,11 +67,10 @@ async function patchServiceWorker() {
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${SW_CACHE}";`);
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, `const FORCE_REFRESH_VALUE = "${SW_REFRESH}";`);
 
-  source = insertAfterVersion(source, SW_MARKER);
-  for (const marker of SW_COMPAT) source = insertAfterVersion(source, marker);
-
   source = source.replace(/NGE_BLOGGING_UPDATE_AVAILABLE_V\d+/g, "NGE_BLOGGING_UPDATE_AVAILABLE_V202");
   source = source.replace(/NGE_BLOGGING_FORCE_RELOAD_V\d+/g, "NGE_BLOGGING_UPDATE_AVAILABLE_V202");
+  source = insertAfterVersion(source, SW_MARKER);
+  for (const marker of SW_COMPAT) source = insertAfterVersion(source, marker);
   source = source.replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v202: update tersedia tanpa navigasi paksa; sesi, callback dan draf tetap dipertahankan.");
 
   if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V202_FORCED_NAVIGATION_REMAINS");
