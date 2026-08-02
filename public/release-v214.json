@@ -1,0 +1,49 @@
+{
+  "release": "studio-production-v214-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v213-20260802",
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themeCount": 100,
+    "widgetCount": 26,
+    "customHtmlJavaScriptWidget": true,
+    "postPageWordLimit": 5000,
+    "analyticsProductionRpc": "get_site_analytics_dashboard",
+    "publicSiteSingleInitialRender": true,
+    "persistentSession": true,
+    "automaticRefreshToken": true
+  },
+  "repairs": {
+    "desktopSiteAndTabletRemainLarge": true,
+    "smallDeviceLayoutUsesPairedFourLeftFourRight": true,
+    "layoutHistoricAbsoluteCoordinatesReset": true,
+    "themeLargeCodePreviewSplitFiftyFifty": true,
+    "themeSmallPreviewAboveCode": true,
+    "themeSmallPreviewFitsAvailableSurface": true,
+    "themeHtmlCssJavaScriptRetained": true,
+    "naraLauncherStable": true,
+    "naraSmallMediumNonModal": true,
+    "naraSmallReducedHeight": true,
+    "naraCameraPhotoFileMenuVisibleWhenOpened": true,
+    "naraModelAndIntelligenceVisible": true,
+    "domainSmallActionsFullWidthHorizontal": true,
+    "domainFreeSubdomainReadable": true,
+    "analyticsLargerSmoothRealSeries": true,
+    "analyticsHumanBotDonutReadable": true,
+    "analyticsBrowserBotEntryDetailsRetained": true,
+    "retainedSessionScopedSiteCacheFallback": true,
+    "drawerDoesNotBlurPage": true,
+    "sidebarFlickerDisabled": true,
+    "serviceWorkerForcedNavigationDisabled": true
+  },
+  "validation": {
+    "fakeAnalytics": false,
+    "syntheticProductionStatisticsAdded": false,
+    "massCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "physicalBrowserRetestRequired": true,
+    "productionDeploymentVerificationRequired": true
+  }
+}
