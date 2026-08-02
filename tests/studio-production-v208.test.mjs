@@ -20,7 +20,7 @@ test("Theme actions cannot stack duplicate labels", async () => {
   assert.match(runtime, /Edit Tata Letak/);
   assert.match(runtime, /Edit Kode/);
   assert.match(css, /\.v199-button-label,.v201-button-label,.v202-button-label/);
-  assert.match(css, /button\[data-v208-theme-action\]::after \{ content:none/);
+  assert.match(css, /button\[data-v208-theme-action\]::after[\s\S]*content:none/);
 });
 
 test("Theme Layout remains a spatial map on phones", async () => {
@@ -49,9 +49,12 @@ test("Nara native plus menu exposes Camera Photo and File without modal backdrop
   assert.match(css, /pointer-events:none !important/);
 });
 
-test("current persisted site snapshots bypass endless Studio startup", async () => {
+test("current persisted site snapshots bypass endless Studio startup after bootstrap patches", async () => {
   const fastGate = await read("src/StudioFastGate.jsx");
+  const chain = await read("scripts/patch-service-worker-v179.mjs");
   const runtime = await read("src/studio-production-v208.js");
+  assert.match(chain, /patch-studio-bootstrap-v195\.mjs/);
+  assert.match(chain, /patch-studio-persisted-session-v198\.mjs/);
   assert.match(fastGate, /ngeblogging-active-site-snapshot-v195/);
   assert.match(fastGate, /ngeblogging-active-site-snapshot-v192/);
   assert.match(runtime, /recoverMembership/);
@@ -76,4 +79,4 @@ test("v208 rotates the service worker cache after historical patches", async () 
   assert.match(patch, /studio-stability-cache-v208/);
   assert.match(patch, /STUDIO_V207_COMPAT_VERSION/);
   assert.doesNotMatch(patch, /localStorage\.clear\(/);
-} );
+});
