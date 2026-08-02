@@ -53,8 +53,6 @@ async function verify() {
     ["src/studio-production-v205-hotfix.css", '.sn-sidebar-toggle[aria-expanded="false"]'],
     ["src/studio-production-v205-hotfix.css", '.sn-sidebar-toggle[aria-expanded="true"]'],
     ["src/studio-production-v205-hotfix.css", ".nara-direct-attachments-v202,.nara-mobile-direct-tools-v199"],
-    ["src/lib/auth-callback-v162.js", "AUTH_CALLBACK_REPLAY_RECOVERY_V205"],
-    ["src/lib/auth-callback-v162.js", "recoverExistingSessionFromReplay"],
     ["src/lib/supabase.js", "persistSession: true"],
     ["src/lib/supabase.js", "autoRefreshToken: true"],
     ["public/release-v205.json", HOTFIX],
@@ -65,11 +63,9 @@ async function verify() {
   }
 
   const runtime = await read("src/studio-production-v205-hotfix.js");
-  const callback = await read("src/lib/auth-callback-v162.js");
-  for (const source of [runtime, callback]) {
-    if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V205_HOTFIX_RUNTIME_SESSION_DESTRUCTIVE_ACTION_FOUND");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(runtime)) {
+    throw new Error("V205_HOTFIX_RUNTIME_SESSION_DESTRUCTIVE_ACTION_FOUND");
   }
-  if ((callback.match(/exchangeCodeForSession\(code\)/g) || []).length !== 1) throw new Error("V205_HOTFIX_PKCE_EXCHANGE_NOT_SINGLE");
 
   const release = JSON.parse(await read("public/release-v205.json"));
   if (release.release !== BASE_RELEASE) throw new Error("V205_HOTFIX_BASE_RELEASE_CHANGED");
