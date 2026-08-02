@@ -1,0 +1,65 @@
+/* v214 top-right Profile / Settings / Logout menu. */
+html[data-studio-production-v214] .sn-avatar[data-v214-profile-trigger="true"] {
+  position:relative !important;
+  z-index:2147483200 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+.sn-profile-dropdown-v214 {
+  position:fixed;
+  z-index:2147483900;
+  width:min(260px,calc(100vw - 16px));
+  padding:8px;
+  border:1px solid #dbe4ef;
+  border-radius:16px;
+  background:#fff;
+  color:#172a43;
+  box-shadow:0 22px 65px rgba(18,38,63,.2);
+}
+.sn-profile-dropdown-v214[hidden] { display:none !important; }
+.sn-profile-dropdown-v214 > button {
+  width:100%;
+  min-width:0;
+  min-height:58px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:2px;
+  padding:10px 12px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.sn-profile-dropdown-v214 > button:hover,
+.sn-profile-dropdown-v214 > button:focus-visible {
+  background:#f1f6fd;
+  outline:none;
+}
+.sn-profile-dropdown-v214 > button b {
+  font-size:14px;
+  line-height:1.25;
+}
+.sn-profile-dropdown-v214 > button small {
+  color:#718096;
+  font-size:12px;
+  line-height:1.3;
+}
+.sn-profile-dropdown-v214 > button.danger { color:#a52a3a; }
+.sn-profile-dropdown-v214 > button.danger small { color:#a86b75; }
+
+html[data-studio-account-view-v189="profile"] .sn-settings-grid > section:not(:first-child),
+html[data-studio-account-view-v189="profile"] .sn-settings-extras,
+html[data-studio-account-view-v189="profile"] .sn-backup-host {
+  display:none !important;
+}
+html[data-studio-account-view-v189="profile"] .sn-settings-grid {
+  grid-template-columns:minmax(0,1fr) !important;
+  max-width:920px !important;
+}
+html[data-studio-account-view-v189="profile"] .sn-settings-grid > section:first-child {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
