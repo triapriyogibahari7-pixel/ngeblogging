@@ -10,6 +10,9 @@ const supabase = read("src/lib/supabase.js");
 const main = read("src/main.jsx");
 const modal = read("src/AuthModal.jsx");
 const patcher = read("scripts/patch-auth-callback-v162.mjs");
+const lateRecovery = read("scripts/patch-auth-late-callback-v215.mjs");
+const worker = read("public/sw.js");
+const release215 = JSON.parse(read("public/release-v215.json"));
 const index = read("index.html");
 
 const providers = ["google", "linkedin_oidc"];
@@ -87,4 +90,31 @@ test("logout remains explicit and callback recovery never clears the stored sess
   assert.doesNotMatch(callback, /localStorage\.clear/);
   assert.doesNotMatch(callback, /sessionStorage\.clear/);
   assert.doesNotMatch(authority, /localStorage\.clear/);
+});
+
+test("v215 keeps v162 single-flight but lets an already verified session win over a late expired callback", () => {
+  assert.match(lateRecovery, /auth-late-callback-recovery-v215-20260802/);
+  assert.match(lateRecovery, /oauth state.*not found/);
+  assert.match(lateRecovery, /await supabase\.auth\.getSession\(\)/);
+  assert.match(lateRecovery, /openVerifiedStudio\(retainedSession\)/);
+  assert.match(main, /authLateCallbackRecoveryV215/);
+  assert.match(main, /retained-verified-session/);
+  assert.match(main, /retainedSession\?\.access_token/);
+  assert.match(main, /retainedSession\?\.refresh_token/);
+  assert.equal(occurrences(callback, "exchangeCodeForSession(code)"), 1);
+  assert.doesNotMatch(lateRecovery, /exchangeCodeForSession/);
+  assert.doesNotMatch(lateRecovery, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
+});
+
+test("v215 rotates cache without forced navigation and records only observed provider evidence", () => {
+  assert.match(worker, /ngeblogging-app-v215-auth-late-callback-20260802/);
+  assert.match(worker, /auth-late-callback-cache-v215/);
+  assert.match(worker, /auth-late-callback-recovery-v215-20260802/);
+  assert.doesNotMatch(worker, /await refreshStaleWindow\(client, url\);/);
+  assert.equal(release215.evidence.googlePkceProductionLoginObserved, true);
+  assert.equal(release215.claims.googleEndToEndProductionEvidence, true);
+  assert.equal(release215.claims.linkedinEndToEndProductionEvidence, false);
+  assert.equal(release215.claims.emailPasswordEndToEndProductionEvidence, false);
+  assert.equal(release215.claims.allProvidersProven, false);
+  assert.equal(release215.claims.massLoginCapacityProven, false);
 });
