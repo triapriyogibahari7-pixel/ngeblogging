@@ -1,0 +1,61 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v202-20260802",
+  "basedOn": "studio-production-v201-20260802",
+  "repairs": {
+    "physicalMobileModeWithoutMediaQuery": true,
+    "mobileLogoWhiteCentered": true,
+    "drawerMenuStartsBelowCreatePost": true,
+    "themePreviewPaintContained": true,
+    "themeLayoutActionUnique": true,
+    "themeCodeEntryUnified": true,
+    "apiKeysPhysicalMobileReflow": true,
+    "naraLauncherOpensSmall": true,
+    "naraHeaderSingleRow": true,
+    "naraComposerSingleRow": true,
+    "naraDirectCameraPhotoFile": true,
+    "naraSmallMediumNonModal": true
+  },
+  "preserved": {
+    "sixResponsiveFamilies": true,
+    "eightThemePreviewProfiles": true,
+    "hundredThemes": true,
+    "htmlCssJavascriptTabs": true,
+    "sidebarMenu": [
+      "Buat Post",
+      "Ringkasan",
+      "Posts",
+      "Pages",
+      "Tema",
+      "Media",
+      "Analitik",
+      "Anggota",
+      "Komentar",
+      "Domain",
+      "API Keys",
+      "Pengaturan",
+      "Keluar"
+    ],
+    "sessionUntilExplicitLogout": true
+  },
+  "validation": {
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "massLoginCapacityClaimed": false,
+    "viewportMatrix": [
+      "320x568",
+      "360x640",
+      "375x667",
+      "390x844",
+      "412x915",
+      "430x932",
+      "600x960",
+      "768x1024",
+      "820x1180",
+      "1024x768",
+      "1280x720",
+      "1366x768",
+      "1440x900",
+      "1920x1080"
+    ]
+  }
+}
