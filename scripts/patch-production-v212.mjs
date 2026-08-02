@@ -87,12 +87,18 @@ async function patchFourthRightArea() {
     await write(cssPath, css);
   }
 
+  // v209 already owns the area-aware map and real right4 selection. v212 only
+  // tags that proven map so the final CSS authority can style all 22 areas.
   const studioPath = "src/ThemeStudio.jsx";
   let studio = await read(studioPath);
-  const oldLabel = "Peta tata letak 20 area widget + 1 area kiri tambahan, total 21 area";
-  const nextLabel = "Peta tata letak 22 area widget, termasuk 4 kiri + 4 kanan postingan";
-  if (!studio.includes(nextLabel)) {
-    studio = replaceRequired(studio, oldLabel, nextLabel, "theme-layout-area-label");
+  if (!studio.includes('data-v212-layout-areas="22"')) {
+    const v209Map = '<section id="ngeblogging-layout-map" className="tn-layout-studio" aria-label="Peta tata letak situs dengan empat widget kiri dan empat widget kanan">';
+    studio = replaceRequired(
+      studio,
+      v209Map,
+      '<section id="ngeblogging-layout-map" className="tn-layout-studio" data-v212-layout-areas="22" aria-label="Peta tata letak situs dengan empat widget kiri dan empat widget kanan">',
+      "theme-v209-layout-map",
+    );
     await write(studioPath, studio);
   }
 }
@@ -146,7 +152,8 @@ async function verify() {
   const checks = [
     [entry, "studio-production-v212.js", "Studio v212 import"],
     [studio, 'data-code-preview-device={device}', "Theme code selected-device marker"],
-    [studio, "Peta tata letak 22 area widget", "22-area Theme map"],
+    [studio, 'data-v212-layout-areas="22"', "22-area Theme map marker"],
+    [studio, "empat widget kiri dan empat widget kanan", "v209 area-aware Theme map retained"],
     [widgets, 'id: "sidebar-left-4"', "real fourth left area"],
     [widgets, 'id: "sidebar-right-4"', "real fourth right area"],
     [widgets, 'id: "custom-html"', "custom HTML/JavaScript widget"],
