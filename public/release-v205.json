@@ -1,0 +1,41 @@
+{
+  "release": "studio-production-v205-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v204-20260802",
+  "scope": "Screenshot-driven final authority for Theme Studio mobile actions/layout map, sidebar n state, Posts/Pages create actions, and compact Nara attachment/model controls.",
+  "repairs": {
+    "themeLayoutDuplicateLabelsSuppressed": true,
+    "themeHeroActionsContainedOnMobile": true,
+    "layoutMapPairedLeftRightOnMobile": true,
+    "layoutMapGiantBlankSpaceRemoved": true,
+    "themeCodeDesktopFiftyFifty": true,
+    "themeCodeMobileVertical": true,
+    "closedLogoWhiteOnBlue": true,
+    "openLogoBlueOnWhite": true,
+    "drawerLogoBlueOnWhite": true,
+    "postsCreateActionPreserved": true,
+    "pagesCreateActionPreserved": true,
+    "naraCameraPhotoFileInsidePlusMenuPreserved": true,
+    "naraInjectedDirectAttachmentDuplicatesHidden": true,
+    "naraModelAndIntelligenceCompact": true,
+    "naraBlinkingTransitionsDisabled": true,
+    "naraSmallMediumRemainNonModal": true,
+    "existingStudioFeaturesPreserved": true
+  },
+  "authentication": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "dataSynchronizationFailureIsNotAutomaticLogout": true,
+    "providerConfigurationChangedByThisRelease": false
+  },
+  "validation": {
+    "netlifyDeployPreviewRequired": true,
+    "productionBuildRequired": true,
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "googleLoginEndToEndClaimed": false,
+    "linkedinLoginEndToEndClaimed": false,
+    "emailPasswordEndToEndClaimed": false,
+    "nineHundredMillionUserCapacityClaimed": false,
+    "massLoginLoadTestPerformed": false
+  }
+}
