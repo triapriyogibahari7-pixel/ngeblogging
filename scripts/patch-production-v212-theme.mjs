@@ -33,4 +33,5 @@ for (const marker of ["tn-code-workspace-v212", "Tukar panel", "PREVIEW LANGSUNG
   if (!source.includes(marker)) throw new Error(`V212_CODE_VERIFY_FAILED:${marker}`);
 }
 await writeFile(file, source);
-console.log("Applied v212 Theme code-editor isolation");
+await import("./patch-production-v212-analytics.mjs");
+console.log("Applied v212 Theme code editor + analytics");
