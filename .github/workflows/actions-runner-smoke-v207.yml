@@ -1,0 +1,20 @@
+name: Ngeblogging Actions runner smoke v207
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Confirm GitHub-hosted runner starts
+        run: |
+          echo "NGE_BLOGGING_ACTIONS_RUNNER_SMOKE_V207_OK"
+          node --version
