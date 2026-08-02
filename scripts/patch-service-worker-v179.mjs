@@ -60,3 +60,4 @@ await import("./patch-studio-bootstrap-v196-v186-bridge.mjs");
 await import("./patch-studio-bootstrap-v196.mjs");
 await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
+await import("./patch-studio-persisted-session-v198.mjs");
