@@ -5,6 +5,8 @@ import { createDefaultWidgetState } from "./widget-system";
 import { getPublishedContent, listPublishedContent, listPublishedPages, resolvePublishedSite } from "./lib/public-data";
 import "./public-site-next.css";
 
+const PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218 = "public-site-atomic-bootstrap-v218-20260802";
+
 function formatDate(value, options = { dateStyle:"long" }) {
   if(!value)return "";
   try{return new Intl.DateTimeFormat("id-ID",options).format(new Date(value));}catch{return "";}
@@ -147,7 +149,44 @@ export default function PublicSiteNext({target}) {
   const [site,setSite]=useState(null),[posts,setPosts]=useState([]),[pages,setPages]=useState([]),[content,setContent]=useState(null),[pageInfo,setPageInfo]=useState({cursor:null,hasMore:false}),[loading,setLoading]=useState(true),[error,setError]=useState(""),[menu,setMenu]=useState(false),[search,setSearch]=useState("");
   const slug=useMemo(()=>decodeURIComponent(window.location.pathname.split("/").filter(Boolean)[0]||""),[]);
 
-  useEffect(()=>{let active=true;setLoading(true);resolvePublishedSite(target).then(async(resolved)=>{if(!active)return;if(!resolved)throw new Error("Situs tidak ditemukan atau belum diluncurkan.");setSite(resolved);const [pageRows,postPage]=await Promise.all([listPublishedPages(resolved.id),listPublishedContent({siteId:resolved.id,kind:"article"})]);if(!active)return;setPages(pageRows.sort((a,b)=>(a.metadata?.menuOrder||0)-(b.metadata?.menuOrder||0)||a.title.localeCompare(b.title)));setPosts(postPage.contents);setPageInfo({cursor:postPage.cursor,hasMore:postPage.hasMore});if(slug){const item=await getPublishedContent(resolved.id,slug);if(!item)throw new Error("Post atau Page tidak ditemukan.");if(active)setContent(item);}}).catch((loadError)=>{console.error("Public site load failed",loadError);if(active)setError(loadError.message||"Situs belum dapat dibuka.");}).finally(()=>{if(active)setLoading(false);});return()=>{active=false};},[target.slug,target.hostname,slug]);
+  useEffect(()=>{
+    let active=true;
+    setLoading(true);
+    setError("");
+    setSite(null);
+    setContent(null);
+    setPosts([]);
+    setPages([]);
+    setPageInfo({cursor:null,hasMore:false});
+
+    resolvePublishedSite(target).then(async(resolved)=>{
+      if(!active)return;
+      if(!resolved)throw new Error("Situs tidak ditemukan atau belum diluncurkan.");
+
+      const [pageRows,postPage,item]=await Promise.all([
+        listPublishedPages(resolved.id),
+        listPublishedContent({siteId:resolved.id,kind:"article"}),
+        slug?getPublishedContent(resolved.id,slug):Promise.resolve(null),
+      ]);
+      if(!active)return;
+      if(slug&&!item)throw new Error("Post atau Page tidak ditemukan.");
+
+      const orderedPages=pageRows.sort((a,b)=>(a.metadata?.menuOrder||0)-(b.metadata?.menuOrder||0)||a.title.localeCompare(b.title));
+      setPages(orderedPages);
+      setPosts(postPage.contents);
+      setPageInfo({cursor:postPage.cursor,hasMore:postPage.hasMore});
+      setContent(item);
+      // PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218: publish site LAST so the theme iframe
+      // is created once with final pages/posts/content instead of reloading srcDoc.
+      setSite(resolved);
+      if(typeof document!=="undefined")document.documentElement.dataset.publicSiteBootstrap=PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218;
+    }).catch((loadError)=>{
+      console.error("Public site load failed",loadError);
+      if(active)setError(loadError.message||"Situs belum dapat dibuka.");
+    }).finally(()=>{if(active)setLoading(false);});
+
+    return()=>{active=false};
+  },[target.slug,target.hostname,slug]);
 
   const loadMore=async()=>{if(!site?.id||!pageInfo.cursor)return;setLoading(true);try{const page=await listPublishedContent({siteId:site.id,kind:"article",cursor:pageInfo.cursor});setPosts((current)=>[...current,...page.contents]);setPageInfo({cursor:page.cursor,hasMore:page.hasMore});}catch(loadError){setError(loadError.message||"Post berikutnya belum dapat dimuat.");}finally{setLoading(false);}};
   if(loading&&!site)return <div className="ps-state"><LoaderCircle className="spin"/><b>Menyiapkan situs…</b></div>;
