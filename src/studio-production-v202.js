@@ -162,6 +162,7 @@ function directTool(kind, input, label) {
 function ensureNaraDirectTools(shell) {
   const tools = shell.querySelector(".nara-composer-tools");
   if (!tools) return;
+  tools.querySelectorAll(":scope > .nara-mobile-direct-tools-v199").forEach((node) => node.remove());
   let direct = tools.querySelector(":scope > .nara-direct-attachments-v202");
   if (!direct) {
     direct = document.createElement("div");
