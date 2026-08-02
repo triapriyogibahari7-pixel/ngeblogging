@@ -63,9 +63,10 @@ await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
-// v199-v201 remain historical source/runtime authorities. v202 and v203 keep
-// their proven feature and reflow contracts; v204 is the final topbar/profile
-// and retained-session clarity authority for the current production build.
+// v199-v201 remain historical source/runtime authorities. v202-v204 keep their
+// proven compatibility contracts; v205 is the final physical-mobile Theme,
+// Nara and retained-session startup authority for the current production build.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
+await import("./patch-production-v205.mjs");
