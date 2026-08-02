@@ -1,0 +1,56 @@
+name: Validate Studio v199
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "server/**"
+      - "scripts/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/validate-v199.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-studio-v199-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate production regressions
+        run: npm run test:production
+
+      - name: Build browser bundle
+        run: npx vite build
+
+      - name: Verify v199 artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'studio-current-screenshot-v199-20260802' public/release-v199.json
+          grep -q 'ngeblogging-app-v199-mobile-auth-ui-20260802' public/sw.js
+          grep -q 'sameOriginGatewayOnlyV199' src/lib/supabase.js
+          grep -q '2026.08.02-auth-gateway-v199' server/auth-gateway-v108.mjs
+          grep -q '2026.08.02-data-gateway-v199' server/data-gateway-v110.mjs
+          grep -q 'nara-mobile-direct-tools-v199' src/NaraAssistant.jsx
+          grep -q 'studio-current-screenshot-v199.js' src/Studio.jsx
