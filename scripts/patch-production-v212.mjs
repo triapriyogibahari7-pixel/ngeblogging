@@ -29,66 +29,25 @@ async function patchStudioEntry() {
   }
 }
 
-async function patchFourthRightArea() {
-  const widgetPath = "src/widget-system.js";
-  let widgets = await read(widgetPath);
-  if (!widgets.includes('id: "sidebar-left-4"')) throw new Error("V212_LEFT4_PRECONDITION_MISSING");
-  if (!widgets.includes('id: "sidebar-right-4"')) {
-    widgets = replaceRequired(
-      widgets,
-      '  { id: "sidebar-right-3", label: "Sidebar kanan 3", group: "content" },\n  { id: "after-content", label: "Tepat di bawah postingan", group: "content" },',
-      '  { id: "sidebar-right-3", label: "Sidebar kanan 3", group: "content" },\n  { id: "sidebar-right-4", label: "Sidebar kanan 4", group: "content" },\n  { id: "after-content", label: "Tepat di bawah postingan", group: "content" },',
-      "widget-right4",
-    );
-    widgets += '\n/* sidebar-right-4-v212: empat area kiri dan empat area kanan adalah area widget nyata. */\n';
-    await write(widgetPath, widgets);
+async function verifyAreaAwareThemeAuthority() {
+  // v207/v209 already own the persistent layout data model. v212 must not
+  // rewrite that historical CSS/data structure; it only supplies the final
+  // presentation authority so the build remains idempotent and non-destructive.
+  const [widgets, runtime] = await Promise.all([
+    read("src/widget-system.js"),
+    read("src/theme-layout-runtime-v170.js"),
+  ]);
+  for (const marker of [
+    'id: "sidebar-left-4"',
+    'id: "sidebar-right-4"',
+    'id: "custom-html"',
+  ]) {
+    if (!widgets.includes(marker)) throw new Error(`V212_THEME_AREA_PRECONDITION:${marker}`);
+  }
+  for (const marker of ['"sidebar-left-4"', '"sidebar-right-4"', "Empat area widget kanan postingan"]) {
+    if (!runtime.includes(marker)) throw new Error(`V212_THEME_RUNTIME_PRECONDITION:${marker}`);
   }
 
-  const runtimePath = "src/theme-layout-runtime-v170.js";
-  let runtime = await read(runtimePath);
-  if (!runtime.includes('"sidebar-right-4"')) {
-    runtime = replaceRequired(
-      runtime,
-      'const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3"];',
-      'const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"];',
-      "runtime-right4",
-    );
-    runtime = runtime.replaceAll('"Tiga area widget kanan postingan"', '"Empat area widget kanan postingan"');
-    await write(runtimePath, runtime);
-  }
-
-  const cssPath = "src/theme-layout-v170.css";
-  let css = await read(cssPath);
-  if (!css.includes(".tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}")) {
-    css = replaceRequired(
-      css,
-      '    "sidebar-left-4 content-main content-main content-main content-main ."\n    "after-content after-content after-content after-content after-content after-content";',
-      '    "sidebar-left-4 content-main content-main content-main content-main sidebar-right-4"\n    "after-content after-content after-content after-content after-content after-content";',
-      "layout-desktop-right4",
-    );
-    css = replaceRequired(
-      css,
-      '.tn-layout-slot-v170.sidebar-right-1{grid-area:sidebar-right-1}.tn-layout-slot-v170.sidebar-right-2{grid-area:sidebar-right-2}.tn-layout-slot-v170.sidebar-right-3{grid-area:sidebar-right-3}',
-      '.tn-layout-slot-v170.sidebar-right-1{grid-area:sidebar-right-1}.tn-layout-slot-v170.sidebar-right-2{grid-area:sidebar-right-2}.tn-layout-slot-v170.sidebar-right-3{grid-area:sidebar-right-3}.tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}',
-      "layout-right4-grid-area",
-    );
-    css = replaceRequired(
-      css,
-      '      "sidebar-left-4 sidebar-left-4"\n      "content-main content-main"',
-      '      "sidebar-left-4 sidebar-right-4"\n      "content-main content-main"',
-      "layout-tablet-right4",
-    );
-    css = replaceRequired(
-      css,
-      '      "sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "after-content"',
-      '      "sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "sidebar-right-4" "after-content"',
-      "layout-phone-right4",
-    );
-    await write(cssPath, css);
-  }
-
-  // v209 already owns the area-aware map and real right4 selection. v212 only
-  // tags that proven map so the final CSS authority can style all 22 areas.
   const studioPath = "src/ThemeStudio.jsx";
   let studio = await read(studioPath);
   if (!studio.includes('data-v212-layout-areas="22"')) {
@@ -136,12 +95,11 @@ async function patchServiceWorker() {
 }
 
 async function verify() {
-  const [entry, studio, widgets, layoutRuntime, layoutCss, runtime, css, nara, sw, release] = await Promise.all([
+  const [entry, studio, widgets, layoutRuntime, runtime, css, nara, sw, release] = await Promise.all([
     read("src/Studio.jsx"),
     read("src/ThemeStudio.jsx"),
     read("src/widget-system.js"),
     read("src/theme-layout-runtime-v170.js"),
-    read("src/theme-layout-v170.css"),
     read("src/studio-production-v212.js"),
     read("src/studio-production-v212.css"),
     read("src/NaraAssistant.jsx"),
@@ -154,15 +112,17 @@ async function verify() {
     [studio, 'data-code-preview-device={device}', "Theme code selected-device marker"],
     [studio, 'data-v212-layout-areas="22"', "22-area Theme map marker"],
     [studio, "empat widget kiri dan empat widget kanan", "v209 area-aware Theme map retained"],
+    [studio, "preferredArea={widgetArea}", "area-aware widget picker retained"],
+    [studio, "tn-widget-custom-code-v209", "custom HTML/JavaScript controls retained"],
     [widgets, 'id: "sidebar-left-4"', "real fourth left area"],
     [widgets, 'id: "sidebar-right-4"', "real fourth right area"],
     [widgets, 'id: "custom-html"', "custom HTML/JavaScript widget"],
     [layoutRuntime, '"sidebar-left-4"', "published fourth left area"],
     [layoutRuntime, '"sidebar-right-4"', "published fourth right area"],
     [layoutRuntime, "Empat area widget kanan postingan", "published four-right label"],
-    [layoutCss, ".tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}", "right4 map grid area"],
     [runtime, RELEASE, "v212 runtime"],
     [runtime, 'studioDesktopSitePhone === "true"', "explicit desktop-site large mode"],
+    [runtime, "PHYSICAL_TABLET_MIN", "physical tablet large-mode threshold"],
     [runtime, "camera-photo-file", "Nara attachment authority"],
     [css, 'data-studio-v212-family="large"', "large family CSS"],
     [css, 'data-v212-workspace="preview-above-code"', "small editor preview-first layout"],
@@ -185,7 +145,7 @@ async function verify() {
 }
 
 await patchStudioEntry();
-await patchFourthRightArea();
+await verifyAreaAwareThemeAuthority();
 await patchThemeCodeDeviceMarker();
 await patchServiceWorker();
 await verify();
