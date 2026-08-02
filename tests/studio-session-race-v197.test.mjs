@@ -40,15 +40,18 @@ test("a stale 401 reuses a newer persisted token before any additional remote re
   assert.match(gate, /refreshRejectedSessionV195\(rejected\)/);
 });
 
-test("initial membership bootstrap and automatic recovery each have one promise per user", () => {
-  assert.match(gate, /loadStudioMembershipAttemptV197/);
+test("initial membership bootstrap and automatic recovery each have one promise per user without renaming legacy functions", () => {
+  assert.match(gate, /async function loadStudioMembership\(userId\)/);
   assert.match(gate, /studioMembershipPromiseV197/);
   assert.match(gate, /studioMembershipUserV197 === userId/);
   assert.match(gate, /studioMembershipSingleFlightV197 = "joined"/);
-  assert.match(gate, /recoverStudioMembershipAttemptV197/);
+  assert.match(gate, /readLocalStudioSessionV195/);
+  assert.match(gate, /refreshRejectedSessionV195\(rejectedToken\)/);
+  assert.match(gate, /async function recoverStudioMembershipV196\(userId, cause = null\)/);
   assert.match(gate, /studioRecoveryPromiseV197/);
   assert.match(gate, /studioRecoveryUserV197 === userId/);
   assert.match(gate, /studioRecoverySingleFlightV197 = "joined"/);
+  assert.doesNotMatch(gate, /loadStudioMembershipAttemptV197|recoverStudioMembershipAttemptV197/);
 });
 
 test("v197 keeps the existing user-token RLS, fallback, onboarding and non-destructive session policy", () => {
