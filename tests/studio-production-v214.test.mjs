@@ -28,6 +28,7 @@ test("v214 runs after v213 and is part of the production patch chain", () => {
   assert.match(entry, /studio-production-v214\.js/);
   assert.ok(entry.indexOf("studio-production-v213.js") < entry.indexOf("studio-production-v214.js"));
   assert.ok(chain.indexOf("patch-production-v214.mjs") > chain.indexOf("patch-production-v213.mjs"));
+  assert.ok(chain.indexOf("patch-production-v214-profile-style.mjs") > chain.indexOf("patch-production-v214.mjs"));
   assert.match(runtime, new RegExp(RELEASE));
 });
 
@@ -66,6 +67,7 @@ test("the complete sidebar remains present and profile is separate from settings
     "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
     "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar",
   ]) assert.ok(studio.includes(label), label);
+  assert.match(studio, /studio-production-v214-profile\.css/);
   assert.match(studio, /sn-profile-menu-wrap/);
   assert.match(studio, /role="menu" aria-label="Menu profil"/);
   assert.match(studio, /chooseView\("profile"\)/);
@@ -135,6 +137,9 @@ test("release metadata refuses unsupported 100 percent or mass-login claims", ()
   assert.equal(release.repairs.smallDeviceLayoutUsesPairedFourLeftFourRight, true);
   assert.equal(release.repairs.naraCameraPhotoFileMenuVisibleWhenOpened, true);
   assert.equal(release.repairs.retainedSessionScopedSiteCacheFallback, true);
+  assert.equal(release.repairs.profileDropdownHasProfileSettingsLogout, true);
+  assert.equal(release.repairs.profileSeparatedFromSiteSettings, true);
+  assert.equal(release.repairs.profileDropdownStylesWiredIntoStudio, true);
   assert.equal(release.validation.fakeAnalytics, false);
   assert.equal(release.validation.massCapacityClaimed, false);
   assert.equal(release.validation.nineHundredMillionOrBillionLoginSimulationClaimed, false);
