@@ -1,0 +1,55 @@
+{
+  "status": "candidate",
+  "release": "studio-persisted-session-recovery-v198-20260802",
+  "basedOn": "studio-session-race-recovery-v197-20260802",
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "persistedSupabaseStorageReadBeforeClientLock": true,
+    "persistedSessionMustMatchStudioUser": true,
+    "remoteRefreshOnlyAfterRejectedBearer": true,
+    "transientNetworkFailureDoesNotLogout": true,
+    "sessionStorageDestruction": false
+  },
+  "studioBootstrap": {
+    "criticalMembershipTransport": "direct Supabase REST with publishable key plus user bearer token and RLS",
+    "membershipSingleFlightPerUserPreserved": true,
+    "recoverySingleFlightPerUserPreserved": true,
+    "userScopedActiveSiteCachePreserved": true,
+    "newUserOnboardingPreserved": true,
+    "boundedFallbacksPreserved": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v198-persisted-session-20260802",
+    "cache": "studio-persisted-session-cache-v198",
+    "forcedNavigation": false,
+    "sessionDestruction": false
+  },
+  "productionRoute": {
+    "cloudflareGitDeploymentRequired": true,
+    "apexCutoverStillRequiresLiveVerification": true,
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12"
+  },
+  "preserved": {
+    "sixResponsiveFamilies": true,
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "completeSidebar": true,
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "themeLayoutAndCodeEditors": true,
+    "media": true,
+    "analytics": true,
+    "members": true,
+    "comments": true,
+    "domains": true,
+    "apiKeys": true,
+    "naraSmallMediumNonModal": true
+  },
+  "evidence": {
+    "screenshotsShowSessionRetainedButWorkspaceBootstrapFails": true,
+    "cloudflareGitIntegrationV197DeploymentObserved": true,
+    "githubActionsRouteCutoverStartupFailureObserved": true,
+    "massCapacityClaimed": false,
+    "physicalDeviceVerificationRequiredBefore100PercentClaim": true
+  }
+}
