@@ -3,6 +3,7 @@ import "./studio-production-v212.css";
 const RELEASE = "studio-production-v212-20260802";
 const SMALL_FAMILIES = new Set(["application", "phone", "mobile", "compact"]);
 const LARGE_FAMILIES = new Set(["tablet", "laptop", "desktop", "computer"]);
+const PHYSICAL_TABLET_MIN = 768;
 let frame = 0;
 
 function responsiveFamily() {
@@ -27,16 +28,23 @@ function shortEdge() {
 function interfaceFamily() {
   const root = document.documentElement;
   const family = responsiveFamily();
+  const variant = root.dataset.studioDeviceVariant || "";
+  const edge = shortEdge();
 
-  // "Situs desktop" on a phone is an explicit large-layout request. Tablet and
-  // every desktop variant also stay large even if the browser UA still says mobile.
-  if (root.dataset.studioDesktopSitePhone === "true" || LARGE_FAMILIES.has(family)) return "large";
-  if (SMALL_FAMILIES.has(family)) return "small";
+  // "Situs desktop" is an explicit large-layout request. Physical tablets,
+  // tablet/laptop/desktop/computer variants and the existing large device mode
+  // remain large even when Android/iPad UA still reports a mobile device.
+  if (root.dataset.studioDesktopSitePhone === "true"
+      || root.dataset.studioDeviceMode === "large"
+      || LARGE_FAMILIES.has(family)
+      || LARGE_FAMILIES.has(variant)
+      || (root.dataset.studioHandheld === "true" && edge >= PHYSICAL_TABLET_MIN)) return "large";
+
+  if (SMALL_FAMILIES.has(family) || SMALL_FAMILIES.has(variant)) return "small";
   if (navigator.userAgentData?.mobile === true) return "small";
   if (/Android.+Mobile|iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent || "")) return "small";
-  const edge = shortEdge();
-  if (edge > 0 && edge <= 700) return "small";
-  return window.innerWidth <= 700 ? "small" : "large";
+  if (edge > 0 && edge < PHYSICAL_TABLET_MIN) return "small";
+  return window.innerWidth < PHYSICAL_TABLET_MIN ? "small" : "large";
 }
 
 function setImportant(node, property, value) {
@@ -251,8 +259,8 @@ new MutationObserver(schedule).observe(document.documentElement, {
   subtree: true,
   attributes: true,
   attributeFilter: [
-    "class", "hidden", "data-nara-size", "data-studio-responsive-mode", "data-studio-device-variant",
-    "data-studio-desktop-site-phone", "data-preview-device", "data-code-preview-device",
+    "class", "hidden", "data-nara-size", "data-studio-responsive-mode", "data-studio-device-mode", "data-studio-device-variant",
+    "data-studio-handheld", "data-studio-desktop-site-phone", "data-preview-device", "data-code-preview-device",
   ],
 });
 for (const eventName of ["pageshow", "resize", "orientationchange", "online"]) {
@@ -264,6 +272,7 @@ sync();
 
 export {
   RELEASE,
+  PHYSICAL_TABLET_MIN,
   interfaceFamily,
   normalizeSidebar,
   normalizeTheme,
