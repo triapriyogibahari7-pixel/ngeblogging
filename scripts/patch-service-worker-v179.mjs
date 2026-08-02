@@ -62,3 +62,4 @@ await import("./patch-studio-bootstrap-v196.mjs");
 await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
+await import("./patch-current-screenshot-v199.mjs");
