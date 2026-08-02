@@ -137,7 +137,7 @@ function normalizeNara() {
   const launcher = document.querySelector(".nara-floating-button");
   if (launcher) {
     launcher.dataset.v205Launcher = "stable";
-    for (const property of ["animation", "transition", "filter", "transform"]) setImportant(launcher, property, property === "filter" || property === "transform" ? "none" : "none");
+    for (const property of ["animation", "transition", "filter", "transform"]) setImportant(launcher, property, "none");
     setImportant(launcher, "opacity", "1");
   }
 
@@ -207,7 +207,6 @@ function verifiedUserKnown() {
 function normalizeStartup() {
   const startup = document.querySelector(".so75-startup");
   if (!startup) {
-    startupAttempts = 0;
     if (startupTimer) window.clearTimeout(startupTimer);
     startupTimer = 0;
     return;
