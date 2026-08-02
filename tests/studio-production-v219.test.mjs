@@ -46,10 +46,10 @@ test("Theme editor stays preview-first on small devices and 50:50 on large devic
   assert.match(runtime, /MAX_CODE_LINES = 10000/);
   assert.match(runtime, /preview-above-code/);
   assert.match(runtime, /split-50-50/);
+  assert.match(runtime, /1–10\.000 baris didukung/);
   assert.match(css, /data-v219-workspace="preview-above-code"/);
   assert.match(css, /data-v219-workspace="split-50-50"/);
   assert.match(css, /\.v219-code-line-gutter/);
-  assert.match(css, /1–10\.000 baris didukung/);
 });
 
 test("layout map has compact physical-device geometry and four left plus four right slots", () => {
