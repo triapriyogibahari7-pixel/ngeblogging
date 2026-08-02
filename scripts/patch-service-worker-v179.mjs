@@ -71,9 +71,9 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // v208 preserves its screenshot compatibility; v209 owns the area-aware Theme,
 // public-site single initial render and in-place retained-session recovery.
 // v210 fixes Theme code visibility, Camera/Photo/File and Domain wrapping.
-// v211 runs last and applies the same mobile geometry to physical phones even
-// when the browser requests a synthetic desktop viewport, portals Theme modals
-// to document.body, compacts Nara, and preserves session/public-site authorities.
+// v211 portals Theme modals and applies physical-phone geometry. v212 runs last:
+// it locks the central Post/Page surface, keeps four left + four right widget areas,
+// stabilizes native Nara attachments, code/preview geometry and analytics detail.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -88,3 +88,4 @@ await import("./patch-production-v209-compat.mjs");
 await import("./patch-public-site-v209.mjs");
 await import("./patch-production-v210.mjs");
 await import("./patch-production-v211.mjs");
+await import("./patch-production-v212.mjs");
