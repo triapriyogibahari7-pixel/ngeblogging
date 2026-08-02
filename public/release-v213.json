@@ -1,0 +1,33 @@
+{
+  "release": "studio-production-v213-20260802",
+  "date": "2026-08-02",
+  "scope": "small-device layout readability and factual analytics detail",
+  "preserved": {
+    "v212LargeTabletDesktopAuthority": true,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "postPageWordLimit": 5000,
+    "naraNativeAttachments": true,
+    "publicSiteSingleInitialRenderV209": true,
+    "persistSession": true,
+    "autoRefreshToken": true
+  },
+  "repairs": {
+    "smallLayoutMainContentFullWidth": true,
+    "smallLayoutFourLeftFourRightRemainRealAreas": true,
+    "layoutMainContentNotWidgetClickable": true,
+    "analyticsSmoothLargeTimeSeries": true,
+    "analyticsBrowserFamilyCollectedForNewEvents": true,
+    "analyticsBotNamesReal": true,
+    "analyticsEntryPagesReal": true,
+    "historicBrowserValuesInvented": false
+  },
+  "validation": {
+    "productionAnalyticsUsesRealRpc": true,
+    "fakeAnalytics": false,
+    "massCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceRequiredBeforeHundredPercentClaim": true
+  }
+}

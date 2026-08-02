@@ -1,0 +1,171 @@
+/* Ngeblogging Studio v213 — readable small-device layout map + factual analytics detail. */
+html[data-studio-production-v213] *,
+html[data-studio-production-v213] *::before,
+html[data-studio-production-v213] *::after { box-sizing:border-box; }
+
+/* On phones/apps/compact devices the old 3-column mini-map was too narrow.
+   Preserve the same real 4-left/4-right areas, but render them as paired rows
+   after a full-width locked Post/Page surface. Large/tablet layout stays v212. */
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map="compact-three-column"] {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  grid-template-rows:none !important;
+  grid-auto-rows:minmax(82px,auto) !important;
+  grid-template-areas:
+    "top-left-1 top-left-2"
+    "top-left-3 top-right-1"
+    "top-right-2 top-right-3"
+    "before-content before-content"
+    "content-main content-main"
+    "sidebar-left-1 sidebar-right-1"
+    "sidebar-left-2 sidebar-right-2"
+    "sidebar-left-3 sidebar-right-3"
+    "sidebar-left-4 sidebar-right-4"
+    "after-content after-content"
+    "bottom-left-1 bottom-left-2"
+    "bottom-left-3 bottom-right-1"
+    "bottom-right-2 bottom-right-3" !important;
+  min-height:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+  gap:9px !important;
+  padding:10px !important;
+  overflow:visible !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170 {
+  min-height:82px !important;
+  padding:9px 8px !important;
+  border-radius:14px !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  word-break:normal !important;
+  overflow-wrap:anywhere !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170 > span {
+  width:32px !important;
+  min-width:32px !important;
+  height:32px !important;
+  font-size:11px !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170 > small {
+  font-size:10px !important;
+  line-height:1.25 !important;
+  letter-spacing:0 !important;
+  writing-mode:horizontal-tb !important;
+  word-break:normal !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170:not(.content-main) > b {
+  display:block !important;
+  margin-top:2px !important;
+  font-size:8.5px !important;
+  line-height:1.2 !important;
+  color:#8190a3 !important;
+  max-height:2.4em !important;
+  overflow:hidden !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170.content-main {
+  min-height:350px !important;
+  width:100% !important;
+  padding:26px 18px !important;
+  border-radius:20px !important;
+  cursor:default !important;
+  pointer-events:none !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170.content-main > span {
+  width:auto !important;
+  min-width:94px !important;
+  height:40px !important;
+  padding:0 14px !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170.content-main > small {
+  font-size:clamp(22px,7vw,34px) !important;
+  line-height:1.08 !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-canvas-v170[data-v212-layout-map] .tn-layout-slot-v170.content-main > b {
+  display:block !important;
+  max-width:330px !important;
+  font-size:11px !important;
+  line-height:1.5 !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-studio-header {
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:12px !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-studio-header h2 {
+  font-size:clamp(24px,7vw,36px) !important;
+  line-height:1.05 !important;
+  overflow-wrap:break-word !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-studio-header p {
+  font-size:13px !important;
+  line-height:1.55 !important;
+}
+html[data-studio-v212-family="small"] .tn-layout-studio-header > button {
+  width:100% !important;
+  min-height:46px !important;
+}
+
+/* v213 analytics: larger time-series surface, smooth path, readable human/bot ring. */
+html[data-studio-production-v213] .op41-card:has(.op41-line-v213) {
+  min-height:410px !important;
+}
+html[data-studio-production-v213] .op41-line-v213 {
+  display:block !important;
+  width:100% !important;
+  min-height:320px !important;
+  overflow:visible !important;
+}
+html[data-studio-production-v213] .op41-line-v213 .grid line {
+  stroke:#e1e9f2 !important;
+  stroke-width:1 !important;
+}
+html[data-studio-production-v213] .op41-line-v213 .grid text {
+  fill:#7c8da2 !important;
+  font:10px "DM Sans",sans-serif !important;
+}
+html[data-studio-production-v213] .op41-line-v213 .area {
+  fill:url(#op41AreaV213) !important;
+}
+html[data-studio-production-v213] .op41-line-v213 .line {
+  fill:none !important;
+  stroke:#2d6edf !important;
+  stroke-width:3.5 !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
+  filter:drop-shadow(0 5px 8px rgba(45,110,223,.16)) !important;
+}
+html[data-studio-production-v213] .op41-line-v213 .point {
+  fill:#fff !important;
+  stroke:#2d6edf !important;
+  stroke-width:2 !important;
+}
+html[data-studio-production-v213] .op41-donut-wrap {
+  grid-template-columns:minmax(220px,.85fr) minmax(0,1.15fr) !important;
+  align-items:center !important;
+}
+html[data-studio-production-v213] .op41-donut {
+  width:min(260px,100%) !important;
+  justify-self:center !important;
+}
+html[data-studio-production-v213] .op41-chart-grid.equal.v213-details {
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+}
+html[data-studio-production-v213] .op41-chart-grid.equal.v213-details .op41-card {
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+
+html[data-studio-v212-family="small"] .op41-card:has(.op41-line-v213) {
+  min-height:330px !important;
+}
+html[data-studio-v212-family="small"] .op41-line-v213 {
+  min-height:250px !important;
+}
+html[data-studio-v212-family="small"] .op41-donut-wrap,
+html[data-studio-v212-family="small"] .op41-chart-grid.equal.v213-details {
+  grid-template-columns:1fr !important;
+}
+html[data-studio-v212-family="small"] .op41-donut {
+  width:min(230px,72vw) !important;
+}
