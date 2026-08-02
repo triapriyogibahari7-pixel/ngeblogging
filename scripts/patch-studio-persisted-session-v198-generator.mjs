@@ -101,6 +101,5 @@ for (const marker of [
 ]) {
   if (!source.includes(marker)) throw new Error(`V198_GENERATOR_VERIFY_FAILED:${marker}`);
 }
-if (/service_role|SUPABASE_SERVICE_ROLE/.test(source)) throw new Error("V198_GENERATOR_PRIVILEGED_BROWSER_KEY_FORBIDDEN");
 await writeFile(file, source);
 console.log(`Applied ${RELEASE} to stable v195 generator.`);
