@@ -26,7 +26,7 @@ test("v205 is loaded after v204 and chained after the v204 production patch", ()
 test("Theme Studio shows one layout label and four contained primary actions", () => {
   assert.match(css, /\.v199-button-label,\.v201-button-label,\.v202-button-label/);
   assert.match(css, /display: none !important/);
-  assert.match(runtime, /data-v202-theme-action=\\"layout\\"/);
+  assert.match(runtime, /data-v202-theme-action="layout"/);
   assert.match(runtime, /v205ThemeAction = "layout"/);
   assert.match(runtime, /Edit Kode HTML CSS JavaScript/);
   assert.match(css, /\.tn-hero-actions[\s\S]*grid-template-columns: repeat\(2,minmax\(0,1fr\)\) !important/);
@@ -106,7 +106,7 @@ test("v205 rotates service worker cache while retaining v204 compatibility", () 
     "topbar-session-cache-v204",
   ]) assert.ok(patch.includes(marker), `missing v205 SW marker ${marker}`);
   assert.match(patch, /replaceAll\("NGE_BLOGGING_UPDATE_AVAILABLE_V204", "NGE_BLOGGING_UPDATE_AVAILABLE_V205"\)/);
-  assert.doesNotMatch(patch, /NGE_BLOGGING_FORCE_RELOAD_V\\d\+/);
+  assert.doesNotMatch(patch, /NGE_BLOGGING_FORCE_RELOAD_V\d+/);
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
