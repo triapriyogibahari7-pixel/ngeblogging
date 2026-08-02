@@ -63,18 +63,30 @@ test("exactly 100 real themes and 26 widgets including Custom HTML JavaScript re
   assert.match(themeStudio, /Tema Custom/);
 });
 
-test("Nara Camera Photo File menu escapes clipping and closing stops active resources", () => {
+test("Nara keeps Camera Photo File model and intelligence features", () => {
   for (const label of ["Kamera", "Foto", "File teks", "Nara Mini", "Nara Writer", "Nara Vision", "Nara Max", "Instan", "Sedang", "Tinggi", "Maksimal"]) {
     assert.ok(nara.includes(label), label);
   }
+});
+
+test("Nara attachment menu escapes shell clipping", () => {
   assert.match(runtime, /v216AttachmentMenu = "camera-photo-file"/);
   assert.match(runtime, /position", "fixed"/);
   assert.match(css, /data-v216-attachment-menu="camera-photo-file"/);
   assert.match(css, /z-index:2147483646/);
+});
+
+test("Nara close cleanup stops listening and clears attachment state", () => {
+  assert.match(nara, /NARA_CLOSE_CLEANUP_V216/);
   assert.match(nara, /setAttachmentMenu\(false\)/);
   assert.match(nara, /recognition\.current\?\.stop/);
   assert.match(nara, /setListening\(false\)/);
+});
+
+test("Nara small and medium are nonmodal while full remains modal", () => {
   assert.match(runtime, /full \? "modal" : "nonmodal"/);
+  assert.match(css, /data-v216-nara-mode="nonmodal"/);
+  assert.match(css, /pointer-events:none/);
 });
 
 test("Domain stays horizontal and analytics uses only the existing real RPC with larger presentation", () => {
