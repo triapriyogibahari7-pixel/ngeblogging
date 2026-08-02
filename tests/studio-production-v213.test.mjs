@@ -7,6 +7,7 @@ import "./studio-production-v214-clean.test.mjs";
 import "./studio-production-v216.test.mjs";
 import "./studio-production-v219.test.mjs";
 import "./studio-production-v220.test.mjs";
+import "./studio-production-v221.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
