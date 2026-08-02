@@ -81,8 +81,8 @@ function patchThemeStudio() {
   );
   source = replaceOnce(
     source,
-    '<LayoutMap widgets={themeState.widgets} onOpenWidgets={() => setModal("widgets")}/> ',
-    '<LayoutMap widgets={themeState.widgets} onOpenWidgets={(area) => { setWidgetAreaV210(area || "sidebar-right-1"); setModal("widgets"); }}/> ',
+    '<LayoutMap widgets={themeState.widgets} onOpenWidgets={() => setModal("widgets")}/>',
+    '<LayoutMap widgets={themeState.widgets} onOpenWidgets={(area) => { setWidgetAreaV210(area || "sidebar-right-1"); setModal("widgets"); }}/>',
     "pembuka layout map",
   );
   source = replaceOnce(
