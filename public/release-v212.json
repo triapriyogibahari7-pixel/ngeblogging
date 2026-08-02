@@ -1,0 +1,38 @@
+{
+  "release": "studio-production-v212-20260802",
+  "date": "2026-08-02",
+  "scope": "screenshot-driven Studio geometry, Theme layout/editor, Nara, Domain and analytics presentation",
+  "preserved": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "postPageWordLimit": 5000,
+    "v211Compatibility": true,
+    "publicSiteSingleInitialRenderV209": true,
+    "sessionStorageDestructiveClearAdded": false
+  },
+  "repairs": {
+    "desktopSitePhoneUsesLargeLayout": true,
+    "tabletUsesLargeLayout": true,
+    "laptopDesktopComputerUseLargeLayout": true,
+    "applicationPhoneMobileCompactUseSmallLayout": true,
+    "themeCodeDesktopSplit": true,
+    "themeCodeSmallPreviewAboveCode": true,
+    "themePreviewKeepsSelectedViewportWidth": true,
+    "layoutFourthLeftRealArea": true,
+    "layoutFourthRightRealArea": true,
+    "layoutMainContentLargeBlueCenter": true,
+    "naraSmallMediumNonModal": true,
+    "naraAttachmentMenuCameraPhotoFile": true,
+    "naraModelAndIntelligenceVisible": true,
+    "domainMobileActionsFullWidthHorizontal": true,
+    "analyticsChartsGivenReadableArea": true,
+    "sidebarFlickerAndBlurSuppressed": true
+  },
+  "validation": {
+    "massCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "oauthEndToEndRequiresLiveProviderRedirect": true,
+    "productionDataMustRemainFactual": true
+  }
+}
