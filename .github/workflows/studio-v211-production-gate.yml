@@ -1,0 +1,111 @@
+name: Ngeblogging Studio v211 production gate
+
+on:
+  push:
+    branches:
+      - main
+      - production
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-production-studio-v211-gate
+  cancel-in-progress: false
+
+jobs:
+  validate-v211:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
+      TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
+
+    steps:
+      - name: Checkout v211
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build with complete production regression
+        id: build
+        run: npm run build
+
+      - name: Validate v210 and v211 contracts after build patches
+        id: regression
+        run: node --test tests/studio-production-v210.test.mjs tests/studio-production-v211.test.mjs
+
+      - name: Wait for live v211 on apex Workers.dev and tenant
+        id: live
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 72); do
+            stamp="$(date +%s)-${attempt}"
+            ok=true
+
+            for base in "https://ngeblogging.com" "${WORKERS_DEV_SMOKE_TEST_URL%/}"; do
+              release_file="/tmp/v211-release-${attempt}-$(echo "${base}" | tr '/:.' '____').json"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${release_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${base}/release-v211.json?verify_v211=${stamp}" || true)"
+              [[ "${code}" == 200 ]] || ok=false
+              if [[ "${code}" == 200 ]]; then
+                if grep -q 'WHITE-R4-2026.07.12' "${release_file}"; then ok=false; fi
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v211-20260802"||x.repairs?.physicalMobileAuthorityWorksWithDesktopSiteViewport!==true||x.repairs?.themeModalPortaledToBody!==true||x.repairs?.themeCodeEditorVisible!==true||x.repairs?.themeCodeDesktopSplit5050!==true||x.repairs?.themeCodePhysicalMobileStacked!==true||x.repairs?.themeLayoutFourLeftFourRightCompactMap!==true||x.repairs?.naraAttachmentPlusOpensCameraPhotoFile!==true||x.repairs?.naraSmallMediumNonModal!==true||x.repairs?.domainPublicationActionHorizontal!==true||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${release_file}" || ok=false
+              fi
+            done
+
+            studio_file="/tmp/v211-studio-${attempt}.html"
+            studio_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${studio_file}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/studio?verify_v211=${stamp}" || true)"
+            [[ "${studio_code}" == 200 ]] || ok=false
+            grep -q 'id="root"' "${studio_file}" || ok=false
+            if grep -q 'WHITE-R4-2026.07.12' "${studio_file}"; then ok=false; fi
+
+            tenant_file="/tmp/v211-tenant-${attempt}.html"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${tenant_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v211=${stamp}" || true)"
+            [[ "${tenant_code}" == 200 ]] || ok=false
+            if grep -q 'WHITE-R4-2026.07.12' "${tenant_file}"; then ok=false; fi
+
+            if [[ "${ok}" == true ]]; then
+              echo "PRODUCTION_STUDIO_V211_VERIFIED"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "PRODUCTION_STUDIO_V211_VERIFY_FAILED"
+          exit 1
+
+      - name: Publish v211 production status
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          REGRESSION_OUTCOME: ${{ steps.regression.outcome }}
+          LIVE_OUTCOME: ${{ steps.live.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const build = process.env.BUILD_OUTCOME || 'not-run';
+            const regression = process.env.REGRESSION_OUTCOME || 'not-run';
+            const live = process.env.LIVE_OUTCOME || 'not-run';
+            const ready = build === 'success' && regression === 'success' && live === 'success';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ready ? 'success' : 'failure',
+              context: 'Ngeblogging production Studio v211',
+              description: `build=${build}; regression=${regression}; live=${live}`.slice(0, 140),
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
