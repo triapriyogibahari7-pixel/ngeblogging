@@ -13,3 +13,5 @@ if (!source.includes(marker)) {
 
 if (!source.includes(marker)) throw new Error("V214_PROFILE_STYLE_IMPORT_MISSING");
 console.log("Applied studio-production-v214 profile style import");
+
+await import("./patch-production-v214-profile-controller.mjs");
