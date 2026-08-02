@@ -1,0 +1,247 @@
+name: Ngeblogging production Studio v207 authority
+
+on:
+  workflow_run:
+    workflows:
+      - "Ngeblogging production route cutover v184 — Studio v191/v192/v195/v196/v197/v205"
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-production-studio-v197
+  cancel-in-progress: false
+
+jobs:
+  deploy-v207:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
+      CLOUDFLARE_ZONE_NAME: ngeblogging.com
+      CLOUDFLARE_WORKER_SERVICE: ngeblogging
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
+      TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
+      V207_RELEASE: studio-production-v207-20260802
+      LEGACY_MARKER: WHITE-R4-2026.07.12
+
+    steps:
+      - name: Resolve release commit
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
+            sha='${{ github.event.workflow_run.head_sha }}'
+          else
+            sha='${{ github.sha }}'
+          fi
+          test -n "${sha}"
+          echo "sha=${sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate Cloudflare credentials
+        id: credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID_INVALID"; exit 1; }
+          [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+          test -n "${VITE_SUPABASE_PUBLISHABLE_KEY}" || { echo "VITE_SUPABASE_PUBLISHABLE_KEY_MISSING"; exit 1; }
+          echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
+          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
+
+      - name: Run v206 and v207 screenshot regression
+        id: regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/patch-service-worker-v179.mjs
+          node --test tests/studio-production-v206.test.mjs tests/studio-production-v207.test.mjs
+
+      - name: Build complete production application
+        id: build
+        run: npm run build
+
+      - name: Build active-zone Wrangler configuration
+        id: config
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v207
+
+      - name: Deploy v207 Worker and assets
+        id: deploy
+        run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
+
+      - name: Verify freshly deployed v207 Worker before route cutover
+        id: worker_verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            stamp="$(date +%s)-${attempt}"
+            output="/tmp/v207-worker.json"
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v207.json?verify_v207=${stamp}" || true)"
+            if [[ "${code}" == "200" ]] && ! grep -q "${LEGACY_MARKER}" "${output}"; then
+              if node - "${output}" "${V207_RELEASE}" <<'NODE'
+          const fs = require('fs');
+          const [file, expected] = process.argv.slice(2);
+          const x = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const ok = x.release === expected
+            && x.repairs?.physicalMobileLayoutMapReadableHorizontal === true
+            && x.repairs?.themePreviewSingleMountAfterCloudState === true
+            && x.repairs?.naraComposerTwoRowsOnHandheld === true
+            && x.repairs?.naraCameraPhotoFileOnlyInsidePlusMenu === true
+            && x.repairs?.mobileNLogoForcedWhiteOnBlue === true
+            && x.repairs?.sessionPersistencePreserved === true;
+          if (!ok) process.exit(1);
+          NODE
+              then
+                echo "WORKERS_DEV_V207_VERIFIED"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo "WORKERS_DEV_V207_VERIFY_FAILED"
+          exit 1
+
+      - name: Preserve historical route compatibility
+        id: compatibility
+        run: node scripts/finalize-cloudflare-routes-v175.mjs
+
+      - name: Cut over apex www and tenant wildcard to Ngeblogging Worker
+        id: cutover
+        run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
+
+      - name: Verify v207 live on apex auth Studio Worker and tenant
+        id: live_verify
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          verify_release() {
+            local base="$1"
+            local output="$2"
+            local stamp="$3"
+            local code
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "${base%/}/release-v207.json?verify_v207=${stamp}" || true)"
+            [[ "${code}" == "200" ]] || return 1
+            ! grep -q "${LEGACY_MARKER}" "${output}" || return 1
+            node - "${output}" "${V207_RELEASE}" <<'NODE'
+          const fs = require('fs');
+          const [file, expected] = process.argv.slice(2);
+          const x = JSON.parse(fs.readFileSync(file, 'utf8'));
+          if (x.release !== expected
+            || x.repairs?.physicalMobileLayoutMapNoVerticalLetterWrapping !== true
+            || x.repairs?.themeLayoutActionSingleVisibleLabel !== true
+            || x.repairs?.themePreviewSingleMountAfterCloudState !== true
+            || x.repairs?.naraComposerTwoRowsOnHandheld !== true
+            || x.repairs?.naraCameraPhotoFileOnlyInsidePlusMenu !== true
+            || x.repairs?.legacyWhiteR4RejectedByDeployment !== true
+            || x.validation?.realDeviceRequiredBeforeHundredPercentClaim !== true
+            || x.validation?.nineHundredMillionUserCapacityClaimed !== false) process.exit(1);
+          NODE
+          }
+
+          verify_shell() {
+            local path="$1"
+            local output="$2"
+            local stamp="$3"
+            local code
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v207=${stamp}" || true)"
+            [[ "${code}" == "200" ]] || return 1
+            ! grep -q "${LEGACY_MARKER}" "${output}" || return 1
+            grep -q 'id="root"' "${output}"
+          }
+
+          for attempt in $(seq 1 42); do
+            stamp="$(date +%s)-${attempt}"
+            ok=true
+
+            verify_release "${WORKERS_DEV_SMOKE_TEST_URL}" /tmp/v207-worker-live.json "${stamp}" || ok=false
+            verify_release "https://ngeblogging.com" /tmp/v207-apex.json "${stamp}" || ok=false
+
+            for path in / /login /signup /studio; do
+              safe="$(printf '%s' "${path}" | tr '/.' '__')"
+              verify_shell "${path}" "/tmp/v207-shell-${safe}.html" "${stamp}" || ok=false
+            done
+
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/v207-tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v207=${stamp}" || true)"
+            [[ "${tenant_code}" == "200" ]] || ok=false
+            if grep -q "${LEGACY_MARKER}" /tmp/v207-tenant.html 2>/dev/null; then ok=false; fi
+
+            if [[ "${ok}" == "true" ]]; then
+              echo "PRODUCTION_STUDIO_V207_LIVE_VERIFIED"
+              exit 0
+            fi
+            echo "v207 live attempt ${attempt}/42 belum konsisten; mencoba lagi..."
+            sleep 10
+          done
+
+          echo "PRODUCTION_STUDIO_V207_LIVE_VERIFY_FAILED"
+          exit 1
+
+      - name: Publish authoritative v207 production status
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          TARGET_SHA: ${{ steps.release.outputs.sha }}
+          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
+          REGRESSION_OUTCOME: ${{ steps.regression.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          WORKER_VERIFY_OUTCOME: ${{ steps.worker_verify.outcome }}
+          CUTOVER_OUTCOME: ${{ steps.cutover.outcome }}
+          LIVE_VERIFY_OUTCOME: ${{ steps.live_verify.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = process.env.TARGET_SHA || context.sha;
+            const outcomes = {
+              credentials: process.env.CREDENTIALS_OUTCOME || 'not-run',
+              regression: process.env.REGRESSION_OUTCOME || 'not-run',
+              build: process.env.BUILD_OUTCOME || 'not-run',
+              deploy: process.env.DEPLOY_OUTCOME || 'not-run',
+              worker: process.env.WORKER_VERIFY_OUTCOME || 'not-run',
+              cutover: process.env.CUTOVER_OUTCOME || 'not-run',
+              live: process.env.LIVE_VERIFY_OUTCOME || 'not-run',
+            };
+            const success = Object.values(outcomes).every((value) => value === 'success');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: success ? 'success' : 'failure',
+              context: 'Ngeblogging production Studio v207',
+              description: `build=${outcomes.build}; deploy=${outcomes.deploy}; cutover=${outcomes.cutover}; live=${outcomes.live}`.slice(0, 140),
+              target_url: runUrl,
+            });
