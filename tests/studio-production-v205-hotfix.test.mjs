@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import "./studio-production-v206.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
@@ -14,7 +15,7 @@ const release = JSON.parse(read("public/release-v205.json"));
 
 const HOTFIX = "studio-production-v205-hotfix-logo-auth-20260802";
 
-test("v205.1 loads after validated v205 and build chain applies it last", () => {
+test("v205.1 loads after validated v205 and build chain applies it last before later authorities", () => {
   const baseRuntime = entry.indexOf('import "./studio-production-v205.js";');
   const hotfixRuntime = entry.indexOf('import "./studio-production-v205-hotfix.js";');
   assert.ok(baseRuntime >= 0);
@@ -23,7 +24,7 @@ test("v205.1 loads after validated v205 and build chain applies it last", () => 
   assert.match(runtime, /studio-production-v205-hotfix-logo-auth-20260802/);
 });
 
-test("mobile n has separate deterministic colors for closed and open drawer", () => {
+test("mobile n has separate deterministic colors for closed and open drawer in the v205.1 compatibility layer", () => {
   assert.match(css, /\.sn-sidebar-toggle\[aria-expanded="false"\] \.sn-mobile-menu-mark[\s\S]*linear-gradient\(145deg,#2f75e8,#4f46e5\)/);
   assert.match(css, /\.sn-sidebar-toggle\[aria-expanded="false"\] \.sn-mobile-menu-mark > strong[\s\S]*-webkit-text-fill-color: #fff/);
   assert.match(css, /\.sn-sidebar-toggle\[aria-expanded="true"\] \.sn-mobile-menu-mark[\s\S]*background: #fff/);
@@ -78,7 +79,7 @@ test("v205.1 rotates service-worker cache without forced navigation or session d
   assert.doesNotMatch(patch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
-test("release stays v205 for production gate and records only supported evidence", () => {
+test("release stays v205 for compatibility gate and records only supported evidence", () => {
   assert.equal(release.release, "studio-production-v205-20260802");
   assert.equal(release.hotfix, HOTFIX);
   assert.equal(release.repairs.mobileNLogoClosedWhiteOnBlue, true);
