@@ -38,9 +38,8 @@ async function repairV205CssSyntax() {
   const path = "src/studio-production-v205.css";
   let source = await read(path);
   const malformed = `html[data-studio-production-v205][data-studio-mobile-v205="true"] .tn-studio .tn-code-workspace,\n@media (max-width:1024px) {`;
-  const corrected = `@media (max-width:1024px) {`;
   if (source.includes(malformed)) {
-    source = source.replace(malformed, corrected);
+    source = source.replace(malformed, "@media (max-width:1024px) {");
     await write(path, source);
   }
   if (source.includes(".tn-code-workspace,\n@media")) throw new Error("V205_CSS_MEDIA_SELECTOR_MALFORMED");
@@ -58,9 +57,7 @@ async function patchServiceWorker() {
   source = source.replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v205: update tersedia tanpa navigasi paksa; sesi login, callback, draf dan editor dipertahankan.");
 
   if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V205_FORCED_NAVIGATION_REMAINS");
-  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) {
-    throw new Error("V205_SESSION_DESTRUCTIVE_ACTION_FOUND");
-  }
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V205_SESSION_DESTRUCTIVE_ACTION_FOUND");
   for (const marker of [SW_VERSION, SW_CACHE, SW_REFRESH, RELEASE, ...SW_COMPAT]) {
     if (!source.includes(marker)) throw new Error(`V205_SW_MARKER_MISSING:${marker}`);
   }
@@ -80,7 +77,7 @@ async function verify() {
     ["src/studio-production-v205.css", ".v199-button-label,.v201-button-label,.v202-button-label"],
     ["src/studio-production-v205.css", '"top-left-1 top-right-1"'],
     ["src/studio-production-v205.css", ".nara-direct-attachments-v202"],
-    ["src/studio-production-v205.css", "grid-template-columns: 32px 32px minmax(62px,.82fr) minmax(78px,1fr) 34px"],
+    ["src/studio-production-v205.css", "grid-template-columns:32px 32px minmax(62px,.82fr) minmax(78px,1fr) 34px"],
     ["src/NaraAssistant.jsx", "nara-attachment-menu"],
     ["src/NaraAssistant.jsx", "Kamera"],
     ["src/NaraAssistant.jsx", "Foto"],
@@ -99,9 +96,9 @@ async function verify() {
 
   const css = await read("src/studio-production-v205.css");
   if (css.includes(".tn-code-workspace,\n@media")) throw new Error("V205_INVALID_CSS_REMAINED");
-  if (!/\.nara-direct-attachments-v202[\s\S]*display: none !important/.test(css)) throw new Error("V205_DIRECT_NARA_TOOLS_NOT_HIDDEN");
-  if (!/\.sn-sidebar-toggle\[aria-expanded="false"\][\s\S]*background: linear-gradient/.test(css)) throw new Error("V205_CLOSED_LOGO_STATE_MISSING");
-  if (!/\.sn-sidebar-toggle\[aria-expanded="true"\][\s\S]*background: #fff !important/.test(css)) throw new Error("V205_OPEN_LOGO_STATE_MISSING");
+  if (!/\.nara-direct-attachments-v202[\s\S]*display\s*:\s*none\s*!important/.test(css)) throw new Error("V205_DIRECT_NARA_TOOLS_NOT_HIDDEN");
+  if (!/\.sn-sidebar-toggle\[aria-expanded="false"\][\s\S]*background\s*:\s*linear-gradient/.test(css)) throw new Error("V205_CLOSED_LOGO_STATE_MISSING");
+  if (!/\.sn-sidebar-toggle\[aria-expanded="true"\][\s\S]*background\s*:\s*#fff\s*!important/.test(css)) throw new Error("V205_OPEN_LOGO_STATE_MISSING");
 
   const runtime = await read("src/studio-production-v205.js");
   const observerStart = runtime.indexOf("new MutationObserver(schedule)");
