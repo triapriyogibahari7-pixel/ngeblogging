@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import "./studio-production-v210.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const widgets = read("src/widget-system.js");
@@ -23,7 +24,7 @@ const AREAS = [
   "bottom-left-1", "bottom-left-2", "bottom-left-3", "bottom-right-1", "bottom-right-2", "bottom-right-3",
 ];
 
-test("v170 exposes 20 real widget areas and migrates legacy placements", () => {
+test("v170 exposes its original 20 widget areas and v210 safely extends the side rails", () => {
   assert.ok(widgets.includes(`WIDGET_LAYOUT_AUTHORITY = "${AUTHORITY}"`));
   for (const area of AREAS) assert.ok(widgets.includes(`id: "${area}"`), `missing area ${area}`);
   for (const legacy of ["header-left", "header-right", "below-header", "sidebar-left", "sidebar-right", "footer-left", "footer-right", "footer-wide", "sidebar", "footer"]) {
@@ -32,14 +33,20 @@ test("v170 exposes 20 real widget areas and migrates legacy placements", () => {
   assert.ok(widgets.includes("LEGACY_AREA_MAP[requestedArea] || requestedArea"));
   assert.ok(widgets.includes("new Set([normalizedGroup])"));
   assert.ok(widgets.includes('"sidebar-right-1", "sidebar-right-2", "sidebar-left-1", "bottom-left-1"'));
+  assert.ok(widgets.includes('id: "sidebar-left-4"'));
+  assert.ok(widgets.includes('id: "sidebar-right-4"'));
 });
 
-test("Theme Studio displays the same detailed map on all device previews", () => {
+test("Theme Studio displays the detailed map on all device previews", () => {
   for (const marker of [
     AUTHORITY, "theme-layout-v170.css", "LAYOUT_AREAS", "PETA TATA LETAK V170",
-    "Enam widget atas, konten tiga kolom, dan enam widget bawah", "tn-layout-canvas-v170",
-    "tn-widget-order-v170", "Naikkan ", "Turunkan ", "WIDGET TERPILIH",
+    "tn-layout-canvas-v170", "tn-widget-order-v170", "Naikkan ", "Turunkan ", "WIDGET TERPILIH",
   ]) assert.ok(themeStudio.includes(marker), `Theme Studio missing ${marker}`);
+  assert.ok(
+    themeStudio.includes("Enam widget atas, konten tiga kolom, dan enam widget bawah")
+      || themeStudio.includes("Enam widget atas, empat widget kiri, konten utama, empat widget kanan, dan enam widget bawah"),
+    "layout summary missing",
+  );
   for (const device of ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]) {
     assert.ok(themeStudio.includes(`id: "${device}"`), `preview missing ${device}`);
   }
