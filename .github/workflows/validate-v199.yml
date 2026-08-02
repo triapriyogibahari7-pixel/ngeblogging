@@ -6,6 +6,7 @@ on:
     paths:
       - "src/**"
       - "scripts/**"
+      - "tests/**"
       - "public/**"
       - "package.json"
       - "package-lock.json"
@@ -38,6 +39,9 @@ jobs:
 
       - name: Validate production regressions
         run: npm run test:production
+
+      - name: Validate v200 regressions
+        run: node --test tests/studio-mobile-flicker-v200.test.mjs
 
       - name: Build browser bundle
         run: npx vite build
