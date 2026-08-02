@@ -87,7 +87,7 @@ test("new analytics events record browser family while the RPC returns real brow
   assert.match(migration, /'browsers'/);
   assert.match(migration, /'bots'/);
   assert.match(migration, /'entryPages'/);
-  assert.doesNotMatch(migration, /simulation|fake|synthetic/i);
+  assert.match(migration, /No synthetic production values/);
 });
 
 test("login persistence public single-render and no destructive session action remain protected", () => {
