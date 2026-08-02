@@ -49,17 +49,43 @@ html[data-studio-production-v214] .sn-avatar[data-v214-profile-trigger="true"] {
 .sn-profile-dropdown-v214 > button.danger { color:#a52a3a; }
 .sn-profile-dropdown-v214 > button.danger small { color:#a86b75; }
 
+/* Profil dan Pengaturan benar-benar menjadi dua permukaan berbeda.
+   React SettingsView lama tetap dipertahankan; v214 hanya menampilkan bagian
+   yang sesuai dengan pilihan dropdown agar tidak ada fitur lama yang hilang. */
 html[data-studio-account-view-v189="profile"] .sn-settings-grid > section:not(:first-child),
 html[data-studio-account-view-v189="profile"] .sn-settings-extras,
 html[data-studio-account-view-v189="profile"] .sn-backup-host {
   display:none !important;
 }
-html[data-studio-account-view-v189="profile"] .sn-settings-grid {
+html[data-studio-account-view-v189="settings"] .sn-settings-grid > section:first-child {
+  display:none !important;
+}
+html[data-studio-account-view-v189="profile"] .sn-settings-grid,
+html[data-studio-account-view-v189="settings"] .sn-settings-grid {
   grid-template-columns:minmax(0,1fr) !important;
+  width:100% !important;
+  min-width:0 !important;
   max-width:920px !important;
 }
-html[data-studio-account-view-v189="profile"] .sn-settings-grid > section:first-child {
+html[data-studio-account-view-v189="profile"] .sn-settings-grid > section:first-child,
+html[data-studio-account-view-v189="settings"] .sn-settings-grid > section:not(:first-child) {
   width:100% !important;
   min-width:0 !important;
   max-width:100% !important;
+}
+html[data-studio-account-view-v189="settings"] .sn-settings-extras,
+html[data-studio-account-view-v189="settings"] .sn-backup-host {
+  display:block !important;
+}
+
+@media(max-width:760px) {
+  .sn-profile-dropdown-v214 {
+    width:min(280px,calc(100vw - 20px));
+    max-height:calc(100dvh - 86px - env(safe-area-inset-bottom));
+    overflow:auto;
+  }
+  html[data-studio-account-view-v189="profile"] .sn-settings-grid,
+  html[data-studio-account-view-v189="settings"] .sn-settings-grid {
+    max-width:100% !important;
+  }
 }
