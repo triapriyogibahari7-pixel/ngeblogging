@@ -1,0 +1,130 @@
+name: Temporary internal v216 production deploy
+
+on:
+  pull_request:
+    branches:
+      - production
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temporary-v216-production-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-v216:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
+      CLOUDFLARE_ZONE_NAME: ngeblogging.com
+      CLOUDFLARE_WORKER_SERVICE: ngeblogging
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+      WORKERS_DEV_SMOKE_TEST_URL: ${{ vars.WORKERS_DEV_SMOKE_TEST_URL || 'https://ngeblogging.triapriyogibahari7.workers.dev' }}
+      TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
+
+    steps:
+      - name: Checkout internal PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate Cloudflare credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID_INVALID"; exit 1; }
+          [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+
+      - name: Regression and production build v216
+        run: npm run build
+
+      - name: Build active-zone Wrangler config
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v216
+
+      - name: Deploy Worker and assets v216
+        run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
+
+      - name: Verify Workers dev v216
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            stamp="$(date +%s)-${attempt}"
+            body=/tmp/nge-v216-workers.json
+            headers=/tmp/nge-v216-workers.headers
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v216.json?v216=${stamp}" || true)"
+            if [[ "${code}" == 200 ]] && ! grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v216-20260802"||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.repairs?.themeCodeLineNumbersOneToTenThousand!==true||x.repairs?.naraCameraPhotoFileMenuEscapesClipping!==true||x.repairs?.domainMobileActionsHorizontalFullWidth!==true||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${body}"; then
+                echo "WORKERS_DEV_V216_VERIFIED"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo "WORKERS_DEV_V216_VERIFY_FAILED"
+          exit 1
+
+      - name: Preserve compatibility routing
+        run: node scripts/finalize-cloudflare-routes-v175.mjs
+
+      - name: Cut over apex www and tenant wildcard
+        run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
+
+      - name: Verify live v216 and reject WHITE-R4
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 42); do
+            stamp="$(date +%s)-${attempt}"
+            ok=true
+            for path in / /login /signup /studio /release-v216.json; do
+              safe="$(printf '%s' "${path}" | tr '/.' '__')"
+              body="/tmp/nge-v216-${safe}.body"
+              headers="/tmp/nge-v216-${safe}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v216=${stamp}" || true)"
+              [[ "${code}" == 200 ]] || ok=false
+              if grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then ok=false; fi
+              if [[ "${path}" == "/release-v216.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v216-20260802"||x.repairs?.legacyWhiteR4MustBeRejectedByDeployment!==true)process.exit(1)' "${body}" || ok=false
+              else
+                grep -q 'id="root"' "${body}" || ok=false
+              fi
+            done
+
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/nge-v216-tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v216=${stamp}" || true)"
+            [[ "${tenant_code}" == 200 ]] || ok=false
+
+            if [[ "${ok}" == true ]]; then
+              echo "PRODUCTION_STUDIO_V216_VERIFIED"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "PRODUCTION_STUDIO_V216_VERIFY_FAILED"
+          exit 1
