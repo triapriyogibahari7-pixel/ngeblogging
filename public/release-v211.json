@@ -1,0 +1,43 @@
+{
+  "release": "studio-production-v211-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v210-20260802",
+  "repairs": {
+    "physicalMobileAuthorityWorksWithDesktopSiteViewport": true,
+    "themeModalPortaledToBody": true,
+    "themeCodeEditorVisible": true,
+    "themeCodeDesktopSplit5050": true,
+    "themeCodePhysicalMobileStacked": true,
+    "themeLayoutFourLeftFourRightCompactMap": true,
+    "layoutSlotsRemainClickable": true,
+    "naraSmallMoreCompact": true,
+    "naraMediumDistinct": true,
+    "naraSmallMediumNonModal": true,
+    "naraAttachmentPlusOpensCameraPhotoFile": true,
+    "naraIntelligenceVisible": true,
+    "naraModelVisible": true,
+    "naraLauncherStable": true,
+    "domainPublicationActionHorizontal": true,
+    "domainLongHostnameContained": true,
+    "sidebarBlinkingSuppressed": true,
+    "publicSiteSingleInitialRenderPreserved": true,
+    "sessionPersistsUntilExplicitLogout": true
+  },
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themePreviewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
+    "themeCount": 100,
+    "widgetCount": 26,
+    "themeCustomCode": ["HTML", "CSS", "JavaScript"],
+    "customHtmlJavascriptWidget": true,
+    "wordLimit": 5000
+  },
+  "validation": {
+    "screenshotDriven": true,
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "oauthProvidersRequireInteractiveEndToEndVerification": true,
+    "massCapacityClaimed": false,
+    "massCapacityNote": "No 900-million-user production capacity claim is made without distributed load testing and infrastructure evidence."
+  }
+}
