@@ -1,0 +1,225 @@
+/* Ngeblogging Studio v204 — mobile topbar/profile + session-state clarity. */
+
+html[data-studio-production-v204] *,
+html[data-studio-production-v204] *::before,
+html[data-studio-production-v204] *::after { box-sizing: border-box; }
+
+/* Physical-phone topbar: n on the left, workspace in the middle, profile on the right. */
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell > .sn-main > .sn-top {
+  position: sticky !important;
+  z-index: 2147482000 !important;
+  top: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 68px !important;
+  height: 68px !important;
+  display: grid !important;
+  grid-template-columns: 52px minmax(0,1fr) 44px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 12px !important;
+  overflow: visible !important;
+  border-bottom: 1px solid #dfe6ef !important;
+  background: rgba(255,255,255,.98) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-sidebar-toggle {
+  grid-column: 1 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace {
+  grid-column: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 2px 4px !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace > span {
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  height: 34px !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace > div {
+  min-width: 0 !important;
+  display: grid !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace small {
+  display: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace b {
+  display: block !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #34465e !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace > svg {
+  flex: 0 0 15px !important;
+  width: 15px !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-cloud {
+  display: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-top-actions {
+  grid-column: 3 !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-top-actions > :not(.sn-avatar) {
+  display: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-top-actions > .sn-avatar {
+  position: static !important;
+  inset: auto !important;
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  max-width: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #d7e0eb !important;
+  border-radius: 50% !important;
+  background: #17253c !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+  filter: none !important;
+  transform: none !important;
+  z-index: 3 !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: inherit !important;
+}
+
+/* Desktop-only edge toggle is not useful on phone; the n button is the drawer toggle. */
+html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-sidebar-edge-toggle-v147 {
+  display: none !important;
+}
+
+/* Keep profile dropdown fully inside the physical viewport. */
+html[data-studio-production-v204] :is(.sn-profile-menu-v147,.sn-profile-menu-v150) {
+  z-index: 2147483600 !important;
+  width: min(260px,calc(100vw - 20px)) !important;
+  max-width: calc(100vw - 20px) !important;
+  max-height: min(430px,calc(100dvh - 82px)) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border: 1px solid #dce4ee !important;
+  border-radius: 15px !important;
+  background: #fff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-studio-production-v204][data-studio-mobile-v204="true"] :is(.sn-profile-menu-v147,.sn-profile-menu-v150) {
+  position: fixed !important;
+  top: max(76px,calc(env(safe-area-inset-top) + 70px)) !important;
+  right: max(10px,env(safe-area-inset-right)) !important;
+  left: auto !important;
+  bottom: auto !important;
+}
+
+html[data-studio-production-v204] :is(.sn-profile-menu-v147,.sn-profile-menu-v150) > button {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 44px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  white-space: nowrap !important;
+}
+
+/* Startup state must clearly distinguish valid session from data transport. */
+html[data-studio-production-v204] .so75-startup[data-session-continuity-v204="retained"] section > small {
+  color: #2d6edf !important;
+}
+
+html[data-studio-production-v204] .so75-startup[data-session-continuity-v204="retained"] section > p {
+  max-width: 720px !important;
+}
+
+@media (max-width: 360px) {
+  html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell > .sn-main > .sn-top {
+    grid-template-columns: 50px minmax(0,1fr) 42px !important;
+    gap: 6px !important;
+    padding-inline: 8px !important;
+  }
+  html[data-studio-production-v204][data-studio-mobile-v204="true"] .sn-shell .sn-workspace > span {
+    display: none !important;
+  }
+}
