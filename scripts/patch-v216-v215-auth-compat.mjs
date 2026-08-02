@@ -27,3 +27,7 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 
 await writeFile(file, source);
 console.log("Preserved v215 auth recovery compatibility markers under v216");
+
+// v218 only rotates the shell/cache after the v216 + v215 auth compatibility
+// contract has been verified. It must never modify the active authentication session.
+await import("./patch-public-site-v218.mjs");
