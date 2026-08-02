@@ -47,9 +47,7 @@ test("physical mobile topbar always reserves left logo, middle workspace and rig
 });
 
 test("mobile profile menu keeps Profile Settings and Logout and stays inside viewport", () => {
-  for (const action of ["profile", "settings", "logout"]) {
-    assert.ok(shellController.includes(`data-action="${action}"`), `profile menu action missing ${action}`);
-  }
+  for (const action of ["profile", "settings", "logout"]) assert.ok(shellController.includes(`data-action="${action}"`), `profile menu action missing ${action}`);
   assert.match(accountRuntime, /studioAccountViewV189 = profileButton \? "profile" : "settings"/);
   assert.match(css, /\.sn-profile-menu-v147/);
   assert.match(css, /width: min\(260px,calc\(100vw - 20px\)\) !important/);
@@ -80,12 +78,10 @@ test("auth transport still persists and transient failures retain local verified
 });
 
 test("v205 renders one Theme layout label and keeps real layout/code controls functional", () => {
-  for (const oldLabel of [".v199-button-label", ".v201-button-label", ".v202-button-label"]) {
-    assert.ok(css205.includes(oldLabel), `missing hidden legacy label ${oldLabel}`);
-  }
-  assert.match(css205, /button\[data-v202-theme-action="layout"\][\s\S]*display: none !important/);
+  for (const oldLabel of [".v199-button-label", ".v201-button-label", ".v202-button-label"]) assert.ok(css205.includes(oldLabel), `missing hidden legacy label ${oldLabel}`);
+  assert.match(css205, /button\[data-v202-theme-action="layout"\][\s\S]*display\s*:\s*none\s*!important/);
   assert.match(runtime205, /normalizeThemeActions/);
-  assert.match(runtime205, /data\.v205Duplicate|dataset\.v205Duplicate/);
+  assert.match(runtime205, /dataset\.v205Duplicate/);
   assert.match(theme, /setModal\("code"\)/);
   assert.match(theme, /saveThemeCode/);
   assert.match(theme, /CodeEditor/);
@@ -93,21 +89,19 @@ test("v205 renders one Theme layout label and keeps real layout/code controls fu
 });
 
 test("v205 mobile layout map keeps paired left/right areas and removes fixed giant height", () => {
-  for (const row of [
-    '"top-left-1 top-right-1"',
-    '"sidebar-left-1 sidebar-right-1"',
-    '"bottom-left-1 bottom-right-1"',
-  ]) assert.ok(css205.includes(row), `missing paired mobile layout row ${row}`);
-  assert.match(css205, /\.tn-layout-canvas-v170[\s\S]*height: auto !important[\s\S]*min-height: 0 !important/);
-  assert.match(css205, /\.tn-layout-slot-v170\.content-main[\s\S]*min-height: 126px !important/);
+  for (const row of ['"top-left-1 top-right-1"','"sidebar-left-1 sidebar-right-1"','"bottom-left-1 bottom-right-1"']) {
+    assert.ok(css205.includes(row), `missing paired mobile layout row ${row}`);
+  }
+  assert.match(css205, /\.tn-layout-canvas-v170[\s\S]*height\s*:\s*auto\s*!important[\s\S]*min-height\s*:\s*0\s*!important/);
+  assert.match(css205, /\.tn-layout-slot-v170\.content-main[\s\S]*min-height\s*:\s*126px\s*!important/);
   assert.match(runtime205, /paired-mobile-map/);
 });
 
 test("v205 logo has deterministic closed/open colors and stays centered", () => {
-  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="false"\][\s\S]*background: linear-gradient\(145deg,#2d73e6,#5149dc\)/);
-  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="false"\][\s\S]*-webkit-text-fill-color: #fff/);
-  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="true"\][\s\S]*background: #fff !important/);
-  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="true"\][\s\S]*-webkit-text-fill-color: #2869df/);
+  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="false"\][\s\S]*background\s*:\s*linear-gradient\(145deg,#2d73e6,#5149dc\)/);
+  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="false"\][\s\S]*-webkit-text-fill-color\s*:\s*#fff/);
+  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="true"\][\s\S]*background\s*:\s*#fff\s*!important/);
+  assert.match(css205, /\.sn-sidebar-toggle\[aria-expanded="true"\][\s\S]*-webkit-text-fill-color\s*:\s*#2869df/);
   assert.match(runtime205, /closed-white-on-blue/);
   assert.match(runtime205, /open-blue-on-white/);
 });
@@ -116,15 +110,15 @@ test("v205 keeps Camera Photo File inside plus menu and removes external duplica
   for (const label of ["Kamera", "Foto", "File teks"]) assert.ok(nara.includes(label), `Nara + menu missing ${label}`);
   assert.match(nara, /nara-attachment-menu-wrap/);
   assert.match(nara, /nara-attachment-menu/);
-  assert.match(css205, /\.nara-direct-attachments-v202[\s\S]*display: none !important/);
-  assert.match(css205, /grid-template-columns: 32px 32px minmax\(62px,\.82fr\) minmax\(78px,1fr\) 34px !important/);
-  assert.match(css205, /\.nara-select[\s\S]*animation: none !important[\s\S]*transition: none !important/);
+  assert.match(css205, /\.nara-direct-attachments-v202[\s\S]*display\s*:\s*none\s*!important/);
+  assert.match(css205, /grid-template-columns\s*:\s*32px 32px minmax\(62px,\.82fr\) minmax\(78px,1fr\) 34px\s*!important/);
+  assert.match(css205, /\.nara-select[\s\S]*animation\s*:\s*none\s*!important[\s\S]*transition\s*:\s*none\s*!important/);
   assert.match(runtime205, /plus-menu-compact-model-intelligence/);
 });
 
 test("v205 keeps Posts and Pages create actions visible on mobile", () => {
-  assert.match(css205, /\.sc161-content-page > \.sn-page-title > \.sn-primary/);
-  assert.match(css205, /\.sn-view-pad > \.sn-page-title > \.sn-primary/);
+  assert.match(css205, /\.sc161-content-page\s*>\s*\.sn-page-title\s*>\s*\.sn-primary/);
+  assert.match(css205, /\.sn-view-pad\s*>\s*\.sn-page-title\s*>\s*\.sn-primary/);
   assert.match(runtime205, /normalizeCreateActions/);
 });
 
@@ -133,11 +127,8 @@ test("v204 rotates only the active v203 update event and v205 rotates only activ
   assert.doesNotMatch(patch, /NGE_BLOGGING_FORCE_RELOAD_V\\d\+/);
   assert.match(patch205, /replaceAll\("NGE_BLOGGING_UPDATE_AVAILABLE_V204", "NGE_BLOGGING_UPDATE_AVAILABLE_V205"\)/);
   for (const marker of [
-    "ngeblogging-app-v205-theme-mobile-controls-20260802",
-    "theme-mobile-controls-cache-v205",
-    "theme-mobile-controls-v205",
-    "ngeblogging-app-v204-topbar-session-20260802",
-    "topbar-session-cache-v204",
+    "ngeblogging-app-v205-theme-mobile-controls-20260802","theme-mobile-controls-cache-v205","theme-mobile-controls-v205",
+    "ngeblogging-app-v204-topbar-session-20260802","topbar-session-cache-v204",
   ]) assert.ok(patch205.includes(marker), `v205 patch marker missing ${marker}`);
   assert.doesNotMatch(patch205, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
