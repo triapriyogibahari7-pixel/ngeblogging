@@ -85,7 +85,7 @@ test("fourth left widget area is real in Studio, public runtime and responsive m
   assert.match(layoutRuntime, /LEFT_AREAS = \["sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4"\]/);
   assert.match(layoutRuntime, /Empat area widget kiri postingan/);
   assert.match(layoutCss, /\.tn-layout-slot-v170\.sidebar-left-4\{grid-area:sidebar-left-4\}/);
-  assert.match(layoutCss, /"sidebar-left-4 content-main content-main content-main content-main \.”/);
+  assert.match(layoutCss, /"sidebar-left-4 content-main content-main content-main content-main \."/);
   assert.match(theme, /Peta tata letak 20 area widget \+ 1 area kiri tambahan, total 21 area/);
   assert.equal(release.repairs.layoutMapTwentyRealAreasPreserved, true);
   assert.equal(release.repairs.layoutMapTotalRealAreas, 21);
