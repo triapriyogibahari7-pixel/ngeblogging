@@ -7,6 +7,7 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 const MARKER = "sidebar-left-4-v207";
 const LEGACY_LAYOUT_LABEL = "Peta tata letak 20 area widget";
 const EXPANDED_LAYOUT_LABEL = `${LEGACY_LAYOUT_LABEL} + 1 area kiri tambahan, total 21 area`;
+const diagnostic = { release: MARKER, stages: {}, complete: false };
 
 function replaceRequired(source, search, replacement, label) {
   if (!source.includes(search)) throw new Error(`V207_LEFT4_ANCHOR_MISSING:${label}`);
@@ -46,43 +47,12 @@ async function patchLayoutCss() {
   const path = "src/theme-layout-v170.css";
   let source = await read(path);
   if (source.includes(".tn-layout-slot-v170.sidebar-left-4")) return;
-
-  source = replaceRequired(
-    source,
-    "grid-template-rows:72px 70px repeat(3,minmax(76px,1fr)) 70px 72px;",
-    "grid-template-rows:72px 70px repeat(4,minmax(76px,1fr)) 70px 72px;",
-    "desktop-rows",
-  );
-  source = replaceRequired(
-    source,
-    '    "sidebar-left-3 content-main content-main content-main content-main sidebar-right-3"\n    "after-content after-content after-content after-content after-content after-content";',
-    '    "sidebar-left-3 content-main content-main content-main content-main sidebar-right-3"\n    "sidebar-left-4 content-main content-main content-main content-main ."\n    "after-content after-content after-content after-content after-content after-content";',
-    "desktop-map",
-  );
-  source = replaceRequired(
-    source,
-    '.tn-layout-slot-v170.sidebar-left-1{grid-area:sidebar-left-1}.tn-layout-slot-v170.sidebar-left-2{grid-area:sidebar-left-2}.tn-layout-slot-v170.sidebar-left-3{grid-area:sidebar-left-3}',
-    '.tn-layout-slot-v170.sidebar-left-1{grid-area:sidebar-left-1}.tn-layout-slot-v170.sidebar-left-2{grid-area:sidebar-left-2}.tn-layout-slot-v170.sidebar-left-3{grid-area:sidebar-left-3}.tn-layout-slot-v170.sidebar-left-4{grid-area:sidebar-left-4}',
-    "left4-grid-area",
-  );
-  source = replaceRequired(
-    source,
-    "grid-template-rows:repeat(3,64px) 64px repeat(3,64px) minmax(160px,1fr) 64px repeat(3,64px);",
-    "grid-template-rows:repeat(3,64px) 64px repeat(3,64px) 64px minmax(160px,1fr) 64px repeat(3,64px);",
-    "tablet-rows",
-  );
-  source = replaceRequired(
-    source,
-    '      "sidebar-left-3 sidebar-right-3"\n      "content-main content-main"',
-    '      "sidebar-left-3 sidebar-right-3"\n      "sidebar-left-4 sidebar-left-4"\n      "content-main content-main"',
-    "tablet-map",
-  );
-  source = replaceRequired(
-    source,
-    '      "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "content-main"',
-    '      "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "sidebar-left-4" "content-main"',
-    "phone-map",
-  );
+  source = replaceRequired(source, "grid-template-rows:72px 70px repeat(3,minmax(76px,1fr)) 70px 72px;", "grid-template-rows:72px 70px repeat(4,minmax(76px,1fr)) 70px 72px;", "desktop-rows");
+  source = replaceRequired(source, '    "sidebar-left-3 content-main content-main content-main content-main sidebar-right-3"\n    "after-content after-content after-content after-content after-content after-content";', '    "sidebar-left-3 content-main content-main content-main content-main sidebar-right-3"\n    "sidebar-left-4 content-main content-main content-main content-main ."\n    "after-content after-content after-content after-content after-content after-content";', "desktop-map");
+  source = replaceRequired(source, '.tn-layout-slot-v170.sidebar-left-1{grid-area:sidebar-left-1}.tn-layout-slot-v170.sidebar-left-2{grid-area:sidebar-left-2}.tn-layout-slot-v170.sidebar-left-3{grid-area:sidebar-left-3}', '.tn-layout-slot-v170.sidebar-left-1{grid-area:sidebar-left-1}.tn-layout-slot-v170.sidebar-left-2{grid-area:sidebar-left-2}.tn-layout-slot-v170.sidebar-left-3{grid-area:sidebar-left-3}.tn-layout-slot-v170.sidebar-left-4{grid-area:sidebar-left-4}', "left4-grid-area");
+  source = replaceRequired(source, "grid-template-rows:repeat(3,64px) 64px repeat(3,64px) minmax(160px,1fr) 64px repeat(3,64px);", "grid-template-rows:repeat(3,64px) 64px repeat(3,64px) 64px minmax(160px,1fr) 64px repeat(3,64px);", "tablet-rows");
+  source = replaceRequired(source, '      "sidebar-left-3 sidebar-right-3"\n      "content-main content-main"', '      "sidebar-left-3 sidebar-right-3"\n      "sidebar-left-4 sidebar-left-4"\n      "content-main content-main"', "tablet-map");
+  source = replaceRequired(source, '      "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "content-main"', '      "before-content" "sidebar-left-1" "sidebar-left-2" "sidebar-left-3" "sidebar-left-4" "content-main"', "phone-map");
   await write(path, source);
 }
 
@@ -90,12 +60,7 @@ async function patchThemeStudioLabel() {
   const path = "src/ThemeStudio.jsx";
   let source = await read(path);
   if (!source.includes(EXPANDED_LAYOUT_LABEL)) {
-    source = replaceRequired(
-      source,
-      `aria-label="${LEGACY_LAYOUT_LABEL}"`,
-      `aria-label="${EXPANDED_LAYOUT_LABEL}"`,
-      "layout-aria-label",
-    );
+    source = replaceRequired(source, `aria-label="${LEGACY_LAYOUT_LABEL}"`, `aria-label="${EXPANDED_LAYOUT_LABEL}"`, "layout-aria-label");
   }
   await write(path, source);
 }
@@ -112,9 +77,15 @@ async function verify() {
   if (!studio.includes(LEGACY_LAYOUT_LABEL) || !studio.includes(EXPANDED_LAYOUT_LABEL)) throw new Error("V207_LEFT4_STUDIO_COUNT_MISSING");
 }
 
-await patchWidgets();
-await patchRuntime();
-await patchLayoutCss();
-await patchThemeStudioLabel();
-await verify();
-console.log("Applied sidebar-left-4-v207");
+for (const [name, fn] of [["widgets", patchWidgets], ["runtime", patchRuntime], ["layoutCss", patchLayoutCss], ["studioLabel", patchThemeStudioLabel], ["verify", verify]]) {
+  try {
+    await fn();
+    diagnostic.stages[name] = { ok: true };
+  } catch (error) {
+    diagnostic.stages[name] = { ok: false, error: String(error?.message || error) };
+    break;
+  }
+}
+diagnostic.complete = Object.keys(diagnostic.stages).length === 5 && Object.values(diagnostic.stages).every((stage) => stage.ok);
+await write("public/sidebar-left4-v207-diagnostic.json", JSON.stringify(diagnostic, null, 2) + "\n");
+console.log(`Left4 diagnostic complete=${diagnostic.complete}`);
