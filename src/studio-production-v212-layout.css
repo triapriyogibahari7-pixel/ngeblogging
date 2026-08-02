@@ -1,0 +1,172 @@
+/* v212 layout authority uses the proven v170/v209 React map and changes only geometry/locked content behavior. */
+html[data-studio-v212] .tn-layout-canvas-v170 {
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  display:grid !important;
+  grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+  grid-template-rows:auto auto repeat(4,minmax(92px,1fr)) auto auto !important;
+  gap:10px !important;
+  padding:14px !important;
+  overflow:hidden !important;
+  border:1px solid #d9e4f1 !important;
+  border-radius:22px !important;
+  background:linear-gradient(180deg,#f5f9ff 0%,#edf5ff 100%) !important;
+}
+
+html[data-studio-v212] .tn-layout-canvas-v170 > .tn-layout-slot-v170 {
+  position:relative !important;
+  inset:auto !important;
+  transform:none !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:76px !important;
+  margin:0 !important;
+  padding:10px !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  word-break:normal !important;
+  overflow-wrap:anywhere !important;
+  overflow:hidden !important;
+  border-radius:14px !important;
+}
+html[data-studio-v212] .tn-layout-canvas-v170 > .tn-layout-slot-v170 > span,
+html[data-studio-v212] .tn-layout-canvas-v170 > .tn-layout-slot-v170 > small,
+html[data-studio-v212] .tn-layout-canvas-v170 > .tn-layout-slot-v170 > b {
+  position:relative !important;
+  inset:auto !important;
+  transform:none !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  writing-mode:horizontal-tb !important;
+  word-break:normal !important;
+  overflow-wrap:anywhere !important;
+}
+
+/* six real top slots */
+html[data-studio-v212] .tn-layout-canvas-v170 > .top-left-1 { grid-column:1; grid-row:1; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .top-left-2 { grid-column:2; grid-row:1; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .top-left-3 { grid-column:3; grid-row:1; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .top-right-1 { grid-column:4; grid-row:1; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .top-right-2 { grid-column:5; grid-row:1; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .top-right-3 { grid-column:6; grid-row:1; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .before-content { grid-column:2 / 6; grid-row:2; }
+
+/* four real left slots around a locked central Post/Page surface */
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-left-1 { grid-column:1; grid-row:3; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-left-2 { grid-column:1; grid-row:4; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-left-3 { grid-column:1; grid-row:5; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-left-4 { grid-column:1; grid-row:6; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-right-1 { grid-column:6; grid-row:3; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-right-2 { grid-column:6; grid-row:4; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-right-3 { grid-column:6; grid-row:5; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .sidebar-right-4 { grid-column:6; grid-row:6; }
+
+html[data-studio-v212] .tn-layout-canvas-v170 > .content-main {
+  grid-column:2 / 6 !important;
+  grid-row:3 / 7 !important;
+  min-height:430px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+  padding:28px !important;
+  border:2px solid #205ecb !important;
+  border-radius:20px !important;
+  background:linear-gradient(145deg,#2d73e5 0%,#215dc9 52%,#184aab 100%) !important;
+  color:#fff !important;
+  text-align:center !important;
+  box-shadow:0 18px 44px rgba(31,91,198,.2) !important;
+  cursor:default !important;
+  pointer-events:none !important;
+  opacity:1 !important;
+}
+html[data-studio-v212] .tn-layout-canvas-v170 > .content-main > span {
+  width:auto !important;
+  min-width:96px !important;
+  min-height:40px !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 16px !important;
+  border:1px solid rgba(255,255,255,.38) !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.12) !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:950 !important;
+  letter-spacing:.12em !important;
+}
+html[data-studio-v212] .tn-layout-canvas-v170 > .content-main > small {
+  color:#fff !important;
+  font-size:clamp(25px,3.2vw,44px) !important;
+  line-height:1.05 !important;
+  font-weight:950 !important;
+}
+html[data-studio-v212] .tn-layout-canvas-v170 > .content-main > b {
+  max-width:620px !important;
+  color:rgba(255,255,255,.88) !important;
+  font-size:12px !important;
+  line-height:1.55 !important;
+}
+html[data-studio-v212] .tn-layout-canvas-v170 > .after-content { grid-column:2 / 6; grid-row:7; }
+
+/* six real bottom slots */
+html[data-studio-v212] .tn-layout-canvas-v170 > .bottom-left-1 { grid-column:1; grid-row:8; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .bottom-left-2 { grid-column:2; grid-row:8; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .bottom-left-3 { grid-column:3; grid-row:8; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .bottom-right-1 { grid-column:4; grid-row:8; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .bottom-right-2 { grid-column:5; grid-row:8; }
+html[data-studio-v212] .tn-layout-canvas-v170 > .bottom-right-3 { grid-column:6; grid-row:8; }
+
+/* Large tablets belong to the large/desktop family. */
+html[data-studio-v212-device="large"] .tn-layout-canvas-v170 {
+  grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+}
+
+/* Handheld layout: locked content first, then readable 2-column widget rails. */
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 {
+  display:flex !important;
+  flex-direction:column !important;
+  gap:9px !important;
+  padding:10px !important;
+  overflow:visible !important;
+}
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > .content-main {
+  order:10 !important;
+  width:100% !important;
+  min-height:310px !important;
+  padding:20px 14px !important;
+}
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > .before-content { order:9 !important; }
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > .after-content { order:11 !important; }
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > :is(.top-left-1,.top-left-2,.top-left-3,.top-right-1,.top-right-2,.top-right-3) { order:1 !important; }
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > :is(.sidebar-left-1,.sidebar-left-2,.sidebar-left-3,.sidebar-left-4) { order:20 !important; }
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > :is(.sidebar-right-1,.sidebar-right-2,.sidebar-right-3,.sidebar-right-4) { order:21 !important; }
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > :is(.bottom-left-1,.bottom-left-2,.bottom-left-3,.bottom-right-1,.bottom-right-2,.bottom-right-3) { order:30 !important; }
+html[data-studio-v212-device="handheld"] .tn-layout-canvas-v170 > .tn-layout-slot-v170:not(.content-main) {
+  width:100% !important;
+  min-height:76px !important;
+}
+
+@media (max-width:760px) {
+  html[data-studio-v212] .tn-layout-canvas-v170 {
+    display:flex !important;
+    flex-direction:column !important;
+    gap:9px !important;
+    padding:10px !important;
+    overflow:visible !important;
+  }
+  html[data-studio-v212] .tn-layout-canvas-v170 > .content-main {
+    order:10 !important;
+    width:100% !important;
+    min-height:310px !important;
+    padding:20px 14px !important;
+  }
+  html[data-studio-v212] .tn-layout-canvas-v170 > .before-content { order:9 !important; }
+  html[data-studio-v212] .tn-layout-canvas-v170 > .after-content { order:11 !important; }
+  html[data-studio-v212] .tn-layout-canvas-v170 > :is(.sidebar-left-1,.sidebar-left-2,.sidebar-left-3,.sidebar-left-4) { order:20 !important; }
+  html[data-studio-v212] .tn-layout-canvas-v170 > :is(.sidebar-right-1,.sidebar-right-2,.sidebar-right-3,.sidebar-right-4) { order:21 !important; }
+  html[data-studio-v212] .tn-layout-canvas-v170 > :is(.bottom-left-1,.bottom-left-2,.bottom-left-3,.bottom-right-1,.bottom-right-2,.bottom-right-3) { order:30 !important; }
+}
