@@ -1,0 +1,37 @@
+name: v216 PR diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-v216:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Apply production patch chain
+        run: |
+          node scripts/patch-auth-callback-v162.mjs
+          node scripts/patch-content-editor-v162.mjs
+          node scripts/patch-studio-content-v161.mjs
+          node scripts/patch-legacy-worker-entry-v157.mjs
+          node scripts/run-patch-theme-layout-v170.mjs
+          node scripts/run-patch-mobile-public-v171.mjs
+          node scripts/run-patch-mobile-interaction-v174.mjs
+          node scripts/run-patch-mobile-stability-v176.mjs
+          node scripts/patch-studio-mobile-v176.mjs
+          node scripts/patch-nara-native-v177.mjs
+          node scripts/run-patch-screenshot-stability-v177.mjs
+          node scripts/patch-service-worker-v179.mjs
+      - name: Focused v216 regression
+        run: node --test tests/studio-production-v216.test.mjs
