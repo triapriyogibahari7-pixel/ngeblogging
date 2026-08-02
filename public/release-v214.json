@@ -12,7 +12,8 @@
     "analyticsProductionRpc": "get_site_analytics_dashboard",
     "publicSiteSingleInitialRender": true,
     "persistentSession": true,
-    "automaticRefreshToken": true
+    "automaticRefreshToken": true,
+    "existingMembershipRecoveryAuthorities": ["v186", "v195", "v196", "v198", "v209"]
   },
   "repairs": {
     "desktopSiteAndTabletRemainLarge": true,
@@ -32,11 +33,14 @@
     "analyticsLargerSmoothRealSeries": true,
     "analyticsHumanBotDonutReadable": true,
     "analyticsBrowserBotEntryDetailsRetained": true,
-    "retainedSessionScopedSiteCacheFallback": true,
+    "existingRetainedSessionRecoveryPreserved": true,
+    "newSyntheticSiteFallbackAdded": false,
     "drawerDoesNotBlurPage": true,
     "sidebarFlickerDisabled": true,
+    "profileDropdownUsesStableV147Owner": true,
     "profileDropdownHasProfileSettingsLogout": true,
     "profileSeparatedFromSiteSettings": true,
+    "profileControllerBridgesToReactProfileView": true,
     "profileDropdownStylesWiredIntoStudio": true,
     "serviceWorkerForcedNavigationDisabled": true
   },
@@ -46,6 +50,8 @@
     "massCapacityClaimed": false,
     "nineHundredMillionOrBillionLoginSimulationClaimed": false,
     "allOAuthProvidersEndToEndProven": false,
+    "netlifyDeployPreviewPassed": true,
+    "cloudflarePreviewPassed": false,
     "physicalBrowserRetestRequired": true,
     "productionDeploymentVerificationRequired": true
   }
