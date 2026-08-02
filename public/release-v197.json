@@ -1,0 +1,47 @@
+{
+  "status": "candidate",
+  "release": "studio-session-race-recovery-v197-20260802",
+  "basedOn": "studio-bootstrap-live-recovery-v196-20260802",
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "forcedVerificationSingleFlight": true,
+    "newerLocalTokenReusedAfterStale401": true,
+    "transientNetworkFailureDoesNotLogout": true,
+    "logoutOnlyOnExplicitLogoutOrDefinitiveInvalidSession": true
+  },
+  "studioBootstrap": {
+    "membershipSingleFlightPerUser": true,
+    "recoverySingleFlightPerUser": true,
+    "staleBearer401CanRecoverWithoutExtraRefresh": true,
+    "directSupabaseRlsPreserved": true,
+    "clientGatewayFallbackPreserved": true,
+    "newUserOnboardingPreserved": true
+  },
+  "productionRoute": {
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "workersDevMustPublishV197BeforeApexCutover": true,
+    "apexAndWwwVerificationRequired": true,
+    "tenantWildcardPreserved": true
+  },
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "naraSmallMediumNonModal": true,
+    "sidebarMenus": ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"]
+  },
+  "evidence": {
+    "observedAuthProviderSuccess": "google-pkce-http-200-before-v197",
+    "observedMembershipRace": "200-401-200-near-simultaneous-before-v197",
+    "massCapacityClaimed": false,
+    "physicalDeviceVerificationRequiredBefore100PercentClaim": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v197-session-race-20260802",
+    "cache": "studio-session-race-cache-v197",
+    "forcedNavigation": false,
+    "sessionDestruction": false
+  }
+}

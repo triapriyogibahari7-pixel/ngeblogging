@@ -4,6 +4,7 @@ const file = new URL("../.github/workflows/cloudflare-token-diagnostic.yml", imp
 let source = await readFile(file, "utf8");
 const RELEASE = "workflow-history-compat-v186";
 const concurrencyAnchors = [
+  "concurrency:\n  group: ngeblogging-production-studio-v197",
   "concurrency:\n  group: ngeblogging-production-studio-v196",
   "concurrency:\n  group: ngeblogging-production-studio-v195",
   "concurrency:\n  group: ngeblogging-production-studio-v192",
@@ -38,6 +39,7 @@ if (!source.includes("studio-screenshot-recovery-v191-20260801")) throw new Erro
 if (!source.includes("auth-studio-bootstrap-v192-20260801")) throw new Error("V186_V192_RELEASE_GATE_MISSING");
 if (!source.includes("studio-bootstrap-session-first-v195-20260801")) throw new Error("V186_V195_RELEASE_GATE_MISSING");
 if (!source.includes("studio-bootstrap-live-recovery-v196-20260802")) throw new Error("V186_V196_RELEASE_GATE_MISSING");
+if (!source.includes("studio-session-race-recovery-v197-20260802")) throw new Error("V186_V197_RELEASE_GATE_MISSING");
 
 await writeFile(file, source);
-console.log(`Applied ${RELEASE}; historical v184/v191/v192 gates remain and v195/v196 are accepted.`);
+console.log(`Applied ${RELEASE}; historical v184-v196 gates remain and v197 is accepted.`);
