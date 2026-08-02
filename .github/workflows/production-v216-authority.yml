@@ -15,7 +15,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  announce-v216:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Publish deployment start status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -d "{\"state\":\"pending\",\"context\":\"ngeblogging/production-v216\",\"description\":\"Deploy v216 sedang berjalan atau menunggu environment\",\"target_url\":\"${target}\"}" >/dev/null
+
   deploy-v216:
+    needs: announce-v216
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: cloudflare-production
@@ -32,19 +50,6 @@ jobs:
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
 
     steps:
-      - name: Publish deployment start status
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          target="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          curl -fsS -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
-            -d "{\"state\":\"pending\",\"context\":\"ngeblogging/production-v216\",\"description\":\"Deploy v216 sedang berjalan\",\"target_url\":\"${target}\"}" >/dev/null
-
       - name: Checkout production commit
         uses: actions/checkout@v4
 
@@ -137,21 +142,28 @@ jobs:
           echo "PRODUCTION_STUDIO_V216_VERIFY_FAILED"
           exit 1
 
+  report-v216:
+    if: always()
+    needs:
+      - announce-v216
+      - deploy-v216
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
       - name: Publish deployment final status
-        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-          JOB_STATUS: ${{ job.status }}
+          DEPLOY_RESULT: ${{ needs.deploy-v216.result }}
         shell: bash
         run: |
           set -euo pipefail
           target="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          if [[ "${JOB_STATUS}" == "success" ]]; then
+          if [[ "${DEPLOY_RESULT}" == "success" ]]; then
             state="success"
             description="Deploy v216 dan verifikasi live berhasil"
           else
             state="failure"
-            description="Deploy v216 gagal; buka run untuk langkah yang gagal"
+            description="Deploy v216 berakhir ${DEPLOY_RESULT}; buka run untuk detail"
           fi
           curl -fsS -X POST \
             -H "Authorization: Bearer ${GH_TOKEN}" \
