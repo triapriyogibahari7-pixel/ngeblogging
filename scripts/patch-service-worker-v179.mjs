@@ -64,7 +64,8 @@ await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
 // v199-v201 remain available as historical source/runtime authorities, but their
-// build-time source mutators are intentionally not executed. v198 is the last
-// deployment that proved green; v202 applies the required screenshot recovery
-// once, deterministically, after that stable bootstrap/session baseline.
+// build-time source mutators are intentionally not executed. v198 is the stable
+// bootstrap/session baseline; v202 fixes Theme/Nara and v203 owns the physical-
+// mobile reflow proven necessary by the latest real-device screenshots.
 await import("./patch-production-v202.mjs");
+await import("./patch-production-v203.mjs");
