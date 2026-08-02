@@ -1,0 +1,44 @@
+{
+  "release": "studio-production-v205-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v204-20260802",
+  "scope": "Fix current real-device screenshot regressions in Theme Studio, physical-mobile layout/code editing, Nara native attachment controls, logo/drawer stability, and retained-session Studio startup behavior.",
+  "repairs": {
+    "themeLayoutActionSingleVisibleLabel": true,
+    "themeHeroActionsContainedOnPhysicalMobile": true,
+    "layoutMapUsesPhysicalMobileGeometry": true,
+    "layoutMapKeepsLeftRightRelationshipsVisible": true,
+    "themeCodeEditorStacksCodeAbovePreviewOnPhysicalMobile": true,
+    "themeCodeTabsHtmlCssJavascriptPreserved": true,
+    "naraCameraPhotoFileRemainInsidePlusMenu": true,
+    "naraV202DirectAttachmentDuplicatesHidden": true,
+    "naraModelAndIntelligenceControlsCompact": true,
+    "naraSmallMediumRemainNonModal": true,
+    "naraCloseAlwaysVisible": true,
+    "naraControlAnimationsDisabled": true,
+    "mobileNLogoForcedWhiteOnBlue": true,
+    "mobileDrawerRemainsClickableWithoutBlur": true,
+    "verifiedSessionStartupDoesNotPresentAsLoginFailure": true,
+    "verifiedSessionStartupRetryIsBounded": true,
+    "noAutomaticLogoutOnTransientDataFailure": true
+  },
+  "productionEvidence": {
+    "googlePkceToken200ObservedOn20260802": true,
+    "googleCallback302ObservedOn20260802": true,
+    "authUser200ObservedOn20260802": true,
+    "refreshToken200ObservedOn20260802": true,
+    "studioSiteMembership200ObservedOnAndroid": true,
+    "studioContentAnalyticsComments200ObservedOnAndroid": true,
+    "oauthStateExpiredDuplicateCallbacksObserved": true
+  },
+  "validation": {
+    "productionRegressionRequired": true,
+    "deployPreviewRequired": true,
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "googleLoginEndToEndClaimed": false,
+    "linkedinLoginEndToEndClaimed": false,
+    "emailPasswordEndToEndClaimed": false,
+    "massLoginCapacityClaimed": false,
+    "nineHundredMillionUserCapacityClaimed": false
+  }
+}
