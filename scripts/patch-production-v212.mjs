@@ -29,6 +29,17 @@ async function patchStudioEntry() {
   }
 }
 
+async function normalizeCss() {
+  const path = "src/studio-production-v212.css";
+  let source = await read(path);
+  const broken = `html[data-studio-v212-device="handheld"] .tn-code-workspace-v212,\nhtml[data-studio-v212-device="handheld"] .tn-code-workspace.tn-code-workspace-v212,\n@media (max-width:760px) {`;
+  if (source.includes(broken)) {
+    source = source.replace(broken, `html[data-studio-v212-device="handheld"] .tn-code-workspace-v212,\nhtml[data-studio-v212-device="handheld"] .tn-code-workspace.tn-code-workspace-v212 {\n  grid-template-columns:1fr !important;\n  gap:10px !important;\n  overflow:visible !important;\n}\n\n@media (max-width:760px) {`);
+    await write(path, source);
+  }
+  if (source.includes(',\n@media (max-width:760px)')) throw new Error("V212_CSS_INVALID_MEDIA_SELECTOR");
+}
+
 async function patchServiceWorker() {
   const path = "public/sw.js";
   let source = await read(path);
@@ -64,6 +75,7 @@ async function verify() {
 }
 
 await patchStudioEntry();
+await normalizeCss();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE} runtime/CSS isolation`);
