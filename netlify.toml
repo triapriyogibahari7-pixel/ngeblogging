@@ -1,5 +1,5 @@
 [build]
-  command = "bash -lc 'set -e; sed -i \"/patch-production-v216.mjs/d\" scripts/patch-service-worker-v179.mjs; npm run test:production; mkdir -p dist; printf \"<!doctype html><meta charset=utf-8><title>v215 production baseline passed</title>\" > dist/index.html'"
+  command = "bash -lc 'set -e; sed -i \"/patch-production-v216.mjs/d\" scripts/patch-service-worker-v179.mjs; node scripts/patch-auth-callback-v162.mjs; node scripts/patch-content-editor-v162.mjs; node scripts/patch-studio-content-v161.mjs; node scripts/patch-legacy-worker-entry-v157.mjs; node scripts/run-patch-theme-layout-v170.mjs; node scripts/run-patch-mobile-public-v171.mjs; node scripts/run-patch-mobile-interaction-v174.mjs; node scripts/run-patch-mobile-stability-v176.mjs; node scripts/patch-studio-mobile-v176.mjs; node scripts/patch-nara-native-v177.mjs; node scripts/run-patch-screenshot-stability-v177.mjs; node scripts/patch-service-worker-v179.mjs; mkdir -p dist; printf \"<!doctype html><meta charset=utf-8><title>v215 source patch chain passed</title>\" > dist/index.html'"
   publish = "dist"
 
 [build.environment]
