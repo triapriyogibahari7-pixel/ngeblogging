@@ -54,6 +54,14 @@ test("green reference map keeps semantic header, 4 left, center, 4 right and foo
   assert.match(themeStudio, /preferredArea=\{widgetArea\}/);
 });
 
+test("v221 removes the old v213 click lock so every visible layout box can open its area", () => {
+  assert.match(runtime, /removeAttribute\("data-v212-layout-map"\)/);
+  assert.match(runtime, /v221LayoutAuthority = "clickable-green-map"/);
+  assert.match(runtime, /removeAttribute\("aria-disabled"\)/);
+  assert.match(runtime, /removeAttribute\("data-v213-locked-content"\)/);
+  assert.match(runtime, /pointer-events", "auto"/);
+});
+
 test("Theme code editor has actual line gutter, 10000 line limit and responsive preview/code order", () => {
   assert.match(runtime, /MAX_CODE_LINES = 10000/);
   assert.match(runtime, /Maks\. 10\.000 baris/);
