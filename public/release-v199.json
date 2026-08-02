@@ -1,0 +1,80 @@
+{
+  "status": "candidate",
+  "release": "studio-current-screenshot-v199-20260802",
+  "date": "2026-08-02",
+  "basedOn": "studio-persisted-session-recovery-v198-20260802",
+  "scope": [
+    "production login bootstrap when browser build variables are absent but the same-origin Worker gateway is configured",
+    "mobile drawer interaction and centered white n logo",
+    "Theme Studio card containment and duplicate action normalization",
+    "mobile layout-map readability",
+    "profile and settings surface separation",
+    "Nara small/medium non-modal geometry and compact controls"
+  ],
+  "responsive": {
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop-family"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themePreviewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
+    "horizontalPageOverflowGuard": true,
+    "themeCardPaintContainment": true,
+    "mobileLayoutMapPreservesLeftRightRelationship": true
+  },
+  "navigation": {
+    "completeSidebarPreserved": true,
+    "mobileDrawerBackdropVisualBlur": false,
+    "drawerRemainsClickable": true,
+    "logoNWhiteAndCentered": true,
+    "settingsAndLogoutPreserved": true
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "sameOriginGatewayBootstrapFallback": true,
+    "browserPlaceholderKeyNeverOverridesServerProjectKey": true,
+    "transientNetworkFailureMustNotLogout": true,
+    "providerConfigurationStillRequiredOnSupabase": true,
+    "workerSupabaseEnvironmentStillRequired": true
+  },
+  "themeStudio": {
+    "themeMinimumPreserved": 100,
+    "duplicateLayoutActionNormalized": true,
+    "htmlCssJavascriptSingleCodeEntry": true,
+    "codeEditorTabsPreserved": ["HTML", "CSS", "JavaScript"],
+    "layoutMapPreserved": true,
+    "widgetSelectionPreserved": true
+  },
+  "nara": {
+    "launcherOpensSmallFirstPreserved": true,
+    "smallMediumNonModal": true,
+    "fullScreenModal": true,
+    "headerControls": ["small", "medium", "full", "speaker", "close"],
+    "mobileQuickAttachments": ["camera", "photo", "file"],
+    "microphonePreserved": true,
+    "modelPreserved": true,
+    "intelligencePreserved": true,
+    "speakerPreserved": true,
+    "closeStopsMicrophoneAndSpeech": true
+  },
+  "preserved": [
+    "Ringkasan",
+    "Posts",
+    "Pages",
+    "5000-word guard",
+    "SEO editor",
+    "Media",
+    "Analytics",
+    "Members",
+    "Comments",
+    "Domains",
+    "API Keys",
+    "Theme Studio",
+    "Nara attachments and voice features"
+  ],
+  "validation": {
+    "staticRegressionRequired": true,
+    "productionBuildRequired": true,
+    "providerLoginRequiresLiveProviderCallbackTest": true,
+    "physicalDeviceVerificationRequiredBefore100PercentClaim": true,
+    "massCapacityClaimed": false
+  }
+}
