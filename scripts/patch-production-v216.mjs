@@ -12,15 +12,12 @@ const VERSION = "ngeblogging-app-v216-theme-nara-layout-route-20260802";
 const CACHE = "theme-nara-layout-route-cache-v216";
 const FORCE = "studio-v216";
 
-function replaceRequired(source, search, replacement, label) {
-  if (!source.includes(search)) throw new Error(`V216_ANCHOR_MISSING:${label}`);
-  return source.replace(search, replacement);
-}
-
 async function patchStudioEntry() {
   const path = "src/Studio.jsx";
   let source = await read(path);
-  if (!source.includes('import "./studio-production-v216.js";')) {
+  const runtimeImport = 'import "./studio-production-v216.js";';
+  const cleanLayoutImport = 'import "./studio-production-v216-layout-clean.css";';
+  if (!source.includes(runtimeImport)) {
     const anchors = [
       'import "./studio-production-v214-profile.js";',
       'import "./studio-production-v214.js";',
@@ -28,9 +25,12 @@ async function patchStudioEntry() {
     ];
     const anchor = anchors.find((candidate) => source.includes(candidate));
     if (!anchor) throw new Error("V216_STUDIO_ENTRY_ANCHOR_MISSING");
-    source = source.replace(anchor, `${anchor}\nimport "./studio-production-v216.js";`);
-    await write(path, source);
+    source = source.replace(anchor, `${anchor}\n${runtimeImport}`);
   }
+  if (!source.includes(cleanLayoutImport)) {
+    source = source.replace(runtimeImport, `${runtimeImport}\n${cleanLayoutImport}`);
+  }
+  await write(path, source);
 }
 
 async function patchNaraClose() {
@@ -91,10 +91,11 @@ async function patchServiceWorker() {
 }
 
 async function verify() {
-  const [entry, runtime, css, themeStudio, nara, auth, publicSite, analytics, widgets, worker, release] = await Promise.all([
+  const [entry, runtime, css, cleanLayoutCss, themeStudio, nara, auth, publicSite, analytics, widgets, worker, release] = await Promise.all([
     read("src/Studio.jsx"),
     read("src/studio-production-v216.js"),
     read("src/studio-production-v216.css"),
+    read("src/studio-production-v216-layout-clean.css"),
     read("src/ThemeStudio.jsx"),
     read("src/NaraAssistant.jsx"),
     read("src/lib/supabase.js"),
@@ -107,6 +108,7 @@ async function verify() {
 
   const checks = [
     [entry, "studio-production-v216.js", "Studio v216 entry"],
+    [entry, "studio-production-v216-layout-clean.css", "layout prose cleanup entry"],
     [runtime, RELEASE, "v216 runtime release"],
     [runtime, "MAX_CODE_LINES = 10000", "ten-thousand code line numbers"],
     [runtime, "preview-above-code", "physical-small Theme editor"],
@@ -119,6 +121,8 @@ async function verify() {
     [css, ".sidebar-right-4", "fourth right widget CSS"],
     [css, 'data-v216-attachment-menu="camera-photo-file"', "Nara attachment menu CSS"],
     [css, 'data-v216-domain-action="horizontal-full"', "Domain horizontal action CSS"],
+    [cleanLayoutCss, ".tn-layout-studio-header > div > h2", "layout long title hidden"],
+    [cleanLayoutCss, ".tn-layout-studio-header > div > p", "layout long description hidden"],
     [themeStudio, "Editor HTML, CSS, dan JavaScript", "Theme code editor source"],
     [themeStudio, "Tema Custom", "Theme Custom source"],
     [themeStudio, "preferredArea={widgetArea}", "area-aware Widget Studio"],
