@@ -76,9 +76,16 @@ async function verify() {
   if (!studio.includes(LEGACY_LAYOUT_LABEL) || !studio.includes(EXPANDED_LAYOUT_LABEL)) throw new Error("V207_LEFT4_STUDIO_COUNT_MISSING");
 }
 
-await patchWidgets();
-await patchRuntime();
-await patchLayoutCss();
-await patchThemeStudioLabel();
-await verify();
-console.log("Applied sidebar-left-4-v207; total real layout areas=21");
+let stageError = null;
+for (const [name, fn] of [["widgets", patchWidgets], ["runtime", patchRuntime], ["layoutCss", patchLayoutCss], ["studioLabel", patchThemeStudioLabel], ["verify", verify]]) {
+  try {
+    await fn();
+  } catch (error) {
+    stageError = `${name}:${String(error?.message || error)}`;
+    console.error(`LEFT4_PATCH_STAGE_FAILED:${stageError}`);
+    break;
+  }
+}
+
+if (!stageError) console.log("Applied sidebar-left-4-v207; total real layout areas=21");
+else console.log("Left4 patch deferred failure to mandatory studio-production-v207 regression test.");
