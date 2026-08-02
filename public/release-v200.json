@@ -1,0 +1,62 @@
+{
+  "status": "candidate",
+  "release": "studio-mobile-flicker-v200-20260802",
+  "date": "2026-08-02",
+  "basedOn": "studio-current-screenshot-v199-20260802",
+  "fixes": {
+    "legacyMutationObserverSelfLoop": true,
+    "observedAttributesRemoved": ["hidden", "inert", "aria-hidden"],
+    "apiKeysMobileNormalFlow": true,
+    "apiKeysHeaderAndEmptyStateFullWidth": true,
+    "apiEndpointCodeScrollContained": true,
+    "themeCardContainmentReinforced": true,
+    "naraSmallMediumNonModalReinforced": true,
+    "mobileHorizontalOverflowGuard": true
+  },
+  "responsive": {
+    "layoutFamiliesPreserved": ["application", "phone", "mobile", "compact", "tablet", "desktop-family"],
+    "desktopVariantsPreserved": ["laptop", "desktop", "computer"],
+    "mobileApiMetrics": "two-columns-then-one-below-430px",
+    "themePreviewProfilesPreserved": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]
+  },
+  "authentication": {
+    "transportChangedByV200": false,
+    "productionGoogleAuthObservedHealthyBeforePatch": true,
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "transientNetworkFailureMustNotLogout": true
+  },
+  "nara": {
+    "launcherBehaviorPreserved": true,
+    "smallMediumNonModal": true,
+    "fullScreenModal": true,
+    "cameraPhotoFilePreserved": true,
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelPreserved": true,
+    "intelligencePreserved": true
+  },
+  "preserved": [
+    "Ringkasan",
+    "Posts",
+    "Pages",
+    "5000-word guard",
+    "SEO editor",
+    "100-theme library",
+    "Edit Tata Letak",
+    "HTML/CSS/JavaScript code editor",
+    "Media",
+    "Analytics",
+    "Members",
+    "Comments",
+    "Domains",
+    "API Keys"
+  ],
+  "validation": {
+    "productionBuildRequired": true,
+    "githubActionsStartupFailureObserved": true,
+    "productionDeployNotYetVerifiedByThisReleaseFile": true,
+    "physicalDeviceVerificationRequiredBefore100PercentClaim": true,
+    "massCapacityClaimed": false
+  }
+}
