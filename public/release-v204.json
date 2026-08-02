@@ -1,0 +1,35 @@
+{
+  "release": "studio-production-v204-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v203-20260802",
+  "scope": "Restore mobile profile topbar visibility and clearly separate valid login state from transient Studio data synchronization failures.",
+  "repairs": {
+    "mobileTopbarHasLogoWorkspaceAndProfile": true,
+    "mobileProfileAlwaysVisible": true,
+    "profileMenuBoundedToViewport": true,
+    "profileMenuKeepsProfileSettingsLogout": true,
+    "desktopEdgeToggleHiddenOnPhysicalPhone": true,
+    "retainedSessionDataErrorClarified": true,
+    "onlineStudioRetryForRetainedSession": true,
+    "noAutomaticLogoutOnTransientDataFailure": true,
+    "v203PhysicalMobileReflowPreserved": true,
+    "v203NaraStabilityPreserved": true
+  },
+  "authenticationEvidence": {
+    "supabasePersistSession": true,
+    "supabaseAutoRefreshToken": true,
+    "googlePkceSuccessObservedInProductionLogs": true,
+    "oauthStateExpiredFailuresAlsoObservedEarlier": true,
+    "validSessionMustNotBeOverriddenByStaleCallbackError": true
+  },
+  "validation": {
+    "productionRegressionRequired": true,
+    "deployPreviewRequired": true,
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "googleLoginEndToEndClaimed": false,
+    "linkedinLoginEndToEndClaimed": false,
+    "emailPasswordEndToEndClaimed": false,
+    "massLoginCapacityClaimed": false,
+    "nineHundredMillionUserCapacityClaimed": false
+  }
+}
