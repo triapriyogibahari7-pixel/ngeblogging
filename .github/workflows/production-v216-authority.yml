@@ -4,13 +4,6 @@ on:
   push:
     branches:
       - production
-  pull_request:
-    branches:
-      - production
-    types:
-      - opened
-      - synchronize
-      - reopened
   workflow_dispatch:
 
 permissions:
@@ -23,7 +16,6 @@ concurrency:
 
 jobs:
   announce-v216:
-    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'agent/production-v216-pr-deploy-trigger')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -58,7 +50,7 @@ jobs:
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
 
     steps:
-      - name: Checkout production candidate
+      - name: Checkout production commit
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -151,7 +143,7 @@ jobs:
           exit 1
 
   report-v216:
-    if: always() && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'agent/production-v216-pr-deploy-trigger'))
+    if: always()
     needs:
       - announce-v216
       - deploy-v216
