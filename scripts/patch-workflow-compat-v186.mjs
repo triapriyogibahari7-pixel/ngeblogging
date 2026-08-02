@@ -40,6 +40,10 @@ if (!source.includes("auth-studio-bootstrap-v192-20260801")) throw new Error("V1
 if (!source.includes("studio-bootstrap-session-first-v195-20260801")) throw new Error("V186_V195_RELEASE_GATE_MISSING");
 if (!source.includes("studio-bootstrap-live-recovery-v196-20260802")) throw new Error("V186_V196_RELEASE_GATE_MISSING");
 if (!source.includes("studio-session-race-recovery-v197-20260802")) throw new Error("V186_V197_RELEASE_GATE_MISSING");
+if (!source.includes("studio-production-v205-20260802")) throw new Error("V186_V205_RELEASE_GATE_MISSING");
+if (!source.includes("/release-v205.json")) throw new Error("V186_V205_RELEASE_PATH_MISSING");
+if (!source.includes("PRODUCTION_STUDIO_V205_VERIFIED")) throw new Error("V186_V205_SUCCESS_MARKER_MISSING");
+if (!source.includes("PRODUCTION_STUDIO_V205_VERIFY_FAILED")) throw new Error("V186_V205_FAILURE_MARKER_MISSING");
 
 await writeFile(file, source);
-console.log(`Applied ${RELEASE}; historical v184-v196 gates remain and v197 is accepted.`);
+console.log(`Applied ${RELEASE}; historical v184-v197 gates remain and v205 is required.`);
