@@ -13,7 +13,7 @@ async function verifyGate() {
   const source = await read("src/StudioOnboardingGate.jsx");
   for (const marker of [
     "function readPersistedSupabaseSessionV198",
-    "sb-${projectRef}-auth-token",
+    'const storageKey = "sb-" + projectRef + "-auth-token";',
     "persisted-storage-v198",
     "persisted-storage-first",
     "async function readLocalStudioSessionV195",
