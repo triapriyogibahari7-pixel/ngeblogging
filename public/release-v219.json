@@ -1,0 +1,68 @@
+{
+  "release": "studio-production-v219-20260802",
+  "status": "candidate",
+  "basedOn": [
+    "studio-production-v216-20260802",
+    "public-site-atomic-v218-20260802"
+  ],
+  "theme": {
+    "builtInThemesRequired": 100,
+    "eagerStudioSurface": true,
+    "renderErrorBoundary": true,
+    "blankSurfaceRejected": true,
+    "customThemePreserved": true,
+    "htmlCssJavaScriptEditorPreserved": true,
+    "codeLineLimitSupported": 10000,
+    "smallDeviceEditor": "preview-above-code",
+    "largeDeviceEditor": "split-50-50",
+    "fourLeftWidgetAreas": true,
+    "fourRightWidgetAreas": true,
+    "customHtmlJavaScriptWidget": true
+  },
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "physicalDeviceDetection": true,
+    "desktopSiteOnPhoneUsesPhysicalGeometry": true
+  },
+  "nara": {
+    "smallMediumNonModal": true,
+    "fullScreenModalOnly": true,
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelSelectorPreserved": true,
+    "intelligenceSelectorPreserved": true
+  },
+  "domain": {
+    "smallDeviceActionsFullWidth": true,
+    "horizontalLabels": true,
+    "longValuesScrollable": true
+  },
+  "analytics": {
+    "productionRpcPreserved": "get_site_analytics_dashboard",
+    "largerLineChart": true,
+    "largerTrafficDonut": true,
+    "fakeProductionStatisticsAdded": false
+  },
+  "authentication": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "logoutOnlyExplicit": true,
+    "providerEndToEndClaimedByThisRelease": false
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v219-theme-blank-resilience-20260802",
+    "cache": "theme-blank-resilience-cache-v219",
+    "forcedNavigation": false,
+    "sessionDestruction": false,
+    "v218PublicSingleLoadPreserved": true
+  },
+  "claims": {
+    "massUserCapacityTestPerformed": false,
+    "massUserCapacityClaimed": false,
+    "realDeviceVerificationStillRequiredBeforeAbsoluteCompletionClaim": true
+  }
+}
