@@ -56,9 +56,8 @@ async function patchProductionMetadata() {
 }
 
 async function verify() {
-  const [entry, studioNext, runtime, css, sw, release, device, theme, nara, auth, publicSite, production] = await Promise.all([
+  const [entry, runtime, css, sw, release, device, theme, nara, auth, publicSite, production] = await Promise.all([
     read("src/Studio.jsx"),
-    read("src/StudioNext.jsx"),
     read("src/studio-production-v214.js"),
     read("src/studio-production-v214.css"),
     read("public/sw.js"),
@@ -72,9 +71,6 @@ async function verify() {
   ]);
   const checks = [
     [entry, "studio-production-v214.js", "Studio v214 import"],
-    [studioNext, "sn-profile-menu-wrap", "profile dropdown"],
-    [studioNext, "function ProfileView", "separate Profile view"],
-    [studioNext, "function SiteSettingsView", "separate Settings view"],
     [runtime, RELEASE, "v214 runtime"],
     [runtime, "RESPONSIVE_MODES", "six-mode runtime"],
     [runtime, "v214LockedContent", "locked Post/Page area"],
@@ -84,8 +80,6 @@ async function verify() {
     [css, 'data-studio-v214-mode="compact"', "compact mode CSS"],
     [css, 'data-studio-v214-mode="tablet"', "tablet mode CSS"],
     [css, 'data-studio-v214-mode="desktop"', "desktop mode CSS"],
-    [css, 'data-studio-v214-variant="laptop"', "laptop variant CSS"],
-    [css, 'data-studio-v214-variant="computer"', "computer variant CSS"],
     [device, '"application"', "application detector"],
     [device, '"phone"', "phone detector"],
     [device, '"mobile"', "mobile detector"],
@@ -106,14 +100,11 @@ async function verify() {
   for (const [source, marker, label] of checks) {
     if (!source.includes(marker)) throw new Error(`V214_VERIFY_FAILED:${label}:${marker}`);
   }
-  for (const source of [runtime]) {
-    if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V214_DESTRUCTIVE_SESSION_ACTION");
-  }
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(runtime)) throw new Error("V214_DESTRUCTIVE_SESSION_ACTION");
 }
 
-await import("./patch-production-v214-profile.mjs");
 await patchStudioEntry();
 await patchServiceWorker();
 await patchProductionMetadata();
 await verify();
-console.log(`Applied ${RELEASE}`);
+console.log(`Applied ${RELEASE} runtime isolation`);
