@@ -1,6 +1,7 @@
 {
   "release": "studio-production-v219-20260802",
   "status": "candidate",
+  "deploymentTrigger": "explicit-production-push-v219",
   "basedOn": [
     "studio-production-v216-20260802",
     "public-site-atomic-v218-20260802"
