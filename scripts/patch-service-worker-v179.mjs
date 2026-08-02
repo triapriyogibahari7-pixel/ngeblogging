@@ -97,3 +97,4 @@ await import("./patch-production-v213.mjs");
 await import("./patch-production-v214.mjs");
 await import("./patch-auth-late-callback-v215.mjs");
 await import("./patch-production-v216.mjs");
+await import("./patch-v216-v215-auth-compat.mjs");
