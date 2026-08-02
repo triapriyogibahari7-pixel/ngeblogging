@@ -3,6 +3,12 @@
   "release": "studio-mobile-flicker-v200-20260802",
   "date": "2026-08-02",
   "basedOn": "studio-current-screenshot-v199-20260802",
+  "productionPromotion": {
+    "requestedAt": "2026-08-02T02:20:00Z",
+    "sourceBranch": "main",
+    "targetBranch": "production",
+    "reason": "Promote the screenshot-driven v199/v200 mobile, Theme Studio, API Keys, drawer, Nara, and session-continuity fixes to the branch used by production deployment."
+  },
   "fixes": {
     "legacyMutationObserverSelfLoop": true,
     "observedAttributesRemoved": ["hidden", "inert", "aria-hidden"],
