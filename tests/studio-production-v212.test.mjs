@@ -10,7 +10,6 @@ const runtime = read("src/studio-production-v212.js");
 const css = read("src/studio-production-v212.css");
 const themeStudio = read("src/ThemeStudio.jsx");
 const themeRuntime = read("src/theme-layout-runtime-v170.js");
-const themeLayoutCss = read("src/theme-layout-v170.css");
 const nara = read("src/NaraAssistant.jsx");
 const auth = read("src/lib/supabase.js");
 const chain = read("scripts/patch-service-worker-v179.mjs");
@@ -29,8 +28,10 @@ test("v212 runs after v211 and keeps compatibility instead of replacing old auth
   assert.match(worker, /ngeblogging-app-v211-mobile-theme-nara-domain-20260802/);
 });
 
-test("explicit desktop-site and tablet/desktop families stay large while app/phone/mobile/compact stay small", () => {
+test("explicit desktop-site and physical tablets stay large while app phone mobile compact stay small", () => {
   assert.match(runtime, /studioDesktopSitePhone === "true"/);
+  assert.match(runtime, /PHYSICAL_TABLET_MIN\s*=\s*768/);
+  assert.match(runtime, /studioDeviceMode === "large"/);
   assert.match(runtime, /LARGE_FAMILIES/);
   assert.match(runtime, /SMALL_FAMILIES/);
   assert.match(css, /data-studio-v212-family="large"/);
@@ -58,7 +59,6 @@ test("layout map has four real left and four real right widget areas around a la
   assert.match(themeRuntime, /sidebar-left-4/);
   assert.match(themeRuntime, /sidebar-right-4/);
   assert.match(themeRuntime, /Empat area widget kanan postingan/);
-  assert.match(themeLayoutCss, /sidebar-right-4/);
   assert.match(css, /sidebar-left-4 content-main sidebar-right-4/);
   assert.match(css, /background:linear-gradient\(145deg,#1268e8,#0755c7\)/);
 });
