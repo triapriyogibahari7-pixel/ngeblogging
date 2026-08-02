@@ -65,7 +65,6 @@ await import("./patch-studio-persisted-session-v198.mjs");
 
 // v199-v201 remain available as historical source/runtime authorities, but their
 // build-time source mutators are intentionally not executed. v198 is the stable
-// bootstrap/session baseline; v202 fixes Theme/Nara and v203 owns the physical-
-// mobile reflow proven necessary by the latest real-device screenshots.
+// bootstrap/session baseline; v202 remains the service-worker authority during
+// this diagnostic while v203 UI reflow is validated independently.
 await import("./patch-production-v202.mjs");
-await import("./patch-production-v203.mjs");
