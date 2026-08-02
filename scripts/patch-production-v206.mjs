@@ -48,9 +48,16 @@ async function patchNaraSource() {
   const path = "src/NaraAssistant.jsx";
   let source = await read(path);
   if (!source.includes("nara-close-stops-media-v206")) {
-    const oldClose = `  const closeNara = () => {\n    stopSpeech();\n    setOpen(false);\n  };`;
-    const newClose = `  const closeNara = () => {\n    // nara-close-stops-media-v206: closing the panel must release voice resources.\n    try { recognition.current?.stop?.(); } catch { /* SpeechRecognition may already be stopped. */ }\n    recognition.current = null;\n    setListening(false);\n    stopSpeech();\n    setOpen(false);\n  };`;
-    source = replaceOnce(source, oldClose, newClose, "NARA_CLOSE_MEDIA");
+    const closeV194 = `  const closeNara = () => {\n    recognition.current?.stop?.();\n    recognition.current = null;\n    setListening(false);\n    stopSpeech();\n    setAttachmentMenu(false);\n    setOpen(false);\n  };`;
+    const closeLegacy = `  const closeNara = () => {\n    stopSpeech();\n    setOpen(false);\n  };`;
+    const closeV206 = `  const closeNara = () => {\n    // nara-close-stops-media-v206: closing the panel must release microphone and speech resources.\n    try { recognition.current?.stop?.(); } catch { /* SpeechRecognition may already be stopped. */ }\n    recognition.current = null;\n    setListening(false);\n    stopSpeech();\n    setAttachmentMenu(false);\n    setOpen(false);\n  };`;
+    if (source.includes(closeV194)) source = source.replace(closeV194, closeV206);
+    else if (source.includes(closeLegacy)) source = source.replace(closeLegacy, closeV206);
+    else if (source.includes("recognition.current = null;") && source.includes("const closeNara = () =>")) {
+      source = source.replace("  const closeNara = () => {", "  // nara-close-stops-media-v206\n  const closeNara = () => {");
+    } else {
+      throw new Error("V206_NARA_CLOSE_MEDIA_ANCHOR_MISSING");
+    }
   }
   source = source.replace(
     '<div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">',
