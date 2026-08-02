@@ -2,6 +2,7 @@ import { supabase, supabaseConfigured } from "./supabase.js";
 
 export const AUTH_CALLBACK_RELEASE = "auth-callback-singleflight-v162-20260730";
 export const AUTH_CALLBACK_COMPAT_RELEASE = "auth-callback-v162-20260730";
+export const AUTH_CALLBACK_REPLAY_RECOVERY_V205 = "auth-callback-replay-recovery-v205-20260802";
 
 const OPERATION_KEY = Symbol.for("ngeblogging.auth.callbackOperationV162");
 const CALLBACK_MARKER = "ngeblogging-auth-callback-singleflight-v162";
@@ -62,9 +63,7 @@ function writeMarker({ codeFingerprint, mode, status, session }) {
 function cleanCallbackUrl({ success = false, recovery = false } = {}) {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
-  for (const key of ["code", "error", "error_code", "error_description", "state"]) {
-    url.searchParams.delete(key);
-  }
+  for (const key of ["code", "error", "error_code", "error_description", "state"]) url.searchParams.delete(key);
   url.searchParams.delete("auth");
   if (success) {
     url.searchParams.set("auth_success", "v162");
@@ -76,12 +75,7 @@ function cleanCallbackUrl({ success = false, recovery = false } = {}) {
 }
 
 function callbackResult(status, extra = {}) {
-  return {
-    status,
-    release: AUTH_CALLBACK_RELEASE,
-    compatibility: AUTH_CALLBACK_COMPAT_RELEASE,
-    ...extra,
-  };
+  return { status, release: AUTH_CALLBACK_RELEASE, compatibility: AUTH_CALLBACK_COMPAT_RELEASE, ...extra };
 }
 
 function isConsumedCodeError(error) {
@@ -99,11 +93,15 @@ function announce(status, session, mode) {
   if (typeof document !== "undefined") {
     document.documentElement.dataset.authCallbackV162 = status;
     document.documentElement.dataset.authCallbackSingleflightV162 = AUTH_CALLBACK_RELEASE;
+    if (status === "recovered-provider-state-replay") {
+      document.documentElement.dataset.authCallbackReplayRecoveryV205 = AUTH_CALLBACK_REPLAY_RECOVERY_V205;
+    }
   }
   window.dispatchEvent(new CustomEvent("ngeblogging:auth-callback-complete", {
     detail: {
       release: AUTH_CALLBACK_RELEASE,
       compatibility: AUTH_CALLBACK_COMPAT_RELEASE,
+      replayRecovery: AUTH_CALLBACK_REPLAY_RECOVERY_V205,
       status,
       mode,
       userId: session?.user?.id || "",
@@ -111,19 +109,38 @@ function announce(status, session, mode) {
   }));
 }
 
+async function recoverExistingSessionFromReplay(mode) {
+  const session = await currentSession().catch(() => null);
+  if (!session?.access_token || !session?.refresh_token) return null;
+  cleanCallbackUrl({ success: true, recovery: mode === "recovery" });
+  announce("recovered-provider-state-replay", session, mode);
+  return callbackResult("recovered", {
+    session,
+    mode,
+    singleFlight: true,
+    providerStateReplayRecovered: true,
+    replayRecovery: AUTH_CALLBACK_REPLAY_RECOVERY_V205,
+  });
+}
+
 async function consumeInternal(url, code, mode, codeFingerprint) {
   const oauthError = callbackErrorFromUrl(url);
   if (oauthError) {
+    /* Supabase can redirect a revisited provider callback with
+       "OAuth state not found or expired" after the original PKCE exchange has
+       already succeeded. Never turn that stale history replay into a logout or
+       a false login failure when a valid persisted session is already present. */
+    if (isConsumedCodeError(oauthError) && supabaseConfigured && supabase) {
+      const recovered = await recoverExistingSessionFromReplay(mode);
+      if (recovered) return recovered;
+    }
     cleanCallbackUrl();
     return callbackResult("error", { error: oauthError, mode });
   }
 
   if (!code) return callbackResult("none", { mode });
   if (!supabaseConfigured || !supabase) {
-    return callbackResult("error", {
-      mode,
-      error: new Error("Autentikasi belum dikonfigurasi pada deployment ini."),
-    });
+    return callbackResult("error", { mode, error: new Error("Autentikasi belum dikonfigurasi pada deployment ini.") });
   }
 
   const completed = readMarker(codeFingerprint);
@@ -154,10 +171,7 @@ async function consumeInternal(url, code, mode, codeFingerprint) {
   const session = data?.session || await currentSession().catch(() => null);
   if (!session?.access_token || !session?.refresh_token) {
     cleanCallbackUrl();
-    return callbackResult("error", {
-      mode,
-      error: new Error("Callback diterima tetapi sesi login tidak terbentuk."),
-    });
+    return callbackResult("error", { mode, error: new Error("Callback diterima tetapi sesi login tidak terbentuk.") });
   }
 
   writeMarker({ codeFingerprint, mode, status: "exchanged-singleflight", session });
@@ -177,11 +191,7 @@ export function consumeAuthCallbackV162() {
   if (current?.promise && current.fingerprint === codeFingerprint) return current.promise;
 
   const promise = consumeInternal(url, code, mode, codeFingerprint);
-  globalThis[OPERATION_KEY] = {
-    fingerprint: codeFingerprint,
-    startedAt: Date.now(),
-    promise,
-  };
+  globalThis[OPERATION_KEY] = { fingerprint: codeFingerprint, startedAt: Date.now(), promise };
 
   globalThis.setTimeout(() => {
     const active = globalThis[OPERATION_KEY];
