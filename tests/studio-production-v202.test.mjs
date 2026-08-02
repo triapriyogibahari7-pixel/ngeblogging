@@ -12,14 +12,17 @@ const release = JSON.parse(read("public/release-v202.json"));
 
 const RELEASE = "studio-production-v202-20260802";
 
-test("v202 is the final Studio authority after v201 and is chained into production builds", () => {
+test("v202 is the final runtime authority after v201 but the build mutator finalizes directly from stable v198", () => {
   const v201 = entry.indexOf('import "./studio-production-v201.js";');
   const v202 = entry.indexOf('import "./studio-production-v202.js";');
   assert.ok(v201 >= 0);
   assert.ok(v202 > v201);
-  assert.match(chain, /patch-production-v201\.mjs/);
+  assert.match(chain, /patch-studio-persisted-session-v198\.mjs/);
   assert.match(chain, /patch-production-v202\.mjs/);
-  assert.ok(chain.indexOf("patch-production-v201.mjs") < chain.indexOf("patch-production-v202.mjs"));
+  assert.ok(chain.indexOf("patch-studio-persisted-session-v198.mjs") < chain.indexOf("patch-production-v202.mjs"));
+  assert.doesNotMatch(chain, /await import\("\.\/patch-current-screenshot-v199\.mjs"\)/);
+  assert.doesNotMatch(chain, /await import\("\.\/patch-mobile-flicker-v200\.mjs"\)/);
+  assert.doesNotMatch(chain, /await import\("\.\/patch-production-v201\.mjs"\)/);
 });
 
 test("physical mobile rules do not depend only on CSS viewport media queries", () => {
@@ -56,9 +59,19 @@ test("API Keys empty state and endpoint are explicitly reflowed for physical mob
   assert.match(css, /\.sn-api-endpoint pre/);
 });
 
-test("v202 service worker rotates cache without destructive session actions", () => {
+test("v202 folds the v200 observer-loop repair into the final build", () => {
+  assert.match(patch, /patchLegacyObserverOnce/);
+  assert.match(patch, /v193 writes hidden\/inert\/aria-hidden itself/);
+  assert.match(patch, /V202_V193_SELF_OBSERVED_ATTRIBUTE_REMAINS/);
+});
+
+test("v202 service worker rotates cache while preserving historical regression evidence", () => {
   assert.match(patch, /ngeblogging-app-v202-mobile-theme-nara-20260802/);
   assert.match(patch, /mobile-theme-nara-cache-v202/);
+  assert.match(patch, /ngeblogging-app-v198-persisted-session-20260802/);
+  assert.match(patch, /ngeblogging-app-v199-mobile-ui-20260802/);
+  assert.match(patch, /ngeblogging-app-v200-mobile-flicker-20260802/);
+  assert.match(patch, /ngeblogging-app-v201-production-ui-20260802/);
   assert.match(patch, /V202_FORCED_NAVIGATION_REMAINS/);
   assert.doesNotMatch(runtime, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
