@@ -72,10 +72,21 @@ async function verify() {
   for (const marker of [VERSION, CACHE, RELEASE]) {
     if (!worker.includes(marker)) throw new Error(`V215_WORKER_VERIFY_FAILED:${marker}`);
   }
-  for (const source of [main, callback]) {
-    if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) {
-      throw new Error("V215_DESTRUCTIVE_SESSION_ACTION_FOUND");
-    }
+
+  const recoveryStart = main.indexOf("const authLateCallbackRecoveryV215");
+  const recoveryEnd = main.indexOf('setAuthMode("signin")', recoveryStart);
+  const recoveryBlock = recoveryStart >= 0 && recoveryEnd > recoveryStart
+    ? main.slice(recoveryStart, recoveryEnd)
+    : "";
+  if (!recoveryBlock) throw new Error("V215_RECOVERY_BLOCK_NOT_FOUND");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(recoveryBlock)) {
+    throw new Error("V215_RECOVERY_BLOCK_DESTRUCTIVE_ACTION_FOUND");
+  }
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(callback)) {
+    throw new Error("V215_CALLBACK_V162_DESTRUCTIVE_ACTION_FOUND");
+  }
+  if (!/const leaveStudio = async \(\) =>/.test(main) || !/await signOut\(\)/.test(main)) {
+    throw new Error("V215_EXPLICIT_LOGOUT_MISSING");
   }
 }
 
