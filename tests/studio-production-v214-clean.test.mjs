@@ -133,9 +133,12 @@ test("persistent session v215 recovery and explicit logout protections stay inta
   assert.match(auth, /flowType:\s*"pkce"/);
   assert.match(publicSite, /PUBLIC_SITE_SINGLE_RENDER_V209/);
   assert.match(lateAuthPatch, /retained-verified-session/);
-  for (const source of [runtime, profile, lateAuthPatch]) {
+  for (const source of [runtime, profile]) {
     assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
   }
+  assert.match(lateAuthPatch, /V215_RECOVERY_BLOCK_DESTRUCTIVE_ACTION_FOUND/);
+  assert.match(lateAuthPatch, /V215_CALLBACK_V162_DESTRUCTIVE_ACTION_FOUND/);
+  assert.match(lateAuthPatch, /V215_EXPLICIT_LOGOUT_MISSING/);
 });
 
 test("release contracts stay factual and refuse unsupported mass-login/all-provider claims", () => {
