@@ -1,0 +1,33 @@
+{
+  "release": "auth-late-callback-recovery-v215-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v214-20260802",
+  "evidence": {
+    "googlePkceProductionLoginObserved": true,
+    "googlePkceTokenStatus": 200,
+    "refreshTokenStatusObserved": 200,
+    "userEndpointStatusObserved": 200,
+    "lateDuplicateCallbackErrorObserved": "OAuth state not found or expired",
+    "lateCallbackOccurredAfterSuccessfulGoogleSession": true,
+    "studioProductionDataRequestsObserved200": true
+  },
+  "repair": {
+    "v162SingleFlightPreserved": true,
+    "exchangeCodeOwnerCountPreserved": 1,
+    "lateStaleOAuthCallbackChecksRetainedSession": true,
+    "verifiedSessionWinsOverExpiredDuplicateCallback": true,
+    "sessionClearedOnNetworkError": false,
+    "logoutRemainsExplicit": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "serviceWorkerForcedNavigationDisabled": true
+  },
+  "claims": {
+    "googleEndToEndProductionEvidence": true,
+    "linkedinEndToEndProductionEvidence": false,
+    "emailPasswordEndToEndProductionEvidence": false,
+    "allProvidersProven": false,
+    "massLoginCapacityProven": false,
+    "physicalDeviceRetestRequired": true
+  }
+}
