@@ -1,0 +1,113 @@
+/* Ngeblogging Studio v205.1 — targeted follow-up on top of the validated v205 authority. */
+
+/* Drawer closed: white n on blue. */
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .sn-sidebar-toggle[aria-expanded="false"] .sn-mobile-menu-mark {
+  background: linear-gradient(145deg,#2f75e8,#4f46e5) !important;
+  border: 1px solid #2f75e8 !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .sn-sidebar-toggle[aria-expanded="false"] .sn-mobile-menu-mark > strong {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* Drawer open: blue n on white, exactly separated from the closed state. */
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .sn-sidebar-toggle[aria-expanded="true"] .sn-mobile-menu-mark,
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark {
+  background: #fff !important;
+  border: 1px solid #cbd9ee !important;
+  color: #2869df !important;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .sn-sidebar-toggle[aria-expanded="true"] .sn-mobile-menu-mark > strong,
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark > strong {
+  color: #2869df !important;
+  -webkit-text-fill-color: #2869df !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+/* Theme actions are real controls, not narrow decorative rails. */
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-hero-actions > button[data-v205-hotfix-theme-action] {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-hero-actions > button[data-v205-hotfix-theme-action] :is(span,b) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-layout-studio,
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-layout-studio button,
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-code-workspace,
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-code-workspace button,
+html[data-studio-v205-hotfix="true"] .tn-studio .tn-code-workspace textarea {
+  pointer-events: auto !important;
+}
+
+/* Nara: keep only +, microphone, intelligence, model, send in the compact row.
+   Camera / Foto / File remain inside the native + menu from NaraAssistant.jsx. */
+html[data-studio-v205-hotfix="true"] :is(.nara-direct-attachments-v202,.nara-mobile-direct-tools-v199) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .nara-composer-tools {
+  grid-template-columns: 34px 34px minmax(62px,.74fr) minmax(78px,.96fr) 38px !important;
+  gap: 4px !important;
+}
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] :is(.nara-select.intelligence,.nara-select.model) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding-inline: 6px !important;
+  overflow: hidden !important;
+  animation: none !important;
+  transition: none !important;
+}
+html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .nara-select > span {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 9px !important;
+  animation: none !important;
+  transition: none !important;
+}
+html[data-studio-v205-hotfix="true"] :is(
+  .nara-floating-button,
+  .nara-size-controls-v147 button,
+  .nara-auto-voice-v148,
+  .nara-select,
+  .nara-select *,
+  .nara-composer-tools > button,
+  .nara-attachment-menu-wrap > button
+) {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+
+@media (max-width:350px) {
+  html[data-studio-v205-hotfix="true"][data-studio-mobile-v205="true"] .nara-composer-tools {
+    grid-template-columns: 31px 31px minmax(55px,.7fr) minmax(68px,.92fr) 34px !important;
+    gap: 3px !important;
+  }
+}
