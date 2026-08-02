@@ -74,6 +74,10 @@ function normalizeLayout() {
   map.dataset.v221Layout = "green-reference-four-four";
   map.dataset.v221Family = family;
   canvas.dataset.v221LayoutCanvas = family;
+  // v213 used this attribute in a capture listener that deliberately blocked the
+  // central Post/Page box. v221 owns the map now, so every visible box is interactive.
+  canvas.removeAttribute("data-v212-layout-map");
+  canvas.dataset.v221LayoutAuthority = "clickable-green-map";
 
   map.querySelectorAll(".tn-layout-studio-header>div>h2,.tn-layout-studio-header>div>p").forEach((node) => node.hidden = true);
   const kicker = map.querySelector(".tn-layout-studio-header small");
@@ -97,6 +101,11 @@ function normalizeLayout() {
     main.dataset.v221Slot = "content-main";
     main.removeAttribute("inert");
     main.removeAttribute("aria-hidden");
+    main.removeAttribute("aria-disabled");
+    main.removeAttribute("tabindex");
+    main.removeAttribute("data-v213-locked-content");
+    main.setAttribute("aria-label", "Kotak postingan / Page. Buka pilihan widget untuk area di atas postingan.");
+    main.setAttribute("title", "Kotak postingan / Page — buka pengaturan area");
     important(main, "pointer-events", "auto");
     const title = main.querySelector(":scope>small");
     if (title) title.textContent = "Kotak postingan / Page";
