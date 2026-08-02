@@ -1,5 +1,6 @@
 import "./studio-production-v212.css";
 import "./studio-production-v212-fix.css";
+import "./studio-production-v212-layout.css";
 
 const RELEASE = "studio-production-v212-20260802";
 let frame = 0;
@@ -42,6 +43,32 @@ function markDevice() {
   root.dataset.studioV212 = RELEASE;
   root.dataset.studioV212Device = isHandheld ? "handheld" : shortEdge >= 768 ? "large" : "standard";
   root.dataset.studioV212ShortEdge = String(Math.round(shortEdge || 0));
+}
+
+function stabilizeLayoutMap() {
+  const canvas = document.querySelector(".tn-layout-canvas-v170");
+  if (!canvas) return;
+  canvas.dataset.v212Layout = "locked-content-four-left-four-right";
+  const content = canvas.querySelector(":scope > .content-main");
+  if (content) {
+    content.dataset.v212LockedContent = "true";
+    content.setAttribute("aria-disabled", "true");
+    content.setAttribute("tabindex", "-1");
+    content.setAttribute("title", "Konten utama Post/Page terkunci — bukan slot widget");
+    const badge = content.querySelector(":scope > span");
+    const label = content.querySelector(":scope > small");
+    const description = content.querySelector(":scope > b");
+    if (badge) badge.textContent = "POST / PAGE";
+    if (label) label.textContent = "Konten utama";
+    if (description) description.textContent = "Area utama tetap penuh hingga editor 5.000 kata; widget hanya berada di sekelilingnya.";
+  }
+  for (const areaId of [
+    "sidebar-left-1","sidebar-left-2","sidebar-left-3","sidebar-left-4",
+    "sidebar-right-1","sidebar-right-2","sidebar-right-3","sidebar-right-4",
+  ]) {
+    const slot = canvas.querySelector(`:scope > .${areaId}`);
+    if (slot) slot.dataset.v212WidgetSlot = areaId;
+  }
 }
 
 function stabilizeNara() {
@@ -100,6 +127,7 @@ function stabilizeShell() {
 function scan() {
   frame = 0;
   markDevice();
+  stabilizeLayoutMap();
   stabilizeNara();
   stabilizeShell();
 }
@@ -115,6 +143,10 @@ window.visualViewport?.addEventListener?.("resize", schedule, { passive:true });
 window.addEventListener("orientationchange", schedule, { passive:true });
 document.addEventListener("click", (event) => {
   if (event.target.closest('button[aria-controls="nara-attachment-menu-v211"]')) requestAnimationFrame(schedule);
+  if (event.target.closest(".tn-layout-canvas-v170 > .content-main")) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 }, true);
 
 schedule();
