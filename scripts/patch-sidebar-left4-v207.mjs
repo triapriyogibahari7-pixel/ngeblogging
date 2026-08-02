@@ -7,7 +7,6 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 const MARKER = "sidebar-left-4-v207";
 const LEGACY_LAYOUT_LABEL = "Peta tata letak 20 area widget";
 const EXPANDED_LAYOUT_LABEL = `${LEGACY_LAYOUT_LABEL} + 1 area kiri tambahan, total 21 area`;
-const diagnostic = { release: MARKER, stages: {}, complete: false };
 
 function replaceRequired(source, search, replacement, label) {
   if (!source.includes(search)) throw new Error(`V207_LEFT4_ANCHOR_MISSING:${label}`);
@@ -77,15 +76,9 @@ async function verify() {
   if (!studio.includes(LEGACY_LAYOUT_LABEL) || !studio.includes(EXPANDED_LAYOUT_LABEL)) throw new Error("V207_LEFT4_STUDIO_COUNT_MISSING");
 }
 
-for (const [name, fn] of [["widgets", patchWidgets], ["runtime", patchRuntime], ["layoutCss", patchLayoutCss], ["studioLabel", patchThemeStudioLabel], ["verify", verify]]) {
-  try {
-    await fn();
-    diagnostic.stages[name] = { ok: true };
-  } catch (error) {
-    diagnostic.stages[name] = { ok: false, error: String(error?.message || error) };
-    break;
-  }
-}
-diagnostic.complete = Object.keys(diagnostic.stages).length === 5 && Object.values(diagnostic.stages).every((stage) => stage.ok);
-await write("public/sidebar-left4-v207-diagnostic.json", JSON.stringify(diagnostic, null, 2) + "\n");
-console.log(`Left4 diagnostic complete=${diagnostic.complete}`);
+await patchWidgets();
+await patchRuntime();
+await patchLayoutCss();
+await patchThemeStudioLabel();
+await verify();
+console.log("Applied sidebar-left-4-v207; total real layout areas=21");
