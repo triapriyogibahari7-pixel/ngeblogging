@@ -74,8 +74,10 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // v211 preserves the physical-phone recovery and modal portal compatibility.
 // v212 keeps explicit desktop-site/tablet geometry, selected Theme preview,
 // 4-left + large center + 4-right layout, Nara and Domain authority.
-// v213 runs last and only tightens small-device map readability plus factual
-// browser/bot/entry-page analytics while retaining all v212 behavior.
+// v213 tightens small-device map readability plus factual browser/bot/entry-page
+// analytics. v214 runs last: it resets stale desktop coordinates on small devices,
+// fits Theme preview/code, stabilizes Nara/Domain/sidebar geometry, enlarges factual
+// analytics, and adds retained-session scoped-cache recovery without fake data.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -92,3 +94,4 @@ await import("./patch-production-v210.mjs");
 await import("./patch-production-v211.mjs");
 await import("./patch-production-v212.mjs");
 await import("./patch-production-v213.mjs");
+await import("./patch-production-v214.mjs");
