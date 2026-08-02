@@ -1,6 +1,9 @@
 name: Ngeblogging Studio v214 PR verification
 
 on:
+  push:
+    branches:
+      - agent/studio-v214-screenshot-final
   pull_request:
     branches:
       - main
@@ -25,7 +28,7 @@ jobs:
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
 
     steps:
-      - name: Checkout PR
+      - name: Checkout v214 branch or PR
         uses: actions/checkout@v4
 
       - name: Setup Node 22
