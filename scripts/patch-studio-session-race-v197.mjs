@@ -15,18 +15,43 @@ function replaceOnce(source, search, replacement, label) {
   return source.replace(search, replacement);
 }
 
-function renameTopLevelFunction(source, signature, nextSignature, label) {
-  if (source.includes(nextSignature)) return source;
-  if (!source.includes(signature)) throw new Error(`V197_${label}_FUNCTION_MISSING`);
-  return source.replace(signature, nextSignature);
-}
-
-function topLevelFunctionEnd(source, signature, label) {
+function replaceTopLevelFunction(source, signature, replacement, label) {
   const start = source.indexOf(signature);
   if (start < 0) throw new Error(`V197_${label}_START_MISSING`);
   const end = source.indexOf("\n}\n", start);
   if (end < 0) throw new Error(`V197_${label}_END_MISSING`);
-  return end + 3;
+  return `${source.slice(0, start)}${replacement}${source.slice(end + 3)}`;
+}
+
+function wrapTopLevelFunctionSingleFlight(source, { signature, marker, promiseName, userName, dataset }) {
+  if (source.includes(marker)) return source;
+  const start = source.indexOf(signature);
+  if (start < 0) throw new Error(`V197_${marker}_START_MISSING`);
+  const end = source.indexOf("\n}\n", start);
+  if (end < 0) throw new Error(`V197_${marker}_END_MISSING`);
+  const inner = source.slice(start + signature.length, end);
+  const indented = inner.split("\n").map((line) => `  ${line}`).join("\n");
+  const replacement = `${signature}
+  if (${promiseName} && ${userName} === userId) {
+    document.documentElement.dataset.${dataset} = "joined";
+    return ${promiseName};
+  }
+
+  ${userName} = userId;
+  document.documentElement.dataset.${dataset} = "leader";
+  const operationV197 = (async () => {${indented}
+  })();
+  let wrappedV197;
+  wrappedV197 = operationV197.finally(() => {
+    if (${promiseName} === wrappedV197) {
+      ${promiseName} = null;
+      ${userName} = "";
+    }
+  });
+  ${promiseName} = wrappedV197;
+  return wrappedV197;
+}`;
+  return `${source.slice(0, start)}${replacement}${source.slice(end + 3)}`;
 }
 
 async function patchAuthSession() {
@@ -40,24 +65,12 @@ async function patchAuthSession() {
     );
   }
 
-  const oldFunction = `export function getVerifiedSession({ force = false } = {}) {
-  if (!force && window.__ngebloggingVerifiedSession?.session?.access_token) {
-    return Promise.resolve(window.__ngebloggingVerifiedSession);
-  }
-  if (!force && verificationPromise) return verificationPromise;
-
-  const operation = verifyInternal();
-  const wrapped = operation.finally(() => {
-    if (verificationPromise === wrapped) verificationPromise = null;
-  });
-  verificationPromise = wrapped;
-  return wrapped;
-}`;
-
-  const newFunction = `export function getVerifiedSession({ force = false } = {}) {
+  if (!source.includes("even a forced verification must join an in-flight verification")) {
+    const signature = "export function getVerifiedSession({ force = false } = {}) {";
+    const replacement = `export function getVerifiedSession({ force = false } = {}) {
   // v197: even a forced verification must join an in-flight verification.
-  // Starting multiple refresh/getUser operations in parallel can rotate a token while
-  // another Studio membership request is still using the previous bearer token.
+  // This prevents simultaneous getUser/refresh operations from rotating a bearer token
+  // while a Studio membership request still uses the previous token.
   if (verificationPromise) return verificationPromise;
 
   if (!force && window.__ngebloggingVerifiedSession?.session?.access_token) {
@@ -71,9 +84,7 @@ async function patchAuthSession() {
   verificationPromise = wrapped;
   return wrapped;
 }`;
-
-  if (!source.includes("even a forced verification must join an in-flight verification")) {
-    source = replaceOnce(source, oldFunction, newFunction, "AUTH_SINGLE_FLIGHT");
+    source = replaceTopLevelFunction(source, signature, replacement, "AUTH_SINGLE_FLIGHT");
   }
 
   await write(path, source);
@@ -92,17 +103,13 @@ async function patchGate() {
     );
   }
 
-  const oldRefresh = `async function refreshRejectedSessionV195(rejectedToken) {
-  const attempt = rejectedToken ? 1 : 0;
-  return getVerifiedSession({ force: attempt > 0 });
-}`;
-
-  const newRefresh = `async function refreshRejectedSessionV195(rejectedToken) {
+  if (!source.includes("rotated-local-session-v197")) {
+    const signature = "async function refreshRejectedSessionV195(rejectedToken) {";
+    const replacement = `async function refreshRejectedSessionV195(rejectedToken) {
   const attempt = rejectedToken ? 1 : 0;
 
-  // v197 first checks whether Supabase already rotated the local token. A request that
-  // received 401 with the previous token must not start another refresh when a newer
-  // persisted token already exists.
+  // v197: a 401 from an old bearer token is not automatically a failed login.
+  // Supabase may already have rotated the persisted session while that request was in flight.
   try {
     const localResult = await withDeadline(
       supabase.auth.getSession(),
@@ -132,9 +139,7 @@ async function patchGate() {
   document.documentElement.dataset.studioSessionRaceV197 = "single-flight-remote-verification";
   return getVerifiedSession({ force: attempt > 0 });
 }`;
-
-  if (!source.includes("rotated-local-session-v197")) {
-    source = replaceOnce(source, oldRefresh, newRefresh, "REJECTED_TOKEN_RECOVERY");
+    source = replaceTopLevelFunction(source, signature, replacement, "REJECTED_TOKEN_RECOVERY");
   }
 
   source = source.replace(
@@ -145,74 +150,23 @@ async function patchGate() {
     'const rejected = status === 401 || status === 403 || code === "session_reauth_required";',
     'const rejected = (status === 401 || status === 403 || code === "session_reauth_required") ? token : "";',
   );
-  source = source.replace(
-    'refreshRejectedSessionV195(true)',
-    'refreshRejectedSessionV195(rejected)',
-  );
+  source = source.replace('refreshRejectedSessionV195(true)', 'refreshRejectedSessionV195(rejected)');
 
-  if (!source.includes("loadStudioMembershipAttemptV197")) {
-    source = renameTopLevelFunction(
-      source,
-      "async function loadStudioMembership(userId) {",
-      "async function loadStudioMembershipAttemptV197(userId) {",
-      "MEMBERSHIP_RENAME",
-    );
-    const signature = "async function loadStudioMembershipAttemptV197(userId) {";
-    const end = topLevelFunctionEnd(source, signature, "MEMBERSHIP_ATTEMPT");
-    const wrapper = `\nasync function loadStudioMembership(userId) {
-  if (studioMembershipPromiseV197 && studioMembershipUserV197 === userId) {
-    document.documentElement.dataset.studioMembershipSingleFlightV197 = "joined";
-    return studioMembershipPromiseV197;
-  }
-
-  studioMembershipUserV197 = userId;
-  document.documentElement.dataset.studioMembershipSingleFlightV197 = "leader";
-  const operation = loadStudioMembershipAttemptV197(userId);
-  let wrapped;
-  wrapped = operation.finally(() => {
-    if (studioMembershipPromiseV197 === wrapped) {
-      studioMembershipPromiseV197 = null;
-      studioMembershipUserV197 = "";
-    }
+  source = wrapTopLevelFunctionSingleFlight(source, {
+    signature: "async function loadStudioMembership(userId) {",
+    marker: "studioMembershipSingleFlightV197",
+    promiseName: "studioMembershipPromiseV197",
+    userName: "studioMembershipUserV197",
+    dataset: "studioMembershipSingleFlightV197",
   });
-  studioMembershipPromiseV197 = wrapped;
-  return wrapped;
-}
-`;
-    source = `${source.slice(0, end)}${wrapper}${source.slice(end)}`;
-  }
 
-  if (!source.includes("recoverStudioMembershipAttemptV197")) {
-    source = renameTopLevelFunction(
-      source,
-      "async function recoverStudioMembershipV196(userId, cause = null) {",
-      "async function recoverStudioMembershipAttemptV197(userId, cause = null) {",
-      "RECOVERY_RENAME",
-    );
-    const signature = "async function recoverStudioMembershipAttemptV197(userId, cause = null) {";
-    const end = topLevelFunctionEnd(source, signature, "RECOVERY_ATTEMPT");
-    const wrapper = `\nasync function recoverStudioMembershipV196(userId, cause = null) {
-  if (studioRecoveryPromiseV197 && studioRecoveryUserV197 === userId) {
-    document.documentElement.dataset.studioRecoverySingleFlightV197 = "joined";
-    return studioRecoveryPromiseV197;
-  }
-
-  studioRecoveryUserV197 = userId;
-  document.documentElement.dataset.studioRecoverySingleFlightV197 = "leader";
-  const operation = recoverStudioMembershipAttemptV197(userId, cause);
-  let wrapped;
-  wrapped = operation.finally(() => {
-    if (studioRecoveryPromiseV197 === wrapped) {
-      studioRecoveryPromiseV197 = null;
-      studioRecoveryUserV197 = "";
-    }
+  source = wrapTopLevelFunctionSingleFlight(source, {
+    signature: "async function recoverStudioMembershipV196(userId, cause = null) {",
+    marker: "studioRecoverySingleFlightV197",
+    promiseName: "studioRecoveryPromiseV197",
+    userName: "studioRecoveryUserV197",
+    dataset: "studioRecoverySingleFlightV197",
   });
-  studioRecoveryPromiseV197 = wrapped;
-  return wrapped;
-}
-`;
-    source = `${source.slice(0, end)}${wrapper}${source.slice(end)}`;
-  }
 
   if (!source.includes("studioSessionRaceReleaseV197")) {
     const anchor = "document.documentElement.dataset.studioBootstrapReleaseV196 = STUDIO_BOOTSTRAP_RECOVERY_V196;";
@@ -226,7 +180,6 @@ async function patchGate() {
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|supabase\.auth\.signOut\s*\(/.test(source)) {
     throw new Error("V197_SESSION_DESTRUCTIVE_ACTION_FOUND");
   }
-
   await write(path, source);
 }
 
@@ -240,16 +193,10 @@ async function patchServiceWorker() {
   const compatVersion = 'const STUDIO_SESSION_RACE_COMPAT_VERSION_V196 = "ngeblogging-app-v196-live-recovery-20260802";';
   const compatCache = 'const STUDIO_SESSION_RACE_COMPAT_CACHE_V196 = "studio-bootstrap-live-recovery-cache-v196";';
   for (const marker of [compatVersion, compatCache]) {
-    if (!source.includes(marker)) {
-      source = source.replace(/^(const VERSION = .*;\n)/m, `$1${marker}\n`);
-    }
+    if (!source.includes(marker)) source = source.replace(/^(const VERSION = .*;\n)/m, `$1${marker}\n`);
   }
-
   if (!source.includes("STUDIO_SESSION_RACE_RELEASE_V197")) {
-    source = source.replace(
-      /^(const VERSION = .*;\n)/m,
-      `$1const STUDIO_SESSION_RACE_RELEASE_V197 = "${RELEASE}";\n`,
-    );
+    source = source.replace(/^(const VERSION = .*;\n)/m, `$1const STUDIO_SESSION_RACE_RELEASE_V197 = "${RELEASE}";\n`);
   }
 
   source = source
@@ -261,7 +208,6 @@ async function patchServiceWorker() {
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) {
     throw new Error("V197_SERVICE_WORKER_SESSION_DESTRUCTION_FOUND");
   }
-
   await write(path, source);
 }
 
@@ -270,9 +216,9 @@ async function verify() {
     ["src/lib/auth-session-v76.js", "AUTH_SESSION_RACE_RELEASE_V197"],
     ["src/lib/auth-session-v76.js", "if (verificationPromise) return verificationPromise"],
     ["src/StudioOnboardingGate.jsx", "rotated-local-session-v197"],
-    ["src/StudioOnboardingGate.jsx", "loadStudioMembershipAttemptV197"],
+    ["src/StudioOnboardingGate.jsx", "async function loadStudioMembership(userId)"],
     ["src/StudioOnboardingGate.jsx", "studioMembershipSingleFlightV197"],
-    ["src/StudioOnboardingGate.jsx", "recoverStudioMembershipAttemptV197"],
+    ["src/StudioOnboardingGate.jsx", "async function recoverStudioMembershipV196(userId, cause = null)"],
     ["src/StudioOnboardingGate.jsx", "studioRecoverySingleFlightV197"],
     ["src/StudioOnboardingGate.jsx", "studioSessionRaceReleaseV197"],
     ["public/sw.js", "STUDIO_SESSION_RACE_RELEASE_V197"],
@@ -288,11 +234,14 @@ async function verify() {
   const auth = await read("src/lib/auth-session-v76.js");
   const singleFlightIndex = auth.indexOf("if (verificationPromise) return verificationPromise");
   const cacheIndex = auth.indexOf("if (!force && window.__ngebloggingVerifiedSession?.session?.access_token)");
-  if (singleFlightIndex < 0 || cacheIndex < 0 || singleFlightIndex > cacheIndex) {
-    throw new Error("V197_AUTH_FORCE_CAN_STILL_RACE");
-  }
+  if (singleFlightIndex < 0 || cacheIndex < 0 || singleFlightIndex > cacheIndex) throw new Error("V197_AUTH_FORCE_CAN_STILL_RACE");
 
   const gate = await read("src/StudioOnboardingGate.jsx");
+  const loadStart = gate.indexOf("async function loadStudioMembership(userId)");
+  const loadEnd = gate.indexOf("\n}\n", loadStart);
+  const loadBody = gate.slice(loadStart, loadEnd + 3);
+  if (!loadBody.includes("readLocalStudioSessionV195")) throw new Error("V197_BROKE_V195_LOCAL_SESSION_CONTRACT");
+  if (!loadBody.includes("refreshRejectedSessionV195(rejectedToken)")) throw new Error("V197_BROKE_V195_REFRESH_CONTRACT");
   if (!/\? accessToken : ""/.test(gate)) throw new Error("V197_REJECTED_ACCESS_TOKEN_NOT_PRESERVED");
   if (!/refreshRejectedSessionV195\(rejected\)/.test(gate)) throw new Error("V197_RECOVERY_STILL_USES_BOOLEAN_TOKEN");
   if (/service_role|SUPABASE_SERVICE_ROLE/.test(gate)) throw new Error("V197_PRIVILEGED_BROWSER_KEY_FORBIDDEN");
