@@ -28,8 +28,10 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 await writeFile(file, source);
 console.log("Preserved v215 auth recovery compatibility markers under v216");
 
-// v218 keeps the public site atomic. v219 then becomes the final Studio UI/cache
-// authority so a stale Theme lazy chunk can never leave a blank white surface.
-// Neither patch may destroy or sign out the authenticated session.
+// v218 keeps the public site atomic. v219 provides eager Theme recovery. v220
+// is the final device/editor authority: desktop-site remains large, Theme code
+// is readable, the 4+4 denah remains clickable and Nara stays non-modal.
+// None of these compatibility layers may destroy the authenticated session.
 await import("./patch-public-site-v218.mjs");
 await import("./patch-production-v219.mjs");
+await import("./patch-production-v220.mjs");
