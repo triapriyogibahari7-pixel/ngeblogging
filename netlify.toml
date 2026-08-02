@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/netlify-v202-diagnostic-build.mjs"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
