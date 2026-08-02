@@ -2,6 +2,7 @@ import { supabase, supabaseConfigured } from "./supabase.js";
 
 export const AUTH_CALLBACK_RELEASE = "auth-callback-singleflight-v162-20260730";
 export const AUTH_CALLBACK_COMPAT_RELEASE = "auth-callback-v162-20260730";
+export const AUTH_CALLBACK_LATE_RECOVERY_V214 = "auth-callback-late-recovery-v214-20260802";
 
 const OPERATION_KEY = Symbol.for("ngeblogging.auth.callbackOperationV162");
 const CALLBACK_MARKER = "ngeblogging-auth-callback-singleflight-v162";
@@ -99,11 +100,13 @@ function announce(status, session, mode) {
   if (typeof document !== "undefined") {
     document.documentElement.dataset.authCallbackV162 = status;
     document.documentElement.dataset.authCallbackSingleflightV162 = AUTH_CALLBACK_RELEASE;
+    document.documentElement.dataset.authCallbackLateRecoveryV214 = AUTH_CALLBACK_LATE_RECOVERY_V214;
   }
   window.dispatchEvent(new CustomEvent("ngeblogging:auth-callback-complete", {
     detail: {
       release: AUTH_CALLBACK_RELEASE,
       compatibility: AUTH_CALLBACK_COMPAT_RELEASE,
+      lateRecovery: AUTH_CALLBACK_LATE_RECOVERY_V214,
       status,
       mode,
       userId: session?.user?.id || "",
@@ -114,6 +117,24 @@ function announce(status, session, mode) {
 async function consumeInternal(url, code, mode, codeFingerprint) {
   const oauthError = callbackErrorFromUrl(url);
   if (oauthError) {
+    // A provider/browser may revisit an already-consumed callback after the first
+    // PKCE exchange succeeded. Never replace a valid local session with that stale
+    // callback error. This directly preserves Studio until explicit logout.
+    if (supabaseConfigured && supabase && isConsumedCodeError(oauthError)) {
+      const recovered = await currentSession().catch(() => null);
+      if (recovered?.access_token && recovered?.refresh_token) {
+        writeMarker({ codeFingerprint, mode, status: "recovered-late-oauth-error-v214", session: recovered });
+        cleanCallbackUrl({ success: true, recovery: mode === "recovery" });
+        announce("recovered-late-oauth-error-v214", recovered, mode);
+        return callbackResult("recovered", {
+          session: recovered,
+          mode,
+          singleFlight: true,
+          lateCallbackIgnored: true,
+          recoveryRelease: AUTH_CALLBACK_LATE_RECOVERY_V214,
+        });
+      }
+    }
     cleanCallbackUrl();
     return callbackResult("error", { error: oauthError, mode });
   }
