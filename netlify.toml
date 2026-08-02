@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "bash -lc 'set -e; npm run test:production; mkdir -p dist; printf \"<!doctype html><meta charset=utf-8><title>production regression passed</title>\" > dist/index.html'"
   publish = "dist"
 
 [build.environment]
