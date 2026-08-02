@@ -61,6 +61,21 @@ function deviceType(userAgent) {
   return "unknown";
 }
 
+function browserFamily(userAgent) {
+  const ua = String(userAgent || "");
+  if (!ua) return "Tidak diketahui";
+  if (/edg(?:e|a|ios)?\//i.test(ua)) return "Microsoft Edge";
+  if (/opr\//i.test(ua) || /opera/i.test(ua)) return "Opera";
+  if (/samsungbrowser\//i.test(ua)) return "Samsung Internet";
+  if (/ucbrowser\//i.test(ua) || /ucweb/i.test(ua)) return "UC Browser";
+  if (/fxios\//i.test(ua) || /firefox\//i.test(ua)) return "Firefox";
+  if (/crios\//i.test(ua)) return "Chrome iOS";
+  if (/;\s*wv\)/i.test(ua) || /\bwv\b/i.test(ua)) return "Android WebView";
+  if (/chrome\//i.test(ua) || /chromium\//i.test(ua)) return "Chrome";
+  if (/safari\//i.test(ua) && /version\//i.test(ua)) return "Safari";
+  return "Lainnya";
+}
+
 function botName(userAgent) {
   const ua = String(userAgent || "");
   const known = [
@@ -172,7 +187,8 @@ export async function handleAnalyticsRequest(request, env, requestId = "") {
     metadata: {
       language: safeText(body.language, 24) || null,
       screenBucket: screenWidth ? (screenWidth < 480 ? "small" : screenWidth < 900 ? "medium" : screenWidth < 1440 ? "large" : "xlarge") : "unknown",
-      release: "analytics-v38",
+      browserFamily: browserFamily(userAgent),
+      release: "analytics-v213",
     },
   });
 
