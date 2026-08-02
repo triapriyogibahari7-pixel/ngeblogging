@@ -1,0 +1,51 @@
+{
+  "release": "studio-production-v214-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v213-20260802",
+  "scope": "non-destructive six-mode screenshot geometry authority",
+  "preserved": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themeCount": 100,
+    "widgetCount": 26,
+    "customHtmlJavaScriptWidget": true,
+    "postPageWordLimit": 5000,
+    "analyticsProductionRpc": "get_site_analytics_dashboard",
+    "publicSiteSingleInitialRenderV209": true,
+    "persistSession": true,
+    "autoRefreshToken": true
+  },
+  "repairs": {
+    "sixModeGeometryAuthority": true,
+    "desktopSiteAndTabletRemainLarge": true,
+    "mobileDrawerDoesNotShiftMain": true,
+    "mobileDrawerNoBlurLock": true,
+    "sidebarLogoCentered": true,
+    "sidebarFlickerDisabled": true,
+    "themeLargeCodePreviewSplitFiftyFifty": true,
+    "themeSmallPreviewAboveCode": true,
+    "themeCodeUsesReadableLightSurface": true,
+    "themeSmallLayoutRemovesGiantDesktopSlots": true,
+    "themeFourLeftFourRightAreasPreserved": true,
+    "themeCustomHtmlJavaScriptPreserved": true,
+    "naraLauncherStable": true,
+    "naraSmallMediumNonModal": true,
+    "naraSmallDesktopReducedHeight": true,
+    "naraCameraPhotoFileMenuVisibleWhenOpened": true,
+    "naraModelAndIntelligenceVisible": true,
+    "domainSmallActionsHorizontalFullWidth": true,
+    "domainLongSubdomainReadable": true,
+    "analyticsLargerRealTimeSeries": true,
+    "analyticsHumanBotBreakdownReadable": true,
+    "serviceWorkerForcedNavigationDisabled": true
+  },
+  "validation": {
+    "fakeAnalytics": false,
+    "syntheticProductionStatisticsAdded": false,
+    "massCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "physicalBrowserRetestRequired": true,
+    "productionDeploymentVerificationRequired": true
+  }
+}
