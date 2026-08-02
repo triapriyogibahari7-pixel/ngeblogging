@@ -37,12 +37,35 @@ async function patchNaraClose() {
   const path = "src/NaraAssistant.jsx";
   let source = await read(path);
   const marker = "NARA_CLOSE_CLEANUP_V216";
-  if (!source.includes(marker)) {
+  if (source.includes(marker)) return;
+
+  // v206 already owns microphone/speech cleanup. v216 extends that proven block
+  // instead of replacing it, so the patch remains idempotent after the complete
+  // production chain has run.
+  if (source.includes("nara-close-stops-media-v206")) {
+    source = source.replace(
+      "    // nara-close-stops-media-v206: release microphone and speech before closing.",
+      "    // nara-close-stops-media-v206: release microphone and speech before closing.\n    // NARA_CLOSE_CLEANUP_V216: also cancel any active request before restoring the page.",
+    );
+    if (!source.includes("activeRequest.current?.abort?.();")) {
+      const anchor = "    setAttachmentMenu(false);\n    setOpen(false);";
+      if (!source.includes(anchor)) throw new Error("V216_NARA_V206_CLOSE_ANCHOR_MISSING");
+      source = source.replace(
+        anchor,
+        "    setAttachmentMenu(false);\n    activeRequest.current?.abort?.();\n    activeRequest.current = null;\n    setOpen(false);",
+      );
+    }
+  } else {
     const original = `  const closeNara = () => {\n    stopSpeech();\n    setOpen(false);\n  };`;
-    const replacement = `  const closeNara = () => {\n    // ${marker}: closing Nara must restore the page and stop device resources.\n    stopSpeech();\n    setAttachmentMenu(false);\n    try { recognition.current?.stop?.(); } catch { /* microphone may already be stopped */ }\n    recognition.current = null;\n    setListening(false);\n    activeRequest.current?.abort?.();\n    activeRequest.current = null;\n    setOpen(false);\n  };`;
-    source = replaceRequired(source, original, replacement, "Nara close cleanup");
-    await write(path, source);
+    const mediaAware = `  const closeNara = () => {\n    recognition.current?.stop?.();\n    recognition.current = null;\n    setListening(false);\n    stopSpeech();\n    setAttachmentMenu(false);\n    setOpen(false);\n  };`;
+    const replacement = `  const closeNara = () => {\n    // ${marker}: closing Nara restores the page and stops device/request resources.\n    try { recognition.current?.stop?.(); } catch { /* microphone may already be stopped */ }\n    recognition.current = null;\n    setListening(false);\n    stopSpeech();\n    setAttachmentMenu(false);\n    activeRequest.current?.abort?.();\n    activeRequest.current = null;\n    setOpen(false);\n  };`;
+    if (source.includes(mediaAware)) source = source.replace(mediaAware, replacement);
+    else if (source.includes(original)) source = source.replace(original, replacement);
+    else throw new Error("V216_NARA_CLOSE_COMPAT_ANCHOR_MISSING");
   }
+
+  if (!source.includes(marker)) throw new Error("V216_NARA_CLOSE_MARKER_MISSING");
+  await write(path, source);
 }
 
 async function patchServiceWorker() {
@@ -133,8 +156,8 @@ async function verify() {
     if (!LAYOUT_AREAS.some((area) => area.id === areaId)) throw new Error(`V216_LAYOUT_AREA_REGRESSION:${areaId}`);
   }
 
-  for (const source of [runtime]) {
-    if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V216_DESTRUCTIVE_SESSION_ACTION");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(runtime)) {
+    throw new Error("V216_DESTRUCTIVE_SESSION_ACTION");
   }
   if (/await refreshStaleWindow\(client, url\);/.test(worker)) throw new Error("V216_FORCED_NAVIGATION_REMAINS_AFTER_VERIFY");
 }
