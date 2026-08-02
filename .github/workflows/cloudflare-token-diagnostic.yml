@@ -1,4 +1,4 @@
-name: Ngeblogging production route cutover v184 — Studio v191/v192/v195/v196/v197/v205
+name: Ngeblogging production route cutover v184 — Studio v191/v192/v195/v196/v197/v205/v210
 
 on:
   push:
@@ -58,7 +58,9 @@ jobs:
 
       - name: Run v183 and v184 regression — v190/v191/v192/v195/v196/v197/v205 continuation
         id: regression
-        run: npm run verify:v205
+        run: |
+          npm run verify:v205
+          node --test tests/studio-production-v210.test.mjs
 
       - name: Build production application
         id: build
@@ -96,6 +98,26 @@ jobs:
           echo "WORKERS_DEV_V205_VERIFY_FAILED"
           exit 1
 
+      - name: Verify freshly deployed Worker v210 before route mutation
+        id: worker_verify_v210
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            stamp="$(date +%s)-${attempt}"
+            output="/tmp/workers-v210-precutover.json"
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v210.json?verify_v210=${stamp}" || true)"
+            if [[ "${code}" == 200 ]] && ! grep -q 'WHITE-R4-2026.07.12' "${output}"; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v210-20260802"||x.repairs?.currentActiveSiteResume!==true||x.repairs?.naraAttachmentCameraPhotoFileVisible!==true||x.repairs?.themeCodeEditorVisible!==true||x.repairs?.themeLayoutFourLeftFourRight!==true||x.repairs?.customHtmlJavascriptWidgetEditable!==true||x.repairs?.domainPublicationActionHorizontal!==true||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${output}"; then
+                echo "WORKERS_DEV_V210_VERIFIED"
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo "WORKERS_DEV_V210_VERIFY_FAILED"
+          exit 1
+
       - name: Preserve compatibility routing before cutover
         id: compatibility
         run: node scripts/finalize-cloudflare-routes-v175.mjs
@@ -105,7 +127,7 @@ jobs:
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
       # Historical compatibility paths remain contract-visible for old regression suites:
-      # /release-v174.json /release-v182.json /release-v183.json /release-v184.json /release-v190.json /release-v191.json /release-v192.json /release-v194.json /release-v195.json /release-v196.json /release-v197.json /release-v205.json
+      # /release-v174.json /release-v182.json /release-v183.json /release-v184.json /release-v190.json /release-v191.json /release-v192.json /release-v194.json /release-v195.json /release-v196.json /release-v197.json /release-v205.json /release-v210.json
       - name: Verify live apex, auth routes, Studio and release markers
         id: verify
         shell: bash
@@ -115,11 +137,11 @@ jobs:
             stamp="$(date +%s)-${attempt}"
             ok=true
 
-            for path in / /login /signup /studio /release-v190.json /release-v191.json /release-v192.json /release-v194.json /release-v195.json /release-v196.json /release-v197.json /release-v205.json; do
+            for path in / /login /signup /studio /release-v190.json /release-v191.json /release-v192.json /release-v194.json /release-v195.json /release-v196.json /release-v197.json /release-v205.json /release-v210.json; do
               safe_name="$(printf '%s' "${path}" | tr '/.' '__')"
-              output="/tmp/ngeblogging-v205-${attempt}-${safe_name}.out"
-              headers="/tmp/ngeblogging-v205-${attempt}-${safe_name}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v205=${stamp}" || true)"
+              output="/tmp/ngeblogging-v210-${attempt}-${safe_name}.out"
+              headers="/tmp/ngeblogging-v210-${attempt}-${safe_name}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v210=${stamp}" || true)"
               [[ "${code}" == 200 ]] || ok=false
               if grep -q 'WHITE-R4-2026.07.12' "${output}" "${headers}"; then ok=false; fi
 
@@ -139,18 +161,20 @@ jobs:
                 node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-session-race-recovery-v197-20260802"||x.authentication?.forcedVerificationSingleFlight!==true||x.authentication?.newerLocalTokenReusedAfterStale401!==true||x.studioBootstrap?.membershipSingleFlightPerUser!==true||x.studioBootstrap?.recoverySingleFlightPerUser!==true||x.productionRoute?.legacyWorkerMarkerRejected!=="WHITE-R4-2026.07.12"||x.serviceWorker?.forcedNavigation!==false)process.exit(1)' "${output}" || ok=false
               elif [[ "${path}" == "/release-v205.json" ]]; then
                 node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v205-20260802"||x.repairs?.themeLayoutActionSingleVisibleLabel!==true||x.repairs?.layoutMapUsesPhysicalMobileGeometry!==true||x.repairs?.naraCameraPhotoFileRemainInsidePlusMenu!==true||x.repairs?.mobileNLogoForcedWhiteOnBlue!==true||x.repairs?.verifiedSessionStartupRetryIsBounded!==true||x.validation?.realDeviceRequiredBeforeHundredPercentClaim!==true)process.exit(1)' "${output}" || ok=false
+              elif [[ "${path}" == "/release-v210.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v210-20260802"||x.repairs?.currentActiveSiteResume!==true||x.repairs?.naraSmallMediumNonModal!==true||x.repairs?.naraAttachmentCameraPhotoFileVisible!==true||x.repairs?.themeCodeEditorVisible!==true||x.repairs?.themeCodeDesktopSplit5050!==true||x.repairs?.themeCodeMobileStacked!==true||x.repairs?.themeLayoutFourLeftFourRight!==true||x.repairs?.customHtmlJavascriptWidgetEditable!==true||x.repairs?.domainPublicationActionHorizontal!==true||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${output}" || ok=false
               else
                 grep -q 'id="root"' "${output}" || ok=false
               fi
             done
 
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant-v205.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v205=${stamp}" || true)"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/tenant-v210.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v210=${stamp}" || true)"
             [[ "${tenant_code}" == 200 ]] || ok=false
 
-            workers_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/workers-v205.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v205.json?verify_v205=${stamp}" || true)"
+            workers_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/workers-v210.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v210.json?verify_v210=${stamp}" || true)"
             [[ "${workers_code}" == 200 ]] || ok=false
             if [[ "${workers_code}" == 200 ]]; then
-              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v205-20260802")process.exit(1)' /tmp/workers-v205.json || ok=false
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v210-20260802"||x.repairs?.themeLayoutFourLeftFourRight!==true||x.repairs?.naraAttachmentCameraPhotoFileVisible!==true)process.exit(1)' /tmp/workers-v210.json || ok=false
             fi
 
             if [[ "${ok}" == true ]]; then
@@ -162,6 +186,7 @@ jobs:
               echo "PRODUCTION_STUDIO_BOOTSTRAP_V196_VERIFIED"
               echo "PRODUCTION_STUDIO_SESSION_RACE_V197_VERIFIED"
               echo "PRODUCTION_STUDIO_V205_VERIFIED"
+              echo "PRODUCTION_STUDIO_V210_VERIFIED"
               exit 0
             fi
             sleep 10
@@ -173,6 +198,7 @@ jobs:
           echo "PRODUCTION_STUDIO_BOOTSTRAP_V196_VERIFY_FAILED"
           echo "PRODUCTION_STUDIO_SESSION_RACE_V197_VERIFY_FAILED"
           echo "PRODUCTION_STUDIO_V205_VERIFY_FAILED"
+          echo "PRODUCTION_STUDIO_V210_VERIFY_FAILED"
           exit 1
 
       - name: Publish production status
@@ -185,6 +211,7 @@ jobs:
           CONFIG_OUTCOME: ${{ steps.config.outcome }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           WORKER_VERIFY_OUTCOME: ${{ steps.worker_verify.outcome }}
+          WORKER_VERIFY_V210_OUTCOME: ${{ steps.worker_verify_v210.outcome }}
           COMPATIBILITY_OUTCOME: ${{ steps.compatibility.outcome }}
           CUTOVER_OUTCOME: ${{ steps.cutover.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
@@ -198,6 +225,7 @@ jobs:
               config: process.env.CONFIG_OUTCOME || 'not-run',
               deploy: process.env.DEPLOY_OUTCOME || 'not-run',
               workerVerify: process.env.WORKER_VERIFY_OUTCOME || 'not-run',
+              workerVerifyV210: process.env.WORKER_VERIFY_V210_OUTCOME || 'not-run',
               compatibility: process.env.COMPATIBILITY_OUTCOME || 'not-run',
               cutover: process.env.CUTOVER_OUTCOME || 'not-run',
               verify: process.env.VERIFY_OUTCOME || 'not-run',
@@ -211,5 +239,14 @@ jobs:
               state: ready ? 'success' : 'failure',
               context: 'Ngeblogging production Studio v205',
               description: `build=${outcomes.build}; worker=${outcomes.workerVerify}; cutover=${outcomes.cutover}; verify=${outcomes.verify}`.slice(0, 140),
+              target_url: runUrl,
+            });
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: ready ? 'success' : 'failure',
+              context: 'Ngeblogging production Studio v210',
+              description: `build=${outcomes.build}; worker210=${outcomes.workerVerifyV210}; cutover=${outcomes.cutover}; verify=${outcomes.verify}`.slice(0, 140),
               target_url: runUrl,
             });
