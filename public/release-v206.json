@@ -1,0 +1,53 @@
+{
+  "release": "studio-production-v206-20260802",
+  "status": "candidate",
+  "basedOn": "studio-production-v205-20260802",
+  "scope": "Replace synthetic Theme hero actions with native React controls, stabilize two-row Nara mobile controls, keep camera/photo/file inside the native plus menu, and recover a verified Studio session from real Supabase membership data without fabricating sites or logging users out on transient failures.",
+  "responsive": {
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themePreviewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]
+  },
+  "repairs": {
+    "themeLayoutActionNative": true,
+    "themeLayoutActionSingleVisibleLabel": true,
+    "themeCodeActionNative": true,
+    "themeCodeEditorHtmlCssJavascriptPreserved": true,
+    "themeLayoutMapAndWidgetStudioPreserved": true,
+    "mobileNLogoWhiteCentered": true,
+    "mobileDrawerNoVisualBlur": true,
+    "mobileDrawerControlsRemainClickable": true,
+    "naraLauncherIconOnlyOnHandheld": true,
+    "naraHeaderTwoRowsOnHandheld": true,
+    "naraSmallMediumNonModal": true,
+    "naraFullModal": true,
+    "naraCameraPhotoFileInsidePlusMenu": true,
+    "naraHistoricalDirectAttachmentRowsHidden": true,
+    "naraModelAndIntelligenceControlsBounded": true,
+    "naraCloseStopsMicrophoneAndSpeech": true,
+    "naraControlAnimationsDisabled": true,
+    "verifiedSessionUsesLocalPersistedSessionFirst": true,
+    "studioMembershipDirectRlsRecovery": true,
+    "studioMembershipRecoveryUsesRealRowsOnly": true,
+    "studioMembershipEmptyResultDoesNotCreateSite": true,
+    "studioRecoveryRetriesBounded": true,
+    "transientDataFailureDoesNotLogout": true
+  },
+  "preserved": [
+    "Ringkasan", "Posts", "Pages", "5000-word guard", "SEO", "Theme Studio", "100 themes",
+    "Media", "Analytics", "Members", "Comments", "Domains", "API Keys", "onboarding",
+    "Google login UI", "LinkedIn login UI", "email/password login UI", "magic-link login UI",
+    "Nara microphone", "Nara speaker", "Nara models", "Nara intelligence", "Nara attachments"
+  ],
+  "validation": {
+    "productionRegressionRequired": true,
+    "deployPreviewRequired": true,
+    "liveCloudflareReleaseProbeRequired": true,
+    "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "googleLoginEndToEndClaimed": false,
+    "linkedinLoginEndToEndClaimed": false,
+    "emailPasswordEndToEndClaimed": false,
+    "massLoginCapacityClaimed": false,
+    "nineHundredMillionUserCapacityClaimed": false
+  }
+}
