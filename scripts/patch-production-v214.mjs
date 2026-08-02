@@ -25,8 +25,16 @@ async function patchStudioEntry() {
       'import "./studio-production-v213.js";\nimport "./studio-production-v214.js";',
       "Studio v213 import",
     );
-    await write(path, source);
   }
+  if (!source.includes('import "./studio-production-v214-profile.js";')) {
+    source = replaceRequired(
+      source,
+      'import "./studio-production-v214.js";',
+      'import "./studio-production-v214.js";\nimport "./studio-production-v214-profile.js";',
+      "Studio v214 runtime import",
+    );
+  }
+  await write(path, source);
 }
 
 async function patchServiceWorker() {
@@ -51,6 +59,8 @@ async function verify() {
   const paths = {
     entry: "src/Studio.jsx",
     runtime: "src/studio-production-v214.js",
+    profile: "src/studio-production-v214-profile.js",
+    profileCss: "src/studio-production-v214-profile.css",
     css: "src/studio-production-v214.css",
     shell: "src/studio-production-v214-shell.css",
     editor: "src/studio-production-v214-theme-editor.css",
@@ -67,9 +77,13 @@ async function verify() {
   const files = Object.fromEntries(await Promise.all(Object.entries(paths).map(async ([key,path]) => [key, await read(path)])));
   const checks = [
     [files.entry, "studio-production-v214.js", "Studio v214 entry"],
+    [files.entry, "studio-production-v214-profile.js", "Studio profile entry"],
     [files.runtime, RELEASE, "runtime release"],
     [files.runtime, "small-paired-four-left-four-right", "small Theme layout"],
     [files.runtime, "split-50-50", "large Theme code split"],
+    [files.profile, "studioAccountViewV189", "profile/settings separation"],
+    [files.profile, "sidebarAction(\"Keluar\")", "explicit logout action"],
+    [files.profileCss, "sn-profile-dropdown-v214", "profile dropdown style"],
     [files.css, "studio-production-v214-theme.css", "CSS authority wiring"],
     [files.shell, "data-v214-sidebar", "sidebar stabilization"],
     [files.editor, "preview-above-code", "small Theme preview first"],
@@ -96,7 +110,7 @@ async function verify() {
   for (const [source, marker, label] of checks) {
     if (!source.includes(marker)) throw new Error(`V214_VERIFY_FAILED:${label}:${marker}`);
   }
-  for (const source of [files.runtime]) {
+  for (const source of [files.runtime, files.profile]) {
     if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V214_DESTRUCTIVE_SESSION_ACTION");
   }
 }
