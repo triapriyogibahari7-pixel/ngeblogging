@@ -39,6 +39,7 @@
     "productionBuildRequired": true,
     "realDeviceRequiredBeforeHundredPercentClaim": true,
     "googleLoginEndToEndObservedInProductionLogs": true,
+    "googleLoginEndToEndClaimed": false,
     "linkedinLoginEndToEndClaimed": false,
     "emailPasswordEndToEndClaimed": false,
     "nineHundredMillionUserCapacityClaimed": false,
