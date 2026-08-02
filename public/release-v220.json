@@ -1,0 +1,65 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v220-20260802",
+  "basedOn": "studio-production-v219-20260802",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "desktopSitePhoneLockedLarge": true,
+    "tabletUsesLargeGeometry": true,
+    "physicalSmallUsesCompactGeometry": true
+  },
+  "theme": {
+    "builtInThemesRequired": 100,
+    "customThemeRetained": true,
+    "widgetCountRequired": 26,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "customHtmlJavascriptWidgetRetained": true,
+    "codeLineLimitSupported": 10000,
+    "minifiedThemeCodePrettyPrint": true,
+    "actualLineNumbers": true,
+    "smallEditor": "preview-above-code",
+    "largeEditor": "code-left-preview-right-50-50",
+    "longLayoutProseRemoved": true
+  },
+  "nara": {
+    "smallMediumNonModal": true,
+    "fullModal": true,
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphoneRetained": true,
+    "speakerRetained": true,
+    "modelsRetained": true,
+    "intelligenceRetained": true,
+    "singleRowComposerControls": true,
+    "launcherAnimationDisabled": true
+  },
+  "domain": {
+    "smallDeviceHorizontalActions": true,
+    "textVerticalWrappingPrevented": true
+  },
+  "analytics": {
+    "productionRpcRetained": true,
+    "largerChartsRetained": true,
+    "fakeProductionStatisticsAdded": false
+  },
+  "auth": {
+    "persistSessionRetained": true,
+    "autoRefreshTokenRetained": true,
+    "lateCallbackRecoveryRetained": true,
+    "forcedLogoutAdded": false,
+    "providerEndToEndClaimedByThisRelease": false
+  },
+  "publicSite": {
+    "atomicBootstrapV218Retained": true,
+    "doubleInitialThemeRenderIntended": false
+  },
+  "claims": {
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionUsersProven": false,
+    "requiresRealLoadTestForCapacityClaim": true,
+    "requiresRealDeviceVerificationBeforeHundredPercentClaim": true
+  }
+}
