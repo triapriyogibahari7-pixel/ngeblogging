@@ -8,6 +8,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-production-v216.js");
 const css = read("src/studio-production-v216.css");
+const cleanLayoutCss = read("src/studio-production-v216-layout-clean.css");
 const nara = read("src/NaraAssistant.jsx");
 const themeStudio = read("src/ThemeStudio.jsx");
 const analytics = read("src/studio-analytics-v41.js");
@@ -20,6 +21,7 @@ const RELEASE = "studio-production-v216-20260802";
 test("v216 is the final UI authority after v214 while v215 auth remains preserved", () => {
   assert.match(entry, /studio-production-v214\.js/);
   assert.match(entry, /studio-production-v216\.js/);
+  assert.match(entry, /studio-production-v216-layout-clean\.css/);
   assert.ok(entry.indexOf("studio-production-v216.js") > entry.indexOf("studio-production-v214.js"));
   assert.match(runtime, new RegExp(RELEASE));
   assert.match(nara, /NARA_CLOSE_CLEANUP_V216/);
@@ -50,6 +52,9 @@ test("Theme map preserves four left and four right slots while small geometry is
   assert.match(css, /\.sidebar-left-4/);
   assert.match(css, /\.sidebar-right-4/);
   assert.match(css, /\.content-main/);
+  assert.match(cleanLayoutCss, /\.tn-layout-studio-header > div > h2/);
+  assert.match(cleanLayoutCss, /\.tn-layout-studio-header > div > p/);
+  assert.match(cleanLayoutCss, /display:none !important/);
   assert.match(themeStudio, /preferredArea=\{widgetArea\}/);
   assert.match(themeStudio, /tn-widget-custom-code-v209/);
 });
@@ -71,9 +76,10 @@ test("Nara keeps Camera Photo File model and intelligence features", () => {
 
 test("Nara attachment menu escapes shell clipping", () => {
   assert.match(runtime, /v216AttachmentMenu = "camera-photo-file"/);
-  assert.match(runtime, /position", "fixed"/);
+  assert.match(runtime, /"position", "fixed"/);
+  assert.match(runtime, /"z-index", "2147483646"/);
   assert.match(css, /data-v216-attachment-menu="camera-photo-file"/);
-  assert.match(css, /z-index:2147483646/);
+  assert.match(css, /overflow:visible !important/);
 });
 
 test("Nara close cleanup stops listening and clears attachment state", () => {
