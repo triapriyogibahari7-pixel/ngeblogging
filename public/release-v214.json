@@ -37,6 +37,9 @@
     "domainLongSubdomainReadable": true,
     "analyticsLargerRealTimeSeries": true,
     "analyticsHumanBotBreakdownReadable": true,
+    "profileDropdownHasProfileSettingsLogout": true,
+    "profileAndSettingsSurfacesSeparated": true,
+    "settingsSidebarResetsAccountMode": true,
     "serviceWorkerForcedNavigationDisabled": true
   },
   "validation": {

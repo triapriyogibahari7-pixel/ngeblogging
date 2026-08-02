@@ -10,9 +10,9 @@ permissions:
   contents: read
   statuses: write
 
-# v213 deploys the same current `ngeblogging` Worker targeted by the historical
-# pipeline, but must not wait behind an obsolete v210 verification queue.
-# Multiple v213 pushes collapse to the newest production commit.
+# v213 remains the historical workflow identity for regression compatibility.
+# The current gate also requires v214 UI and v215 auth markers before production
+# is considered verified. Multiple production pushes collapse to the newest commit.
 concurrency:
   group: ngeblogging-production-studio-v213
   cancel-in-progress: true
@@ -83,13 +83,33 @@ jobs:
           set -euo pipefail
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            output="/tmp/workers-v213-precutover.json"
-            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v213.json?verify_v213=${stamp}" || true)"
-            if [[ "${code}" == 200 ]] && ! grep -q 'WHITE-R4-2026.07.12' "${output}"; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v213-20260802"||x.repairs?.smallLayoutMainContentFullWidth!==true||x.repairs?.analyticsBrowserFamilyCollectedForNewEvents!==true||x.repairs?.historicBrowserValuesInvented!==false||x.validation?.fakeAnalytics!==false||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${output}"; then
-                echo "WORKERS_DEV_V213_VERIFIED"
-                exit 0
-              fi
+            ok=true
+
+            v213_file="/tmp/workers-v213-precutover.json"
+            v213_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${v213_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v213.json?verify_v215=${stamp}" || true)"
+            [[ "${v213_code}" == 200 ]] || ok=false
+            if [[ "${v213_code}" == 200 ]]; then
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v213-20260802"||x.repairs?.smallLayoutMainContentFullWidth!==true||x.repairs?.analyticsBrowserFamilyCollectedForNewEvents!==true||x.repairs?.historicBrowserValuesInvented!==false||x.validation?.fakeAnalytics!==false||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${v213_file}" || ok=false
+            fi
+
+            v214_file="/tmp/workers-v214-precutover.json"
+            v214_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${v214_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v214.json?verify_v215=${stamp}" || true)"
+            [[ "${v214_code}" == 200 ]] || ok=false
+            if [[ "${v214_code}" == 200 ]]; then
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v214-20260802"||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.repairs?.themeLargeCodePreviewSplitFiftyFifty!==true||x.repairs?.themeSmallPreviewAboveCode!==true||x.repairs?.naraSmallMediumNonModal!==true||x.validation?.fakeAnalytics!==false||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${v214_file}" || ok=false
+            fi
+
+            v215_file="/tmp/workers-v215-precutover.json"
+            v215_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${v215_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v215.json?verify_v215=${stamp}" || true)"
+            [[ "${v215_code}" == 200 ]] || ok=false
+            if [[ "${v215_code}" == 200 ]]; then
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="auth-late-callback-recovery-v215-20260802"||x.repair?.v162SingleFlightPreserved!==true||x.repair?.verifiedSessionWinsOverExpiredDuplicateCallback!==true||x.repair?.persistSession!==true||x.repair?.autoRefreshToken!==true||x.claims?.allProvidersProven!==false||x.claims?.massLoginCapacityProven!==false)process.exit(1)' "${v215_file}" || ok=false
+            fi
+
+            if grep -q 'WHITE-R4-2026.07.12' "${v213_file}" "${v214_file}" "${v215_file}" 2>/dev/null; then ok=false; fi
+            if [[ "${ok}" == true ]]; then
+              echo "WORKERS_DEV_V213_V214_V215_VERIFIED"
+              exit 0
             fi
             sleep 5
           done
@@ -115,36 +135,51 @@ jobs:
 
             for path in / /login /signup /studio; do
               safe_name="$(printf '%s' "${path}" | tr '/.' '__')"
-              output="/tmp/ngeblogging-v213-${attempt}-${safe_name}.html"
-              headers="/tmp/ngeblogging-v213-${attempt}-${safe_name}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v213=${stamp}" || true)"
+              output="/tmp/ngeblogging-v215-${attempt}-${safe_name}.html"
+              headers="/tmp/ngeblogging-v215-${attempt}-${safe_name}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${output}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v215=${stamp}" || true)"
               [[ "${code}" == 200 ]] || ok=false
               grep -q 'id="root"' "${output}" || ok=false
               if grep -q 'WHITE-R4-2026.07.12' "${output}" "${headers}"; then ok=false; fi
             done
 
             release_file="/tmp/ngeblogging-v213-${attempt}-release.json"
-            release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${release_file}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v213.json?verify_v213=${stamp}" || true)"
+            release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${release_file}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v213.json?verify_v215=${stamp}" || true)"
             [[ "${release_code}" == 200 ]] || ok=false
             if [[ "${release_code}" == 200 ]]; then
               node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v213-20260802"||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.preserved?.postPageWordLimit!==5000||x.repairs?.smallLayoutMainContentFullWidth!==true||x.repairs?.analyticsBrowserFamilyCollectedForNewEvents!==true||x.repairs?.historicBrowserValuesInvented!==false||x.validation?.fakeAnalytics!==false||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${release_file}" || ok=false
-              if grep -q 'WHITE-R4-2026.07.12' "${release_file}"; then ok=false; fi
             fi
 
+            release214_file="/tmp/ngeblogging-v214-${attempt}-release.json"
+            release214_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${release214_file}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v214.json?verify_v215=${stamp}" || true)"
+            [[ "${release214_code}" == 200 ]] || ok=false
+            if [[ "${release214_code}" == 200 ]]; then
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v214-20260802"||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.repairs?.themeLargeCodePreviewSplitFiftyFifty!==true||x.repairs?.themeSmallPreviewAboveCode!==true||x.repairs?.naraSmallMediumNonModal!==true||x.repairs?.domainSmallActionsHorizontalFullWidth!==true||x.validation?.fakeAnalytics!==false||x.validation?.massCapacityClaimed!==false)process.exit(1)' "${release214_file}" || ok=false
+            fi
+
+            release215_file="/tmp/ngeblogging-v215-${attempt}-release.json"
+            release215_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${release215_file}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com/release-v215.json?verify_v215=${stamp}" || true)"
+            [[ "${release215_code}" == 200 ]] || ok=false
+            if [[ "${release215_code}" == 200 ]]; then
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="auth-late-callback-recovery-v215-20260802"||x.evidence?.googlePkceProductionLoginObserved!==true||x.repair?.v162SingleFlightPreserved!==true||x.repair?.verifiedSessionWinsOverExpiredDuplicateCallback!==true||x.repair?.persistSession!==true||x.repair?.autoRefreshToken!==true||x.claims?.allProvidersProven!==false||x.claims?.massLoginCapacityProven!==false)process.exit(1)' "${release215_file}" || ok=false
+            fi
+
+            if grep -q 'WHITE-R4-2026.07.12' "${release_file}" "${release214_file}" "${release215_file}" 2>/dev/null; then ok=false; fi
+
             worker_file="/tmp/workers-v213-${attempt}.json"
-            worker_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${worker_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v213.json?verify_v213=${stamp}" || true)"
+            worker_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${worker_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v215.json?verify_v215=${stamp}" || true)"
             [[ "${worker_code}" == 200 ]] || ok=false
             if [[ "${worker_code}" == 200 ]]; then
-              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v213-20260802")process.exit(1)' "${worker_file}" || ok=false
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="auth-late-callback-recovery-v215-20260802")process.exit(1)' "${worker_file}" || ok=false
             fi
 
             tenant_file="/tmp/tenant-v213-${attempt}.html"
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${tenant_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v213=${stamp}" || true)"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${tenant_file}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v215=${stamp}" || true)"
             [[ "${tenant_code}" == 200 ]] || ok=false
             if grep -q 'WHITE-R4-2026.07.12' "${tenant_file}"; then ok=false; fi
 
             if [[ "${ok}" == true ]]; then
-              echo "PRODUCTION_STUDIO_V213_VERIFIED"
+              echo "PRODUCTION_STUDIO_V213_V214_V215_VERIFIED"
               exit 0
             fi
             sleep 10
@@ -187,6 +222,6 @@ jobs:
               sha: context.sha,
               state: ready ? 'success' : 'failure',
               context: 'Ngeblogging production Studio v213',
-              description: `build=${outcomes.build}; worker=${outcomes.workerVerify}; cutover=${outcomes.cutover}; verify=${outcomes.verify}`.slice(0, 140),
+              description: `v215 build=${outcomes.build}; worker=${outcomes.workerVerify}; cutover=${outcomes.cutover}; verify=${outcomes.verify}`.slice(0, 140),
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
