@@ -1,0 +1,22 @@
+name: v216 runner probe
+
+on:
+  pull_request:
+    branches:
+      - production
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'agent/production-v216-pr-deploy-trigger'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Runner is available
+        run: echo "V216_GITHUB_ACTIONS_RUNNER_OK"
