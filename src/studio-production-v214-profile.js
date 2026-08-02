@@ -1,8 +1,10 @@
 import "./studio-production-v214-profile.css";
 
 const RELEASE = "studio-production-v214-profile-20260802";
+const SEPARATION_RELEASE = "studio-production-v214-profile-settings-separated-20260802";
 const MENU_ID = "ngeblogging-profile-menu-v214";
 let bound = false;
+let accountFrame = 0;
 
 function sidebarAction(label) {
   const wanted = String(label || "").trim().toLowerCase();
@@ -78,11 +80,44 @@ function toggleMenu() {
   if (nextOpen) positionMenu();
 }
 
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
+function syncAccountPresentation() {
+  accountFrame = 0;
+  const mode = document.documentElement.dataset.studioAccountViewV189 || "settings";
+  const grid = document.querySelector(".sn-settings-grid");
+  const page = grid?.closest(".sn-view-pad");
+  if (!page) return;
+  const title = page.querySelector(".sn-page-title h1");
+  const description = page.querySelector(".sn-page-title p");
+  const save = page.querySelector(".sn-save-settings");
+  const saveText = save?.lastChild;
+
+  if (mode === "profile") {
+    setText(title, "Profil");
+    setText(description, "Kelola identitas, biografi, avatar, dan informasi publik akun Anda.");
+    setText(saveText, " Simpan profil");
+  } else {
+    setText(title, "Pengaturan");
+    setText(description, "Kelola konfigurasi situs aktif tanpa mencampurkannya dengan profil akun.");
+    setText(saveText, " Simpan pengaturan");
+  }
+  page.dataset.accountSurfaceV214 = mode;
+  document.documentElement.dataset.studioProfileSettingsSeparationV214 = SEPARATION_RELEASE;
+}
+
+function scheduleAccountPresentation() {
+  if (!accountFrame) accountFrame = requestAnimationFrame(syncAccountPresentation);
+}
+
 function openAccount(mode) {
   document.documentElement.dataset.studioAccountViewV189 = mode;
   const settings = sidebarAction("Pengaturan");
   if (settings) settings.click();
   closeMenu();
+  scheduleAccountPresentation();
 }
 
 function handleClick(event) {
@@ -93,6 +128,16 @@ function handleClick(event) {
     toggleMenu();
     return;
   }
+
+  const sidebarButton = event.target.closest?.("#ngeblogging-studio-sidebar button");
+  if (sidebarButton) {
+    const label = String(sidebarButton.textContent || "").replace(/\s+/g," ").trim().toLowerCase();
+    if (label === "pengaturan" || label.startsWith("pengaturan ")) {
+      document.documentElement.dataset.studioAccountViewV189 = "settings";
+      scheduleAccountPresentation();
+    }
+  }
+
   const menu = event.target.closest?.(`#${MENU_ID}`);
   if (!menu) {
     closeMenu();
@@ -120,6 +165,7 @@ function syncProfileMenu() {
   }
   ensureMenu();
   document.documentElement.dataset.studioProfileReleaseV214 = RELEASE;
+  scheduleAccountPresentation();
 }
 
 function bind() {
@@ -133,8 +179,17 @@ function bind() {
   window.addEventListener("orientationchange", () => { if (!ensureMenu().hidden) positionMenu(); }, { passive:true });
 }
 
-new MutationObserver(syncProfileMenu).observe(document.documentElement, { childList:true, subtree:true });
+new MutationObserver(() => {
+  syncProfileMenu();
+  scheduleAccountPresentation();
+}).observe(document.documentElement, {
+  childList:true,
+  subtree:true,
+  attributes:true,
+  attributeFilter:["data-studio-account-view-v189"],
+});
 bind();
 syncProfileMenu();
+scheduleAccountPresentation();
 
-export { RELEASE, MENU_ID, sidebarAction, openAccount, syncProfileMenu };
+export { RELEASE, SEPARATION_RELEASE, MENU_ID, sidebarAction, openAccount, syncProfileMenu, syncAccountPresentation };
