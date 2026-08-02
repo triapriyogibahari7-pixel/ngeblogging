@@ -63,7 +63,6 @@ await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
-// Existing v211 production chain retained exactly for diagnostic comparison.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -78,3 +77,4 @@ await import("./patch-production-v209-compat.mjs");
 await import("./patch-public-site-v209.mjs");
 await import("./patch-production-v210.mjs");
 await import("./patch-production-v211.mjs");
+await import("./patch-production-v212.mjs");
