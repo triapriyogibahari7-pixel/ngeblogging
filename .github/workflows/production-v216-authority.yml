@@ -11,8 +11,8 @@ permissions:
   statuses: write
 
 concurrency:
-  group: ngeblogging-production-studio-v197
-  cancel-in-progress: false
+  group: ngeblogging-production-v216-final-20260802
+  cancel-in-progress: true
 
 jobs:
   announce-v216:
