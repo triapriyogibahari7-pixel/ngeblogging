@@ -11,6 +11,9 @@ const nara = read("src/NaraAssistant.jsx");
 const chain = read("scripts/patch-service-worker-v179.mjs");
 const patch = read("scripts/patch-production-v207.mjs");
 const supabase = read("src/lib/supabase.js");
+const widgetSystem = read("src/widget-system.js");
+const layoutRuntime = read("src/theme-layout-runtime-v170.js");
+const layoutCss = read("src/theme-layout-v170.css");
 const release = JSON.parse(read("public/release-v207.json"));
 const RELEASE = "studio-production-v207-20260802";
 
@@ -73,6 +76,20 @@ test("mobile n remains white on blue and drawer never uses blur", () => {
   assert.match(css, /:is\(\.sn-mobile-menu-mark,.sn-logo-mark\) > strong[\s\S]*-webkit-text-fill-color: #fff !important/);
   assert.match(css, /\.sn-side-backdrop[\s\S]*backdrop-filter: none !important/);
   assert.match(runtime, /toggle\?\.setAttribute\("aria-expanded", String\(open\)\)/);
+});
+
+test("fourth left widget area is real in Studio, public runtime and responsive map", () => {
+  assert.match(chain, /patch-sidebar-left4-v207\.mjs/);
+  assert.match(widgetSystem, /id: "sidebar-left-4", label: "Sidebar kiri 4", group: "content"/);
+  assert.match(widgetSystem, /sidebar-left-4-v207/);
+  assert.match(layoutRuntime, /LEFT_AREAS = \["sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4"\]/);
+  assert.match(layoutRuntime, /Empat area widget kiri postingan/);
+  assert.match(layoutCss, /\.tn-layout-slot-v170\.sidebar-left-4\{grid-area:sidebar-left-4\}/);
+  assert.match(layoutCss, /"sidebar-left-4 content-main content-main content-main content-main \.”/);
+  assert.match(theme, /Peta tata letak 20 area widget \+ 1 area kiri tambahan, total 21 area/);
+  assert.equal(release.repairs.layoutMapTwentyRealAreasPreserved, true);
+  assert.equal(release.repairs.layoutMapTotalRealAreas, 21);
+  assert.equal(release.repairs.sidebarLeftFourthAreaFunctional, true);
 });
 
 test("session persistence and v206 real-membership recovery are preserved", () => {
