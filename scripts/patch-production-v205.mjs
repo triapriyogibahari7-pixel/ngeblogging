@@ -84,7 +84,7 @@ async function verify() {
     ["src/NaraAssistant.jsx", "File teks"],
     ["src/ThemeStudio.jsx", 'setModal("code")'],
     ["src/ThemeStudio.jsx", "saveThemeCode"],
-    ["src/ThemeStudio.jsx", "tn-layout-canvas-v170"],
+    ["scripts/patch-theme-layout-v170.mjs", "tn-layout-canvas-v170"],
     ["src/lib/supabase.js", "persistSession: true"],
     ["src/lib/supabase.js", "autoRefreshToken: true"],
     ["public/release-v205.json", RELEASE],
