@@ -65,3 +65,4 @@ await import("./patch-studio-persisted-session-v198.mjs");
 await import("./patch-current-screenshot-v199.mjs");
 await import("./patch-mobile-flicker-v200.mjs");
 await import("./patch-production-v201.mjs");
+await import("./patch-production-v202.mjs");
