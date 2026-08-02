@@ -1,5 +1,5 @@
 [build]
-  command = "bash -lc 'set -e; sed -i \"/patch-production-v216.mjs/d\" scripts/patch-service-worker-v179.mjs; node scripts/patch-service-worker-v179.mjs; mkdir -p dist; printf \"<!doctype html><meta charset=utf-8><title>pre-v216 patch chain passed</title>\" > dist/index.html'"
+  command = "bash -lc 'set -e; sed -i \"/patch-production-v214.mjs/d;/patch-auth-late-callback-v215.mjs/d;/patch-production-v216.mjs/d\" scripts/patch-service-worker-v179.mjs; node scripts/patch-service-worker-v179.mjs; mkdir -p dist; printf \"<!doctype html><meta charset=utf-8><title>through v213 patch chain passed</title>\" > dist/index.html'"
   publish = "dist"
 
 [build.environment]
