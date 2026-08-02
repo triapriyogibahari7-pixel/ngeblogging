@@ -72,9 +72,10 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // public-site single initial render and in-place retained-session recovery.
 // v210 fixes Theme code visibility, Camera/Photo/File and Domain wrapping.
 // v211 preserves the physical-phone recovery and modal portal compatibility.
-// v212 runs last: explicit desktop-site + tablet stay large, Theme code preview
-// keeps the selected viewport, right4 becomes a real widget area, the center
-// post remains large, Nara controls stay visible, and Domain actions stay readable.
+// v212 keeps explicit desktop-site/tablet geometry, selected Theme preview,
+// 4-left + large center + 4-right layout, Nara and Domain authority.
+// v213 runs last and only tightens small-device map readability plus factual
+// browser/bot/entry-page analytics while retaining all v212 behavior.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -90,3 +91,4 @@ await import("./patch-public-site-v209.mjs");
 await import("./patch-production-v210.mjs");
 await import("./patch-production-v211.mjs");
 await import("./patch-production-v212.mjs");
+await import("./patch-production-v213.mjs");
