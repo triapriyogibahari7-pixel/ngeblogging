@@ -1,0 +1,206 @@
+/* Ngeblogging Studio v206 — final layer on top of validated v205 + v205.1. */
+html[data-studio-production-v206],
+html[data-studio-production-v206] body,
+html[data-studio-production-v206] #root,
+html[data-studio-production-v206] .sn-shell,
+html[data-studio-production-v206] .sn-main { min-width:0!important; max-width:100%!important; }
+html[data-studio-production-v206] * { box-sizing:border-box; }
+html[data-studio-production-v206] body { overflow-x:clip!important; }
+html[data-studio-production-v206] :is(img,video,canvas,iframe) { max-width:100%!important; }
+
+/* One visible Theme layout label even if historical label spans still exist. */
+html[data-studio-production-v206] .tn-hero-actions > button[data-v206-theme-action="layout"] {
+  min-width:0!important; max-width:100%!important; font-size:0!important;
+  white-space:nowrap!important; word-break:normal!important; overflow-wrap:normal!important;
+}
+html[data-studio-production-v206] .tn-hero-actions > button[data-v206-theme-action="layout"] > span,
+html[data-studio-production-v206] .tn-hero-actions > button[data-v206-theme-action="layout"] > :is(.v199-button-label,.v201-button-label,.v202-button-label) {
+  display:none!important;
+}
+html[data-studio-production-v206] .tn-hero-actions > button[data-v206-theme-action="layout"]::after {
+  content:"Edit Tata Letak"!important;
+  display:inline-block!important;
+  font:700 12px/1.15 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  white-space:nowrap!important;
+  letter-spacing:0!important;
+}
+html[data-studio-production-v206] .tn-hero-actions > button[data-v206-theme-action="code"] {
+  min-width:0!important; max-width:100%!important;
+  white-space:nowrap!important; word-break:normal!important; overflow-wrap:normal!important;
+  pointer-events:auto!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-hero-actions {
+  display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:9px!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-hero-actions > button {
+  width:100%!important; min-width:0!important; min-height:48px!important; max-width:100%!important;
+  padding:8px!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;
+  gap:7px!important; overflow:hidden!important; white-space:nowrap!important; word-break:normal!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-hero-actions > button svg {
+  width:18px!important; height:18px!important; flex:0 0 18px!important;
+}
+
+/* User-requested state: n stays white and perfectly centered on blue when drawer is closed OR open. */
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .sn-sidebar-toggle,
+html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] .sn-sidebar-toggle {
+  display:grid!important; place-items:center!important; opacity:1!important; filter:none!important; transform:none!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .sn-sidebar-toggle .sn-mobile-menu-mark,
+html[data-studio-production-v206][data-studio-mobile-v206="true"] #ngeblogging-studio-sidebar .sn-logo-mark,
+html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] .sn-sidebar-toggle[aria-expanded="true"] .sn-mobile-menu-mark,
+html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark {
+  width:42px!important; height:42px!important; min-width:42px!important; min-height:42px!important;
+  display:grid!important; place-items:center!important; padding:0!important;
+  background:linear-gradient(145deg,#2f75e8,#4f46e5)!important;
+  border:1px solid #2f75e8!important; border-radius:12px!important;
+  color:#fff!important; opacity:1!important; filter:none!important; mix-blend-mode:normal!important; overflow:hidden!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark) > strong,
+html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] .sn-sidebar-toggle[aria-expanded="true"] .sn-mobile-menu-mark > strong,
+html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark > strong {
+  position:static!important; inset:auto!important; margin:0!important; padding:0!important;
+  color:#fff!important; -webkit-text-fill-color:#fff!important;
+  font:900 27px/1 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  text-align:center!important; opacity:1!important; visibility:visible!important; filter:none!important; text-shadow:none!important; transform:none!important;
+}
+
+/* Drawer stays interactive; no dark/blur page lock. */
+html[data-studio-production-v206][data-studio-mobile-v206="true"] #ngeblogging-studio-sidebar.mobile-open {
+  width:clamp(260px,72vw,344px)!important; max-width:calc(100vw - 42px)!important;
+  height:100dvh!important; max-height:100dvh!important; inset:0 auto 0 0!important;
+  display:flex!important; flex-direction:column!important; background:#fff!important;
+  opacity:1!important; filter:none!important; backdrop-filter:none!important; pointer-events:auto!important;
+  overflow:hidden!important; z-index:2147483200!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] #ngeblogging-studio-sidebar.mobile-open > nav {
+  flex:1 1 auto!important; min-height:0!important; display:flex!important; flex-direction:column!important;
+  justify-content:flex-start!important; gap:4px!important; padding:6px 0 10px!important;
+  overflow-y:auto!important; overflow-x:hidden!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] #ngeblogging-studio-sidebar.mobile-open > .sn-account-footer {
+  flex:0 0 auto!important; margin-top:auto!important; position:static!important; background:#fff!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .sn-side-backdrop {
+  background:transparent!important; filter:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+  opacity:1!important; z-index:2147483100!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .sn-main,
+html[data-studio-production-v206][data-studio-mobile-v206="true"] body.sn-mobile-sidebar-open .sn-main {
+  width:100%!important; max-width:100%!important; margin-left:0!important; opacity:1!important; filter:none!important; transform:none!important;
+}
+
+/* Theme layout map and code editor remain full real controls on physical phones. */
+html[data-studio-production-v206][data-studio-mobile-v206="true"] :is(.tn-studio,.tn-hero,.tn-layout-studio,.tn-code-workspace,.tn-code-pane,.tn-code-preview-pane) {
+  min-width:0!important; max-width:100%!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-studio {
+  width:100%!important; padding:12px 10px 96px!important; overflow-x:clip!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-code-workspace {
+  width:100%!important; height:auto!important; display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(420px,52dvh) minmax(360px,48dvh)!important;
+  overflow:auto!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-code-pane textarea {
+  width:100%!important; max-width:100%!important; min-width:0!important; min-height:330px!important;
+  overflow:auto!important; white-space:pre!important; word-break:normal!important; overflow-wrap:normal!important;
+  font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] :is(.tn-code-pane > nav,.tn-code-preview-pane .tn-device-switch) {
+  overflow-x:auto!important; overflow-y:hidden!important;
+}
+
+/* Nara launcher: icon-only, stable and safe-area friendly on handhelds. */
+html[data-studio-production-v206] :is(.nara-floating-button,.nara-floating-button *,.nara-assistant-shell button,.nara-select,.nara-select *) {
+  animation:none!important; transition:none!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-floating-button {
+  width:58px!important; height:58px!important; min-width:58px!important; min-height:58px!important;
+  display:grid!important; place-items:center!important; padding:0!important; opacity:1!important; filter:none!important; transform:none!important; overflow:hidden!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-floating-button > :is(b,small) { display:none!important; }
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-floating-button > span { margin:0!important; display:grid!important; place-items:center!important; }
+
+/* Small and medium are non-modal. */
+html[data-studio-production-v206] .nara-assistant-layer[data-v206-mode="nonmodal"] {
+  pointer-events:none!important; background:transparent!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+}
+html[data-studio-production-v206] .nara-assistant-layer[data-v206-mode="nonmodal"] > .nara-assistant-shell { pointer-events:auto!important; }
+html[data-studio-production-v206] .nara-assistant-layer[data-v206-mode="nonmodal"] > .nara-assistant-backdrop { display:none!important; pointer-events:none!important; }
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-shell[data-nara-size="small"] {
+  width:min(360px,calc(100vw - 22px))!important; max-width:calc(100vw - 22px)!important;
+  height:min(560px,68dvh)!important; max-height:calc(100dvh - 20px)!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-shell[data-nara-size="medium"] {
+  width:min(500px,calc(100vw - 14px))!important; max-width:calc(100vw - 14px)!important;
+  height:min(760px,84dvh)!important; max-height:calc(100dvh - 14px)!important;
+}
+
+/* Header exactly two rows: brand + speaker + X, then three sizes + new conversation. */
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header {
+  width:100%!important; min-width:0!important; display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) 36px 36px!important;
+  grid-template-areas:"orb brand voice close" "sizes sizes sizes reset"!important;
+  grid-template-rows:auto 38px!important; align-items:center!important; gap:7px 6px!important; padding:10px 10px 8px!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > .nara-brand-orb {
+  grid-area:orb!important; width:40px!important; height:40px!important; min-width:40px!important; min-height:40px!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > .nara-brand-orb + div {
+  grid-area:brand!important; min-width:0!important; overflow:hidden!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-size-controls-v147 {
+  grid-area:sizes!important; width:max-content!important; max-width:100%!important;
+  display:grid!important; grid-template-columns:repeat(3,36px)!important; gap:5px!important; justify-self:start!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-size-controls-v147 > button,
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > .nara-auto-voice-v148,
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > button[title="Percakapan baru"],
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > button[title="Tutup"],
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > button[title="Tutup Nara AI"],
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > button[aria-label="Tutup Nara AI"] {
+  width:36px!important; height:36px!important; min-width:36px!important; min-height:36px!important;
+  padding:0!important; display:grid!important; place-items:center!important; opacity:1!important; visibility:visible!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > .nara-auto-voice-v148 { grid-area:voice!important; }
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > button[title="Percakapan baru"] { grid-area:reset!important; }
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-assistant-header > :is(button[title="Tutup"],button[title="Tutup Nara AI"],button[aria-label="Tutup Nara AI"]) { grid-area:close!important; }
+
+/* Camera / Photo / File remain only inside the native + menu. */
+html[data-studio-production-v206] :is(.nara-direct-attachments-v202,.nara-mobile-direct-tools-v199) {
+  display:none!important; visibility:hidden!important; pointer-events:none!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-composer-tools {
+  width:100%!important; min-width:0!important; display:grid!important;
+  grid-template-columns:36px 36px minmax(72px,84px) minmax(92px,108px) 38px!important;
+  justify-content:space-between!important; align-items:center!important; gap:4px!important; overflow:visible!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-select {
+  min-width:0!important; width:100%!important; height:36px!important; min-height:36px!important;
+  display:grid!important; grid-template-columns:minmax(0,1fr) 13px!important; align-items:center!important; gap:2px!important;
+  padding:0 6px!important; overflow:hidden!important; white-space:nowrap!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-select.intelligence { max-width:84px!important; }
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-select.model { max-width:108px!important; }
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-select > span {
+  min-width:0!important; overflow:hidden!important; text-overflow:ellipsis!important; white-space:nowrap!important; font-size:10px!important; line-height:1!important;
+}
+html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-attachment-menu {
+  left:0!important; right:auto!important; bottom:calc(100% + 8px)!important;
+  width:min(270px,calc(100vw - 34px))!important; max-width:calc(100vw - 34px)!important; z-index:90!important;
+}
+
+/* Startup retry stays readable and reachable. */
+html[data-studio-production-v206] .so75-startup[data-v206-startup="real-membership-recovery"] section { max-width:min(720px,calc(100vw - 28px))!important; }
+html[data-studio-production-v206] .so75-startup[data-v206-startup="real-membership-recovery"] :is(h1,p) { max-width:100%!important; word-break:normal!important; overflow-wrap:normal!important; }
+
+@media(max-width:370px) {
+  html[data-studio-production-v206][data-studio-mobile-v206="true"] .tn-hero-actions { grid-template-columns:minmax(0,1fr)!important; }
+  html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-composer-tools {
+    grid-template-columns:34px 34px minmax(66px,76px) minmax(82px,94px) 36px!important; gap:3px!important;
+  }
+  html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-select.intelligence { max-width:76px!important; }
+  html[data-studio-production-v206][data-studio-mobile-v206="true"] .nara-select.model { max-width:94px!important; }
+}
