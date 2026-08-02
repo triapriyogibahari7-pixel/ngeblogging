@@ -7,12 +7,22 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 
 const RELEASE = "auth-late-callback-recovery-v215-20260802";
 const MAIN_MARKER = "authLateCallbackRecoveryV215";
+const V162_MAIN_MARKER = "consumeAuthCallbackV162().then";
 const VERSION = "ngeblogging-app-v215-auth-late-callback-20260802";
 const CACHE = "auth-late-callback-cache-v215";
 
+async function ensureV162Prerequisite() {
+  let source = await read("src/main.jsx");
+  if (source.includes(MAIN_MARKER) || source.includes(V162_MAIN_MARKER)) return source;
+  await import("./patch-auth-callback-v162.mjs");
+  source = await read("src/main.jsx");
+  if (!source.includes(V162_MAIN_MARKER)) throw new Error("V215_V162_PREREQUISITE_FAILED");
+  return source;
+}
+
 async function patchMain() {
   const path = "src/main.jsx";
-  let source = await read(path);
+  let source = await ensureV162Prerequisite();
   if (source.includes(MAIN_MARKER)) return;
 
   const anchor = `      if (callback.status === "error") {\n        setAuthMode("signin");\n        setAuthMessage(callback.error?.message || "Callback login belum berhasil.");\n        setDemo(true);\n        return;\n      }`;
