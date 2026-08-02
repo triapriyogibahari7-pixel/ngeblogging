@@ -81,3 +81,4 @@ await import("./patch-production-v207.mjs");
 await import("./patch-sidebar-left4-v207.mjs");
 await import("./patch-production-v208.mjs");
 await import("./patch-production-v209.mjs");
+await import("./patch-public-site-v209.mjs");
