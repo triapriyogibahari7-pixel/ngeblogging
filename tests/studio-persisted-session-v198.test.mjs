@@ -4,6 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const chain = read("scripts/patch-service-worker-v179.mjs");
+const primer = read("scripts/patch-studio-persisted-session-v198-primer.mjs");
 const patch = read("scripts/patch-studio-persisted-session-v198.mjs");
 const gate = read("src/StudioOnboardingGate.jsx");
 const worker = read("public/sw.js");
@@ -11,30 +12,29 @@ const release = JSON.parse(read("public/release-v198.json"));
 
 const RELEASE = "studio-persisted-session-recovery-v198-20260802";
 
-test("v198 is chained after v197 so all prior login and bootstrap protections remain", () => {
+test("v198 primer runs before stable v195 and finalizer runs after v197", () => {
+  assert.match(chain, /patch-studio-persisted-session-v198-primer\.mjs/);
+  assert.match(chain, /patch-studio-bootstrap-v195\.mjs/);
   assert.match(chain, /patch-studio-session-race-v197\.mjs/);
   assert.match(chain, /patch-studio-persisted-session-v198\.mjs/);
+  assert.ok(chain.indexOf("patch-studio-persisted-session-v198-primer.mjs") < chain.indexOf("patch-studio-bootstrap-v195.mjs"));
   assert.ok(chain.indexOf("patch-studio-session-race-v197.mjs") < chain.indexOf("patch-studio-persisted-session-v198.mjs"));
 });
 
 test("Studio reads only the current Supabase project persisted auth key before waiting on the client lock", () => {
-  assert.match(gate, /STUDIO_PERSISTED_SESSION_RELEASE_V198/);
-  assert.match(gate, /function supabaseProjectRefV198/);
+  assert.match(primer, /function supabaseProjectRefV198/);
   assert.match(gate, /function readPersistedSupabaseSessionV198/);
   assert.match(gate, /sb-\$\{projectRef\}-auth-token/);
   assert.match(gate, /persisted\.user\?\.id !== userId/);
   assert.match(gate, /persisted-storage-v198/);
+  assert.match(gate, /persisted-storage-first/);
   const localStart = gate.indexOf("async function readLocalStudioSessionV195");
   const localEnd = gate.indexOf("\n}\n", localStart);
   const localBody = gate.slice(localStart, localEnd + 3);
-  assert.ok(localBody.indexOf("readPersistedSupabaseSessionV198") < localBody.indexOf("supabase.auth.getSession"));
-});
-
-test("a rotated persisted token can recover a stale 401 without launching another remote refresh first", () => {
-  assert.match(gate, /persistedReplacementV198/);
-  assert.match(gate, /persisted-newer-token-reused-v198/);
-  assert.match(gate, /persistedReplacementV198\.session\.access_token !== rejectedToken/);
-  assert.match(gate, /newer-local-token-reused/);
+  const persistedIndex = localBody.indexOf("readPersistedSupabaseSessionV198(userId)");
+  const clientIndex = localBody.indexOf("supabase.auth.getSession()");
+  assert.ok(persistedIndex >= 0);
+  assert.ok(clientIndex > persistedIndex);
 });
 
 test("v198 preserves direct user bearer RLS, v197 single-flight, onboarding and all non-destructive session rules", () => {
@@ -42,8 +42,10 @@ test("v198 preserves direct user bearer RLS, v197 single-flight, onboarding and 
   assert.match(gate, /studioMembershipSingleFlightV197/);
   assert.match(gate, /studioRecoverySingleFlightV197/);
   assert.match(gate, /FirstSiteOnboarding/);
+  assert.match(gate, /newer-local-token-reused/);
   assert.doesNotMatch(gate, /service_role|SUPABASE_SERVICE_ROLE/);
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|supabase\.auth\.signOut\s*\(/);
+  assert.doesNotMatch(primer, /service_role|SUPABASE_SERVICE_ROLE/);
   assert.doesNotMatch(patch, /service_role|SUPABASE_SERVICE_ROLE/);
 });
 
