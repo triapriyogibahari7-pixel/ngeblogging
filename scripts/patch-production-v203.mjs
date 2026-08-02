@@ -62,7 +62,7 @@ async function verify() {
     ["src/studio-production-v203.js", RELEASE],
     ["src/studio-production-v203.js", "studioMobileV203"],
     ["src/studio-production-v203.js", "normalizeCreateActions"],
-    ["src/studio-production-v203.js", "data-v203-mode"],
+    ["src/studio-production-v203.js", "layer.dataset.v203Mode"],
     ["src/studio-production-v203.css", 'data-studio-mobile-v203="true"'],
     ["src/studio-production-v203.css", ".sc161-content-page > .sn-page-title > .sn-primary"],
     ["src/studio-production-v203.css", 'grid-template-areas:\n    "title status"'],
