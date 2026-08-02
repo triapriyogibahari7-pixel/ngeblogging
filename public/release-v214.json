@@ -1,6 +1,6 @@
 {
   "release": "studio-production-v214-20260802",
-  "status": "candidate",
+  "status": "preview-validated",
   "basedOn": "studio-production-v213-20260802",
   "preserved": {
     "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
@@ -51,7 +51,7 @@
     "nineHundredMillionOrBillionLoginSimulationClaimed": false,
     "allOAuthProvidersEndToEndProven": false,
     "netlifyDeployPreviewPassed": true,
-    "cloudflarePreviewPassed": false,
+    "cloudflarePreviewPassed": true,
     "physicalBrowserRetestRequired": true,
     "productionDeploymentVerificationRequired": true
   }
