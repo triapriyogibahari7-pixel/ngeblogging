@@ -33,6 +33,14 @@ test("v214 keeps six responsive modes and large tablet desktop family while v215
   assert.equal(release215.repair.lateStaleOAuthCallbackChecksRetainedSession, true);
 });
 
+test("v215 can run from the production verify:v213 path even before v162 was patched in the checkout", () => {
+  assert.match(lateAuthPatch, /async function ensureV162Prerequisite\(\)/);
+  assert.match(lateAuthPatch, /V162_MAIN_MARKER = "consumeAuthCallbackV162\(\)\.then"/);
+  assert.match(lateAuthPatch, /await import\("\.\/patch-auth-callback-v162\.mjs"\)/);
+  assert.match(lateAuthPatch, /V215_V162_PREREQUISITE_FAILED/);
+  assert.match(lateAuthPatch, /let source = await ensureV162Prerequisite\(\)/);
+});
+
 test("sidebar and mobile drawer stay complete centered non-blurred and non-shifting", () => {
   for (const label of [
     "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
