@@ -1,0 +1,47 @@
+name: Ngeblogging Studio v214 PR verification
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-v214-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-v214:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify v214 contracts
+        run: npm run verify:v214
+
+      - name: Run complete production regression
+        run: npm run test:production
+
+      - name: Build application
+        run: npx vite build
