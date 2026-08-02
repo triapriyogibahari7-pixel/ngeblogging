@@ -1,11 +1,13 @@
 {
   "release": "studio-production-v205-20260802",
+  "hotfix": "studio-production-v205-hotfix-logo-auth-20260802",
   "status": "candidate",
   "basedOn": "studio-production-v204-20260802",
-  "scope": "Fix current real-device screenshot regressions in Theme Studio, physical-mobile layout/code editing, Nara native attachment controls, logo/drawer stability, and retained-session Studio startup behavior.",
+  "scope": "Fix current real-device screenshot regressions in Theme Studio, physical-mobile layout/code editing, Nara native attachment controls, logo/drawer stability, and retained-session Studio startup behavior without replacing the validated v205 authentication callback.",
   "repairs": {
     "themeLayoutActionSingleVisibleLabel": true,
     "themeHeroActionsContainedOnPhysicalMobile": true,
+    "themeLayoutAndCodeActionsForceClickable": true,
     "layoutMapUsesPhysicalMobileGeometry": true,
     "layoutMapKeepsLeftRightRelationshipsVisible": true,
     "themeCodeEditorStacksCodeAbovePreviewOnPhysicalMobile": true,
@@ -17,6 +19,8 @@
     "naraCloseAlwaysVisible": true,
     "naraControlAnimationsDisabled": true,
     "mobileNLogoForcedWhiteOnBlue": true,
+    "mobileNLogoClosedWhiteOnBlue": true,
+    "mobileNLogoOpenBlueOnWhite": true,
     "mobileDrawerRemainsClickableWithoutBlur": true,
     "verifiedSessionStartupDoesNotPresentAsLoginFailure": true,
     "verifiedSessionStartupRetryIsBounded": true,
@@ -24,6 +28,7 @@
   },
   "productionEvidence": {
     "googlePkceToken200ObservedOn20260802": true,
+    "googlePkceSuccessObservedAt": "2026-08-02T05:12:03Z",
     "googleCallback302ObservedOn20260802": true,
     "authUser200ObservedOn20260802": true,
     "refreshToken200ObservedOn20260802": true,
@@ -35,9 +40,11 @@
     "productionRegressionRequired": true,
     "deployPreviewRequired": true,
     "realDeviceRequiredBeforeHundredPercentClaim": true,
+    "googleLoginEndToEndObservedInProductionLogs": true,
     "googleLoginEndToEndClaimed": false,
     "linkedinLoginEndToEndClaimed": false,
     "emailPasswordEndToEndClaimed": false,
+    "oauthStateReplayRecoveryClaimed": false,
     "massLoginCapacityClaimed": false,
     "nineHundredMillionUserCapacityClaimed": false
   }
