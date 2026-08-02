@@ -2,7 +2,20 @@ import { readFile, writeFile } from "node:fs/promises";
 
 const file = new URL("../src/PublicSiteNext.jsx", import.meta.url);
 const RELEASE = "public-site-single-render-v209-20260802";
+const V218_ATOMIC = "PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218";
 let source = await readFile(file, "utf8");
+
+// v218 is a stricter continuation of the v209 single-render contract. Preserve
+// the historical marker for regression compatibility without replacing the new
+// atomic effect with the older textual implementation.
+if (source.includes(V218_ATOMIC) && !source.includes("PUBLIC_SITE_SINGLE_RENDER_V209")) {
+  const anchor = 'const PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218 = "public-site-atomic-bootstrap-v218-20260802";';
+  if (!source.includes(anchor)) throw new Error("V218_PUBLIC_SITE_COMPAT_ANCHOR_MISSING");
+  source = source.replace(
+    anchor,
+    `// PUBLIC_SITE_SINGLE_RENDER_V209 compatibility: superseded by the stricter v218 atomic bootstrap.\n${anchor}`,
+  );
+}
 
 if (!source.includes("PUBLIC_SITE_SINGLE_RENDER_V209")) {
   const startMarker = "  useEffect(()=>{let active=true;setLoading(true);resolvePublishedSite(target).then(async(resolved)=>{";
@@ -37,10 +50,15 @@ if (!source.includes("PUBLIC_SITE_SINGLE_RENDER_V209")) {
 }
 
 if (!source.includes("PUBLIC_SITE_SINGLE_RENDER_V209")) throw new Error("V209_PUBLIC_SITE_SINGLE_RENDER_MISSING");
-const effectStart = source.indexOf("PUBLIC_SITE_SINGLE_RENDER_V209");
+const effectStart = source.includes(V218_ATOMIC)
+  ? source.indexOf(V218_ATOMIC)
+  : source.indexOf("PUBLIC_SITE_SINGLE_RENDER_V209");
 const postsIndex = source.indexOf("setPosts(postPage.contents)", effectStart);
+const contentIndex = source.indexOf("setContent(item", effectStart);
 const siteIndex = source.indexOf("setSite(resolved)", effectStart);
-if (postsIndex < 0 || siteIndex < postsIndex) throw new Error("V209_PUBLIC_SITE_STILL_PUBLISHES_SITE_TOO_EARLY");
+if (postsIndex < 0 || contentIndex < 0 || siteIndex < postsIndex || siteIndex < contentIndex) {
+  throw new Error("V209_PUBLIC_SITE_STILL_PUBLISHES_SITE_TOO_EARLY");
+}
 
 await writeFile(file, source);
-console.log(`Applied ${RELEASE}`);
+console.log(`Applied ${RELEASE}${source.includes(V218_ATOMIC) ? " with v218 atomic compatibility" : ""}`);
