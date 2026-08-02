@@ -114,6 +114,19 @@ function announce(status, session, mode) {
 async function consumeInternal(url, code, mode, codeFingerprint) {
   const oauthError = callbackErrorFromUrl(url);
   if (oauthError) {
+    if (isConsumedCodeError(oauthError) && supabaseConfigured && supabase) {
+      const recovered = await currentSession().catch(() => null);
+      if (recovered?.access_token && recovered?.refresh_token) {
+        cleanCallbackUrl({ success: true, recovery: mode === "recovery" });
+        announce("recovered-provider-state-replay", recovered, mode);
+        return callbackResult("recovered", {
+          session: recovered,
+          mode,
+          singleFlight: true,
+          providerStateReplayRecovered: true,
+        });
+      }
+    }
     cleanCallbackUrl();
     return callbackResult("error", { error: oauthError, mode });
   }
