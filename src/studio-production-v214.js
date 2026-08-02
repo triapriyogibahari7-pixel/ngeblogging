@@ -1,4 +1,5 @@
 import "./studio-production-v214.css";
+import "./studio-production-v214-profile.css";
 
 const RELEASE = "studio-production-v214-20260802";
 const RESPONSIVE_MODES = new Set(["application", "phone", "mobile", "compact", "tablet", "desktop"]);
@@ -30,13 +31,31 @@ function setImportant(node, property, value) {
   node.style.setProperty(property, value, "important");
 }
 
+function setAttributeIfChanged(node, name, value) {
+  if (!node) return;
+  const next = String(value);
+  if (node.getAttribute(name) !== next) node.setAttribute(name, next);
+}
+
+function setDataset(node, key, value) {
+  if (!node) return;
+  const next = String(value);
+  if (node.dataset[key] !== next) node.dataset[key] = next;
+}
+
+function setText(node, value) {
+  if (!node) return;
+  const next = String(value);
+  if (node.textContent !== next) node.textContent = next;
+}
+
 function normalizeRoot() {
   const root = document.documentElement;
   const currentMode = mode();
-  root.dataset.studioProductionV214 = RELEASE;
-  root.dataset.studioV214Mode = currentMode;
-  root.dataset.studioV214Variant = variant(currentMode);
-  root.dataset.studioV214Layout = SMALL_MODES.has(currentMode) ? "small" : "large";
+  setDataset(root, "studioProductionV214", RELEASE);
+  setDataset(root, "studioV214Mode", currentMode);
+  setDataset(root, "studioV214Variant", variant(currentMode));
+  setDataset(root, "studioV214Layout", SMALL_MODES.has(currentMode) ? "small" : "large");
 }
 
 function normalizeSidebar() {
@@ -47,8 +66,8 @@ function normalizeSidebar() {
   const toggle = document.querySelector(".sn-sidebar-toggle");
   if (!sidebar) return;
 
-  sidebar.dataset.v214Mode = root.dataset.studioV214Mode || mode();
-  sidebar.dataset.v214Layout = root.dataset.studioV214Layout || "large";
+  setDataset(sidebar, "v214Mode", root.dataset.studioV214Mode || mode());
+  setDataset(sidebar, "v214Layout", root.dataset.studioV214Layout || "large");
   sidebar.removeAttribute("inert");
   sidebar.removeAttribute("aria-hidden");
   sidebar.querySelectorAll("button,a").forEach((control) => control.removeAttribute("inert"));
@@ -79,25 +98,25 @@ function normalizeSidebar() {
 function normalizeLayoutMap() {
   const currentMode = mode();
   document.querySelectorAll(".tn-layout-canvas-v170[data-v212-layout-map]").forEach((map) => {
-    map.dataset.v214Mode = currentMode;
-    map.dataset.v214Adaptive = currentMode === "phone" || currentMode === "application"
+    setDataset(map, "v214Mode", currentMode);
+    setDataset(map, "v214Adaptive", currentMode === "phone" || currentMode === "application"
       ? "single-column"
       : currentMode === "mobile" || currentMode === "compact"
         ? "paired-small"
-        : "large-map";
+        : "large-map");
 
     const content = map.querySelector(":scope > .content-main");
     if (content) {
-      content.dataset.v214LockedContent = "true";
-      content.setAttribute("aria-disabled", "true");
-      content.setAttribute("tabindex", "-1");
-      content.setAttribute("title", "Konten utama Post/Page — bukan slot widget");
+      setDataset(content, "v214LockedContent", "true");
+      setAttributeIfChanged(content, "aria-disabled", "true");
+      setAttributeIfChanged(content, "tabindex", "-1");
+      setAttributeIfChanged(content, "title", "Konten utama Post/Page — bukan slot widget");
       const badge = content.querySelector(":scope > span");
       const title = content.querySelector(":scope > small");
       const description = content.querySelector(":scope > b");
-      if (badge) badge.textContent = "POST / PAGE";
-      if (title) title.textContent = "Konten utama";
-      if (description) description.textContent = "Area tulisan utama tetap penuh; widget aktif berada di area sekeliling sesuai perangkat.";
+      setText(badge, "POST / PAGE");
+      setText(title, "Konten utama");
+      setText(description, "Area tulisan utama tetap penuh; widget aktif berada di area sekeliling sesuai perangkat.");
     }
   });
 }
@@ -105,19 +124,22 @@ function normalizeLayoutMap() {
 function closeProfileMenu() {
   profileMenuNode?.remove();
   profileMenuNode = null;
-  document.documentElement.dataset.studioV214ProfileMenu = "closed";
+  setDataset(document.documentElement, "studioV214ProfileMenu", "closed");
   const avatar = document.querySelector(".sn-avatar");
-  avatar?.setAttribute("aria-expanded", "false");
+  setAttributeIfChanged(avatar, "aria-expanded", "false");
 }
 
 function navigateSettings(section) {
   const root = document.documentElement;
-  root.dataset.studioV214SettingsSection = section;
+  setDataset(root, "studioV214SettingsSection", section === "profile" ? "profile" : "site");
   const button = document.querySelector(".sn-account-settings-v135");
   if (!button) return;
-  button.dataset.v214RequestedSection = section;
+  setDataset(button, "v214RequestedSection", section);
   button.click();
-  queueMicrotask(() => { delete button.dataset.v214RequestedSection; schedule(); });
+  queueMicrotask(() => {
+    delete button.dataset.v214RequestedSection;
+    schedule();
+  });
 }
 
 function openProfileMenu() {
@@ -135,8 +157,8 @@ function openProfileMenu() {
     <button type="button" role="menuitem" class="danger" data-v214-profile-action="logout"><span aria-hidden="true">↪</span><b>Keluar</b></button>`;
   document.body.append(menu);
   profileMenuNode = menu;
-  document.documentElement.dataset.studioV214ProfileMenu = "open";
-  avatar.setAttribute("aria-expanded", "true");
+  setDataset(document.documentElement, "studioV214ProfileMenu", "open");
+  setAttributeIfChanged(avatar, "aria-expanded", "true");
   requestAnimationFrame(() => menu.querySelector("button")?.focus({ preventScroll:true }));
 }
 
@@ -147,25 +169,25 @@ function normalizeSettingsSection() {
   const section = root.dataset.studioV214SettingsSection === "profile" ? "profile" : "site";
   const page = grid.closest(".sn-view-pad");
   if (!page) return;
-  page.dataset.v214SettingsSection = section;
+  setDataset(page, "v214SettingsSection", section);
   const title = page.querySelector(":scope > .sn-page-title h1");
   const description = page.querySelector(":scope > .sn-page-title p");
-  if (title) title.textContent = section === "profile" ? "Profil" : "Pengaturan";
-  if (description) description.textContent = section === "profile"
+  setText(title, section === "profile" ? "Profil" : "Pengaturan");
+  setText(description, section === "profile"
     ? "Identitas akun, biografi, website, avatar, bahasa, dan zona waktu."
-    : "Konfigurasi situs aktif dipisahkan dari identitas profil Anda.";
+    : "Konfigurasi situs aktif dipisahkan dari identitas profil Anda.");
   const save = page.querySelector(".sn-save-settings");
-  if (save) save.dataset.v214SaveSection = section;
+  if (save) setDataset(save, "v214SaveSection", section);
 }
 
 function normalizeProfileMenu() {
   const avatar = document.querySelector(".sn-avatar");
   if (avatar) {
-    avatar.dataset.v214ProfileTrigger = "true";
-    avatar.setAttribute("aria-label", "Buka menu profil");
-    avatar.setAttribute("aria-haspopup", "menu");
-    avatar.setAttribute("aria-controls", "ngeblogging-profile-menu-v214");
-    avatar.setAttribute("aria-expanded", String(Boolean(profileMenuNode)));
+    setDataset(avatar, "v214ProfileTrigger", "true");
+    setAttributeIfChanged(avatar, "aria-label", "Buka menu profil");
+    setAttributeIfChanged(avatar, "aria-haspopup", "menu");
+    setAttributeIfChanged(avatar, "aria-controls", "ngeblogging-profile-menu-v214");
+    setAttributeIfChanged(avatar, "aria-expanded", String(Boolean(profileMenuNode)));
   }
   normalizeSettingsSection();
 }
@@ -176,8 +198,8 @@ function normalizeNara() {
   if (!layer || !shell) return;
   const size = shell.dataset.naraSize || "small";
   const full = size === "full";
-  shell.dataset.v214Mode = mode();
-  shell.dataset.v214Size = size;
+  setDataset(shell, "v214Mode", mode());
+  setDataset(shell, "v214Size", size);
   if (!full) {
     setImportant(layer, "pointer-events", "none");
     setImportant(layer, "background", "transparent");
@@ -262,7 +284,7 @@ document.addEventListener("click", (event) => {
   const settingsButton = target.closest(".sn-account-settings-v135");
   if (settingsButton) {
     const requested = settingsButton.dataset.v214RequestedSection;
-    document.documentElement.dataset.studioV214SettingsSection = requested === "profile" ? "profile" : "site";
+    setDataset(document.documentElement, "studioV214SettingsSection", requested === "profile" ? "profile" : "site");
     closeProfileMenu();
     requestAnimationFrame(schedule);
     return;
