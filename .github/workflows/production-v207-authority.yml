@@ -1,11 +1,10 @@
 name: Ngeblogging production Studio v207 authority
 
 on:
-  workflow_run:
-    workflows:
-      - "Ngeblogging production route cutover v184 — Studio v191/v192/v195/v196/v197/v205"
-    types:
-      - completed
+  push:
+    branches:
+      - main
+      - production
   workflow_dispatch:
 
 permissions:
@@ -13,12 +12,11 @@ permissions:
   statuses: write
 
 concurrency:
-  group: ngeblogging-production-studio-v197
+  group: ngeblogging-production-studio-v207
   cancel-in-progress: false
 
 jobs:
   deploy-v207:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: cloudflare-production
@@ -37,23 +35,10 @@ jobs:
       LEGACY_MARKER: WHITE-R4-2026.07.12
 
     steps:
-      - name: Resolve release commit
-        id: release
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
-            sha='${{ github.event.workflow_run.head_sha }}'
-          else
-            sha='${{ github.sha }}'
-          fi
-          test -n "${sha}"
-          echo "sha=${sha}" >> "${GITHUB_OUTPUT}"
-
       - name: Checkout release
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.release.outputs.sha }}
+          ref: ${{ github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -213,7 +198,7 @@ jobs:
         if: always()
         uses: actions/github-script@v7
         env:
-          TARGET_SHA: ${{ steps.release.outputs.sha }}
+          TARGET_SHA: ${{ github.sha }}
           CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
           REGRESSION_OUTCOME: ${{ steps.regression.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
