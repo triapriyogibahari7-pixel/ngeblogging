@@ -51,5 +51,6 @@ import "./studio-production-v206.js";
 import "./studio-production-v207.js";
 import "./studio-production-v208.js";
 import "./studio-production-v209.js";
+import "./studio-production-v210.js";
 
 export default StudioFastGate;

@@ -1,0 +1,84 @@
+/* Ngeblogging Studio v210 — physical-device authority for screenshots 2026-08-02. */
+html[data-studio-production-v210],html[data-studio-production-v210] body,html[data-studio-production-v210] #root,
+html[data-studio-production-v210] .sn-shell,html[data-studio-production-v210] .sn-main{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html[data-studio-production-v210] *,html[data-studio-production-v210] *::before,html[data-studio-production-v210] *::after{box-sizing:border-box!important}
+html[data-studio-production-v210] body{overflow-x:clip!important}
+html[data-studio-production-v210] :is(img,video,canvas,iframe,table){max-width:100%!important}
+
+/* Advanced Theme Editor must be visible above its backdrop instead of leaving a dark page. */
+html[data-studio-production-v210] .tn-modal-layer{position:fixed!important;inset:0!important;z-index:2147483700!important;display:grid!important;place-items:center!important;padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))!important;visibility:visible!important;opacity:1!important;overflow:hidden!important}
+html[data-studio-production-v210] .tn-modal-layer>.tn-modal-backdrop{position:absolute!important;inset:0!important;z-index:0!important;background:rgba(15,28,46,.38)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;opacity:1!important}
+html[data-studio-production-v210] .tn-modal-layer>.tn-modal{position:relative!important;inset:auto!important;z-index:1!important;visibility:visible!important;opacity:1!important;transform:none!important;background:#fff!important;color:#182a42!important;box-shadow:0 28px 90px rgba(8,24,46,.28)!important;overflow:hidden!important}
+html[data-studio-production-v210] .tn-modal-layer>.tn-modal.fullscreen{width:min(1480px,calc(100vw - 24px))!important;height:min(920px,calc(100dvh - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;border-radius:22px!important}
+html[data-studio-production-v210] .tn-modal.fullscreen>header,html[data-studio-production-v210] .tn-modal.fullscreen>footer{position:relative!important;z-index:5!important;background:#fff!important;opacity:1!important;visibility:visible!important}
+html[data-studio-production-v210] .tn-modal.fullscreen>.tn-modal-body{min-height:0!important;overflow:hidden!important;background:#fff!important}
+html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-workspace{height:100%!important;min-height:0!important;width:100%!important;max-width:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;background:#fff!important;overflow:hidden!important}
+html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-pane{min-width:0!important;max-width:100%!important;background:#101b2e!important;color:#e9f1ff!important;display:grid!important;grid-template-rows:auto auto minmax(0,1fr)!important;overflow:hidden!important}
+html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-pane textarea{width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;resize:none!important;overflow:auto!important;white-space:pre!important;word-break:normal!important;overflow-wrap:normal!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace!important;font-size:13px!important;line-height:1.65!important;background:#101b2e!important;color:#edf4ff!important;caret-color:#fff!important;padding:18px!important;border:0!important}
+html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-preview-pane{min-width:0!important;max-width:100%!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;overflow:hidden!important;background:#edf2f8!important}
+html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-preview-pane>.tn-frame-shell{min-width:0!important;max-width:100%!important;width:100%!important;height:100%!important;overflow:auto!important}
+html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-preview-pane iframe{display:block!important;width:100%!important;height:100%!important;min-height:100%!important;background:#fff!important}
+
+/* Four real side slots around the post/page. */
+html[data-studio-production-v210] .tn-layout-studio[data-v210-layout="four-left-four-right"]{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+html[data-studio-production-v210] .tn-layout-studio[data-v210-layout="four-left-four-right"]>div{min-width:0!important;max-width:100%!important;overflow-x:auto!important;overscroll-behavior-inline:contain!important;-webkit-overflow-scrolling:touch!important}
+html[data-studio-production-v210] .tn-layout-canvas-v170[data-v210-layout-canvas="four-left-four-right"]{min-width:720px!important;grid-template-rows:84px 84px 84px 74px repeat(4,118px) 74px 84px 84px 84px!important}
+html[data-studio-production-v210] .tn-layout-canvas-v170 .sidebar-left-4{grid-column:1!important;grid-row:8!important}
+html[data-studio-production-v210] .tn-layout-canvas-v170 .sidebar-right-4{grid-column:6!important;grid-row:8!important}
+html[data-studio-production-v210] .tn-layout-canvas-v170 .content-main{grid-column:2/6!important;grid-row:5/9!important}
+html[data-studio-production-v210] .tn-layout-slot-v170[data-v210-slot="clickable"]{cursor:pointer!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;overflow:hidden!important}
+html[data-studio-production-v210] .tn-layout-slot-v170[data-v210-slot="clickable"] :is(span,small,b){writing-mode:horizontal-tb!important;text-orientation:mixed!important;word-break:normal!important}
+
+/* Custom HTML/JavaScript widget is an actual editable sandbox widget. */
+html[data-studio-production-v210] .tn-widget-code-v210{grid-column:1/-1!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important;width:100%!important;min-width:0!important}
+html[data-studio-production-v210] .tn-widget-code-v210 label{display:grid!important;gap:6px!important;min-width:0!important;font-weight:800!important}
+html[data-studio-production-v210] .tn-widget-code-v210 textarea{width:100%!important;min-width:0!important;min-height:180px!important;max-height:360px!important;resize:vertical!important;overflow:auto!important;white-space:pre!important;word-break:normal!important;overflow-wrap:normal!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;font-size:12px!important;line-height:1.55!important}
+html[data-studio-production-v210] .tn-widget-code-v210>small{grid-column:1/-1!important;color:#64758a!important;line-height:1.5!important}
+
+/* Nara: small and medium are genuinely non-modal and differently sized. */
+html[data-studio-production-v210] .nara-floating-button[data-v210-launcher="stable"]{animation:none!important;transition:none!important;transform:none!important;filter:none!important;opacity:1!important}
+html[data-studio-production-v210] .nara-assistant-layer[data-v210-mode="nonmodal"]{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important}
+html[data-studio-production-v210] .nara-assistant-layer[data-v210-mode="nonmodal"]>.nara-assistant-backdrop{display:none!important;pointer-events:none!important}
+html[data-studio-production-v210] .nara-assistant-layer[data-v210-mode="nonmodal"]>.nara-assistant-shell{pointer-events:auto!important;position:fixed!important;left:auto!important;top:auto!important;right:max(10px,env(safe-area-inset-right))!important;bottom:max(10px,env(safe-area-inset-bottom))!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 20px)!important;overflow:hidden!important;background:#fff!important;opacity:1!important;filter:none!important;transform:none!important}
+html[data-studio-production-v210] .nara-assistant-shell[data-v210-size="small"]{width:min(430px,calc(100vw - 20px))!important;height:clamp(440px,62dvh,610px)!important;border-radius:22px!important}
+html[data-studio-production-v210] .nara-assistant-shell[data-v210-size="medium"]{width:min(720px,calc(100vw - 20px))!important;height:min(78dvh,760px)!important;border-radius:22px!important}
+html[data-studio-production-v210] .nara-assistant-layer[data-v210-mode="modal"]>.nara-assistant-shell[data-v210-size="full"]{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;border-radius:0!important}
+html[data-studio-production-v210] .nara-assistant-header{min-width:0!important;max-width:100%!important;overflow:visible!important}
+html[data-studio-production-v210] .nara-assistant-header button[data-v210-close="visible"]{display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;min-width:40px!important;width:40px!important;height:40px!important;flex:0 0 40px!important}
+html[data-studio-production-v210] .nara-composer,html[data-studio-production-v210] .nara-composer-tools,html[data-studio-production-v210] .nara-attachment-menu-wrap{min-width:0!important;max-width:100%!important;overflow:visible!important}
+html[data-studio-production-v210] .nara-attachment-menu[data-v210-attachment="camera-photo-file"]{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:6px!important;position:absolute!important;left:0!important;right:auto!important;bottom:calc(100% + 10px)!important;top:auto!important;width:min(310px,calc(100vw - 32px))!important;max-width:calc(100vw - 32px)!important;max-height:min(260px,45dvh)!important;overflow:auto!important;padding:8px!important;border:1px solid #d6e0ec!important;border-radius:16px!important;background:#fff!important;color:#23364d!important;box-shadow:0 20px 52px rgba(13,31,56,.24)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;z-index:2147483900!important}
+html[data-studio-production-v210] .nara-attachment-menu[data-v210-attachment="camera-photo-file"]>button{display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;width:100%!important;min-width:0!important;min-height:56px!important;padding:9px 11px!important;text-align:left!important;white-space:normal!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+html[data-studio-production-v210] .nara-attachment-menu[data-v210-attachment="camera-photo-file"]>button>span{display:grid!important;gap:2px!important;min-width:0!important}
+html[data-studio-production-v210] .nara-attachment-menu[data-v210-attachment="camera-photo-file"]>button :is(b,small){white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important}
+
+/* Domain: URLs and publication controls remain horizontal and readable. */
+html[data-studio-production-v210] .sv124-domain-page[data-v210-domain="mobile-contained"],html[data-studio-production-v210] .sv124-domain-page[data-v210-domain="mobile-contained"]>*{min-width:0!important;max-width:100%!important}
+html[data-studio-production-v210] .sv124-domain-page[data-v210-domain="mobile-contained"] :is(h1,h2,h3,p,b,small,label,span,code){writing-mode:horizontal-tb!important;text-orientation:mixed!important;word-break:normal!important;max-width:100%!important}
+html[data-studio-production-v210] .sv124-domain-page [data-v210-domain-action="horizontal"]{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:auto!important;min-width:max-content!important;max-width:100%!important;white-space:nowrap!important;word-break:normal!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important}
+html[data-studio-production-v210] .sv124-free-domain>aside{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-width:0!important;max-width:100%!important}
+html[data-studio-production-v210] .sv124-free-domain>div h2{font-size:clamp(26px,7vw,42px)!important;line-height:1.02!important;letter-spacing:-.035em!important;word-break:normal!important;overflow-wrap:anywhere!important;hyphens:none!important}
+
+/* Drawer outside-click surface must never blur or disable the page. */
+html[data-studio-production-v210] .sn-side-backdrop{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important}
+html[data-studio-production-v210] #ngeblogging-studio-sidebar.mobile-open{opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+@media(max-width:760px){
+  html[data-studio-production-v210] .tn-modal-layer{padding:0!important;place-items:stretch!important}
+  html[data-studio-production-v210] .tn-modal-layer>.tn-modal.fullscreen{width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;border-radius:0!important}
+  html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-workspace{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(390px,52dvh) minmax(340px,46dvh)!important;overflow:auto!important}
+  html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-pane,html[data-studio-production-v210] .tn-modal.fullscreen .tn-code-preview-pane{min-height:0!important;height:auto!important}
+  html[data-studio-production-v210] .tn-widget-code-v210{grid-template-columns:minmax(0,1fr)!important}
+  html[data-studio-production-v210] .tn-widget-code-v210>small{grid-column:1!important}
+  html[data-studio-production-v210] .tn-layout-canvas-v170[data-v210-layout-canvas="four-left-four-right"]{min-width:680px!important}
+  html[data-studio-production-v210] .nara-assistant-shell[data-v210-size="small"]{left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom))!important;width:auto!important;max-width:none!important;height:clamp(430px,64dvh,590px)!important}
+  html[data-studio-production-v210] .nara-assistant-shell[data-v210-size="medium"]{left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom))!important;width:auto!important;max-width:none!important;height:min(80dvh,730px)!important}
+  html[data-studio-production-v210] .nara-attachment-menu[data-v210-attachment="camera-photo-file"]{position:fixed!important;left:12px!important;right:12px!important;bottom:calc(118px + env(safe-area-inset-bottom))!important;width:auto!important;max-width:none!important}
+  html[data-studio-production-v210] .sv124-free-domain{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+  html[data-studio-production-v210] .sv124-free-domain>span{justify-self:start!important}
+  html[data-studio-production-v210] .sv124-free-domain>aside{width:100%!important}
+}
+
+@media(max-width:390px){
+  html[data-studio-production-v210] .nara-assistant-shell[data-v210-size="small"]{height:min(68dvh,570px)!important}
+  html[data-studio-production-v210] .sv124-free-domain>div h2{font-size:clamp(24px,7.5vw,34px)!important}
+}
