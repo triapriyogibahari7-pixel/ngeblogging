@@ -1,0 +1,34 @@
+/* v212 syntax-safe tail authority. Loaded after the main v212 stylesheet. */
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212,
+html[data-studio-v212-device="handheld"] .tn-code-workspace.tn-code-workspace-v212 {
+  grid-template-columns:1fr !important;
+  gap:10px !important;
+  overflow:visible !important;
+}
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212 .tn-code-pane,
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212 .tn-code-preview-pane {
+  width:100% !important;
+  height:min(58dvh,560px) !important;
+  min-height:360px !important;
+  max-height:620px !important;
+}
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212.tn-code-order-code .tn-code-pane { order:1 !important; }
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212.tn-code-order-code .tn-code-preview-pane { order:2 !important; }
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212.tn-code-order-preview .tn-code-preview-pane { order:1 !important; }
+html[data-studio-v212-device="handheld"] .tn-code-workspace-v212.tn-code-order-preview .tn-code-pane { order:2 !important; }
+
+@media (max-width:760px) {
+  .tn-code-workspace-v212,
+  .tn-code-workspace.tn-code-workspace-v212 {
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+    overflow:visible !important;
+  }
+  .tn-code-workspace-v212 .tn-code-pane,
+  .tn-code-workspace-v212 .tn-code-preview-pane {
+    width:100% !important;
+    height:min(58dvh,560px) !important;
+    min-height:360px !important;
+    max-height:620px !important;
+  }
+}
