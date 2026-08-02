@@ -40,8 +40,13 @@ async function patchServiceWorker() {
   source = source.replace(/^const VERSION = ".*";$/m, `const VERSION = "${SW_VERSION}";`);
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${SW_CACHE}";`);
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, `const FORCE_REFRESH_VALUE = "${SW_REFRESH}";`);
-  source = source.replace(/NGE_BLOGGING_UPDATE_AVAILABLE_V\d+/g, "NGE_BLOGGING_UPDATE_AVAILABLE_V203");
-  source = source.replace(/NGE_BLOGGING_FORCE_RELOAD_V\d+/g, "NGE_BLOGGING_UPDATE_AVAILABLE_V203");
+
+  /* v202 has already normalized the active update event and then reinserted
+     historical compatibility constants (for example v170). Replace only the
+     active v202 event. Broad FORCE_RELOAD replacement would corrupt those
+     evidence markers and trigger false regression failures. */
+  source = source.replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V202", "NGE_BLOGGING_UPDATE_AVAILABLE_V203");
+
   source = insertAfterVersion(source, SW_MARKER);
   for (const marker of SW_COMPAT) source = insertAfterVersion(source, marker);
   source = source.replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v203: update tersedia tanpa navigasi paksa; sesi, callback, editor, dan draf tetap dipertahankan.");
