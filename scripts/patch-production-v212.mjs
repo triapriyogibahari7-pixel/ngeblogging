@@ -78,4 +78,5 @@ await patchStudioEntry();
 await normalizeCss();
 await patchServiceWorker();
 await verify();
-console.log(`Applied ${RELEASE} runtime/CSS isolation`);
+await import("./patch-production-v212-theme.mjs");
+console.log(`Applied ${RELEASE} runtime/CSS + Theme Studio`);
