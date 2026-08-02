@@ -1,0 +1,429 @@
+/* Ngeblogging Studio v207 — screenshot-driven physical-mobile authority. */
+html[data-studio-production-v207],
+html[data-studio-production-v207] body,
+html[data-studio-production-v207] #root,
+html[data-studio-production-v207] .sn-shell,
+html[data-studio-production-v207] .sn-main {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+html[data-studio-production-v207] *,
+html[data-studio-production-v207] *::before,
+html[data-studio-production-v207] *::after { box-sizing: border-box; }
+html[data-studio-production-v207] body { overflow-x: clip !important; }
+html[data-studio-production-v207] :is(img,video,canvas,iframe,table) { max-width: 100% !important; }
+
+/* Theme hero actions: exactly four real actions in a stable 2x2 handheld grid. */
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-hero-actions {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  gap: 9px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-hero-actions > button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 48px !important;
+  padding: 8px 9px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  text-align: center !important;
+}
+html[data-studio-production-v207] .tn-hero-actions > button[data-v206-theme-action="layout"] {
+  font-size: 0 !important;
+}
+html[data-studio-production-v207] .tn-hero-actions > button[data-v206-theme-action="layout"] :is(.v199-button-label,.v201-button-label,.v202-button-label) {
+  display: none !important;
+}
+html[data-studio-production-v207] .tn-hero-actions > button[data-v206-theme-action="layout"]::after {
+  content: "Edit Tata Letak" !important;
+  display: inline-block !important;
+  font: 700 12px/1.15 system-ui,-apple-system,"Segoe UI",sans-serif !important;
+  white-space: nowrap !important;
+}
+html[data-studio-production-v207] .tn-hero-actions > button[data-v206-theme-action="code"] {
+  font-size: 0 !important;
+}
+html[data-studio-production-v207] .tn-hero-actions > button[data-v206-theme-action="code"]::after {
+  content: "Edit Kode" !important;
+  display: inline-block !important;
+  font: 700 12px/1.15 system-ui,-apple-system,"Segoe UI",sans-serif !important;
+  white-space: nowrap !important;
+}
+
+/* Do not mount a disposable Theme iframe while the real cloud theme is still loading. */
+html[data-studio-production-v207] .tn-preview-loading-v207 {
+  min-height: 320px !important;
+  width: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 24px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(145deg,#f8fbff,#eef4fb) !important;
+  color: #52657d !important;
+  text-align: center !important;
+}
+html[data-studio-production-v207] .tn-preview-loading-v207 > div {
+  display: grid !important;
+  gap: 8px !important;
+  justify-items: center !important;
+}
+html[data-studio-production-v207] .tn-preview-loading-v207 b { color: #18304f !important; }
+html[data-studio-production-v207] .tn-preview-loading-v207 small { max-width: 360px !important; line-height: 1.55 !important; }
+
+/* Blogger-like readable layout map on physical phones: relationships are retained,
+   but no slot is allowed to collapse until its label becomes vertical letters. */
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-studio {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 14px !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-studio-header {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 10px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-studio-header :is(h2,p) {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-studio-header > button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-canvas-v170 {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: minmax(64px,auto) !important;
+  grid-template-areas: none !important;
+  gap: 7px !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170,
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170.content-main {
+  grid-area: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 64px !important;
+  display: grid !important;
+  grid-template-columns: 32px minmax(0,1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-content: center !important;
+  justify-content: stretch !important;
+  gap: 3px 9px !important;
+  padding: 9px 10px !important;
+  overflow: hidden !important;
+  text-align: left !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170.content-main { min-height: 96px !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170 > span {
+  grid-row: 1 / 3 !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  align-self: center !important;
+  font-size: 9px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170 > :is(small,b) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  letter-spacing: 0 !important;
+  text-overflow: ellipsis !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170 > small {
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+  font-weight: 850 !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-slot-v170 > b {
+  font-size: 9px !important;
+  line-height: 1.35 !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-side {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding: 14px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-layout-widget-list {
+  grid-template-columns: minmax(0,1fr) !important;
+  max-height: none !important;
+}
+
+/* Code editor: real editor first, preview second, no horizontal page overflow. */
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-modal.fullscreen .tn-modal-body { overflow: auto !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-code-workspace {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: minmax(430px,52dvh) minmax(360px,48dvh) !important;
+  overflow: auto !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-code-pane,
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-code-preview-pane { min-width: 0 !important; max-width: 100% !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-code-pane textarea {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 340px !important;
+  overflow: auto !important;
+  white-space: pre !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  font: 12px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace !important;
+}
+
+/* n logo: white glyph on blue in both closed/open mobile states. */
+html[data-studio-production-v207][data-studio-mobile-v207="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark) {
+  display: grid !important;
+  place-items: center !important;
+  background: linear-gradient(145deg,#2f75e8,#4f46e5) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  isolation: isolate !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] :is(.sn-mobile-menu-mark,.sn-logo-mark) > strong {
+  position: static !important;
+  margin: 0 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+/* Drawer is clickable and never blurs/locks the page. */
+html[data-studio-production-v207][data-studio-mobile-v207="true"] #ngeblogging-studio-sidebar.mobile-open {
+  width: clamp(260px,72vw,344px) !important;
+  max-width: calc(100vw - 42px) !important;
+  height: 100dvh !important;
+  inset: 0 auto 0 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #fff !important;
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] #ngeblogging-studio-sidebar.mobile-open > nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+  padding: 6px 0 10px !important;
+  overflow-y: auto !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .sn-side-backdrop {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* Nara: no blinking, non-modal small/medium, exact two-row header. */
+html[data-studio-production-v207] :is(.nara-floating-button,.nara-floating-button *,.nara-assistant-shell button,.nara-select,.nara-select *) {
+  animation: none !important;
+  transition: none !important;
+}
+html[data-studio-production-v207] :is(.nara-direct-attachments-v202,.nara-mobile-direct-tools-v199) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html[data-studio-production-v207] .nara-assistant-layer[data-v207-mode="nonmodal"] {
+  pointer-events: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-studio-production-v207] .nara-assistant-layer[data-v207-mode="nonmodal"] > .nara-assistant-shell { pointer-events: auto !important; }
+html[data-studio-production-v207] .nara-assistant-layer[data-v207-mode="nonmodal"] > .nara-assistant-backdrop {
+  display: none !important;
+  pointer-events: none !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-floating-button {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-floating-button > :is(b,small) { display: none !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-assistant-shell[data-nara-size="small"] {
+  width: min(360px,calc(100vw - 18px)) !important;
+  max-width: calc(100vw - 18px) !important;
+  height: min(560px,66dvh) !important;
+  max-height: calc(100dvh - 18px) !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-assistant-shell[data-nara-size="medium"] {
+  width: min(500px,calc(100vw - 12px)) !important;
+  max-width: calc(100vw - 12px) !important;
+  height: min(760px,84dvh) !important;
+  max-height: calc(100dvh - 12px) !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-assistant-header {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0,1fr) 36px 36px !important;
+  grid-template-areas: "orb brand voice close" "sizes sizes sizes reset" !important;
+  grid-template-rows: auto 38px !important;
+  align-items: center !important;
+  gap: 7px 6px !important;
+  padding: 10px 10px 8px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-brand-orb { grid-area: orb !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-brand-orb + div { grid-area: brand !important; min-width: 0 !important; overflow: hidden !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-size-controls-v147 {
+  grid-area: sizes !important;
+  width: max-content !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3,36px) !important;
+  gap: 5px !important;
+  justify-self: start !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-auto-voice-v148 { grid-area: voice !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-assistant-header > button[title="Percakapan baru"] { grid-area: reset !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-assistant-header > :is(button[title="Tutup"],button[title="Tutup Nara AI"],button[aria-label="Tutup Nara AI"]) {
+  grid-area: close !important;
+  display: grid !important;
+  place-items: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Composer is deliberately two rows on handhelds:
+   row 1 = +, microphone, send; row 2 = intelligence + model. */
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-composer-tools {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 38px 38px minmax(0,1fr) 40px !important;
+  grid-template-areas: "attach mic spacer send" "intel intel model model" !important;
+  gap: 6px !important;
+  align-items: center !important;
+  overflow: visible !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-attachment-menu-wrap { grid-area: attach !important; min-width: 0 !important; position: relative !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-composer-tools > button:not(.nara-send) { grid-area: mic !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-composer-tools > .nara-select.intelligence {
+  grid-area: intel !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-composer-tools > .nara-select.model {
+  grid-area: model !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-composer-tools > .nara-send { grid-area: send !important; }
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-select {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 9px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) 14px !important;
+  gap: 4px !important;
+  overflow: hidden !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-select > span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 11px !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-attachment-menu {
+  left: 0 !important;
+  right: auto !important;
+  bottom: calc(100% + 8px) !important;
+  width: min(270px,calc(100vw - 30px)) !important;
+  max-width: calc(100vw - 30px) !important;
+  z-index: 2147483600 !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-quick-prompts {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin !important;
+}
+html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-quick-prompts > button { flex: 0 0 auto !important; white-space: nowrap !important; }
+
+/* Startup is bounded/readable. Never convert a data timeout into a visual logout. */
+html[data-studio-production-v207] .so75-startup section {
+  max-width: min(720px,calc(100vw - 28px)) !important;
+  min-width: 0 !important;
+}
+html[data-studio-production-v207] .so75-startup section :is(h1,p) {
+  max-width: 100% !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+@media (max-width: 370px) {
+  html[data-studio-production-v207][data-studio-mobile-v207="true"] .tn-hero-actions { grid-template-columns: minmax(0,1fr) !important; }
+  html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-assistant-header {
+    grid-template-columns: 38px minmax(0,1fr) 34px 34px !important;
+  }
+  html[data-studio-production-v207][data-studio-mobile-v207="true"] .nara-size-controls-v147 { grid-template-columns: repeat(3,34px) !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-studio-production-v207] * { scroll-behavior: auto !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
