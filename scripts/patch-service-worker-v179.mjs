@@ -63,8 +63,8 @@ await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
-// v199-v201 remain available as historical source/runtime authorities, but their
-// build-time source mutators are intentionally not executed. v198 is the stable
-// bootstrap/session baseline; v202 remains the service-worker authority during
-// this diagnostic while v203 UI reflow is validated independently.
+// v199-v201 remain available as historical source/runtime authorities. v202
+// applies its proven production patch, then this diagnostic rotates only the
+// service worker to v203 without invoking the v203 verify() function.
 await import("./patch-production-v202.mjs");
+await import("./patch-production-v203-sw-diagnostic.mjs");
