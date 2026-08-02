@@ -10,6 +10,7 @@
     "desktopVariantsPreserved": true,
     "physicalMobileLayoutMapReadableHorizontal": true,
     "physicalMobileLayoutMapNoVerticalLetterWrapping": true,
+    "layoutMapTwentyRealAreasPreserved": true,
     "layoutMapLegacyTwentyRealAreasPreserved": true,
     "layoutMapTotalRealAreas": 21,
     "sidebarLeftFourthAreaFunctional": true,
