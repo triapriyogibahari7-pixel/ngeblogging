@@ -1,0 +1,58 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v231-sidebar-theme-nara-final-20260803",
+  "basedOn": "studio-production-v230-preview-bootstrap-live-gate-20260803",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "repairs": {
+    "singleSidebarNControl": true,
+    "desktopCollapsedIconsPreserved": true,
+    "mobileDrawerComplete": true,
+    "menuStackTightBelowCreatePost": true,
+    "drawerBackdropTransparent": true,
+    "mainContentReflowsWithDesktopSidebar": true,
+    "mobileContentDoesNotShiftPermanently": true,
+    "greenReferenceLayoutMapPreserved": true,
+    "fourLeftAndFourRightLayoutSlotsPreserved": true,
+    "layoutSlotsRemainInteractive": true,
+    "widgetPanelBelowMap": true,
+    "themeCodeRealLineGutterUpTo10000": true,
+    "desktopCodePreviewFiftyFifty": true,
+    "mobilePreviewAboveCode": true,
+    "naraLauncherStable": true,
+    "naraSmallMediumNonModal": true,
+    "naraAttachmentMenuCameraPhotoFile": true,
+    "naraModelAndIntelligenceVisible": true,
+    "domainMobileActionsReadable": true,
+    "analyticsChartGeometryExpanded": true,
+    "sessionPreservationRequired": true
+  },
+  "preserved": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "customHtmlWidgetLast": true,
+    "postsPagesEditors": true,
+    "wordLimit": 5000,
+    "analyticsProductionSource": true,
+    "members": true,
+    "comments": true,
+    "domains": true,
+    "apiKeys": true,
+    "onboarding": true,
+    "profileSettingsLogout": true
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "logoutOnlyOnExplicitAction": true,
+    "googleEndToEndVerifiedByThisRelease": false,
+    "linkedinEndToEndVerifiedByThisRelease": false,
+    "emailPasswordEndToEndVerifiedByThisRelease": false
+  },
+  "validation": {
+    "viewportMatrix": ["320x568", "360x640", "375x667", "390x844", "412x915", "430x932", "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768", "1440x900", "1920x1080"],
+    "realDeviceVerification": "required before a 100-percent cross-device claim",
+    "providerLoginVerification": "required after the live production bundle is confirmed",
+    "capacity": "No 900-million-user claim. Capacity requires distributed load, database, storage, edge, rate-limit and observability testing."
+  }
+}
