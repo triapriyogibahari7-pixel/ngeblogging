@@ -1,0 +1,35 @@
+/* v225 final Nara size geometry: Small ≈ half viewport, Medium ≈ three-quarter viewport, Full remains owned by React/full modal authority. */
+html[data-studio-production-v225] .nara-assistant-shell[data-v225-nara-size="small"]{
+  width:min(430px,calc(100vw - 20px))!important;
+  height:min(520px,58dvh,calc(100dvh - 86px))!important;
+  min-height:min(320px,calc(100dvh - 86px))!important;
+  max-height:calc(100dvh - 86px)!important;
+  right:max(10px,env(safe-area-inset-right))!important;
+  bottom:max(76px,calc(env(safe-area-inset-bottom) + 66px))!important;
+}
+html[data-studio-production-v225] .nara-assistant-shell[data-v225-nara-size="medium"]{
+  width:min(700px,calc(100vw - 24px))!important;
+  height:min(720px,78dvh,calc(100dvh - 24px))!important;
+  min-height:min(440px,calc(100dvh - 24px))!important;
+  max-height:calc(100dvh - 24px)!important;
+  right:max(12px,env(safe-area-inset-right))!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+}
+html[data-studio-production-v225] .nara-assistant-shell[data-v225-nara-size="small"],
+html[data-studio-production-v225] .nara-assistant-shell[data-v225-nara-size="medium"]{
+  left:auto!important;
+  top:auto!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+@media(max-width:360px), (max-height:640px){
+  html[data-studio-production-v225] .nara-assistant-shell[data-v225-nara-size="small"]{
+    height:min(360px,58dvh,calc(100dvh - 76px))!important;
+    min-height:min(280px,calc(100dvh - 76px))!important;
+    bottom:max(68px,calc(env(safe-area-inset-bottom) + 58px))!important;
+  }
+  html[data-studio-production-v225] .nara-assistant-shell[data-v225-nara-size="medium"]{
+    height:min(560px,78dvh,calc(100dvh - 16px))!important;
+    min-height:min(360px,calc(100dvh - 16px))!important;
+  }
+}
