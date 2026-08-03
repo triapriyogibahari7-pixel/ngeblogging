@@ -1,0 +1,47 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v225-green-layout-source-20260803",
+  "basedOn": [
+    "studio-production-v223-20260803",
+    "data-reauth-v224-20260803"
+  ],
+  "themeLayout": {
+    "nativeReactMap": true,
+    "reference": "green-reference",
+    "fourSidebarSlotsLeft": true,
+    "fourSidebarSlotsRight": true,
+    "postPageCenter": true,
+    "widgetAreaClickIsSourceWired": true,
+    "widgetCount": 26,
+    "customHtmlJavascriptLast": true,
+    "widgetListBelowMap": true,
+    "longDecorativeHeadingRemovedFromSource": true
+  },
+  "themeEditor": {
+    "themeCount": 100,
+    "customThemePreserved": true,
+    "htmlCssJavascriptPreserved": true,
+    "actualLineNumberGutterPreserved": true,
+    "maxCodeLines": 10000,
+    "smallPhysicalUi": "preview-above-code",
+    "largePhysicalUi": "code-left-preview-right",
+    "previewTargetIndependentFromPhysicalUi": true
+  },
+  "authentication": {
+    "v224DataReauthPreserved": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "transientData401DoesNotForceLogout": true
+  },
+  "nara": {
+    "cameraPhotoFilePreserved": true,
+    "smallMediumNonModalPreserved": true,
+    "modelAndIntelligencePreserved": true
+  },
+  "claims": {
+    "hundredPercentProductionClaimed": false,
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "realDeviceAndLiveRouteVerificationStillRequired": true
+  }
+}
