@@ -1,0 +1,18 @@
+{
+  "release": "studio-native-stability-v248-20260803",
+  "version": "ngeblogging-app-v248-native-stability-20260803",
+  "cache": "studio-native-stability-cache-v248",
+  "authority": "native-react-studio-shell",
+  "auth": "same-origin-provider-gateway",
+  "responsive": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "computer"],
+  "nara": ["small-nonmodal", "medium-nonmodal", "full-modal"],
+  "themes": 100,
+  "widgets": 26,
+  "layoutAreas": 10,
+  "productionClaims": {
+    "realOAuthRequiresProviderRoundTrip": true,
+    "realDeviceVerificationRequiredAfterDeploy": true,
+    "noSyntheticAnalyticsPresentedAsProduction": true
+  }
+}

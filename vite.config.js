@@ -3,18 +3,12 @@ import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
 import { finalizeServiceWorkerV240 } from "./scripts/service-worker-v240-lib.mjs";
-import { finalizeServiceWorkerV241 } from "./scripts/service-worker-v241-lib.mjs";
-import { finalizeServiceWorkerV242 } from "./scripts/service-worker-v242-lib.mjs";
-import { finalizeServiceWorkerV243 } from "./scripts/service-worker-v243-lib.mjs";
-import { finalizeServiceWorkerV244 } from "./scripts/service-worker-v244-lib.mjs";
-import { finalizeServiceWorkerV245 } from "./scripts/service-worker-v245-lib.mjs";
-import { finalizeServiceWorkerV246 } from "./scripts/service-worker-v246-lib.mjs";
-import { finalizeServiceWorkerV247 } from "./scripts/service-worker-v247-lib.mjs";
+import { finalizeServiceWorkerV248 } from "./scripts/service-worker-v248-lib.mjs";
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-service-worker-v247",
+      name: "ngeblogging-service-worker-v248",
       apply: "build",
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
@@ -25,20 +19,8 @@ export default defineConfig({
         console.log(`[vite] ${v239.release} compatibility finalized in ${v239.path}`);
         const v240 = finalizeServiceWorkerV240();
         console.log(`[vite] ${v240.release} compatibility finalized in ${v240.path}`);
-        const v241 = finalizeServiceWorkerV241();
-        console.log(`[vite] ${v241.release} compatibility finalized in ${v241.path}`);
-        const v242 = finalizeServiceWorkerV242();
-        console.log(`[vite] ${v242.release} compatibility finalized in ${v242.path}`);
-        const v243 = finalizeServiceWorkerV243();
-        console.log(`[vite] ${v243.release} compatibility finalized in ${v243.path}`);
-        const v244 = finalizeServiceWorkerV244();
-        console.log(`[vite] ${v244.release} compatibility finalized in ${v244.path}`);
-        const v245 = finalizeServiceWorkerV245();
-        console.log(`[vite] ${v245.release} compatibility finalized in ${v245.path}`);
-        const v246 = finalizeServiceWorkerV246();
-        console.log(`[vite] ${v246.release} compatibility finalized in ${v246.path}`);
-        const v247 = finalizeServiceWorkerV247();
-        console.log(`[vite] ${v247.release} finalized in ${v247.path}`);
+        const v248 = finalizeServiceWorkerV248();
+        console.log(`[vite] ${v248.release} finalized in ${v248.path}`);
       },
     },
   ],

@@ -1,3 +1,4 @@
+import "./auth-provider-gateway-v248.js";
 import {
   AUTH_SESSION_RELEASE,
   SESSION_REAUTH_REQUIRED,

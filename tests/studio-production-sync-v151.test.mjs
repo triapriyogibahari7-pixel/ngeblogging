@@ -12,26 +12,37 @@ const studio = read("src/StudioNext.jsx");
 const theme = read("src/ThemeStudio.jsx");
 const nara = read("src/NaraAssistant.jsx");
 const entryWorker = read("cloudflare/worker-v69.mjs");
+const v248Finalizer = read("scripts/service-worker-v248-lib.mjs");
+const v248Release = JSON.parse(read("public/release-v248.json"));
 
 const menu = ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"];
 
-test("PWA v151 compatibility remains", () => {
+test("PWA v151 compatibility remains while v248 owns the current cache authority", () => {
   for (const marker of ["ngeblogging-pwa-v151-20260729", "studio-completion-v151", "responsiveFamily", "authSurface"]) assert.ok(pwa.includes(marker));
-  for (const marker of ["ngeblogging-app-v151-studio-completion-20260729", "studio-completion-cache-v151", "function isAuthSurface", "refreshStaleWindow"]) assert.ok(worker.includes(marker));
+  for (const marker of ["function isAuthSurface", "refreshStaleWindow"]) assert.ok(worker.includes(marker), `worker compatibility missing ${marker}`);
+  for (const marker of [
+    "ngeblogging-app-v248-native-stability-20260803",
+    "studio-native-stability-cache-v248",
+    "studio-native-stability-v248-20260803",
+    "V248_FORCED_NAVIGATION_REMAINS",
+    "V248_AUTH_SURFACE_GUARD_MISSING",
+  ]) assert.ok(v248Finalizer.includes(marker), `v248 finalizer missing ${marker}`);
+  assert.equal(v248Release.release, "studio-native-stability-v248-20260803");
+  assert.equal(v248Release.version, "ngeblogging-app-v248-native-stability-20260803");
+  assert.equal(v248Release.cache, "studio-native-stability-cache-v248");
 });
 
-test("v184 extends the historical production chain without deleting earlier authorities", () => {
+test("production route cutover remains intact without pinning a retired Studio cache marker", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
   assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-authority-v172");
 
   for (const marker of [
     "Ngeblogging production route cutover v184",
-    "Run v183 and v184 regression",
-    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
-    "/release-v183.json",
-    "/release-v184.json",
+    "npm run build",
+    "Deploy Worker and assets",
     "Cut over apex and www to authoritative zone routes v184",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
     "WHITE-R4-2026.07.12",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 
@@ -45,7 +56,8 @@ test("v184 extends the historical production chain without deleting earlier auth
     "mobile-public-v171-20260730",
   ]) assert.ok(entryWorker.includes(marker), `worker chain missing ${marker}`);
 
-  assert.ok(worker.includes("mobile-interaction-v174-20260731"));
+  assert.match(v248Finalizer, /V248_AUTH_SURFACE_GUARD_MISSING/);
+  assert.match(v248Finalizer, /V248_OLD_CACHE_CLEANUP_MISSING/);
 });
 
 test("responsive modes, complete menu, Theme Studio and Nara remain", () => {
@@ -60,4 +72,6 @@ test("auth surfaces remain excluded from PWA forced navigation", () => {
     assert.ok(worker.includes(route));
     assert.ok(pwa.includes(route));
   }
+  assert.match(v248Finalizer, /isAuthSurface/);
+  assert.match(v248Finalizer, /V248_AUTH_SURFACE_GUARD_MISSING/);
 });

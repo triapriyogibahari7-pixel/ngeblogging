@@ -16,8 +16,10 @@ const callbackAuthority = read("src/auth-callback-authority-v107.js");
 const callbackConsumer = read("src/lib/auth-callback-v162.js");
 const authModal = read("src/AuthModal.jsx");
 const studio = read("src/StudioNext.jsx");
+const v248Finalizer = read("scripts/service-worker-v248-lib.mjs");
+const v248Release = JSON.parse(read("public/release-v248.json"));
 
-const activeEntryFiles = [worker, defaultConfig, productionConfig, serviceWorker, browserBridge, netlifyBuild];
+const activeEntryFiles = [worker, defaultConfig, productionConfig, browserBridge, netlifyBuild];
 
 function occurrences(source, marker) {
   return source.split(marker).length - 1;
@@ -95,25 +97,23 @@ test("Netlify production keeps v164-v165 compatibility while publishing React fa
   ]) assert.ok(netlifyBuild.includes(marker), `Netlify fallback missing ${marker}`);
 });
 
-test("PWA cache rotation removes stale shells without interrupting auth callbacks", () => {
-  for (const marker of [
-    "ngeblogging-app-v171-mobile-public-20260730",
-    "ngeblogging-app-v169-first-site-20260730",
-    "ngeblogging-app-v162-auth-editor-20260730",
-    "ngeblogging-app-v159-studio-ui-contract-20260730",
-    "ngeblogging-app-v154-production-entry-20260730",
-    "production-entry-cache-v154",
-    "auth-entry-v154-20260730",
-    "service-worker-stale-shell-v154",
-    "service-worker-activated-production-entry-v154",
-  ]) assert.ok(serviceWorker.includes(marker), `service worker missing ${marker}`);
-
+test("PWA compatibility keeps old auth routes while v248 owns current cache rotation", () => {
   for (const route of ["/login", "/signup", "/signin", "/auth/"]) {
     assert.ok(serviceWorker.includes(route), `auth surface missing ${route}`);
   }
   for (const mode of ["callback", "recovery", "session-expired", "callback-error"]) {
     assert.ok(serviceWorker.includes(mode), `auth mode missing ${mode}`);
   }
+  for (const marker of [
+    "ngeblogging-app-v248-native-stability-20260803",
+    "studio-native-stability-cache-v248",
+    "studio-native-stability-v248-20260803",
+    "V248_OLD_CACHE_CLEANUP_MISSING",
+    "V248_AUTH_SURFACE_GUARD_MISSING",
+    "V248_FORCED_NAVIGATION_REMAINS",
+  ]) assert.ok(v248Finalizer.includes(marker), `v248 cache authority missing ${marker}`);
+  assert.equal(v248Release.version, "ngeblogging-app-v248-native-stability-20260803");
+  assert.equal(v248Release.cache, "studio-native-stability-cache-v248");
 });
 
 test("browser bridge verifies v154 and clears only legacy PWA guards", () => {

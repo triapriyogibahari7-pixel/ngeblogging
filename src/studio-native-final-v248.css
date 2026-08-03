@@ -1,0 +1,98 @@
+/* Final visible-surface guard for v248. Loaded after every historical Studio stylesheet. */
+html[data-studio-native-v248] :is(.sn-device-mode-badge-v148,[data-studio-mode-badge],[data-device-mode-badge],.studio-device-mode-badge,.v225-mode-badge){display:none!important;visibility:hidden!important;pointer-events:none!important}
+html[data-studio-v248-family="small"][data-studio-v248-sidebar="open"] .sn-sidebar-toggle{display:none!important;visibility:hidden!important;pointer-events:none!important}
+html[data-studio-v248-family="small"][data-studio-v248-sidebar="closed"] #ngeblogging-studio-sidebar{pointer-events:none!important}
+
+html[data-studio-native-v248] .tn-studio,
+html[data-studio-native-v248] .tn-command,
+html[data-studio-native-v248] .tn-theme-grid,
+html[data-studio-native-v248] .tn-layout-studio{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-native-v248] .tn-theme-grid{
+  display:grid!important;
+  width:100%!important;
+  overflow:visible!important;
+}
+html[data-studio-native-v248] .tn-command>nav,
+html[data-studio-native-v248] .v232-theme-code-actions,
+html[data-studio-native-v248] .v235-theme-code-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:7px!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-native-v248] .tn-modal-layer{
+  z-index:6400!important;
+  padding:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))!important;
+}
+html[data-studio-native-v248] .tn-modal{
+  width:min(1180px,100%)!important;
+  max-width:100%!important;
+  max-height:calc(100dvh - 20px)!important;
+  margin:auto!important;
+  overflow:auto!important;
+  transform:none!important;
+}
+html[data-studio-native-v248] .tn-code-preview-pane,
+html[data-studio-native-v248] .tn-code-preview-pane .tn-frame-shell,
+html[data-studio-native-v248] .tn-code-preview-pane iframe{
+  max-width:100%!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+.sn-profile-layer-v178{
+  z-index:9500!important;
+  padding:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))!important;
+}
+.sn-profile-dialog-v178{
+  width:min(760px,100%)!important;
+  max-width:100%!important;
+  max-height:calc(100dvh - 20px)!important;
+  margin:auto!important;
+  overflow:auto!important;
+}
+.sn-profile-summary-v178{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:12px!important;
+  min-width:0!important;
+}
+.sn-profile-avatar-actions-v248{display:flex!important;justify-content:flex-end!important;min-width:0!important}
+.sn-profile-avatar-upload-v248{
+  min-height:40px!important;
+  padding:0 13px!important;
+  border:1px solid #cfd9e7!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#203451!important;
+  font:750 12px/1 system-ui,sans-serif!important;
+  white-space:nowrap!important;
+}
+.sn-profile-avatar-upload-v248:hover,.sn-profile-avatar-upload-v248:focus-visible{border-color:#3478e8!important;background:#f5f9ff!important;outline:none!important}
+
+html[data-studio-v248-family="small"] .tn-theme-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+html[data-studio-v248-family="small"] .tn-command>nav{overflow-x:auto!important;flex-wrap:nowrap!important;overscroll-behavior-inline:contain!important;padding-bottom:4px!important}
+html[data-studio-v248-family="small"] .tn-command>nav>*{flex:0 0 auto!important}
+html[data-studio-v248-family="small"] .tn-modal{border-radius:16px!important}
+html[data-studio-v248-family="small"] .sn-profile-dialog-v178{border-radius:16px!important}
+html[data-studio-v248-family="small"] .sn-profile-dialog-v178>header{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+html[data-studio-v248-family="small"] .sn-profile-summary-v178{grid-template-columns:auto minmax(0,1fr)!important}
+html[data-studio-v248-family="small"] .sn-profile-avatar-actions-v248{grid-column:1/-1!important;justify-content:stretch!important}
+html[data-studio-v248-family="small"] .sn-profile-avatar-upload-v248{width:100%!important;min-height:44px!important}
+html[data-studio-v248-family="small"] .sn-profile-fields-v178{grid-template-columns:minmax(0,1fr)!important}
+html[data-studio-v248-family="small"] .sn-profile-fields-v178 .wide{grid-column:auto!important}
+
+@media(max-width:420px){
+  .sn-profile-layer-v178{padding:6px!important}
+  .sn-profile-dialog-v178{max-height:calc(100dvh - 12px)!important;border-radius:13px!important}
+  .sn-profile-dialog-v178>header h1{font-size:28px!important;line-height:1.08!important}
+}
