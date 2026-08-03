@@ -67,7 +67,8 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // establishes the code gutter/Nara attachment geometry; v223 locks physical UI;
 // v224 owns transient data re-auth; v225 owns responsive Studio/Nara UI; v226
 // owns the native React green Theme map; v227 aligns Nara model/intelligence;
-// v228 is the final physical-device/layout/editor/Nara authority.
+// v228 locks the physical-device/layout/editor/Nara foundation; v229 is the
+// final screenshot-driven layout/editor/sidebar/profile/Nara authority.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -95,3 +96,4 @@ await import("./patch-v225-mode-lock.mjs");
 await import("./patch-production-v225.mjs");
 await import("./patch-nara-fallback-v227.mjs");
 await import("./patch-production-v228.mjs");
+await import("./patch-production-v229.mjs");
