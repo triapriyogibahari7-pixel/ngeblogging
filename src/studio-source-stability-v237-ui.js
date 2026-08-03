@@ -7,39 +7,46 @@ function cleanText(value) {
 }
 
 function settingsView() {
+  const v239Profile = document.documentElement.dataset.v239AccountSurface === "profile";
   for (const view of document.querySelectorAll(".sn-view-pad")) {
     const title = view.querySelector(":scope > .sn-page-title h1");
-    if (!title || !/profil\s*&\s*pengaturan|pengaturan/i.test(cleanText(title.textContent))) continue;
+    if (!title || !/profil\s*&\s*pengaturan|pengaturan|profil/i.test(cleanText(title.textContent))) continue;
     const grid = view.querySelector(".sn-settings-grid");
     if (!grid) continue;
 
-    view.dataset.v237RenderedSettings = "site-only";
-    title.textContent = "Pengaturan";
+    view.dataset.v237RenderedSettings = v239Profile ? "profile-only-v239" : "site-only";
+    title.textContent = v239Profile ? "Profil" : "Pengaturan";
     const description = view.querySelector(":scope > .sn-page-title p");
-    if (description) description.textContent = "Kelola konfigurasi situs aktif. Profil dan avatar akun dikelola terpisah melalui menu profil di pojok kanan atas.";
+    if (description) description.textContent = v239Profile
+      ? "Kelola identitas akun, biografi, website, dan avatar Anda."
+      : "Kelola konfigurasi situs aktif. Profil dan avatar akun dikelola terpisah melalui menu profil di pojok kanan atas.";
 
-    grid.dataset.v237Settings = "site-only-bounded";
+    grid.dataset.v237Settings = v239Profile ? "profile-only-v239" : "site-only-bounded";
     const sections = [...grid.querySelectorAll(":scope > section")];
     for (const section of sections) {
       const heading = cleanText(section.querySelector("h2")?.textContent).toLowerCase();
-      if (heading === "profil" || heading.startsWith("profil ")) {
-        section.dataset.v237ProfileSection = "moved-to-profile-menu";
+      const isProfile = heading === "profil" || heading.startsWith("profil ");
+      const shouldHide = v239Profile ? !isProfile : isProfile;
+      if (shouldHide) {
+        section.dataset.v237ProfileSection = isProfile ? "moved-to-profile-menu" : "hidden-on-profile-surface-v239";
         section.hidden = true;
         section.setAttribute("aria-hidden", "true");
         section.style.setProperty("display", "none", "important");
       } else {
         section.hidden = false;
         section.removeAttribute("aria-hidden");
+        section.style.removeProperty("display");
       }
     }
 
-    if (!view.querySelector(".sn-settings-profile-note.v237")) {
+    if (!v239Profile && !view.querySelector(".sn-settings-profile-note.v237")) {
       const note = document.createElement("div");
       note.className = "sn-settings-profile-note v237";
       note.setAttribute("role", "note");
       note.innerHTML = "<span>Profil, biografi, website, dan avatar akun tersedia dari tombol profil di pojok kanan atas. Pengaturan halaman ini hanya untuk situs aktif.</span>";
       grid.insertAdjacentElement("afterend", note);
     }
+    if (v239Profile) view.querySelector(".sn-settings-profile-note.v237")?.remove();
   }
 }
 
@@ -88,7 +95,7 @@ function profileSurface() {
     avatar.dataset.v237ProfileSurface = "separate";
     avatar.setAttribute("aria-label", "Buka menu profil");
   });
-  document.querySelectorAll(".sn-profile-menu-v150").forEach((menu) => menu.dataset.v237ProfileMenu = "profile-settings-add-site-logout");
+  document.querySelectorAll(".sn-profile-menu-v150").forEach((menu) => menu.dataset.v237ProfileMenu = "profile-settings-add-site-view-site-logout-v239");
 }
 
 function scan() {
@@ -111,7 +118,7 @@ new MutationObserver(schedule).observe(document.documentElement, {
   subtree: true,
   characterData: true,
   attributes: true,
-  attributeFilter: ["class", "hidden", "aria-expanded"],
+  attributeFilter: ["class", "hidden", "aria-expanded", "data-v239-account-surface"],
 });
 window.addEventListener("pageshow", schedule, { passive: true });
 window.addEventListener("resize", schedule, { passive: true });
