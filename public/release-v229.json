@@ -1,0 +1,71 @@
+{
+  "release": "studio-production-v229-layout-editor-sidebar-nara-20260803",
+  "status": "candidate",
+  "basedOn": "studio-production-v228-green-editor-nara-20260803",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "desktopSitePhysicalPhoneLockedToLargeLayout": true,
+    "rootScalingAdded": false
+  },
+  "sidebar": {
+    "desktopOpenAndCollapsed": true,
+    "collapsedKeepsIcons": true,
+    "mobileDrawer": true,
+    "nLogoIsToggle": true,
+    "extraDesktopToggleGlyphHidden": true,
+    "backdropBlurAdded": false
+  },
+  "profile": {
+    "dropdownActions": 5,
+    "actions": ["profile-avatar", "sites", "view-site", "settings", "logout"],
+    "profileAndSettingsSurfacesSeparated": true,
+    "usesExistingAuthenticatedLogout": true
+  },
+  "theme": {
+    "builtInThemesRequired": 100,
+    "widgetCountRequired": 26,
+    "customHtmlJavascriptWidgetPreserved": true,
+    "layoutReferencePreservedOnSmallAndLarge": true,
+    "fourLeftAndFourRightSlots": true,
+    "clickedAreaOpensWidgetStudio": true,
+    "widgetListBelowMap": true
+  },
+  "codeEditor": {
+    "tabs": ["HTML", "CSS", "JavaScript"],
+    "maxSupportedLines": 10000,
+    "actualLineNumberGutter": true,
+    "smallPreviewAboveCode": true,
+    "largeCodeLeftPreviewRight": true,
+    "sandboxPreviewPreserved": true
+  },
+  "nara": {
+    "smallMediumNonModal": true,
+    "fullScreenOnlyWhenSelected": true,
+    "cameraPhotoFile": true,
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelsPreserved": true,
+    "intelligencePreserved": true,
+    "attachmentMenuViewportBound": true
+  },
+  "domain": {
+    "smallActionsFullHorizontal": true
+  },
+  "analytics": {
+    "realProductionRpcPreserved": true,
+    "chartReadabilityIncreased": true,
+    "fakeStatisticsAdded": false
+  },
+  "authentication": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "forcedLogoutAdded": false,
+    "providerOAuthEndToEndClaimed": false
+  },
+  "claims": {
+    "massCapacityClaimed": false,
+    "providerOAuthEndToEndClaimed": false,
+    "realDeviceVerificationRequired": true
+  }
+}
