@@ -93,3 +93,8 @@ async function patchServiceWorker() {
 await patchSupabaseTransport();
 await patchServiceWorker();
 console.log(`Applied ${RELEASE}`);
+
+// v225 is intentionally chained here because v224 is already the final import in
+// the top-level production build. This guarantees the native green layout source
+// authority executes after data reauthentication without an ESM import-cache race.
+await import("./patch-production-v225.mjs");
