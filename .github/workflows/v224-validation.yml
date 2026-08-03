@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-studio-v224-${{ github.event.pull_request.number || github.ref }}
+  group: validate-studio-v224
   cancel-in-progress: true
 
 jobs:
