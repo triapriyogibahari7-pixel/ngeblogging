@@ -49,7 +49,7 @@ function verifySourceContracts() {
     "Buka menu profil",
     "Tambahkan situs",
     "Lihat situs",
-    "data.v250Interaction",
+    "dataset.v250Interaction",
     "LAYOUT_AREAS",
     "tn-code-gutter-v250",
   ]) if (!runtime.includes(marker)) throw new Error(`V250_RUNTIME_MARKER_MISSING:${marker}`);
