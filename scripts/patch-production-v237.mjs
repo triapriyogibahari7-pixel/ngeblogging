@@ -1,3 +1,3 @@
-// Stable entry point kept for the historical production patch chain.
-// The safe driver avoids brittle JSX anchors while preserving every v236 authority.
-await import("./patch-production-v237-safe.mjs");
+// Diagnostic entry point: v237 runtime/CSS still compile, but the build mutation is
+// temporarily disabled so preview can isolate runtime compilation from SW/source patching.
+console.log("v237 runtime-only diagnostic build");
