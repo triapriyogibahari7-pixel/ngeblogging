@@ -77,7 +77,7 @@ async function verify() {
     [entry, "studio-production-v232.js"], [entry, "studio-production-v234.js"],
     [runtime, RELEASE], [runtime, "GRID_PLACEMENT"], [runtime, "content-main"],
     [runtime, "WIDGET_CHOICES"], [runtime, "HTML / JavaScript"], [runtime, "numberText"],
-    [runtime, "camera-photo-file"], [runtime, "siteManagerTrigger"],
+    [runtime, "camera-photo-file"], [runtime, "v234SiteManagerTrigger"],
     [css, 'data-v234-family="large"'], [css, 'data-v234-family="small"'],
     [css, "v234-layout-popover"], [css, "code-left-preview-right"], [css, "preview-top-code-bottom"],
     [css, "v234-code-gutter"], [css, "nara-attachment-menu"], [css, "op41-line"],
