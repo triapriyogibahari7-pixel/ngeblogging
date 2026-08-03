@@ -1,0 +1,54 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v224-20260803",
+  "basedOn": "studio-production-v223-20260803",
+  "theme": {
+    "builtInThemesRequired": 100,
+    "widgetCountRequired": 26,
+    "customHtmlJavascriptWidgetRequired": true,
+    "explicitHtmlActionVisible": true,
+    "explicitCssActionVisible": true,
+    "explicitJavascriptActionVisible": true,
+    "legacyV209ActionConflictRemoved": true,
+    "layoutReference": "green-reference-four-left-four-right",
+    "physicalSmallFourLeftFourRight": true,
+    "codeLineLimitSupported": 10000,
+    "actualLineNumbersRetained": true,
+    "minifiedCodePrettyPrintRetained": true,
+    "physicalSmallPreviewAboveCode": true,
+    "largeCodeLeftPreviewRight": true
+  },
+  "nara": {
+    "smallMediumNonModal": true,
+    "attachmentMenuCameraPhotoFile": true,
+    "attachmentMenuViewportVisible": true,
+    "modelAndIntelligenceControlsRetained": true,
+    "launcherIconOnlyStable": true
+  },
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "previewSelectionNotRewritten": true,
+    "physicalSmallUiNotScaledByDesktopPreview": true
+  },
+  "domain": {
+    "physicalSmallActionsFullHorizontal": true
+  },
+  "auth": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "forcedLogoutAdded": false,
+    "transientNetworkFailureMustNotLogout": true
+  },
+  "deployment": {
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "liveApexMustServeV224BeforeCompletion": true,
+    "productionStatusContext": "ngeblogging/production-v224"
+  },
+  "claims": {
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceVerificationRequiredBeforeHundredPercentClaim": true
+  }
+}
