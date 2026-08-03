@@ -5,12 +5,21 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-production-v234-data-gateway-safe-20260803";
+const ACTIVE_VERSION = "ngeblogging-app-v234-data-gateway-safe-20260803";
+const ACTIVE_CACHE = "data-gateway-safe-cache-v234";
 
 function replaceFunction(source, startMarker, endMarker, replacement) {
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start + startMarker.length);
   if (start < 0 || end < 0) throw new Error("V234_DATA_GATEWAY_FUNCTION_ANCHOR_MISSING");
   return `${source.slice(0, start)}${replacement}\n\n${source.slice(end)}`;
+}
+
+function insertAfterVersion(source, line) {
+  if (source.includes(line)) return source;
+  const next = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
+  if (next === source) throw new Error(`V234_SW_VERSION_ANCHOR_MISSING:${line}`);
+  return next;
 }
 
 async function patchTransport() {
@@ -147,12 +156,49 @@ async function patchTransport() {
   await write(path, source);
 }
 
+async function patchServiceWorker() {
+  const path = "public/sw.js";
+  let source = await read(path);
+  for (const line of [
+    `const ACTIVE_VERSION_V234 = "${ACTIVE_VERSION}";`,
+    `const ACTIVE_CACHE_RELEASE_V234 = "${ACTIVE_CACHE}";`,
+    `const STUDIO_PRODUCTION_RELEASE_V234 = "${RELEASE}";`,
+  ]) source = insertAfterVersion(source, line);
+
+  const oldShell = 'const SHELL_CACHE = `${ACTIVE_VERSION_V232}-${ACTIVE_CACHE_RELEASE_V232}-${AUTH_HANDOFF_RELEASE}-shell`;';
+  const nextShell = 'const SHELL_CACHE = `${ACTIVE_VERSION_V234}-${ACTIVE_CACHE_RELEASE_V234}-${AUTH_HANDOFF_RELEASE}-shell`;';
+  if (!source.includes(nextShell)) {
+    if (!source.includes(oldShell)) throw new Error("V234_SHELL_CACHE_V232_ANCHOR_MISSING");
+    source = source.replace(oldShell, nextShell);
+  }
+  const oldAsset = 'const ASSET_CACHE = `${ACTIVE_VERSION_V232}-${ACTIVE_CACHE_RELEASE_V232}-${AUTH_HANDOFF_RELEASE}-assets`;';
+  const nextAsset = 'const ASSET_CACHE = `${ACTIVE_VERSION_V234}-${ACTIVE_CACHE_RELEASE_V234}-${AUTH_HANDOFF_RELEASE}-assets`;';
+  if (!source.includes(nextAsset)) {
+    if (!source.includes(oldAsset)) throw new Error("V234_ASSET_CACHE_V232_ANCHOR_MISSING");
+    source = source.replace(oldAsset, nextAsset);
+  }
+
+  source = source
+    .replace("    version: ACTIVE_VERSION_V232,", "    version: ACTIVE_VERSION_V234,")
+    .replace("    release: ACTIVE_CACHE_RELEASE_V232,", "    release: ACTIVE_CACHE_RELEASE_V234,")
+    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V232", "NGE_BLOGGING_UPDATE_AVAILABLE_V234")
+    .replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v234 announces a new transport shell without force-navigation, logout, or draft loss.");
+
+  if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V234_FORCED_NAVIGATION_REMAINS");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V234_DESTRUCTIVE_SESSION_ACTION_IN_SW");
+  for (const marker of [ACTIVE_VERSION, ACTIVE_CACHE, RELEASE, nextShell, nextAsset]) {
+    if (!source.includes(marker)) throw new Error(`V234_SW_VERIFY_FAILED:${marker}`);
+  }
+  await write(path, source);
+}
+
 async function verifyPreservedV232() {
-  const [runtime, css, nara, theme] = await Promise.all([
+  const [runtime, css, nara, theme, worker] = await Promise.all([
     read("src/studio-production-v232.js"),
     read("src/studio-production-v232.css"),
     read("src/NaraAssistant.jsx"),
     read("src/ThemeStudio.jsx"),
+    read("public/sw.js"),
   ]);
   for (const [source, marker] of [
     [runtime, "studio-production-v232-single-n-theme-actions-20260803"],
@@ -160,9 +206,11 @@ async function verifyPreservedV232() {
     [css, 'data-v232-family="small"'],
     [nara, "Kamera"], [nara, "Foto"], [nara, "File teks"],
     [theme, 'data-v226-layout-source="native-green-reference"'],
+    [worker, "ACTIVE_VERSION_V232"], [worker, "ACTIVE_CACHE_RELEASE_V232"],
   ]) if (!source.includes(marker)) throw new Error(`V234_V232_COMPAT_MISSING:${marker}`);
 }
 
 await patchTransport();
+await patchServiceWorker();
 await verifyPreservedV232();
-console.log(`Applied ${RELEASE}; v224 session recovery and v232 UI remain intact while stale data gateways fail over safely.`);
+console.log(`Applied ${RELEASE}; v224 recovery and v232 UI remain intact, cache rotates safely, and stale gateways fail over without logout.`);
