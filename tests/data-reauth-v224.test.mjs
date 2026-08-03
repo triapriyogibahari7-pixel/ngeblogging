@@ -10,11 +10,12 @@ const worker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v224.json"));
 const RELEASE = "data-reauth-v224-20260803";
 
-test("v224 runs once and after the final v223 UI authority", () => {
+test("v224 runs once after v223 UI and before any later UI authority", () => {
   assert.match(chain, /patch-production-v223\.mjs/);
   assert.match(chain, /patch-data-reauth-v224\.mjs/);
   assert.ok(chain.lastIndexOf("patch-production-v223.mjs") < chain.lastIndexOf("patch-data-reauth-v224.mjs"));
   assert.equal((chain.match(/patch-data-reauth-v224\.mjs/g) || []).length, 1);
+  if (chain.includes("patch-production-v225.mjs")) assert.ok(chain.lastIndexOf("patch-data-reauth-v224.mjs") < chain.lastIndexOf("patch-production-v225.mjs"));
 });
 
 test("transient data 401 and 403 use one single-flight refresh and fresh-token retry", () => {
@@ -37,9 +38,14 @@ test("v224 recovery never adds destructive logout or storage clearing", () => {
   assert.equal(release.repairs.noLocalStorageClear, true);
 });
 
-test("final service worker and release metadata are v224", () => {
-  assert.match(worker, /const VERSION = "ngeblogging-app-v224-data-reauth-20260803";/);
-  assert.match(worker, /const CACHE_RELEASE = "data-reauth-cache-v224";/);
+test("final service worker preserves v224 data reauth authority even when a later UI release rotates cache", () => {
+  const isV224 = /const VERSION = "ngeblogging-app-v224-data-reauth-20260803";/.test(worker)
+    && /const CACHE_RELEASE = "data-reauth-cache-v224";/.test(worker);
+  const isV225Compat = /const VERSION = "ngeblogging-app-v225-theme-layout-nara-20260803";/.test(worker)
+    && /const CACHE_RELEASE = "theme-layout-nara-cache-v225";/.test(worker)
+    && /DATA_REAUTH_COMPAT_VERSION_V224 = "ngeblogging-app-v224-data-reauth-20260803"/.test(worker)
+    && /DATA_REAUTH_COMPAT_CACHE_V224 = "data-reauth-cache-v224"/.test(worker);
+  assert.ok(isV224 || isV225Compat, "final service worker must be v224 or a later release carrying explicit v224 compatibility markers");
   assert.match(worker, /DATA_REAUTH_RELEASE_V224/);
   assert.equal(release.release, RELEASE);
   assert.equal(release.repairs.data401403SingleflightRefresh, true);
