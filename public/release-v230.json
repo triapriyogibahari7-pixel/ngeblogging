@@ -9,6 +9,25 @@
     "devices": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
     "rootScalingAdded": false
   },
+  "sidebar": {
+    "singleVisibleNToggle": true,
+    "mobileClosedShowsTopLeftNOnly": true,
+    "mobileOpenUsesDrawerN": true,
+    "desktopUsesSidebarN": true,
+    "desktopCollapsedKeepsMenuIcons": true,
+    "extraCloseXHidden": true,
+    "extraDesktopToggleGlyphHidden": true,
+    "menuGroupStaysNearCreatePost": true,
+    "backdropBlurAdded": false
+  },
+  "layoutMap": {
+    "sameReferenceStructureSmallAndLarge": true,
+    "smallDeviceTileBoardDisabled": true,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "contentMainCentered": true,
+    "widgetSelectionPreserved": true
+  },
   "studioBootstrap": {
     "staleErrorRecovery": true,
     "retryOnlyAfterLocalSessionAndSiteReadSucceed": true,
