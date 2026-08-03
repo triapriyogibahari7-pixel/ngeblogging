@@ -1,0 +1,22 @@
+{
+  "release": "studio-shell-rescue-v242-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v242-shell-rescue-20260803",
+  "cache": "studio-shell-rescue-cache-v242",
+  "purpose": "Restore the visible Studio topbar, single-n navigation, profile avatar, drawer interaction and Nara attachment controls after all historical authorities.",
+  "responsiveFamilies": {
+    "small": ["application", "phone", "mobile", "compact"],
+    "large": ["tablet", "desktop", "laptop", "computer", "desktop-site"]
+  },
+  "guards": [
+    "one visible n control per navigation state",
+    "no external sidebar edge toggle",
+    "no device-name badge in topbar",
+    "avatar menu remains visible",
+    "drawer backdrop never covers drawer",
+    "small and medium Nara remain non-modal",
+    "Nara camera photo file portal is viewport-safe",
+    "no forced auth navigation",
+    "no localStorage.clear or sessionStorage.clear",
+    "no automatic sign-out"
+  ]
+}
