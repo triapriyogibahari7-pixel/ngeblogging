@@ -69,8 +69,8 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // owns the native React green Theme map; v227 aligns Nara model/intelligence;
 // v228 locks physical layout/editor/Nara; v229 locks map/sidebar/profile; v230
 // owns bounded-preview/bootstrap recovery; v231 owns the green map and single-n
-// geometry; v232 is the final current-screenshot authority for desktop auto-collapse,
-// explicit HTML/CSS/JavaScript/Preview actions and stable physical family locking.
+// geometry; v232 owns the current screenshot UI; v233 owns fast safe data-gateway
+// failover so an authenticated session is not trapped at the Studio startup surface.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -102,3 +102,4 @@ await import("./patch-production-v229.mjs");
 await import("./patch-production-v230.mjs");
 await import("./patch-production-v231.mjs");
 await import("./patch-production-v232.mjs");
+await import("./patch-production-v233.mjs");
