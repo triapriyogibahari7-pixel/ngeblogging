@@ -89,12 +89,20 @@ test("Nara keeps native tools and small medium are non-modal", () => {
   assert.match(runtime, /backdrop\.hidden = !full/);
 });
 
-test("Theme Studio layout data keeps semantic areas and editable left right slots", () => {
-  const semanticAreas = ["header-left","header-right","below-header","before-content","after-content","footer-left","footer-right","footer-wide"];
-  for (const area of semanticAreas) assert.ok(widgets.includes(`id: \"${area}\"`), `missing semantic area ${area}`);
-  const hasSingleSidebars = widgets.includes('id: "sidebar-left"') && widgets.includes('id: "sidebar-right"');
-  const hasFourSlotSidebars = widgets.includes('id: "sidebar-left-1"') && widgets.includes('id: "sidebar-left-4"') && widgets.includes('id: "sidebar-right-1"') && widgets.includes('id: "sidebar-right-4"');
-  assert.ok(hasSingleSidebars || hasFourSlotSidebars, "left/right editable layout areas missing");
+test("Theme Studio layout data supports base semantic areas and production multi-slot areas", () => {
+  const baseAreas = ["header-left","header-right","below-header","sidebar-left","before-content","after-content","sidebar-right","footer-left","footer-right","footer-wide"];
+  const productionAreas = [
+    "top-left-1","top-left-2","top-left-3","top-right-1","top-right-2","top-right-3",
+    "before-content","sidebar-left-1","sidebar-left-2","sidebar-left-3",
+    "sidebar-right-1","sidebar-right-2","sidebar-right-3","after-content",
+    "bottom-left-1","bottom-left-2","bottom-left-3","bottom-right-1","bottom-right-2","bottom-right-3",
+  ];
+  const hasBase = baseAreas.every((area) => widgets.includes(`id: \"${area}\"`));
+  const hasProduction = productionAreas.every((area) => widgets.includes(`id: \"${area}\"`));
+  assert.ok(hasBase || hasProduction, "neither base nor production layout-area model is complete");
+  if (widgets.includes('id: "sidebar-left-4"') || widgets.includes('id: "sidebar-right-4"')) {
+    assert.ok(widgets.includes('id: "sidebar-left-4"') && widgets.includes('id: "sidebar-right-4"'), "fourth left/right slots must be added as a pair");
+  }
   assert.match(runtime, /LAYOUT_AREAS/);
   assert.match(runtime, /v248-layout-map/);
 });
