@@ -10,6 +10,7 @@ const auth = read("src/lib/supabase.js");
 const authReadiness = read("src/auth-readiness-bridge.js");
 const provider = read("src/auth-provider-gateway-v250.js");
 const activator = read("scripts/activate-studio-native-v250.mjs");
+const swRotate = read("scripts/service-worker-v250-rotate.mjs");
 const studio = read("src/StudioNext.jsx");
 const nara = read("src/NaraAssistant.jsx");
 const theme = read("src/ThemeStudio.jsx");
@@ -92,9 +93,19 @@ test("login remains persistent and generated membership gets official public fal
   assert.doesNotMatch(activator, /service_role|SUPABASE_SERVICE_ROLE|sb_secret_/i);
 });
 
-test("v250 activates at Vite buildStart while established service-worker finalizers remain compatible", () => {
+test("v250 activates before bundling and rotates cache only after proven v249 finalizer", () => {
   assert.match(vite, /activateStudioNativeV250/);
   assert.match(vite, /async buildStart\(\)/);
   assert.match(vite, /finalizeServiceWorkerV249/);
-  assert.doesNotMatch(vite, /finalizeServiceWorkerV250/);
+  assert.match(vite, /rotateServiceWorkerV250/);
+  assert.ok(vite.indexOf("rotateServiceWorkerV250()") > vite.indexOf("finalizeServiceWorkerV249()"));
+  for (const marker of [
+    "ngeblogging-app-v250-native-bundle-20260804",
+    "studio-native-bundle-cache-v250",
+    "studio-native-bundle-v250-20260804",
+    "NGE_BLOGGING_UPDATE_AVAILABLE_V250",
+    "isAuthSurface(url)",
+    "studioNativeBundleReleaseV250",
+  ]) assert.ok(swRotate.includes(marker), marker);
+  assert.doesNotMatch(swRotate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
