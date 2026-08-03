@@ -7,23 +7,28 @@ import { BUILT_IN_WIDGETS, WIDGET_COUNT } from "../src/widget-system.js";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-source-stability-v237.js");
+const ui = read("src/studio-source-stability-v237-ui.js");
 const css = read("src/studio-source-stability-v237.css");
 const studio = read("src/StudioNext.jsx");
 const analytics = read("src/studio-analytics-v41.js");
 const operations = read("src/studio-operations-v41.js");
 const auth = read("src/lib/supabase.js");
-const patch = read("scripts/patch-production-v237-safe.mjs");
+const verifier = read("scripts/patch-production-v237.mjs");
 const chain = read("scripts/patch-service-worker-v179.mjs");
+const vite = read("vite.config.js");
+const swLib = read("scripts/service-worker-v237-lib.mjs");
 const release = JSON.parse(read("public/release-v237.json"));
 
 const RELEASE = "studio-source-stability-v237-20260803";
 const menu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
-test("v237 is loaded after the v236 real-device authority", () => {
+test("v237 loads after v236 and its rendered UI authority loads last", () => {
   const previous = entry.indexOf('import "./studio-real-device-v236.js"');
   const current = entry.indexOf('import "./studio-source-stability-v237.js"');
+  const rendered = entry.indexOf('import "./studio-source-stability-v237-ui.js"');
   assert.ok(previous >= 0);
   assert.ok(current > previous);
+  assert.ok(rendered > current);
   assert.match(runtime, new RegExp(RELEASE));
   assert.match(chain, /patch-production-v237\.mjs/);
 });
@@ -37,24 +42,29 @@ test("physical handheld safety overrides stale desktop geometry without removing
   for (const mode of ["application","phone","mobile","compact","tablet","desktop"]) assert.ok(release.responsiveFamilies.includes(mode));
 });
 
-test("Profile and Settings are source-separated while Ringkasan add-site stays production-backed", () => {
-  assert.ok(patch.includes('data-source-settings-v237="site-only"'));
-  assert.ok(patch.includes('title="Pengaturan"'));
-  assert.match(patch, /Profil akun dan avatar tetap terpisah/);
+test("Profile and Settings are separated at render time while historical React source remains intact", () => {
+  assert.match(ui, /v237RenderedSettings/);
+  assert.match(ui, /moved-to-profile-menu/);
+  assert.match(ui, /title\.textContent = "Pengaturan"/);
+  assert.match(ui, /Profil, biografi, website, dan avatar akun/);
   assert.match(operations, /Tambah situs/);
-  assert.equal(release.sourceCorrections.profileSeparatedFromSettings, true);
-  assert.equal(release.sourceCorrections.summaryAddSiteAction, true);
+  assert.equal(release.renderedCorrections.historicalReactSourcePreserved, true);
+  assert.equal(release.renderedCorrections.profileSeparatedFromSettings, true);
+  assert.equal(release.renderedCorrections.settingsRenderedSiteOnly, true);
+  assert.equal(release.renderedCorrections.summaryAddSiteAction, true);
 });
 
-test("25-site guard remains internal and normal UI does not advertise the maximum", () => {
-  assert.match(patch, /Batas jumlah situs dalam akun sudah tercapai/);
-  assert.doesNotMatch(patch, /Batas 25 situs tercapai/);
-  assert.equal(release.sourceCorrections.siteLimitInternal, 25);
-  assert.equal(release.sourceCorrections.siteLimitNumberAdvertisedInNormalUi, false);
+test("25-site guard stays internal while quota number is removed from ordinary rendered UI", () => {
+  assert.match(studio, /MAX_SITES_PER_ACCOUNT = 25/);
+  assert.match(ui, /Kelola situs dalam akun ini/);
+  assert.match(ui, /Batas situs tercapai/);
+  assert.equal(release.renderedCorrections.siteLimitInternal, 25);
+  assert.equal(release.renderedCorrections.siteLimitNumberAdvertisedInNormalUi, false);
 });
 
 test("Domain small actions are horizontal full-width rows instead of vertical pills", () => {
   assert.match(runtime, /stacked-actions/);
+  assert.match(ui, /v237DomainAction/);
   assert.match(css, /\.sv124-free-domain>aside[\s\S]*grid-template-columns:minmax\(0,1fr\)/);
   assert.match(css, /\[data-v237-domain-action="true"\][\s\S]*width:100%!important/);
   assert.match(css, /white-space:nowrap!important/);
@@ -100,11 +110,22 @@ test("Nara attachment portal remains camera/photo/file and viewport-safe", () =>
   assert.equal(release.nara.smallMediumNonmodal, true);
 });
 
+test("v237 verifies before historical tests but rotates the service worker only after Vite output exists", () => {
+  assert.match(verifier, /Verified \$\{RELEASE\} without mutating historical React or service-worker sources before tests/);
+  assert.match(vite, /closeBundle/);
+  assert.match(vite, /finalizeServiceWorkerV237/);
+  assert.match(swLib, /source-stability-cache-v237/);
+  assert.match(swLib, /OLD_CACHE_CLEANUP_MISSING/);
+  assert.match(swLib, /AUTH_SURFACE_GUARD_MISSING/);
+  assert.equal(release.serviceWorker.finalizationStage, "vite-closeBundle-after-tests");
+  assert.equal(release.serviceWorker.oldCachesDeletedOnActivate, true);
+});
+
 test("sidebar labels, persistent auth and non-destructive update behavior remain protected", () => {
   for (const label of menu) assert.ok(studio.includes(label), `missing ${label}`);
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
-  for (const source of [runtime, patch]) assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  for (const source of [runtime, ui, verifier, swLib]) assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
 test("release refuses unproven provider and mass-capacity claims", () => {
