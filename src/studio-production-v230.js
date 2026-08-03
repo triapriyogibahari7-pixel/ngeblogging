@@ -16,6 +16,7 @@ const DEVICE_WIDTHS = Object.freeze({
 const STARTUP_RETRY_LIMIT = 3;
 let frame = 0;
 let startupProbe = null;
+let startupRetryTimer = 0;
 let startupAttempts = 0;
 let lastStartupRetryAt = 0;
 
@@ -23,6 +24,11 @@ function important(node, property, value) {
   if (!node) return;
   if (node.style.getPropertyValue(property) === value && node.style.getPropertyPriority(property) === "important") return;
   node.style.setProperty(property, value, "important");
+}
+
+function setVar(node, property, value) {
+  if (!node || node.style.getPropertyValue(property) === value) return;
+  node.style.setProperty(property, value);
 }
 
 function withDeadline(promise, milliseconds, label) {
@@ -53,9 +59,9 @@ function normalizeThemePreview(shell) {
 
   shell.dataset.v230PreviewScale = scale < 0.999 ? "scaled" : "native";
   shell.dataset.v230PreviewDevice = shell.dataset.previewDevice || "unknown";
-  shell.style.setProperty("--v230-preview-scale", String(scale));
-  shell.style.setProperty("--v230-preview-target-width", `${targetWidth}px`);
-  shell.style.setProperty("--v230-preview-target-height", `${targetHeight}px`);
+  setVar(shell, "--v230-preview-scale", String(scale));
+  setVar(shell, "--v230-preview-target-width", `${targetWidth}px`);
+  setVar(shell, "--v230-preview-target-height", `${targetHeight}px`);
 
   important(shell, "position", "relative");
   important(shell, "min-width", "0");
@@ -127,27 +133,36 @@ async function recoverFalseStartupError() {
   return startupProbe;
 }
 
+function scheduleStartupRecovery() {
+  if (startupRetryTimer || startupProbe || startupAttempts >= STARTUP_RETRY_LIMIT) return;
+  startupRetryTimer = window.setTimeout(() => {
+    startupRetryTimer = 0;
+    recoverFalseStartupError();
+  }, 450);
+}
+
 function normalizeStartupCopy() {
   const surface = startupErrorSurface();
   if (!surface) return;
   surface.root.dataset.v230Startup = "bounded-recoverable";
   const paragraph = surface.root.querySelector("section>p");
-  if (paragraph && document.documentElement.dataset.v230DataHealth === "authenticated-and-readable") {
-    paragraph.textContent = "Sesi dan jalur data sudah merespons. Studio sedang menyinkronkan ulang Workspace tanpa mengeluarkan akun Anda.";
+  const healthyCopy = "Sesi dan jalur data sudah merespons. Studio sedang menyinkronkan ulang Workspace tanpa mengeluarkan akun Anda.";
+  if (paragraph && document.documentElement.dataset.v230DataHealth === "authenticated-and-readable" && paragraph.textContent !== healthyCopy) {
+    paragraph.textContent = healthyCopy;
   }
-  window.setTimeout(recoverFalseStartupError, 450);
+  scheduleStartupRecovery();
 }
 
 function normalizeTopbarModeArtifacts() {
   const topbar = document.querySelector(".sn-topbar");
   if (!topbar) return;
   topbar.querySelectorAll("[data-studio-mode-badge],[data-device-mode-badge],.studio-device-mode-badge,.v225-mode-badge").forEach((node) => {
-    node.hidden = true;
-    node.setAttribute("aria-hidden", "true");
+    if (!node.hidden) node.hidden = true;
+    if (node.getAttribute("aria-hidden") !== "true") node.setAttribute("aria-hidden", "true");
   });
   const avatar = topbar.querySelector(".sn-avatar");
   if (avatar) {
-    avatar.hidden = false;
+    if (avatar.hidden) avatar.hidden = false;
     avatar.removeAttribute("aria-hidden");
     avatar.dataset.v230TopbarProfile = "visible";
   }
@@ -197,11 +212,15 @@ new MutationObserver(schedule).observe(document.documentElement, {
   childList: true,
   subtree: true,
   attributes: true,
-  attributeFilter: ["class", "style", "hidden", "data-preview-device", "data-preview-mode", "data-v229-account-view"],
+  attributeFilter: ["class", "hidden", "data-preview-device", "data-preview-mode", "data-v229-account-view"],
 });
 for (const eventName of ["pageshow", "resize", "orientationchange", "online"]) window.addEventListener(eventName, schedule, { passive: true });
 window.visualViewport?.addEventListener("resize", schedule, { passive: true });
-window.addEventListener("online", () => window.setTimeout(recoverFalseStartupError, 250), { passive: true });
+window.addEventListener("online", () => {
+  if (startupRetryTimer) window.clearTimeout(startupRetryTimer);
+  startupRetryTimer = 0;
+  window.setTimeout(recoverFalseStartupError, 250);
+}, { passive: true });
 schedule();
 
 export { RELEASE };
