@@ -1,4 +1,8 @@
 /* Final visible-surface guard for v248. Loaded after every historical Studio stylesheet. */
+html[data-studio-native-v248] :is(.sn-device-mode-badge-v148,[data-studio-mode-badge],[data-device-mode-badge],.studio-device-mode-badge,.v225-mode-badge){display:none!important;visibility:hidden!important;pointer-events:none!important}
+html[data-studio-v248-family="small"][data-studio-v248-sidebar="open"] .sn-sidebar-toggle{display:none!important;visibility:hidden!important;pointer-events:none!important}
+html[data-studio-v248-family="small"][data-studio-v248-sidebar="closed"] #ngeblogging-studio-sidebar{pointer-events:none!important}
+
 html[data-studio-native-v248] .tn-studio,
 html[data-studio-native-v248] .tn-command,
 html[data-studio-native-v248] .tn-theme-grid,
