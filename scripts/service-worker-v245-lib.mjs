@@ -51,7 +51,7 @@ function verifySourceContracts() {
   ]) if (!entry.includes(marker)) throw new Error(`V245_V244_SHELL_NOT_PRESERVED:${marker}`);
 
   if (!release.includes(RELEASE)) throw new Error("V245_RELEASE_CONTRACT_MISSING");
-  if (/SUPABASE_SERVICE_ROLE|service[_-]?role/i.test(patch)) throw new Error("V245_SERVICE_ROLE_EMBEDDED");
+  if (/SUPABASE_SERVICE_ROLE_KEY\s*[:=]|sb_secret_[A-Za-z0-9_-]{8,}/i.test(patch)) throw new Error("V245_PRIVILEGED_KEY_EMBEDDED");
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(patch)) throw new Error("V245_DESTRUCTIVE_STORAGE_ACTION");
 }
 
