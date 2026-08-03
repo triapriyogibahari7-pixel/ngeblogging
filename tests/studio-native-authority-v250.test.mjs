@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
-const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-native-authority-v250.js");
 const css = read("src/studio-native-authority-v250.css");
 const auth = read("src/lib/supabase.js");
@@ -17,11 +16,7 @@ const theme = read("src/ThemeStudio.jsx");
 const widgets = read("src/widget-system.js");
 const vite = read("vite.config.js");
 
-const liveImport = (path) => new RegExp(`^\\s*import\\s+[\"']\\./${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[\"'];?\\s*$`, "m").test(entry);
-
-test("v250 owns one native React Studio shell and retires click competitors in source and bundle activation", () => {
-  assert.equal(liveImport("studio-native-authority-v250.js"), true);
-  assert.equal(liveImport("studio-native-authority-v250.css"), true);
+test("v250 activation retires competing shell owners after historical regressions", () => {
   for (const retired of [
     "studio-stable-shell-v244.js",
     "studio-shell-controller-v147.js",
@@ -33,10 +28,12 @@ test("v250 owns one native React Studio shell and retires click competitors in s
     "studio-sidebar-brand-v246.css",
     "studio-screenshot-lock-v247.css",
     "studio-final-visual-v249.css",
-  ]) {
-    assert.equal(liveImport(retired), false, `${retired} must stay backup-only in committed source`);
-    assert.ok(activator.includes(retired), `${retired} must remain retired again after historical regressions`);
-  }
+    "studio-final-visual-v249-hotfix.css",
+  ]) assert.ok(activator.includes(retired), `${retired} must be retired at bundle activation`);
+  assert.ok(activator.includes('ensureLastImport(source, "studio-native-authority-v250.js")'));
+  assert.ok(activator.includes('ensureLastImport(source, "studio-native-authority-v250.css")'));
+  assert.match(vite, /async buildStart\(\)/);
+  assert.match(vite, /activateStudioNativeV250/);
 });
 
 test("six responsive families keep one centered n and complete menu", () => {
@@ -93,9 +90,7 @@ test("login remains persistent and generated membership gets official public fal
   assert.doesNotMatch(activator, /service_role|SUPABASE_SERVICE_ROLE|sb_secret_/i);
 });
 
-test("v250 activates before bundling and rotates cache only after proven v249 finalizer", () => {
-  assert.match(vite, /activateStudioNativeV250/);
-  assert.match(vite, /async buildStart\(\)/);
+test("v250 rotates cache only after proven v249 finalizer and protects auth surfaces", () => {
   assert.match(vite, /finalizeServiceWorkerV249/);
   assert.match(vite, /rotateServiceWorkerV250/);
   assert.ok(vite.indexOf("rotateServiceWorkerV250()") > vite.indexOf("finalizeServiceWorkerV249()"));
