@@ -6,10 +6,13 @@ const AUTH_LEGACY_RELEASE = "auth-production-v153-20260730";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const DATA_GATEWAY_PREFIX = "/api/data-proxy";
 const DATA_TRANSPORT_RELEASE_V190 = "studio-data-gateway-v190-20260801";
+const DATA_TRANSPORT_RELEASE_V233 = "studio-production-v233-data-session-bootstrap-20260803";
 const DATA_GATEWAY_PATHS_V190 = ["/rest/v1/", "/storage/v1/"];
 const OAUTH_PROVIDERS = new Set(["google", "github", "linkedin_oidc"]);
 const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
-/* Historical build-patch compatibility markers. v190 implements these behaviors
+const DATA_GATEWAY_DEADLINE_V233 = 2800;
+const AUTH_GATEWAY_DEADLINE_V233 = 4200;
+/* Historical build-patch compatibility markers. v190/v233 implement these behaviors
    natively, so v186 must not replace the transport during production builds. */
 const AUTH_V186_COMPAT = "direct-fallback-v186 direct-supabase-oauth-v186";
 const browserEnv = import.meta.env || {};
@@ -74,26 +77,66 @@ function directRequestV190(input) {
 
 async function gatewayFirstV190(input, init, proxy, kind) {
   const directInput = directRequestV190(input);
+  const callerSignal = init?.signal || (input instanceof Request ? input.signal : null);
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  let callerAborted = Boolean(callerSignal?.aborted);
+  const onCallerAbort = () => {
+    callerAborted = true;
+    try { controller?.abort(callerSignal?.reason); } catch { controller?.abort(); }
+  };
+  if (callerSignal && !callerSignal.aborted) callerSignal.addEventListener("abort", onCallerAbort, { once: true });
+  const deadline = kind === "data" ? DATA_GATEWAY_DEADLINE_V233 : AUTH_GATEWAY_DEADLINE_V233;
+  let deadlineTimer = 0;
+  if (controller) deadlineTimer = globalThis.setTimeout(() => {
+    if (!callerAborted) {
+      try { controller.abort(new DOMException("Gateway timeout", "TimeoutError")); }
+      catch { controller.abort(); }
+    }
+  }, deadline);
+
+  let fallbackReason = "";
   try {
-    const response = await nativeFetch(proxyRequestV190(input, proxy), init);
+    if (callerAborted) throw callerSignal?.reason || new DOMException("Request dibatalkan.", "AbortError");
+    const gatewayInit = controller ? { ...(init || {}), signal: controller.signal } : init;
+    const response = await nativeFetch(proxyRequestV190(input, proxy), gatewayInit);
     const gatewayHeader = kind === "auth"
       ? response.headers.get("x-ngeblogging-auth-gateway")
       : response.headers.get("x-ngeblogging-data-gateway");
-    const staleUnauthorized = kind === "auth" && [401, 403].includes(response.status) && !gatewayHeader;
-    if (!GATEWAY_FALLBACK_STATUSES.has(response.status) && !staleUnauthorized) {
+    const contentType = String(response.headers.get("content-type") || "").toLowerCase();
+    const staleUnauthorized = [401, 403].includes(response.status) && !gatewayHeader;
+    const staleHtmlShell = response.ok && !gatewayHeader && contentType.includes("text/html");
+    const retryableGatewayStatus = GATEWAY_FALLBACK_STATUSES.has(response.status);
+
+    if (!retryableGatewayStatus && !staleUnauthorized && !staleHtmlShell) {
       if (typeof document !== "undefined") {
         if (kind === "auth") document.documentElement.dataset.authTransportV190 = "same-origin-gateway";
         else document.documentElement.dataset.dataTransportV190 = "same-origin-data-gateway";
+        document.documentElement.dataset.dataTransportV233 = `${kind}-gateway-confirmed`;
       }
       return response;
     }
-    console.warn(`Gateway ${kind} mengembalikan ${response.status}; mencoba Supabase langsung.`);
+
+    fallbackReason = staleUnauthorized
+      ? `stale-${kind}-unauthorized-${response.status}`
+      : staleHtmlShell
+        ? `stale-${kind}-html-shell`
+        : `${kind}-gateway-${response.status}`;
+    console.warn(`Gateway ${kind} belum dapat dipakai (${fallbackReason}); mencoba Supabase langsung.`);
   } catch (error) {
-    console.warn(`Gateway ${kind} tidak terjangkau; mencoba Supabase langsung.`, error);
+    if (callerAborted) throw error;
+    fallbackReason = error?.name === "TimeoutError" || controller?.signal?.aborted
+      ? `${kind}-gateway-timeout`
+      : `${kind}-gateway-network-error`;
+    console.warn(`Gateway ${kind} tidak terjangkau (${fallbackReason}); mencoba Supabase langsung.`, error);
+  } finally {
+    if (deadlineTimer) globalThis.clearTimeout(deadlineTimer);
+    if (callerSignal) callerSignal.removeEventListener?.("abort", onCallerAbort);
   }
+
   if (typeof document !== "undefined") {
     if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback";
     else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback";
+    document.documentElement.dataset.dataTransportV233 = `direct-fallback:${fallbackReason || kind}`;
   }
   return nativeFetch(directInput, init);
 }
@@ -118,17 +161,18 @@ export const supabase = supabaseConfigured
       global: {
         fetch: authAwareFetch,
         headers: {
-          "x-client-info": "ngeblogging-web-v190",
+          "x-client-info": "ngeblogging-web-v233",
         },
       },
     })
   : null;
 
 if (typeof document !== "undefined") {
-  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v190" : "not-configured";
+  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v233" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
   document.documentElement.dataset.authLegacyRelease = AUTH_LEGACY_RELEASE;
   document.documentElement.dataset.dataTransportReleaseV190 = DATA_TRANSPORT_RELEASE_V190;
+  document.documentElement.dataset.dataTransportReleaseV233 = DATA_TRANSPORT_RELEASE_V233;
 }
 
 const configuredSiteUrl = browserEnv.VITE_PUBLIC_SITE_URL;
@@ -324,6 +368,7 @@ export {
   AUTH_GATEWAY_PREFIX,
   DATA_GATEWAY_PREFIX,
   DATA_TRANSPORT_RELEASE_V190,
+  DATA_TRANSPORT_RELEASE_V233,
   AUTH_V186_COMPAT,
   authAwareFetch,
   installAuthEntryBridge,
