@@ -1,4 +1,4 @@
-name: Ngeblogging production Studio v222 live gate
+name: Ngeblogging production Studio v223 live gate
 
 on:
   push:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-v222:
+  deploy-v223:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: cloudflare-production
@@ -32,7 +32,7 @@ jobs:
       TENANT_SMOKE_TEST_URL: ${{ vars.TENANT_SMOKE_TEST_URL || 'https://tri-apriyogi-bahari.ngeblogging.com' }}
 
     steps:
-      - name: Checkout v222
+      - name: Checkout v223
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -64,48 +64,51 @@ jobs:
           [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
 
-      - name: Run complete production regression and build v222
+      - name: Run complete production regression and build v223
         run: npm run build
 
-      - name: Assert final v222 artifacts exist
+      - name: Assert final v223 artifacts exist
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/release-v222.json
-          node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("dist/release-v222.json","utf8"));if(x.release!=="studio-production-v222-20260803"||x.responsive?.explicitDesktopSiteLockedLarge!==true||x.responsive?.physicalSmallStaleDesktopDatasetRejected!==true||x.responsive?.modeBounceGuard!==true||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26||x.theme?.greenReferenceFullWidthMap!==true||x.theme?.fourLeftSlots!==true||x.theme?.fourRightSlots!==true||x.theme?.actualLineNumbers!==true||x.theme?.codeLineLimitSupported!==10000||x.nara?.camera!==true||x.nara?.photo!==true||x.nara?.file!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.auth?.forcedLogoutAdded!==false||x.claims?.massUserCapacityClaimed!==false)process.exit(1)'
-          grep -R -q 'studio-production-v222-20260803' dist/assets
-          grep -R -q 'green-reference-full-width' dist/assets
-          grep -R -q 'v222-code-line-gutter' dist/assets
-          grep -R -q 'fixed-visible' dist/assets
+          test -f dist/release-v223.json
+          node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("dist/release-v223.json","utf8"));if(x.release!=="studio-production-v223-20260803"||x.themeStudio?.builtInThemesMinimum!==100||x.themeStudio?.widgetCount!==26||x.themeStudio?.fourLeftWidgetAreas!==true||x.themeStudio?.fourRightWidgetAreas!==true||x.themeStudio?.layoutReference!=="green-map"||x.themeStudio?.explicitHtmlAction!==true||x.themeStudio?.explicitCssAction!==true||x.themeStudio?.explicitJavascriptAction!==true||x.themeStudio?.codeLineNumberCapacity!==10000||x.nara?.smallNonModal!==true||x.nara?.mediumNonModal!==true||x.nara?.camera!==true||x.nara?.photo!==true||x.nara?.textFile!==true||x.auth?.forcedLogoutAdded!==false||x.capacity?.claim!=="not-claimed")process.exit(1)'
+          grep -R -q 'studio-production-v223-20260803' dist/assets
+          grep -R -q 'green-reference-deterministic' dist/assets
+          grep -R -q 'tn-code-editor-grid-v223' dist/assets
+          grep -R -q 'tn-code-line-gutter-v223' dist/assets
+          grep -R -q 'expanded-html-css-javascript-v223' dist/assets
+          grep -R -q 'viewport-fixed' dist/assets
 
       - name: Build active-zone Wrangler configuration
         shell: bash
         run: |
           set -euo pipefail
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v222
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v223
 
-      - name: Deploy Worker and v222 assets
+      - name: Deploy Worker and v223 assets
         run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
-      - name: Verify v222 on Workers.dev before route cutover
+      - name: Verify v223 on Workers.dev before route cutover
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            body=/tmp/v222-workers.json
-            headers=/tmp/v222-workers.headers
-            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v222.json?verify_v222=${stamp}" || true)"
+            body=/tmp/v223-workers.json
+            headers=/tmp/v223-workers.headers
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v223.json?verify_v223=${stamp}" || true)"
             if [[ "${code}" == 200 ]] && ! grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v222-20260803"||x.theme?.greenReferenceFullWidthMap!==true||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26||x.theme?.actualLineNumbers!==true||x.theme?.codeLineLimitSupported!==10000||x.nara?.smallMediumNonModal!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.auth?.persistSessionRetained!==true)process.exit(1)' "${body}"; then
-                echo "WORKERS_DEV_V222_VERIFIED"
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v223-20260803"||x.themeStudio?.layoutReference!=="green-map"||x.themeStudio?.builtInThemesMinimum!==100||x.themeStudio?.widgetCount!==26||x.themeStudio?.explicitHtmlAction!==true||x.themeStudio?.explicitCssAction!==true||x.themeStudio?.explicitJavascriptAction!==true||x.nara?.smallNonModal!==true||x.nara?.camera!==true||x.auth?.persistSessionRequired!==true)process.exit(1)' "${body}"; then
+                echo "WORKERS_DEV_V223_VERIFIED"
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo "WORKERS_DEV_V222_VERIFY_FAILED"
+          echo "WORKERS_DEV_V223_VERIFY_FAILED"
           exit 1
 
       - name: Preserve compatibility routing
@@ -114,7 +117,7 @@ jobs:
       - name: Cut over apex www and tenant wildcard
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      - name: Verify live apex Studio auth tenant and v222
+      - name: Verify live apex Studio auth tenant and v223
         id: live_verify
         shell: bash
         run: |
@@ -122,41 +125,43 @@ jobs:
           for attempt in $(seq 1 42); do
             stamp="$(date +%s)-${attempt}"
             ok=true
-            for path in / /login /signup /studio /release-v221.json /release-v222.json; do
+            for path in / /login /signup /studio /release-v221.json /release-v222.json /release-v223.json; do
               safe="$(printf '%s' "${path}" | tr '/.' '__')"
-              body="/tmp/v222-live-${safe}.body"
-              headers="/tmp/v222-live-${safe}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v222=${stamp}" || true)"
+              body="/tmp/v223-live-${safe}.body"
+              headers="/tmp/v223-live-${safe}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?verify_v223=${stamp}" || true)"
               [[ "${code}" == 200 ]] || ok=false
               if grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then ok=false; fi
               if [[ "${path}" == "/release-v221.json" ]]; then
                 node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v221-20260802"||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26)process.exit(1)' "${body}" || ok=false
               elif [[ "${path}" == "/release-v222.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v222-20260803"||x.responsive?.modeBounceGuard!==true||x.theme?.greenReferenceFullWidthMap!==true||x.theme?.fourLeftSlots!==true||x.theme?.fourRightSlots!==true||x.theme?.actualLineNumbers!==true||x.theme?.minifiedCodeAutoPrettyPrint!==true||x.nara?.camera!==true||x.nara?.photo!==true||x.nara?.file!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.domain?.smallDeviceActionsHorizontal!==true||x.analytics?.realProductionRpcRetained!==true||x.auth?.forcedLogoutAdded!==false)process.exit(1)' "${body}" || ok=false
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v222-20260803"||x.theme?.greenReferenceFullWidthMap!==true||x.theme?.actualLineNumbers!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.auth?.forcedLogoutAdded!==false)process.exit(1)' "${body}" || ok=false
+              elif [[ "${path}" == "/release-v223.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v223-20260803"||x.themeStudio?.builtInThemesMinimum!==100||x.themeStudio?.widgetCount!==26||x.themeStudio?.fourLeftWidgetAreas!==true||x.themeStudio?.fourRightWidgetAreas!==true||x.themeStudio?.layoutReference!=="green-map"||x.themeStudio?.explicitHtmlAction!==true||x.themeStudio?.explicitCssAction!==true||x.themeStudio?.explicitJavascriptAction!==true||x.themeStudio?.smallDeviceCodeLayout!=="preview-above-code"||x.themeStudio?.largeDeviceCodeLayout!=="code-left-preview-right"||x.nara?.camera!==true||x.nara?.photo!==true||x.nara?.textFile!==true||x.nara?.smallNonModal!==true||x.nara?.mediumNonModal!==true||x.auth?.forcedLogoutAdded!==false||x.capacity?.claim!=="not-claimed")process.exit(1)' "${body}" || ok=false
               else
                 grep -q 'id="root"' "${body}" || ok=false
               fi
             done
 
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/v222-tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v222=${stamp}" || true)"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/v223-tenant.html -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?verify_v223=${stamp}" || true)"
             [[ "${tenant_code}" == 200 ]] || ok=false
 
-            workers_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/v222-workers-live.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v222.json?verify_v222=${stamp}" || true)"
+            workers_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/v223-workers-live.json -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v223.json?verify_v223=${stamp}" || true)"
             [[ "${workers_code}" == 200 ]] || ok=false
             if [[ "${workers_code}" == 200 ]]; then
-              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v222-20260803")process.exit(1)' /tmp/v222-workers-live.json || ok=false
+              node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v223-20260803")process.exit(1)' /tmp/v223-workers-live.json || ok=false
             fi
 
             if [[ "${ok}" == true ]]; then
-              echo "PRODUCTION_STUDIO_V222_LIVE_VERIFIED"
+              echo "PRODUCTION_STUDIO_V223_LIVE_VERIFIED"
               exit 0
             fi
             sleep 10
           done
-          echo "PRODUCTION_STUDIO_V222_LIVE_VERIFY_FAILED"
+          echo "PRODUCTION_STUDIO_V223_LIVE_VERIFY_FAILED"
           exit 1
 
-      - name: Publish v222 live status to commit
+      - name: Publish v223 live status to commit
         if: always()
         uses: actions/github-script@v7
         with:
@@ -164,13 +169,13 @@ jobs:
             const outcome = '${{ steps.live_verify.outcome }}';
             const state = outcome === 'success' ? 'success' : 'failure';
             const description = outcome === 'success'
-              ? 'v222 live apex, Studio, auth routes, tenant and Workers.dev verified'
-              : 'v222 live verification did not complete successfully';
+              ? 'v223 live apex, Studio, auth routes, tenant and Workers.dev verified'
+              : 'v223 live verification did not complete successfully';
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: context.sha,
               state,
-              context: 'ngeblogging/production-v222',
+              context: 'ngeblogging/production-v223',
               description,
             });
