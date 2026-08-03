@@ -34,12 +34,21 @@ test("v170 exposes 20 real widget areas and migrates legacy placements", () => {
   assert.ok(widgets.includes('"sidebar-right-1", "sidebar-right-2", "sidebar-left-1", "bottom-left-1"'));
 });
 
-test("Theme Studio displays the same detailed map on all device previews", () => {
-  for (const marker of [
-    AUTHORITY, "theme-layout-v170.css", "LAYOUT_AREAS", "PETA TATA LETAK V170",
-    "Enam widget atas, konten tiga kolom, dan enam widget bawah", "tn-layout-canvas-v170",
-    "tn-widget-order-v170", "Naikkan ", "Turunkan ", "WIDGET TERPILIH",
-  ]) assert.ok(themeStudio.includes(marker), `Theme Studio missing ${marker}`);
+test("Theme Studio displays a detailed editable map on all device previews", () => {
+  const nativeV245 = themeStudio.includes('data-theme-interface="v245-native"');
+  if (nativeV245) {
+    for (const marker of [
+      "theme-native-v245.css", "LAYOUT_SLOTS", "tn-native-layout-map", "tn-native-layout-popover",
+      'id: "left-1"', 'id: "left-4"', 'id: "content-main"', 'id: "right-1"', 'id: "right-4"',
+      "BUILT_IN_WIDGETS.map", "settings: {", "layoutSlot: selectedSlot.id",
+    ]) assert.ok(themeStudio.includes(marker), `native Theme Studio v245 missing ${marker}`);
+  } else {
+    for (const marker of [
+      AUTHORITY, "theme-layout-v170.css", "LAYOUT_AREAS", "PETA TATA LETAK V170",
+      "Enam widget atas, konten tiga kolom, dan enam widget bawah", "tn-layout-canvas-v170",
+      "tn-widget-order-v170", "Naikkan ", "Turunkan ", "WIDGET TERPILIH",
+    ]) assert.ok(themeStudio.includes(marker), `Theme Studio missing ${marker}`);
+  }
   for (const device of ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]) {
     assert.ok(themeStudio.includes(`id: "${device}"`), `preview missing ${device}`);
   }
