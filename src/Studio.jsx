@@ -75,5 +75,6 @@ import "./studio-sidebar-brand-v246.js";
 import "./studio-sidebar-brand-v246.css";
 import "./studio-screenshot-lock-v247.css";
 import "./studio-final-visual-v249.css";
+import "./studio-final-visual-v249-hotfix.css";
 
 export default StudioFastGate;
