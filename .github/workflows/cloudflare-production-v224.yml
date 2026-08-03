@@ -88,7 +88,7 @@ jobs:
           grep -R -q 'compact-green-map' dist/assets
           grep -R -q '1-to-10000-actual' dist/assets
           grep -R -q 'viewport-visible' dist/assets
-          grep -R -q 'expanded-html-css-javascript-v224' dist/assets
+          grep -R -q 'outside-v209-direct-button-sweep' dist/assets
 
       - name: Build active-zone Wrangler configuration
         id: config
