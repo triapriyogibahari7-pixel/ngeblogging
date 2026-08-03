@@ -44,4 +44,4 @@ jobs:
           grep -R -q 'html-css-javascript-visible' dist/assets
           grep -R -q 'compact-green-map' dist/assets
           grep -R -q '1-to-10000-actual' dist/assets
-          grep -R -q 'expanded-html-css-javascript-v224' dist/assets
+          grep -R -q 'outside-v209-direct-button-sweep' dist/assets
