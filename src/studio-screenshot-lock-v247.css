@@ -1,0 +1,444 @@
+/* Screenshot lock v247 — final visual contract for the six responsive families. */
+:root{
+  --v247-open:248px;
+  --v247-rail:70px;
+  --v247-top:64px;
+  --v247-safe-top:max(8px,env(safe-area-inset-top,0px));
+  --v247-safe-right:max(10px,env(safe-area-inset-right,0px));
+  --v247-safe-bottom:max(10px,env(safe-area-inset-bottom,0px));
+  --v247-safe-left:max(10px,env(safe-area-inset-left,0px));
+}
+
+html[data-studio-v246],
+html[data-studio-v246] body,
+html[data-studio-v246] #root,
+html[data-studio-v246] .sn-shell{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  overflow-x:clip!important;
+  zoom:1!important;
+  scale:1!important;
+  transform:none!important;
+  -webkit-text-size-adjust:100%!important;
+  text-size-adjust:100%!important;
+}
+html[data-studio-v246] *,
+html[data-studio-v246] *::before,
+html[data-studio-v246] *::after{box-sizing:border-box!important}
+html[data-studio-v246] :is(.sn-main,.sn-main>*,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-welcome,.sn-home-grid,.sn-settings-grid,.sv124-page,.sv124-page>*,.sv124-domain-page,.tn-studio,.tn-studio>*,.ce-app,.ce-app>*){
+  min-width:0!important;
+  max-width:100%!important;
+}
+html[data-studio-v246] :is(img,video,canvas,iframe,svg){max-width:100%!important}
+html[data-studio-v246] :is(h1,h2,h3,h4,p,b,strong,span,small,label,a,button,input,textarea,select,code){
+  min-width:0!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+}
+html[data-studio-v246] :is(h1,h2,h3,h4,p,b,strong,span,small,label,a,button){overflow-wrap:break-word!important;word-break:normal!important}
+
+/* Historical backdrops are delegates only. They must never darken or freeze Studio. */
+html[data-studio-v246] :is(.sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop]){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* One stable chrome. */
+#ngeblogging-studio-chrome-v244{
+  visibility:visible!important;
+  opacity:1!important;
+  filter:none!important;
+  pointer-events:none;
+}
+#ngeblogging-studio-chrome-v244 .v244-topbar,
+#ngeblogging-studio-chrome-v244 .v244-sidebar,
+#ngeblogging-studio-chrome-v244 .v244-profile-menu,
+#ngeblogging-studio-chrome-v244 .v244-mobile-n,
+#ngeblogging-studio-chrome-v244 .v244-internal-n{pointer-events:auto!important}
+#ngeblogging-studio-chrome-v244 .v244-topbar{
+  top:0!important;
+  right:0!important;
+  height:var(--v247-top)!important;
+  min-height:var(--v247-top)!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:var(--v247-safe-top) var(--v247-safe-right) 8px var(--v247-safe-left)!important;
+  background:#fff!important;
+  border-bottom:1px solid #dce5ef!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-avatar{
+  order:99!important;
+  margin-left:auto!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  max-width:44px!important;
+  max-height:44px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border-radius:50%!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:hidden!important;
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-avatar img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:inherit!important}
+
+/* Desktop/tablet-large/laptop/computer: exactly one n inside the sidebar. */
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-mobile-n{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-sidebar{
+  top:0!important;
+  bottom:0!important;
+  left:0!important;
+  height:100dvh!important;
+  background:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-sidebar{width:var(--v247-open)!important;max-width:var(--v247-open)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-sidebar{width:var(--v247-rail)!important;max-width:var(--v247-rail)!important}
+#ngeblogging-studio-chrome-v244 .v244-brand-row{
+  height:68px!important;
+  min-height:68px!important;
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  align-items:center!important;
+  align-content:center!important;
+  gap:11px!important;
+  padding:10px 12px!important;
+  background:#fff!important;
+  color:#17243a!important;
+  overflow:hidden!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-internal-n,
+#ngeblogging-studio-chrome-v244 .v244-mobile-n{
+  position:relative!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  max-width:46px!important;
+  max-height:46px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:13px!important;
+  color:#fff!important;
+  background:linear-gradient(145deg,#3379ea,#5f54dc)!important;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:hidden!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+#ngeblogging-studio-chrome-v244 :is(.v244-internal-n,.v244-mobile-n)::after{content:none!important;display:none!important}
+#ngeblogging-studio-chrome-v244 :is(.v244-internal-n,.v244-mobile-n)>span{
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  font:850 30px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.055em!important;
+  text-align:center!important;
+  text-shadow:none!important;
+  transform:none!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-brand-row>strong{
+  align-self:center!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  color:#17243a!important;
+  font-size:20px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  letter-spacing:-.015em!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-brand-row{
+  grid-template-columns:1fr!important;
+  place-items:center!important;
+  padding-inline:12px!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-brand-row>strong{display:none!important}
+
+/* Menu stays compact directly below Create Post; footer stays at bottom. */
+#ngeblogging-studio-chrome-v244 .v244-create{
+  flex:0 0 46px!important;
+  min-height:46px!important;
+  margin:7px 9px 3px!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-nav{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  justify-content:flex-start!important;
+  align-content:flex-start!important;
+  gap:2px!important;
+  padding:3px 8px 8px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+#ngeblogging-studio-chrome-v244 :is(.v244-nav,.v244-footer)>button{
+  flex:0 0 42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  margin:0!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-footer{margin-top:auto!important;padding-bottom:max(8px,var(--v247-safe-bottom))!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] :is(.v244-create,.v244-nav>button,.v244-footer>button){
+  grid-template-columns:1fr!important;
+  place-items:center!important;
+  padding-inline:0!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] :is(.v244-create,.v244-nav>button,.v244-footer>button)>span{display:none!important}
+
+html[data-studio-v246-family="large"][data-studio-v246-sidebar="expanded"] .sn-shell .sn-main{
+  margin-left:var(--v247-open)!important;
+  width:calc(100% - var(--v247-open))!important;
+  max-width:none!important;
+  padding-top:var(--v247-top)!important;
+}
+html[data-studio-v246-family="large"][data-studio-v246-sidebar="collapsed"] .sn-shell .sn-main{
+  margin-left:var(--v247-rail)!important;
+  width:calc(100% - var(--v247-rail))!important;
+  max-width:none!important;
+  padding-top:var(--v247-top)!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-topbar{left:var(--v247-open)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-topbar{left:var(--v247-rail)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-workspace{display:flex!important;visibility:visible!important;opacity:1!important}
+
+/* Application / phone / mobile / compact: one n in the top-left when closed. */
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-topbar{left:0!important;right:0!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-workspace{display:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-mobile-n{display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-sidebar{
+  width:clamp(244px,74vw,320px)!important;
+  max-width:calc(100vw - 48px)!important;
+  height:100dvh!important;
+  top:0!important;
+  bottom:0!important;
+  left:0!important;
+  background:#fff!important;
+  overflow:hidden!important;
+  animation:none!important;
+  transition:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-sidebar{
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:translateX(-105%)!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-sidebar{
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translateX(0)!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-brand-row>strong{display:block!important;font-size:19px!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-drawer-backdrop{display:none!important;pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-drawer-backdrop{
+  display:block!important;
+  position:fixed!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:clamp(244px,74vw,320px)!important;
+  width:auto!important;
+  height:100dvh!important;
+  border:0!important;
+  background:transparent!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-studio-v246-family="small"] .sn-shell .sn-main{
+  margin-left:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  padding-top:var(--v247-top)!important;
+  transform:none!important;
+  zoom:1!important;
+}
+html[data-studio-v246-family="small"] .sn-view-pad{width:100%!important;margin:0!important;padding:clamp(10px,3vw,16px)!important}
+html[data-studio-v246-family="small"] :is(.sn-welcome,.sn-home-grid,.sn-settings-grid,.sn-info-grid,.sn-metrics,.sv124-metrics-grid){grid-template-columns:minmax(0,1fr)!important}
+html[data-studio-v246-family="small"] :is(.sn-page-title,.sv124-page-title){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+html[data-studio-v246-family="small"] :is(.sn-page-title h1,.sv124-page-title h1,.sn-welcome h1){font-size:clamp(27px,7.7vw,36px)!important;line-height:1.08!important;letter-spacing:-.025em!important;max-width:100%!important}
+html[data-studio-v246-family="small"] :is(.sn-page-title p,.sv124-page-title p,.sn-welcome p){font-size:13px!important;line-height:1.5!important}
+html[data-studio-v246-family="small"] .sn-welcome{padding:16px 14px!important;border-radius:18px!important}
+html[data-studio-v246-family="small"] .sn-welcome>div:last-child{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;width:100%!important}
+html[data-studio-v246-family="small"] .sn-welcome>div:last-child :is(button,a){width:100%!important;min-height:44px!important;justify-content:center!important}
+html[data-studio-v246-family="small"] .sn-metrics{display:grid!important;gap:10px!important}
+html[data-studio-v246-family="small"] .sn-metrics article{width:100%!important;min-height:112px!important;padding:16px!important}
+html[data-studio-v246-family="small"] .sn-content-card{width:100%!important;overflow:hidden!important}
+html[data-studio-v246-family="small"] .sn-content-tools{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+html[data-studio-v246-family="small"] .sn-table-scroll,
+html[data-studio-v246-family="small"] [data-table-scroll]{width:100%!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+html[data-studio-v246-family="small"] .sn-table-head{display:none!important}
+html[data-studio-v246-family="small"] .sn-doc-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;padding:12px!important}
+html[data-studio-v246-family="small"] .sn-doc-row>button:first-child{grid-column:1/-1!important;width:100%!important;text-align:left!important}
+
+/* Domain: long actions stay horizontal and full-width on compact screens. */
+html[data-studio-v246-family="small"] .sv124-domain-page{width:100%!important;padding-inline:0!important;overflow:hidden!important}
+html[data-studio-v246-family="small"] .sv124-domain-page :is(.sv124-card,.sv124-site-strip,.sv124-domain-item,.sv124-provider-note,.sv124-error){width:100%!important;max-width:100%!important;min-width:0!important}
+html[data-studio-v246-family="small"] .sv124-free-domain{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;gap:12px!important}
+html[data-studio-v246-family="small"] .sv124-free-domain>aside{grid-column:1/-1!important;width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+html[data-studio-v246-family="small"] .sv124-free-domain>aside :is(button,a){width:100%!important;min-height:44px!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important}
+html[data-studio-v246-family="small"] .sv124-domain-register form{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+html[data-studio-v246-family="small"] .sv124-domain-register form>button{width:100%!important;min-height:44px!important;white-space:nowrap!important}
+html[data-studio-v246-family="small"] .sv124-domain-page button{max-width:100%!important}
+
+/* Profile menu is always inside the viewport and separate from Settings. */
+#ngeblogging-studio-chrome-v244 .v244-profile-menu{
+  width:min(320px,calc(100vw - 20px))!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:calc(100dvh - 82px)!important;
+  overflow:auto!important;
+  background:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-profile-menu[hidden]{display:none!important}
+
+/* Nara launcher never blinks; small/medium are non-modal and compact. */
+html[data-studio-v246] .nara-floating-button{
+  right:max(12px,var(--v247-safe-right))!important;
+  bottom:max(12px,var(--v247-safe-bottom))!important;
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  min-height:52px!important;
+  max-width:52px!important;
+  max-height:52px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+html[data-studio-v246] .nara-floating-button>span{width:100%!important;height:100%!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important}
+html[data-studio-v246] .nara-floating-button svg{width:24px!important;height:24px!important;margin:0!important}
+html[data-studio-v246] .nara-floating-button>b,
+html[data-studio-v246] .nara-floating-button>small{display:none!important}
+html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]{
+  position:fixed!important;
+  inset:0!important;
+  background:transparent!important;
+  pointer-events:none!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]>.nara-assistant-backdrop{display:none!important;visibility:hidden!important;pointer-events:none!important;background:transparent!important}
+html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]>.nara-assistant-shell{
+  position:fixed!important;
+  left:auto!important;
+  top:auto!important;
+  right:max(12px,var(--v247-safe-right))!important;
+  bottom:max(12px,var(--v247-safe-bottom))!important;
+  margin:0!important;
+  pointer-events:auto!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:calc(100dvh - 24px)!important;
+  overflow:hidden!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]>.nara-assistant-shell[data-nara-size="small"]{width:min(430px,calc(100vw - 24px))!important;height:min(62dvh,590px)!important;min-height:min(380px,calc(100dvh - 24px))!important}
+html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]>.nara-assistant-shell[data-nara-size="medium"]{width:min(720px,calc(100vw - 24px))!important;height:min(78dvh,780px)!important}
+html[data-studio-v246] .nara-assistant-header{min-width:0!important;max-width:100%!important;overflow:visible!important}
+html[data-studio-v246] .nara-size-controls-v147{display:flex!important;align-items:center!important;gap:3px!important;min-width:0!important}
+html[data-studio-v246] .nara-size-controls-v147 button,
+html[data-studio-v246] .nara-assistant-header>button{width:34px!important;height:34px!important;min-width:34px!important;max-width:34px!important;display:grid!important;place-items:center!important;padding:0!important;visibility:visible!important;opacity:1!important}
+html[data-studio-v246] .nara-composer{min-width:0!important;max-width:100%!important;overflow:visible!important}
+html[data-studio-v246] .nara-composer-tools{min-width:0!important;max-width:100%!important;align-items:center!important;overflow:visible!important}
+html[data-studio-v246] .nara-attachment-menu-wrap>button,
+html[data-studio-v246] .nara-composer-tools>button{visibility:visible!important;opacity:1!important}
+html[data-studio-v246] .nara-select{min-width:0!important;max-width:100%!important;width:100%!important;overflow:hidden!important}
+html[data-studio-v246] .nara-select>span{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#ngeblogging-nara-attachments-v244{max-width:calc(100vw - 20px)!important;max-height:min(240px,calc(100dvh - 20px))!important;overflow:auto!important}
+
+@media(max-width:760px){
+  :root{--v247-top:62px}
+  #ngeblogging-studio-chrome-v244 .v244-topbar{height:62px!important;min-height:62px!important}
+  #ngeblogging-studio-chrome-v244 .v244-avatar{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;max-width:42px!important;max-height:42px!important}
+  html[data-studio-v246] .nara-floating-button{width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
+  html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]>.nara-assistant-shell[data-nara-size="small"]{width:calc(100vw - 16px)!important;right:8px!important;bottom:max(8px,var(--v247-safe-bottom))!important;height:min(64dvh,590px)!important;min-height:350px!important}
+  html[data-studio-v246] .nara-assistant-layer[data-v244-mode="nonmodal"]>.nara-assistant-shell[data-nara-size="medium"]{width:calc(100vw - 12px)!important;right:6px!important;bottom:max(6px,var(--v247-safe-bottom))!important;height:min(82dvh,760px)!important}
+  html[data-studio-v246] .nara-assistant-header{display:grid!important;grid-template-columns:32px minmax(0,1fr) auto auto!important;gap:4px!important;padding:7px 8px!important}
+  html[data-studio-v246] .nara-size-controls-v147{grid-column:1/-1!important;grid-row:2!important;justify-content:flex-end!important}
+  html[data-studio-v246] .nara-composer-tools{display:grid!important;grid-template-columns:38px 38px minmax(0,1fr) 40px!important;gap:4px!important}
+  html[data-studio-v246] .nara-select.intelligence{grid-column:3!important;grid-row:1!important}
+  html[data-studio-v246] .nara-select.model{grid-column:1/4!important;grid-row:2!important;min-height:36px!important}
+  html[data-studio-v246] .nara-send{grid-column:4!important;grid-row:1/3!important;align-self:stretch!important;height:auto!important;max-height:none!important}
+}
+
+@media(max-width:430px){
+  #ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-sidebar{width:min(76vw,300px)!important;max-width:calc(100vw - 42px)!important}
+  #ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-drawer-backdrop{left:min(76vw,300px)!important}
+  #ngeblogging-studio-chrome-v244 .v244-brand-row{height:64px!important;min-height:64px!important;grid-template-columns:44px minmax(0,1fr)!important;padding:9px 10px!important}
+  #ngeblogging-studio-chrome-v244 .v244-internal-n,
+  #ngeblogging-studio-chrome-v244 .v244-mobile-n{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important}
+  #ngeblogging-studio-chrome-v244 .v244-brand-row>strong{font-size:18px!important}
+  html[data-studio-v246-family="small"] .sn-view-pad{padding:9px!important}
+  html[data-studio-v246-family="small"] :is(.sn-page-title h1,.sv124-page-title h1,.sn-welcome h1){font-size:clamp(25px,7.2vw,32px)!important}
+  html[data-studio-v246] .nara-assistant-header>div:nth-child(2)>small{display:none!important}
+  html[data-studio-v246] .nara-auto-voice-v148{display:grid!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-studio-v246] *,
+  #ngeblogging-studio-chrome-v244 *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
