@@ -98,3 +98,4 @@ console.log(`Applied ${RELEASE}`);
 // the top-level production build. This guarantees the native green layout source
 // authority executes after data reauthentication without an ESM import-cache race.
 await import("./patch-production-v225.mjs");
+await import("./patch-production-v225-legacy-markers.mjs");
