@@ -1,0 +1,27 @@
+{
+  "status": "candidate",
+  "release": "nara-fallback-model-contract-v227-20260803",
+  "preserves": {
+    "dataReauthV224": true,
+    "responsiveUiV225": true,
+    "nativeGreenThemeMapV226": true
+  },
+  "nara": {
+    "frontendSendsModel": true,
+    "frontendSendsIntelligence": true,
+    "primaryQwenModelSelectionPreserved": true,
+    "workersAiFallbackHonorsModel": true,
+    "secondaryWorkersAiFallbackHonorsModel": true,
+    "workersAiFallbackHonorsIntelligence": true,
+    "visionRestrictionMatchesPrimary": true,
+    "modelLabels": ["Nara Mini", "Nara Writer", "Nara Vision", "Nara Max"],
+    "intelligenceLabels": ["Instan", "Sedang", "Tinggi", "Maksimal"],
+    "quotaUsesRequestedModelAndIntelligence": true,
+    "sessionVerificationRequired": true
+  },
+  "claims": {
+    "fallbackProviderAlwaysAvailable": false,
+    "distinctProviderWeightsForEveryModelUnlessConfigured": false,
+    "massCapacityClaimed": false
+  }
+}
