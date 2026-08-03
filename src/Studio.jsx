@@ -73,5 +73,6 @@ import "./studio-shell-rescue-v242.js";
 import "./studio-stable-shell-v244-final.css";
 import "./studio-sidebar-brand-v246.js";
 import "./studio-sidebar-brand-v246.css";
+import "./studio-screenshot-lock-v247.css";
 
 export default StudioFastGate;
