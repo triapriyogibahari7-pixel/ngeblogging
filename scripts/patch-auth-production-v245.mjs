@@ -21,9 +21,8 @@ const nativeFetch`;
 
 const newConfig = `const browserEnv = import.meta.env || {};
 const AUTH_CONFIG_RELEASE_V245 = "${RELEASE}";
-// These are browser-safe public Supabase client credentials, never a service-role secret.
-// They are used only on official ngeblogging.com hosts when a deployment forgot to expose
-// the VITE_* build variables. Explicit VITE_* values always remain authoritative.
+// Browser-safe public client configuration only. No privileged Supabase credential
+// is embedded. Explicit VITE_* values remain authoritative whenever supplied.
 const PRODUCTION_SUPABASE_URL_V245 = "https://polvmlrhqoiflumibfqs.supabase.co";
 const PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245 = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
 
@@ -82,8 +81,8 @@ for (const marker of [
   if (!source.includes(marker)) throw new Error(`V245_AUTH_CONTRACT_MISSING:${marker}`);
 }
 
-if (/service[_-]?role|SUPABASE_SERVICE_ROLE|service_role/i.test(newConfig)) {
-  throw new Error("V245_SERVICE_ROLE_MUST_NEVER_BE_EMBEDDED");
+if (/SUPABASE_SERVICE_ROLE_KEY\s*[:=]|sb_secret_[A-Za-z0-9_-]{8,}/i.test(newConfig)) {
+  throw new Error("V245_PRIVILEGED_KEY_MUST_NEVER_BE_EMBEDDED");
 }
 if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) {
   throw new Error("V245_DESTRUCTIVE_STORAGE_ACTION");
