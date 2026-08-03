@@ -64,11 +64,10 @@ await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
 // Historical authorities remain executable for regression compatibility. v222
-// establishes the green map, line-number gutter and Nara attachment geometry.
-// v223 separates preview target from physical editor UI. v224 owns transient
-// data 401/403 session refresh recovery. v225 MUST execute last and changes only
-// responsive UI/Theme/Nara/Domain/Analytics plus the PWA cache generation; it
-// must preserve every v224 data reauth marker and must never destructively logout.
+// establishes the code gutter/Nara attachment geometry; v223 locks physical UI;
+// v224 owns transient data re-auth; v225 owns responsive Studio/Nara UI; v226
+// owns the native React green Theme map. v227 runs last only to align the Nara
+// model/intelligence contract across Qwen and both Workers AI fallback layers.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -94,3 +93,4 @@ await import("./patch-production-v223.mjs");
 await import("./patch-data-reauth-v224.mjs");
 await import("./patch-v225-mode-lock.mjs");
 await import("./patch-production-v225.mjs");
+await import("./patch-nara-fallback-v227.mjs");
