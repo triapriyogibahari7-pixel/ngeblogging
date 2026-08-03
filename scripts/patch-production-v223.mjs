@@ -13,6 +13,13 @@ function replaceRequired(source, search, replacement, label) {
   return source.replace(search, replacement);
 }
 
+function replaceBetween(source, startMarker, endMarker, replacement, label) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker, start + startMarker.length);
+  if (start < 0 || end < 0) throw new Error(`V223_RANGE_MISSING:${label}`);
+  return `${source.slice(0, start)}${replacement}\n\n${source.slice(end)}`;
+}
+
 async function patchStudioEntry() {
   const path = "src/Studio.jsx";
   let source = await read(path);
@@ -51,14 +58,116 @@ async function patchLegacyThemeActionConflict() {
   await write(path, source);
 }
 
-async function patchThemeMapCopy() {
+async function patchThemeStudio() {
   const path = "src/ThemeStudio.jsx";
   let source = await read(path);
+
   source = source.replace(
     '<header className="tn-layout-studio-header"><div><small>PETA TATA LETAK SITUS</small><h2>Header, area atas, empat widget kiri, konten utama, empat widget kanan, area bawah, dan footer.</h2><p>Tekan kotak untuk membuka pilihan widget langsung pada area itu. Struktur yang sama dipakai aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, desktop, dan komputer.</p></div><button onClick={() => onOpenWidgets("sidebar-right-1")}><Blocks/> Atur widget</button></header>',
     '<header className="tn-layout-studio-header"><div><small>PETA TATA LETAK SITUS</small></div><button onClick={() => onOpenWidgets("sidebar-right-1")}><Blocks/> Atur widget</button></header>',
   );
+
+  if (!source.includes("tn-code-editor-grid-v223")) {
+    const reactCodeEditor = `const MAX_THEME_CODE_LINES_V223 = 10000;
+
+function formatThemeHtmlV223(source) {
+  const input = String(source || "").trim();
+  if (!input) return input;
+  const tokens = input.replace(/>\\s*</g, "><").replace(/></g, ">\\n<").split("\\n");
+  let depth = 0;
+  const voidTag = /^<(?:!doctype|area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\\b/i;
+  return tokens.map((raw) => {
+    const token = raw.trim();
+    if (!token) return "";
+    if (/^<\\//.test(token)) depth = Math.max(0, depth - 1);
+    const line = "  ".repeat(depth) + token;
+    if (/^<[^!/][^>]*>/.test(token) && !/^<.*<\\//.test(token) && !/\\/>$/.test(token) && !voidTag.test(token)) depth += 1;
+    return line;
+  }).filter(Boolean).join("\\n");
+}
+
+function formatThemeBracedV223(source) {
+  const input = String(source || "").trim();
+  if (!input) return input;
+  let output = "", indent = 0, quote = "", escaped = false, lineComment = false, blockComment = false;
+  const newline = () => {
+    output = output.replace(/[ \\t]+$/g, "");
+    if (!output.endsWith("\\n")) output += "\\n";
+    output += "  ".repeat(Math.max(0, indent));
+  };
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index], next = input[index + 1] || "";
+    if (lineComment) { output += char; if (char === "\\n") { lineComment = false; output += "  ".repeat(indent); } continue; }
+    if (blockComment) { output += char; if (char === "*" && next === "/") { output += next; index += 1; blockComment = false; } continue; }
+    if (quote) {
+      output += char;
+      if (escaped) escaped = false;
+      else if (char === "\\\\") escaped = true;
+      else if (char === quote) quote = "";
+      continue;
+    }
+    if (["\\\"", "'", "\u0060"].includes(char)) { quote = char; output += char; continue; }
+    if (char === "/" && next === "/") { lineComment = true; output += "//"; index += 1; continue; }
+    if (char === "/" && next === "*") { blockComment = true; output += "/*"; index += 1; continue; }
+    if (char === "{") { output += "{"; indent += 1; newline(); continue; }
+    if (char === "}") { indent = Math.max(0, indent - 1); output = output.replace(/[ \\t]+$/g, ""); if (!output.endsWith("\\n")) newline(); output += "}"; if (next && ![";", ",", ")"].includes(next)) newline(); continue; }
+    if (char === ";") { output += ";"; newline(); continue; }
+    if (char === "\\n" || char === "\\r") { if (!output.endsWith("\\n")) newline(); continue; }
+    output += char;
+  }
+  return output.trim();
+}
+
+function formatThemeSourceV223(kind, source) {
+  return kind === "html" ? formatThemeHtmlV223(source) : formatThemeBracedV223(source);
+}
+
+function CodeEditor({ value, onChange, config, widgets, theme, device, onDeviceChange }) {
+  const [tab, setTab] = useState("html");
+  const gutterRef = useRef(null);
+  const formattedOnce = useRef(new Set());
+  const tabs = [{ id:"html",label:"HTML",icon:FileCode2 },{ id:"css",label:"CSS",icon:Palette },{ id:"javascript",label:"JavaScript",icon:Code2 }];
+  const selectedDevice = deviceInfo(device);
+  const source = String(value[tab] || "");
+  const lineCount = Math.max(1, source.split("\\n").length);
+  const shownLines = Math.min(MAX_THEME_CODE_LINES_V223, lineCount);
+  const lineNumbers = useMemo(() => Array.from({ length: shownLines }, (_, index) => String(index + 1)).join("\\n"), [shownLines]);
+
+  useEffect(() => {
+    const raw = String(value[tab] || "");
+    const rawLines = raw.split("\\n").length;
+    const signature = tab + ":" + raw.length + ":" + raw.slice(0, 48);
+    if (formattedOnce.current.has(signature) || raw.length <= 80 || rawLines > 4) return;
+    formattedOnce.current.add(signature);
+    const pretty = formatThemeSourceV223(tab, raw);
+    if (pretty && pretty !== raw && pretty.split("\\n").length > rawLines) onChange({ ...value, [tab]: pretty });
+  }, [tab]);
+
+  const formatCurrent = () => {
+    const pretty = formatThemeSourceV223(tab, source);
+    if (pretty && pretty !== source) onChange({ ...value, [tab]: pretty });
+  };
+
+  return <div className="tn-code-workspace" data-v223-react-code-editor="true">
+    <section className="tn-code-pane" data-v223-react-code-pane={tab}>
+      <nav>{tabs.map(({id,label,icon:Icon}) => <button type="button" key={id} className={tab===id?"active":""} onClick={() => setTab(id)}><Icon/>{label}</button>)}</nav>
+      <div className="tn-code-status"><span><ShieldCheck/> Sandbox aktif</span><span className="v223-code-metrics">{lineCount.toLocaleString("id-ID")} baris · {source.length.toLocaleString("id-ID")} karakter{lineCount > MAX_THEME_CODE_LINES_V223 ? " · kurangi " + (lineCount - MAX_THEME_CODE_LINES_V223).toLocaleString("id-ID") + " baris" : ""}</span><button type="button" className="v223-format-code" onClick={formatCurrent}>Rapikan kode</button></div>
+      <div className="tn-code-editor-grid-v223">
+        <pre ref={gutterRef} className="tn-code-line-gutter-v223" aria-hidden="true">{lineNumbers}</pre>
+        <textarea aria-label={"Editor " + tab} value={source} onChange={(event) => onChange({ ...value, [tab]: event.target.value })} onScroll={(event) => { if (gutterRef.current) gutterRef.current.scrollTop = event.currentTarget.scrollTop; }} onKeyDown={(event) => { if (event.key !== "Tab") return; event.preventDefault(); const target = event.currentTarget; const start = target.selectionStart; const end = target.selectionEnd; const next = source.slice(0,start) + "  " + source.slice(end); onChange({ ...value, [tab]: next }); requestAnimationFrame(() => { target.selectionStart = target.selectionEnd = start + 2; }); }} wrap="off" spellCheck="false" autoCapitalize="off" autoCorrect="off" />
+      </div>
+    </section>
+    <section className="tn-code-preview-pane">
+      <header><div><small>PREVIEW LANGSUNG</small><b>{selectedDevice.label} · {selectedDevice.width}px</b></div><DeviceSwitch value={device} onChange={onDeviceChange}/></header>
+      <ThemeFrame theme={theme} code={value} config={config} widgets={widgets} device={device} title={"Pratinjau kode tema mode " + selectedDevice.label}/>
+    </section>
+  </div>;
+}`;
+    source = replaceBetween(source, "function CodeEditor(", "function WidgetStudio(", reactCodeEditor, "react-code-editor");
+  }
+
   if (!source.includes("PETA TATA LETAK SITUS")) throw new Error("V223_THEME_MAP_MISSING");
+  if (!source.includes("tn-code-editor-grid-v223") || !source.includes("tn-code-line-gutter-v223")) throw new Error("V223_REACT_CODE_EDITOR_MISSING");
   await write(path, source);
 }
 
@@ -107,6 +216,9 @@ async function verify() {
     [themeStudio, 'data-v222-code-tab="html"', "HTML action"],
     [themeStudio, 'data-v222-code-tab="css"', "CSS action"],
     [themeStudio, 'data-v222-code-tab="javascript"', "JavaScript action"],
+    [themeStudio, "tn-code-editor-grid-v223", "React-owned code editor"],
+    [themeStudio, "tn-code-line-gutter-v223", "React-owned actual line gutter"],
+    [themeStudio, "formatThemeSourceV223", "code formatter"],
     [themeStudio, "preferredArea={widgetArea}", "layout click opens preferred widget area"],
     [themeStudio, "tn-widget-custom-code-v209", "custom HTML JavaScript widget"],
     [themeStudio, "Tema Custom", "custom theme"],
@@ -127,8 +239,8 @@ async function verify() {
     [sw, CACHE, "service worker cache"],
     [release, RELEASE, "release artifact"],
   ];
-  for (const [source, marker, label] of checks) {
-    if (!source.includes(marker)) throw new Error(`V223_VERIFY_FAILED:${label}:${marker}`);
+  for (const [sourceText, marker, label] of checks) {
+    if (!sourceText.includes(marker)) throw new Error(`V223_VERIFY_FAILED:${label}:${marker}`);
   }
 
   const familyCount = (themeCatalog.match(/\{ id:/g) || []).length;
@@ -140,7 +252,7 @@ async function verify() {
 
 await patchStudioEntry();
 await patchLegacyThemeActionConflict();
-await patchThemeMapCopy();
+await patchThemeStudio();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
