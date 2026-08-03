@@ -1,0 +1,41 @@
+name: Validate Studio v223
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-studio-v223-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-v223:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Run full production build
+        run: npm run build
+      - name: Assert v223 bundle markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/release-v223.json
+          grep -R -q 'studio-production-v223-20260803' dist/assets
+          grep -R -q 'green-reference-deterministic' dist/assets
+          grep -R -q 'tn-code-editor-grid-v223' dist/assets
+          grep -R -q 'expanded-html-css-javascript-v223' dist/assets
+          grep -R -q 'viewport-fixed' dist/assets
