@@ -29,11 +29,12 @@ await writeFile(file, source);
 console.log("Preserved v215 auth recovery compatibility markers under v216");
 
 // v218 keeps the public site atomic. v219 provides eager Theme recovery. v220
-// locks desktop-site and repairs code/Nara. v221 is the final screenshot authority:
-// it uses the green semantic layout map, physical-phone-safe mode selection,
-// a real grid gutter code editor and a visible Camera/Photo/File attachment menu.
-// None of these compatibility layers may destroy the authenticated session.
+// locks desktop-site and repairs code/Nara. v221 establishes the green semantic
+// map. v222 is the final screenshot authority for the full-width green map,
+// actual line-numbered code editor, fixed Camera/Photo/File attachment menu and
+// stable mode lock. None of these layers may destroy the authenticated session.
 await import("./patch-public-site-v218.mjs");
 await import("./patch-production-v219.mjs");
 await import("./patch-production-v220.mjs");
 await import("./patch-production-v221.mjs");
+await import("./patch-production-v222.mjs");
