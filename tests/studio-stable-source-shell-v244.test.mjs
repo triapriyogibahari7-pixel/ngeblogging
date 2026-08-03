@@ -11,20 +11,20 @@ const auth = read("src/lib/supabase.js");
 const nara = read("src/NaraAssistant.jsx");
 const release = read("public/release-v244.json");
 const vite = read("vite.config.js");
+const native248 = read("src/studio-native-stability-v248.js");
 
 const RELEASE = "studio-stable-source-shell-v244-20260803";
 
-test("v244 preempts legacy interaction runtimes and owns final CSS", () => {
-  const early = entry.indexOf('import "./studio-stable-shell-v244.js"');
-  const historical = entry.indexOf('import "./studio-style-authority-v144.js"');
-  const rescue = entry.indexOf('import "./studio-shell-rescue-v242.js"');
-  const finalCss = entry.indexOf('import "./studio-stable-shell-v244-final.css"');
-  assert.ok(early >= 0 && early < historical, "v244 capture authority must register before historical listeners");
-  assert.ok(finalCss > rescue, "v244 final CSS must load after v242 rescue CSS/runtime");
-  assert.match(vite, /finalizeServiceWorkerV244/);
+test("v244 source remains available but v248 supersedes its duplicate chrome", () => {
+  assert.doesNotMatch(entry, /import "\.\/studio-stable-shell-v244\.js"/);
+  assert.ok(entry.indexOf('import "./studio-stable-shell-v244-final.css"') >= 0);
+  assert.ok(entry.indexOf('import "./studio-native-stability-v248.js"') > entry.indexOf('import "./studio-stable-shell-v244-final.css"'));
+  assert.match(native248, /restoreReactChrome/);
+  assert.doesNotMatch(vite, /finalizeServiceWorkerV244\(\)/);
+  assert.match(vite, /finalizeServiceWorkerV248/);
 });
 
-test("v244 keeps one independent chrome with complete navigation and separate profile/settings", () => {
+test("v244 historical implementation remains recoverable without losing actions", () => {
   for (const marker of [
     RELEASE,
     "ngeblogging-studio-chrome-v244",
@@ -38,15 +38,14 @@ test("v244 keeps one independent chrome with complete navigation and separate pr
     'data-account="add-site"',
     'data-account="view-site"',
     'data-account="logout"',
-  ]) assert.ok(runtime.includes(marker), `missing v244 runtime marker: ${marker}`);
+  ]) assert.ok(runtime.includes(marker), `missing v244 historical marker: ${marker}`);
 
   for (const label of ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"]) {
     assert.ok(studio.includes(label), `React action must remain mounted: ${label}`);
-    assert.ok(runtime.includes(label), `v244 visible chrome must expose: ${label}`);
   }
 });
 
-test("v244 preserves six-mode intent without desktop scaling the real page", () => {
+test("v244 responsive and Nara contracts remain as fallback source only", () => {
   for (const marker of [
     'new Set(["application", "phone", "mobile", "compact"])',
     'return "large"',
@@ -55,21 +54,13 @@ test("v244 preserves six-mode intent without desktop scaling the real page", () 
     "--v244-open:248px",
     "--v244-rail:70px",
     "zoom:1!important",
-    "width:min(78vw,328px)",
     "background:transparent",
-  ]) assert.ok(runtime.includes(marker) || css.includes(marker), `missing responsive contract: ${marker}`);
-});
-
-test("Nara small/medium is non-modal and attachment plus reaches real native inputs", () => {
-  for (const marker of ["openNaraAttachments", "Kamera", "Foto", "File", "stopImmediatePropagation", "naraInput"])
-    assert.ok(runtime.includes(marker), `missing Nara v244 marker: ${marker}`);
-  for (const marker of ['data-v244-mode="nonmodal"', "pointer-events:none!important", "#ngeblogging-nara-attachments-v244", ".nara-composer-tools"])
-    assert.ok(css.includes(marker), `missing Nara CSS contract: ${marker}`);
+  ]) assert.ok(runtime.includes(marker) || css.includes(marker), `missing compatibility contract: ${marker}`);
   for (const marker of ["cameraInput", "imageInput", "fileInput", "capture=\"environment\"", "nara-select intelligence", "nara-select model"])
     assert.ok(nara.includes(marker), `real Nara React control missing: ${marker}`);
 });
 
-test("auth/session remains persistent and v244 adds no destructive session action", () => {
+test("auth/session remains persistent and historical v244 adds no destructive session action", () => {
   for (const marker of ['flowType: "pkce"', "persistSession: true", "autoRefreshToken: true"])
     assert.ok(auth.includes(marker), `auth contract missing: ${marker}`);
   assert.doesNotMatch(runtime, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|supabase\.auth\.signOut\s*\(/);
