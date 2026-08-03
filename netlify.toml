@@ -1,5 +1,5 @@
 [build]
-  command = "npm run pretest:production && node --test --test-name-pattern='PWA v151 compatibility' tests/studio-production-sync-v151.test.mjs && mkdir -p dist && printf '<!doctype html><title>v151 PWA compatibility passed</title><p>v151 PWA compatibility passed</p>' > dist/index.html"
+  command = "npm run pretest:production && node --test --test-name-pattern='v184 extends|responsive modes|auth surfaces remain' tests/studio-production-sync-v151.test.mjs && mkdir -p dist && printf '<!doctype html><title>remaining v151 sync passed</title><p>remaining v151 sync passed</p>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
