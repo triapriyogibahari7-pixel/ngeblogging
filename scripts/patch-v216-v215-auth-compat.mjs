@@ -28,15 +28,12 @@ if (/await refreshStaleWindow\(client, url\);/.test(source)) {
 await writeFile(file, source);
 console.log("Preserved v215 auth recovery compatibility markers under v216");
 
-// v218 keeps the public site atomic. v219 provides eager Theme recovery. v220
-// locks desktop-site and repairs code/Nara. v221 establishes the green semantic
-// map. v222 supplies the full-width green map and true line gutter. v223 keeps
-// the selected preview mode independent from the physical editor UI, so Desktop
-// preview on a phone does not shrink Theme Studio controls into an unusable
-// miniature. None of these layers may destroy the authenticated session.
+// Compatibility subchain intentionally stops at v222. v223 must not be imported
+// here because ESM import caching would prevent the final v223 import in
+// patch-service-worker-v179.mjs from executing after v222. The top-level chain
+// owns v223 as the single final production authority.
 await import("./patch-public-site-v218.mjs");
 await import("./patch-production-v219.mjs");
 await import("./patch-production-v220.mjs");
 await import("./patch-production-v221.mjs");
 await import("./patch-production-v222.mjs");
-await import("./patch-production-v223.mjs");
