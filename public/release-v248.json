@@ -1,0 +1,83 @@
+{
+  "status": "candidate",
+  "release": "studio-auth-ui-regression-v248-20260803",
+  "basedOn": [
+    "studio-production-v234-screenshot-layout-sidebar-nara-20260803",
+    "studio-shell-rescue-v242-20260803",
+    "auth-production-readiness-v245-20260803"
+  ],
+  "regressionCause": {
+    "duplicateStableChromeV244Retired": true,
+    "duplicateSidebarStateOwnerV246Retired": true,
+    "screenshotLockV247Retired": true,
+    "legacyFilesKeptAsBackup": true
+  },
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+    "desktopSidebarWidths": {"expanded": 248, "collapsed": 70},
+    "smallDrawer": "clamp(244px,74vw,320px)",
+    "horizontalOverflowGuard": true,
+    "deviceNameBadgeRemoved": true
+  },
+  "sidebar": {
+    "singleN": true,
+    "desktopInternalN": true,
+    "mobileTopNWhenClosed": true,
+    "mobileInternalNWhenOpen": true,
+    "externalSquareToggle": false,
+    "xCloseButton": false,
+    "menuTightBelowCreatePost": true,
+    "settingsLogoutPinnedBottom": true,
+    "contentTracksSidebarWidth": true
+  },
+  "profile": {
+    "topRight": true,
+    "profileSeparateFromSettings": true,
+    "actions": ["Profil", "Pengaturan", "Tambahkan situs", "Lihat situs", "Keluar"]
+  },
+  "auth": {
+    "healthProbeCanHideLoginActions": false,
+    "healthFailureIsDiagnosticOnly": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "pkce": true,
+    "productionPublicSupabaseFallbackPreserved": true,
+    "googleClientWired": true,
+    "linkedinClientWired": true,
+    "emailPasswordClientWired": true,
+    "realProviderEndToEndRequiresProviderCredentialsAndUserAction": true
+  },
+  "themeStudio": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "fourLeftCenterFourRightMapPreserved": true,
+    "slotPopoverPreserved": true,
+    "htmlCssJavascriptPreserved": true,
+    "lineGutterTo10000Preserved": true,
+    "desktopCodePreview5050": true,
+    "smallPreviewAboveCode": true
+  },
+  "nara": {
+    "launcherBottomRight": true,
+    "smallMediumNonModal": true,
+    "fullModal": true,
+    "cameraPhotoFile": true,
+    "microphone": true,
+    "speaker": true,
+    "modelSelector": true,
+    "intelligenceSelector": true,
+    "closeButtonVisible": true,
+    "blinkAnimationDisabled": true
+  },
+  "domain": {"smallActionsHorizontal": true, "primaryActionsFullWidth": true},
+  "validation": {
+    "staticRegressionGateAdded": true,
+    "productionBuildMustPassBeforeMerge": true,
+    "realDeviceVerificationRequiredBefore100PercentClaim": true,
+    "massCapacityClaimed": false,
+    "massAccountCreationPerformed": false
+  },
+  "dataDestruction": false,
+  "legacyFeaturesPreserved": true
+}
