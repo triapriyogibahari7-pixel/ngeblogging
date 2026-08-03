@@ -65,9 +65,9 @@ await import("./patch-studio-persisted-session-v198.mjs");
 
 // Historical authorities remain executable for regression compatibility. v222
 // establishes the green map, line-number gutter and Nara attachment geometry.
-// v223 MUST execute last: it separates the selected preview target from the
-// physical editing UI so Desktop preview remains locked while a phone still gets
-// readable controls. Neither layer may destroy authenticated sessions or drafts.
+// v223 separates preview target from physical editor UI. v224 MUST execute once
+// and last so a transient REST/Storage 401 during refresh is recovered without
+// destructive logout while all v223 visual behavior remains intact.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -90,3 +90,4 @@ await import("./patch-production-v216.mjs");
 await import("./patch-v216-v215-auth-compat.mjs");
 await import("./patch-production-v222.mjs");
 await import("./patch-production-v223.mjs");
+await import("./patch-data-reauth-v224.mjs");
