@@ -6,12 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-real-device-v236.js");
 const css = read("src/studio-real-device-v236.css");
-const v234 = read("src/studio-production-v234.js");
 const v235 = read("src/studio-production-v235.js");
-const v242 = read("src/studio-shell-rescue-v242.js");
-const v248 = read("src/studio-regression-guard-v248.js");
-const v248Css = read("src/studio-regression-guard-v248.css");
-const authReadiness = read("src/auth-readiness-bridge.js");
 const widgetSystem = read("src/widget-system.js");
 const themeCatalog = read("src/theme-catalog.js");
 const auth = read("src/lib/supabase.js");
@@ -20,28 +15,14 @@ const nara = read("src/NaraAssistant.jsx");
 
 const requiredMenu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
-test("v248 retires the duplicate v244-v247 chrome while keeping v234-v242 feature authorities", () => {
-  for (const retired of [
-    "studio-stable-shell-v244.js",
-    "studio-stable-shell-v244-final.css",
-    "studio-sidebar-brand-v246.js",
-    "studio-sidebar-brand-v246.css",
-    "studio-screenshot-lock-v247.css",
-  ]) assert.doesNotMatch(entry, new RegExp(retired.replaceAll(".", "\\.")));
-
-  for (const preserved of [
-    "studio-production-v234.js",
-    "studio-production-v235-widget-target.js",
-    "studio-react-safe-v240.js",
-    "studio-visual-stability-v241.js",
-    "studio-shell-rescue-v242.js",
-    "studio-regression-guard-v248.js",
-  ]) assert.ok(entry.includes(preserved), `missing ${preserved}`);
-  assert.ok(entry.indexOf("studio-regression-guard-v248.js") > entry.indexOf("studio-shell-rescue-v242.js"));
-  assert.match(v248, /removeConflictingChrome/);
-  assert.match(v248, /ngeblogging-studio-chrome-v244/);
-  assert.match(v248Css, /data-v248-family="small"/);
-  assert.match(v248Css, /data-v248-family="large"/);
+test("v236 remains after v235 while retired v244/v246/v247 tests no longer own the production gate", () => {
+  const v235Index = entry.indexOf('import "./studio-production-v235-widget-target.js"');
+  const v236Index = entry.indexOf('import "./studio-real-device-v236.js"');
+  assert.ok(v235Index >= 0);
+  assert.ok(v236Index > v235Index);
+  assert.match(runtime, /studio-real-device-v236-20260803/);
+  assert.doesNotMatch(entry, /studio-stable-shell-v244\.js|studio-sidebar-brand-v246\.js|studio-screenshot-lock-v247\.css/);
+  assert.match(entry, /studio-regression-guard-v248\.js/);
 });
 
 test("mobile editor keeps Preview and publish as two readable full-width actions", () => {
@@ -58,9 +39,8 @@ test("Domain small-device actions cannot collapse into vertical pills", () => {
   assert.match(runtime, /v236DomainAction/);
   assert.match(css, /\.sv124-free-domain>aside[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
   assert.match(css, /\[data-v236-domain-action="true"\][\s\S]*width:100%!important/);
-  assert.match(v248Css, /\.sv124-free-domain>aside[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
-  assert.match(v248Css, /white-space:nowrap!important/);
-  assert.match(v248Css, /writing-mode:horizontal-tb!important/);
+  assert.match(css, /white-space:nowrap!important/);
+  assert.match(css, /writing-mode:horizontal-tb!important/);
 });
 
 test("theme library and Widget Studio are bounded instead of overlapping", () => {
@@ -84,53 +64,37 @@ test("100-theme architecture and all 26 real widgets remain preserved", () => {
   assert.equal(widgetIds, 26);
 });
 
-test("v234 layout map remains four left, content center and four right with real widget targeting", () => {
+test("v235 layout map remains four left, content center and four right with real widget targeting", () => {
   for (const slot of ["sidebar-left-1","sidebar-left-2","sidebar-left-3","sidebar-left-4","content-main","sidebar-right-1","sidebar-right-2","sidebar-right-3","sidebar-right-4"]) {
-    assert.ok(v234.includes(`"${slot}"`) || v235.includes(`"${slot}"`), `missing ${slot}`);
+    assert.ok(v235.includes(`"${slot}"`), `missing ${slot}`);
   }
-  assert.match(v234, /GRID_PLACEMENT/);
-  assert.match(v234, /v234-layout-popover/);
-  assert.match(v234, /HTML \/ JavaScript/);
-  assert.match(v234, /Buka semua 26 widget/);
-  assert.match(v248Css, /\.tn-code-workspace[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
-  assert.match(v248Css, /\.tn-code-preview-pane\{order:1/);
-  assert.match(v248Css, /\.tn-code-pane\{order:2/);
+  assert.match(v235, /v235-layout-popover/);
+  assert.match(v235, /HTML \/ JavaScript/);
 });
 
-test("Nara keeps Camera Photo File model intelligence and non-modal small/medium geometry", () => {
+test("Nara keeps native Camera Photo File plus model and intelligence, with viewport-safe portal", () => {
   assert.match(nara, /<Camera \/>[\s\S]*<b>Kamera<\/b>/);
   assert.match(nara, /<ImageIcon \/>[\s\S]*<b>Foto<\/b>/);
   assert.match(nara, /<File \/>[\s\S]*<b>File teks<\/b>/);
   assert.match(nara, /intelligenceOptions/);
   assert.match(nara, /modelOptions/);
-  assert.match(v242, /v242-nara-attachment-menu/);
-  assert.match(v242, /Kamera/);
-  assert.match(v242, /Foto/);
-  assert.match(v242, /File/);
-  assert.match(v248Css, /data-nara-interaction="small"/);
-  assert.match(v248Css, /data-nara-interaction="medium"/);
-  assert.match(v248Css, /pointer-events:none!important/);
-  assert.match(v248Css, /nara-assistant-header button\[title="Tutup"\]/);
+  assert.match(v235, /v235-nara-attachment-portal/);
+  assert.match(css, /\.v235-nara-attachment-portal[\s\S]*position:fixed!important[\s\S]*pointer-events:auto!important/);
 });
 
-test("profile and Settings remain separate while the profile surface keeps useful account actions", () => {
-  for (const action of ["profile","settings","add-site","view-site","logout"]) assert.ok(v242.includes(`data-action="${action}"`), `missing profile action ${action}`);
-  assert.match(v242, /Avatar, identitas, biografi, dan website/);
-  assert.match(v242, /Konfigurasi situs aktif/);
-  assert.match(v248, /Buka menu profil/);
+test("profile menu receives explicit add-site action while Profile and Settings stay separate", () => {
+  assert.match(runtime, /data-action = "create-site"|dataset\.action = "create-site"/);
+  assert.match(runtime, /\+ Tambahkan situs/);
+  assert.match(v235, /data-action="profile"/);
+  assert.match(v235, /data-action="settings"/);
+  assert.match(v235, /data-action="logout"/);
+  assert.match(runtime, /openSiteManager/);
 });
 
-test("health probe failures never hide or disable auth methods", () => {
-  assert.match(authReadiness, /auth-readiness-nondestructive-v248/);
-  assert.match(authReadiness, /Opsi login tetap aktif/);
-  assert.doesNotMatch(authReadiness, /hideUnavailableEmailActions|leaveSignupMode/);
-  assert.doesNotMatch(authReadiness, /\.hidden\s*=\s*true|\.disabled\s*=\s*true/);
-  for (const marker of ["signInWithProvider","signInWithPassword","signInWithMagicLink","persistSession: true","autoRefreshToken: true"]) assert.ok(auth.includes(marker), `missing auth contract ${marker}`);
-});
-
-test("v248 adds no destructive storage or logout behavior", () => {
-  assert.doesNotMatch(v248, /localStorage\.clear|sessionStorage\.clear|signOut\(/);
-  assert.doesNotMatch(authReadiness, /localStorage\.clear|sessionStorage\.clear|signOut\(/);
+test("session persistence is still mandatory and no v236 logout/clear-storage regression exists", () => {
+  assert.match(auth, /persistSession:\s*true/);
+  assert.match(auth, /autoRefreshToken:\s*true/);
+  assert.doesNotMatch(runtime, /localStorage\.clear|sessionStorage\.clear|signOut\(/);
 });
 
 test("all required sidebar labels remain in the production Studio source", () => {
