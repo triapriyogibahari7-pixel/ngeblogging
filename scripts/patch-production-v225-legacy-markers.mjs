@@ -9,6 +9,7 @@ const THEME_LEGACY = [
   "Peta tata letak 20 area widget",
   "Peta tata letak 20 area widget + 1 area kiri tambahan, total 21 area",
   "onOpenWidgets(area.id)",
+  "empat widget kiri dan empat widget kanan",
 ];
 const WIDGET_LEGACY = [
   'id: "sidebar-left-4", label: "Sidebar kiri 4", group: "content"',
@@ -16,11 +17,16 @@ const WIDGET_LEGACY = [
 ];
 
 let themeSource = await readFile(themeFile, "utf8");
+const v225Map = '<section id="ngeblogging-layout-map" className="tn-layout-studio" aria-label="Peta tata letak situs" data-v225-layout-source="green-reference">';
+const semanticMap = '<section id="ngeblogging-layout-map" className="tn-layout-studio" data-v212-layout-areas="22" aria-label="Peta tata letak situs dengan empat widget kiri dan empat widget kanan" data-v225-layout-source="green-reference">';
+if (themeSource.includes(v225Map)) {
+  themeSource = themeSource.replace(v225Map, semanticMap);
+}
 if (!themeSource.includes(MARKER)) {
   themeSource += `\n/* ${MARKER}\n${THEME_LEGACY.join("\n")}\nThese strings are retained only for backward regression compatibility. They are not rendered UI copy.\n*/\n`;
-  await writeFile(themeFile, themeSource);
 }
-for (const marker of [MARKER, ...THEME_LEGACY]) {
+await writeFile(themeFile, themeSource);
+for (const marker of [MARKER, ...THEME_LEGACY, 'data-v212-layout-areas="22"']) {
   if (!themeSource.includes(marker)) throw new Error(`V225_THEME_LEGACY_MARKER_MISSING:${marker}`);
 }
 
