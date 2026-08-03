@@ -6,10 +6,11 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-native-authority-v250.js");
 const css = read("src/studio-native-authority-v250.css");
-const onboarding = read("src/StudioOnboardingGate.jsx");
 const auth = read("src/lib/supabase.js");
 const authReadiness = read("src/auth-readiness-bridge.js");
 const provider = read("src/auth-provider-gateway-v250.js");
+const postpatch = read("scripts/patch-studio-native-v250.mjs");
+const patchChain = read("scripts/patch-service-worker-v179.mjs");
 const studio = read("src/StudioNext.jsx");
 const nara = read("src/NaraAssistant.jsx");
 const theme = read("src/ThemeStudio.jsx");
@@ -69,16 +70,23 @@ test("Theme editor keeps device preview, real gutter, 10 areas and custom HTML w
   assert.ok(widgets.includes('id: "custom-html"'));
 });
 
-test("login is persistent, OAuth has same-origin route, bootstrap is membership-first", () => {
+test("login stays persistent and v250 postpatch is last after legacy bootstrap generators", () => {
   for (const marker of ['flowType: "pkce"',"persistSession: true","autoRefreshToken: true","PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245"]) assert.ok(auth.includes(marker), marker);
   assert.ok(authReadiness.includes('import "./auth-provider-gateway-v250.js"'));
   assert.ok(provider.includes("/api/auth-proxy"));
   assert.ok(provider.includes("/auth/v1/authorize"));
   assert.ok(provider.includes("same-origin-auth-gateway"));
-  assert.ok(onboarding.includes("first-site-onboarding-v250-20260804"));
-  assert.ok(onboarding.includes("Critical path: Supabase already owns persisted tokens. Read the user's sites first."));
-  assert.ok(onboarding.includes("verifySessionDeferred(userId)"));
-  assert.doesNotMatch(runtime + onboarding + provider, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
+  assert.ok(patchChain.includes('await import("./patch-studio-native-v250.mjs")'));
+  assert.ok(patchChain.indexOf("patch-studio-native-v250.mjs") > patchChain.indexOf("patch-auth-production-v245.mjs"));
+  for (const marker of [
+    "studio-native-auth-postpatch-v250-20260804",
+    "polvmlrhqoiflumibfqs.supabase.co",
+    "polvmlrhqoiflumibfqs",
+    "listUserSitesDirectV192",
+    "readPersistedSupabaseSessionV198",
+    "direct-supabase-rls",
+  ]) assert.ok(postpatch.includes(marker), marker);
+  assert.doesNotMatch(runtime + provider + postpatch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
 test("v250 is a build-time service-worker gate", () => {
