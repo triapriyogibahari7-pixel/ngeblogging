@@ -11,6 +11,7 @@ function verifySourceContracts() {
   const runtime = read("src/studio-final-authority-v239.js");
   const css = read("src/studio-final-authority-v239.css");
   const sourceV237 = read("src/studio-source-stability-v237-ui.js");
+  const widgets = read("src/widget-system.js");
   const release = read("public/release-v239.json");
   const checks = [
     [entry, 'import "./studio-final-authority-v239.js"'],
@@ -22,13 +23,14 @@ function verifySourceContracts() {
     [runtime, "v239-code-gutter"],
     [runtime, "Widget kiri 4"],
     [runtime, "Widget kanan 4"],
-    [runtime, "custom-html"],
     [css, "v239-layout-popover"],
     [css, "v239-code-editor"],
     [css, 'data-v239-nara-mode="nonmodal"'],
     [css, ".sv124-free-domain>aside"],
     [css, ".op41-line"],
     [sourceV237, "profile-only-v239"],
+    [widgets, 'id: "custom-html"'],
+    [widgets, 'name: "HTML / JavaScript"'],
     [release, RELEASE],
   ];
   for (const [source, marker] of checks) if (!source.includes(marker)) throw new Error(`V239_SOURCE_CONTRACT_MISSING:${marker}`);
