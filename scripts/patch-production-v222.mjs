@@ -106,7 +106,7 @@ async function verify() {
     [auth, "persistSession: true", "persist session"],
     [auth, "autoRefreshToken: true", "auto refresh"],
     [analytics, "get_site_analytics_dashboard", "real analytics RPC"],
-    [publicSite, "PUBLIC_SITE_SINGLE_RENDER_V209", "single public render"],
+    [publicSite, "PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218", "atomic single public bootstrap"],
     [widgets, 'id: "custom-html"', "custom widget retained"],
     [worker, VERSION, "v222 SW version"],
     [worker, CACHE, "v222 cache"],
