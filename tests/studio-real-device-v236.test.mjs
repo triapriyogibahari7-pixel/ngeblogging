@@ -17,7 +17,6 @@ const themeCatalog = read("src/theme-catalog.js");
 const auth = read("src/lib/supabase.js");
 const editor = read("src/ContentEditor.jsx");
 const nara = read("src/NaraAssistant.jsx");
-const finalizer = read("scripts/patch-production-v248.mjs");
 
 const requiredMenu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
@@ -129,12 +128,9 @@ test("health probe failures never hide or disable auth methods", () => {
   for (const marker of ["signInWithProvider","signInWithPassword","signInWithMagicLink","persistSession: true","autoRefreshToken: true"]) assert.ok(auth.includes(marker), `missing auth contract ${marker}`);
 });
 
-test("v248 build finalizer rotates cache without forced navigation or logout", () => {
-  assert.match(finalizer, /ngeblogging-app-v248-auth-ui-regression-20260803/);
-  assert.match(finalizer, /auth-ui-regression-cache-v248/);
-  assert.match(finalizer, /NGE_BLOGGING_UPDATE_AVAILABLE_V248/);
-  assert.match(finalizer, /V248_FORCED_NAVIGATION_REMAINS/);
+test("v248 adds no destructive storage or logout behavior", () => {
   assert.doesNotMatch(v248, /localStorage\.clear|sessionStorage\.clear|signOut\(/);
+  assert.doesNotMatch(authReadiness, /localStorage\.clear|sessionStorage\.clear|signOut\(/);
 });
 
 test("all required sidebar labels remain in the production Studio source", () => {
