@@ -5,11 +5,12 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 const RELEASE = "studio-source-stability-v237-20260803";
 const HOTFIX_RELEASE = "studio-desktop-sidebar-v238-20260803";
 
-const [entry, runtime, ui, css, css238, device, studio, operations, analytics, themes, widgets, nara, auth, vite, swLib, swLib238, release, release238] = await Promise.all([
+const [entry, runtime, ui, css, runtime238, css238, device, studio, operations, analytics, themes, widgets, nara, auth, vite, swLib, swLib238, release, release238] = await Promise.all([
   read("src/Studio.jsx"),
   read("src/studio-source-stability-v237.js"),
   read("src/studio-source-stability-v237-ui.js"),
   read("src/studio-source-stability-v237.css"),
+  read("src/studio-desktop-sidebar-v238.js"),
   read("src/studio-desktop-sidebar-v238.css"),
   read("src/studio-device-mode-v140.js"),
   read("src/StudioNext.jsx"),
@@ -30,17 +31,22 @@ const required = [
   [entry, 'import "./studio-real-device-v236.js"'],
   [entry, 'import "./studio-source-stability-v237.js"'],
   [entry, 'import "./studio-source-stability-v237-ui.js"'],
-  [entry, 'import "./studio-desktop-sidebar-v238.css"'],
+  [entry, 'import "./studio-desktop-sidebar-v238.js"'],
   [runtime, RELEASE],
-  [runtime, HOTFIX_RELEASE],
   [runtime, 'import "./studio-operations-v41.js"'],
   [runtime, "physicalMetrics"],
-  [runtime, "desktopSitePhone"],
-  [runtime, "single-internal-n-toggle"],
   [runtime, "camera-photo-file"],
   [runtime, "v235-nara-attachment-portal"],
   [runtime, "code-left-preview-right"],
   [runtime, "preview-top-code-bottom"],
+  [runtime238, HOTFIX_RELEASE],
+  [runtime238, "detectedDesktopSite"],
+  [runtime238, 'responsiveMode = "desktop"'],
+  [runtime238, "largeTablet"],
+  [runtime238, "single-internal-n-toggle"],
+  [runtime238, "camera-photo-file"],
+  [runtime238, "code-left-preview-right"],
+  [runtime238, "preview-top-code-bottom"],
   [ui, "v237RenderedSettings"],
   [ui, "moved-to-profile-menu"],
   [ui, "+ Tambahkan situs"],
@@ -56,9 +62,8 @@ const required = [
   [css238, ".sv124-free-domain>aside"],
   [css238, "#ngeblogging-layout-map"],
   [css238, ".tn-code-workspace"],
-  [device, "desktopSitePhoneSignal"],
-  [device, 'if (desktopSitePhone) return "desktop"'],
-  [device, 'if (handheld) return "tablet"'],
+  [device, 'const RELEASE = "studio-device-mode-v188-20260801"'],
+  [device, "view.layoutWidth > view.physicalViewportWidth * 1.35"],
   [operations, "Tambah situs"],
   [operations, "loadAnalytics"],
   [analytics, "get_site_analytics_dashboard"],
@@ -88,8 +93,8 @@ for (const [source, marker] of required) {
 const v236Index = entry.indexOf('import "./studio-real-device-v236.js"');
 const v237Index = entry.indexOf('import "./studio-source-stability-v237.js"');
 const uiIndex = entry.indexOf('import "./studio-source-stability-v237-ui.js"');
-const v238CssIndex = entry.indexOf('import "./studio-desktop-sidebar-v238.css"');
-if (!(v236Index >= 0 && v237Index > v236Index && uiIndex > v237Index && v238CssIndex > uiIndex)) throw new Error("V237_V238_AUTHORITY_ORDER_INVALID");
+const v238Index = entry.indexOf('import "./studio-desktop-sidebar-v238.js"');
+if (!(v236Index >= 0 && v237Index > v236Index && uiIndex > v237Index && v238Index > uiIndex)) throw new Error("V237_V238_AUTHORITY_ORDER_INVALID");
 
 const familyCount = [...themes.matchAll(/\{ id:"[^"]+",name:"[^"]+",category:/g)].length;
 const compositionCount = [...themes.matchAll(/\{ id:"(?:prime|dawn|night|coast|atelier)"/g)].length;
@@ -102,9 +107,9 @@ for (const label of ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Ana
   if (!studio.includes(label)) throw new Error(`V237_MENU_MISSING:${label}`);
 }
 
-for (const source of [runtime, ui, swLib, swLib238, device, css238]) {
+for (const source of [runtime, runtime238, ui, swLib, swLib238, device, css238]) {
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V237_V238_DESTRUCTIVE_SESSION_ACTION");
 }
 
 console.log(`Verified ${RELEASE} without mutating historical React or service-worker sources before tests.`);
-console.log(`Verified ${HOTFIX_RELEASE}: desktop-site large family, single internal n, bounded Domain/Theme/Settings and non-destructive session behavior.`);
+console.log(`Verified ${HOTFIX_RELEASE}: additive desktop-site large family, single internal n, bounded Domain/Theme/Settings and non-destructive session behavior.`);
