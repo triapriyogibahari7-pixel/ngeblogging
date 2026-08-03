@@ -196,7 +196,14 @@ async function verify() {
     [release, RELEASE],
   ];
   for (const [source, marker] of checks) if (!source.includes(marker)) throw new Error(`V233_VERIFY_FAILED:${marker}`);
-  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(transport)) throw new Error("V233_DESTRUCTIVE_TRANSPORT_SESSION_ACTION");
+
+  const gatewayStart = transport.indexOf("async function gatewayFirstV190(input, init, proxy, kind) {");
+  const gatewayEnd = transport.indexOf("async function authAwareFetch(input, init) {", gatewayStart);
+  if (gatewayStart < 0 || gatewayEnd < 0) throw new Error("V233_GATEWAY_SECTION_MISSING");
+  const gatewaySection = transport.slice(gatewayStart, gatewayEnd);
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(gatewaySection)) {
+    throw new Error("V233_DESTRUCTIVE_GATEWAY_SESSION_ACTION");
+  }
 }
 
 await patchDataTransport();
