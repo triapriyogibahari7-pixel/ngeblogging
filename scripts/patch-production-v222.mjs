@@ -24,11 +24,33 @@ async function patchStudioEntry() {
   let source = await read(path);
   const line = 'import "./studio-production-v222.js";';
   if (!source.includes(line)) {
-    const anchor = 'import "./studio-production-v221.js";';
-    if (!source.includes(anchor)) throw new Error("V222_V221_ENTRY_ANCHOR_MISSING");
+    const anchors = [
+      'import "./studio-production-v221.js";',
+      'import "./studio-production-v216.js";',
+      'import "./studio-production-v210.js";',
+    ];
+    const anchor = anchors.find((candidate) => source.includes(candidate));
+    if (!anchor) throw new Error("V222_STUDIO_ENTRY_ANCHOR_MISSING");
     source = source.replace(anchor, `${anchor}\n${line}`);
-    await write(path, source);
   }
+  const tabBridge = 'import "./studio-production-v222-code-tabs.js";';
+  if (!source.includes(tabBridge)) source = source.replace(line, `${line}\n${tabBridge}`);
+  await write(path, source);
+}
+
+async function patchThemeCodeActions() {
+  const path = "src/ThemeStudio.jsx";
+  let source = await read(path);
+  if (source.includes('data-v222-code-tab="html"') && source.includes('data-v222-code-tab="css"') && source.includes('data-v222-code-tab="javascript"')) return;
+
+  const generic = '<button onClick={() => setModal("code")}><Code2/> Edit Kode</button>';
+  const legacy = '<button onClick={() => setModal("code")}><Code2/> Edit HTML</button>';
+  const actions = '<button data-v222-code-tab="html" onClick={() => setModal("code")}><FileCode2/> Edit HTML</button><button data-v222-code-tab="css" onClick={() => setModal("code")}><Palette/> Edit CSS</button><button data-v222-code-tab="javascript" onClick={() => setModal("code")}><Code2/> Edit JavaScript</button>';
+  if (source.includes(generic)) source = source.replaceAll(generic, actions);
+  else if (source.includes(legacy)) source = source.replaceAll(legacy, actions);
+  else throw new Error("V222_THEME_CODE_ACTION_ANCHOR_MISSING");
+
+  await write(path, source);
 }
 
 async function patchServiceWorker() {
@@ -50,7 +72,7 @@ async function patchServiceWorker() {
 }
 
 async function verify() {
-  const [entry, runtime, css, themeStudio, nara, auth, analytics, worker, release] = await Promise.all([
+  const [entry, runtime, css, themeStudio, nara, auth, analytics, worker, release, tabBridge] = await Promise.all([
     read("src/Studio.jsx"),
     read("src/studio-production-v222.js"),
     read("src/studio-production-v222.css"),
@@ -60,10 +82,12 @@ async function verify() {
     read("src/studio-analytics-v41.js"),
     read("public/sw.js"),
     read("public/release-v222.json"),
+    read("src/studio-production-v222-code-tabs.js"),
   ]);
 
   const checks = [
     [entry, "studio-production-v222.js", "Studio v222 entry"],
+    [entry, "studio-production-v222-code-tabs.js", "Theme tab bridge entry"],
     [runtime, RELEASE, "runtime release"],
     [runtime, "green-reference-full-width", "green full-width layout"],
     [runtime, "semantic-four-left-four-right", "semantic four/four map"],
@@ -83,6 +107,10 @@ async function verify() {
     [themeStudio, "preferredArea={widgetArea}", "clicked layout area reaches Widget Studio"],
     [themeStudio, "tn-widget-custom-code-v209", "custom HTML JavaScript widget retained"],
     [themeStudio, "Tema Custom", "custom theme retained"],
+    [themeStudio, 'data-v222-code-tab="html"', "explicit HTML action"],
+    [themeStudio, 'data-v222-code-tab="css"', "explicit CSS action"],
+    [themeStudio, 'data-v222-code-tab="javascript"', "explicit JavaScript action"],
+    [tabBridge, "openRequestedThemeCodeTab", "matching Theme code tab bridge"],
     [nara, "Kamera", "Nara Camera"],
     [nara, "Foto", "Nara Photo"],
     [nara, "File teks", "Nara File"],
@@ -108,6 +136,7 @@ async function verify() {
 }
 
 await patchStudioEntry();
+await patchThemeCodeActions();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
