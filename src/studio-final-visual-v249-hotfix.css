@@ -1,0 +1,47 @@
+/* v249 hotfix — remove duplicate controls that were visible in the supplied screenshots. */
+html[data-studio-v246] :is(
+  .sn-sidebar-edge-toggle-v147,
+  .sn-side-close,
+  .v227-sidebar-fab,
+  .studio-external-sidebar-toggle,
+  [data-v173-collapse-toggle],
+  [data-v187-sidebar-toggle],
+  [data-v208-sidebar-toggle],
+  [data-v223-sidebar-toggle],
+  [data-v229-sidebar-toggle],
+  [data-studio-mode-badge],
+  [data-device-mode-badge],
+  .studio-device-mode-badge,
+  .v225-mode-badge,
+  .sn-device-mode-badge-v148
+){display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* Never let a hidden legacy backdrop darken or freeze the page. */
+html[data-studio-v246] :is(.sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop]){
+  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+  background:transparent!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+
+/* Keep the visible top profile in every large viewport. */
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-avatar{
+  display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;margin-left:auto!important;
+}
+
+/* Small mode has exactly one n: top-left while closed, internal while open. */
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-mobile-n{display:grid!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-sidebar{pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-mobile-n{display:none!important;pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-internal-n{display:grid!important;pointer-events:auto!important}
+
+/* Profile dropdown stays inside the viewport and above Studio chrome. */
+#ngeblogging-studio-chrome-v244 .v244-profile-menu{right:max(10px,env(safe-area-inset-right))!important;left:auto!important;top:calc(var(--v249-top) + 8px)!important;max-height:calc(100dvh - var(--v249-top) - 20px)!important}
+
+/* Prevent long account/site names from pushing the profile out of the topbar. */
+#ngeblogging-studio-chrome-v244 .v244-workspace{min-width:0!important;max-width:min(52vw,520px)!important;overflow:hidden!important}
+#ngeblogging-studio-chrome-v244 .v244-workspace :is(strong,small){min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+/* Nara attachment portal must open above the composer and never below the viewport. */
+html[data-studio-v246] :is(.v242-nara-attachment-menu,.v235-nara-attachment-portal,.nara-attachment-menu){
+  max-width:calc(100vw - 20px)!important;max-height:min(240px,calc(100dvh - 20px))!important;overflow:auto!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
