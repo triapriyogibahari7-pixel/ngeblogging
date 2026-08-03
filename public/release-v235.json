@@ -1,0 +1,75 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v235-interaction-map-nara-20260803",
+  "basedOn": [
+    "studio-production-v234-screenshot-layout-sidebar-nara-20260803",
+    "studio-production-v233-data-session-bootstrap-20260803"
+  ],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+  "sidebar": {
+    "singleInteractionAuthorityAtWindowCapture": true,
+    "desktopSingleInternalN": true,
+    "mobileSingleNWhenClosed": true,
+    "drawerInternalNCloses": true,
+    "legacyDuplicateControlsHidden": true,
+    "menuAlignedAndTight": true,
+    "collapsedIconsRemainCentered": true,
+    "mainContentTracksSidebarWidth": true,
+    "backdropDoesNotBlurDrawer": true
+  },
+  "topbar": {
+    "deviceLabelRemoved": true,
+    "duplicateSiteSwitcherRemoved": true,
+    "profileTopRight": true,
+    "profileSeparatedFromSettings": true,
+    "profileActions": ["profile", "avatar", "sites", "view-site", "settings", "logout"],
+    "avatarUploadUsesExistingProfileStorage": true
+  },
+  "themeStudio": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "layoutAreaRightFourthMadeRealAtBuild": true,
+    "fourLeftPostCenterFourRight": true,
+    "legacyHeaderCopyrightStrayBoxesHidden": true,
+    "slotContextPopoverIsSmall": true,
+    "slotChoiceAssignsRealWidgetArea": true,
+    "customHtmlJavascriptChoice": true,
+    "desktopCodePreview5050": true,
+    "smallPreviewAboveCode": true,
+    "actualCodeLineGutterCappedAt": 10000,
+    "unconditionalTenThousandLineRenderingRemoved": true,
+    "explicitHtmlCssJavascriptPreviewActions": true
+  },
+  "nara": {
+    "smallMediumNonmodal": true,
+    "fullscreenModal": true,
+    "attachmentMenuBodyPortal": true,
+    "cameraUsesNativeHiddenInput": true,
+    "photoUsesNativeHiddenInput": true,
+    "fileUsesNativeHiddenInput": true,
+    "intelligenceVisible": true,
+    "modelVisible": true,
+    "smallLargeDeviceWidthPx": 410,
+    "noBlinkAnimation": true
+  },
+  "domain": {
+    "smallDevicePrimaryActionsFullRow": true,
+    "horizontalLabels": true
+  },
+  "auth": {
+    "dataFailoverPreserved": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "automaticLogoutAdded": false,
+    "googleOAuthEndToEndClaimed": false,
+    "linkedinOAuthEndToEndClaimed": false,
+    "emailPasswordEndToEndClaimed": false
+  },
+  "validation": {
+    "realDeviceRequiredBefore100PercentClaim": true,
+    "massCapacityClaimed": false,
+    "productionCredentialLoadTest": false
+  },
+  "legacyFeaturesPreserved": true
+}
