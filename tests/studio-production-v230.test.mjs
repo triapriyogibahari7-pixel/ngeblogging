@@ -119,3 +119,38 @@ test("v230 does not claim unverified OAuth or mass capacity", () => {
   assert.equal(release.validation.massCapacityClaimed, false);
   assert.equal(release.validation.realDeviceRequired, true);
 });
+
+test("v234 is chained after v233 and owns the current screenshot geometry without deleting data-session recovery", () => {
+  const runtime234 = read("src/studio-production-v234.js");
+  const css234 = read("src/studio-production-v234.css");
+  const patch234 = read("scripts/patch-production-v234.mjs");
+  const release234 = JSON.parse(read("public/release-v234.json"));
+  assert.match(chain, /patch-production-v233\.mjs/);
+  assert.match(chain, /patch-production-v234\.mjs/);
+  assert.ok(chain.indexOf("patch-production-v233.mjs") < chain.indexOf("patch-production-v234.mjs"));
+  assert.match(entry, /studio-production-v234\.js/);
+  assert.ok(entry.indexOf("studio-production-v232.js") < entry.indexOf("studio-production-v234.js"));
+  assert.match(runtime234, /studio-production-v234-screenshot-layout-sidebar-nara-20260803/);
+  assert.match(runtime234, /GRID_PLACEMENT/);
+  assert.match(runtime234, /"content-main": \["4 \/ 10", "6 \/ 10"\]/);
+  assert.match(runtime234, /WIDGET_CHOICES/);
+  assert.match(runtime234, /HTML \/ JavaScript/);
+  assert.match(runtime234, /Array\.from\(\{ length: 10000 \}/);
+  assert.match(runtime234, /camera-photo-file/);
+  assert.match(css234, /v234-layout-popover/);
+  assert.match(css234, /code-left-preview-right/);
+  assert.match(css234, /preview-top-code-bottom/);
+  assert.match(css234, /nara-attachment-menu/);
+  assert.match(css234, /data-v234-domain-action/);
+  assert.match(patch234, /ACTIVE_VERSION_V234/);
+  assert.match(patch234, /ACTIVE_CACHE_RELEASE_V234/);
+  assert.match(auth, /DATA_TRANSPORT_RELEASE_V233/);
+  assert.equal(release234.themeStudio.themeCount, 100);
+  assert.equal(release234.themeStudio.widgetCount, 26);
+  assert.equal(release234.sidebar.desktopSingleInternalN, true);
+  assert.equal(release234.topbar.siteManagerMovedToSummary, true);
+  assert.equal(release234.nara.cameraPhotoFileMenu, true);
+  assert.equal(release234.auth.v233DataFailoverPreserved, true);
+  assert.equal(release234.auth.automaticLogoutAdded, false);
+  assert.doesNotMatch(runtime234, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+});
