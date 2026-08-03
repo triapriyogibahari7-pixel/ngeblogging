@@ -67,6 +67,14 @@ async function patchRealFourthAreas() {
   await write(runtimePath, runtime);
 }
 
+async function patchCssSyntax() {
+  const path = "src/studio-production-v235.css";
+  let css = await read(path);
+  css = css.replaceAll("!important!important", "!important");
+  if (css.includes("!important!important")) throw new Error("V235_CSS_DOUBLE_IMPORTANT_REMAINS");
+  await write(path, css);
+}
+
 async function patchServiceWorker() {
   const path = "public/sw.js";
   let source = await read(path);
@@ -131,6 +139,7 @@ async function verify() {
 
 await patchStudioEntry();
 await patchRealFourthAreas();
+await patchCssSyntax();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}; v234 geometry and v233 data/session recovery remain preserved under one v235 interaction authority.`);
