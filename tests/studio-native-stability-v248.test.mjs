@@ -6,10 +6,12 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-native-stability-v248.js");
 const css = read("src/studio-native-stability-v248.css");
+const finalCss = read("src/studio-native-final-v248.css");
 const studio = read("src/StudioNext.jsx");
 const auth = read("src/lib/supabase.js");
 const provider = read("src/auth-provider-gateway-v248.js");
 const sessionAuthority = read("src/auth-session-authority-v76.js");
+const avatar = read("src/profile-avatar-v248.js");
 const widgets = read("src/widget-system.js");
 const themes = read("src/theme-catalog.js");
 const nara = read("src/NaraAssistant.jsx");
@@ -26,10 +28,12 @@ const retired = [
 ];
 
 test("v248 makes the native React shell the last Studio interaction authority", () => {
-  for (const filename of retired) assert.doesNotMatch(entry, new RegExp(`import \\\"\\.\\/${filename.replaceAll(".", "\\.")}\\\"`), `retired runtime re-enabled: ${filename}`);
+  for (const filename of retired) assert.ok(!entry.includes(`import \"./${filename}\"`), `retired runtime re-enabled: ${filename}`);
   const js = entry.indexOf('import "./studio-native-stability-v248.js"');
+  const avatarImport = entry.indexOf('import "./profile-avatar-v248.js"');
   const style = entry.indexOf('import "./studio-native-stability-v248.css"');
-  assert.ok(js >= 0 && style > js);
+  const finalStyle = entry.indexOf('import "./studio-native-final-v248.css"');
+  assert.ok(js >= 0 && avatarImport > js && style > avatarImport && finalStyle > style);
   assert.match(runtime, /restoreReactChrome/);
   assert.match(runtime, /v244-legacy-sidebar/);
   assert.match(css, /#ngeblogging-studio-chrome-v244/);
@@ -48,13 +52,21 @@ test("all required sidebar actions stay in React and one n toggles each family",
   assert.match(css, /--v248-sidebar-rail:70px/);
   assert.match(css, /\.sn-side\.mobile-open/);
   assert.match(css, /\.sn-side-backdrop[\s\S]*pointer-events:none!important/);
+  assert.match(finalCss, /data-studio-v248-sidebar="open"[\s\S]*\.sn-sidebar-toggle/);
+  assert.match(finalCss, /sn-device-mode-badge-v148/);
 });
 
 test("profile, settings, add site, view site and logout are separate explicit actions", () => {
   for (const action of ["profile","settings","add-site","view-site","logout"]) assert.ok(runtime.includes(`data-action=\"${action}\"`));
+  assert.match(runtime, /openProfile\(/);
   assert.match(runtime, /studioAccountPaneV248/);
   assert.match(css, /data-studio-account-pane-v248="profile"/);
   assert.match(css, /data-studio-account-pane-v248="settings"/);
+  assert.match(avatar, /site-public-media/);
+  assert.match(avatar, /squareAvatarBlob/);
+  assert.match(avatar, /updateUserProfile/);
+  assert.match(avatar, /Unggah avatar/);
+  assert.match(finalCss, /sn-profile-avatar-upload-v248/);
 });
 
 test("OAuth providers use same-origin auth gateway while sessions remain persistent", () => {
@@ -85,6 +97,8 @@ test("Theme Studio exposes the ten real layout areas and readable line numbers",
   assert.match(runtime, /tn-code-gutter-v248/);
   assert.match(css, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)!important/);
   assert.match(css, /ui-monospace/);
+  assert.match(finalCss, /\.tn-studio[\s\S]*display:block!important/);
+  assert.match(finalCss, /\.tn-modal[\s\S]*max-height:calc\(100dvh - 20px\)!important/);
 });
 
 test("100 distinct theme architecture and 26 widgets remain intact", () => {
