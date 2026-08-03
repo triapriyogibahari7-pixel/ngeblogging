@@ -1,5 +1,5 @@
 [build]
-  command = "npm run pretest:production && node --test --test-name-pattern='PWA cache rotation' tests/production-entry-v154.test.mjs && mkdir -p dist && printf '<!doctype html><title>v154 pwa subtest passed</title><p>v154 pwa subtest passed</p>' > dist/index.html"
+  command = "npm run pretest:production && node --test tests/production-entry-v154.test.mjs && mkdir -p dist && printf '<!doctype html><title>production entry v154 passed</title><p>production entry v154 passed</p>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
