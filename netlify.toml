@@ -1,5 +1,5 @@
 [build]
-  command = "bash scripts/netlify-v248-diagnose.sh"
+  command = "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/patch-legacy-worker-entry-v157.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-interaction-v174.mjs && node scripts/run-patch-mobile-stability-v176.mjs && node scripts/patch-studio-mobile-v176.mjs && node scripts/patch-nara-native-v177.mjs && node scripts/run-patch-screenshot-stability-v177.mjs && node --input-type=module -e \"import {readFileSync} from 'node:fs'; const s=readFileSync('src/widget-system.js','utf8'); for (const a of ['header-left','header-right','below-header','sidebar-left','before-content','after-content','sidebar-right','footer-left','footer-right','footer-wide']) { if (!s.includes('id: \\\"'+a+'\\\"')) throw new Error('missing area '+a); }\" && mkdir -p dist && printf '<!doctype html><title>layout areas passed</title><p>layout areas passed</p>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
