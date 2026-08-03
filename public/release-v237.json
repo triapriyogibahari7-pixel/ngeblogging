@@ -14,9 +14,10 @@
   ],
   "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
   "largeVariants": ["tablet", "laptop", "desktop", "computer"],
-  "sourceCorrections": {
+  "renderedCorrections": {
+    "historicalReactSourcePreserved": true,
     "profileSeparatedFromSettings": true,
-    "settingsSiteOnly": true,
+    "settingsRenderedSiteOnly": true,
     "summaryAddSiteAction": true,
     "siteLimitInternal": 25,
     "siteLimitNumberAdvertisedInNormalUi": false,
@@ -78,8 +79,10 @@
   "serviceWorker": {
     "version": "ngeblogging-app-v237-source-stability-20260803",
     "cache": "source-stability-cache-v237",
+    "finalizationStage": "vite-closeBundle-after-tests",
     "forcedAuthNavigation": false,
-    "sessionStorageClearing": false
+    "sessionStorageClearing": false,
+    "oldCachesDeletedOnActivate": true
   },
   "legacyFeaturesPreserved": true,
   "productionPromotionRequired": true,
