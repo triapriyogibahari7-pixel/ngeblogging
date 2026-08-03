@@ -40,6 +40,30 @@ test("eight device previews preserve actual target width and scale into the visi
   assert.equal(release.preview.rootScalingAdded, false);
 });
 
+test("sidebar exposes one visible n control, hides X and keeps menus close to Buat Post", () => {
+  assert.match(runtime, /normalizeSidebarControls/);
+  assert.match(runtime, /mobile-closed-logo/);
+  assert.match(runtime, /desktop-collapsed/);
+  assert.match(runtime, /sideClose\.hidden = true/);
+  assert.match(css, /sn-side-close\{display:none!important/);
+  assert.match(css, /sn-sidebar-toggle\[hidden\]\{display:none!important/);
+  assert.match(css, /#ngeblogging-studio-sidebar>nav\{justify-content:flex-start!important/);
+  assert.match(css, /data-v230-sidebar="mobile-open"/);
+  assert.match(css, /data-v230-sidebar="desktop-collapsed"/);
+});
+
+test("small-device layout remains the green-reference site map instead of a tiny tile board", () => {
+  assert.match(theme, /data-v226-layout-source="native-green-reference"/);
+  assert.match(theme, /data-v226-green-map="four-left-post-four-right"/);
+  assert.match(css, /grid-template-columns:minmax\(66px,\.9fr\) minmax\(132px,1\.75fr\) minmax\(66px,\.9fr\)/);
+  for (const marker of [
+    ".sidebar-left-1", ".sidebar-left-2", ".sidebar-left-3", ".sidebar-left-4",
+    ".sidebar-right-1", ".sidebar-right-2", ".sidebar-right-3", ".sidebar-right-4",
+    ".content-main", ".before-content", ".after-content",
+  ]) assert.ok(css.includes(marker), `small map missing ${marker}`);
+  assert.match(theme, /preferredArea=\{widgetArea\}/);
+});
+
 test("false startup error retries only after an authenticated session and real site read succeed", () => {
   assert.match(runtime, /STARTUP_RETRY_LIMIT = 3/);
   assert.match(runtime, /supabase\.auth\.getSession\(\)/);
@@ -56,6 +80,7 @@ test("false startup error retries only after an authenticated session and real s
 });
 
 test("topbar profile remains visible and avatar URL gets a bounded live preview", () => {
+  assert.match(runtime, /querySelector\("\.sn-top,\.sn-topbar"\)/);
   assert.match(runtime, /v230TopbarProfile = "visible"/);
   assert.match(runtime, /v230-avatar-preview/);
   assert.match(css, /v230-avatar-preview/);
@@ -64,7 +89,7 @@ test("topbar profile remains visible and avatar URL gets a bounded live preview"
   assert.equal(release.profile.avatarUrlLivePreview, true);
 });
 
-test("v229 green layout/theme/Nara and real Analytics remain preserved", () => {
+test("v229 Theme/Nara and real Analytics remain preserved", () => {
   assert.match(theme, /data-v226-layout-source="native-green-reference"/);
   assert.match(theme, /preferredArea=\{widgetArea\}/);
   assert.match(analytics, /get_site_analytics_dashboard/);
