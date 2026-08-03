@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ngeblogging Studio — Audit 14 Viewport v241</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif;background:#edf2f8;color:#172840}body{padding:16px}header,.controls,.stage,.note{max-width:1500px;margin-left:auto;margin-right:auto}header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}h1{margin:3px 0;font-size:clamp(24px,4vw,38px)}p{margin:0;max-width:900px;color:#65758b;line-height:1.5}.controls{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.controls button{min-height:40px;padding:0 11px;border:1px solid #cad6e5;border-radius:9px;background:#fff;color:#334b6a;font-weight:750}.controls button.active{background:#2d6edf;color:#fff;border-color:#2d6edf}.stage{min-height:680px;padding:44px 14px 18px;border:1px solid #d4dfeb;border-radius:18px;background:linear-gradient(145deg,#dce6f2,#f8fafc);overflow:auto}.device{position:relative;margin:auto;background:#111827;border:9px solid #111827;border-radius:24px;box-shadow:0 22px 70px #17294233;transform-origin:top center}.device::before{content:attr(data-label);position:absolute;top:-38px;left:50%;transform:translateX(-50%);padding:5px 10px;border-radius:999px;background:#172840;color:#fff;font-size:11px;white-space:nowrap}.device iframe{display:block;width:100%;height:100%;border:0;border-radius:14px;background:#fff}.note{margin-top:12px;padding:12px 14px;border:1px solid #d4dfeb;border-radius:12px;background:#fff;font-size:12px;line-height:1.55}@media(max-width:720px){body{padding:8px}.stage{padding:42px 4px 12px}.device{transform:scale(var(--audit-scale,.78));margin-bottom:calc((1 - var(--audit-scale,.78))*-100%)}}
+</style>
+</head>
+<body>
+<header><div><small>NGEBLOGGING QA · v241</small><h1>Visualisasi 14 viewport Studio</h1><p>Memeriksa sidebar/drawer, Profil, Domain, Tema, Tata Letak, 100 tema, 26 widget, editor HTML/CSS/JavaScript, Analitik dan Nara menggunakan sesi origin yang sama. Halaman ini tidak menciptakan statistik atau akun palsu.</p></div></header>
+<nav class="controls" aria-label="Pilih viewport"></nav>
+<main class="stage"><div class="device"><iframe title="Preview Ngeblogging Studio" src="/studio?ui_audit=v241"></iframe></div></main>
+<div class="note"><b>Catatan validasi:</b> visualisasi iframe membantu pemeriksaan geometri, tetapi tidak menggantikan pengujian Chrome Android, Safari iPhone, PWA, keyboard terbuka, login provider nyata, atau load test infrastruktur produksi.</div>
+<script>
+const sizes=[[320,568],[360,640],[375,667],[390,844],[412,915],[430,932],[600,960],[768,1024],[820,1180],[1024,768],[1280,720],[1366,768],[1440,900],[1920,1080]];
+const nav=document.querySelector('.controls'),device=document.querySelector('.device'),stage=document.querySelector('.stage');
+function choose(w,h,button){document.querySelectorAll('.controls button').forEach(b=>b.classList.toggle('active',b===button));device.style.width=w+'px';device.style.height=h+'px';device.dataset.label=`${w} × ${h}`;const available=Math.max(260,stage.clientWidth-16);const scale=Math.min(1,available/(w+18));device.style.setProperty('--audit-scale',String(scale));}
+sizes.forEach(([w,h],index)=>{const b=document.createElement('button');b.type='button';b.textContent=`${w}×${h}`;b.onclick=()=>choose(w,h,b);nav.append(b);if(index===3)choose(w,h,b)});window.addEventListener('resize',()=>document.querySelector('.controls button.active')?.click(),{passive:true});
+</script>
+</body>
+</html>

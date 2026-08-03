@@ -66,5 +66,7 @@ import "./studio-desktop-sidebar-v238.js";
 import "./studio-react-safe-v240.js";
 import "./studio-final-authority-v239.js";
 import "./studio-react-safe-v240.css";
+import "./studio-visual-stability-v241.js";
+import "./studio-visual-stability-v241-final.css";
 
 export default StudioFastGate;
