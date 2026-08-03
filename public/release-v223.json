@@ -1,0 +1,46 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v223-20260803",
+  "basedOn": "studio-production-v222-20260803",
+  "theme": {
+    "builtInThemesRequired": 100,
+    "widgetCountRequired": 26,
+    "customHtmlJavascriptWidgetRequired": true,
+    "layoutReference": "green-reference",
+    "fourLeftFourRight": true,
+    "codeLineLimitSupported": 10000,
+    "actualLineNumbersRetained": true,
+    "previewModeIndependentFromPhysicalEditorUi": true,
+    "physicalSmallPreviewAboveCode": true,
+    "largeCodeLeftPreviewRight": true
+  },
+  "nara": {
+    "smallMediumNonModal": true,
+    "attachmentMenuCameraPhotoFile": true,
+    "attachmentMenuViewportVisible": true,
+    "modelAndIntelligenceControlsRetained": true,
+    "launcherAnimationDisabled": true
+  },
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "previewSelectionNotRewrittenByV223": true,
+    "physicalEditorUiRemainsReadableInDesktopSitePhone": true
+  },
+  "auth": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "forcedLogoutAdded": false,
+    "transientNetworkFailureMustNotLogout": true
+  },
+  "deployment": {
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "liveApexMustServeV223BeforeCompletion": true
+  },
+  "claims": {
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceVerificationRequiredBeforeHundredPercentClaim": true
+  }
+}
