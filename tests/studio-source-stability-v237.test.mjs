@@ -9,7 +9,6 @@ const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-source-stability-v237.js");
 const css = read("src/studio-source-stability-v237.css");
 const studio = read("src/StudioNext.jsx");
-const domain = read("src/DomainPanelV124.jsx");
 const analytics = read("src/studio-analytics-v41.js");
 const operations = read("src/studio-operations-v41.js");
 const auth = read("src/lib/supabase.js");
@@ -39,8 +38,8 @@ test("physical handheld safety overrides stale desktop geometry without removing
 });
 
 test("Profile and Settings are source-separated while add-site remains in Ringkasan", () => {
-  assert.match(patch, /data-source-settings-v237=\\"site-only\\"/);
-  assert.match(patch, /title=\\"Pengaturan\\"/);
+  assert.ok(patch.includes('data-source-settings-v237="site-only"'));
+  assert.ok(patch.includes('title="Pengaturan"'));
   assert.match(patch, /sn-add-site-summary/);
   assert.match(patch, /Profil akun dan avatar tetap terpisah/);
   assert.equal(release.sourceCorrections.profileSeparatedFromSettings, true);
