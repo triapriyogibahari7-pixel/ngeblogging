@@ -1,0 +1,55 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v223-20260803",
+  "date": "2026-08-03",
+  "purpose": "Deterministic Theme Studio, responsive green layout map, stable device-family lock, explicit HTML/CSS/JavaScript actions, and contained Nara AI geometry.",
+  "legacyFeaturesPreserved": true,
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "themeStudio": {
+    "builtInThemesMinimum": 100,
+    "customThemePreserved": true,
+    "widgetCount": 26,
+    "fourLeftWidgetAreas": true,
+    "fourRightWidgetAreas": true,
+    "layoutReference": "green-map",
+    "layoutAreaClickOpensWidgetStudio": true,
+    "customHtmlJavascriptWidgetPreserved": true,
+    "explicitHtmlAction": true,
+    "explicitCssAction": true,
+    "explicitJavascriptAction": true,
+    "smallDeviceCodeLayout": "preview-above-code",
+    "largeDeviceCodeLayout": "code-left-preview-right",
+    "codeLineNumberCapacity": 10000
+  },
+  "nara": {
+    "launcherStable": true,
+    "smallNonModal": true,
+    "mediumNonModal": true,
+    "fullModal": true,
+    "camera": true,
+    "photo": true,
+    "textFile": true,
+    "microphone": true,
+    "speaker": true,
+    "modelSelector": true,
+    "intelligenceSelector": true
+  },
+  "auth": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "forcedLogoutAdded": false
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v223-deterministic-theme-nara-20260803",
+    "cache": "deterministic-theme-nara-cache-v223",
+    "forcedNavigation": false,
+    "sessionStorageDestruction": false
+  },
+  "capacity": {
+    "productionMassLoadTestPerformed": false,
+    "massAccountCreationPerformed": false,
+    "claim": "not-claimed"
+  },
+  "realDeviceVerification": "required-before-100-percent-claim"
+}
