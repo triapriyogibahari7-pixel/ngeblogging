@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, ChevronDown, Cloud, CloudOff, Code2, Copy, Download, Eye, FileArchive,
-  Gauge, Globe2, History, Laptop, Monitor, Palette, Rocket, RotateCcw, Save, Search,
+  Check, ChevronDown, Cloud, Code2, Download, Eye, FileArchive,
+  Gauge, Globe2, History, Laptop, Monitor, Palette, Rocket, Save, Search,
   ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Tablet, Upload, X, Zap,
   Blocks, ExternalLink, FileCode2,
 } from "lucide-react";
@@ -15,6 +15,7 @@ import { BUILT_IN_WIDGETS, createDefaultWidgetState, getWidget, normalizeWidgetS
 import { loadSiteThemeState, saveSiteBlueprint, saveSiteThemeState } from "./lib/theme-data";
 import "./theme-next.css";
 import "./theme-interface-v149.css";
+import "./theme-native-v245.css";
 
 const DEVICES = [
   { id: "application", label: "Aplikasi", icon: Smartphone, width: 360, frameClass: "mobile" },
@@ -29,6 +30,19 @@ const DEVICES = [
 
 const DEVICE_IDS = new Set(DEVICES.map((device) => device.id));
 const CATEGORIES = ["Semua", ...new Set(BUILT_IN_THEMES.map((theme) => theme.category))];
+const LAYOUT_SLOTS = [
+  { id: "header-wide", label: "Header & navigasi", area: "below-header", group: "header" },
+  { id: "left-1", label: "Widget kiri 1", area: "sidebar-left", group: "left", ordinal: 0 },
+  { id: "left-2", label: "Widget kiri 2", area: "sidebar-left", group: "left", ordinal: 1 },
+  { id: "left-3", label: "Widget kiri 3", area: "sidebar-left", group: "left", ordinal: 2 },
+  { id: "left-4", label: "Widget kiri 4", area: "sidebar-left", group: "left", ordinal: 3 },
+  { id: "content-main", label: "Post / Page utama", area: "after-content", group: "content", ordinal: 0 },
+  { id: "right-1", label: "Widget kanan 1", area: "sidebar-right", group: "right", ordinal: 0 },
+  { id: "right-2", label: "Widget kanan 2", area: "sidebar-right", group: "right", ordinal: 1 },
+  { id: "right-3", label: "Widget kanan 3", area: "sidebar-right", group: "right", ordinal: 2 },
+  { id: "right-4", label: "Widget kanan 4", area: "sidebar-right", group: "right", ordinal: 3 },
+  { id: "footer-wide", label: "Footer", area: "footer-wide", group: "footer" },
+];
 
 function deviceInfo(id) {
   return DEVICES.find((device) => device.id === id) || DEVICES[6];
@@ -115,15 +129,32 @@ function Customizer({ value, onChange, theme }) {
   </div>;
 }
 
+function CodeSurface({ language, value, onChange }) {
+  const gutter = useRef(null);
+  const source = String(value || "");
+  const actualLines = Math.max(1, source.split("\n").length);
+  const numberedLines = Math.min(10_000, actualLines);
+  const lineNumbers = useMemo(() => Array.from({ length: numberedLines }, (_, index) => String(index + 1)).join("\n"), [numberedLines]);
+  const syncScroll = (event) => {
+    if (gutter.current) gutter.current.scrollTop = event.currentTarget.scrollTop;
+  };
+  return <div className="tn-native-code-surface" data-language={language} data-line-count={actualLines} data-max-lines="10000">
+    <pre ref={gutter} className="tn-native-line-gutter" aria-hidden="true">{lineNumbers}</pre>
+    <textarea aria-label={`Editor ${language} dengan nomor baris`} value={source} onScroll={syncScroll} onChange={(event) => onChange(event.target.value)} spellCheck="false" wrap="off"/>
+  </div>;
+}
+
 function CodeEditor({ value, onChange, config, widgets, theme, device, onDeviceChange }) {
   const [tab, setTab] = useState("html");
   const tabs = [{ id:"html",label:"HTML",icon:FileCode2 },{ id:"css",label:"CSS",icon:Palette },{ id:"javascript",label:"JavaScript",icon:Code2 }];
   const selectedDevice = deviceInfo(device);
-  return <div className="tn-code-workspace">
+  const source = String(value[tab] || "");
+  const lineCount = Math.max(1, source.split("\n").length);
+  return <div className="tn-code-workspace tn-native-code-workspace-v245">
     <section className="tn-code-pane">
       <nav>{tabs.map(({id,label,icon:Icon}) => <button key={id} className={tab===id?"active":""} onClick={() => setTab(id)}><Icon/>{label}</button>)}</nav>
-      <div className="tn-code-status"><span><ShieldCheck/> Sandbox aktif</span><small>{String(value[tab] || "").length.toLocaleString("id-ID")} karakter</small></div>
-      <textarea aria-label={`Editor ${tab}`} value={value[tab] || ""} onChange={(event) => onChange({ ...value, [tab]: event.target.value })} spellCheck="false"/>
+      <div className="tn-code-status"><span><ShieldCheck/> Sandbox aktif</span><small>{lineCount.toLocaleString("id-ID")} baris · {source.length.toLocaleString("id-ID")} karakter · kapasitas 10.000 baris</small></div>
+      <CodeSurface language={tab} value={source} onChange={(next) => onChange({ ...value, [tab]: next })}/>
     </section>
     <section className="tn-code-preview-pane">
       <header><div><small>PREVIEW LANGSUNG</small><b>{selectedDevice.label} · {selectedDevice.width}px</b></div><DeviceSwitch value={device} onChange={onDeviceChange}/></header>
@@ -137,7 +168,7 @@ function WidgetStudio({ value, onChange }) {
   const toggle = (widgetId) => {
     const existing = activeMap.get(widgetId);
     if (existing) onChange(value.filter((entry) => entry.id !== widgetId));
-    else onChange([...value, { id: widgetId, enabled: true, area: "sidebar", order: value.length, title: getWidget(widgetId)?.name || widgetId, settings: {} }]);
+    else onChange([...value, { id: widgetId, enabled: true, area: "sidebar-right", order: value.length, title: getWidget(widgetId)?.name || widgetId, settings: {} }]);
   };
   const patch = (widgetId, changes) => onChange(value.map((entry) => entry.id === widgetId ? { ...entry, ...changes } : entry));
   return <div className="tn-widget-studio">
@@ -146,27 +177,84 @@ function WidgetStudio({ value, onChange }) {
       const active = activeMap.get(widget.id);
       return <article key={widget.id} className={active ? "active" : ""}>
         <button className="tn-widget-toggle" onClick={() => toggle(widget.id)}><span>{widget.icon}</span><div><small>{widget.category}</small><b>{widget.name}</b><p>{widget.description}</p></div><i>{active ? <Check/> : "+"}</i></button>
-        {active && <div className="tn-widget-settings"><label>Area<select value={active.area} onChange={(event) => patch(widget.id,{area:event.target.value})}><option value="sidebar">Sidebar</option><option value="after-content">Setelah konten</option><option value="footer">Footer</option></select></label><label>Judul<input value={active.title} onChange={(event) => patch(widget.id,{title:event.target.value})}/></label></div>}
+        {active && <div className="tn-widget-settings"><label>Area<select value={active.area} onChange={(event) => patch(widget.id,{area:event.target.value})}><option value="header-left">Header kiri</option><option value="header-right">Header kanan</option><option value="below-header">Di bawah header</option><option value="sidebar-left">Sidebar kiri</option><option value="before-content">Di atas postingan</option><option value="after-content">Di bawah postingan</option><option value="sidebar-right">Sidebar kanan</option><option value="footer-left">Footer kiri</option><option value="footer-right">Footer kanan</option><option value="footer-wide">Footer panjang</option></select></label><label>Judul<input value={active.title} onChange={(event) => patch(widget.id,{title:event.target.value})}/></label></div>}
       </article>;
     })}</div>
   </div>;
 }
 
-function LayoutMap({ widgets, onOpenWidgets }) {
+function LayoutMap({ widgets, onChange, onOpenWidgets }) {
+  const [selectedSlotId, setSelectedSlotId] = useState("");
   const enabled = normalizeWidgetState(widgets).filter((entry) => entry.enabled !== false);
-  const areaCount = (area) => enabled.filter((entry) => entry.area === area).length;
-  const areas = [
-    { id: "header", label: "Header / navigasi", count: areaCount("header") },
-    { id: "main", label: "Konten utama", count: areaCount("after-content") },
-    { id: "sidebar", label: "Sidebar", count: areaCount("sidebar") },
-    { id: "footer", label: "Footer", count: areaCount("footer") },
-  ];
-  return <section className="tn-layout-studio" aria-label="Peta tata letak dan widget">
-    <div>
-      <header className="tn-layout-studio-header"><div><small>PETA TATA LETAK</small><h2>Struktur situs terlihat jelas dari atas sampai bawah.</h2><p>Klik area untuk membuka Widget Studio. Semua kotak tetap terbaca pada komputer, laptop, tablet, aplikasi, handphone, mobile, dan perangkat kecil.</p></div><button onClick={onOpenWidgets}><Blocks/> Atur widget</button></header>
-      <div className="tn-layout-canvas">{areas.map((area) => <button key={area.id} className={`tn-layout-area ${area.id}`} onClick={onOpenWidgets}><span>{area.count}</span>{area.label}</button>)}</div>
+  const selectedSlot = LAYOUT_SLOTS.find((slot) => slot.id === selectedSlotId) || null;
+
+  const entriesForSlot = (slot) => {
+    const explicit = enabled.filter((entry) => entry.settings?.layoutSlot === slot.id);
+    if (explicit.length) return explicit;
+    const areaEntries = enabled.filter((entry) => entry.area === slot.area && !entry.settings?.layoutSlot);
+    const siblings = LAYOUT_SLOTS.filter((candidate) => candidate.area === slot.area);
+    const siblingIndex = Math.max(0, siblings.findIndex((candidate) => candidate.id === slot.id));
+    return areaEntries.filter((_, index) => index % Math.max(1, siblings.length) === siblingIndex);
+  };
+
+  const assignWidget = (widgetId) => {
+    if (!selectedSlot) return;
+    const normalized = normalizeWidgetState(widgets);
+    const existing = normalized.find((entry) => entry.id === widgetId);
+    const nextEntry = {
+      id: widgetId,
+      enabled: true,
+      area: selectedSlot.area,
+      order: existing?.order ?? normalized.length,
+      title: existing?.title || getWidget(widgetId)?.name || widgetId,
+      settings: { ...(existing?.settings || {}), layoutSlot: selectedSlot.id },
+    };
+    const next = existing ? normalized.map((entry) => entry.id === widgetId ? nextEntry : entry) : [...normalized, nextEntry];
+    onChange(next);
+    setSelectedSlotId("");
+  };
+
+  const clearSlot = () => {
+    if (!selectedSlot) return;
+    const next = normalizeWidgetState(widgets).map((entry) => entry.settings?.layoutSlot === selectedSlot.id ? { ...entry, enabled: false } : entry);
+    onChange(next);
+    setSelectedSlotId("");
+  };
+
+  const slotButton = (slot) => {
+    const entries = entriesForSlot(slot);
+    return <button type="button" key={slot.id} className={`tn-native-layout-slot ${slot.group}`} data-layout-slot={slot.id} onClick={() => setSelectedSlotId(slot.id)}>
+      <span>{entries.length}</span><b>{slot.label}</b><small>{entries.length ? entries.slice(0,2).map((entry) => entry.title || getWidget(entry.id)?.name).join(" · ") : "Klik untuk memilih widget"}</small>
+    </button>;
+  };
+
+  const left = LAYOUT_SLOTS.filter((slot) => slot.group === "left");
+  const right = LAYOUT_SLOTS.filter((slot) => slot.group === "right");
+  const header = LAYOUT_SLOTS.find((slot) => slot.group === "header");
+  const content = LAYOUT_SLOTS.find((slot) => slot.group === "content");
+  const footer = LAYOUT_SLOTS.find((slot) => slot.group === "footer");
+
+  return <section className="tn-layout-studio tn-native-layout-v245" aria-label="Peta tata letak tema interaktif">
+    <header className="tn-layout-studio-header"><div><small>EDIT TATA LETAK</small><h2>Denah asli tema: widget kiri, Post/Page utama, dan widget kanan.</h2><p>Setiap kotak adalah target widget nyata. Klik kotak untuk memilih salah satu dari {WIDGET_COUNT} widget, termasuk HTML / JavaScript.</p></div><button onClick={onOpenWidgets}><Blocks/> Semua widget</button></header>
+    <div className="tn-native-layout-scroll">
+      <div className="tn-native-layout-map">
+        {slotButton(header)}
+        <div className="tn-native-layout-column left">{left.map(slotButton)}</div>
+        <div className="tn-native-layout-content">{slotButton(content)}<div className="tn-native-post-preview"><small>PREVIEW STRUKTUR</small><h3>Judul Post / Page</h3><p>Konten utama selalu berada di tengah. Widget kiri dan kanan tidak menutup area membaca.</p><i/><i/><i/></div></div>
+        <div className="tn-native-layout-column right">{right.map(slotButton)}</div>
+        {slotButton(footer)}
+      </div>
     </div>
-    <aside className="tn-layout-side"><small>WIDGET TERPILIH</small><h3>{enabled.length} widget aktif</h3><p>Centang menunjukkan widget yang akan ikut diterbitkan bersama tema.</p><div className="tn-layout-widget-list">{enabled.slice(0, 12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div><button onClick={onOpenWidgets}><Blocks/> Buka semua {WIDGET_COUNT} widget</button></aside>
+    <aside className="tn-layout-side"><small>WIDGET AKTIF</small><h3>{enabled.length} dari {WIDGET_COUNT}</h3><p>Centang menunjukkan widget aktif yang ikut tersimpan bersama tema.</p><div className="tn-layout-widget-list">{enabled.slice(0,12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.settings?.layoutSlot || entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div><button onClick={onOpenWidgets}><Blocks/> Kelola semua widget</button></aside>
+    {selectedSlot && <div className="tn-native-layout-popover" role="dialog" aria-modal="false" aria-label={`Pilih widget untuk ${selectedSlot.label}`}>
+      <header><div><small>TARGET TATA LETAK</small><h3>{selectedSlot.label}</h3></div><button type="button" onClick={() => setSelectedSlotId("")} aria-label="Tutup pilihan widget"><X/></button></header>
+      <div className="tn-native-layout-widget-options">{BUILT_IN_WIDGETS.map((widget) => {
+        const current = enabled.find((entry) => entry.id === widget.id);
+        const here = current?.settings?.layoutSlot === selectedSlot.id;
+        return <button type="button" key={widget.id} className={here ? "active" : ""} onClick={() => assignWidget(widget.id)}><span>{widget.icon}</span><div><b>{widget.name}</b><small>{widget.category} · {widget.description}</small></div><i>{here ? <Check/> : "+"}</i></button>;
+      })}</div>
+      <footer><button type="button" onClick={clearSlot}>Kosongkan kotak</button><button type="button" onClick={onOpenWidgets}><Blocks/> Pengaturan lengkap</button></footer>
+    </div>}
   </section>;
 }
 
@@ -242,16 +330,16 @@ export default function ThemeStudio({ setToast, site, user }) {
     } catch (error) { setToast(error.message || "File tema gagal dibaca"); }
   };
 
-  return <div className="tn-studio" data-theme-interface="v149">
+  return <div className="tn-studio" data-theme-interface="v245-native">
     <input ref={fileInput} type="file" accept=".ngeblog-theme,.json,.html,.htm,.css,.js" hidden onChange={importFile}/>
     <section className="tn-hero">
-      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><h1>100 tema aktif dengan delapan pratinjau perangkat.</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
+      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><h1>100 tema aktif dengan delapan pratinjau perangkat.</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML / CSS / JavaScript</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
       <div className="tn-active-stage"><div className="tn-stage-toolbar"><DeviceSwitch value={device} onChange={setDevice}/><b>{previewTheme.name}</b></div><ThemeFrame theme={previewTheme} code={previewTheme.id === activeTheme.id ? themeState.code : previewTheme.code} config={previewTheme.id === activeTheme.id ? themeState.publishedConfig : undefined} widgets={previewTheme.id === activeTheme.id ? themeState.widgets : createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/>{previewTheme.id !== activeTheme.id && <div className="tn-apply-bar"><span>Pratinjau <b>{previewTheme.name}</b></span><button onClick={() => apply(previewTheme.id)}><Check/> Gunakan tema</button></div>}</div>
     </section>
 
-    <section className="tn-command"><div><small>TEMA AKTIF</small><b>{activeTheme.name}</b><span>{THEME_COUNT} tema · {WIDGET_COUNT} widget · diperbarui {formatDate(themeState.updatedAt)}</span></div><nav><button onClick={() => setModal("preview")}><Eye/> Preview</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => fileInput.current?.click()}><Upload/> Upload tema</button><button onClick={backup}><FileArchive/> Cadangan</button><button onClick={saveHtml}><Download/> Simpan ke komputer</button><button onClick={() => setModal("history")}><History/> Pulihkan</button></nav></section>
+    <section className="tn-command"><div><small>TEMA AKTIF</small><b>{activeTheme.name}</b><span>{THEME_COUNT} tema · {WIDGET_COUNT} widget · diperbarui {formatDate(themeState.updatedAt)}</span></div><nav><button onClick={() => setModal("preview")}><Eye/> Preview</button><button onClick={() => setModal("code")}><Code2/> Edit kode</button><button onClick={() => fileInput.current?.click()}><Upload/> Upload tema</button><button onClick={backup}><FileArchive/> Cadangan</button><button onClick={saveHtml}><Download/> Simpan ke komputer</button><button onClick={() => setModal("history")}><History/> Pulihkan</button></nav></section>
 
-    <LayoutMap widgets={themeState.widgets} onOpenWidgets={() => setModal("widgets")}/>
+    <LayoutMap widgets={themeState.widgets} onChange={(nextWidgets) => commit(saveThemeWidgets(themeState,nextWidgets),"Posisi widget tata letak disimpan")} onOpenWidgets={() => setModal("widgets")}/>
 
     <section className="tn-blueprints"><div><small>JENIS SITUS</small><h2>Blog, portofolio, forum, berita, website, landing page, dan profil.</h2></div><div className="tn-blueprint-list"><button className={blueprint === "all" ? "active" : ""} onClick={() => chooseBlueprint("all")}><Globe2/> Semua</button>{SITE_BLUEPRINTS.map((item) => <button key={item.id} className={blueprint === item.id ? "active" : ""} onClick={() => chooseBlueprint(item.id)}><b>{item.label}</b><small>{item.description}</small></button>)}</div></section>
 
