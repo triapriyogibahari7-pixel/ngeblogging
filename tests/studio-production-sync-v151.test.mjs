@@ -12,12 +12,24 @@ const studio = read("src/StudioNext.jsx");
 const theme = read("src/ThemeStudio.jsx");
 const nara = read("src/NaraAssistant.jsx");
 const entryWorker = read("cloudflare/worker-v69.mjs");
+const v248Finalizer = read("scripts/service-worker-v248-lib.mjs");
+const v248Release = JSON.parse(read("public/release-v248.json"));
 
 const menu = ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"];
 
-test("PWA v151 compatibility remains", () => {
+test("PWA v151 compatibility remains while v248 owns the current cache authority", () => {
   for (const marker of ["ngeblogging-pwa-v151-20260729", "studio-completion-v151", "responsiveFamily", "authSurface"]) assert.ok(pwa.includes(marker));
-  for (const marker of ["ngeblogging-app-v151-studio-completion-20260729", "studio-completion-cache-v151", "function isAuthSurface", "refreshStaleWindow"]) assert.ok(worker.includes(marker));
+  for (const marker of ["function isAuthSurface", "refreshStaleWindow", "AUTH_HANDOFF_RELEASE"]) assert.ok(worker.includes(marker), `worker compatibility missing ${marker}`);
+  for (const marker of [
+    "ngeblogging-app-v248-native-stability-20260803",
+    "studio-native-stability-cache-v248",
+    "studio-native-stability-v248-20260803",
+    "V248_FORCED_NAVIGATION_REMAINS",
+    "V248_AUTH_SURFACE_GUARD_MISSING",
+  ]) assert.ok(v248Finalizer.includes(marker), `v248 finalizer missing ${marker}`);
+  assert.equal(v248Release.release, "studio-native-stability-v248-20260803");
+  assert.equal(v248Release.version, "ngeblogging-app-v248-native-stability-20260803");
+  assert.equal(v248Release.cache, "studio-native-stability-cache-v248");
 });
 
 test("v184 extends the historical production chain without deleting earlier authorities", () => {
@@ -60,4 +72,6 @@ test("auth surfaces remain excluded from PWA forced navigation", () => {
     assert.ok(worker.includes(route));
     assert.ok(pwa.includes(route));
   }
+  assert.match(v248Finalizer, /isAuthSurface/);
+  assert.match(v248Finalizer, /V248_AUTH_SURFACE_GUARD_MISSING/);
 });
