@@ -1,0 +1,34 @@
+{
+  "release": "auth-production-readiness-v245-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v245-auth-production-readiness-20260803",
+  "cache": "auth-production-readiness-cache-v245",
+  "purpose": "Keep Google, LinkedIn, email/password and magic-link login usable on official Ngeblogging production hosts even when a deployment omits VITE Supabase public variables.",
+  "security": {
+    "publicPublishableCredentialOnly": true,
+    "serviceRoleEmbedded": false,
+    "pkce": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "automaticLogoutOnNetworkFailure": false
+  },
+  "configurationPriority": [
+    "VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY/ANON_KEY",
+    "official-host public fallback for ngeblogging.com and subdomains"
+  ],
+  "preserved": [
+    "Studio stable source shell v244",
+    "workspace snapshot resilience v243",
+    "same-origin auth gateway with direct Supabase fallback",
+    "Google OAuth",
+    "LinkedIn OIDC",
+    "GitHub OAuth",
+    "email/password",
+    "magic link",
+    "email confirmation resend",
+    "password recovery"
+  ],
+  "verificationLimits": {
+    "providerEndToEndNeedsRealProviderCredentialsAndConsent": true,
+    "capacityModelIsNotARealHundredsOfMillionsLoginLoadTest": true
+  }
+}
