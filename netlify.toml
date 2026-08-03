@@ -1,5 +1,5 @@
 [build]
-  command = "npm run pretest:production && node --test tests/production-entry-v154.test.mjs tests/netlify-production-publisher-v156.test.mjs && mkdir -p dist && printf '<!doctype html><title>entry publisher v154-v156 passed</title><p>entry publisher v154-v156 passed</p>' > dist/index.html"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
