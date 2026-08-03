@@ -72,23 +72,23 @@ async function patchDataTransport() {
       if (typeof document !== "undefined") {
         if (kind === "auth") document.documentElement.dataset.authTransportV190 = "same-origin-gateway";
         else document.documentElement.dataset.dataTransportV190 = "same-origin-data-gateway";
-        document.documentElement.dataset.dataTransportV233 = `${kind}-gateway-confirmed`;
+        document.documentElement.dataset.dataTransportV233 = \`\${kind}-gateway-confirmed\`;
       }
       return response;
     }
 
     fallbackReason = staleUnauthorized
-      ? `stale-${kind}-unauthorized-${response.status}`
+      ? \`stale-\${kind}-unauthorized-\${response.status}\`
       : staleHtmlShell
-        ? `stale-${kind}-html-shell`
-        : `${kind}-gateway-${response.status}`;
-    console.warn(`Gateway ${kind} belum dapat dipakai (${fallbackReason}); mencoba Supabase langsung.`);
+        ? \`stale-\${kind}-html-shell\`
+        : \`\${kind}-gateway-\${response.status}\`;
+    console.warn(\`Gateway \${kind} belum dapat dipakai (\${fallbackReason}); mencoba Supabase langsung.\`);
   } catch (error) {
     if (callerAborted) throw error;
     fallbackReason = error?.name === "TimeoutError" || controller?.signal?.aborted
-      ? `${kind}-gateway-timeout`
-      : `${kind}-gateway-network-error`;
-    console.warn(`Gateway ${kind} tidak terjangkau (${fallbackReason}); mencoba Supabase langsung.`, error);
+      ? \`\${kind}-gateway-timeout\`
+      : \`\${kind}-gateway-network-error\`;
+    console.warn(\`Gateway \${kind} tidak terjangkau (\${fallbackReason}); mencoba Supabase langsung.\`, error);
   } finally {
     if (deadlineTimer) globalThis.clearTimeout(deadlineTimer);
     if (callerSignal) callerSignal.removeEventListener?.("abort", onCallerAbort);
@@ -97,7 +97,7 @@ async function patchDataTransport() {
   if (typeof document !== "undefined") {
     if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback";
     else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback";
-    document.documentElement.dataset.dataTransportV233 = `direct-fallback:${fallbackReason || kind}`;
+    document.documentElement.dataset.dataTransportV233 = \`direct-fallback:\${fallbackReason || kind}\`;
   }
   return nativeFetch(directInput, init);
 }`;
