@@ -108,4 +108,5 @@ await import("./patch-production-v233.mjs");
 await import("./patch-production-v234.mjs");
 await import("./patch-production-v235.mjs");
 await import("./patch-production-v236.mjs");
+await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
