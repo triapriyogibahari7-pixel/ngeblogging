@@ -29,6 +29,8 @@ import "./studio-recovery-v135.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
+const ACTIVE_SITE_SNAPSHOT_KEY = "ngeblogging-active-site-snapshot-v209";
+const BOOTSTRAP_RELEASE = "studio-bootstrap-resilience-v243-20260803";
 
 function localDocument(type, title, content, status = "draft") {
   const metadata = normalizeMetadata({ commentsEnabled: type !== "page", showAuthor: type !== "page", showDate: type !== "page", showShare: type !== "page" }, type);
@@ -55,6 +57,28 @@ function loadLocalDocs() {
   } catch {
     return STARTER;
   }
+}
+
+function loadCachedSite() {
+  try {
+    if (window.__ngebloggingActiveSite?.id) return window.__ngebloggingActiveSite;
+    const stored = JSON.parse(localStorage.getItem(ACTIVE_SITE_SNAPSHOT_KEY) || "null");
+    return stored?.id ? stored : null;
+  } catch {
+    return window.__ngebloggingActiveSite?.id ? window.__ngebloggingActiveSite : null;
+  }
+}
+
+function publishActiveSiteSnapshot(site) {
+  if (!site?.id) return;
+  setActiveSiteId(site.id);
+  window.__ngebloggingActiveSite = site;
+  document.documentElement.dataset.activeSiteId = site.id;
+  document.documentElement.dataset.activeSiteSlug = site.slug || "";
+  document.documentElement.dataset.studioBootstrapV243 = BOOTSTRAP_RELEASE;
+  try { localStorage.setItem(ACTIVE_SITE_SNAPSHOT_KEY, JSON.stringify(site)); } catch { /* private storage must not block Studio */ }
+  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-ready", { detail: site }));
+  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: site }));
 }
 
 function relativeTime(value) {
@@ -159,17 +183,68 @@ export default function StudioNext({ onExit, user }) {
   }, [deviceMode, mobileSidebar]);
 
   useEffect(() => {
-    if (!user?.id || !supabaseConfigured) { setDataMode("local"); return; }
+    if (!user?.id || !supabaseConfigured) { setDataMode("local"); return undefined; }
     let cancelled = false;
-    setDataMode("connecting");
-    Promise.all([getOrCreatePrimarySite(user), listUserSites(user.id), getUserProfile(user.id)]).then(([primary, siteRows, userProfile]) => {
-      if (cancelled) return;
-      setSite(primary); setSites(siteRows.length ? siteRows : [primary]); setProfile(userProfile); setDataMode("cloud");
-    }).catch((error) => {
-      console.error("Studio bootstrap failed", error);
-      if (!cancelled) { setDataMode("local"); setToast("Cloud belum dapat dijangkau; Studio memakai cadangan perangkat"); }
-    });
-    return () => { cancelled = true; };
+    let request = 0;
+
+    const bootstrap = async () => {
+      const currentRequest = ++request;
+      const cached = loadCachedSite();
+      if (cached && !cancelled) {
+        setSite((current) => current?.id ? current : cached);
+        setSites((current) => current.length ? current : [cached]);
+        publishActiveSiteSnapshot(cached);
+      }
+      setDataMode("connecting");
+
+      let primary;
+      try {
+        primary = await getOrCreatePrimarySite(user);
+      } catch (error) {
+        console.error("Studio primary-site bootstrap failed", error);
+        if (cancelled || currentRequest !== request) return;
+        if (cached?.id) {
+          setSite(cached);
+          setSites((current) => current.length ? current : [cached]);
+          setDataMode("local");
+          setToast("Koneksi cloud belum stabil; sesi dan workspace aktif tetap dipertahankan di perangkat");
+        } else {
+          setDataMode("local");
+          setToast("Koneksi data belum stabil; sesi akun tetap aktif dan Studio akan mencoba lagi saat online");
+        }
+        return;
+      }
+
+      if (cancelled || currentRequest !== request) return;
+      publishActiveSiteSnapshot(primary);
+      setSite(primary);
+      setSites((current) => current.some((item) => item.id === primary.id) ? current : [primary, ...current]);
+      setDataMode("cloud");
+
+      const [siteRowsResult, profileResult] = await Promise.allSettled([
+        listUserSites(user.id),
+        getUserProfile(user.id),
+      ]);
+      if (cancelled || currentRequest !== request) return;
+
+      if (siteRowsResult.status === "fulfilled") {
+        const siteRows = siteRowsResult.value;
+        setSites(siteRows.length ? siteRows : [primary]);
+      } else {
+        console.warn("Studio site-list enrichment failed; primary site remains active", siteRowsResult.reason);
+      }
+      if (profileResult.status === "fulfilled") setProfile(profileResult.value);
+      else console.warn("Studio profile enrichment failed; Studio remains usable", profileResult.reason);
+      document.documentElement.dataset.studioBootstrapV243 = BOOTSTRAP_RELEASE;
+    };
+
+    const retryOnline = () => bootstrap();
+    window.addEventListener("online", retryOnline, { passive: true });
+    bootstrap();
+    return () => {
+      cancelled = true;
+      window.removeEventListener("online", retryOnline);
+    };
   }, [user?.id]);
 
   useEffect(() => {
@@ -257,7 +332,7 @@ export default function StudioNext({ onExit, user }) {
   };
 
   const chooseView = (next) => { setView(next); setMobileSidebar(false); if (["posts", "pages"].includes(next)) setQuery(""); };
-  const selectSite = (next) => { setActiveSiteId(next.id); setSite(next); setSiteManager(false); setDocs([]); setView("home"); setToast(`Workspace ${next.name} aktif`); };
+  const selectSite = (next) => { setActiveSiteId(next.id); publishActiveSiteSnapshot(next); setSite(next); setSiteManager(false); setDocs([]); setView("home"); setToast(`Workspace ${next.name} aktif`); };
   const toggleSidebar = () => {
     if (currentStudioDeviceMode() === "small") setMobileSidebar((current) => !current);
     else setSidebar((current) => !current);
