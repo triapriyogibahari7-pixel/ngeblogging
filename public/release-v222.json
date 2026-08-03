@@ -1,0 +1,64 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v222-20260803",
+  "basedOn": "studio-production-v221-20260802",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "explicitDesktopSiteLocked": true,
+    "normalPhysicalPhoneSmall": true,
+    "tabletAndDesktopLarge": true,
+    "noRootZoomOrScale": true
+  },
+  "theme": {
+    "builtInThemesRequired": 100,
+    "customThemeRetained": true,
+    "widgetCountRequired": 26,
+    "greenReferenceSemanticMap": true,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "allMapBoxesAreaAware": true,
+    "customHtmlJavascriptWidgetRetained": true,
+    "explicitHtmlCssJavascriptActions": true,
+    "actualLineNumbers": true,
+    "codeLineLimitSupported": 10000,
+    "minifiedThemeCodePrettyPrint": true,
+    "smallEditor": "preview-above-code",
+    "largeEditor": "code-left-preview-right-50-50",
+    "codeSurface": "light-readable"
+  },
+  "nara": {
+    "launcherSquareIcon": true,
+    "smallMediumNonModal": true,
+    "fullModal": true,
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphoneRetained": true,
+    "speakerRetained": true,
+    "modelsRetained": true,
+    "intelligenceRetained": true,
+    "attachmentMenuVisibleWhenOpened": true,
+    "compactControls": true
+  },
+  "auth": {
+    "persistSessionRetained": true,
+    "autoRefreshTokenRetained": true,
+    "forcedLogoutAdded": false
+  },
+  "analytics": {
+    "realProductionRpcRetained": true,
+    "largerCharts": true,
+    "simulationExplicitlyLabeled": true
+  },
+  "domain": {
+    "smallActionsHorizontalFullWidth": true
+  },
+  "publicSite": {
+    "singleInitialRenderV209Retained": true
+  },
+  "claims": {
+    "massUserCapacityClaimed": false,
+    "requiresDistributedLoadTest": true
+  }
+}
