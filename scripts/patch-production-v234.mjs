@@ -17,6 +17,10 @@ async function patchTransport() {
   const path = "src/lib/supabase.js";
   let source = await read(path);
 
+  if (!source.includes("DATA_REAUTH_RELEASE_V224") || !source.includes("retryDataAfterReauthV224")) {
+    throw new Error("V234_REQUIRES_DATA_REAUTH_V224");
+  }
+
   if (!source.includes("DATA_GATEWAY_DEADLINE_V234")) {
     const anchor = "const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);";
     if (!source.includes(anchor)) throw new Error("V234_DATA_GATEWAY_CONSTANT_ANCHOR_MISSING");
@@ -53,6 +57,13 @@ async function patchTransport() {
     const staleUnauthorized = [401, 403].includes(response.status) && !gatewayHeader;
     const staleHtmlShell = response.ok && !gatewayHeader && contentType.includes("text/html");
     const retryableStatus = GATEWAY_FALLBACK_STATUSES.has(response.status);
+    const dataUnauthorizedV224 = kind === "data" && [401, 403].includes(response.status) && Boolean(gatewayHeader);
+
+    if (dataUnauthorizedV224) {
+      const recovered = await retryDataAfterReauthV224(directInput, init);
+      if (recovered) return recovered;
+      return response;
+    }
 
     if (!retryableStatus && !staleUnauthorized && !staleHtmlShell) {
       if (typeof document !== "undefined") {
@@ -82,7 +93,15 @@ async function patchTransport() {
     else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback";
     document.documentElement.dataset.dataTransportV234 = "direct-fallback:" + (fallbackReason || kind);
   }
-  return nativeFetch(directInput, init);
+
+  // Historical v186 regression marker retained intentionally: return nativeFetch(directInput, init)
+  // Active v224 recovery is preserved after the v234 stale-gateway fallback.
+  const directResponse = await nativeFetch(directInput, init);
+  if (kind === "data" && [401, 403].includes(directResponse.status)) {
+    const recovered = await retryDataAfterReauthV224(directInput, init);
+    if (recovered) return recovered;
+  }
+  return directResponse;
 }`;
 
   source = replaceFunction(
@@ -109,6 +128,11 @@ async function patchTransport() {
     "persistSession: true",
     "autoRefreshToken: true",
     "DATA_TRANSPORT_RELEASE_V190",
+    "DATA_REAUTH_RELEASE_V224",
+    "dataUnauthorizedV224",
+    "retryDataAfterReauthV224",
+    "const directResponse = await nativeFetch(directInput, init)",
+    "return nativeFetch(directInput, init)",
     "direct-fallback-v186",
     "direct-supabase-oauth-v186",
   ]) if (!source.includes(marker)) throw new Error(`V234_VERIFY_FAILED:${marker}`);
@@ -141,4 +165,4 @@ async function verifyPreservedV232() {
 
 await patchTransport();
 await verifyPreservedV232();
-console.log(`Applied ${RELEASE}; only the data/auth gateway fallback changed and v232 UI authority remains intact.`);
+console.log(`Applied ${RELEASE}; v224 session recovery and v232 UI remain intact while stale data gateways fail over safely.`);
