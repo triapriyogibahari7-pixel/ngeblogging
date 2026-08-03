@@ -71,7 +71,8 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // owns bounded-preview/bootstrap recovery; v231 owns the green map and single-n
 // geometry; v232 owns screenshot controls; v233 owns bounded data failover; v234
 // owns screenshot geometry; v235 preempts historical interaction listeners and
-// is final for the current single-n, real layout slots, code and Nara attachment UI.
+// owns single-n/layout/code/Nara interactions; v236 is the final real-device
+// geometry guard for editor actions, Domain, Theme/Widget typography and cache.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -106,3 +107,4 @@ await import("./patch-production-v232.mjs");
 await import("./patch-production-v233.mjs");
 await import("./patch-production-v234.mjs");
 await import("./patch-production-v235.mjs");
+await import("./patch-production-v236.mjs");
