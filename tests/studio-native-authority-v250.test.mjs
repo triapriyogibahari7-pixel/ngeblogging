@@ -9,8 +9,7 @@ const css = read("src/studio-native-authority-v250.css");
 const auth = read("src/lib/supabase.js");
 const authReadiness = read("src/auth-readiness-bridge.js");
 const provider = read("src/auth-provider-gateway-v250.js");
-const postpatch = read("scripts/patch-studio-native-v250.mjs");
-const patchChain = read("scripts/patch-service-worker-v179.mjs");
+const activator = read("scripts/activate-studio-native-v250.mjs");
 const studio = read("src/StudioNext.jsx");
 const nara = read("src/NaraAssistant.jsx");
 const theme = read("src/ThemeStudio.jsx");
@@ -19,7 +18,7 @@ const vite = read("vite.config.js");
 
 const liveImport = (path) => new RegExp(`^\\s*import\\s+[\"']\\./${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[\"'];?\\s*$`, "m").test(entry);
 
-test("v250 owns one native React Studio shell and retires click competitors", () => {
+test("v250 owns one native React Studio shell and retires click competitors in source and bundle activation", () => {
   assert.equal(liveImport("studio-native-authority-v250.js"), true);
   assert.equal(liveImport("studio-native-authority-v250.css"), true);
   for (const retired of [
@@ -33,7 +32,10 @@ test("v250 owns one native React Studio shell and retires click competitors", ()
     "studio-sidebar-brand-v246.css",
     "studio-screenshot-lock-v247.css",
     "studio-final-visual-v249.css",
-  ]) assert.equal(liveImport(retired), false, `${retired} must stay backup-only`);
+  ]) {
+    assert.equal(liveImport(retired), false, `${retired} must stay backup-only in committed source`);
+    assert.ok(activator.includes(retired), `${retired} must remain retired again after historical regressions`);
+  }
 });
 
 test("six responsive families keep one centered n and complete menu", () => {
@@ -70,26 +72,29 @@ test("Theme editor keeps device preview, real gutter, 10 areas and custom HTML w
   assert.ok(widgets.includes('id: "custom-html"'));
 });
 
-test("login stays persistent and v250 postpatch is last after legacy bootstrap generators", () => {
+test("login remains persistent and generated membership gets official public fallback only before bundling", () => {
   for (const marker of ['flowType: "pkce"',"persistSession: true","autoRefreshToken: true","PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245"]) assert.ok(auth.includes(marker), marker);
   assert.ok(authReadiness.includes('import "./auth-provider-gateway-v250.js"'));
   assert.ok(provider.includes("/api/auth-proxy"));
   assert.ok(provider.includes("/auth/v1/authorize"));
   assert.ok(provider.includes("same-origin-auth-gateway"));
-  assert.ok(patchChain.includes('await import("./patch-studio-native-v250.mjs")'));
-  assert.ok(patchChain.indexOf("patch-studio-native-v250.mjs") > patchChain.indexOf("patch-auth-production-v245.mjs"));
   for (const marker of [
-    "studio-native-auth-postpatch-v250-20260804",
+    "studio-native-bundle-activation-v250-20260804",
     "polvmlrhqoiflumibfqs.supabase.co",
-    "polvmlrhqoiflumibfqs",
+    "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
     "listUserSitesDirectV192",
     "readPersistedSupabaseSessionV198",
+    "Authorization: `Bearer ${accessToken}`",
     "direct-supabase-rls",
-  ]) assert.ok(postpatch.includes(marker), marker);
-  assert.doesNotMatch(runtime + provider + postpatch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
+    "persisted-storage-first",
+  ]) assert.ok(activator.includes(marker), marker);
+  assert.doesNotMatch(runtime + provider + activator, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|supabase\.auth\.signOut\s*\(/);
+  assert.doesNotMatch(activator, /service_role|SUPABASE_SERVICE_ROLE|sb_secret_/i);
 });
 
-test("v250 is a build-time service-worker gate", () => {
-  assert.match(vite, /finalizeServiceWorkerV250/);
-  assert.match(vite, /ngeblogging-service-worker-v250/);
+test("v250 activates at Vite buildStart while established service-worker finalizers remain compatible", () => {
+  assert.match(vite, /activateStudioNativeV250/);
+  assert.match(vite, /async buildStart\(\)/);
+  assert.match(vite, /finalizeServiceWorkerV249/);
+  assert.doesNotMatch(vite, /finalizeServiceWorkerV250/);
 });
