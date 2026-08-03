@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { activateStudioNativeV250 } from "./scripts/activate-studio-native-v250.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
@@ -15,8 +16,12 @@ import { finalizeServiceWorkerV249 } from "./scripts/service-worker-v249-lib.mjs
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-service-worker-v249",
+      name: "ngeblogging-native-studio-v250",
       apply: "build",
+      async buildStart() {
+        const v250 = await activateStudioNativeV250();
+        console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
+      },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
         console.log(`[vite] ${v237.release} compatibility finalized in ${v237.path}`);
