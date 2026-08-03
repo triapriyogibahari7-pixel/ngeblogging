@@ -3,6 +3,7 @@ import { createAppUrl } from "./site-url.js";
 
 const AUTH_RELEASE = "auth-resilience-v190-20260801";
 const AUTH_LEGACY_RELEASE = "auth-production-v153-20260730";
+const AUTH_PRODUCTION_READINESS_V245 = "auth-production-readiness-v245-20260803";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const DATA_GATEWAY_PREFIX = "/api/data-proxy";
 const DATA_TRANSPORT_RELEASE_V190 = "studio-data-gateway-v190-20260801";
@@ -13,12 +14,36 @@ const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
    natively, so v186 must not replace the transport during production builds. */
 const AUTH_V186_COMPAT = "direct-fallback-v186 direct-supabase-oauth-v186";
 const browserEnv = import.meta.env || {};
-const url = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-const key = String(
+
+// Public browser client configuration only. Explicit VITE_* values are preferred.
+// The official-host fallback prevents production login buttons from becoming disabled
+// if a deployment path forgets to expose Vite variables. No privileged key is embedded.
+const PRODUCTION_SUPABASE_URL_V245 = "https://polvmlrhqoiflumibfqs.supabase.co";
+const PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245 = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
+
+function productionClientHostV245() {
+  if (typeof window === "undefined") return false;
+  const hostname = String(window.location?.hostname || "").toLowerCase();
+  return hostname === "ngeblogging.com"
+    || hostname === "www.ngeblogging.com"
+    || hostname.endsWith(".ngeblogging.com");
+}
+
+const configuredUrlV245 = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+const configuredKeyV245 = String(
   browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY
   || browserEnv.VITE_SUPABASE_ANON_KEY
   || "",
 ).trim();
+const productionFallbackAllowedV245 = productionClientHostV245();
+const url = configuredUrlV245 || (productionFallbackAllowedV245 ? PRODUCTION_SUPABASE_URL_V245 : "");
+const key = configuredKeyV245 || (productionFallbackAllowedV245 ? PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245 : "");
+const authConfigSourceV245 = configuredUrlV245 && configuredKeyV245
+  ? "vite-env"
+  : url && key && productionFallbackAllowedV245
+    ? "production-public-fallback"
+    : "missing";
+
 const nativeFetch = typeof globalThis.fetch === "function"
   ? globalThis.fetch.bind(globalThis)
   : null;
@@ -125,6 +150,8 @@ export const supabase = supabaseConfigured
   : null;
 
 if (typeof document !== "undefined") {
+  document.documentElement.dataset.authProductionReadinessV245 = AUTH_PRODUCTION_READINESS_V245;
+  document.documentElement.dataset.supabaseConfigSourceV245 = authConfigSourceV245;
   document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v190" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
   document.documentElement.dataset.authLegacyRelease = AUTH_LEGACY_RELEASE;
@@ -321,6 +348,7 @@ installAuthEntryBridge();
 export {
   AUTH_RELEASE,
   AUTH_LEGACY_RELEASE,
+  AUTH_PRODUCTION_READINESS_V245,
   AUTH_GATEWAY_PREFIX,
   DATA_GATEWAY_PREFIX,
   DATA_TRANSPORT_RELEASE_V190,
