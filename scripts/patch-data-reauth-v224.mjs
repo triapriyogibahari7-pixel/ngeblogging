@@ -70,10 +70,22 @@ async function patchServiceWorker() {
   source = source.replace(/^const VERSION = ".*";$/m, 'const VERSION = "ngeblogging-app-v224-data-reauth-20260803";');
   source = source.replace(/^const CACHE_RELEASE = ".*";$/m, 'const CACHE_RELEASE = "data-reauth-cache-v224";');
   source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "data-reauth-v224";');
+  const compatLines = [
+    'const STUDIO_PRODUCTION_COMPAT_VERSION_V223 = "ngeblogging-app-v223-physical-ui-route-20260803";',
+    'const STUDIO_PRODUCTION_COMPAT_CACHE_V223 = "physical-ui-route-cache-v223";',
+  ];
+  for (const line of compatLines) {
+    if (!source.includes(line)) {
+      const next = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
+      if (next === source) throw new Error(`V224_V223_COMPAT_ANCHOR_MISSING:${line}`);
+      source = next;
+    }
+  }
   if (!source.includes("DATA_REAUTH_RELEASE_V224")) {
     source = source.replace(/^(const VERSION = .*;\n)/m, `$1const DATA_REAUTH_RELEASE_V224 = "${RELEASE}";\n`);
   }
   source = source.replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V223", "NGE_BLOGGING_UPDATE_AVAILABLE_V224");
+  for (const marker of [...compatLines, RELEASE]) if (!source.includes(marker)) throw new Error(`V224_SW_MARKER_MISSING:${marker}`);
   if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V224_FORCED_NAVIGATION_REMAINS");
   await write(path, source);
 }
