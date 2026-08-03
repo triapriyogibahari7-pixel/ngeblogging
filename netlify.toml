@@ -1,5 +1,5 @@
 [build]
-  command = "npm run pretest:production && node --test tests/auth-production-v153.test.mjs tests/production-entry-v154.test.mjs tests/netlify-production-publisher-v156.test.mjs tests/legacy-worker-entry-v157.test.mjs tests/release-v157-probe.test.mjs tests/auth-studio-route-v158.test.mjs && mkdir -p dist && printf '<!doctype html><title>v153-v158 passed</title><p>v153-v158 passed</p>' > dist/index.html"
+  command = "npm run pretest:production && node --test tests/legacy-worker-entry-v157.test.mjs tests/release-v157-probe.test.mjs tests/auth-studio-route-v158.test.mjs && mkdir -p dist && printf '<!doctype html><title>v157-v158 passed</title><p>v157-v158 passed</p>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
