@@ -54,7 +54,7 @@ test("profile is visible and exposes five distinct actions", () => {
 
 test("Nara native controls remain and small medium are non-modal", () => {
   for (const marker of ["<Camera />","<ImageIcon />","<File />","<MicOff />","SpeakerIcon","intelligenceOptions","modelOptions"]) assert.ok(nara.includes(marker), marker);
-  assert.ok(runtime.includes("data.v250Interaction"));
+  assert.ok(runtime.includes("dataset.v250Interaction"));
   assert.ok(css.includes('.nara-assistant-layer[data-v250-interaction="nonmodal"]'));
   assert.ok(css.includes(".nara-attachment-menu"));
   assert.doesNotMatch(css, /\.nara-floating-button[^}]*animation:[^n]/);
