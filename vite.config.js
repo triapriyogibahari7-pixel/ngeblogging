@@ -7,12 +7,11 @@ import { finalizeServiceWorkerV241 } from "./scripts/service-worker-v241-lib.mjs
 import { finalizeServiceWorkerV242 } from "./scripts/service-worker-v242-lib.mjs";
 import { finalizeServiceWorkerV243 } from "./scripts/service-worker-v243-lib.mjs";
 import { finalizeServiceWorkerV244 } from "./scripts/service-worker-v244-lib.mjs";
-import { finalizeServiceWorkerV245 } from "./scripts/service-worker-v245-lib.mjs";
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-service-worker-v245",
+      name: "ngeblogging-service-worker-v244",
       apply: "build",
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
@@ -30,9 +29,7 @@ export default defineConfig({
         const v243 = finalizeServiceWorkerV243();
         console.log(`[vite] ${v243.release} compatibility finalized in ${v243.path}`);
         const v244 = finalizeServiceWorkerV244();
-        console.log(`[vite] ${v244.release} compatibility finalized in ${v244.path}`);
-        const v245 = finalizeServiceWorkerV245();
-        console.log(`[vite] ${v245.release} finalized in ${v245.path}`);
+        console.log(`[vite] ${v244.release} finalized in ${v244.path}`);
       },
     },
   ],
