@@ -11,17 +11,13 @@ let profileOpen = false;
 let selectedLayoutArea = "";
 let sidebarRestored = false;
 
-function root() {
-  return document.documentElement;
-}
+const html = () => document.documentElement;
 
 function readPreference() {
   try {
     const value = localStorage.getItem(SIDEBAR_KEY);
     return value === "collapsed" || value === "expanded" ? value : "";
-  } catch {
-    return "";
-  }
+  } catch { return ""; }
 }
 
 function writePreference(value) {
@@ -29,39 +25,38 @@ function writePreference(value) {
 }
 
 function responsiveFamily() {
-  const html = root();
-  const explicit = String(html.dataset.studioResponsiveMode || "").toLowerCase();
-  const variant = String(html.dataset.studioDeviceVariant || "").toLowerCase();
-  const device = String(html.dataset.studioDeviceMode || "").toLowerCase();
-  const desktopSitePhone = html.dataset.studioDesktopSitePhone === "true" || html.dataset.desktopSitePhone === "true";
-
+  const root = html();
+  const declared = String(root.dataset.studioResponsiveMode || "").toLowerCase();
+  const variant = String(root.dataset.studioDeviceVariant || "").toLowerCase();
+  const device = String(root.dataset.studioDeviceMode || "").toLowerCase();
+  const desktopSitePhone = root.dataset.studioDesktopSitePhone === "true" || root.dataset.desktopSitePhone === "true";
   if (desktopSitePhone) return "large";
-  if (SMALL_MODES.has(explicit)) return "small";
-  if (LARGE_MODES.has(explicit)) return "large";
-  if (LARGE_MODES.has(variant)) return "large";
+  if (SMALL_MODES.has(declared)) return "small";
+  if (LARGE_MODES.has(declared) || LARGE_MODES.has(variant)) return "large";
   if (device === "small" || device === "large") return device;
-
   const layout = Number(document.documentElement.clientWidth || window.innerWidth || 0);
   const visual = Number(window.visualViewport?.width || layout || 0);
-  const width = layout && visual ? Math.min(layout, visual) : layout || visual;
-  return width <= 760 ? "small" : "large";
+  return Math.min(layout || visual, visual || layout) <= 760 ? "small" : "large";
 }
 
-function clearStyle(node, properties) {
+function clearLegacyStyle(node, properties) {
   if (!node) return;
-  for (const property of properties) node.style.removeProperty(property);
+  for (const property of properties) {
+    if (node.style.getPropertyValue(property)) node.style.removeProperty(property);
+  }
 }
 
 function restoreReactChrome() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return null;
 
-  const duplicateChrome = document.getElementById("ngeblogging-studio-chrome-v244");
-  if (duplicateChrome) {
-    duplicateChrome.hidden = true;
-    duplicateChrome.setAttribute("aria-hidden", "true");
-    duplicateChrome.style.setProperty("display", "none", "important");
-    duplicateChrome.style.setProperty("pointer-events", "none", "important");
+  const duplicate = document.getElementById("ngeblogging-studio-chrome-v244");
+  if (duplicate && duplicate.dataset.disabledByV248 !== RELEASE_V248) {
+    duplicate.dataset.disabledByV248 = RELEASE_V248;
+    duplicate.hidden = true;
+    duplicate.setAttribute("aria-hidden", "true");
+    duplicate.style.setProperty("display", "none", "important");
+    duplicate.style.setProperty("pointer-events", "none", "important");
   }
 
   const side = document.getElementById("ngeblogging-studio-sidebar") || shell.querySelector(".v244-legacy-sidebar,.sn-side");
@@ -71,10 +66,7 @@ function restoreReactChrome() {
     side.removeAttribute("aria-hidden");
     side.removeAttribute("inert");
     side.dataset.nativeSidebarV248 = RELEASE_V248;
-    clearStyle(side, [
-      "position", "left", "top", "right", "bottom", "width", "height", "min-width", "min-height",
-      "max-width", "max-height", "overflow", "opacity", "visibility", "pointer-events", "z-index", "transform",
-    ]);
+    clearLegacyStyle(side, ["position","left","top","right","bottom","width","height","min-width","min-height","max-width","max-height","overflow","opacity","visibility","pointer-events","z-index","transform"]);
   }
 
   const top = shell.querySelector(".sn-main > [data-v244-legacy-top],.sn-main > .sn-top");
@@ -84,15 +76,12 @@ function restoreReactChrome() {
     top.removeAttribute("inert");
     delete top.dataset.v244LegacyTop;
     top.dataset.nativeTopbarV248 = RELEASE_V248;
-    clearStyle(top, ["display", "visibility", "height", "min-height", "overflow", "pointer-events", "opacity", "left", "right", "top", "transform"]);
+    clearLegacyStyle(top, ["display","visibility","height","min-height","overflow","pointer-events","opacity","left","right","top","transform"]);
   }
 
   shell.dataset.nativeShellV248 = RELEASE_V248;
-  root().dataset.studioNativeV248 = RELEASE_V248;
-  root().removeAttribute("data-studio-v246");
-  root().removeAttribute("data-studio-v246-family");
-  root().removeAttribute("data-studio-v246-sidebar");
-
+  html().dataset.studioNativeV248 = RELEASE_V248;
+  for (const attribute of ["data-studio-v246","data-studio-v246-family","data-studio-v246-sidebar"]) html().removeAttribute(attribute);
   return { shell, side, top };
 }
 
@@ -100,14 +89,11 @@ function buttonLabel(button) {
   return button?.querySelector("span")?.textContent?.trim() || button?.textContent?.trim() || "";
 }
 
-function sidebarToggle() {
-  return document.querySelector(".sn-shell .sn-main .sn-sidebar-toggle");
-}
+const sidebarToggle = () => document.querySelector(".sn-shell .sn-main .sn-sidebar-toggle");
 
 function sidebarState(side, family) {
-  if (!side) return family === "small" ? "closed" : "expanded";
-  if (family === "small") return side.classList.contains("mobile-open") ? "open" : "closed";
-  return side.classList.contains("collapsed") ? "collapsed" : "expanded";
+  if (family === "small") return side?.classList.contains("mobile-open") ? "open" : "closed";
+  return side?.classList.contains("collapsed") ? "collapsed" : "expanded";
 }
 
 function syncSidebar() {
@@ -115,7 +101,7 @@ function syncSidebar() {
   if (!restored?.side) return;
   const { shell, side } = restored;
   const family = responsiveFamily();
-  let state = sidebarState(side, family);
+  const state = sidebarState(side, family);
 
   if (family === "large" && !sidebarRestored) {
     sidebarRestored = true;
@@ -126,12 +112,12 @@ function syncSidebar() {
       return;
     }
   }
-
   if (family === "large") writePreference(state);
+
   shell.dataset.nativeFamilyV248 = family;
   shell.dataset.nativeSidebarStateV248 = state;
-  root().dataset.studioV248Family = family;
-  root().dataset.studioV248Sidebar = state;
+  html().dataset.studioV248Family = family;
+  html().dataset.studioV248Sidebar = state;
 
   const logo = side.querySelector(".sn-logo-mark");
   if (logo) {
@@ -142,27 +128,22 @@ function syncSidebar() {
     logo.setAttribute("aria-label", family === "small" ? (state === "open" ? "Tutup menu Studio" : "Buka menu Studio") : (state === "expanded" ? "Ciutkan menu Studio" : "Perluas menu Studio"));
     logo.setAttribute("title", logo.getAttribute("aria-label"));
     const n = logo.querySelector("strong");
-    if (n) n.textContent = "n";
+    if (n && n.textContent !== "n") n.textContent = "n";
   }
 
-  const topToggle = sidebarToggle();
-  if (topToggle) {
-    topToggle.setAttribute("aria-expanded", String(family === "small" ? state === "open" : state === "expanded"));
-    topToggle.dataset.nativeToggleV248 = family;
-    const n = topToggle.querySelector(".sn-mobile-menu-mark strong");
-    if (n) n.textContent = "n";
+  const toggle = sidebarToggle();
+  if (toggle) {
+    toggle.dataset.nativeToggleV248 = family;
+    toggle.setAttribute("aria-expanded", String(family === "small" ? state === "open" : state === "expanded"));
+    const n = toggle.querySelector(".sn-mobile-menu-mark strong");
+    if (n && n.textContent !== "n") n.textContent = "n";
   }
-
-  side.querySelector(".sn-side-close")?.setAttribute("aria-hidden", "true");
-  for (const backdrop of document.querySelectorAll(".sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop]")) {
-    backdrop.setAttribute("aria-hidden", "true");
-    backdrop.tabIndex = -1;
-  }
+  const close = side.querySelector(".sn-side-close");
+  if (close) { close.hidden = true; close.tabIndex = -1; close.setAttribute("aria-hidden", "true"); }
 }
 
 function menuMarkup() {
-  return `
-    <div class="v248-profile-head"><strong>Profil pengguna</strong><small>Akun Ngeblogging aktif</small></div>
+  return `<div class="v248-profile-head"><strong>Profil pengguna</strong><small>Akun Ngeblogging aktif</small></div>
     <button type="button" role="menuitem" data-action="profile"><b>Profil</b><small>Avatar, nama, biografi, dan website</small></button>
     <button type="button" role="menuitem" data-action="settings"><b>Pengaturan</b><small>Pengaturan situs, bahasa, dan zona waktu</small></button>
     <button type="button" role="menuitem" data-action="add-site"><b>Tambahkan situs</b><small>Buat atau pilih workspace lain</small></button>
@@ -188,51 +169,46 @@ function ensureProfileMenu() {
 function positionProfileMenu() {
   const menu = ensureProfileMenu();
   const avatar = document.querySelector(".sn-shell .sn-avatar");
-  if (!avatar) {
-    menu.hidden = true;
-    profileOpen = false;
-    return;
-  }
+  if (!avatar) { menu.hidden = true; profileOpen = false; return; }
   avatar.dataset.nativeProfileV248 = RELEASE_V248;
   avatar.setAttribute("aria-haspopup", "menu");
   avatar.setAttribute("aria-expanded", String(profileOpen));
   avatar.setAttribute("aria-label", "Buka menu profil");
   if (!profileOpen) return;
-
   const rect = avatar.getBoundingClientRect();
   const vw = window.visualViewport?.width || window.innerWidth;
   const width = Math.min(330, Math.max(250, vw - 20));
-  menu.style.width = `${width}px`;
-  menu.style.left = `${Math.max(10, Math.min(vw - width - 10, rect.right - width))}px`;
-  menu.style.top = `${Math.max(64, rect.bottom + 8)}px`;
+  const left = Math.max(10, Math.min(vw - width - 10, rect.right - width));
+  const top = Math.max(64, rect.bottom + 8);
+  if (menu.style.width !== `${width}px`) menu.style.width = `${width}px`;
+  if (menu.style.left !== `${left}px`) menu.style.left = `${left}px`;
+  if (menu.style.top !== `${top}px`) menu.style.top = `${top}px`;
 }
 
 function clickSidebarLabel(label) {
-  const buttons = [...document.querySelectorAll("#ngeblogging-studio-sidebar button")];
-  const target = buttons.find((button) => buttonLabel(button) === label);
+  const target = [...document.querySelectorAll("#ngeblogging-studio-sidebar button")].find((button) => buttonLabel(button) === label);
   target?.click();
   return Boolean(target);
 }
 
-function setAccountPane(kind) {
-  root().dataset.studioAccountPaneV248 = kind;
-  clickSidebarLabel("Pengaturan");
-  requestAnimationFrame(() => syncAccountPane(kind));
-}
-
-function syncAccountPane(kind = root().dataset.studioAccountPaneV248 || "settings") {
+function syncAccountPane(kind = html().dataset.studioAccountPaneV248 || "settings") {
   const page = document.querySelector(".sn-settings-grid")?.closest(".sn-view-pad");
   if (!page) return;
   page.dataset.accountPaneV248 = kind;
   const title = page.querySelector(".sn-page-title h1");
   const description = page.querySelector(".sn-page-title p");
-  if (kind === "profile") {
-    if (title) title.textContent = "Profil";
-    if (description) description.textContent = "Kelola avatar, nama tampilan, biografi, dan alamat website profil Anda.";
-  } else {
-    if (title) title.textContent = "Pengaturan situs";
-    if (description) description.textContent = "Kelola identitas situs aktif, bahasa, zona waktu, cadangan, dan konfigurasi workspace.";
-  }
+  const desiredTitle = kind === "profile" ? "Profil" : "Pengaturan situs";
+  const desiredDescription = kind === "profile"
+    ? "Kelola avatar, nama tampilan, biografi, dan alamat website profil Anda."
+    : "Kelola identitas situs aktif, bahasa, zona waktu, cadangan, dan konfigurasi workspace.";
+  if (title && title.textContent !== desiredTitle) title.textContent = desiredTitle;
+  if (description && description.textContent !== desiredDescription) description.textContent = desiredDescription;
+}
+
+function setAccountPane(kind) {
+  html().dataset.studioAccountPaneV248 = kind;
+  clickSidebarLabel("Pengaturan");
+  requestAnimationFrame(() => syncAccountPane(kind));
 }
 
 function runProfileAction(action) {
@@ -240,10 +216,7 @@ function runProfileAction(action) {
   positionProfileMenu();
   if (action === "profile") return setAccountPane("profile");
   if (action === "settings") return setAccountPane("settings");
-  if (action === "add-site") {
-    document.querySelector(".sn-shell .sn-workspace")?.click();
-    return;
-  }
+  if (action === "add-site") return document.querySelector(".sn-shell .sn-workspace")?.click();
   if (action === "view-site") {
     const link = document.querySelector(".sn-view-site[href],.sn-secondary-link[href]");
     if (link?.href) window.open(link.href, "_blank", "noopener,noreferrer");
@@ -254,9 +227,11 @@ function runProfileAction(action) {
 
 function syncNara() {
   const layer = document.querySelector(".nara-assistant-layer");
-  if (!layer) return;
-  const shell = layer.querySelector(".nara-assistant-shell");
-  if (!shell) return;
+  const shell = layer?.querySelector(".nara-assistant-shell");
+  if (!layer || !shell) {
+    document.body.classList.remove("nara-fullscreen-open-v248", "nara-nonmodal-open-v248");
+    return;
+  }
   const size = shell.dataset.naraSize || layer.dataset.naraLayerSize || "small";
   const full = size === "full";
   layer.dataset.naraLayerSize = size;
@@ -282,47 +257,36 @@ function codeLineNumbers() {
       gutter.className = "tn-code-gutter-v248";
       gutter.setAttribute("aria-hidden", "true");
       textarea.insertAdjacentElement("beforebegin", gutter);
-      textarea.addEventListener("scroll", () => { gutter.scrollTop = textarea.scrollTop; });
+      textarea.addEventListener("scroll", () => { gutter.scrollTop = textarea.scrollTop; }, { passive: true });
       textarea.addEventListener("input", schedule, { passive: true });
     }
     const count = Math.max(1, String(textarea.value || "").split("\n").length);
-    const signature = String(count);
-    if (gutter.dataset.lines !== signature) {
-      gutter.dataset.lines = signature;
+    if (gutter.dataset.lines !== String(count)) {
+      gutter.dataset.lines = String(count);
       gutter.textContent = Array.from({ length: count }, (_, index) => index + 1).join("\n");
     }
   }
 }
 
 function layoutMapMarkup() {
-  const groups = {
-    "header-left": "header-left", "header-right": "header-right", "below-header": "below-header",
-    "sidebar-left": "sidebar-left", "before-content": "before-content", "after-content": "after-content",
-    "sidebar-right": "sidebar-right", "footer-left": "footer-left", "footer-right": "footer-right", "footer-wide": "footer-wide",
-  };
-  return LAYOUT_AREAS.map((area) => `<button type="button" data-layout-area="${area.id}" class="v248-layout-area ${groups[area.id] || ""}"><span>${area.label}</span><small>Klik untuk atur widget</small></button>`).join("");
+  return LAYOUT_AREAS.map((area) => `<button type="button" data-layout-area="${area.id}" class="v248-layout-area ${area.id}"><span>${area.label}</span><small>Klik untuk atur widget</small></button>`).join("");
 }
 
 function enhanceThemeLayout() {
   const studio = document.querySelector(".tn-layout-studio");
-  if (studio) {
-    let map = studio.querySelector(".v248-layout-map");
-    if (!map) {
-      map = document.createElement("div");
-      map.className = "v248-layout-map";
-      map.setAttribute("aria-label", "Denah tata letak tema");
-      map.innerHTML = layoutMapMarkup();
-      const original = studio.querySelector(".tn-layout-canvas");
-      original?.insertAdjacentElement("afterend", map);
-      map.addEventListener("click", (event) => {
-        const button = event.target.closest("button[data-layout-area]");
-        if (!button) return;
-        selectedLayoutArea = button.dataset.layoutArea || "";
-        map.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
-        const opener = studio.querySelector(".tn-layout-studio-header button,.tn-layout-side>button");
-        opener?.click();
-      });
-    }
+  if (studio && !studio.querySelector(".v248-layout-map")) {
+    const map = document.createElement("div");
+    map.className = "v248-layout-map";
+    map.setAttribute("aria-label", "Denah tata letak tema");
+    map.innerHTML = layoutMapMarkup();
+    studio.querySelector(".tn-layout-canvas")?.insertAdjacentElement("afterend", map);
+    map.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-layout-area]");
+      if (!button) return;
+      selectedLayoutArea = button.dataset.layoutArea || "";
+      map.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
+      studio.querySelector(".tn-layout-studio-header button,.tn-layout-side>button")?.click();
+    });
   }
 
   for (const label of document.querySelectorAll(".tn-widget-settings label")) {
@@ -338,22 +302,7 @@ function enhanceThemeLayout() {
       select.dispatchEvent(new Event("change", { bubbles: true }));
     }
   }
-
   codeLineNumbers();
-}
-
-function protectGeometry() {
-  const shell = document.querySelector(".sn-shell");
-  if (!shell) return;
-  const selectors = [
-    ".sn-main", ".sn-main>*", ".sn-view-pad", ".sn-view-pad>*", ".sn-content-card",
-    ".sv124-page", ".sv124-page>*", ".sv124-domain-page", ".tn-studio", ".tn-studio>*",
-    ".ce-app", ".ce-app>*", ".op41-panel", ".op41-card",
-  ];
-  for (const node of shell.querySelectorAll(selectors.join(","))) {
-    node.style.setProperty("min-width", "0");
-    node.style.setProperty("max-width", "100%");
-  }
 }
 
 function enhance() {
@@ -363,7 +312,6 @@ function enhance() {
   syncAccountPane();
   syncNara();
   enhanceThemeLayout();
-  protectGeometry();
 }
 
 function schedule() {
@@ -374,9 +322,7 @@ function schedule() {
 function handleClickCapture(event) {
   const avatar = event.target.closest?.(".sn-shell .sn-avatar");
   if (avatar) {
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
     profileOpen = !profileOpen;
     positionProfileMenu();
     if (profileOpen) ensureProfileMenu().querySelector("button[data-action]")?.focus();
@@ -385,18 +331,14 @@ function handleClickCapture(event) {
 
   const profileButton = event.target.closest?.(`#${PROFILE_MENU_ID} button[data-action]`);
   if (profileButton) {
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
     runProfileAction(profileButton.dataset.action);
     return;
   }
 
   const logo = event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark");
   if (logo) {
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
     sidebarToggle()?.click();
     requestAnimationFrame(schedule);
     return;
@@ -407,9 +349,7 @@ function handleClickCapture(event) {
     positionProfileMenu();
   }
 
-  const settings = event.target.closest?.("#ngeblogging-studio-sidebar .sn-account-settings-v135");
-  if (settings) root().dataset.studioAccountPaneV248 = "settings";
-
+  if (event.target.closest?.("#ngeblogging-studio-sidebar .sn-account-settings-v135")) html().dataset.studioAccountPaneV248 = "settings";
   const navigation = event.target.closest?.("#ngeblogging-studio-sidebar .sn-new,#ngeblogging-studio-sidebar nav button,#ngeblogging-studio-sidebar .sn-account-settings-v135");
   if (navigation && responsiveFamily() === "large") {
     requestAnimationFrame(() => {
@@ -431,7 +371,6 @@ function handleKey(event) {
     const side = document.getElementById("ngeblogging-studio-sidebar");
     if (responsiveFamily() === "small" && side?.classList.contains("mobile-open")) sidebarToggle()?.click();
   }
-
   if ((event.key === "Enter" || event.key === " ") && event.target.matches?.("#ngeblogging-studio-sidebar .sn-logo-mark")) {
     event.preventDefault();
     sidebarToggle()?.click();
@@ -451,7 +390,7 @@ if (typeof document !== "undefined") {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["class", "style", "data-nara-size", "data-studio-responsive-mode", "data-studio-device-mode", "data-studio-device-variant"],
+    attributeFilter: ["class", "data-nara-size", "data-studio-responsive-mode", "data-studio-device-mode", "data-studio-device-variant"],
   });
   schedule();
 }
