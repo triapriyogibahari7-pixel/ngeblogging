@@ -78,14 +78,14 @@ async function patchServiceWorker() {
 }
 
 async function verify() {
-  const [entry, runtime, css, v209, themeStudio, widgets, themeSystem, nara, auth, sw, release] = await Promise.all([
+  const [entry, runtime, css, v209, themeStudio, widgets, themeCatalog, nara, auth, sw, release] = await Promise.all([
     read("src/Studio.jsx"),
     read("src/studio-production-v223.js"),
     read("src/studio-production-v223.css"),
     read("src/studio-production-v209.js"),
     read("src/ThemeStudio.jsx"),
     read("src/widget-system.js"),
-    read("src/theme-system.js"),
+    read("src/theme-catalog.js"),
     read("src/NaraAssistant.jsx"),
     read("src/lib/supabase.js"),
     read("public/sw.js"),
@@ -112,7 +112,9 @@ async function verify() {
     [themeStudio, "Tema Custom", "custom theme"],
     [widgets, 'id: "sidebar-left-4"', "fourth left widget area"],
     [widgets, 'id: "sidebar-right-4"', "fourth right widget area"],
-    [themeSystem, "THEME_COUNT", "theme count authority"],
+    [themeCatalog, "FAMILIES.flatMap", "real theme generation"],
+    [themeCatalog, "COMPOSITIONS.map", "real theme composition generation"],
+    [themeCatalog, "export const THEME_COUNT=BUILT_IN_THEMES.length", "theme count authority"],
     [nara, "Kamera", "Nara Camera"],
     [nara, "Foto", "Nara Photo"],
     [nara, "File teks", "Nara File"],
@@ -129,9 +131,10 @@ async function verify() {
     if (!source.includes(marker)) throw new Error(`V223_VERIFY_FAILED:${label}:${marker}`);
   }
 
-  const countMatch = themeSystem.match(/export const THEME_COUNT\s*=\s*BUILT_IN_THEMES\.length/);
-  if (!countMatch) throw new Error("V223_THEME_COUNT_NOT_DERIVED_FROM_REAL_THEMES");
-  if (!themeSystem.includes("100")) throw new Error("V223_100_THEME_CONTRACT_MISSING");
+  const familyCount = (themeCatalog.match(/\{ id:/g) || []).length;
+  const compositionCount = (themeCatalog.match(/\{ id:"(?:prime|dawn|night|coast|atelier)"/g) || []).length;
+  if (familyCount < 20 || compositionCount < 5) throw new Error("V223_100_THEME_GENERATION_INCOMPLETE");
+  if (familyCount * compositionCount < 100) throw new Error("V223_REAL_THEME_COUNT_BELOW_100");
   if (/900\s*(juta|miliar|million|billion)/i.test(release)) throw new Error("V223_UNSUPPORTED_CAPACITY_CLAIM");
 }
 
