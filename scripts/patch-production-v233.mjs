@@ -89,8 +89,9 @@ async function verifyPreservedAuthorities() {
     read("public/release-v233.json"),
   ]);
   const checks = [
-    [gate, "recoverStudioMembershipV196"],
-    [gate, "tidak ada logout otomatis"],
+    [gate, "loadStudioMembership"],
+    [gate, "Sesi akun Anda tetap tersimpan"],
+    [gate, "Koneksi data belum selesai."],
     [fastGate, "hasKnownSite"],
     [worker, ACTIVE_VERSION],
     [worker, ACTIVE_CACHE],
