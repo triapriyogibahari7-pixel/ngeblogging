@@ -1,0 +1,53 @@
+/* React-safe layout/code hotfix v240. Loaded after v239 CSS. */
+html[data-studio-react-safe-v240],body{--v240-code-gutter-width:58px}
+
+/* Keep Theme Studio's React-owned light DOM intact while the shadow map is the visible map. */
+.tn-layout-canvas[data-v240-shadow-map]{display:block!important;position:relative!important;inset:auto!important;transform:none!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:visible!important;padding:10px!important;border-radius:18px!important;contain:layout paint!important}
+.tn-layout-canvas[data-v240-shadow-map]>.tn-layout-grid{visibility:hidden!important;pointer-events:none!important;position:absolute!important;inset:0!important;overflow:hidden!important}
+
+/* Real code line gutter without reparenting React's textarea. */
+.tn-code-pane textarea[data-v240-line-numbers="true"]{padding-left:calc(var(--v240-code-gutter-width) + 14px)!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:560px!important;height:100%!important;box-sizing:border-box!important;overflow:auto!important;white-space:pre!important;word-break:normal!important;overflow-wrap:normal!important;tab-size:2!important;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace!important;resize:none!important}
+.v240-code-gutter-portal{position:fixed!important;z-index:2147482000!important;pointer-events:none!important;overflow:hidden!important;margin:0!important;padding:14px 8px!important;text-align:right!important;user-select:none!important;white-space:pre!important;background:#0b111a!important;color:#7f8ca0!important;border-right:1px solid #253146!important;border-radius:0!important;box-shadow:none!important;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace!important;box-sizing:border-box!important}
+
+/* Body-level small widget chooser; it must never cover the whole Studio. */
+.v240-widget-popover{position:fixed!important;z-index:2147483000!important;display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;background:#fff!important;color:#15243a!important;border:1px solid #d8e0eb!important;border-radius:16px!important;box-shadow:0 18px 60px rgba(16,35,62,.24)!important;overflow:hidden!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important}
+.v240-widget-popover>header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:12px 14px!important;border-bottom:1px solid #e6ebf2!important;background:#fff!important}
+.v240-widget-popover>header>div{display:grid!important;gap:2px!important;min-width:0!important}
+.v240-widget-popover>header small{font-size:.7rem!important;letter-spacing:.12em!important;color:#64809e!important}
+.v240-widget-popover>header b{overflow-wrap:anywhere!important}
+.v240-widget-popover>header button{width:36px!important;height:36px!important;min-width:36px!important;border:0!important;background:#f1f4f8!important;color:#15243a!important;border-radius:10px!important;display:grid!important;place-items:center!important;font-size:1.35rem!important;padding:0!important}
+.v240-widget-options{overflow:auto!important;-webkit-overflow-scrolling:touch!important;padding:8px!important;display:grid!important;gap:5px!important;background:#fff!important}
+.v240-widget-options>button{border:0!important;background:transparent!important;color:inherit!important;border-radius:10px!important;display:grid!important;grid-template-columns:34px minmax(0,1fr)!important;gap:9px!important;align-items:center!important;text-align:left!important;padding:8px!important;min-height:50px!important;width:100%!important;max-width:100%!important}
+.v240-widget-options>button:hover,.v240-widget-options>button:focus-visible{background:#f1f5fb!important;outline:2px solid #2d6edf!important;outline-offset:-2px!important}
+.v240-widget-options>button>span{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;border-radius:9px!important;background:#edf3ff!important;font-size:1rem!important}
+.v240-widget-options>button>div{display:grid!important;gap:2px!important;min-width:0!important}
+.v240-widget-options>button b,.v240-widget-options>button small{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.v240-widget-popover>footer{padding:9px!important;border-top:1px solid #e6ebf2!important;background:#fff!important}
+.v240-widget-popover>footer button{width:100%!important;min-height:42px!important;border:1px solid #d6deea!important;border-radius:10px!important;background:#f7f9fc!important;color:#17304e!important;padding:8px 12px!important;white-space:normal!important}
+
+/* During automated assignment, keep React's real Widget Studio alive but visually hidden. */
+html[data-v240-widget-autoconfigure="true"] .tn-modal-layer{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* Avoid a flash of the profile menu while bridging sidebar Settings from Profile. */
+html[data-v240-settings-bridge="running"] .sn-profile-menu-v150{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* v239's old wrapper is intentionally absent in v240; make direct React textarea geometry definitive. */
+.tn-code-pane{position:relative!important;min-width:0!important;min-height:0!important;overflow:hidden!important}
+.tn-code-pane>.tn-code-tabs,.tn-code-pane>.tn-code-toolbar{position:relative!important;z-index:2!important}
+.tn-code-workspace{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.tn-code-preview-pane{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+
+@media(max-width:900px){
+  :root{--v240-code-gutter-width:50px}
+  .tn-layout-canvas[data-v240-shadow-map]{padding:8px!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .tn-code-pane textarea[data-v240-line-numbers="true"]{min-height:520px!important;padding-left:calc(var(--v240-code-gutter-width) + 12px)!important}
+  .v240-code-gutter-portal{padding-inline:6px!important}
+}
+
+@media(max-width:600px){
+  :root{--v240-code-gutter-width:46px}
+  .v240-widget-popover{left:10px!important;right:10px!important;width:auto!important;max-width:none!important;max-height:min(430px,calc(100dvh - 20px))!important}
+  .v240-widget-options>button{min-height:48px!important;padding:7px!important}
+  .tn-code-pane textarea[data-v240-line-numbers="true"]{font-size:12px!important;line-height:1.65!important;padding-left:58px!important}
+  .v240-code-gutter-portal{font-size:12px!important;line-height:1.65!important}
+}

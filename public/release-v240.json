@@ -1,0 +1,40 @@
+{
+  "status": "candidate",
+  "release": "studio-react-safe-v240-20260803",
+  "date": "2026-08-03",
+  "basedOn": "studio-final-authority-v239-20260803",
+  "reason": "Prevent Theme layout map and code line-number enhancements from reparenting or replacing React-owned DOM nodes.",
+  "repairs": {
+    "reactLightDomPreserved": true,
+    "layoutMapUsesShadowDom": true,
+    "layoutMapFourLeftContentFourRight": true,
+    "layoutWidgetPickerUsesRealWidgetStudio": true,
+    "layoutWidgetCountPreserved": 26,
+    "customHtmlJavascriptPreserved": true,
+    "codeTextareaNeverReparented": true,
+    "lineNumbersUseBodyPortal": true,
+    "lineNumbersReflectActualLines": true,
+    "lineNumberMaximum": 10000,
+    "desktopCodePreviewSplitPreserved": true,
+    "smallPreviewAboveCodePreserved": true,
+    "profileToSettingsBridgeUsesExistingProfileMenu": true,
+    "v239SidebarBootstrapDomainNaraRepairsPreserved": true
+  },
+  "session": {
+    "automaticLogoutAdded": false,
+    "storageClearAdded": false,
+    "forcedAuthNavigationAdded": false
+  },
+  "validation": {
+    "requiresBuild": true,
+    "requiresDeployPreview": true,
+    "requiresProductionDeploy": true,
+    "requiresRealDeviceRetest": true
+  },
+  "claims": {
+    "googleOAuthEndToEnd": false,
+    "linkedinOAuthEndToEnd": false,
+    "emailPasswordEndToEnd": false,
+    "extremeScaleLoadTest": false
+  }
+}
