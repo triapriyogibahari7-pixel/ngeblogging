@@ -21,7 +21,7 @@ const worker = read("public/sw.js");
 
 const RELEASE = "studio-production-v224-20260803";
 
-test("v224 is the final production patch after v222 and v223", () => {
+test("v224 is the final UI patch after v222/v223 while retaining validated v223 cache authority", () => {
   const v222Pos = chain.lastIndexOf('patch-production-v222.mjs');
   const v223Pos = chain.lastIndexOf('patch-production-v223.mjs');
   const v224Pos = chain.lastIndexOf('patch-production-v224.mjs');
@@ -29,9 +29,13 @@ test("v224 is the final production patch after v222 and v223", () => {
   assert.match(patch, /studio-production-v224\.js/);
   assert.match(patch, /studio-production-v224-action-isolation\.js/);
   assert.match(runtime, new RegExp(RELEASE));
-  assert.match(worker, /ngeblogging-app-v224-visible-actions-cutover-20260803/);
-  assert.match(worker, /visible-actions-cutover-cache-v224/);
-  assert.match(worker, /STUDIO_PRODUCTION_RELEASE_V224/);
+  assert.match(worker, /const VERSION = "ngeblogging-app-v223-physical-ui-route-20260803";/);
+  assert.match(worker, /const CACHE_RELEASE = "physical-ui-route-cache-v223";/);
+  assert.match(worker, /STUDIO_PRODUCTION_RELEASE_V223/);
+  assert.match(worker, /STUDIO_UI_HOTFIX_V224/);
+  assert.match(worker, new RegExp(RELEASE));
+  assert.doesNotMatch(patch, /VERSION = "ngeblogging-app-v224/);
+  assert.doesNotMatch(patch, /CACHE = "visible-actions-cutover-cache-v224/);
 });
 
 test("legacy v209 direct-button sweep cannot hide isolated HTML CSS JavaScript Theme actions", () => {
