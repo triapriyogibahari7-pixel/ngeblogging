@@ -13,6 +13,8 @@ function verifySourceContracts() {
   const runtime = read("src/studio-native-authority-v250.js");
   const css = read("src/studio-native-authority-v250.css");
   const onboarding = read("src/StudioOnboardingGate.jsx");
+  const postpatch = read("scripts/patch-studio-native-v250.mjs");
+  const patchChain = read("scripts/patch-service-worker-v179.mjs");
   const auth = read("src/lib/supabase.js");
   const authReadiness = read("src/auth-readiness-bridge.js");
   const providerGateway = read("src/auth-provider-gateway-v250.js");
@@ -83,17 +85,36 @@ function verifySourceContracts() {
   for (const marker of ["/api/auth-proxy","/auth/v1/authorize","same-origin-auth-gateway"]) {
     if (!providerGateway.includes(marker)) throw new Error(`V250_PROVIDER_GATEWAY_REGRESSION:${marker}`);
   }
+
+  if (!patchChain.includes('await import("./patch-studio-native-v250.mjs")')) {
+    throw new Error("V250_POSTPATCH_NOT_LAST_IN_BUILD_CHAIN");
+  }
   for (const marker of [
-    "first-site-onboarding-v250-20260804",
-    "Critical path: Supabase already owns persisted tokens. Read the user's sites first.",
-    "verifySessionDeferred(userId)",
-    "Gangguan jaringan tidak akan dianggap sebagai logout",
+    "studio-native-auth-postpatch-v250-20260804",
+    "polvmlrhqoiflumibfqs.supabase.co",
+    "polvmlrhqoiflumibfqs",
+    "RETIRED_IMPORTS",
+  ]) if (!postpatch.includes(marker)) throw new Error(`V250_POSTPATCH_MARKER_MISSING:${marker}`);
+
+  // At Vite closeBundle the historical bootstrap generators have already run,
+  // followed by the v250 postpatch. Their proven persisted-session/RLS contracts
+  // must therefore still coexist with the v250 production fallback.
+  for (const marker of [
+    "studioNativeAuthPostpatchV250",
+    "readPersistedSupabaseSessionV198",
+    "persisted-storage-first",
+    "listUserSitesDirectV192",
+    "Authorization: `Bearer ${accessToken}`",
+    "direct-supabase-rls",
+    "client-gateway-fallback",
+    "polvmlrhqoiflumibfqs.supabase.co",
   ]) if (!onboarding.includes(marker)) throw new Error(`V250_BOOTSTRAP_REGRESSION:${marker}`);
+
   if (!/BUILT_IN_THEMES/.test(theme) || !/THEME_COUNT/.test(theme)) throw new Error("V250_THEME_SYSTEM_MISSING");
   if (!/BUILT_IN_WIDGETS/.test(widgets) || !/WIDGET_COUNT/.test(widgets) || !/custom-html/.test(widgets)) throw new Error("V250_WIDGET_SYSTEM_MISSING");
 
   for (const destructive of [/localStorage\.clear\s*\(/,/sessionStorage\.clear\s*\(/]) {
-    if (destructive.test(runtime) || destructive.test(onboarding) || destructive.test(providerGateway)) {
+    if (destructive.test(runtime) || destructive.test(onboarding) || destructive.test(providerGateway) || destructive.test(postpatch)) {
       throw new Error("V250_DESTRUCTIVE_SESSION_ACTION");
     }
   }
