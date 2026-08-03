@@ -7,7 +7,8 @@ import { BUILT_IN_WIDGETS, WIDGET_COUNT } from "../src/widget-system.js";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
 const device = read("src/studio-device-mode-v140.js");
-const runtime = read("src/studio-source-stability-v237.js");
+const historicalV237 = read("src/studio-source-stability-v237.js");
+const runtime = read("src/studio-desktop-sidebar-v238.js");
 const css = read("src/studio-desktop-sidebar-v238.css");
 const studio = read("src/StudioNext.jsx");
 const v235 = read("src/studio-production-v235.js");
@@ -21,33 +22,36 @@ const release = JSON.parse(read("public/release-v238.json"));
 const RELEASE = "studio-desktop-sidebar-v238-20260803";
 const menu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
-test("v238 loads after v237 UI and keeps the final CSS authority last", () => {
-  const runtimeIndex = entry.indexOf('import "./studio-source-stability-v237.js"');
+test("v238 loads after the untouched v237 authorities", () => {
+  const runtime237Index = entry.indexOf('import "./studio-source-stability-v237.js"');
   const uiIndex = entry.indexOf('import "./studio-source-stability-v237-ui.js"');
-  const v238Index = entry.indexOf('import "./studio-desktop-sidebar-v238.css"');
-  assert.ok(runtimeIndex >= 0);
-  assert.ok(uiIndex > runtimeIndex);
+  const v238Index = entry.indexOf('import "./studio-desktop-sidebar-v238.js"');
+  assert.ok(runtime237Index >= 0);
+  assert.ok(uiIndex > runtime237Index);
   assert.ok(v238Index > uiIndex);
   assert.match(runtime, new RegExp(RELEASE));
+  assert.match(device, /studio-device-mode-v188-20260801/);
+  assert.match(historicalV237, /studio-source-stability-v237-20260803/);
 });
 
-test("browser Desktop site is a real large Studio family instead of being forced back to mobile", () => {
-  assert.match(device, /function desktopSitePhoneSignal/);
-  assert.match(device, /if \(desktopSitePhone\) return "desktop"/);
-  assert.match(device, /desktopVariant\(view, responsiveMode, desktopSitePhone/);
-  assert.match(device, /root\.dataset\.studioSiteDesktop = String\(responsiveMode === "desktop"\)/);
-  assert.match(runtime, /desktopSitePhone/);
-  assert.match(runtime, /explicitLarge/);
-  assert.match(runtime, /LARGE_MODES/);
+test("browser Desktop site becomes a real large Studio family in additive v238 authority", () => {
+  assert.match(runtime, /detectedDesktopSite/);
+  assert.match(runtime, /layoutWidth > physicalViewportWidth \* 1\.35/);
+  assert.match(runtime, /if \(desktopSitePhone\) \{/);
+  assert.match(runtime, /responsiveMode = "desktop"/);
+  assert.match(runtime, /variant = "desktop"/);
+  assert.match(runtime, /family = "large"/);
+  assert.match(runtime, /root\.dataset\.studioDeviceMode = family/);
+  assert.match(runtime, /root\.dataset\.v237Family = family/);
   assert.equal(release.deviceRules.desktopSiteOnPhoneUsesLargeFamily, true);
   assert.equal(release.deviceRules.desktopAndComputerShareLargeGeometry, true);
 });
 
 test("large physical tablets use Tablet/large while true handheld sizes keep the drawer", () => {
-  assert.match(device, /if \(handheld && view\.physicalShortSide <= PHONE_MAX\) return "phone"/);
-  assert.match(device, /if \(handheld && view\.physicalShortSide <= HANDHELD_MAX\) return "mobile"/);
-  assert.match(device, /if \(handheld\) return "tablet"/);
-  assert.match(device, /\["application", "phone", "mobile", "compact"\]/);
+  assert.match(runtime, /LARGE_TABLET_MIN = 700/);
+  assert.match(runtime, /largeTablet = handheld && shortSide >= LARGE_TABLET_MIN/);
+  assert.match(runtime, /responsiveMode = "tablet"/);
+  assert.match(runtime, /SMALL_RESPONSIVE/);
   assert.equal(release.deviceRules.largePhysicalTabletUsesLargeFamily, true);
   assert.equal(release.deviceRules.phoneUsesSmallDrawer, true);
 });
@@ -103,13 +107,16 @@ test("Theme Studio keeps 100 themes 26 widgets the interactive map and responsiv
   assert.match(css, /#ngeblogging-layout-map/);
   assert.match(css, /width:620px!important/);
   assert.match(css, /grid-template-areas:"code preview"/);
-  assert.match(css, /\.tn-code-preview-pane\{order:1!important/);
-  assert.match(css, /\.tn-code-pane\{order:2!important/);
+  assert.match(css, /tn-code-preview-pane[\s\S]*order:1!important/);
+  assert.match(css, /tn-code-pane[\s\S]*order:2!important/);
+  assert.match(runtime, /code-left-preview-right/);
+  assert.match(runtime, /preview-top-code-bottom/);
   assert.equal(release.themeStudio.fourLeftCenterFourRightPreserved, true);
 });
 
 test("Nara camera photo file model intelligence and non-modal behavior remain protected", () => {
   for (const marker of ["Kamera", "Foto", "File teks", "intelligenceOptions", "modelOptions"]) assert.match(nara, new RegExp(marker));
+  assert.match(runtime, /camera-photo-file/);
   assert.match(css, /nara-assistant-layer:not\(\[aria-modal="true"\]\)/);
   assert.match(css, /v235-nara-attachment-portal/);
   assert.equal(release.nara.smallMediumNonmodal, true);
@@ -128,7 +135,7 @@ test("profile remains separated and retains more than five useful menu actions",
 test("persistent auth and non-destructive update rules stay intact", () => {
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
-  for (const source of [device, runtime, css, sw]) assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  for (const source of [device, historicalV237, runtime, css, sw]) assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
   assert.equal(release.auth.automaticLogoutAdded, false);
   assert.equal(release.auth.providerEndToEndClaim, false);
 });
