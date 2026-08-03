@@ -53,5 +53,6 @@ import "./studio-production-v208.js";
 import "./studio-production-v209.js";
 import "./studio-production-v210.js";
 import "./studio-production-v222.js";
+import "./studio-production-v222-code-tabs.js";
 
 export default StudioFastGate;
