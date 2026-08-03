@@ -1,0 +1,56 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v233-data-session-bootstrap-20260803",
+  "basedOn": "studio-production-v232-single-n-theme-actions-20260803",
+  "problem": "A valid authenticated session can still reach the Studio startup error when the same-origin data gateway is stale, returns an unmarked 401/403 or HTML shell, or hangs before Supabase direct fallback.",
+  "dataTransport": {
+    "sameOriginGatewayRetained": true,
+    "dataGatewayDeadlineMs": 2800,
+    "authGatewayDeadlineMs": 4200,
+    "fallbackOnGateway404502503504": true,
+    "fallbackOnUnmarked401403": true,
+    "fallbackOnUnmarkedHtmlShell": true,
+    "fallbackOnGatewayTimeout": true,
+    "directSupabaseFallback": true,
+    "callerAbortRespected": true
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "networkFailureDoesNotLogout": true,
+    "sessionStorageClearingAdded": false,
+    "googleEndToEndVerifiedByThisRelease": false,
+    "linkedinEndToEndVerifiedByThisRelease": false,
+    "emailPasswordEndToEndVerifiedByThisRelease": false
+  },
+  "studioBootstrap": {
+    "existingV195V196V197V198RecoveryPreserved": true,
+    "knownSiteFastGatePreserved": true,
+    "existingV230HealthyRetryPreserved": true,
+    "expectedEffect": "When the gateway route is the failing layer but Supabase itself is reachable, site_members/sites reads recover within a few seconds instead of ending at Koneksi data belum selesai."
+  },
+  "uiPreservedFromV232": {
+    "singleNControl": true,
+    "desktopAutoCollapse": true,
+    "mobileDrawer": true,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "themeHtmlCssJavascriptPreview": true,
+    "greenLayoutMap": true,
+    "naraCameraPhotoFile": true,
+    "naraSmallMediumNonmodal": true,
+    "domainMobileFullRow": true
+  },
+  "serviceWorker": {
+    "activeVersion": "ngeblogging-app-v233-data-session-bootstrap-20260803",
+    "activeCache": "data-session-bootstrap-cache-v233",
+    "forcedNavigation": false,
+    "automaticLogout": false
+  },
+  "validation": {
+    "mustPassBuildAndDeployPreviewBeforeMerge": true,
+    "liveProviderCallbackTestStillRequired": true,
+    "realDeviceStudioEntryTestStillRequired": true,
+    "capacity": "No mass-user capacity claim is made by this release."
+  }
+}
