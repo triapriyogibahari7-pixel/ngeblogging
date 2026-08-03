@@ -30,26 +30,41 @@ async function patchStudioEntry() {
   await write(path, source);
 }
 
-async function patchRealRightFourthArea() {
+function insertAreaAfterId(source, afterId, id, label) {
+  if (source.includes(`id: "${id}"`)) return source;
+  const pattern = new RegExp(`(^\\s*\\{\\s*id:\\s*"${afterId}"[^\\n]*\\n)`, "m");
+  const match = source.match(pattern);
+  if (!match) throw new Error(`V235_AREA_ANCHOR_MISSING:${afterId}`);
+  const indent = match[1].match(/^(\s*)/)?.[1] || "  ";
+  return source.replace(pattern, `$1${indent}{ id: "${id}", label: "${label}", group: "content" },\n`);
+}
+
+async function patchRealFourthAreas() {
   const widgetPath = "src/widget-system.js";
   let widgets = await read(widgetPath);
-  if (!widgets.includes('id: "sidebar-right-4"')) {
-    const anchor = '  { id: "sidebar-right-3", label: "Sidebar kanan 3", group: "content" },';
-    if (!widgets.includes(anchor)) throw new Error("V235_RIGHT4_WIDGET_ANCHOR_MISSING");
-    widgets = widgets.replace(anchor, `${anchor}\n  { id: "sidebar-right-4", label: "Sidebar kanan 4", group: "content" },`);
-    widgets += '\n/* v235: sidebar-right-4 is a real editable area paired with sidebar-left-4. */\n';
-    await write(widgetPath, widgets);
+  widgets = insertAreaAfterId(widgets, "sidebar-left-3", "sidebar-left-4", "Sidebar kiri · kotak 4");
+  widgets = insertAreaAfterId(widgets, "sidebar-right-3", "sidebar-right-4", "Sidebar kanan · kotak 4");
+  if (!widgets.includes("v235: fourth sidebar areas are real editable areas")) {
+    widgets += '\n/* v235: fourth sidebar areas are real editable areas, not screenshot-only decoration. */\n';
   }
+  await write(widgetPath, widgets);
 
   const runtimePath = "src/theme-layout-runtime-v170.js";
   let runtime = await read(runtimePath);
-  if (!runtime.includes('"sidebar-right-4"')) {
-    const oldRight = 'const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3"];';
-    if (!runtime.includes(oldRight)) throw new Error("V235_RIGHT4_RUNTIME_ANCHOR_MISSING");
-    runtime = runtime.replace(oldRight, 'const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"];');
-    runtime = runtime.replaceAll("Tiga area widget kanan postingan", "Empat area widget kanan postingan");
-    await write(runtimePath, runtime);
+  runtime = runtime.replace(
+    /const LEFT_AREAS = \[([^\]]*)\];/,
+    'const LEFT_AREAS = ["sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4"];',
+  );
+  runtime = runtime.replace(
+    /const RIGHT_AREAS = \[([^\]]*)\];/,
+    'const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"];',
+  );
+  runtime = runtime.replaceAll("Tiga area widget kiri postingan", "Empat area widget kiri postingan");
+  runtime = runtime.replaceAll("Tiga area widget kanan postingan", "Empat area widget kanan postingan");
+  for (const marker of ['"sidebar-left-4"', '"sidebar-right-4"', "Empat area widget kiri postingan", "Empat area widget kanan postingan"]) {
+    if (!runtime.includes(marker)) throw new Error(`V235_LAYOUT_RUNTIME_MISSING:${marker}`);
   }
+  await write(runtimePath, runtime);
 }
 
 async function patchServiceWorker() {
@@ -115,7 +130,7 @@ async function verify() {
 }
 
 await patchStudioEntry();
-await patchRealRightFourthArea();
+await patchRealFourthAreas();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}; v234 geometry and v233 data/session recovery remain preserved under one v235 interaction authority.`);
