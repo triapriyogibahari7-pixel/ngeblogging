@@ -101,3 +101,4 @@ await import("./patch-production-v229.mjs");
 await import("./patch-production-v230.mjs");
 await import("./patch-production-v231.mjs");
 await import("./patch-production-v232.mjs");
+await import("./patch-production-v232-map.mjs");
