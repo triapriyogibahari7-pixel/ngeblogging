@@ -136,7 +136,10 @@ function ensureShadowLayoutMap() {
       <button class="strip after" data-area="before-content">Area konten tambahan</button>
       <button class="strip footer" data-area="footer-wide">Footer</button>
     </div>`;
-    root.querySelectorAll("button[data-area]").forEach((button) => button.addEventListener("click", () => openWidgetPopover(button, button.dataset.area)));
+    root.querySelectorAll("button[data-area]").forEach((button) => button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openWidgetPopover(button, button.dataset.area);
+    }));
   });
 }
 
@@ -160,7 +163,10 @@ function positionGutter(textarea, gutter) {
 
 function ensurePortalGutters() {
   for (const [textarea, gutter] of gutters) {
-    if (!textarea.isConnected) { gutter.remove(); gutters.delete(textarea); }
+    if (!textarea.isConnected) {
+      gutter.remove();
+      gutters.delete(textarea);
+    }
   }
   document.querySelectorAll(".tn-code-pane textarea").forEach((textarea) => {
     textarea.dataset.v240LineNumbers = "true";
@@ -196,9 +202,8 @@ function ensurePortalGutters() {
 }
 
 function bridgeSettingsFromProfile() {
-  if (document.body?.dataset.v240SettingsBridge === RELEASE) return;
-  if (!document.body) return;
-  document.body.dataset.v240SettingsBridge = RELEASE;
+  if (!document.body || document.body.dataset.v240SettingsBridgeBound === RELEASE) return;
+  document.body.dataset.v240SettingsBridgeBound = RELEASE;
   document.addEventListener("click", (event) => {
     const settings = event.target.closest(".sn-account-settings-v135");
     if (!settings || document.documentElement.dataset.v239AccountSurface !== "profile") return;
@@ -214,6 +219,7 @@ function bridgeSettingsFromProfile() {
           return;
         }
         if (remaining > 0) requestAnimationFrame(() => pick(remaining - 1));
+        else document.documentElement.dataset.v240SettingsBridge = "idle";
       };
       pick();
     });
