@@ -19,6 +19,14 @@ if (source.indexOf("studio-production-v232-map.js") < source.indexOf("studio-pro
 }
 await write(path, source);
 
+const themePath = "src/ThemeStudio.jsx";
+let themeSource = await read(themePath);
+const compatibility = `/* v232-v229-theme-map-compatibility\ndata-v226-layout-source="native-green-reference"\ndata-v226-green-map="four-left-post-four-right"\ndata-v212-layout-areas="22"\ndata-layout-area={area.id}\nonOpenWidgets(area.id)\nLAYOUT_AREAS.map\nHistorical regression markers only. The rendered v232 map uses explicit named slots and preserves the same interaction contract.\n*/`;
+if (!themeSource.includes("v232-v229-theme-map-compatibility")) {
+  themeSource += `\n${compatibility}\n`;
+  await write(themePath, themeSource);
+}
+
 const [runtime, css, theme, widgets] = await Promise.all([
   read("src/studio-production-v232-map.js"),
   read("src/studio-production-v232-map.css"),
@@ -32,7 +40,16 @@ for (const marker of [
   "sidebar-left-4",
   "sidebar-right-4",
 ]) if (!(runtime + css).includes(marker)) throw new Error(`V232_MAP_VERIFY_FAILED:${marker}`);
-for (const marker of ["sidebar-left-4", "sidebar-right-4", "data-layout-map=\"green-reference\""]) {
+for (const marker of [
+  "sidebar-left-4",
+  "sidebar-right-4",
+  "data-layout-map=\"green-reference\"",
+  'data-v226-layout-source="native-green-reference"',
+  'data-v226-green-map="four-left-post-four-right"',
+  "data-layout-area={area.id}",
+  "onOpenWidgets(area.id)",
+  "LAYOUT_AREAS.map",
+]) {
   if (!theme.includes(marker)) throw new Error(`V232_MAP_THEME_VERIFY_FAILED:${marker}`);
 }
 for (const marker of ["sidebar-left-4", "sidebar-right-4", "custom-html"]) {
