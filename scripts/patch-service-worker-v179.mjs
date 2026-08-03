@@ -92,4 +92,5 @@ await import("./patch-v216-v215-auth-compat.mjs");
 await import("./patch-production-v222.mjs");
 await import("./patch-production-v223.mjs");
 await import("./patch-data-reauth-v224.mjs");
+await import("./patch-v225-mode-lock.mjs");
 await import("./patch-production-v225.mjs");
