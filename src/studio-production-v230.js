@@ -87,6 +87,45 @@ function normalizeThemePreviews() {
   });
 }
 
+function isSmallStudioFamily() {
+  const root = document.documentElement;
+  if (root.dataset.v229Family) return root.dataset.v229Family === "small";
+  return root.dataset.studioDeviceMode === "small" || ["application", "phone", "mobile", "compact"].includes(root.dataset.studioResponsiveMode || "");
+}
+
+function normalizeSidebarControls() {
+  const sidebar = document.getElementById("ngeblogging-studio-sidebar");
+  const topToggle = document.querySelector(".sn-sidebar-toggle");
+  const sideLogo = sidebar?.querySelector(".sn-logo-mark");
+  const sideClose = sidebar?.querySelector(".sn-side-close");
+  if (!sidebar || !sideLogo) return;
+
+  const small = isSmallStudioFamily();
+  const drawerOpen = sidebar.classList.contains("mobile-open");
+  sidebar.dataset.v230Sidebar = small ? (drawerOpen ? "mobile-open" : "mobile-closed") : (sidebar.classList.contains("collapsed") ? "desktop-collapsed" : "desktop-open");
+  sideLogo.dataset.v230SingleToggle = small ? "drawer-logo" : "desktop-logo";
+
+  if (sideClose) {
+    if (!sideClose.hidden) sideClose.hidden = true;
+    sideClose.setAttribute("aria-hidden", "true");
+    sideClose.setAttribute("tabindex", "-1");
+  }
+
+  if (topToggle) {
+    const shouldShowTopToggle = small && !drawerOpen;
+    if (topToggle.hidden === shouldShowTopToggle) topToggle.hidden = !shouldShowTopToggle;
+    topToggle.dataset.v230SingleToggle = shouldShowTopToggle ? "mobile-closed-logo" : "hidden-duplicate";
+    topToggle.setAttribute("aria-hidden", shouldShowTopToggle ? "false" : "true");
+    if (shouldShowTopToggle) topToggle.removeAttribute("tabindex");
+    else topToggle.setAttribute("tabindex", "-1");
+  }
+
+  document.querySelectorAll(".sn-desktop-sidebar-icon,.sn-sidebar-toggle .sn-mobile-menu-mark>i").forEach((node) => {
+    if (!node.hidden) node.hidden = true;
+    node.setAttribute("aria-hidden", "true");
+  });
+}
+
 function startupErrorSurface() {
   const root = document.querySelector(".so75-startup");
   const retry = root?.querySelector(".so75-primary");
@@ -154,11 +193,17 @@ function normalizeStartupCopy() {
 }
 
 function normalizeTopbarModeArtifacts() {
-  const topbar = document.querySelector(".sn-topbar");
+  const topbar = document.querySelector(".sn-top,.sn-topbar");
   if (!topbar) return;
   topbar.querySelectorAll("[data-studio-mode-badge],[data-device-mode-badge],.studio-device-mode-badge,.v225-mode-badge").forEach((node) => {
     if (!node.hidden) node.hidden = true;
     if (node.getAttribute("aria-hidden") !== "true") node.setAttribute("aria-hidden", "true");
+  });
+  [...topbar.querySelectorAll("span,small,b,i")].forEach((node) => {
+    if (node.children.length === 0 && /^situs desktop$/i.test(String(node.textContent || "").trim())) {
+      node.hidden = true;
+      node.setAttribute("aria-hidden", "true");
+    }
   });
   const avatar = topbar.querySelector(".sn-avatar");
   if (avatar) {
@@ -199,6 +244,7 @@ function sync() {
   frame = 0;
   document.documentElement.dataset.studioProductionV230 = RELEASE;
   normalizeThemePreviews();
+  normalizeSidebarControls();
   normalizeStartupCopy();
   normalizeTopbarModeArtifacts();
   normalizeProfileAvatarPreview();
@@ -212,7 +258,7 @@ new MutationObserver(schedule).observe(document.documentElement, {
   childList: true,
   subtree: true,
   attributes: true,
-  attributeFilter: ["class", "hidden", "data-preview-device", "data-preview-mode", "data-v229-account-view"],
+  attributeFilter: ["class", "hidden", "data-preview-device", "data-preview-mode", "data-v229-account-view", "data-v229-family", "data-studio-device-mode", "data-studio-responsive-mode"],
 });
 for (const eventName of ["pageshow", "resize", "orientationchange", "online"]) window.addEventListener(eventName, schedule, { passive: true });
 window.visualViewport?.addEventListener("resize", schedule, { passive: true });
