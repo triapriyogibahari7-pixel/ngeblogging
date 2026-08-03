@@ -64,6 +64,11 @@ async function verify() {
     read("src/studio-analytics-v41.js"),
     read("src/studio-production-v222.js"),
   ]);
+  const nativeV245 = themeStudio.includes('data-theme-interface="v245-native"')
+    && themeStudio.includes("function CodeSurface")
+    && themeStudio.includes('id: "left-4"')
+    && themeStudio.includes('id: "right-4"')
+    && themeStudio.includes('id: "content-main"');
   const checks = [
     [entry,"studio-production-v225.js","entry runtime"],
     [entry,"studio-production-v225-action-isolation.js","entry action isolation"],
@@ -91,12 +96,12 @@ async function verify() {
     [auth,"autoRefreshToken: true","refresh token"],
     [auth,"DATA_REAUTH_RELEASE_V224","v224 data reauth installed"],
     [dataReauth,"retryDataAfterReauthV224","data reauth patch preserved"],
-    [themeStudio,'data-v222-code-tab="html"',"HTML action"],
-    [themeStudio,'data-v222-code-tab="css"',"CSS action"],
-    [themeStudio,'data-v222-code-tab="javascript"',"JavaScript action"],
-    [themeStudio,"preferredArea={widgetArea}","area-aware widget studio"],
-    [themeStudio,"tn-widget-custom-code-v209","custom HTML JavaScript widget"],
-    [themeStudio,"Tema Custom","custom theme"],
+    [themeStudio,nativeV245 ? "function CodeSurface" : 'data-v222-code-tab="html"',"HTML action"],
+    [themeStudio,nativeV245 ? 'id:"css",label:"CSS"' : 'data-v222-code-tab="css"',"CSS action"],
+    [themeStudio,nativeV245 ? 'id:"javascript",label:"JavaScript"' : 'data-v222-code-tab="javascript"',"JavaScript action"],
+    [themeStudio,nativeV245 ? "LAYOUT_SLOTS" : "preferredArea={widgetArea}","area-aware widget studio"],
+    [themeStudio,nativeV245 ? "BUILT_IN_WIDGETS.map" : "tn-widget-custom-code-v209","custom HTML JavaScript widget"],
+    [themeStudio,nativeV245 ? "THEME_COUNT" : "Tema Custom","custom theme/catalog"],
     [nara,"Kamera","Nara Camera"],[nara,"Foto","Nara Photo"],[nara,"File teks","Nara File"],[nara,"Nara Mini","Nara model"],[nara,"Instan","Nara intelligence"],
     [analytics,"get_site_analytics_dashboard","real analytics source"],
     [v222,"MAX_CODE_LINES = 10000","v222 line limit"],[v222,"v222-code-line-gutter","v222 real gutter"],[v222,"v222-format-code","v222 formatter"],
@@ -114,6 +119,6 @@ await verify();
 console.log(`Applied ${RELEASE}`);
 
 // v226 changes only the Theme Studio source map after the established v225
-// runtime has been verified. This keeps v225 mode-lock/Nara/sidebar/analytics
-// authority intact while making the green widget blueprint native React output.
+// runtime has been verified. v245 is a native React successor and v226 will
+// detect it and leave its source intact.
 await import("./patch-production-v226.mjs");
