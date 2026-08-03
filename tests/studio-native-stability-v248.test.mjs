@@ -13,13 +13,20 @@ const sessionAuthority = read("src/auth-session-authority-v76.js");
 const widgets = read("src/widget-system.js");
 const themes = read("src/theme-catalog.js");
 const nara = read("src/NaraAssistant.jsx");
+const vite = read("vite.config.js");
 
 const menu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
+const retired = [
+  "studio-shell-controller-v147.js",
+  "studio-production-v235.js",
+  "studio-visual-stability-v241.js",
+  "studio-shell-rescue-v242.js",
+  "studio-stable-shell-v244.js",
+  "studio-sidebar-brand-v246.js",
+];
 
-test("v248 makes the native React shell the last Studio authority", () => {
-  assert.doesNotMatch(entry, /import "\.\/studio-stable-shell-v244\.js"/);
-  assert.doesNotMatch(entry, /import "\.\/studio-sidebar-brand-v246\.js"/);
-  assert.doesNotMatch(entry, /import "\.\/studio-shell-controller-v147\.js"/);
+test("v248 makes the native React shell the last Studio interaction authority", () => {
+  for (const filename of retired) assert.doesNotMatch(entry, new RegExp(`import \\\"\\.\\/${filename.replaceAll(".", "\\.")}\\\"`), `retired runtime re-enabled: ${filename}`);
   const js = entry.indexOf('import "./studio-native-stability-v248.js"');
   const style = entry.indexOf('import "./studio-native-stability-v248.css"');
   assert.ok(js >= 0 && style > js);
@@ -27,6 +34,8 @@ test("v248 makes the native React shell the last Studio authority", () => {
   assert.match(runtime, /v244-legacy-sidebar/);
   assert.match(css, /#ngeblogging-studio-chrome-v244/);
   assert.match(css, /display:none!important/);
+  assert.doesNotMatch(vite, /finalizeServiceWorkerV24[1-7]/);
+  assert.match(vite, /finalizeServiceWorkerV248/);
 });
 
 test("all required sidebar actions stay in React and one n toggles each family", () => {
