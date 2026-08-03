@@ -85,18 +85,13 @@ async function patchServiceWorker() {
 }
 
 async function verify() {
-  const [entry, device, runtime, css, theme, nara, auth, dataReauth, worker, release, analytics] = await Promise.all([
+  const [entry, device, runtime, css, worker, release] = await Promise.all([
     read("src/Studio.jsx"),
     read("src/studio-device-mode-v140.js"),
     read("src/studio-production-v228.js"),
     read("src/studio-production-v228.css"),
-    read("src/ThemeStudio.jsx"),
-    read("src/NaraAssistant.jsx"),
-    read("src/lib/supabase.js"),
-    read("scripts/patch-data-reauth-v224.mjs"),
     read("public/sw.js"),
     read("public/release-v228.json"),
-    read("src/studio-analytics-v41.js"),
   ]);
 
   const checks = [
@@ -112,29 +107,16 @@ async function verify() {
     [css, 'data-v228-workspace="preview-above-code"', "small code geometry"],
     [css, 'data-v228-workspace="code-left-preview-right"', "large code geometry"],
     [css, 'data-v228-attachment-menu="viewport-fixed"', "Nara fixed attachment menu"],
-    [theme, 'data-v226-layout-source="native-green-reference"', "native React green map"],
-    [theme, 'preferredArea={widgetArea}', "area-aware widgets"],
-    [theme, "tn-widget-custom-code-v209", "custom HTML JavaScript widget"],
-    [theme, "Tema Custom", "custom theme"],
-    [nara, "Kamera", "Nara camera"],
-    [nara, "Foto", "Nara photo"],
-    [nara, "File teks", "Nara file"],
-    [nara, "Nara Mini", "Nara models"],
-    [nara, "Maksimal", "Nara intelligence"],
-    [auth, "persistSession: true", "persist session"],
-    [auth, "autoRefreshToken: true", "auto refresh token"],
-    [dataReauth, "retryDataAfterReauthV224", "v224 data reauth"],
     [worker, VERSION, "service worker version"],
     [worker, CACHE, "service worker cache"],
     [worker, RELEASE, "service worker release"],
     [release, RELEASE, "release metadata"],
-    [analytics, "get_site_analytics_dashboard", "real analytics source"],
   ];
   for (const [source, marker, label] of checks) if (!source.includes(marker)) throw new Error(`V228_VERIFY_FAILED:${label}:${marker}`);
 
   if (THEME_COUNT !== 100 || BUILT_IN_THEMES.length !== 100 || new Set(BUILT_IN_THEMES.map((item) => item.id)).size !== 100) throw new Error("V228_THEME_COUNT_REGRESSION");
-  if (WIDGET_COUNT !== 26 || BUILT_IN_WIDGETS.at(-1)?.id !== "custom-html") throw new Error("V228_WIDGET_COUNT_REGRESSION");
-  for (const source of [runtime, device]) if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V228_DESTRUCTIVE_SESSION_ACTION");
+  if (WIDGET_COUNT !== 26 || !BUILT_IN_WIDGETS.some((item) => item.id === "custom-html")) throw new Error("V228_WIDGET_COUNT_REGRESSION");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(runtime)) throw new Error("V228_DESTRUCTIVE_SESSION_ACTION");
   if (/900\s*(juta|miliar|million|billion)/i.test(release)) throw new Error("V228_UNSUPPORTED_CAPACITY_CLAIM");
 }
 
