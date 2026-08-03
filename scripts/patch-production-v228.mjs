@@ -7,6 +7,8 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-production-v228-green-editor-nara-20260803";
+const VERSION = "ngeblogging-app-v228-green-editor-nara-20260803";
+const CACHE = "green-editor-nara-cache-v228";
 
 function insertAfterVersion(source, line) {
   if (source.includes(line)) return source;
@@ -51,11 +53,27 @@ async function patchStudioEntry() {
   await write(path, source);
 }
 
-async function preserveServiceWorkerAuthorityForIsolation() {
+async function patchServiceWorker() {
   const path = "public/sw.js";
   let source = await read(path);
+  const compat = [
+    'const STUDIO_PRODUCTION_COMPAT_VERSION_V226_V228 = "ngeblogging-app-v226-native-green-layout-20260803";',
+    'const STUDIO_PRODUCTION_COMPAT_CACHE_V226_V228 = "native-green-layout-cache-v226";',
+    'const STUDIO_PRODUCTION_COMPAT_VERSION_V225_V228 = "ngeblogging-app-v225-theme-layout-nara-20260803";',
+    'const STUDIO_PRODUCTION_COMPAT_CACHE_V225_V228 = "theme-layout-nara-cache-v225";',
+    'const DATA_REAUTH_COMPAT_VERSION_V224_V228 = "ngeblogging-app-v224-data-reauth-20260803";',
+    'const DATA_REAUTH_COMPAT_CACHE_V224_V228 = "data-reauth-cache-v224";',
+    'const NARA_FALLBACK_COMPAT_RELEASE_V227_V228 = "nara-fallback-model-contract-v227-20260803";',
+  ];
+  for (const line of compat) source = insertAfterVersion(source, line);
+  source = source.replace(/^const VERSION = ".*";$/m, `const VERSION = "${VERSION}";`);
+  source = source.replace(/^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${CACHE}";`);
+  source = source.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "studio-v228";');
   source = insertAfterVersion(source, `const STUDIO_PRODUCTION_RELEASE_V228 = "${RELEASE}";`);
-  source = insertAfterVersion(source, 'const V228_SERVICE_WORKER_ROTATION_PENDING_COMPAT_AUDIT = "preserve-v227-cache-during-isolation";');
+  source = source.replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V227", "NGE_BLOGGING_UPDATE_AVAILABLE_V228");
+  source = source.replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V226", "NGE_BLOGGING_UPDATE_AVAILABLE_V228");
+  source = source.replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v228 announces a new shell without force-navigating authenticated tabs.");
+  for (const marker of [VERSION,CACHE,RELEASE,...compat]) if (!source.includes(marker.replace(/^const [^=]+=\s*"|";$/g,"")) && !source.includes(marker)) throw new Error(`V228_SW_COMPAT_MISSING:${marker}`);
   if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V228_FORCED_NAVIGATION_REMAINS");
   await write(path, source);
 }
@@ -65,7 +83,7 @@ async function verify() {
     read("src/Studio.jsx"),read("src/studio-device-mode-v140.js"),read("src/studio-production-v228.js"),read("src/studio-production-v228.css"),read("public/sw.js"),read("public/release-v228.json"),
   ]);
   for (const [source, marker] of [
-    [entry,"studio-production-v228.js"],[device,"V228_DESKTOP_SITE_PHYSICAL_PHONE_LOCK"],[device,'if (desktopSitePhone) return "desktop";'],[runtime,RELEASE],[runtime,"semantic-green-blueprint"],[runtime,"actual-1-to-10000"],[runtime,"camera-photo-file"],[css,'data-v228-layout-canvas="semantic-small"'],[css,'data-v228-layout-canvas="semantic-large"'],[css,'data-v228-workspace="preview-above-code"'],[css,'data-v228-workspace="code-left-preview-right"'],[css,'data-v228-attachment-menu="viewport-fixed"'],[worker,RELEASE],[release,RELEASE],
+    [entry,"studio-production-v228.js"],[device,"V228_DESKTOP_SITE_PHYSICAL_PHONE_LOCK"],[device,'if (desktopSitePhone) return "desktop";'],[runtime,RELEASE],[runtime,"semantic-green-blueprint"],[runtime,"actual-1-to-10000"],[runtime,"camera-photo-file"],[css,'data-v228-layout-canvas="semantic-small"'],[css,'data-v228-layout-canvas="semantic-large"'],[css,'data-v228-workspace="preview-above-code"'],[css,'data-v228-workspace="code-left-preview-right"'],[css,'data-v228-attachment-menu="viewport-fixed"'],[worker,VERSION],[worker,CACHE],[worker,"native-green-layout-cache-v226"],[worker,"theme-layout-nara-cache-v225"],[worker,"data-reauth-cache-v224"],[worker,RELEASE],[release,RELEASE],
   ]) if (!source.includes(marker)) throw new Error(`V228_VERIFY_FAILED:${marker}`);
   if (THEME_COUNT !== 100 || BUILT_IN_THEMES.length !== 100 || new Set(BUILT_IN_THEMES.map((item) => item.id)).size !== 100) throw new Error("V228_THEME_COUNT_REGRESSION");
   if (WIDGET_COUNT !== 26 || !BUILT_IN_WIDGETS.some((item) => item.id === "custom-html")) throw new Error("V228_WIDGET_COUNT_REGRESSION");
@@ -74,6 +92,6 @@ async function verify() {
 
 await patchDeviceModeSource();
 await patchStudioEntry();
-await preserveServiceWorkerAuthorityForIsolation();
+await patchServiceWorker();
 await verify();
-console.log(`Applied ${RELEASE}; service worker v227 intentionally preserved for compatibility isolation.`);
+console.log(`Applied ${RELEASE}`);
