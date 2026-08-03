@@ -25,9 +25,23 @@ function insertAfterVersion(source, line) {
   return next;
 }
 
+function isNativeV245(source) {
+  return source.includes('data-theme-interface="v245-native"')
+    && source.includes("function LayoutMap({ widgets, onChange, onOpenWidgets })")
+    && source.includes('id: "left-4"')
+    && source.includes('id: "content-main"')
+    && source.includes('id: "right-4"')
+    && source.includes("BUILT_IN_WIDGETS.map")
+    && source.includes("layoutSlot: selectedSlot.id");
+}
+
 async function patchThemeStudioSource() {
   const path = "src/ThemeStudio.jsx";
   let source = await read(path);
+  if (isNativeV245(source)) {
+    console.log("[v226] native Theme Studio v245 detected; legacy source replacement skipped");
+    return;
+  }
   if (!source.includes("LAYOUT_AREAS")) throw new Error("V226_LAYOUT_AREAS_NOT_READY");
 
   const widgetStudio = `function WidgetStudio({ value, onChange, preferredArea = "sidebar-right-1" }) {
@@ -134,10 +148,17 @@ async function verify() {
     read("src/studio-production-v225.js"), read("src/studio-production-v225.css"),
     read("src/NaraAssistant.jsx"), read("src/studio-analytics-v41.js"),
   ]);
-  for (const marker of [
-    'data-v226-layout-source="native-green-reference"', 'data-v226-green-map="four-left-post-four-right"',
-    'data-v212-layout-areas="22"', 'preferredArea={widgetArea}', 'tn-widget-custom-code-v209',
-  ]) if (!studio.includes(marker)) throw new Error(`V226_VERIFY_THEME:${marker}`);
+  if (isNativeV245(studio)) {
+    for (const marker of [
+      'data-theme-interface="v245-native"', "LAYOUT_SLOTS", "BUILT_IN_WIDGETS.map",
+      'id: "left-4"', 'id: "content-main"', 'id: "right-4"', "layoutSlot: selectedSlot.id",
+    ]) if (!studio.includes(marker)) throw new Error(`V226_VERIFY_NATIVE_V245:${marker}`);
+  } else {
+    for (const marker of [
+      'data-v226-layout-source="native-green-reference"', 'data-v226-green-map="four-left-post-four-right"',
+      'data-v212-layout-areas="22"', 'preferredArea={widgetArea}', 'tn-widget-custom-code-v209',
+    ]) if (!studio.includes(marker)) throw new Error(`V226_VERIFY_THEME:${marker}`);
+  }
   for (const id of ["sidebar-left-1","sidebar-left-2","sidebar-left-3","sidebar-left-4","sidebar-right-1","sidebar-right-2","sidebar-right-3","sidebar-right-4"]) {
     if (!LAYOUT_AREAS.some((area) => area.id === id)) throw new Error(`V226_REAL_AREA_MISSING:${id}`);
   }
