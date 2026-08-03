@@ -1,5 +1,5 @@
 [build]
-  command = "node --test tests/studio-native-stability-v248.test.mjs && mkdir -p dist && printf '<!doctype html><title>v248 regression passed</title><p>v248 regression passed</p>' > dist/index.html"
+  command = "npm run test:production && mkdir -p dist && printf '<!doctype html><title>production regression passed</title><p>production regression passed</p>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
