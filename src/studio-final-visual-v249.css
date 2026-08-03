@@ -1,0 +1,154 @@
+/* v249 — final screenshot-oriented visual lock layered after v247.
+   It does not replace pages/features; it only normalizes the existing v244/v246 chrome. */
+:root{
+  --v249-open:248px;
+  --v249-rail:70px;
+  --v249-top:64px;
+  --v249-safe-top:max(8px,env(safe-area-inset-top,0px));
+  --v249-safe-right:max(10px,env(safe-area-inset-right,0px));
+  --v249-safe-bottom:max(10px,env(safe-area-inset-bottom,0px));
+  --v249-safe-left:max(10px,env(safe-area-inset-left,0px));
+}
+
+html[data-studio-v246],html[data-studio-v246] body,html[data-studio-v246] #root,html[data-studio-v246] .sn-shell{
+  width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;overflow-x:clip!important;
+  transform:none!important;scale:1!important;zoom:1!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;
+}
+html[data-studio-v246] *,html[data-studio-v246] *::before,html[data-studio-v246] *::after{box-sizing:border-box!important}
+html[data-studio-v246] :is(.sn-main,.sn-main>*,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-settings-grid,.sn-settings-grid>*,.sv124-page,.sv124-page>*,.tn-studio,.tn-studio>*,.tn-code-workspace,.tn-code-workspace>*,.ce-app,.ce-app>*){min-width:0!important;max-width:100%!important}
+html[data-studio-v246] :is(img,video,canvas,iframe,svg){max-width:100%!important}
+html[data-studio-v246] :is(h1,h2,h3,h4,p,b,strong,span,small,label,a,button){min-width:0!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;overflow-wrap:break-word!important;word-break:normal!important}
+
+/* Freeze flicker/blink from historical layers. */
+#ngeblogging-studio-chrome-v244 :is(.v244-topbar,.v244-sidebar,.v244-mobile-n,.v244-internal-n,.v244-avatar),
+html[data-studio-v246] :is(.nara-floating-button,.nara-assistant-shell){animation:none!important;transition:none!important;filter:none!important}
+
+/* The visible chrome must always sit above Studio pages but below full-screen Nara/modals. */
+#ngeblogging-studio-chrome-v244{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:none!important;z-index:2147482000!important}
+#ngeblogging-studio-chrome-v244 :is(.v244-topbar,.v244-sidebar,.v244-mobile-n,.v244-internal-n,.v244-avatar,.v244-profile-menu,.v244-drawer-backdrop){pointer-events:auto!important}
+
+#ngeblogging-studio-chrome-v244 .v244-topbar{
+  position:fixed!important;top:0!important;right:0!important;height:var(--v249-top)!important;min-height:var(--v249-top)!important;
+  display:flex!important;align-items:center!important;gap:8px!important;padding:var(--v249-safe-top) var(--v249-safe-right) 8px var(--v249-safe-left)!important;
+  background:#fff!important;border-bottom:1px solid #dce5ef!important;visibility:visible!important;opacity:1!important;overflow:visible!important;
+  z-index:2147482300!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-avatar{
+  order:100!important;margin-left:auto!important;display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;
+  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;
+  padding:0!important;border-radius:50%!important;overflow:hidden!important;pointer-events:auto!important;z-index:2147482350!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-avatar img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:inherit!important}
+#ngeblogging-studio-chrome-v244 .v244-profile-menu{
+  position:fixed!important;width:min(330px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 82px)!important;
+  overflow:auto!important;z-index:2147482600!important;background:#fff!important;visibility:visible;opacity:1;
+}
+#ngeblogging-studio-chrome-v244 .v244-profile-menu[hidden]{display:none!important}
+
+/* n identity: always one white centered glyph, never pseudo-generated or color-blended. */
+#ngeblogging-studio-chrome-v244 :is(.v244-mobile-n,.v244-internal-n){
+  width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;
+  display:grid!important;place-items:center!important;margin:0!important;padding:0!important;border:0!important;border-radius:13px!important;
+  background:linear-gradient(145deg,#3379ea,#5f54dc)!important;color:#fff!important;visibility:visible!important;opacity:1!important;overflow:hidden!important;
+}
+#ngeblogging-studio-chrome-v244 :is(.v244-mobile-n,.v244-internal-n)::before,
+#ngeblogging-studio-chrome-v244 :is(.v244-mobile-n,.v244-internal-n)::after{content:none!important;display:none!important}
+#ngeblogging-studio-chrome-v244 :is(.v244-mobile-n,.v244-internal-n)>span{
+  width:100%!important;height:100%!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important;
+  color:#fff!important;visibility:visible!important;opacity:1!important;font:850 30px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.055em!important;text-align:center!important;text-shadow:none!important;transform:none!important;
+}
+
+/* Large family = tablet besar + laptop + situs desktop + komputer. Exactly one n: internal sidebar. */
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-mobile-n{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-sidebar{
+  position:fixed!important;inset:0 auto 0 0!important;height:100dvh!important;display:flex!important;flex-direction:column!important;
+  background:#fff!important;border-right:1px solid #dce5ef!important;visibility:visible!important;opacity:1!important;overflow:hidden!important;z-index:2147482400!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-sidebar{width:var(--v249-open)!important;max-width:var(--v249-open)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-sidebar{width:var(--v249-rail)!important;max-width:var(--v249-rail)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-topbar{left:var(--v249-open)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-topbar{left:var(--v249-rail)!important}
+html[data-studio-v246-family="large"][data-studio-v246-sidebar="expanded"] .sn-shell .sn-main{margin-left:var(--v249-open)!important;width:calc(100% - var(--v249-open))!important;max-width:none!important;padding-top:var(--v249-top)!important}
+html[data-studio-v246-family="large"][data-studio-v246-sidebar="collapsed"] .sn-shell .sn-main{margin-left:var(--v249-rail)!important;width:calc(100% - var(--v249-rail))!important;max-width:none!important;padding-top:var(--v249-top)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-workspace{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;max-width:min(520px,55vw)!important}
+
+#ngeblogging-studio-chrome-v244 .v244-brand-row{
+  flex:0 0 68px!important;min-height:68px!important;height:68px!important;display:grid!important;grid-template-columns:46px minmax(0,1fr)!important;
+  align-items:center!important;gap:11px!important;padding:10px 12px!important;background:#fff!important;overflow:hidden!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-brand-row>strong{display:block!important;align-self:center!important;margin:0!important;color:#17243a!important;font-size:20px!important;line-height:1.1!important;font-weight:800!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-brand-row{grid-template-columns:1fr!important;place-items:center!important;padding-inline:12px!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-brand-row>strong{display:none!important}
+
+/* Menu sits tightly below Buat Post. Footer stays pinned to bottom. */
+#ngeblogging-studio-chrome-v244 .v244-create{flex:0 0 46px!important;min-height:46px!important;margin:7px 9px 3px!important}
+#ngeblogging-studio-chrome-v244 .v244-nav{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:2px!important;padding:3px 8px 8px!important;overflow-x:hidden!important;overflow-y:auto!important}
+#ngeblogging-studio-chrome-v244 :is(.v244-nav,.v244-footer)>button{flex:0 0 42px!important;min-height:42px!important;max-height:42px!important;margin:0!important}
+#ngeblogging-studio-chrome-v244 .v244-footer{flex:0 0 auto!important;margin-top:auto!important;padding:7px 8px max(8px,var(--v249-safe-bottom))!important;background:#fff!important;border-top:1px solid #edf1f6!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] :is(.v244-create,.v244-nav>button,.v244-footer>button){grid-template-columns:1fr!important;place-items:center!important;padding-inline:0!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] :is(.v244-create,.v244-nav>button,.v244-footer>button)>span{display:none!important}
+
+/* Small family = application + phone + mobile + compact/tablet kecil.
+   Closed: only the top-left n. Open: only the internal sidebar n. */
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-topbar{left:0!important;right:0!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-workspace{display:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-mobile-n{display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-mobile-n{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-sidebar{
+  position:fixed!important;top:0!important;bottom:0!important;left:0!important;width:clamp(244px,74vw,320px)!important;max-width:calc(100vw - 44px)!important;height:100dvh!important;
+  display:flex!important;flex-direction:column!important;background:#fff!important;border-right:1px solid #dce5ef!important;overflow:hidden!important;z-index:2147482450!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-sidebar{visibility:hidden!important;opacity:0!important;pointer-events:none!important;transform:translateX(-105%)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-sidebar{visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:translateX(0)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-brand-row>strong{display:block!important;font-size:19px!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-drawer-backdrop{background:transparent!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-drawer-backdrop{display:none!important;pointer-events:none!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-drawer-backdrop{display:block!important;position:fixed!important;top:0!important;right:0!important;bottom:0!important;left:clamp(244px,74vw,320px)!important;width:auto!important;height:100dvh!important;border:0!important;opacity:1!important;pointer-events:auto!important;z-index:2147482390!important}
+html[data-studio-v246-family="small"] .sn-shell .sn-main{margin-left:0!important;width:100%!important;max-width:100%!important;padding-top:var(--v249-top)!important;transform:none!important;zoom:1!important}
+html[data-studio-v246-family="small"] .sn-view-pad{width:100%!important;margin:0!important;padding:clamp(10px,3vw,16px)!important}
+html[data-studio-v246-family="small"] :is(.sn-welcome,.sn-home-grid,.sn-settings-grid,.sn-info-grid,.sn-metrics,.sv124-metrics-grid){grid-template-columns:minmax(0,1fr)!important}
+html[data-studio-v246-family="small"] :is(.sn-page-title,.sv124-page-title){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+html[data-studio-v246-family="small"] :is(.sn-page-title h1,.sv124-page-title h1,.sn-welcome h1){font-size:clamp(27px,7.5vw,36px)!important;line-height:1.08!important;letter-spacing:-.025em!important;max-width:100%!important}
+html[data-studio-v246-family="small"] .sn-welcome>div:last-child{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+html[data-studio-v246-family="small"] .sn-welcome>div:last-child :is(button,a){width:100%!important;min-height:44px!important;justify-content:center!important;white-space:normal!important}
+html[data-studio-v246-family="small"] .sn-metrics{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+html[data-studio-v246-family="small"] .sn-content-card{overflow:hidden!important}
+html[data-studio-v246-family="small"] .sn-table-head{display:none!important}
+html[data-studio-v246-family="small"] .sn-doc-row{min-width:0!important;max-width:100%!important}
+
+/* Settings and Domain never collapse text into vertical columns on small devices. */
+html[data-studio-v246-family="small"] .sn-settings-grid{grid-template-columns:minmax(0,1fr)!important}
+html[data-studio-v246-family="small"] .sv124-free-domain{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+html[data-studio-v246-family="small"] .sv124-free-domain>aside{width:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+html[data-studio-v246-family="small"] .sv124-free-domain>aside>i{grid-column:1/-1!important;width:100%!important}
+html[data-studio-v246-family="small"] .sv124-free-domain>aside :is(a,button){width:100%!important;min-height:44px!important;justify-content:center!important;white-space:nowrap!important;writing-mode:horizontal-tb!important}
+html[data-studio-v246-family="small"] .sv124-domain-register form{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+html[data-studio-v246-family="small"] .sv124-domain-register form>button{width:100%!important;min-height:44px!important}
+
+/* Nara: small/medium stays non-modal, launcher and controls never blink or disappear. */
+html[data-studio-v246] .nara-floating-button{right:max(10px,env(safe-area-inset-right))!important;bottom:max(10px,env(safe-area-inset-bottom))!important;visibility:visible!important;opacity:1!important;transform:none!important;animation:none!important;transition:none!important;z-index:2147483000!important}
+html[data-studio-v246] .nara-assistant-layer[data-v242-nara-mode="nonmodal"]{pointer-events:none!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-studio-v246] .nara-assistant-layer[data-v242-nara-mode="nonmodal"]>.nara-assistant-backdrop{display:none!important;pointer-events:none!important;background:transparent!important}
+html[data-studio-v246] .nara-assistant-layer[data-v242-nara-mode="nonmodal"]>.nara-assistant-shell{pointer-events:auto!important;background:#fff!important;overflow:hidden!important}
+html[data-studio-v246] :is(.v242-nara-attachment-menu,.v235-nara-attachment-portal,.nara-attachment-menu){position:fixed!important;z-index:2147483600!important;max-width:calc(100vw - 20px)!important;max-height:min(260px,calc(100dvh - 20px))!important;overflow:auto!important;background:#fff!important;pointer-events:auto!important}
+html[data-studio-v246] :is(.nara-size-controls-v147,.nara-auto-voice-v148,.nara-attachment-menu-wrap,.nara-select.intelligence,.nara-select.model){visibility:visible!important;opacity:1!important;min-width:0!important;max-width:100%!important}
+html[data-studio-v246] .nara-assistant-header button[title="Tutup"]{display:grid!important;visibility:visible!important;opacity:1!important}
+html[data-studio-v246-family="small"] .nara-floating-button{width:48px!important;height:48px!important;min-width:48px!important;max-width:48px!important;padding:0!important;border-radius:14px!important;display:grid!important;place-items:center!important;overflow:hidden!important}
+html[data-studio-v246-family="small"] .nara-floating-button :is(b,small){display:none!important}
+html[data-studio-v246-family="small"] .nara-assistant-layer[data-v242-nara-mode="nonmodal"]>.nara-assistant-shell{right:max(7px,env(safe-area-inset-right))!important;bottom:max(7px,env(safe-area-inset-bottom))!important;width:calc(100vw - 14px)!important;max-width:calc(100vw - 14px)!important;height:min(76dvh,680px)!important;max-height:calc(100dvh - 72px)!important;border-radius:18px!important}
+
+/* Theme code workspace: desktop 50/50, small preview first and code second; never wider than viewport. */
+html[data-studio-v246] :is(.tn-code-workspace,.tn-code-pane,.tn-code-preview-pane,#ngeblogging-layout-map,.tn-layout-studio){min-width:0!important;max-width:100%!important}
+html[data-studio-v246-family="large"] .tn-code-workspace{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important;align-items:stretch!important}
+html[data-studio-v246-family="small"] .tn-code-workspace{display:flex!important;flex-direction:column!important;gap:10px!important}
+html[data-studio-v246-family="small"] .tn-code-preview-pane{order:1!important;min-height:300px!important}
+html[data-studio-v246-family="small"] .tn-code-pane{order:2!important;min-height:58dvh!important}
+html[data-studio-v246] .tn-code-pane textarea{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace!important;line-height:1.6!important;white-space:pre!important;overflow:auto!important;min-height:58dvh!important}
+html[data-studio-v246-family="small"] #ngeblogging-layout-map .tn-layout-canvas-v170{width:100%!important;max-width:100%!important;margin-inline:auto!important;overflow:hidden!important}
+
+@media(max-height:620px){
+  #ngeblogging-studio-chrome-v244 .v244-nav{gap:0!important;padding-top:1px!important}
+  #ngeblogging-studio-chrome-v244 :is(.v244-nav,.v244-footer)>button{flex-basis:37px!important;min-height:37px!important;max-height:37px!important}
+}
+@media(prefers-reduced-motion:reduce){html[data-studio-v246] *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
