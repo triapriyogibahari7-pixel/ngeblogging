@@ -112,3 +112,4 @@ await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
 await import("./patch-studio-bootstrap-v243.mjs");
 await import("./patch-auth-production-v245.mjs");
+await import("./patch-studio-native-v250.mjs");
