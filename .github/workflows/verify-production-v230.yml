@@ -1,0 +1,122 @@
+name: Verify Ngeblogging production v230 live
+
+on:
+  workflow_run:
+    workflows:
+      - Ngeblogging production route cutover v184 — Studio v191/v192/v195/v196/v197/v205/v210
+    branches:
+      - production
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-production-v230-live-gate
+  cancel-in-progress: false
+
+jobs:
+  verify-live:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      EXPECTED_RELEASE: studio-production-v230-preview-bootstrap-live-gate-20260803
+      APEX: https://ngeblogging.com
+      TARGET_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Mark v230 live verification pending
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.TARGET_SHA,
+              state: 'pending',
+              context: 'production/v230-live',
+              description: 'Verifying release-v230 and Studio on ngeblogging.com'
+            });
+
+      - name: Wait for v230 release marker on apex
+        id: live
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 36); do
+            stamp="$(date +%s)-${attempt}"
+            release_file="$(mktemp)"
+            studio_file="$(mktemp)"
+            root_file="$(mktemp)"
+
+            release_code="$(curl -L -sS -o "$release_file" -w '%{http_code}' --max-time 20 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "$APEX/release-v230.json?verify=$stamp" || true)"
+            studio_code="$(curl -L -sS -o "$studio_file" -w '%{http_code}' --max-time 20 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "$APEX/studio?verify=$stamp" || true)"
+            root_code="$(curl -L -sS -o "$root_file" -w '%{http_code}' --max-time 20 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "$APEX/?verify=$stamp" || true)"
+
+            release_ok=0
+            if [ "$release_code" = "200" ]; then
+              if EXPECTED_RELEASE="$EXPECTED_RELEASE" RELEASE_FILE="$release_file" node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const body = readFileSync(process.env.RELEASE_FILE, 'utf8');
+          if (body.includes('WHITE-R4-2026.07.12')) process.exit(2);
+          let parsed;
+          try { parsed = JSON.parse(body); } catch { process.exit(3); }
+          if (parsed.release !== process.env.EXPECTED_RELEASE) process.exit(4);
+          if (parsed.preview?.visuallyScalesIntoAvailableFrame !== true) process.exit(5);
+          if (parsed.studioBootstrap?.retryOnlyAfterLocalSessionAndSiteReadSucceed !== true) process.exit(6);
+          if (parsed.preserved?.themeCount !== 100 || parsed.preserved?.widgetCount !== 26) process.exit(7);
+          if (parsed.validation?.massCapacityClaimed !== false) process.exit(8);
+          NODE
+              then release_ok=1; fi
+            fi
+
+            studio_ok=0
+            if [ "$studio_code" = "200" ] && grep -q 'id="root"' "$studio_file" && ! grep -q 'WHITE-R4-2026.07.12' "$studio_file"; then studio_ok=1; fi
+            root_ok=0
+            if [ "$root_code" = "200" ] && grep -q 'id="root"' "$root_file" && ! grep -q 'WHITE-R4-2026.07.12' "$root_file"; then root_ok=1; fi
+
+            rm -f "$release_file" "$studio_file" "$root_file"
+            echo "attempt=$attempt release=$release_code/$release_ok studio=$studio_code/$studio_ok root=$root_code/$root_ok"
+            if [ "$release_ok" = "1" ] && [ "$studio_ok" = "1" ] && [ "$root_ok" = "1" ]; then
+              success=1
+              break
+            fi
+            sleep 10
+          done
+
+          if [ "$success" != "1" ]; then
+            echo "V230_LIVE_VERIFY_FAILED: apex did not expose the expected release and React Studio within the verification window." >&2
+            exit 1
+          fi
+
+      - name: Mark v230 live verification success
+        if: ${{ success() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.TARGET_SHA,
+              state: 'success',
+              context: 'production/v230-live',
+              description: 'v230 release marker and Studio are live on ngeblogging.com'
+            });
+
+      - name: Mark v230 live verification failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.TARGET_SHA,
+              state: 'failure',
+              context: 'production/v230-live',
+              description: 'v230 live verification failed; do not claim production is current'
+            });

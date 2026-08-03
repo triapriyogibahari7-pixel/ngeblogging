@@ -1,0 +1,124 @@
+/* Ngeblogging Studio v230 — bounded device preview + healthy bootstrap recovery. */
+html[data-studio-production-v230],html[data-studio-production-v230] body,html[data-studio-production-v230] #root{min-width:0!important;max-width:100%!important;overflow-x:clip!important}
+html[data-studio-production-v230] *,html[data-studio-production-v230] *::before,html[data-studio-production-v230] *::after{box-sizing:border-box!important}
+
+/* Theme preview: keep the requested device viewport internally, but scale it into the visible host. */
+html[data-studio-production-v230] .tn-frame-shell[data-v230-preview-scale]{position:relative!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:360px!important;height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#e8eef5!important;contain:layout paint!important}
+html[data-studio-production-v230] .tn-frame-shell[data-v230-preview-scale]>iframe{position:absolute!important;left:50%!important;top:10px!important;width:var(--v230-preview-target-width)!important;max-width:none!important;height:var(--v230-preview-target-height)!important;min-height:0!important;margin:0!important;border:0!important;border-radius:12px!important;background:#fff!important;transform:translateX(-50%) scale(var(--v230-preview-scale))!important;transform-origin:top center!important;box-shadow:0 12px 40px rgba(26,45,73,.13)!important}
+html[data-studio-production-v230] [data-v230-preview-host="bounded-centered"]{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+html[data-studio-production-v230] .tn-active-stage[data-v230-preview-host="bounded-centered"]{width:100%!important;min-width:0!important;max-width:100%!important}
+html[data-studio-production-v230] .tn-active-stage>.tn-frame-shell[data-v230-preview-scale]{flex:1 1 auto!important;min-height:500px!important}
+html[data-studio-production-v230] .tn-code-preview-pane[data-v230-preview-host="bounded-centered"]{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+html[data-studio-production-v230] .tn-code-preview-pane .tn-frame-shell[data-v230-preview-scale]{flex:1 1 auto!important;min-height:0!important;height:100%!important}
+html[data-studio-production-v230] .tn-customizer[data-v230-preview-host="bounded-centered"]>.tn-frame-shell[data-v230-preview-scale]{min-height:520px!important}
+
+/* Device chooser always stays inside the toolbar and can scroll instead of clipping. */
+html[data-studio-production-v230] .tn-stage-toolbar{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+html[data-studio-production-v230] .tn-device-switch{min-width:0!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin!important;overscroll-behavior-x:contain!important}
+html[data-studio-production-v230] .tn-device-switch button{flex:0 0 auto!important}
+
+/* One visible n toggle only. No X close button, no extra square/glyph outside the sidebar. */
+html[data-studio-production-v230] #ngeblogging-studio-sidebar .sn-side-close{display:none!important;visibility:hidden!important;pointer-events:none!important}
+html[data-studio-production-v230] .sn-sidebar-toggle[hidden]{display:none!important}
+html[data-studio-production-v230] .sn-sidebar-toggle .sn-desktop-sidebar-icon,
+html[data-studio-production-v230] .sn-sidebar-toggle .sn-mobile-menu-mark>i,
+html[data-studio-production-v230] #ngeblogging-studio-sidebar .sn-logo-mark>i{display:none!important}
+html[data-studio-production-v230] #ngeblogging-studio-sidebar .sn-logo-mark[data-v230-single-toggle]{cursor:pointer!important;display:grid!important;place-items:center!important;margin:0!important;opacity:1!important;filter:none!important;transform:none!important}
+html[data-studio-production-v230] #ngeblogging-studio-sidebar .sn-logo-mark[data-v230-single-toggle]>strong,
+html[data-studio-production-v230] .sn-sidebar-toggle[data-v230-single-toggle="mobile-closed-logo"] .sn-mobile-menu-mark>strong{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;margin:0!important;color:#2869df!important;font-weight:900!important;line-height:1!important;opacity:1!important;filter:none!important;transform:none!important}
+html[data-studio-production-v230] .sn-sidebar-toggle[data-v230-single-toggle="mobile-closed-logo"]{display:grid!important;place-items:center!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;padding:0!important;margin:0!important;border-radius:15px!important;background:#fff!important;color:#2869df!important;box-shadow:none!important;overflow:hidden!important}
+html[data-studio-production-v230] .sn-side-backdrop{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important}
+
+/* Menu stays directly below + Buat Post instead of spreading far apart on tall screens. */
+html[data-studio-production-v230] #ngeblogging-studio-sidebar>nav{justify-content:flex-start!important;align-content:flex-start!important;gap:2px!important;margin-top:5px!important;padding-top:0!important;min-height:0!important;overflow-y:auto!important}
+html[data-studio-production-v230] #ngeblogging-studio-sidebar>.sn-new{margin-bottom:0!important}
+html[data-studio-production-v230] #ngeblogging-studio-sidebar nav>button{flex:0 0 auto!important;min-height:38px!important;margin:0!important}
+html[data-studio-production-v230] #ngeblogging-studio-sidebar>.sn-account-footer{margin-top:auto!important}
+
+/* On mobile the closed state only exposes the top-left n; when open the drawer's own n is the only visible toggle. */
+html[data-studio-production-v230][data-v229-family="small"] #ngeblogging-studio-sidebar[data-v230-sidebar="mobile-closed"]{transform:translateX(-105%)!important;pointer-events:none!important}
+html[data-studio-production-v230][data-v229-family="small"] #ngeblogging-studio-sidebar[data-v230-sidebar="mobile-open"]{transform:none!important;pointer-events:auto!important;width:min(76vw,320px)!important;max-width:calc(100vw - 34px)!important}
+html[data-studio-production-v230][data-v229-family="small"] #ngeblogging-studio-sidebar[data-v230-sidebar="mobile-open"] .sn-logo{min-height:58px!important;padding:8px 10px!important}
+html[data-studio-production-v230][data-v229-family="small"] #ngeblogging-studio-sidebar[data-v230-sidebar="mobile-open"] .sn-logo-mark{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;border-radius:13px!important}
+html[data-studio-production-v230][data-v229-family="small"] #ngeblogging-studio-sidebar[data-v230-sidebar="mobile-open"] .sn-logo>b{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+/* Desktop keeps the sidebar visible. Clicking its n collapses to icons and clicking n again restores text. */
+html[data-studio-production-v230][data-v229-family="large"] .sn-sidebar-toggle{display:none!important}
+html[data-studio-production-v230][data-v229-family="large"] #ngeblogging-studio-sidebar[data-v230-sidebar="desktop-open"]{width:224px!important}
+html[data-studio-production-v230][data-v229-family="large"] #ngeblogging-studio-sidebar[data-v230-sidebar="desktop-collapsed"]{width:72px!important}
+html[data-studio-production-v230][data-v229-family="large"] #ngeblogging-studio-sidebar[data-v230-sidebar="desktop-collapsed"] :is(.sn-logo>b,.sn-new>span,nav button>span,.sn-account-footer button>span){display:none!important}
+html[data-studio-production-v230][data-v229-family="large"] #ngeblogging-studio-sidebar[data-v230-sidebar="desktop-collapsed"] :is(.sn-logo,.sn-new,nav button,.sn-account-footer button){justify-content:center!important;padding-inline:0!important}
+
+/* The green-reference map stays a map on phones: paired header/footer rows and 4-left + content + 4-right, not a tile board. */
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170[data-v229-layout-canvas]{grid-template-columns:minmax(66px,.9fr) minmax(132px,1.75fr) minmax(66px,.9fr)!important;grid-auto-rows:minmax(62px,auto)!important;gap:5px!important;padding:6px!important;width:100%!important;min-width:0!important;max-width:100%!important;margin-inline:auto!important;overflow:visible!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170[data-v229-layout-canvas]>[data-v229-slot]{grid-template-columns:22px minmax(0,1fr)!important;min-height:62px!important;padding:7px 5px!important;gap:2px 5px!important;border-radius:9px!important;overflow:hidden!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170[data-v229-layout-canvas]>.tn-layout-slot-v170>span{width:22px!important;height:22px!important;min-width:22px!important;font-size:7px!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170[data-v229-layout-canvas]>.tn-layout-slot-v170>small{display:block!important;font-size:8.5px!important;line-height:1.15!important;overflow-wrap:break-word!important;word-break:normal!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170[data-v229-layout-canvas]>.tn-layout-slot-v170>b{display:none!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .top-left-1{grid-column:1/2!important;grid-row:1!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .top-right-1{grid-column:2/4!important;grid-row:1!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .top-left-3{grid-column:1/4!important;grid-row:2!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .top-left-2{grid-column:1/2!important;grid-row:3!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .top-right-2{grid-column:2/4!important;grid-row:3!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .top-right-3{grid-column:1/4!important;grid-row:4!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .before-content{grid-column:1/4!important;grid-row:5!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-left-1{grid-column:1!important;grid-row:6!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-left-2{grid-column:1!important;grid-row:7!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-left-3{grid-column:1!important;grid-row:8!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-left-4{grid-column:1!important;grid-row:9!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .content-main{grid-column:2!important;grid-row:6/10!important;min-height:263px!important;padding:8px!important;display:grid!important;place-content:center!important;border:2px solid #3478de!important;border-radius:11px!important;overflow:hidden!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .content-main>span{font-size:8px!important;line-height:1.15!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .content-main>small{font-size:clamp(12px,3.8vw,18px)!important;line-height:1.08!important;overflow-wrap:break-word!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-right-1{grid-column:3!important;grid-row:6!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-right-2{grid-column:3!important;grid-row:7!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-right-3{grid-column:3!important;grid-row:8!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .sidebar-right-4{grid-column:3!important;grid-row:9!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .after-content{grid-column:1/4!important;grid-row:10!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .bottom-left-1{grid-column:1/2!important;grid-row:11!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .bottom-right-1{grid-column:2/4!important;grid-row:11!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .bottom-left-2{grid-column:1/2!important;grid-row:12!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .bottom-right-2{grid-column:2/4!important;grid-row:12!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .bottom-left-3{grid-column:1/4!important;grid-row:13!important}
+html[data-studio-production-v230][data-v229-family="small"] .tn-layout-canvas-v170 .bottom-right-3{grid-column:1/4!important;grid-row:14!important}
+
+/* Startup state: no giant/clipped typography, bounded content, clear retry. */
+html[data-studio-production-v230] .so75-startup[data-v230-startup="bounded-recoverable"]{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:clip!important}
+html[data-studio-production-v230] .so75-startup[data-v230-startup="bounded-recoverable"]>header{min-width:0!important;max-width:100%!important}
+html[data-studio-production-v230] .so75-startup[data-v230-startup="bounded-recoverable"]>section{width:min(760px,calc(100% - 28px))!important;min-width:0!important;max-width:100%!important;margin-inline:auto!important;padding-inline:clamp(16px,4vw,42px)!important;text-align:center!important}
+html[data-studio-production-v230] .so75-startup[data-v230-startup="bounded-recoverable"] h1{max-width:100%!important;margin-inline:auto!important;font-size:clamp(36px,8vw,72px)!important;line-height:1.02!important;overflow-wrap:break-word!important;word-break:normal!important}
+html[data-studio-production-v230] .so75-startup[data-v230-startup="bounded-recoverable"] p{max-width:680px!important;margin-inline:auto!important;font-size:clamp(14px,2.5vw,19px)!important;line-height:1.65!important;overflow-wrap:break-word!important}
+html[data-studio-production-v230] .so75-startup[data-v230-startup="bounded-recoverable"] .so75-primary{min-width:min(260px,100%)!important;max-width:100%!important;min-height:50px!important;justify-content:center!important;white-space:normal!important}
+
+/* Topbar: profile is the primary control; stale textual mode badges never displace it. */
+html[data-studio-production-v230] :is(.sn-top,.sn-topbar){min-width:0!important;max-width:100%!important;overflow:visible!important}
+html[data-studio-production-v230] :is(.sn-top,.sn-topbar) [data-studio-mode-badge],
+html[data-studio-production-v230] :is(.sn-top,.sn-topbar) [data-device-mode-badge],
+html[data-studio-production-v230] :is(.sn-top,.sn-topbar) .studio-device-mode-badge,
+html[data-studio-production-v230] :is(.sn-top,.sn-topbar) .v225-mode-badge{display:none!important}
+html[data-studio-production-v230] :is(.sn-top,.sn-topbar) .sn-avatar[data-v230-topbar-profile="visible"]{display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;overflow:hidden!important}
+
+/* Profile avatar URL gets a real visual preview without replacing existing persistence fields. */
+html[data-studio-production-v230] [data-v230-avatar-field="live-preview"]{position:relative!important;padding-right:82px!important;min-width:0!important}
+html[data-studio-production-v230] .v230-avatar-preview{position:absolute!important;right:8px!important;top:50%!important;transform:translateY(-50%)!important;width:58px!important;height:58px!important;display:grid!important;place-items:center!important;border:1px solid #d8e2ee!important;border-radius:16px!important;overflow:hidden!important;background:#eef4fb!important}
+html[data-studio-production-v230] .v230-avatar-preview img{width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;display:block!important}
+
+/* Small surfaces preserve the preview proportions instead of letting desktop previews explode past the phone. */
+@media(max-width:760px){
+  html[data-studio-production-v230] .tn-active-stage{min-height:560px!important}
+  html[data-studio-production-v230] .tn-active-stage>.tn-frame-shell[data-v230-preview-scale]{min-height:475px!important}
+  html[data-studio-production-v230] .tn-stage-toolbar{padding:8px!important;gap:8px!important}
+  html[data-studio-production-v230] .tn-stage-toolbar>b{width:100%!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  html[data-studio-production-v230] .tn-device-switch{width:100%!important}
+  html[data-studio-production-v230] .tn-code-preview-pane .tn-frame-shell[data-v230-preview-scale]{min-height:330px!important;height:100%!important}
+  html[data-studio-production-v230] [data-v230-avatar-field="live-preview"]{padding-right:0!important;padding-bottom:76px!important}
+  html[data-studio-production-v230] .v230-avatar-preview{right:auto!important;left:0!important;top:auto!important;bottom:4px!important;transform:none!important}
+}
+
+/* Desktop-site-on-phone may expose a synthetic wide viewport; the preview host remains bounded to its real container. */
+html[data-studio-production-v230][data-v229-desktop-site-phone="true"] .tn-active-stage,
+html[data-studio-production-v230][data-v229-desktop-site-phone="true"] .tn-code-preview-pane,
+html[data-studio-production-v230][data-v229-desktop-site-phone="true"] .tn-frame-shell[data-v230-preview-scale]{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-studio-production-v230] .tn-frame-shell[data-v230-preview-scale]>iframe{transition:none!important;animation:none!important}
+}

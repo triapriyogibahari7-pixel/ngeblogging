@@ -1,0 +1,70 @@
+{
+  "release": "studio-production-v230-preview-bootstrap-live-gate-20260803",
+  "status": "candidate",
+  "basedOn": "studio-production-v229-layout-editor-sidebar-nara-20260803",
+  "preview": {
+    "keepsActualDeviceViewport": true,
+    "visuallyScalesIntoAvailableFrame": true,
+    "centered": true,
+    "devices": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
+    "rootScalingAdded": false
+  },
+  "sidebar": {
+    "singleVisibleNToggle": true,
+    "mobileClosedShowsTopLeftNOnly": true,
+    "mobileOpenUsesDrawerN": true,
+    "desktopUsesSidebarN": true,
+    "desktopCollapsedKeepsMenuIcons": true,
+    "extraCloseXHidden": true,
+    "extraDesktopToggleGlyphHidden": true,
+    "menuGroupStaysNearCreatePost": true,
+    "backdropBlurAdded": false
+  },
+  "layoutMap": {
+    "sameReferenceStructureSmallAndLarge": true,
+    "smallDeviceTileBoardDisabled": true,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "contentMainCentered": true,
+    "widgetSelectionPreserved": true
+  },
+  "studioBootstrap": {
+    "staleErrorRecovery": true,
+    "retryOnlyAfterLocalSessionAndSiteReadSucceed": true,
+    "retryLimit": 3,
+    "forcedRemoteSessionVerificationAdded": false,
+    "automaticLogoutAdded": false,
+    "realNetworkErrorMayStillBeShown": true
+  },
+  "profile": {
+    "topbarProfileRequired": true,
+    "staleModeBadgeHidden": true,
+    "avatarUrlLivePreview": true,
+    "existingProfilePersistencePreserved": true
+  },
+  "preserved": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "greenLayoutMap": true,
+    "htmlCssJavascriptEditor": true,
+    "naraCameraPhotoFile": true,
+    "naraMicSpeakerModelIntelligence": true,
+    "realAnalyticsRpc": true,
+    "persistSession": true,
+    "autoRefreshToken": true
+  },
+  "serviceWorker": {
+    "activeVersion": "ngeblogging-app-v230-preview-bootstrap-live-gate-20260803",
+    "activeCache": "preview-bootstrap-live-gate-cache-v230",
+    "forcedNavigation": false,
+    "sessionStorageClearing": false
+  },
+  "validation": {
+    "deployPreviewRequired": true,
+    "liveApexGateRequired": true,
+    "realDeviceRequired": true,
+    "googleOAuthEndToEndClaimed": false,
+    "linkedinOAuthEndToEndClaimed": false,
+    "massCapacityClaimed": false
+  }
+}
