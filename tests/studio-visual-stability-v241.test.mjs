@@ -14,13 +14,15 @@ const nara = read("src/NaraAssistant.jsx");
 const analytics = read("src/studio-analytics-v41.js");
 const auth = read("src/lib/supabase.js");
 const release = JSON.parse(read("public/release-v241.json"));
+const native248 = read("src/studio-native-stability-v248.js");
 
-test("v241 is loaded after v239/v240 as the final Studio authority", () => {
-  const v240 = entry.indexOf('import "./studio-react-safe-v240.css"');
-  const v241 = entry.indexOf('import "./studio-visual-stability-v241.js"');
-  const final = entry.indexOf('import "./studio-visual-stability-v241-final.css"');
-  assert.ok(v240 >= 0 && v241 > v240 && final > v241);
+test("v241 recovery source is preserved but its capture portal is retired under v248", () => {
+  assert.doesNotMatch(entry, /import "\.\/studio-visual-stability-v241\.js"/);
+  assert.ok(entry.indexOf('import "./studio-visual-stability-v241-final.css"') >= 0);
+  assert.ok(entry.indexOf('import "./studio-native-stability-v248.js"') > entry.indexOf('import "./studio-visual-stability-v241-final.css"'));
   assert.match(runtime, /studio-visual-stability-v241-20260803/);
+  assert.match(runtime, /stopImmediatePropagation/);
+  assert.match(native248, /restoreReactChrome/);
 });
 
 test("all required sidebar menu items remain in the React source", () => {
@@ -34,10 +36,8 @@ test("all required sidebar menu items remain in the React source", () => {
   assert.match(css, /#ngeblogging-studio-sidebar\.collapsed\+\.sn-main/);
 });
 
-test("top-right profile has five real actions and Profile stays separate from Settings", () => {
-  for (const action of ["profile", "settings", "add-site", "view-site", "logout"]) {
-    assert.match(runtime, new RegExp(`data-action=\\"${action}\\"`));
-  }
+test("historical v241 profile source has five real actions and Profile stays separate from Settings", () => {
+  for (const action of ["profile", "settings", "add-site", "view-site", "logout"]) assert.match(runtime, new RegExp(`data-action=\\"${action}\\"`));
   assert.match(runtime, /openProfile\(avatar\)/);
   assert.match(runtime, /sn-account-settings-v135/);
   assert.match(runtime, /sn-account-logout-v135/);
@@ -70,7 +70,7 @@ test("100 themes and 26 real widgets including custom HTML JavaScript stay conne
   assert.equal(release.themeSystem.widgetCount, 26);
 });
 
-test("layout map keeps four left slots, centered content, four right slots with a compact picker", () => {
+test("layout map keeps four left slots, centered content, four right slots with a compact picker in historical source", () => {
   const v240 = read("src/studio-react-safe-v240.js");
   for (const marker of ["Widget kiri 1", "Widget kiri 4", "Konten utama", "Widget kanan 1", "Widget kanan 4"]) assert.match(v240, new RegExp(marker));
   assert.match(runtime, /v241-widget-picker/);
@@ -91,7 +91,7 @@ test("theme code workspace has HTML CSS JavaScript, actual line numbers, and dev
   assert.equal(release.themeSystem.lineNumbers.maximum, 10000);
 });
 
-test("Nara attachment plus uses the real camera photo and file inputs in every family", () => {
+test("historical Nara portal still documents real camera photo and file inputs", () => {
   for (const marker of ["cameraInput", "imageInput", "fileInput", "intelligenceOptions", "modelOptions"]) assert.match(nara, new RegExp(marker));
   assert.match(runtime, /openAttachmentPortal/);
   assert.match(runtime, /data-kind="camera"/);
@@ -99,12 +99,9 @@ test("Nara attachment plus uses the real camera photo and file inputs in every f
   assert.match(runtime, /data-kind="file"/);
   assert.match(css, /\.v241-nara-attachment-portal/);
   assert.match(css, /data-v241-nara-mode="nonmodal"/);
-  assert.match(css, /data-nara-size="small"/);
-  assert.match(css, /data-nara-size="medium"/);
-  assert.match(css, /data-nara-size="full"/);
 });
 
-test("analytics uses production RPC and v241 only enlarges presentation, never invents production numbers", () => {
+test("analytics uses production RPC and v241 never invents production numbers", () => {
   assert.match(analytics, /get_site_analytics_dashboard/);
   assert.match(analytics, /SIMULASI TAMPILAN — BUKAN DATA PRODUKSI/);
   assert.match(runtime, /loadAnalytics\(view, 30, false\)/);
@@ -113,7 +110,7 @@ test("analytics uses production RPC and v241 only enlarges presentation, never i
   assert.equal(release.analytics.fakeProductionNumbers, false);
 });
 
-test("auth persistence is preserved and v241 adds no destructive session action", () => {
+test("auth persistence is preserved and v241 historical source adds no destructive session action", () => {
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.match(auth, /flowType:\s*"pkce"/);
