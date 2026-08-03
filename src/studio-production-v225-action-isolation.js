@@ -1,4 +1,5 @@
 import "./studio-production-v225-action-isolation.css";
+import "./studio-production-v225-nara-size-final.css";
 
 const RELEASE = "studio-production-v225-action-isolation-20260803";
 let frame = 0;
