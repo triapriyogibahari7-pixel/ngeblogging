@@ -5,21 +5,28 @@ import { BUILT_IN_THEMES, THEME_COUNT } from "../src/theme-catalog.js";
 import { BUILT_IN_WIDGETS, WIDGET_COUNT } from "../src/widget-system.js";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
-const chain = read("scripts/patch-v216-v215-auth-compat.mjs");
+const compatChain = read("scripts/patch-v216-v215-auth-compat.mjs");
+const topChain = read("scripts/patch-service-worker-v179.mjs");
 const patch = read("scripts/patch-production-v223.mjs");
 const runtime = read("src/studio-production-v223.js");
 const css = read("src/studio-production-v223.css");
 const auth = read("src/lib/supabase.js");
 const nara = read("src/NaraAssistant.jsx");
+const worker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v223.json"));
 const RELEASE = "studio-production-v223-20260803";
 
-test("v223 is appended after v222 without removing established production authority", () => {
-  assert.match(chain, /patch-production-v222\.mjs/);
-  assert.match(chain, /patch-production-v223\.mjs/);
-  assert.ok(chain.indexOf("patch-production-v222.mjs") < chain.indexOf("patch-production-v223.mjs"));
+test("v223 executes once and last after v222, avoiding ESM import-cache authority rollback", () => {
+  assert.match(compatChain, /patch-production-v222\.mjs/);
+  assert.doesNotMatch(compatChain, /patch-production-v223\.mjs/);
+  assert.match(topChain, /patch-production-v222\.mjs/);
+  assert.match(topChain, /patch-production-v223\.mjs/);
+  assert.ok(topChain.lastIndexOf("patch-production-v222.mjs") < topChain.lastIndexOf("patch-production-v223.mjs"));
   assert.match(patch, /studio-production-v223\.js/);
   assert.match(runtime, new RegExp(RELEASE));
+  assert.match(worker, /const VERSION = "ngeblogging-app-v223-physical-ui-route-20260803";/);
+  assert.match(worker, /const CACHE_RELEASE = "physical-ui-route-cache-v223";/);
+  assert.match(worker, /STUDIO_PRODUCTION_RELEASE_V223/);
 });
 
 test("preview selection is independent from physical editor UI", () => {
