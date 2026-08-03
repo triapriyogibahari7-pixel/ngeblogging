@@ -1,0 +1,35 @@
+{
+  "release": "theme-native-map-code-v245-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v245-theme-native-20260803",
+  "cache": "theme-native-map-code-cache-v245",
+  "themeCount": 100,
+  "widgetCount": 26,
+  "previewDevices": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
+  "layout": {
+    "leftWidgetSlots": 4,
+    "center": "Post/Page utama",
+    "rightWidgetSlots": 4,
+    "header": true,
+    "footer": true,
+    "nativeReact": true,
+    "widgetPicker": "compact-nonmodal"
+  },
+  "codeEditor": {
+    "tabs": ["HTML", "CSS", "JavaScript"],
+    "realLineNumbers": true,
+    "lineNumberCap": 10000,
+    "desktop": "code-left-preview-right-50-50",
+    "tabletAndMobile": "preview-above-code-below",
+    "sandboxPreview": true
+  },
+  "preserved": [
+    "100 real catalog themes",
+    "26 built-in widgets",
+    "custom HTML JavaScript widget",
+    "theme cloud/local persistence",
+    "theme history backup restore",
+    "responsive preview",
+    "v244 stable Studio shell",
+    "authentication/session behavior"
+  ]
+}
