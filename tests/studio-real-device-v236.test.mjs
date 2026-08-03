@@ -1,9 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import "./studio-stable-source-shell-v244.test.mjs";
-import "./studio-sidebar-brand-v246.test.mjs";
-import "./studio-screenshot-lock-v247.test.mjs";
+import "./studio-native-stability-v248.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
@@ -18,11 +16,13 @@ const nara = read("src/NaraAssistant.jsx");
 
 const requiredMenu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
-test("v236 is the final Studio authority after v235", () => {
+test("v236 remains a compatibility authority before native v248", () => {
   const v235Index = entry.indexOf('import "./studio-production-v235-widget-target.js"');
   const v236Index = entry.indexOf('import "./studio-real-device-v236.js"');
+  const v248Index = entry.indexOf('import "./studio-native-stability-v248.js"');
   assert.ok(v235Index >= 0);
   assert.ok(v236Index > v235Index);
+  assert.ok(v248Index > v236Index);
   assert.match(runtime, /studio-real-device-v236-20260803/);
 });
 
