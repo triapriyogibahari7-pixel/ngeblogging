@@ -8,28 +8,33 @@ export const CACHE = "desktop-sidebar-cache-v238";
 function verifySourceContracts() {
   const read = (path) => readFileSync(resolve(path), "utf8");
   const entry = read("src/Studio.jsx");
-  const device = read("src/studio-device-mode-v140.js");
-  const stability = read("src/studio-source-stability-v237.js");
+  const runtime = read("src/studio-desktop-sidebar-v238.js");
   const css = read("src/studio-desktop-sidebar-v238.css");
+  const historicalDevice = read("src/studio-device-mode-v140.js");
+  const historicalV237 = read("src/studio-source-stability-v237.js");
   const release = read("public/release-v238.json");
   const checks = [
-    [entry, 'import "./studio-desktop-sidebar-v238.css"'],
-    [device, "desktopSitePhoneSignal"],
-    [device, 'if (desktopSitePhone) return "desktop"'],
-    [device, 'if (handheld) return "tablet"'],
-    [stability, RELEASE],
-    [stability, "desktopSitePhone"],
-    [stability, "single-internal-n-toggle"],
+    [entry, 'import "./studio-desktop-sidebar-v238.js"'],
+    [runtime, RELEASE],
+    [runtime, "detectedDesktopSite"],
+    [runtime, 'responsiveMode = "desktop"'],
+    [runtime, "largeTablet"],
+    [runtime, "single-internal-n-toggle"],
+    [runtime, "camera-photo-file"],
+    [runtime, "code-left-preview-right"],
+    [runtime, "preview-top-code-bottom"],
     [css, 'data-v238-family="large"'],
     [css, 'data-v238-family="small"'],
     [css, "v238-internal-n"],
     [css, ".sv124-free-domain>aside"],
     [css, ".tn-code-workspace"],
     [css, "#ngeblogging-layout-map"],
+    [historicalDevice, 'const RELEASE = "studio-device-mode-v188-20260801"'],
+    [historicalV237, 'export const RELEASE = "studio-source-stability-v237-20260803"'],
     [release, RELEASE],
   ];
   for (const [source, marker] of checks) if (!source.includes(marker)) throw new Error(`V238_SOURCE_CONTRACT_MISSING:${marker}`);
-  for (const source of [device, stability, css]) {
+  for (const source of [runtime, css, historicalDevice, historicalV237]) {
     if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V238_DESTRUCTIVE_SESSION_ACTION");
   }
 }
