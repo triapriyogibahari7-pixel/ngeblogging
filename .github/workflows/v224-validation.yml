@@ -1,0 +1,47 @@
+name: Validate Studio v224 candidate
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-studio-v224-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-v224:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Apply full production patch chain
+        run: node scripts/patch-service-worker-v179.mjs
+      - name: Run v224 focused regression
+        run: node --test tests/studio-production-v224.test.mjs
+      - name: Run complete production regression
+        run: npm run test:production
+      - name: Build Vite and Cloudflare dry run
+        run: npm run build
+      - name: Verify final v224 artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/release-v224.json
+          grep -R -q 'studio-production-v224-20260803' dist/assets
+          grep -R -q 'html-css-javascript-visible' dist/assets
+          grep -R -q 'compact-green-map' dist/assets
+          grep -R -q '1-to-10000-actual' dist/assets
+          grep -R -q 'expanded-html-css-javascript-v224' dist/assets
