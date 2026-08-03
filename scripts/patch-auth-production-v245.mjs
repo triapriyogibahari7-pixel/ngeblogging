@@ -10,15 +10,6 @@ export const RELEASE = "auth-production-readiness-v245-20260803";
 const path = "src/lib/supabase.js";
 let source = await read(path);
 
-const oldConfig = `const browserEnv = import.meta.env || {};
-const url = String(browserEnv.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-const key = String(
-  browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY
-  || browserEnv.VITE_SUPABASE_ANON_KEY
-  || "",
-).trim();
-const nativeFetch`;
-
 const newConfig = `const browserEnv = import.meta.env || {};
 const AUTH_CONFIG_RELEASE_V245 = "${RELEASE}";
 // Browser-safe public client configuration only. No privileged Supabase credential
@@ -51,15 +42,19 @@ const authConfigSourceV245 = configuredUrlV245 && configuredKeyV245
 const nativeFetch`;
 
 if (!source.includes("PRODUCTION_SUPABASE_URL_V245")) {
-  if (!source.includes(oldConfig)) throw new Error("V245_SUPABASE_CONFIG_ANCHOR_MISSING");
-  source = source.replace(oldConfig, newConfig);
+  const start = source.indexOf("const browserEnv = import.meta.env || {};");
+  const nativeFetch = source.indexOf("const nativeFetch", start);
+  if (start < 0 || nativeFetch < 0) throw new Error("V245_SUPABASE_CONFIG_RANGE_MISSING");
+  source = `${source.slice(0, start)}${newConfig}${source.slice(nativeFetch + "const nativeFetch".length)}`;
 }
 
-const transportAnchor = '  document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v190" : "not-configured";';
-const transportReplacement = `  document.documentElement.dataset.authProductionReadinessV245 = AUTH_CONFIG_RELEASE_V245;\n  document.documentElement.dataset.supabaseConfigSourceV245 = authConfigSourceV245;\n${transportAnchor}`;
 if (!source.includes("dataset.supabaseConfigSourceV245")) {
-  if (!source.includes(transportAnchor)) throw new Error("V245_SUPABASE_DATASET_ANCHOR_MISSING");
-  source = source.replace(transportAnchor, transportReplacement);
+  const marker = "document.documentElement.dataset.supabaseTransport =";
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) throw new Error("V245_SUPABASE_DATASET_RANGE_MISSING");
+  const lineStart = source.lastIndexOf("\n", markerIndex) + 1;
+  const insert = `  document.documentElement.dataset.authProductionReadinessV245 = AUTH_CONFIG_RELEASE_V245;\n  document.documentElement.dataset.supabaseConfigSourceV245 = authConfigSourceV245;\n`;
+  source = `${source.slice(0, lineStart)}${insert}${source.slice(lineStart)}`;
 }
 
 for (const marker of [
