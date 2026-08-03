@@ -1,0 +1,28 @@
+{
+  "release": "studio-shell-authority-v246-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v246-studio-shell-authority-20260803",
+  "cache": "studio-shell-authority-cache-v246",
+  "purpose": "Make the visible Studio chrome deterministic after v245: one n control per visible state, restored ngeblogging brand and profile, sidebar-driven content width, transparent mobile drawer behavior, and Nara non-modal geometry without removing existing features.",
+  "responsiveModes": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "computer"],
+  "preserved": [
+    "v245 production authentication fallback and persistent PKCE session",
+    "Posts and Pages",
+    "5000 word editor guard",
+    "100 themes and custom theme",
+    "26 theme widgets",
+    "HTML CSS JavaScript and preview",
+    "Media",
+    "production analytics",
+    "Members",
+    "Studio and public comments",
+    "Domains",
+    "API Keys",
+    "Nara attachments microphone speaker models and intelligence"
+  ],
+  "verificationLimits": {
+    "realOAuthLoginRequiresRealProviderConsentAndCredentials": true,
+    "realBrowserAndDeviceTestingRequiresExternalBrowserDeviceInfrastructure": true,
+    "capacityModelIsNotProofOfHundredsOfMillionsOfConcurrentLogins": true
+  }
+}
