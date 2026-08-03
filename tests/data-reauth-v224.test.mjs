@@ -38,14 +38,19 @@ test("v224 recovery never adds destructive logout or storage clearing", () => {
   assert.equal(release.repairs.noLocalStorageClear, true);
 });
 
-test("final service worker preserves v224 data reauth authority even when a later UI release rotates cache", () => {
+test("final service worker preserves v224 data reauth authority under later UI releases", () => {
   const isV224 = /const VERSION = "ngeblogging-app-v224-data-reauth-20260803";/.test(worker)
     && /const CACHE_RELEASE = "data-reauth-cache-v224";/.test(worker);
   const isV225Compat = /const VERSION = "ngeblogging-app-v225-theme-layout-nara-20260803";/.test(worker)
     && /const CACHE_RELEASE = "theme-layout-nara-cache-v225";/.test(worker)
     && /DATA_REAUTH_COMPAT_VERSION_V224 = "ngeblogging-app-v224-data-reauth-20260803"/.test(worker)
     && /DATA_REAUTH_COMPAT_CACHE_V224 = "data-reauth-cache-v224"/.test(worker);
-  assert.ok(isV224 || isV225Compat, "final service worker must be v224 or a later release carrying explicit v224 compatibility markers");
+  const isV226Compat = /const VERSION = "ngeblogging-app-v226-native-green-layout-20260803";/.test(worker)
+    && /const CACHE_RELEASE = "native-green-layout-cache-v226";/.test(worker)
+    && /STUDIO_PRODUCTION_COMPAT_VERSION_V225 = "ngeblogging-app-v225-theme-layout-nara-20260803"/.test(worker)
+    && /DATA_REAUTH_COMPAT_VERSION_V224 = "ngeblogging-app-v224-data-reauth-20260803"/.test(worker)
+    && /DATA_REAUTH_COMPAT_CACHE_V224 = "data-reauth-cache-v224"/.test(worker);
+  assert.ok(isV224 || isV225Compat || isV226Compat, "later service workers must carry explicit v224 data-reauth compatibility markers");
   assert.match(worker, /DATA_REAUTH_RELEASE_V224/);
   assert.equal(release.release, RELEASE);
   assert.equal(release.repairs.data401403SingleflightRefresh, true);

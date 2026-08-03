@@ -1,0 +1,66 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v226-native-green-layout-20260803",
+  "basedOn": "studio-production-v225-20260803",
+  "themeLayout": {
+    "nativeReactMap": true,
+    "reference": "green-reference-four-left-post-four-right",
+    "realAreaCount": 22,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "postPageCenter": true,
+    "eachWidgetSlotOpensItsArea": true,
+    "widgetListBelowMap": true,
+    "longLayoutHeadingRendered": false
+  },
+  "widgets": {
+    "count": 26,
+    "activeCheckmarksPreserved": true,
+    "areaSelectorPreserved": true,
+    "titleEditingPreserved": true,
+    "orderingPreserved": true,
+    "customHtmlJavascriptLast": true,
+    "customHtmlJavascriptSandboxPreserved": true
+  },
+  "preservedV225": {
+    "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "desktopSiteModeLock": true,
+    "physicalSmallPreviewAboveCode": true,
+    "largeCodeLeftPreviewRight": true,
+    "actualLineNumbersUpTo10000": true,
+    "naraCameraPhotoFile": true,
+    "naraSmallMediumNonModal": true,
+    "sidebarDrawerNoBlur": true,
+    "domainActionsHorizontal": true,
+    "realAnalyticsRpc": true
+  },
+  "authentication": {
+    "v224DataReauthPreserved": true,
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "forcedLogoutAdded": false
+  },
+  "themeCatalog": {
+    "builtInThemes": 100,
+    "customThemePreserved": true,
+    "htmlCssJavascriptPreserved": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v226-native-green-layout-20260803",
+    "cache": "native-green-layout-cache-v226",
+    "v225CompatibilityPreserved": true,
+    "forcedNavigation": false
+  },
+  "deployment": {
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "liveApexMustServeV226BeforeCompletion": true
+  },
+  "claims": {
+    "hundredPercentProductionClaimed": false,
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceVerificationRequiredBeforeHundredPercentClaim": true
+  }
+}
