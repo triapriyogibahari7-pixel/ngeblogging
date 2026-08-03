@@ -1,9 +1,7 @@
 import StudioFastGate from "./StudioFastGate.jsx";
-import "./studio-stable-shell-v244.js";
 import "./studio-style-authority-v144.js";
 import "./studio-device-mode-v140.js";
 import "./nara-size-authority-v144.js";
-import "./studio-shell-controller-v147.js";
 import "./studio-interface-v148.js";
 import "./studio-recovery-v150.js";
 import "./studio-completion-v151.js";
@@ -71,8 +69,9 @@ import "./studio-visual-stability-v241.js";
 import "./studio-visual-stability-v241-final.css";
 import "./studio-shell-rescue-v242.js";
 import "./studio-stable-shell-v244-final.css";
-import "./studio-sidebar-brand-v246.js";
 import "./studio-sidebar-brand-v246.css";
 import "./studio-screenshot-lock-v247.css";
+import "./studio-native-stability-v248.js";
+import "./studio-native-stability-v248.css";
 
 export default StudioFastGate;
