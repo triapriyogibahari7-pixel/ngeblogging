@@ -1,5 +1,5 @@
 [build]
-  command = "bash scripts/netlify-v248-diagnose.sh"
+  command = "node --test tests/studio-native-stability-v248.test.mjs && mkdir -p dist && printf '<!doctype html><title>v248 regression passed</title><p>v248 regression passed</p>' > dist/index.html"
   publish = "dist"
 
 [build.environment]
