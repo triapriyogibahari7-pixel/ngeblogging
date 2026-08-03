@@ -66,8 +66,8 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // Historical authorities remain executable for regression compatibility. v222
 // establishes the code gutter/Nara attachment geometry; v223 locks physical UI;
 // v224 owns transient data re-auth; v225 owns responsive Studio/Nara UI; v226
-// owns the native React green Theme map. v227 runs last only to align the Nara
-// model/intelligence contract across Qwen and both Workers AI fallback layers.
+// owns the native React green Theme map; v227 aligns Nara model/intelligence;
+// v228 is the final physical-device/layout/editor/Nara authority.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -94,3 +94,4 @@ await import("./patch-data-reauth-v224.mjs");
 await import("./patch-v225-mode-lock.mjs");
 await import("./patch-production-v225.mjs");
 await import("./patch-nara-fallback-v227.mjs");
+await import("./patch-production-v228.mjs");
