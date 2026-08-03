@@ -1,0 +1,84 @@
+{
+  "status": "candidate",
+  "release": "studio-visual-stability-v241-20260803",
+  "date": "2026-08-03",
+  "basedOn": "studio-react-safe-v240-20260803",
+  "screenshotsAddressed": [
+    "backup-settings-widget-text-overlap",
+    "android-text-inflation",
+    "domain-mobile-vertical-action-pills",
+    "desktop-sidebar-profile-disappearing",
+    "nara-attachment-menu-not-opening-consistently",
+    "theme-layout-map-device-overflow",
+    "theme-code-preview-device-overflow"
+  ],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+  "sidebar": {
+    "largeSingleInternalN": true,
+    "collapsedIconsRemainVisible": true,
+    "mainContentFollowsSidebarWidth": true,
+    "smallSingleTopLeftN": true,
+    "smallDrawerComplete": true,
+    "menuItemsRemainAdjacent": true,
+    "settingsAndLogoutRemainReachable": true,
+    "blurBackdropDisabled": true
+  },
+  "account": {
+    "topRightAvatar": true,
+    "fiveActions": ["profile", "settings", "add-site", "view-site", "logout"],
+    "profileSeparateFromSettings": true,
+    "avatarEditableThroughProfile": true
+  },
+  "themeSystem": {
+    "themeCount": 100,
+    "architecture": "20 families x 5 compositions",
+    "widgetCount": 26,
+    "customHtmlJavascriptWidget": true,
+    "layout": {"leftWidgets": 4, "center": "Post/Page", "rightWidgets": 4, "clickablePicker": true},
+    "codeTabs": ["HTML", "CSS", "JavaScript"],
+    "lineNumbers": {"actualLines": true, "maximum": 10000},
+    "largeCodeLayout": "code-left-preview-right",
+    "smallCodeLayout": "preview-top-code-bottom"
+  },
+  "nara": {
+    "sizes": ["small", "medium", "full"],
+    "smallMediumNonmodal": true,
+    "fullscreenModal": true,
+    "attachmentPortal": ["camera", "photo", "file"],
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelSelectorPreserved": true,
+    "intelligenceSelectorPreserved": true
+  },
+  "analytics": {
+    "productionRpc": "get_site_analytics_dashboard",
+    "ranges": [7, 30, 90, 365],
+    "humanBot": true,
+    "devices": true,
+    "countries": true,
+    "referrers": true,
+    "topContent": true,
+    "largeTrendChart": true,
+    "fakeProductionNumbers": false,
+    "simulationMustBeLabeled": true
+  },
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "flow": "pkce",
+    "automaticLogoutAdded": false,
+    "providerEndToEndClaim": false,
+    "reason": "Login provider nyata tetap memerlukan kredensial dan tindakan pengguna; v241 tidak membuat klaim end-to-end tanpa bukti tersebut."
+  },
+  "capacity": {
+    "extremeScale": "model-only",
+    "productionCredentialLoadTest": false,
+    "massAccountCreation": false,
+    "claim": "not-claimed"
+  },
+  "legacyFeaturesPreserved": true,
+  "requiresBuild": true,
+  "requiresDeployPreview": true,
+  "requiresRealDeviceRetest": true
+}
