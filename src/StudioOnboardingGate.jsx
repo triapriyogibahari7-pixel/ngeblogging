@@ -19,9 +19,10 @@ import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
 const RELEASE = "first-site-onboarding-v76-20260727";
-const STARTUP_RELEASE = "first-site-onboarding-v169-20260730";
+const STARTUP_RELEASE = "first-site-onboarding-v250-20260804";
 const CHECK_TIMEOUT_MS = 12_000;
-const STARTUP_RETRY_DELAYS = [450, 900, 1_800];
+const FALLBACK_SESSION_TIMEOUT_MS = 6_000;
+const STARTUP_RETRY_DELAYS = [350, 800, 1_600];
 const SITE_TYPES = [
   { value: "blog", label: "Blog", description: "Tulisan, cerita, opini, dan publikasi pribadi.", icon: PenLine },
   { value: "website", label: "Website", description: "Situs profesional untuk organisasi, usaha, atau layanan.", icon: Building2 },
@@ -89,24 +90,84 @@ function isTransientStudioError(error) {
     || /failed to fetch|network|jaringan|timeout|time out|sementara|unreachable|belum dapat dijangkau/.test(message);
 }
 
+function requestReauthentication(error) {
+  window.dispatchEvent(new CustomEvent("ngeblogging:session-invalid", {
+    detail: {
+      code: "SESSION_REAUTH_REQUIRED",
+      message: error?.message || "Sesi sudah berakhir. Silakan masuk kembali.",
+      release: STARTUP_RELEASE,
+      compatibility: RELEASE,
+    },
+  }));
+}
+
+function verifySessionDeferred(userId) {
+  window.setTimeout(() => {
+    getVerifiedSession({ force: true }).then((verified) => {
+      if (!verified?.user?.id || verified.user.id === userId) return;
+      requestReauthentication(Object.assign(new Error("Identitas sesi berubah. Silakan autentikasi ulang."), {
+        code: "SESSION_REAUTH_REQUIRED",
+        status: 401,
+      }));
+    }).catch((error) => {
+      if (isSessionReauthError(error)) requestReauthentication(error);
+      // Transient network failures never turn into logout.
+    });
+  }, 0);
+}
+
 async function loadStudioMembership(userId) {
   let lastError = null;
   for (let attempt = 0; attempt <= STARTUP_RETRY_DELAYS.length; attempt += 1) {
     try {
-      const verified = await withDeadline(getVerifiedSession({ force: true }), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
-      if (!verified?.user?.id) {
-        throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
-      }
-      const sites = await withDeadline(listUserSites(verified.user.id || userId), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu.");
-      return { verified, sites };
+      // Critical path: Supabase already owns persisted tokens. Read the user's sites first.
+      // Do not block the whole Studio on an extra remote getUser() round trip.
+      const sites = await withDeadline(
+        listUserSites(userId),
+        CHECK_TIMEOUT_MS,
+        "Pemeriksaan situs melewati batas waktu.",
+      );
+      verifySessionDeferred(userId);
+      return { verified: window.__ngebloggingVerifiedSession || null, sites };
     } catch (error) {
-      if (isSessionReauthError(error) || !isTransientStudioError(error)) throw error;
       lastError = error;
+      if (isSessionReauthError(error)) throw error;
+
+      // If the data request was rejected for a non-network reason, hydrate/verify the
+      // persisted session once and retry the membership query before failing.
+      if (!isTransientStudioError(error)) {
+        try {
+          const verified = await withDeadline(
+            getVerifiedSession(),
+            FALLBACK_SESSION_TIMEOUT_MS,
+            "Pembacaan sesi lokal melewati batas waktu.",
+          );
+          if (!verified?.user?.id) {
+            throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), {
+              code: "SESSION_REAUTH_REQUIRED",
+              status: 401,
+            });
+          }
+          const sites = await withDeadline(
+            listUserSites(verified.user.id),
+            CHECK_TIMEOUT_MS,
+            "Pemeriksaan situs melewati batas waktu.",
+          );
+          verifySessionDeferred(verified.user.id);
+          return { verified, sites };
+        } catch (sessionError) {
+          lastError = sessionError;
+          if (isSessionReauthError(sessionError)) throw sessionError;
+          if (!isTransientStudioError(sessionError) && !isTransientStudioError(error)) throw error;
+        }
+      }
+
       if (attempt < STARTUP_RETRY_DELAYS.length) await sleep(STARTUP_RETRY_DELAYS[attempt]);
     }
   }
+
   throw Object.assign(new Error(
-    "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan dan sistem tidak mengeluarkan akun. Tekan Coba lagi setelah jaringan tersambung.",
+    "Sesi login tetap tersimpan, tetapi data Studio belum dapat dijangkau. Periksa koneksi lalu tekan Coba lagi; akun tidak akan dikeluarkan otomatis.",
   ), { name: "DataTransportError", code: "DATA_NETWORK_UNAVAILABLE", cause: lastError });
 }
 
@@ -126,21 +187,10 @@ function publishActiveSite(site) {
   window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: site }));
 }
 
-function requestReauthentication(error) {
-  window.dispatchEvent(new CustomEvent("ngeblogging:session-invalid", {
-    detail: {
-      code: "SESSION_REAUTH_REQUIRED",
-      message: error?.message || "Sesi sudah berakhir. Silakan masuk kembali.",
-      release: STARTUP_RELEASE,
-      compatibility: RELEASE,
-    },
-  }));
-}
-
 function StartupState({ error, onRetry, onExit }) {
   return <main className="so75-startup" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
     <header><a href="/" aria-label="Ngeblogging">ngeblogging<span>.</span></a><button onClick={onExit}><LogOut/>Keluar</button></header>
-    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi data belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
+    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>SESI MASUK TETAP DIPERTAHANKAN</small><h1>Data Studio belum terhubung.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging. Gangguan jaringan tidak akan dianggap sebagai logout.</p></>}</section>
   </main>;
 }
 
@@ -211,7 +261,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
       }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
       const settings = {
         ...(site.settings || {}),
-        onboarding: "complete-v169",
+        onboarding: "complete-v250",
         onboarding_completed_at: new Date().toISOString(),
         initial_theme: draft.themeKey,
         locale: draft.locale,
@@ -236,7 +286,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
   return <main className="so75-shell so169-shell" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
     <header className="so75-topbar"><a className="so75-brand" href="/">ngeblogging<span>.</span></a><div><span>LANGKAH PERTAMA · {quota.used}/{quota.limit} SITUS</span><button onClick={onExit}><LogOut/>Keluar</button></div></header>
     <section className="so75-hero">
-      <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Buat situs pertama<br/><em>sebelum masuk Studio.</em></h1><p>Setelah login Google, LinkedIn, atau email, akun baru menyelesaikan identitas situs terlebih dahulu. Studio baru dibuka setelah situs nyata berhasil dibuat dan dipilih sebagai situs aktif.</p><div className="so75-promise"><Check/><span>Subdomain gratis *.ngeblogging.com</span><Check/><span>Maksimal {MAX_SITES_PER_ACCOUNT} situs per akun</span><Check/><span>Situs tidak dipublikasikan tanpa persetujuan</span></div></div>
+      <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Buat situs pertama<br/><em>sebelum masuk Studio.</em></h1><p>Setelah login Google, LinkedIn, atau email, akun baru menyelesaikan identitas situs terlebih dahulu. Studio dibuka setelah situs nyata berhasil dibuat dan dipilih sebagai situs aktif.</p><div className="so75-promise"><Check/><span>Subdomain gratis *.ngeblogging.com</span><Check/><span>Maksimal {MAX_SITES_PER_ACCOUNT} situs per akun</span><Check/><span>Situs tidak dipublikasikan tanpa persetujuan</span></div></div>
       <form className="so75-form" onSubmit={submit}>
         <div className="so75-progress"><span className="active">1</span><i/><span className="active">2</span><i/><span className="active">3</span><b>Jenis · Identitas · Preferensi awal</b></div>
         <fieldset><legend>Pilih jenis situs</legend><div className="so75-types">{SITE_TYPES.map(({ value, label, description, icon: Icon }) => <button key={value} type="button" className={draft.blueprint === value ? "active" : ""} onClick={() => setDraft((current) => ({ ...current, blueprint: value }))}><Icon/><span><b>{label}</b><small>{description}</small></span>{draft.blueprint === value ? <Check/> : null}</button>)}</div></fieldset>
@@ -265,19 +315,33 @@ export default function StudioOnboardingGate(props) {
   useEffect(() => {
     let cancelled = false;
     const check = async () => {
-      setPhase("checking"); setError("");
-      if (!props.user?.id) { setError("Sesi pengguna tidak ditemukan. Silakan masuk kembali."); setPhase("error"); return; }
-      if (!supabaseConfigured || !supabase) { setError("Penyimpanan cloud belum dikonfigurasi."); setPhase("error"); return; }
+      setPhase("checking");
+      setError("");
+      if (!props.user?.id) {
+        setError("Sesi pengguna tidak ditemukan. Silakan masuk kembali.");
+        setPhase("error");
+        return;
+      }
+      if (!supabaseConfigured || !supabase) {
+        setError("Penyimpanan cloud belum dikonfigurasi.");
+        setPhase("error");
+        return;
+      }
       try {
         const { sites } = await loadStudioMembership(props.user.id);
         if (cancelled) return;
         const site = preferredSite(sites);
-        if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding");
+        if (site) {
+          publishActiveSite(site);
+          setPhase("ready");
+        } else {
+          setPhase("onboarding");
+        }
       } catch (nextError) {
         if (isSessionReauthError(nextError)) requestReauthentication(nextError);
         if (!cancelled) {
           const nextMessage = isTransientStudioError(nextError)
-            ? "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan. Tekan Coba lagi setelah jaringan tersambung."
+            ? "Sesi login tetap tersimpan, tetapi data Studio belum dapat dijangkau. Tekan Coba lagi setelah jaringan tersambung."
             : nextError.message || "Daftar situs belum dapat dimuat.";
           setError(nextMessage);
           setPhase("error");
