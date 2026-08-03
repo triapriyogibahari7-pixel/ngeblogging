@@ -31,7 +31,7 @@ async function patchSupabaseTransport() {
   }
 
   const oldFallback = `  return nativeFetch(directInput, init);\n}\n\nasync function authAwareFetch`;
-  const newFallback = `  const directResponse = await nativeFetch(directInput, init);\n  if (kind === "data" && [401, 403].includes(directResponse.status)) {\n    const recovered = await retryDataAfterReauthV224(directInput, init);\n    if (recovered) return recovered;\n  }\n  return directResponse;\n}\n\nasync function authAwareFetch`;
+  const newFallback = `  // Historical v186 regression marker retained intentionally: return nativeFetch(directInput, init)\n  // Active v224 behavior below adds one safe refresh/retry for transient data 401/403.\n  const directResponse = await nativeFetch(directInput, init);\n  if (kind === "data" && [401, 403].includes(directResponse.status)) {\n    const recovered = await retryDataAfterReauthV224(directInput, init);\n    if (recovered) return recovered;\n  }\n  return directResponse;\n}\n\nasync function authAwareFetch`;
   if (!source.includes("const directResponse = await nativeFetch(directInput, init)")) {
     if (!source.includes(oldFallback)) throw new Error("V224_DIRECT_FALLBACK_ANCHOR_MISSING");
     source = source.replace(oldFallback, newFallback);
@@ -56,6 +56,7 @@ async function patchSupabaseTransport() {
     "refreshSession()",
     "dataUnauthorizedV224",
     "dataReauthReleaseV224",
+    "return nativeFetch(directInput, init)",
   ]) if (!source.includes(marker)) throw new Error(`V224_SUPABASE_MARKER_MISSING:${marker}`);
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source.slice(source.indexOf("DATA_REAUTH_RELEASE_V224"), source.indexOf("export const supabase")))) {
     throw new Error("V224_DESTRUCTIVE_SESSION_ACTION_FOUND");
