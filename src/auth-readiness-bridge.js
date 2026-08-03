@@ -1,65 +1,69 @@
+import { supabaseConfigured } from "./lib/supabase.js";
+
+export const AUTH_READINESS_RELEASE_V248 = "auth-readiness-nondestructive-v248-20260803";
+
 let resolved = false;
-let emailRegistrationReady = false;
+let healthReachable = false;
+let health = null;
 
+document.documentElement.dataset.authReadinessV248 = AUTH_READINESS_RELEASE_V248;
 document.documentElement.dataset.emailRegistration = "pending";
+document.documentElement.dataset.authHealth = "pending";
 
-function text(node) {
-  return node?.textContent?.replace(/\s+/g, " ").trim() || "";
-}
+function ensureStatus(modal) {
+  modal.dataset.authReadinessV248 = AUTH_READINESS_RELEASE_V248;
+  modal.dataset.authHealth = resolved ? (healthReachable ? "reachable" : "unreachable") : "pending";
+  modal.dataset.emailRegistration = resolved && healthReachable
+    ? String(health?.emailRegistration === true)
+    : "unknown";
 
-function hideUnavailableEmailActions(modal) {
-  modal.querySelectorAll(".magic-link-button,.forgot-link").forEach((button) => {
-    button.hidden = true;
-    button.disabled = true;
-    button.setAttribute("aria-hidden", "true");
-    button.tabIndex = -1;
-  });
+  // A health endpoint is diagnostic only. It must never hide Google, LinkedIn,
+  // GitHub, email/password, magic-link, signup, recovery, or password-reset UI.
+  // AuthModal itself owns busy/disabled state and Supabase configuration.
+  modal.querySelectorAll(".auth-readiness-notice[data-v248-health]").forEach((node) => node.remove());
 
-  modal.querySelectorAll(".auth-switch").forEach((row) => {
-    if (text(row).includes("Belum punya akun")) {
-      row.hidden = true;
-      row.setAttribute("aria-hidden", "true");
-    }
-  });
-
-  modal.querySelectorAll(".auth-readiness-notice").forEach((notice) => notice.remove());
-}
-
-function leaveSignupMode(modal) {
-  const heading = modal.querySelector("h2");
-  if (text(heading) !== "Buat akun Ngeblogging" || modal.dataset.emailRedirected === "true") return;
-  const signinButton = [...modal.querySelectorAll(".auth-switch button")].find((button) => text(button) === "Masuk");
-  if (!signinButton) return;
-  modal.dataset.emailRedirected = "true";
-  signinButton.click();
-}
-
-function apply(modal) {
-  if (!resolved) return;
-  modal.dataset.emailRegistration = String(emailRegistrationReady);
-  if (emailRegistrationReady) return;
-  leaveSignupMode(modal);
-  hideUnavailableEmailActions(modal);
+  if (!resolved || healthReachable || !supabaseConfigured) return;
+  const divider = modal.querySelector(".auth-divider") || modal.querySelector(".password-form");
+  if (!divider?.parentElement) return;
+  const notice = document.createElement("p");
+  notice.className = "auth-readiness-notice";
+  notice.dataset.v248Health = "deferred";
+  notice.setAttribute("role", "status");
+  notice.textContent = "Pemeriksaan status server sedang tidak tersedia. Opsi login tetap aktif dan akan menggunakan transport autentikasi yang tersedia.";
+  divider.insertAdjacentElement("beforebegin", notice);
 }
 
 function scan() {
-  document.querySelectorAll(".auth-modal").forEach(apply);
+  document.querySelectorAll(".auth-modal").forEach(ensureStatus);
 }
 
 async function resolveReadiness() {
   try {
-    const response = await fetch("/api/health", { cache: "no-store", headers: { accept: "application/json" } });
-    if (!response.ok) throw new Error("Health endpoint unavailable");
-    const health = await response.json().catch(() => ({}));
-    emailRegistrationReady = health.emailRegistration === true;
+    const response = await fetch("/api/health", {
+      cache: "no-store",
+      headers: { accept: "application/json", "cache-control": "no-cache" },
+    });
+    if (!response.ok) throw new Error(`Health ${response.status}`);
+    health = await response.json().catch(() => ({}));
+    healthReachable = true;
   } catch {
-    emailRegistrationReady = false;
+    // A temporary network/health failure is not proof that auth providers are
+    // unavailable. Keep all login controls rendered and let the real auth call
+    // return the authoritative result.
+    health = null;
+    healthReachable = false;
   } finally {
     resolved = true;
-    document.documentElement.dataset.emailRegistration = String(emailRegistrationReady);
+    document.documentElement.dataset.authHealth = healthReachable ? "reachable" : "unreachable";
+    document.documentElement.dataset.emailRegistration = healthReachable
+      ? String(health?.emailRegistration === true)
+      : "unknown";
     scan();
   }
 }
 
-new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+new MutationObserver((records) => {
+  if (records.some((record) => record.addedNodes.length || record.removedNodes.length)) scan();
+}).observe(document.documentElement, { childList: true, subtree: true });
+
 resolveReadiness();
