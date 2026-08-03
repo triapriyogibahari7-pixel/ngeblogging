@@ -4,13 +4,19 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(path.join(root, file), "utf8");
+const themeStudioSource = read("src/ThemeStudio.jsx");
+const nativeV245 = themeStudioSource.includes('data-theme-interface="v245-native"')
+  && themeStudioSource.includes('import "./theme-native-v245.css"')
+  && themeStudioSource.includes('id: "left-4"')
+  && themeStudioSource.includes('id: "right-4"')
+  && themeStudioSource.includes('id: "content-main"');
 
 const checks = [
   ["src/widget-system.js", 'WIDGET_LAYOUT_AUTHORITY = "theme-layout-v170-20260730"'],
   ["src/theme-system.js", "composeThemeLayoutV170"],
   ["src/theme-system.js", 'data-theme-layout-authority="theme-layout-v170-20260730"'],
-  ["src/ThemeStudio.jsx", 'data-theme-layout-authority="theme-layout-v170-20260730"'],
-  ["src/ThemeStudio.jsx", 'import "./theme-layout-v170.css"'],
+  ["src/ThemeStudio.jsx", nativeV245 ? 'data-theme-interface="v245-native"' : 'data-theme-layout-authority="theme-layout-v170-20260730"'],
+  ["src/ThemeStudio.jsx", nativeV245 ? 'import "./theme-native-v245.css"' : 'import "./theme-layout-v170.css"'],
   ["src/StudioNext.jsx", 'data-page-audit="studio-page-audit-v170-20260730"'],
   ["src/StudioNext.jsx", "ngeblogging:request-install-app"],
   ["src/main.jsx", "logout-landing-v170-20260730"],
@@ -26,7 +32,9 @@ const before = inspect();
 const presentCount = before.filter((entry) => entry.present).length;
 
 if (presentCount === checks.length) {
-  console.log("[theme-layout-v170-20260730] patch already complete; no source mutation required");
+  console.log(nativeV245
+    ? "[theme-layout-v170-20260730] native Theme Studio v245 supersedes the legacy visual map; no source mutation required"
+    : "[theme-layout-v170-20260730] patch already complete; no source mutation required");
   process.exit(0);
 }
 
