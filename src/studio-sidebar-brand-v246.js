@@ -3,6 +3,7 @@ export const SIDEBAR_BRAND_RELEASE_V246 = "studio-sidebar-brand-toggle-v246-2026
 const ROOT_ID = "ngeblogging-studio-chrome-v244";
 const SIDEBAR_KEY = "ngeblogging-sidebar-state-v244";
 const SMALL = new Set(["application", "phone", "mobile", "compact", "small"]);
+const LARGE = new Set(["tablet", "laptop", "desktop", "computer", "large"]);
 let desktopExpanded = true;
 let mobileOpen = false;
 let initialized = false;
@@ -19,18 +20,31 @@ function writeExpanded() {
   catch { /* storage may be unavailable */ }
 }
 
+function viewportWidth() {
+  const layout = Number(document.documentElement.clientWidth || innerWidth || 0);
+  const visual = Number(window.visualViewport?.width || layout || 0);
+  if (layout > 0 && visual > 0) return Math.min(layout, visual);
+  return layout || visual || 0;
+}
+
 function family(root) {
   const html = document.documentElement;
-  const declared = html.dataset.studioResponsiveMode || "";
-  const deviceMode = html.dataset.studioDeviceMode || "";
-  const v244 = html.dataset.studioV244Family || root?.dataset.family || "";
+  const declared = String(html.dataset.studioResponsiveMode || "").toLowerCase();
+  const deviceMode = String(html.dataset.studioDeviceMode || "").toLowerCase();
   const desktopSite = html.dataset.studioDesktopSitePhone === "true" || html.dataset.desktopSitePhone === "true";
+
+  // The responsive detector is the authority. Never let an old v244/root family
+  // keep a phone stuck in desktop mode after resize/orientation/React re-render.
   if (desktopSite) return "large";
-  if (v244 === "small" || v244 === "large") return v244;
-  if (SMALL.has(declared) || SMALL.has(deviceMode)) return "small";
-  if (["tablet", "laptop", "desktop", "computer", "large"].includes(declared) || deviceMode === "large") return "large";
-  const viewport = Math.min(window.visualViewport?.width || innerWidth || 0, document.documentElement.clientWidth || innerWidth || 0);
-  return viewport <= 760 ? "small" : "large";
+  if (SMALL.has(declared)) return "small";
+  if (LARGE.has(declared)) return "large";
+  if (deviceMode === "small" || deviceMode === "large") return deviceMode;
+
+  const width = viewportWidth();
+  if (width > 0) return width <= 760 ? "small" : "large";
+
+  const historical = String(html.dataset.studioV244Family || root?.dataset.family || "").toLowerCase();
+  return historical === "large" ? "large" : "small";
 }
 
 function setImportant(node, property, value) {
@@ -83,6 +97,23 @@ function ensureBrand(root) {
     setImportant(name, "color", "#17243a");
     setImportant(name, "writing-mode", "horizontal-tb");
   }
+  if (avatar) {
+    setImportant(avatar, "display", "grid");
+    setImportant(avatar, "place-items", "center");
+    setImportant(avatar, "pointer-events", "auto");
+  }
+}
+
+function neutralizeLegacyBlockingLayers() {
+  document.body.classList.remove("sn-mobile-sidebar-open");
+  for (const node of document.querySelectorAll(".sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop]")) {
+    setImportant(node, "display", "none");
+    setImportant(node, "visibility", "hidden");
+    setImportant(node, "opacity", "0");
+    setImportant(node, "pointer-events", "none");
+    setImportant(node, "backdrop-filter", "none");
+    setImportant(node, "-webkit-backdrop-filter", "none");
+  }
 }
 
 function applyMainGeometry(mode, state, root) {
@@ -97,8 +128,10 @@ function applyMainGeometry(mode, state, root) {
     setImportant(sidebar, "max-width", width);
     setImportant(sidebar, "transform", "none");
     setImportant(sidebar, "visibility", "visible");
+    setImportant(sidebar, "opacity", "1");
     setImportant(sidebar, "pointer-events", "auto");
     setImportant(topbar, "left", width);
+    setImportant(topbar, "right", "0px");
     setImportant(main, "margin-left", width);
     setImportant(main, "width", `calc(100% - ${width})`);
     setImportant(main, "max-width", "none");
@@ -106,6 +139,7 @@ function applyMainGeometry(mode, state, root) {
     setImportant(main, "zoom", "1");
   } else {
     setImportant(topbar, "left", "0px");
+    setImportant(topbar, "right", "0px");
     setImportant(main, "margin-left", "0px");
     setImportant(main, "width", "100%");
     setImportant(main, "max-width", "100%");
@@ -113,14 +147,24 @@ function applyMainGeometry(mode, state, root) {
     setImportant(main, "zoom", "1");
     if (state === "open") {
       setImportant(sidebar, "visibility", "visible");
+      setImportant(sidebar, "opacity", "1");
       setImportant(sidebar, "pointer-events", "auto");
       setImportant(sidebar, "transform", "translateX(0)");
     } else {
       setImportant(sidebar, "visibility", "hidden");
+      setImportant(sidebar, "opacity", "0");
       setImportant(sidebar, "pointer-events", "none");
       setImportant(sidebar, "transform", "translateX(-105%)");
     }
   }
+}
+
+function synchronizeHistoricalState(root, mode, state) {
+  const html = document.documentElement;
+  html.dataset.studioV244Family = mode;
+  html.dataset.studioV244Sidebar = state;
+  root.dataset.family = mode;
+  root.dataset.sidebar = state;
 }
 
 function apply() {
@@ -147,6 +191,8 @@ function apply() {
   root.dataset.v246Sidebar = state;
   root.hidden = false;
 
+  synchronizeHistoricalState(root, mode, state);
+  neutralizeLegacyBlockingLayers();
   ensureBrand(root);
   applyMainGeometry(mode, state, root);
 }
@@ -159,9 +205,21 @@ function schedule() {
   });
 }
 
+function closeProfileIfClickOutside(event, root) {
+  const menu = root?.querySelector(".v244-profile-menu");
+  const avatar = root?.querySelector(".v244-avatar");
+  if (!menu || menu.hidden || !avatar) return;
+  if (menu.contains(event.target) || avatar.contains(event.target)) return;
+  requestAnimationFrame(() => {
+    if (!menu.hidden) avatar.click();
+  });
+}
+
 function handleClick(event) {
   const root = document.getElementById(ROOT_ID);
   if (!root) return;
+  closeProfileIfClickOutside(event, root);
+
   const target = event.target.closest?.("button, a");
   if (!target || !root.contains(target)) return;
   const mode = family(root);
@@ -194,9 +252,14 @@ function handleClick(event) {
     return;
   }
 
-  if (mode === "small" && target.closest(".v244-create,.v244-nav button,.v244-footer button")) {
+  const navigationTarget = target.closest(".v244-create,.v244-nav button,.v244-footer button");
+  if (navigationTarget) {
     requestAnimationFrame(() => {
-      mobileOpen = false;
+      if (mode === "small") mobileOpen = false;
+      else {
+        desktopExpanded = false;
+        writeExpanded();
+      }
       schedule();
     });
   }
@@ -204,6 +267,10 @@ function handleClick(event) {
 
 function handleKey(event) {
   if (event.key !== "Escape") return;
+  const root = document.getElementById(ROOT_ID);
+  const menu = root?.querySelector(".v244-profile-menu");
+  const avatar = root?.querySelector(".v244-avatar");
+  if (menu && !menu.hidden && avatar) avatar.click();
   if (mobileOpen) {
     mobileOpen = false;
     schedule();
@@ -215,15 +282,17 @@ if (typeof document !== "undefined") {
   document.addEventListener("keydown", handleKey, true);
   window.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("orientationchange", schedule, { passive: true });
+  window.addEventListener("pageshow", schedule, { passive: true });
+  window.addEventListener("ngeblogging:studio-device-mode-change", schedule, { passive: true });
   window.visualViewport?.addEventListener("resize", schedule, { passive: true });
   observer = new MutationObserver((records) => {
-    if (records.some((record) => record.type === "childList" || record.attributeName === "style" || record.attributeName === "data-sidebar" || record.attributeName === "data-family" || record.attributeName === "class")) schedule();
+    if (records.some((record) => record.type === "childList" || record.attributeName === "style" || record.attributeName === "data-sidebar" || record.attributeName === "data-family" || record.attributeName === "class" || record.attributeName === "data-studio-responsive-mode" || record.attributeName === "data-studio-device-mode")) schedule();
   });
   observer.observe(document.documentElement, {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["style", "class", "data-sidebar", "data-family", "data-studio-v244-family", "data-studio-v244-sidebar"],
+    attributeFilter: ["style", "class", "data-sidebar", "data-family", "data-studio-v244-family", "data-studio-v244-sidebar", "data-studio-responsive-mode", "data-studio-device-mode", "data-studio-desktop-site-phone"],
   });
   schedule();
 }
