@@ -1,17 +1,21 @@
 import { supabaseConfigured } from "./lib/supabase.js";
+import "./auth-provider-gateway-v250.js";
 
 export const AUTH_READINESS_RELEASE_V249 = "auth-readiness-nondestructive-v249-20260803";
+export const AUTH_READINESS_RELEASE_V250 = "auth-readiness-provider-gateway-v250-20260804";
 
 let resolved = false;
 let healthReachable = false;
 let health = null;
 
 document.documentElement.dataset.authReadinessV249 = AUTH_READINESS_RELEASE_V249;
+document.documentElement.dataset.authReadinessV250 = AUTH_READINESS_RELEASE_V250;
 document.documentElement.dataset.emailRegistration = "pending";
 document.documentElement.dataset.authHealth = "pending";
 
 function ensureStatus(modal) {
   modal.dataset.authReadinessV249 = AUTH_READINESS_RELEASE_V249;
+  modal.dataset.authReadinessV250 = AUTH_READINESS_RELEASE_V250;
   modal.dataset.authHealth = resolved ? (healthReachable ? "reachable" : "unreachable") : "pending";
   modal.dataset.emailRegistration = resolved && healthReachable
     ? String(health?.emailRegistration === true)
