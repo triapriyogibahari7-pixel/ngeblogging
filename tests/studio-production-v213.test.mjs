@@ -11,7 +11,7 @@ import "./studio-production-v221.test.mjs";
 import "./studio-production-v222.test.mjs";
 import "./studio-production-v223.test.mjs";
 import "./data-reauth-v224.test.mjs";
-// v225 diagnostic isolation: restored before merge after the source/build failure is identified.
+import "./studio-production-v225.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
