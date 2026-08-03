@@ -1,4 +1,5 @@
 import StudioFastGate from "./StudioFastGate.jsx";
+import "./studio-stable-shell-v244.js";
 import "./studio-style-authority-v144.js";
 import "./studio-device-mode-v140.js";
 import "./nara-size-authority-v144.js";
@@ -69,5 +70,6 @@ import "./studio-react-safe-v240.css";
 import "./studio-visual-stability-v241.js";
 import "./studio-visual-stability-v241-final.css";
 import "./studio-shell-rescue-v242.js";
+import "./studio-stable-shell-v244-final.css";
 
 export default StudioFastGate;
