@@ -70,6 +70,7 @@ import "./studio-sidebar-brand-v246.css";
 import "./studio-screenshot-lock-v247.css";
 import "./studio-native-stability-v248.js";
 import "./profile-avatar-v248.js";
+import "./studio-drawer-dismiss-v248.js";
 import "./studio-native-stability-v248.css";
 import "./studio-native-final-v248.css";
 
