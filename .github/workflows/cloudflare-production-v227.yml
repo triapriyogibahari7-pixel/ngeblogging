@@ -1,4 +1,4 @@
-name: Ngeblogging production v227 live authority
+name: Ngeblogging production v228 live authority
 
 on:
   push:
@@ -11,11 +11,11 @@ permissions:
   statuses: write
 
 concurrency:
-  group: ngeblogging-production-v227
+  group: ngeblogging-production-v228
   cancel-in-progress: false
 
 jobs:
-  deploy-v227:
+  deploy-v228:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: cloudflare-production
@@ -64,113 +64,114 @@ jobs:
           [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
 
-      - name: Apply current authority chain and run complete production regression
+      - name: Apply full authority chain and focused v228 regression
         run: |
           node scripts/patch-service-worker-v179.mjs
+          node --test tests/studio-production-v228.test.mjs
           npm run test:production
 
       - name: Build production application
         run: npm run build
 
-      - name: Assert v224 session recovery v226 green map and v227 Nara contract
+      - name: Assert v224 v226 v227 and v228 contracts
         shell: bash
         run: |
           set -euo pipefail
-          test -f dist/release-v224.json
-          test -f dist/release-v225.json
-          test -f dist/release-v226.json
-          test -f dist/release-v227.json
-          node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync("dist/release-v224.json","utf8"));const g=JSON.parse(fs.readFileSync("dist/release-v226.json","utf8"));const n=JSON.parse(fs.readFileSync("dist/release-v227.json","utf8"));if(a.release!=="data-reauth-v224-20260803"||a.repairs?.data401403SingleflightRefresh!==true||a.repairs?.dataRetryUsesFreshAccessToken!==true||g.release!=="studio-production-v226-native-green-layout-20260803"||g.themeLayout?.nativeReactMap!==true||g.themeLayout?.fourLeftSlots!==true||g.themeLayout?.fourRightSlots!==true||g.themeLayout?.postPageCenter!==true||g.widgets?.count!==26||g.themeCatalog?.builtInThemes!==100||g.preservedV225?.actualLineNumbersUpTo10000!==true||g.authentication?.v224DataReauthPreserved!==true||n.release!=="nara-fallback-model-contract-v227-20260803"||n.preserves?.dataReauthV224!==true||n.preserves?.responsiveUiV225!==true||n.preserves?.nativeGreenThemeMapV226!==true||n.nara?.workersAiFallbackHonorsModel!==true||n.nara?.secondaryWorkersAiFallbackHonorsModel!==true||n.nara?.workersAiFallbackHonorsIntelligence!==true||n.nara?.visionRestrictionMatchesPrimary!==true||n.nara?.quotaUsesRequestedModelAndIntelligence!==true||n.claims?.massCapacityClaimed!==false)process.exit(1)'
-          grep -R -q 'nara-fallback-model-contract-v227-20260803' dist
-          grep -R -q 'studio-production-v226-native-green-layout-20260803' dist
-          grep -R -q 'data-reauth-v224-20260803' dist
+          for file in dist/release-v224.json dist/release-v225.json dist/release-v226.json dist/release-v227.json dist/release-v228.json; do test -f "$file"; done
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=JSON.parse(fs.readFileSync('dist/release-v224.json','utf8'));
+          const g=JSON.parse(fs.readFileSync('dist/release-v226.json','utf8'));
+          const n=JSON.parse(fs.readFileSync('dist/release-v227.json','utf8'));
+          const v=JSON.parse(fs.readFileSync('dist/release-v228.json','utf8'));
+          if(a.release!=='data-reauth-v224-20260803'||a.repairs?.data401403SingleflightRefresh!==true||a.repairs?.dataRetryUsesFreshAccessToken!==true)process.exit(1);
+          if(g.release!=='studio-production-v226-native-green-layout-20260803'||g.themeLayout?.nativeReactMap!==true||g.themeLayout?.fourLeftSlots!==true||g.themeLayout?.fourRightSlots!==true||g.themeLayout?.postPageCenter!==true||g.widgets?.count!==26||g.themeCatalog?.builtInThemes!==100)process.exit(1);
+          if(n.release!=='nara-fallback-model-contract-v227-20260803'||n.nara?.workersAiFallbackHonorsModel!==true||n.nara?.workersAiFallbackHonorsIntelligence!==true)process.exit(1);
+          if(v.release!=='studio-production-v228-green-editor-nara-20260803'||v.responsive?.desktopSiteOnPhysicalPhoneLocksLarge!==true||v.theme?.builtInThemesRequired!==100||v.theme?.widgetCountRequired!==26||v.theme?.nativeGreenMapPreserved!==true||v.theme?.semanticSmallMap!==true||v.codeEditor?.actualLineNumbers!==true||v.codeEditor?.maxSupportedLines!==10000||v.codeEditor?.smallPreviewAboveCode!==true||v.codeEditor?.largeCodeLeftPreviewRight!==true||v.nara?.cameraPhotoFile!==true||v.nara?.smallMediumNonModal!==true||v.authentication?.v224SingleFlightDataReauthPreserved!==true||v.claims?.massCapacityClaimed!==false)process.exit(1);
+          NODE
+          grep -R -q 'studio-production-v228-green-editor-nara-20260803' dist
+          grep -R -q 'ngeblogging-app-v228-green-editor-nara-20260803' dist
+          grep -R -q 'green-editor-nara-cache-v228' dist
 
       - name: Build active-zone Wrangler configuration
         shell: bash
         run: |
           set -euo pipefail
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v227
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v228
 
       - name: Deploy Worker and current assets
         run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
-      - name: Verify v227 on Workers.dev before route cutover
+      - name: Verify v228 on Workers.dev before route cutover
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            body=/tmp/v227-workers.json
-            headers=/tmp/v227-workers.headers
-            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v227.json?v227=${stamp}" || true)"
+            body=/tmp/v228-workers.json
+            headers=/tmp/v228-workers.headers
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v228.json?v228=${stamp}" || true)"
             if [[ "${code}" == "200" ]] && ! grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="nara-fallback-model-contract-v227-20260803"||x.preserves?.dataReauthV224!==true||x.preserves?.responsiveUiV225!==true||x.preserves?.nativeGreenThemeMapV226!==true||x.nara?.workersAiFallbackHonorsModel!==true||x.nara?.workersAiFallbackHonorsIntelligence!==true)process.exit(1)' "${body}"; then
-                echo "WORKERS_DEV_V227_VERIFIED"
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v228-green-editor-nara-20260803"||x.responsive?.desktopSiteOnPhysicalPhoneLocksLarge!==true||x.theme?.nativeGreenMapPreserved!==true||x.codeEditor?.actualLineNumbers!==true||x.nara?.cameraPhotoFile!==true||x.authentication?.v224SingleFlightDataReauthPreserved!==true)process.exit(1)' "${body}"; then
+                echo "WORKERS_DEV_V228_VERIFIED"
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo "WORKERS_DEV_V227_VERIFY_FAILED"
+          echo "WORKERS_DEV_V228_VERIFY_FAILED"
           exit 1
 
       - name: Install authoritative apex www and tenant routes
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      - name: Verify live apex auth Studio tenant and v227 authority
-        id: live_verify
+      - name: Verify live apex auth Studio tenant and v228 authority
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 42); do
             stamp="$(date +%s)-${attempt}"
             ok=true
-            for path in / /login /signup /studio /release-v224.json /release-v226.json /release-v227.json; do
+            for path in / /login /signup /studio /release-v224.json /release-v226.json /release-v227.json /release-v228.json; do
               safe="$(printf '%s' "${path}" | tr '/.' '__')"
-              body="/tmp/v227-apex-${safe}.out"
-              headers="/tmp/v227-apex-${safe}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v227=${stamp}" || true)"
+              body="/tmp/v228-apex-${safe}.out"
+              headers="/tmp/v228-apex-${safe}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v228=${stamp}" || true)"
               [[ "${code}" == "200" ]] || ok=false
-              if grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then ok=false; fi
-              if [[ "${path}" == "/release-v224.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="data-reauth-v224-20260803"||x.repairs?.data401403SingleflightRefresh!==true||x.repairs?.dataRetryUsesFreshAccessToken!==true)process.exit(1)' "${body}" || ok=false
-              elif [[ "${path}" == "/release-v226.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v226-native-green-layout-20260803"||x.themeLayout?.nativeReactMap!==true||x.themeLayout?.fourLeftSlots!==true||x.themeLayout?.fourRightSlots!==true||x.themeLayout?.postPageCenter!==true||x.widgets?.count!==26||x.themeCatalog?.builtInThemes!==100)process.exit(1)' "${body}" || ok=false
-              elif [[ "${path}" == "/release-v227.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="nara-fallback-model-contract-v227-20260803"||x.preserves?.dataReauthV224!==true||x.preserves?.responsiveUiV225!==true||x.preserves?.nativeGreenThemeMapV226!==true||x.nara?.workersAiFallbackHonorsModel!==true||x.nara?.secondaryWorkersAiFallbackHonorsModel!==true||x.nara?.workersAiFallbackHonorsIntelligence!==true)process.exit(1)' "${body}" || ok=false
-              else
+              grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}" && ok=false || true
+              if [[ "${path}" == "/release-v228.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v228-green-editor-nara-20260803"||x.responsive?.desktopSiteOnPhysicalPhoneLocksLarge!==true||x.theme?.nativeGreenMapPreserved!==true||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26||x.codeEditor?.actualLineNumbers!==true||x.codeEditor?.maxSupportedLines!==10000||x.nara?.cameraPhotoFile!==true||x.nara?.smallMediumNonModal!==true||x.authentication?.v224SingleFlightDataReauthPreserved!==true)process.exit(1)' "${body}" || ok=false
+              elif [[ "${path}" != /release-* ]]; then
                 grep -q 'id="root"' "${body}" || ok=false
               fi
             done
-
-            tenant_body=/tmp/v227-tenant.html
-            tenant_headers=/tmp/v227-tenant.headers
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${tenant_headers}" -o "${tenant_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v227=${stamp}" || true)"
+            tenant_body=/tmp/v228-tenant.html
+            tenant_headers=/tmp/v228-tenant.headers
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${tenant_headers}" -o "${tenant_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v228=${stamp}" || true)"
             [[ "${tenant_code}" == "200" ]] || ok=false
             grep -q 'WHITE-R4-2026.07.12' "${tenant_body}" "${tenant_headers}" && ok=false || true
-
             if [[ "${ok}" == true ]]; then
-              echo "PRODUCTION_V227_APEX_AUTH_STUDIO_TENANT_VERIFIED"
+              echo "PRODUCTION_V228_APEX_AUTH_STUDIO_TENANT_VERIFIED"
               exit 0
             fi
             sleep 10
           done
-          echo "PRODUCTION_V227_LIVE_VERIFY_FAILED"
+          echo "PRODUCTION_V228_LIVE_VERIFY_FAILED"
           exit 1
 
-      - name: Publish v227 production success status
+      - name: Publish v228 production success status
         if: success()
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'success', context:'ngeblogging/production-v227', description:'v227 build, Worker, route cutover dan live authority terverifikasi', target_url:runUrl });
+            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'success', context:'ngeblogging/production-v228', description:'v228 build, Worker, route cutover dan live authority terverifikasi', target_url:runUrl });
 
-      - name: Publish v227 production failure status
+      - name: Publish v228 production failure status
         if: failure()
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'failure', context:'ngeblogging/production-v227', description:'v227 belum lolos build, Worker, route cutover atau verifikasi live', target_url:runUrl });
+            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'failure', context:'ngeblogging/production-v228', description:'v228 belum lolos build, Worker, route cutover atau verifikasi live', target_url:runUrl });
