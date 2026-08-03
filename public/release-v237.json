@@ -1,0 +1,80 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v237-layout-stability-20260803",
+  "basedOn": [
+    "studio-production-v233-data-session-bootstrap-20260803",
+    "studio-production-v235-interaction-map-nara-20260803",
+    "studio-real-device-v236-20260803"
+  ],
+  "screenshotsAddressed": [
+    "settings-backup-text-overlap",
+    "settings-heading-overlap",
+    "widget-studio-heading-overlap",
+    "domain-mobile-vertical-action-pills",
+    "domain-mobile-subdomain-overflow",
+    "responsive-family-bounce",
+    "theme-code-editor-small-device-clipping",
+    "nara-attachment-menu-visibility"
+  ],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+  "responsiveRule": "physical viewport <= 767px always small; stale family attributes are synchronized to v237",
+  "sidebar": {
+    "singleNControl": true,
+    "desktopOpenWidth": 248,
+    "desktopCollapsedWidth": 68,
+    "mobileDrawer": true,
+    "menuTightBelowCreatePost": true,
+    "duplicateLegacyControlsHidden": true
+  },
+  "profile": {
+    "separateFromSettings": true,
+    "avatarUploadPreserved": true,
+    "siteManagerActionPreserved": true,
+    "summaryCreateSiteAction": true
+  },
+  "sites": {
+    "systemLimit": 25,
+    "limitNotAdvertisedInPrimaryUi": true
+  },
+  "themeStudio": {
+    "builtInArchitecture": "20 families x 5 compositions = 100 themes",
+    "customThemeEntry": true,
+    "widgetCount": 26,
+    "customHtmlJavascriptWidget": true,
+    "layoutMap": "4 left + Post/Page center + 4 right with contextual widget popover",
+    "largeCodeLayout": "code-left-preview-right",
+    "smallCodeLayout": "preview-top-code-bottom",
+    "actualLineGutterMax": 10000
+  },
+  "nara": {
+    "smallMediumNonmodal": true,
+    "fullscreenModal": true,
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphone": true,
+    "speaker": true,
+    "modelSelector": true,
+    "intelligenceSelector": true,
+    "attachmentPortal": true
+  },
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "dataRecoveryAuthority": "v233",
+    "automaticLogoutAdded": false,
+    "providerEndToEndClaim": false
+  },
+  "pwa": {
+    "cache": "layout-stability-cache-v237",
+    "forcedNavigation": false,
+    "storageClearing": false
+  },
+  "validation": {
+    "realDeviceRequiredBefore100PercentClaim": true,
+    "productionCredentialLoadTest": false,
+    "extremeScaleClaim": false
+  },
+  "legacyFeaturesPreserved": true
+}
