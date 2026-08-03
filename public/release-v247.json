@@ -1,0 +1,37 @@
+{
+  "release": "studio-screenshot-lock-v247-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v247-screenshot-lock-20260803",
+  "cache": "studio-screenshot-lock-cache-v247",
+  "purpose": "Lock the real six-mode Studio shell to the screenshot contract without removing existing features or replacing production data.",
+  "responsive": {
+    "application": "small drawer",
+    "phone": "small drawer",
+    "mobile": "small drawer",
+    "compact": "small drawer",
+    "tablet": "large family",
+    "desktop": "large family with laptop/computer variants"
+  },
+  "fixes": [
+    "responsive detector wins over stale historical family state",
+    "one visible n toggle per device family",
+    "Ngeblogging brand is vertically aligned and readable on large family",
+    "profile avatar remains visible in the top-right",
+    "legacy sidebar backdrops cannot darken or freeze Studio",
+    "main content follows expanded and collapsed desktop sidebar widths",
+    "small drawer never permanently shifts main content",
+    "mobile summary, domain and cards cannot overflow horizontally",
+    "Nara launcher does not blink and small/medium remain non-modal",
+    "Nara attachment portal remains viewport safe"
+  ],
+  "preserved": [
+    "v245 production authentication fallback",
+    "PKCE persisted session and auto refresh token",
+    "onboarding and workspace cache resilience",
+    "Posts and Pages editor",
+    "5000 word contract",
+    "100 theme architecture and custom theme",
+    "26 widget system and layout targeting",
+    "Media Analytics Members Comments Domain API Keys",
+    "Nara camera photo file microphone speaker model intelligence"
+  ]
+}
