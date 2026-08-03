@@ -85,6 +85,3 @@ if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) {
 
 await write(path, source);
 console.log(`Applied ${RELEASE}: production login retains VITE config first and gains an official-host public fallback.`);
-
-// Always finalize the build with the non-destructive v248 Studio/auth authority.
-await import("./patch-production-v248.mjs");
