@@ -85,7 +85,7 @@ async function verify() {
     [entry, "studio-production-v230.js"],
     [runtime, RELEASE],
     [runtime, "DEVICE_WIDTHS"],
-    [runtime, "data-v230-preview-scale"],
+    [runtime, "v230PreviewScale"],
     [runtime, "probeHealthyStudioData"],
     [runtime, "STARTUP_RETRY_LIMIT = 3"],
     [runtime, "listUserSites(userId)"],
