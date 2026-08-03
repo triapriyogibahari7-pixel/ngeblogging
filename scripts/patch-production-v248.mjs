@@ -6,6 +6,7 @@ const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 
 export const RELEASE = "studio-auth-ui-regression-v248-20260803";
+export const GUARD_RELEASE = "studio-regression-guard-v248-20260803";
 export const VERSION = "ngeblogging-app-v248-auth-ui-regression-20260803";
 export const CACHE = "auth-ui-regression-cache-v248";
 
@@ -28,7 +29,6 @@ async function patchStudioEntry() {
   if (!source.includes(v248)) source = source.replace(v242, `${v242}\n${v248}`);
   if (source.indexOf(v248) < source.indexOf(v242)) throw new Error("V248_STUDIO_ORDER_INVALID");
 
-  // Preserve the known-good v234 Theme/Nara/layout authority and v241/v242 rescue.
   for (const marker of [
     'studio-production-v234.js',
     'studio-production-v235-widget-target.js',
@@ -80,7 +80,7 @@ async function verifyContracts() {
 
   const checks = [
     [entry, "studio-regression-guard-v248.js"],
-    [guard, RELEASE],
+    [guard, GUARD_RELEASE],
     [guard, "removeConflictingChrome"],
     [css, 'data-v248-family="small"'],
     [css, 'data-v248-family="large"'],
