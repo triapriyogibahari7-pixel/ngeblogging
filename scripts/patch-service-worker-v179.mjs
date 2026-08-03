@@ -70,7 +70,8 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // v228 locks physical layout/editor/Nara; v229 locks map/sidebar/profile; v230
 // owns bounded-preview/bootstrap recovery; v231 owns the green map and single-n
 // geometry; v232 owns screenshot controls; v233 owns bounded data failover; v234
-// is final for the current screenshot geometry without replacing v233 auth/data.
+// owns screenshot geometry; v235 preempts historical interaction listeners and
+// is final for the current single-n, real layout slots, code and Nara attachment UI.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -104,3 +105,4 @@ await import("./patch-production-v231.mjs");
 await import("./patch-production-v232.mjs");
 await import("./patch-production-v233.mjs");
 await import("./patch-production-v234.mjs");
+await import("./patch-production-v235.mjs");
