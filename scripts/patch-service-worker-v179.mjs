@@ -63,22 +63,11 @@ await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
-// v199-v201 remain historical source/runtime authorities. v202-v204 keep their
-// proven compatibility contracts; v205 is the validated physical-mobile Theme,
-// Nara and retained-session authority. v205.1 closes the logo/action gaps, v206
-// adds native Theme/two-row Nara/RLS recovery, v207 closes the remaining
-// screenshot geometry/live authority gap, then left4 extends the real widget map.
-// v208 preserves its screenshot compatibility; v209 owns the area-aware Theme,
-// public-site single initial render and in-place retained-session recovery.
-// v210 fixes Theme code visibility, Camera/Photo/File and Domain wrapping.
-// v211 preserves the physical-phone recovery and modal portal compatibility.
-// v212 keeps explicit desktop-site/tablet geometry, selected Theme preview,
-// 4-left + large center + 4-right layout, Nara and Domain authority.
-// v213 tightens small-device map readability plus factual browser/bot/entry analytics.
-// v214 only normalizes screenshot geometry/visibility without replacing production
-// data/auth/themes/widgets. v215 patches late OAuth handoff. v216 is retained as
-// compatibility. v222 MUST run last so its green map, line-numbered code editor,
-// mode lock and Nara attachment geometry become the final production authority.
+// Historical authorities remain executable for regression compatibility. v222
+// establishes the green map, line-number gutter and Nara attachment geometry.
+// v223 MUST execute last: it separates the selected preview target from the
+// physical editing UI so Desktop preview remains locked while a phone still gets
+// readable controls. Neither layer may destroy authenticated sessions or drafts.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -100,3 +89,4 @@ await import("./patch-auth-late-callback-v215.mjs");
 await import("./patch-production-v216.mjs");
 await import("./patch-v216-v215-auth-compat.mjs");
 await import("./patch-production-v222.mjs");
+await import("./patch-production-v223.mjs");
