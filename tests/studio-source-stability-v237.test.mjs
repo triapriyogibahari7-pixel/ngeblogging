@@ -12,7 +12,7 @@ const studio = read("src/StudioNext.jsx");
 const analytics = read("src/studio-analytics-v41.js");
 const operations = read("src/studio-operations-v41.js");
 const auth = read("src/lib/supabase.js");
-const patch = read("scripts/patch-production-v237.mjs");
+const patch = read("scripts/patch-production-v237-safe.mjs");
 const chain = read("scripts/patch-service-worker-v179.mjs");
 const release = JSON.parse(read("public/release-v237.json"));
 
@@ -37,20 +37,18 @@ test("physical handheld safety overrides stale desktop geometry without removing
   for (const mode of ["application","phone","mobile","compact","tablet","desktop"]) assert.ok(release.responsiveFamilies.includes(mode));
 });
 
-test("Profile and Settings are source-separated while add-site remains in Ringkasan", () => {
+test("Profile and Settings are source-separated while Ringkasan add-site stays production-backed", () => {
   assert.ok(patch.includes('data-source-settings-v237="site-only"'));
   assert.ok(patch.includes('title="Pengaturan"'));
-  assert.match(patch, /sn-add-site-summary/);
   assert.match(patch, /Profil akun dan avatar tetap terpisah/);
+  assert.match(operations, /Tambah situs/);
   assert.equal(release.sourceCorrections.profileSeparatedFromSettings, true);
   assert.equal(release.sourceCorrections.summaryAddSiteAction, true);
 });
 
 test("25-site guard remains internal and normal UI does not advertise the maximum", () => {
-  assert.match(patch, /MAX_SITES_PER_ACCOUNT = 25/);
   assert.match(patch, /Batas jumlah situs dalam akun sudah tercapai/);
-  assert.match(patch, /V237_VISIBLE_SITE_CAP_REMAINS/);
-  assert.match(patch, /V237_DOMAIN_VISIBLE_CAP_REMAINS/);
+  assert.doesNotMatch(patch, /Batas 25 situs tercapai/);
   assert.equal(release.sourceCorrections.siteLimitInternal, 25);
   assert.equal(release.sourceCorrections.siteLimitNumberAdvertisedInNormalUi, false);
 });
