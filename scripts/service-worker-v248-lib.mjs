@@ -87,8 +87,8 @@ export function finalizeServiceWorkerV248(target = resolve("dist", "sw.js")) {
     .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V248}-${ACTIVE_CACHE_RELEASE_V248}-${AUTH_HANDOFF_RELEASE}-assets`;')
     .replace(/(function versionPayload\(type\) \{[\s\S]*?return \{[\s\S]*?\n\s*type,\n\s*)version:\s*[^,]+,/m, "$1version: ACTIVE_VERSION_V248,")
     .replace(/(function versionPayload\(type\) \{[\s\S]*?return \{[\s\S]*?\n\s*(?:type,[\s\S]*?\n\s*)?)release:\s*[^,]+,/m, "$1release: ACTIVE_CACHE_RELEASE_V248,")
-    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V247", "NGE_BLOGGING_UPDATE_AVAILABLE_V248")
-    .replaceAll("service-worker-activated-screenshot-lock-v247", "service-worker-activated-native-stability-v248");
+    .replace(/NGE_BLOGGING_UPDATE_AVAILABLE_V\d+/g, "NGE_BLOGGING_UPDATE_AVAILABLE_V248")
+    .replace(/service-worker-activated-[a-z0-9-]+-v\d+/g, "service-worker-activated-native-stability-v248");
 
   if (!source.includes("studioNativeStabilityReleaseV248:")) {
     source = source.replace(/(function versionPayload\(type\) \{[\s\S]*?return \{)/, "$1\n    studioNativeStabilityReleaseV248: STUDIO_NATIVE_STABILITY_RELEASE_V248,");
