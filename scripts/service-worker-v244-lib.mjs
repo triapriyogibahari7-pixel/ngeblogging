@@ -53,7 +53,7 @@ function verifySourceContracts() {
     "--v244-open:248px",
     "--v244-rail:70px",
     ".v244-profile-menu",
-    ".v244-nara-attachments",
+    "#ngeblogging-nara-attachments-v244",
     'data-v244-mode="nonmodal"',
     "background:transparent",
     "zoom:1!important",
