@@ -1,0 +1,39 @@
+{
+  "status": "candidate",
+  "release": "data-reauth-v224-20260803",
+  "basedOn": "studio-production-v223-20260803",
+  "problemEvidence": {
+    "transientData401ObservedBeforeSuccessfulTokenRefresh": true,
+    "subsequentAuthUser200Observed": true,
+    "subsequentStudioData200Observed": true
+  },
+  "repairs": {
+    "data401403SingleflightRefresh": true,
+    "dataRetryUsesFreshAccessToken": true,
+    "retryCount": 1,
+    "noForcedLogoutOnTransientFailure": true,
+    "noLocalStorageClear": true,
+    "v223PhysicalUiPreserved": true
+  },
+  "preserved": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "layoutFourLeftFourRight": true,
+    "themeCodeLineLimit": 10000,
+    "naraCameraPhotoFile": true,
+    "sixResponsiveFamilies": true,
+    "postPageWordLimit": 5000
+  },
+  "deployment": {
+    "serviceWorkerVersion": "ngeblogging-app-v224-data-reauth-20260803",
+    "cacheRelease": "data-reauth-cache-v224",
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "liveApexMustServeV224BeforeCompletion": true
+  },
+  "claims": {
+    "allOAuthProvidersEndToEndProven": false,
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "realDeviceVerificationRequiredBeforeHundredPercentClaim": true
+  }
+}

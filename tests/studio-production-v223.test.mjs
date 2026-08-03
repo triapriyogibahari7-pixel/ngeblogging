@@ -16,7 +16,7 @@ const worker = read("public/sw.js");
 const release = JSON.parse(read("public/release-v223.json"));
 const RELEASE = "studio-production-v223-20260803";
 
-test("v223 executes once and last after v222, avoiding ESM import-cache authority rollback", () => {
+test("v223 executes after v222 once and remains preserved under later authorities", () => {
   assert.match(compatChain, /patch-production-v222\.mjs/);
   assert.doesNotMatch(compatChain, /patch-production-v223\.mjs/);
   assert.match(topChain, /patch-production-v222\.mjs/);
@@ -24,9 +24,9 @@ test("v223 executes once and last after v222, avoiding ESM import-cache authorit
   assert.ok(topChain.lastIndexOf("patch-production-v222.mjs") < topChain.lastIndexOf("patch-production-v223.mjs"));
   assert.match(patch, /studio-production-v223\.js/);
   assert.match(runtime, new RegExp(RELEASE));
-  assert.match(worker, /const VERSION = "ngeblogging-app-v223-physical-ui-route-20260803";/);
-  assert.match(worker, /const CACHE_RELEASE = "physical-ui-route-cache-v223";/);
   assert.match(worker, /STUDIO_PRODUCTION_RELEASE_V223/);
+  assert.match(worker, /ngeblogging-app-v223-physical-ui-route-20260803/);
+  assert.match(worker, /physical-ui-route-cache-v223/);
 });
 
 test("preview selection is independent from physical editor UI", () => {
