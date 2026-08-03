@@ -1,0 +1,56 @@
+{
+  "status": "candidate",
+  "release": "studio-real-device-v236-20260803",
+  "basedOn": "studio-production-v235-interaction-map-nara-20260803",
+  "screenshotsAddressed": [
+    "domain-mobile-vertical-action-pills",
+    "content-editor-mobile-preview-publish-clipping",
+    "theme-category-chip-collision",
+    "widget-studio-heading-overlap",
+    "theme-code-editor-small-device-geometry",
+    "nara-attachment-menu-clipping",
+    "profile-add-site-action"
+  ],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+  "themeCountArchitecture": "20 families x 5 compositions = 100",
+  "widgetCount": 26,
+  "layoutReference": {
+    "leftWidgets": 4,
+    "center": "Post/Page",
+    "rightWidgets": 4,
+    "clickablePopover": true,
+    "customHtmlJavascript": true
+  },
+  "editor": {
+    "mobilePreviewPublishVisible": true,
+    "toolbarHorizontalScroll": true,
+    "pageAndPostSameEditor": true,
+    "codeEditorLarge": "code-left-preview-right",
+    "codeEditorSmall": "preview-top-code-bottom",
+    "maxCodeLines": 10000
+  },
+  "nara": {
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphone": true,
+    "speaker": true,
+    "modelSelector": true,
+    "intelligenceSelector": true,
+    "smallMediumNonmodal": true
+  },
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "dataRecoveryAuthority": "v233",
+    "providerEndToEndClaim": false
+  },
+  "capacity": {
+    "extremeScale": "model-only",
+    "productionCredentialLoadTest": false,
+    "claim": "not-claimed"
+  },
+  "productionPromotionRequired": true,
+  "legacyFeaturesPreserved": true
+}
