@@ -112,3 +112,8 @@ await patchStudioEntry();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
+
+// v226 changes only the Theme Studio source map after the established v225
+// runtime has been verified. This keeps v225 mode-lock/Nara/sidebar/analytics
+// authority intact while making the green widget blueprint native React output.
+await import("./patch-production-v226.mjs");
