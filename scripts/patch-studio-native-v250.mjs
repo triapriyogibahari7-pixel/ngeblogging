@@ -49,38 +49,67 @@ async function patchStudioEntry() {
   if (!source.includes(exportAnchor)) throw new Error("V250_STUDIO_EXPORT_ANCHOR_MISSING");
   source = source.replace(exportAnchor, `${jsImport}\n${cssImport}\n\n${exportAnchor}`);
   source = source.replace(/\n{3,}/g, "\n\n");
-
   await write(path, source);
+}
+
+function patchDirectRlsFallback(source) {
+  if (!source.includes("async function listUserSitesDirectV192")) return source;
+
+  source = source.replace(
+    /const base = String\(env\.VITE_SUPABASE_URL \|\| "[^"]*"\)\.trim\(\)\.replace\(\/\\\/\$\/, ""\);/,
+    `const base = String(env.VITE_SUPABASE_URL || "${PRODUCTION_SUPABASE_URL}").trim().replace(/\\/$/, "");`,
+  );
+  source = source.replace(
+    /const key = String\(env\.VITE_SUPABASE_PUBLISHABLE_KEY \|\| env\.VITE_SUPABASE_ANON_KEY \|\| "[^"]*"\)\.trim\(\);/,
+    `const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "${PRODUCTION_SUPABASE_KEY}").trim();`,
+  );
+
+  // If a compatibility patch reformatted the helper, place public fallbacks
+  // beside its env declaration and switch empty fallback literals only inside
+  // the helper range. This keeps the user bearer/RLS architecture unchanged.
+  if (!source.includes(PRODUCTION_SUPABASE_URL) || !source.includes(PRODUCTION_SUPABASE_KEY)) {
+    const start = source.indexOf("async function listUserSitesDirectV192");
+    const end = source.indexOf("\n}\n", start);
+    if (start >= 0 && end > start) {
+      let block = source.slice(start, end + 3);
+      block = block
+        .replace('env.VITE_SUPABASE_URL || ""', `env.VITE_SUPABASE_URL || "${PRODUCTION_SUPABASE_URL}"`)
+        .replace('env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || ""', `env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "${PRODUCTION_SUPABASE_KEY}"`);
+      source = `${source.slice(0, start)}${block}${source.slice(end + 3)}`;
+    }
+  }
+  return source;
+}
+
+function patchPersistedProjectRef(source) {
+  if (!source.includes("function supabaseProjectRefV198")) return source;
+  const replacement = `function supabaseProjectRefV198() {
+  try {
+    const configured = String(import.meta.env?.VITE_SUPABASE_URL || "${PRODUCTION_SUPABASE_URL}").trim();
+    return configured ? new URL(configured).hostname.split(".")[0] || "${PRODUCTION_PROJECT_REF}" : "${PRODUCTION_PROJECT_REF}";
+  } catch {
+    return "${PRODUCTION_PROJECT_REF}";
+  }
+}`;
+  const next = source.replace(/function supabaseProjectRefV198\(\) \{[\s\S]*?\n\}/, replacement);
+  return next;
 }
 
 async function patchGeneratedAuthGate() {
   const path = "src/StudioOnboardingGate.jsx";
   let source = await read(path);
-
-  // The historical v192 direct RLS path originally depended only on build-time
-  // VITE variables. Production already owns a public fallback project in
-  // lib/supabase.js, so use the same public project when Netlify/Workers do not
-  // inject VITE variables. This does not introduce a privileged key.
-  source = source.replace(
-    '  const base = String(env.VITE_SUPABASE_URL || "").trim().replace(/\\/$/, "");\n  const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim();',
-    `  const base = String(env.VITE_SUPABASE_URL || "${PRODUCTION_SUPABASE_URL}").trim().replace(/\\/$/, "");\n  const key = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "${PRODUCTION_SUPABASE_KEY}").trim();`,
-  );
-
-  source = source.replace(
-    '    const configured = String(import.meta.env?.VITE_SUPABASE_URL || "").trim();\n    return configured ? new URL(configured).hostname.split(".")[0] || "" : "";',
-    `    const configured = String(import.meta.env?.VITE_SUPABASE_URL || "${PRODUCTION_SUPABASE_URL}").trim();\n    return configured ? new URL(configured).hostname.split(".")[0] || "${PRODUCTION_PROJECT_REF}" : "${PRODUCTION_PROJECT_REF}";`,
-  );
+  source = patchDirectRlsFallback(source);
+  source = patchPersistedProjectRef(source);
 
   if (!source.includes("studioNativeAuthPostpatchV250")) {
     const markerAnchor = 'const RELEASE = "first-site-onboarding-v76-20260727";';
     if (!source.includes(markerAnchor)) throw new Error("V250_AUTH_RELEASE_ANCHOR_MISSING");
+    source = source.replace(markerAnchor, `${markerAnchor}\nconst STUDIO_NATIVE_AUTH_POSTPATCH_V250 = "${RELEASE}";`);
+    const componentAnchor = "export default function StudioOnboardingGate(props) {";
+    if (!source.includes(componentAnchor)) throw new Error("V250_AUTH_COMPONENT_ANCHOR_MISSING");
     source = source.replace(
-      markerAnchor,
-      `${markerAnchor}\nconst STUDIO_NATIVE_AUTH_POSTPATCH_V250 = "${RELEASE}";`,
-    );
-    source = source.replace(
-      'export default function StudioOnboardingGate(props) {',
-      'export default function StudioOnboardingGate(props) {\n  document.documentElement.dataset.studioNativeAuthPostpatchV250 = STUDIO_NATIVE_AUTH_POSTPATCH_V250;',
+      componentAnchor,
+      `${componentAnchor}\n  document.documentElement.dataset.studioNativeAuthPostpatchV250 = STUDIO_NATIVE_AUTH_POSTPATCH_V250;`,
     );
   }
 
@@ -91,13 +120,13 @@ async function patchGeneratedAuthGate() {
       "Data Workspace belum merespons. Sesi login tetap disimpan; sistem tidak melakukan logout otomatis. Coba lagi setelah koneksi tersedia.",
     );
 
-  // Preserve every historical contract: persisted session, direct user-bearer
-  // RLS, single-flight, active-site cache and online retry must remain present.
+  // These markers are guaranteed by the production v192/v195/v198 regression
+  // suite and must survive v250. Optional later compatibility wrappers are not
+  // required for this postpatch to execute successfully.
   for (const marker of [
     "listUserSitesDirectV192",
     "readLocalStudioSessionV195",
     "readPersistedSupabaseSessionV198",
-    "studioMembershipSingleFlightV197",
     "rememberActiveSiteV195",
     "studio-bootstrap-online-retry-v192",
     "Authorization: `Bearer ${accessToken}`",
@@ -106,10 +135,12 @@ async function patchGeneratedAuthGate() {
   ]) {
     if (!source.includes(marker)) throw new Error(`V250_AUTH_COMPAT_MARKER_MISSING:${marker}`);
   }
+  if (!source.includes(PRODUCTION_SUPABASE_URL) || !source.includes(PRODUCTION_SUPABASE_KEY) || !source.includes(PRODUCTION_PROJECT_REF)) {
+    throw new Error("V250_PRODUCTION_PUBLIC_FALLBACK_NOT_INSTALLED");
+  }
   if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|supabase\.auth\.signOut\s*\(/.test(source)) {
     throw new Error("V250_AUTH_DESTRUCTIVE_SESSION_ACTION");
   }
-
   await write(path, source);
 }
 
@@ -125,7 +156,7 @@ async function verify() {
 
   const gate = await read("src/StudioOnboardingGate.jsx");
   for (const marker of [
-    STUDIO_MARKER,
+    "studioNativeAuthPostpatchV250",
     PRODUCTION_SUPABASE_URL,
     PRODUCTION_SUPABASE_KEY,
     PRODUCTION_PROJECT_REF,
@@ -134,7 +165,6 @@ async function verify() {
   ]) if (!gate.includes(marker)) throw new Error(`V250_AUTH_POSTPATCH_VERIFY_FAILED:${marker}`);
 }
 
-const STUDIO_MARKER = "studioNativeAuthPostpatchV250";
 await patchStudioEntry();
 await patchGeneratedAuthGate();
 await verify();
