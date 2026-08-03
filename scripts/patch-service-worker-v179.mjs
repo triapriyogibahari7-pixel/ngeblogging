@@ -77,8 +77,9 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // v213 tightens small-device map readability plus factual browser/bot/entry analytics.
 // v214 only normalizes screenshot geometry/visibility without replacing production
 // data/auth/themes/widgets. v215 patches late OAuth handoff. v216 is retained as
-// compatibility. v222 MUST run last so its green map, line-numbered code editor,
-// mode lock and Nara attachment geometry become the final production authority.
+// compatibility. v222 remains the prior green-map/code/Nara compatibility layer.
+// v223 MUST run last: it removes the v209 four-action conflict, locks synthetic
+// desktop-site mode, and owns the deterministic green map + Nara geometry.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -100,3 +101,4 @@ await import("./patch-auth-late-callback-v215.mjs");
 await import("./patch-production-v216.mjs");
 await import("./patch-v216-v215-auth-compat.mjs");
 await import("./patch-production-v222.mjs");
+await import("./patch-production-v223.mjs");
