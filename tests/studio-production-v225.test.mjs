@@ -7,11 +7,13 @@ import { BUILT_IN_WIDGETS, WIDGET_COUNT } from "../src/widget-system.js";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const chain = read("scripts/patch-service-worker-v179.mjs");
 const patch = read("scripts/patch-production-v225.mjs");
+const modeLock = read("scripts/patch-v225-mode-lock.mjs");
 const runtime = read("src/studio-production-v225.js");
 const css = read("src/studio-production-v225.css");
 const isolation = read("src/studio-production-v225-action-isolation.js");
 const isolationCss = read("src/studio-production-v225-action-isolation.css");
 const v222 = read("src/studio-production-v222.js");
+const v223 = read("src/studio-production-v223.js");
 const v209 = read("src/studio-production-v209.js");
 const themeStudio = read("src/ThemeStudio.jsx");
 const nara = read("src/NaraAssistant.jsx");
@@ -23,10 +25,11 @@ const worker = read("public/sw.js");
 
 const RELEASE = "studio-production-v225-20260803";
 
-test("v225 runs after v224 data reauth and becomes final UI/cache authority", () => {
+test("v225 runs after v224 data reauth and its mode lock executes before final UI/cache authority", () => {
   const v224Pos = chain.lastIndexOf('patch-data-reauth-v224.mjs');
+  const modeLockPos = chain.lastIndexOf('patch-v225-mode-lock.mjs');
   const v225Pos = chain.lastIndexOf('patch-production-v225.mjs');
-  assert.ok(v224Pos >= 0 && v225Pos > v224Pos);
+  assert.ok(v224Pos >= 0 && modeLockPos > v224Pos && v225Pos > modeLockPos);
   assert.match(runtime,new RegExp(RELEASE));
   assert.match(patch,/studio-production-v225\.js/);
   assert.match(patch,/studio-production-v225-action-isolation\.js/);
@@ -36,13 +39,29 @@ test("v225 runs after v224 data reauth and becomes final UI/cache authority", ()
   assert.equal(release.preservesV224DataReauth,true);
 });
 
+test("desktop laptop computer selection cannot bounce back to phone and physical editor chrome is never overscaled", () => {
+  assert.match(modeLock,/V225_USER_DEVICE_MODE_PRESERVED/);
+  assert.match(modeLock,/v225-user-choice-preserved/);
+  assert.match(modeLock,/const uiScale = 1/);
+  assert.match(modeLock,/V225_V222_RESPONSIVE_REWRITE_REMAINS/);
+  assert.match(modeLock,/V225_V223_OVERSCALE_REMAINS/);
+  const rootStart = v222.indexOf("function normalizeRoot()");
+  const rootEnd = v222.indexOf("function normalizeLayout", rootStart);
+  const normalizeRoot = v222.slice(rootStart, rootEnd);
+  assert.doesNotMatch(normalizeRoot,/studioResponsiveMode\s*=\s*"(?:phone|desktop)"/);
+  assert.doesNotMatch(normalizeRoot,/studioDeviceVariant\s*=\s*"(?:phone|desktop)"/);
+  assert.match(v223,/const uiScale = 1/);
+  assert.doesNotMatch(v223,/const uiScale = desktopSitePhone \?/);
+  assert.equal(release.responsive.desktopSiteModeMustNotBounceToMobile,true);
+});
+
 test("v224 login data reauth remains installed and persistent sessions remain enabled", () => {
   assert.match(dataReauth,/retryDataAfterReauthV224/);
   assert.match(dataReauth,/refreshSession\(\)/);
   assert.match(auth,/DATA_REAUTH_RELEASE_V224/);
   assert.match(auth,/persistSession:\s*true/);
   assert.match(auth,/autoRefreshToken:\s*true/);
-  for (const source of [runtime,isolation,patch]) assert.doesNotMatch(source,/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  for (const source of [runtime,isolation,patch,modeLock]) assert.doesNotMatch(source,/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
   assert.equal(release.auth.v224DataReauthPreserved,true);
   assert.equal(release.auth.forcedLogoutAdded,false);
 });
@@ -58,7 +77,7 @@ test("v209 cannot hide explicit HTML CSS JavaScript actions after isolation", ()
   assert.equal(release.theme.explicitJavascriptActionVisible,true);
 });
 
-test("physical-small green map keeps four left center and four right slots", () => {
+test("physical-small green map keeps four left center Post Page and four right slots", () => {
   assert.match(runtime,/green-reference-four-left-four-right/);
   assert.match(runtime,/compact-green-map/);
   for (const selector of [".sidebar-left-1",".sidebar-left-2",".sidebar-left-3",".sidebar-left-4",".content-main",".sidebar-right-1",".sidebar-right-2",".sidebar-right-3",".sidebar-right-4"]) assert.ok(css.includes(selector));
@@ -66,13 +85,16 @@ test("physical-small green map keeps four left center and four right slots", () 
   assert.equal(release.theme.physicalSmallFourLeftFourRight,true);
 });
 
-test("Theme code keeps real gutter through 10000 lines and responsive split", () => {
+test("Theme code keeps a real numbered gutter through 10000 lines and responsive split without giant mobile controls", () => {
   assert.match(v222,/MAX_CODE_LINES = 10000/);
   assert.match(v222,/v222-code-line-gutter/);
   assert.match(v222,/v222-format-code/);
   assert.match(runtime,/1-to-10000-actual/);
   assert.match(css,/data-v225-workspace="preview-above-code"/);
   assert.match(css,/data-v225-workspace="code-left-preview-right"/);
+  assert.match(isolationCss,/grid-template-columns:48px minmax\(0,1fr\)/);
+  assert.match(isolationCss,/font-size:20px!important/);
+  assert.match(isolationCss,/data-v225-code-textarea/);
   assert.equal(release.theme.codeLineLimitSupported,10000);
   assert.equal(release.theme.actualLineNumbersRetained,true);
 });
@@ -92,6 +114,7 @@ test("Nara remains nonmodal in small medium and exposes camera photo file model 
   assert.match(runtime,/viewport-fixed/);
   assert.match(css,/data-v225-nara-mode="nonmodal"/);
   assert.match(css,/data-v225-attachment-menu="viewport-fixed"/);
+  assert.match(isolationCss,/nara-assistant-shell\[data-v225-nara-size="small"\]/);
   for (const marker of ["Kamera","Foto","File teks","Mic","SpeakerIcon","Nara Mini","Nara Writer","Nara Vision","Nara Max","Instan","Sedang","Tinggi","Maksimal"]) assert.ok(nara.includes(marker),marker);
   assert.equal(release.nara.smallMediumNonModal,true);
   assert.equal(release.nara.attachmentMenuFixedToViewport,true);
