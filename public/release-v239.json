@@ -1,0 +1,53 @@
+{
+  "status": "candidate",
+  "release": "studio-final-authority-v239-20260803",
+  "date": "2026-08-03",
+  "baseRelease": "studio-desktop-sidebar-v238-20260803",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "desktopVariants": ["laptop", "desktop", "computer"],
+  "repairs": {
+    "internalNUsesReactSidebarState": true,
+    "largeMenuAutoCollapsesAfterNavigation": true,
+    "collapsedLargeSidebarKeepsIcons": true,
+    "mobileDrawerKeepsOneN": true,
+    "profileSettingsSeparated": true,
+    "profileMenuHasFiveActions": true,
+    "summaryAddSiteUsesExistingSiteManager": true,
+    "startupMembershipRescuePreservesSession": true,
+    "domainActionsHorizontal": true,
+    "domainLegacyTwelveCopyHidden": true,
+    "themeLibraryRemainsVisible": true,
+    "layoutMapHasFourLeftAndFourRightSlots": true,
+    "layoutSlotsOpenBoundedWidgetPicker": true,
+    "layoutUsesExistingTwentySixWidgets": true,
+    "customHtmlJavascriptWidgetPreserved": true,
+    "codeEditorHasRealLineNumberGutter": true,
+    "desktopCodePreviewSplit": "code-left-preview-right",
+    "smallCodePreviewSplit": "preview-top-code-bottom",
+    "naraSmallMediumNonmodal": true,
+    "naraAttachmentMenuCameraPhotoFile": true,
+    "naraModelAndIntelligencePreserved": true,
+    "analyticsChartEnlarged": true,
+    "settingsBackupWidgetOverlapGuards": true
+  },
+  "authentication": {
+    "sessionDeletionOnTransientFailure": false,
+    "automaticSiteCreationByRecovery": false,
+    "bootstrapRecoveryUsesExistingMembershipOnly": true,
+    "supabaseProductionLogsObservedHttp200": true,
+    "googleEndToEndClaimed": false,
+    "linkedinEndToEndClaimed": false,
+    "emailEndToEndClaimed": false
+  },
+  "capacity": {
+    "massAccountCreationPerformed": false,
+    "productionLoadTestPerformed": false,
+    "extremeScaleClaim": "not-claimed"
+  },
+  "validation": {
+    "requiresBuild": true,
+    "requiresDeployPreview": true,
+    "requiresRealDeviceRetest": true,
+    "requiresProductionRouteVerification": true
+  }
+}

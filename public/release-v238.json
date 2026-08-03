@@ -1,0 +1,95 @@
+{
+  "status": "candidate",
+  "release": "studio-desktop-sidebar-v238-20260803",
+  "basedOn": "studio-source-stability-v237-20260803",
+  "purpose": "Restore the proven single-n sidebar behavior and make browser Desktop site use the large Studio family without regressing true mobile drawers.",
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+  "deviceRules": {
+    "applicationUsesSmallDrawer": true,
+    "phoneUsesSmallDrawer": true,
+    "mobileUsesSmallDrawer": true,
+    "compactUsesSmallDrawer": true,
+    "largePhysicalTabletUsesLargeFamily": true,
+    "desktopSiteOnPhoneUsesLargeFamily": true,
+    "desktopSiteVariant": "desktop",
+    "desktopAndComputerShareLargeGeometry": true
+  },
+  "sidebar": {
+    "singleN": true,
+    "largeInternalNIsToggle": true,
+    "largeCollapsedKeepsAllIcons": true,
+    "largeContentTracksSidebarWidth": true,
+    "smallClosedShowsTopLeftNOnly": true,
+    "smallOpenDrawerShowsInternalN": true,
+    "drawerCloseXHidden": true,
+    "legacyExternalToggleHidden": true,
+    "navigationTightBelowCreatePost": true,
+    "settingsAndLogoutRemainAtBottom": true,
+    "backdropNeverBlursDrawer": true
+  },
+  "profile": {
+    "topRightAvatar": true,
+    "deviceLabelHidden": true,
+    "separateFromSettings": true,
+    "menuAtLeastFiveActions": true,
+    "createSiteActionPreserved": true,
+    "avatarChangePreserved": true
+  },
+  "domain": {
+    "smallPrimaryActionsFullWidth": true,
+    "horizontalLabels": true,
+    "noVerticalPillButtons": true,
+    "desktopSiteUsesLargeCardGeometry": true
+  },
+  "themeStudio": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "layoutMapInteractive": true,
+    "fourLeftCenterFourRightPreserved": true,
+    "smallMapScrollsInsteadOfCrushing": true,
+    "layoutPopoverBounded": true,
+    "desktopCodePreview5050": true,
+    "smallPreviewAboveCode": true,
+    "actualLineGutterUpTo10000Preserved": true,
+    "htmlCssJavascriptActionsPreserved": true
+  },
+  "nara": {
+    "smallMediumNonmodal": true,
+    "fullscreenModal": true,
+    "camera": true,
+    "photo": true,
+    "file": true,
+    "microphone": true,
+    "speaker": true,
+    "model": true,
+    "intelligence": true,
+    "noBlinkAnimation": true
+  },
+  "textGeometry": {
+    "settingsBounded": true,
+    "backupCenterBounded": true,
+    "widgetStudioBounded": true,
+    "domainBounded": true,
+    "noWritingModeRotation": true,
+    "textSizeAdjustLocked": true
+  },
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "automaticLogoutAdded": false,
+    "providerEndToEndClaim": false,
+    "reason": "Provider login still requires real account credentials and user interaction before an end-to-end success claim."
+  },
+  "capacity": {
+    "extremeScale": "model-only",
+    "productionCredentialLoadTest": false,
+    "massAccountCreation": false,
+    "claim": "not-claimed"
+  },
+  "validation": {
+    "realDeviceRequiredBefore100PercentClaim": true,
+    "viewports": ["320x568", "360x640", "375x667", "390x844", "412x915", "430x932", "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768", "1440x900", "1920x1080"]
+  },
+  "legacyFeaturesPreserved": true
+}

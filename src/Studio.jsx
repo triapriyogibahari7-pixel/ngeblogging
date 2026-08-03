@@ -60,5 +60,9 @@ import "./studio-production-v234.js";
 import "./studio-production-v235.js";
 import "./studio-production-v235-widget-target.js";
 import "./studio-real-device-v236.js";
+import "./studio-source-stability-v237.js";
+import "./studio-source-stability-v237-ui.js";
+import "./studio-desktop-sidebar-v238.js";
+import "./studio-final-authority-v239.js";
 
 export default StudioFastGate;
