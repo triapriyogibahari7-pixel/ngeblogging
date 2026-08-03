@@ -7,59 +7,22 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 const RELEASE = "studio-production-v224-20260803";
+const ACTION_RELEASE = "studio-production-v224-action-isolation-20260803";
 const VERSION = "ngeblogging-app-v224-visible-actions-cutover-20260803";
 const CACHE = "visible-actions-cutover-cache-v224";
 const FORCE = "studio-v224";
 
-function replaceRequired(source, pattern, replacement, label) {
-  const next = source.replace(pattern, replacement);
-  if (next === source) throw new Error(`V224_ANCHOR_MISSING:${label}`);
-  return next;
-}
-
 async function patchStudioEntry() {
   const path = "src/Studio.jsx";
   let source = await read(path);
-  const line = 'import "./studio-production-v224.js";';
-  if (!source.includes(line)) {
+  const runtime = 'import "./studio-production-v224.js";';
+  const isolation = 'import "./studio-production-v224-action-isolation.js";';
+  if (!source.includes(runtime)) {
     const anchor = 'import "./studio-production-v223.js";';
     if (!source.includes(anchor)) throw new Error("V224_STUDIO_ENTRY_ANCHOR_MISSING");
-    source = source.replace(anchor, `${anchor}\n${line}`);
-    await write(path, source);
+    source = source.replace(anchor, `${anchor}\n${runtime}`);
   }
-}
-
-async function patchLegacyV209ActionAuthority() {
-  const path = "src/studio-production-v209.js";
-  let source = await read(path);
-  if (source.includes("expanded-html-css-javascript-v224")) return;
-
-  source = replaceRequired(
-    source,
-    /const canonical = new Set\(\[customize, layout, code, site\]\.filter\(Boolean\)\);/,
-    'const explicitCode = buttons.filter((node) => node.matches?.("[data-v222-code-tab]"));\n  const canonical = new Set([customize, layout, code, site, ...explicitCode].filter(Boolean));',
-    "v209-canonical",
-  );
-
-  source = replaceRequired(
-    source,
-    /canonicalButton\(code, "Edit Kode", "code"\);\n\s*canonicalButton\(site, "Lihat situs", "site"\);\n\s*hero\.dataset\.v209Actions = "exactly-four";/,
-    `if (explicitCode.length) {
-    explicitCode.forEach((button) => {
-      const kind = button.dataset.v222CodeTab || "html";
-      const label = kind === "html" ? "Edit HTML" : kind === "css" ? "Edit CSS" : kind === "javascript" ? "Edit JavaScript" : "Edit Kode";
-      canonicalButton(button, label, \`code-\${kind}\`);
-      button.dataset.v222CodeTab = kind;
-      button.dataset.v224ExpandedCodeAction = "true";
-    });
-  } else {
-    canonicalButton(code, "Edit Kode", "code");
-  }
-  canonicalButton(site, "Lihat situs", "site");
-  hero.dataset.v209Actions = explicitCode.length ? "expanded-html-css-javascript-v224" : "exactly-four";`,
-    "v209-code-actions",
-  );
-
+  if (!source.includes(isolation)) source = source.replace(runtime, `${runtime}\n${isolation}`);
   await write(path, source);
 }
 
@@ -82,30 +45,35 @@ async function patchServiceWorker() {
 }
 
 async function verify() {
-  const [entry, runtime, css, v209, worker, release, auth, themeStudio, nara] = await Promise.all([
+  const [entry, runtime, isolation, isolationCss, css, worker, release, auth, themeStudio, nara, v222] = await Promise.all([
     read("src/Studio.jsx"),
     read("src/studio-production-v224.js"),
+    read("src/studio-production-v224-action-isolation.js"),
+    read("src/studio-production-v224-action-isolation.css"),
     read("src/studio-production-v224.css"),
-    read("src/studio-production-v209.js"),
     read("public/sw.js"),
     read("public/release-v224.json"),
     read("src/lib/supabase.js"),
     read("src/ThemeStudio.jsx"),
     read("src/NaraAssistant.jsx"),
+    read("src/studio-production-v222.js"),
   ]);
 
   const checks = [
-    [entry, "studio-production-v224.js", "entry"],
+    [entry, "studio-production-v224.js", "entry runtime"],
+    [entry, "studio-production-v224-action-isolation.js", "entry action isolation"],
     [runtime, RELEASE, "runtime release"],
-    [runtime, "html-css-javascript-visible", "runtime code actions"],
     [runtime, "compact-green-map", "compact green map"],
     [runtime, "1-to-10000-actual", "line gutter"],
     [runtime, "camera-photo-file", "Nara plus"],
+    [isolation, ACTION_RELEASE, "action isolation release"],
+    [isolation, "outside-v209-direct-button-sweep", "v209 isolation"],
+    [isolation, "v224-theme-code-actions", "isolated action group"],
+    [isolationCss, ".v224-theme-code-actions", "isolated action CSS"],
     [css, 'data-v224-layout-canvas="compact-green-map"', "physical small map"],
     [css, 'data-v224-workspace="preview-above-code"', "small code workspace"],
     [css, 'data-v224-workspace="code-left-preview-right"', "large code workspace"],
     [css, 'data-v224-nara-mode="nonmodal"', "Nara nonmodal"],
-    [v209, "expanded-html-css-javascript-v224", "v209 action conflict"],
     [worker, VERSION, "service worker version"],
     [worker, CACHE, "service worker cache"],
     [worker, RELEASE, "service worker release"],
@@ -123,6 +91,8 @@ async function verify() {
     [nara, "File teks", "Nara File"],
     [nara, "Nara Mini", "Nara model"],
     [nara, "Instan", "Nara intelligence"],
+    [v222, "MAX_CODE_LINES = 10000", "v222 actual line limit"],
+    [v222, "v222-format-code", "v222 formatter"],
   ];
   for (const [source, marker, label] of checks) {
     if (!source.includes(marker)) throw new Error(`V224_VERIFY_FAILED:${label}:${marker}`);
@@ -130,12 +100,13 @@ async function verify() {
 
   if (THEME_COUNT !== 100 || BUILT_IN_THEMES.length !== 100 || new Set(BUILT_IN_THEMES.map((theme) => theme.id)).size !== 100) throw new Error("V224_THEME_COUNT_REGRESSION");
   if (WIDGET_COUNT !== 26 || !BUILT_IN_WIDGETS.some((widget) => widget.id === "custom-html")) throw new Error("V224_WIDGET_COUNT_REGRESSION");
-  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(runtime)) throw new Error("V224_DESTRUCTIVE_SESSION_ACTION");
+  for (const source of [runtime, isolation]) {
+    if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(source)) throw new Error("V224_DESTRUCTIVE_SESSION_ACTION");
+  }
   if (/900\s*(juta|miliar|million|billion)/i.test(release)) throw new Error("V224_UNSUPPORTED_CAPACITY_CLAIM");
 }
 
 await patchStudioEntry();
-await patchLegacyV209ActionAuthority();
 await patchServiceWorker();
 await verify();
 console.log(`Applied ${RELEASE}`);
