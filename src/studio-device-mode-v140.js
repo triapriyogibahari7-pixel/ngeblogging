@@ -1,4 +1,4 @@
-const RELEASE = "studio-device-mode-v238-20260803";
+const RELEASE = "studio-device-mode-v188-20260801";
 const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
@@ -88,6 +88,8 @@ function touchHandheldSignal(view) {
   const finePointer = mediaMatches("(any-pointer: fine)");
   const compactPhysicalScreen = view.physicalShortSide <= HANDHELD_MAX && view.density >= 1.1;
 
+  // Fallback untuk telepon yang menyamarkan user-agent ketika mode Situs desktop aktif.
+  // Laptop sentuh tidak masuk karena sisi fisiknya lebih besar dan tetap memiliki pointer halus.
   return touchPoints > 1
     && coarsePointer
     && (platformHandheldSignal() || !finePointer || compactPhysicalScreen);
@@ -97,24 +99,17 @@ function handheldSignal(view) {
   return userAgentHandheldSignal() || touchHandheldSignal(view);
 }
 
-function desktopSitePhoneSignal(view, handheld) {
-  return handheld && view.layoutWidth > view.physicalViewportWidth * 1.35;
-}
-
-function classifyResponsiveMode(view, handheld, desktopSitePhone = false) {
-  if (desktopSitePhone) return "desktop";
+function classifyResponsiveMode(view, handheld) {
   if (standaloneSurface()) return "application";
   if (handheld && view.physicalShortSide <= PHONE_MAX) return "phone";
-  if (handheld && view.physicalShortSide <= HANDHELD_MAX) return "mobile";
-  if (handheld) return "tablet";
+  if (handheld) return "mobile";
   if (view.effectiveWidth <= COMPACT_MAX) return "compact";
   if (view.effectiveWidth <= TABLET_MAX) return "tablet";
   return "desktop";
 }
 
-function desktopVariant(view, responsiveMode, desktopSitePhone = false) {
+function desktopVariant(view, responsiveMode) {
   if (responsiveMode !== "desktop") return responsiveMode;
-  if (desktopSitePhone) return "desktop";
   if (view.effectiveWidth <= 1536) return "laptop";
   return "computer";
 }
@@ -127,8 +122,7 @@ function layoutMode(responsiveMode) {
 
 export function detectStudioResponsiveMode() {
   const view = viewportMetrics();
-  const handheld = handheldSignal(view);
-  return classifyResponsiveMode(view, handheld, desktopSitePhoneSignal(view, handheld));
+  return classifyResponsiveMode(view, handheldSignal(view));
 }
 
 export function currentStudioResponsiveMode() {
@@ -160,10 +154,10 @@ function applyDeviceMode() {
   const root = document.documentElement;
   const view = viewportMetrics();
   const handheld = handheldSignal(view);
-  const desktopSitePhone = desktopSitePhoneSignal(view, handheld);
-  const responsiveMode = classifyResponsiveMode(view, handheld, desktopSitePhone);
+  const responsiveMode = classifyResponsiveMode(view, handheld);
   const nextLayoutMode = layoutMode(responsiveMode);
-  const variant = desktopVariant(view, responsiveMode, desktopSitePhone);
+  const variant = desktopVariant(view, responsiveMode);
+  const desktopSitePhone = handheld && view.layoutWidth > view.physicalViewportWidth * 1.35;
   const signature = [responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
   const previousMode = root.dataset.studioResponsiveMode || "";
 
@@ -174,7 +168,7 @@ function applyDeviceMode() {
   root.dataset.studioSurfaceMode = standaloneSurface() ? "application" : "browser";
   root.dataset.studioHandheld = String(handheld);
   root.dataset.studioDesktopSitePhone = String(desktopSitePhone);
-  root.dataset.studioSiteDesktop = String(responsiveMode === "desktop");
+  root.dataset.studioSiteDesktop = String(!handheld && responsiveMode === "desktop");
   root.dataset.studioDeviceRelease = RELEASE;
   root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
