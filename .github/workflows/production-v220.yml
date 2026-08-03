@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - production
-      - main
   workflow_dispatch:
 
 permissions:
@@ -13,7 +12,7 @@ permissions:
 
 concurrency:
   group: ngeblogging-production-studio-v197
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy-v222:
