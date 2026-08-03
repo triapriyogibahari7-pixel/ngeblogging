@@ -16,118 +16,31 @@ function insertAfterVersion(source, line) {
   return next;
 }
 
-function replaceBetween(source, startMarker, endMarker, replacement, label) {
-  const start = source.indexOf(startMarker);
-  const end = source.indexOf(endMarker, start + startMarker.length);
-  if (start < 0 || end < 0) throw new Error(`V233_${label}_ANCHOR_MISSING`);
-  return `${source.slice(0, start)}${replacement}\n\n${source.slice(end)}`;
-}
-
-async function patchDataTransport() {
-  const path = "src/lib/supabase.js";
-  let source = await read(path);
-
-  if (!source.includes("DATA_GATEWAY_DEADLINE_V233")) {
-    const anchor = "const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);";
-    if (!source.includes(anchor)) throw new Error("V233_DATA_GATEWAY_CONSTANT_ANCHOR_MISSING");
-    source = source.replace(
-      anchor,
-      `${anchor}\nconst DATA_GATEWAY_DEADLINE_V233 = 2800;\nconst AUTH_GATEWAY_DEADLINE_V233 = 4200;\nconst DATA_TRANSPORT_RELEASE_V233 = "${RELEASE}";`,
-    );
-  }
-
-  const replacement = `async function gatewayFirstV190(input, init, proxy, kind) {
-  const directInput = directRequestV190(input);
-  const callerSignal = init?.signal || (input instanceof Request ? input.signal : null);
-  const controller = typeof AbortController === "function" ? new AbortController() : null;
-  let callerAborted = Boolean(callerSignal?.aborted);
-  const onCallerAbort = () => {
-    callerAborted = true;
-    try { controller?.abort(callerSignal?.reason); } catch { controller?.abort(); }
-  };
-  if (callerSignal && !callerSignal.aborted) callerSignal.addEventListener("abort", onCallerAbort, { once: true });
-  const deadline = kind === "data" ? DATA_GATEWAY_DEADLINE_V233 : AUTH_GATEWAY_DEADLINE_V233;
-  let deadlineTimer = 0;
-  if (controller) deadlineTimer = globalThis.setTimeout(() => {
-    if (!callerAborted) {
-      try { controller.abort(new DOMException("Gateway timeout", "TimeoutError")); }
-      catch { controller.abort(); }
-    }
-  }, deadline);
-
-  let fallbackReason = "";
-  try {
-    if (callerAborted) throw callerSignal?.reason || new DOMException("Request dibatalkan.", "AbortError");
-    const gatewayInit = controller ? { ...(init || {}), signal: controller.signal } : init;
-    const response = await nativeFetch(proxyRequestV190(input, proxy), gatewayInit);
-    const gatewayHeader = kind === "auth"
-      ? response.headers.get("x-ngeblogging-auth-gateway")
-      : response.headers.get("x-ngeblogging-data-gateway");
-    const contentType = String(response.headers.get("content-type") || "").toLowerCase();
-    const staleUnauthorized = [401, 403].includes(response.status) && !gatewayHeader;
-    const staleHtmlShell = response.ok && !gatewayHeader && contentType.includes("text/html");
-    const retryableGatewayStatus = GATEWAY_FALLBACK_STATUSES.has(response.status);
-
-    if (!retryableGatewayStatus && !staleUnauthorized && !staleHtmlShell) {
-      if (typeof document !== "undefined") {
-        if (kind === "auth") document.documentElement.dataset.authTransportV190 = "same-origin-gateway";
-        else document.documentElement.dataset.dataTransportV190 = "same-origin-data-gateway";
-        document.documentElement.dataset.dataTransportV233 = \`\${kind}-gateway-confirmed\`;
-      }
-      return response;
-    }
-
-    fallbackReason = staleUnauthorized
-      ? \`stale-\${kind}-unauthorized-\${response.status}\`
-      : staleHtmlShell
-        ? \`stale-\${kind}-html-shell\`
-        : \`\${kind}-gateway-\${response.status}\`;
-    console.warn(\`Gateway \${kind} belum dapat dipakai (\${fallbackReason}); mencoba Supabase langsung.\`);
-  } catch (error) {
-    if (callerAborted) throw error;
-    fallbackReason = error?.name === "TimeoutError" || controller?.signal?.aborted
-      ? \`\${kind}-gateway-timeout\`
-      : \`\${kind}-gateway-network-error\`;
-    console.warn(\`Gateway \${kind} tidak terjangkau (\${fallbackReason}); mencoba Supabase langsung.\`, error);
-  } finally {
-    if (deadlineTimer) globalThis.clearTimeout(deadlineTimer);
-    if (callerSignal) callerSignal.removeEventListener?.("abort", onCallerAbort);
-  }
-
-  if (typeof document !== "undefined") {
-    if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback";
-    else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback";
-    document.documentElement.dataset.dataTransportV233 = \`direct-fallback:\${fallbackReason || kind}\`;
-  }
-  return nativeFetch(directInput, init);
-}`;
-
-  source = replaceBetween(
-    source,
-    "async function gatewayFirstV190(input, init, proxy, kind) {",
-    "async function authAwareFetch(input, init) {",
-    replacement,
-    "GATEWAY_FUNCTION",
-  );
-
-  if (!source.includes("document.documentElement.dataset.dataTransportReleaseV233")) {
-    const anchor = "  document.documentElement.dataset.dataTransportReleaseV190 = DATA_TRANSPORT_RELEASE_V190;";
-    if (!source.includes(anchor)) throw new Error("V233_DATASET_ANCHOR_MISSING");
-    source = source.replace(anchor, `${anchor}\n  document.documentElement.dataset.dataTransportReleaseV233 = DATA_TRANSPORT_RELEASE_V233;`);
-  }
-
-  for (const marker of [
-    "DATA_GATEWAY_DEADLINE_V233",
-    "staleUnauthorized",
+async function verifyDirectDataTransport() {
+  const transport = await read("src/lib/supabase.js");
+  const markers = [
+    RELEASE,
+    "DATA_GATEWAY_DEADLINE_V233 = 2800",
+    "AUTH_GATEWAY_DEADLINE_V233 = 4200",
+    "staleUnauthorized = [401, 403].includes(response.status) && !gatewayHeader",
     "staleHtmlShell",
     "gateway-timeout",
     "direct-supabase-fallback",
-    "dataTransportReleaseV233",
     "persistSession: true",
     "autoRefreshToken: true",
-  ]) if (!source.includes(marker)) throw new Error(`V233_DATA_TRANSPORT_VERIFY_FAILED:${marker}`);
+    "DATA_TRANSPORT_RELEASE_V190",
+    "direct-fallback-v186",
+    "direct-supabase-oauth-v186",
+  ];
+  for (const marker of markers) if (!transport.includes(marker)) throw new Error(`V233_DATA_TRANSPORT_VERIFY_FAILED:${marker}`);
 
-  await write(path, source);
+  const start = transport.indexOf("async function gatewayFirstV190(input, init, proxy, kind) {");
+  const end = transport.indexOf("async function authAwareFetch(input, init) {", start);
+  if (start < 0 || end < 0) throw new Error("V233_GATEWAY_SECTION_MISSING");
+  const gateway = transport.slice(start, end);
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(gateway)) {
+    throw new Error("V233_DESTRUCTIVE_GATEWAY_SESSION_ACTION");
+  }
 }
 
 async function patchServiceWorker() {
@@ -166,9 +79,8 @@ async function patchServiceWorker() {
   await write(path, source);
 }
 
-async function verify() {
-  const [transport, gate, fastGate, worker, v232Runtime, v232Css, release] = await Promise.all([
-    read("src/lib/supabase.js"),
+async function verifyPreservedAuthorities() {
+  const [gate, fastGate, worker, v232Runtime, v232Css, release] = await Promise.all([
     read("src/StudioOnboardingGate.jsx"),
     read("src/StudioFastGate.jsx"),
     read("public/sw.js"),
@@ -176,14 +88,7 @@ async function verify() {
     read("src/studio-production-v232.css"),
     read("public/release-v233.json"),
   ]);
-
   const checks = [
-    [transport, RELEASE],
-    [transport, "DATA_GATEWAY_DEADLINE_V233"],
-    [transport, "staleUnauthorized"],
-    [transport, "gateway-timeout"],
-    [transport, "persistSession: true"],
-    [transport, "autoRefreshToken: true"],
     [gate, "recoverStudioMembershipV196"],
     [gate, "tidak ada logout otomatis"],
     [fastGate, "hasKnownSite"],
@@ -196,17 +101,9 @@ async function verify() {
     [release, RELEASE],
   ];
   for (const [source, marker] of checks) if (!source.includes(marker)) throw new Error(`V233_VERIFY_FAILED:${marker}`);
-
-  const gatewayStart = transport.indexOf("async function gatewayFirstV190(input, init, proxy, kind) {");
-  const gatewayEnd = transport.indexOf("async function authAwareFetch(input, init) {", gatewayStart);
-  if (gatewayStart < 0 || gatewayEnd < 0) throw new Error("V233_GATEWAY_SECTION_MISSING");
-  const gatewaySection = transport.slice(gatewayStart, gatewayEnd);
-  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(gatewaySection)) {
-    throw new Error("V233_DESTRUCTIVE_GATEWAY_SESSION_ACTION");
-  }
 }
 
-await patchDataTransport();
+await verifyDirectDataTransport();
 await patchServiceWorker();
-await verify();
-console.log(`Applied ${RELEASE}; data gateway now fails over quickly to direct Supabase on timeout, stale 401/403 or stale HTML shell while preserving the authenticated session.`);
+await verifyPreservedAuthorities();
+console.log(`Applied ${RELEASE}; v232 UI remains intact and the direct v233 data transport fails over quickly while preserving authenticated sessions.`);
