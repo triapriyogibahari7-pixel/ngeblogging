@@ -1,4 +1,4 @@
-name: Ngeblogging production v224 data reauth authority
+name: Ngeblogging production v225 UI authority with v224 data reauth
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-v224:
+  deploy-v225:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: cloudflare-production
@@ -45,6 +45,18 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
 
+      - name: Resolve Cloudflare zone when repository variable is missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
+          if [[ ! "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            response="$(curl -fsS --connect-timeout 10 --max-time 25 -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json' "https://api.cloudflare.com/client/v4/zones?name=${CLOUDFLARE_ZONE_NAME}&status=active&per_page=1")"
+            zone="$(printf '%s' "${response}" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);process.stdout.write(x?.result?.[0]?.id||"")})')"
+            [[ "${zone}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_RESOLVE_FAILED"; exit 1; }
+            echo "CLOUDFLARE_ZONE_ID=${zone}" >> "${GITHUB_ENV}"
+          fi
+
       - name: Validate Cloudflare credentials
         shell: bash
         run: |
@@ -52,117 +64,114 @@ jobs:
           [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID_INVALID"; exit 1; }
           [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
-          echo "RESOLVED_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" >> "${GITHUB_ENV}"
-          echo "RESOLVED_CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" >> "${GITHUB_ENV}"
 
-      - name: Run v223 v224 regression and complete production suite
+      - name: Run v223 v224 v225 regression and complete production suite
         run: |
           node scripts/patch-service-worker-v179.mjs
-          node --test tests/studio-production-v223.test.mjs tests/data-reauth-v224.test.mjs
+          node --test tests/studio-production-v223.test.mjs tests/data-reauth-v224.test.mjs tests/studio-production-v225.test.mjs
           npm run test:production
 
       - name: Build production application
         run: npm run build
+
+      - name: Assert v224 login recovery and v225 UI artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/release-v224.json
+          test -f dist/release-v225.json
+          node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync("dist/release-v224.json","utf8"));const x=JSON.parse(fs.readFileSync("dist/release-v225.json","utf8"));if(a.release!=="data-reauth-v224-20260803"||a.repairs?.data401403SingleflightRefresh!==true||x.release!=="studio-production-v225-20260803"||x.preservesV224DataReauth!==true||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26||x.theme?.explicitHtmlActionVisible!==true||x.theme?.explicitCssActionVisible!==true||x.theme?.explicitJavascriptActionVisible!==true||x.theme?.physicalSmallFourLeftFourRight!==true||x.theme?.actualLineNumbersRetained!==true||x.theme?.codeLineLimitSupported!==10000||x.nara?.smallMediumNonModal!==true||x.nara?.cameraPhotoFile!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.sidebar?.mobileBackdropNoBlur!==true||x.domain?.physicalSmallActionsFullHorizontal!==true||x.auth?.v224DataReauthPreserved!==true||x.auth?.forcedLogoutAdded!==false)process.exit(1)'
+          grep -R -q 'studio-production-v225-20260803' dist/assets
+          grep -R -q 'outside-v209-direct-button-sweep' dist/assets
+          grep -R -q 'compact-green-map' dist/assets
+          grep -R -q '1-to-10000-actual' dist/assets
+          grep -R -q 'viewport-fixed' dist/assets
+          grep -R -q 'transparent-click-close' dist/assets
 
       - name: Build active-zone Wrangler configuration
         shell: bash
         run: |
           set -euo pipefail
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v224
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v225
 
       - name: Deploy Worker and current assets
         run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
-      - name: Verify v224 on workers.dev before route cutover
+      - name: Verify v225 on workers.dev before route cutover
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            body="/tmp/v224-worker.json"
-            headers="/tmp/v224-worker.headers"
-            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v224.json?v224=${stamp}" || true)"
+            body="/tmp/v225-worker.json"
+            headers="/tmp/v225-worker.headers"
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v225.json?v225=${stamp}" || true)"
             if [[ "${code}" == "200" ]] && ! grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="data-reauth-v224-20260803"||x.repairs?.data401403SingleflightRefresh!==true||x.repairs?.dataRetryUsesFreshAccessToken!==true||x.repairs?.retryCount!==1||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26||x.preserved?.layoutFourLeftFourRight!==true||x.preserved?.naraCameraPhotoFile!==true)process.exit(1)' "${body}"; then
-                echo "WORKERS_DEV_V224_VERIFIED"
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v225-20260803"||x.preservesV224DataReauth!==true||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26||x.theme?.physicalSmallFourLeftFourRight!==true||x.theme?.actualLineNumbersRetained!==true||x.nara?.cameraPhotoFile!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.sidebar?.mobileBackdropNoBlur!==true||x.auth?.v224DataReauthPreserved!==true)process.exit(1)' "${body}"; then
+                echo "WORKERS_DEV_V225_VERIFIED"
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo "WORKERS_DEV_V224_VERIFY_FAILED"
+          echo "WORKERS_DEV_V225_VERIFY_FAILED"
           exit 1
 
       - name: Remove stale exact Worker Domains and install authoritative routes
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      - name: Verify live apex auth Studio tenant and v224 marker
+      - name: Verify live apex auth Studio tenant and v225 marker
+        id: live_verify
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 42); do
             stamp="$(date +%s)-${attempt}"
             ok=true
-            for path in / /login /signup /studio /release-v223.json /release-v224.json; do
+            for path in / /login /signup /studio /release-v224.json /release-v225.json; do
               safe="$(printf '%s' "${path}" | tr '/.' '__')"
-              body="/tmp/v224-apex-${safe}.out"
-              headers="/tmp/v224-apex-${safe}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v224=${stamp}" || true)"
+              body="/tmp/v225-apex-${safe}.out"
+              headers="/tmp/v225-apex-${safe}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v225=${stamp}" || true)"
               [[ "${code}" == "200" ]] || ok=false
               if grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then ok=false; fi
-              if [[ "${path}" == "/release-v223.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v223-20260803"||x.theme?.fourLeftFourRight!==true||x.nara?.attachmentMenuViewportVisible!==true)process.exit(1)' "${body}" || ok=false
-              elif [[ "${path}" == "/release-v224.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="data-reauth-v224-20260803"||x.deployment?.legacyWorkerMarkerRejected!=="WHITE-R4-2026.07.12"||x.repairs?.data401403SingleflightRefresh!==true||x.repairs?.dataRetryUsesFreshAccessToken!==true||x.preserved?.themeCount!==100||x.preserved?.widgetCount!==26)process.exit(1)' "${body}" || ok=false
+              if [[ "${path}" == "/release-v224.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="data-reauth-v224-20260803"||x.repairs?.data401403SingleflightRefresh!==true||x.repairs?.dataRetryUsesFreshAccessToken!==true)process.exit(1)' "${body}" || ok=false
+              elif [[ "${path}" == "/release-v225.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v225-20260803"||x.deployment?.legacyWorkerMarkerRejected!=="WHITE-R4-2026.07.12"||x.theme?.legacyV209ActionConflictIsolated!==true||x.theme?.physicalSmallFourLeftFourRight!==true||x.nara?.attachmentMenuFixedToViewport!==true||x.sidebar?.sidebarAboveBackdrop!==true||x.auth?.v224DataReauthPreserved!==true)process.exit(1)' "${body}" || ok=false
               else
                 grep -q 'id="root"' "${body}" || ok=false
               fi
             done
 
-            tenant_body="/tmp/v224-tenant.html"
-            tenant_headers="/tmp/v224-tenant.headers"
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${tenant_headers}" -o "${tenant_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v224=${stamp}" || true)"
+            tenant_body="/tmp/v225-tenant.html"
+            tenant_headers="/tmp/v225-tenant.headers"
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${tenant_headers}" -o "${tenant_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v225=${stamp}" || true)"
             [[ "${tenant_code}" == "200" ]] || ok=false
             grep -q 'WHITE-R4-2026.07.12' "${tenant_body}" "${tenant_headers}" && ok=false || true
 
             if [[ "${ok}" == true ]]; then
-              echo "PRODUCTION_V224_APEX_AUTH_STUDIO_TENANT_VERIFIED"
+              echo "PRODUCTION_V225_APEX_AUTH_STUDIO_TENANT_VERIFIED"
               exit 0
             fi
             sleep 10
           done
-          echo "PRODUCTION_V224_LIVE_VERIFY_FAILED"
+          echo "PRODUCTION_V225_LIVE_VERIFY_FAILED"
           exit 1
 
-      - name: Publish v224 production success status
+      - name: Publish v225 production success status
         if: success()
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: 'success',
-              context: 'Ngeblogging production v224',
-              description: 'v224 build, Worker, route cutover dan verifikasi live berhasil',
-              target_url: runUrl,
-            });
+            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'success', context:'ngeblogging/production-v225', description:'v225 build, Worker, route cutover dan verifikasi live berhasil', target_url:runUrl });
 
-      - name: Publish v224 production failure status
+      - name: Publish v225 production failure status
         if: failure()
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.sha,
-              state: 'failure',
-              context: 'Ngeblogging production v224',
-              description: 'v224 belum lolos build, Worker, route cutover atau verifikasi live',
-              target_url: runUrl,
-            });
+            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'failure', context:'ngeblogging/production-v225', description:'v225 belum lolos build, Worker, route cutover atau verifikasi live', target_url:runUrl });

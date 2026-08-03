@@ -1,0 +1,81 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v225-20260803",
+  "basedOn": "data-reauth-v224-20260803",
+  "preservesV224DataReauth": true,
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "physicalSmallUiIndependentFromPreview": true,
+    "desktopSiteModeMustNotBounceToMobile": true
+  },
+  "sidebar": {
+    "desktopOpenClosePreserved": true,
+    "mobileDrawerPreserved": true,
+    "allRequiredMenuItemsPreserved": true,
+    "mobileBackdropNoBlur": true,
+    "sidebarAboveBackdrop": true,
+    "mobileNMarkCentered": true
+  },
+  "theme": {
+    "builtInThemesRequired": 100,
+    "widgetCountRequired": 26,
+    "customThemePreserved": true,
+    "customHtmlJavascriptWidgetPreserved": true,
+    "explicitHtmlActionVisible": true,
+    "explicitCssActionVisible": true,
+    "explicitJavascriptActionVisible": true,
+    "legacyV209ActionConflictIsolated": true,
+    "layoutReference": "green-reference-four-left-four-right",
+    "physicalSmallFourLeftFourRight": true,
+    "actualLineNumbersRetained": true,
+    "codeLineLimitSupported": 10000,
+    "minifiedCodePrettyPrintRetained": true,
+    "physicalSmallPreviewAboveCode": true,
+    "largeCodeLeftPreviewRight": true
+  },
+  "nara": {
+    "launcherIconOnlyStable": true,
+    "smallMediumNonModal": true,
+    "fullModalPreserved": true,
+    "cameraPhotoFile": true,
+    "attachmentMenuFixedToViewport": true,
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelSelectorPreserved": true,
+    "intelligenceSelectorPreserved": true
+  },
+  "analytics": {
+    "productionDataSourcePreserved": true,
+    "largeTrendChartExpanded": true,
+    "humanBotDonutExpanded": true,
+    "mobileContained": true
+  },
+  "domain": {
+    "physicalSmallActionsFullHorizontal": true
+  },
+  "auth": {
+    "v224DataReauthPreserved": true,
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "forcedLogoutAdded": false
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v225-theme-layout-nara-20260803",
+    "cache": "theme-layout-nara-cache-v225",
+    "v224DataReauthCompatibilityPreserved": true,
+    "forcedNavigation": false,
+    "sessionStorageDestruction": false
+  },
+  "deployment": {
+    "legacyWorkerMarkerRejected": "WHITE-R4-2026.07.12",
+    "liveApexMustServeV225BeforeCompletion": true,
+    "productionStatusContext": "ngeblogging/production-v225"
+  },
+  "claims": {
+    "massUserCapacityClaimed": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceVerificationRequiredBeforeHundredPercentClaim": true
+  }
+}
