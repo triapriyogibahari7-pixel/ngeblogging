@@ -1,0 +1,35 @@
+{
+  "release": "studio-stable-source-shell-v244-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v244-stable-source-shell-20260803",
+  "cache": "studio-stable-source-shell-cache-v244",
+  "purpose": "Replace competing historical Studio chrome with one independent visible navigation/profile authority while preserving React-owned content and actions.",
+  "responsiveFamilies": {
+    "small": ["application", "phone", "mobile", "compact"],
+    "large": ["tablet", "laptop", "desktop", "desktop-site", "computer"]
+  },
+  "screenshotFixes": [
+    "topbar n and profile remain visible",
+    "one n control per family and state",
+    "drawer never blurs or darkens the page",
+    "large sidebar expands to 248px and collapses to a 70px icon rail",
+    "main content follows sidebar width without synthetic scaling",
+    "profile and settings remain separate actions",
+    "Nara launcher does not blink",
+    "Nara small and medium stay non-modal",
+    "Nara attachment plus opens camera photo and file in a viewport-safe portal"
+  ],
+  "preserved": [
+    "Posts and Pages",
+    "Theme Studio 100 themes and custom theme",
+    "26 widgets",
+    "HTML CSS JavaScript and preview",
+    "production analytics",
+    "members comments domains API keys",
+    "session persistence and auto refresh",
+    "v243 workspace snapshot resilience"
+  ],
+  "limits": {
+    "oauthEndToEndRequiresRealProviderSession": true,
+    "capacitySimulationIsNotProductionLoadProof": true
+  }
+}
