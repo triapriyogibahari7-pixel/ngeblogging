@@ -1,0 +1,29 @@
+{
+  "release": "studio-sidebar-brand-toggle-v246-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v246-sidebar-brand-toggle-20260803",
+  "cache": "sidebar-brand-toggle-cache-v246",
+  "purpose": "Restore the visible n + Ngeblogging identity and make one sidebar toggle authoritative while preserving the v244 shell and v245 production authentication.",
+  "desktop": {
+    "singleInternalN": true,
+    "expandedWidth": 248,
+    "collapsedRailWidth": 70,
+    "contentFollowsSidebar": true,
+    "brandVisibleWhenExpanded": true,
+    "iconsRemainWhenCollapsed": true
+  },
+  "smallDevices": {
+    "singleTopLeftNWhenClosed": true,
+    "drawerWidth": "78vw max 328px",
+    "drawerDoesNotShiftContent": true,
+    "drawerBackdropTransparent": true,
+    "drawerClosesAfterNavigation": true
+  },
+  "preserved": [
+    "all Studio menu actions",
+    "profile dropdown",
+    "v245 production login configuration",
+    "session persistence and refresh",
+    "Posts Pages Theme Media Analytics Members Comments Domain API Keys",
+    "Nara small medium full behavior"
+  ]
+}
