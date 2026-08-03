@@ -1,0 +1,34 @@
+{
+  "release": "studio-bootstrap-resilience-v243-20260803",
+  "serviceWorkerVersion": "ngeblogging-app-v243-bootstrap-resilience-20260803",
+  "cache": "studio-bootstrap-resilience-cache-v243",
+  "purpose": "Bridge user-scoped v195/v192 active-site snapshots into the resilient v186 Studio bootstrap so a transient data failure cannot make a valid signed-in workspace appear unselected.",
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "automaticLogoutOnNetworkFailure": false,
+    "oauthProvidersChanged": false
+  },
+  "studioBootstrap": {
+    "readsV243Snapshot": true,
+    "readsV195Snapshot": true,
+    "readsV192Snapshot": true,
+    "userScopedCachePreferred": true,
+    "legacySnapshotRequiresActiveSiteMatch": true,
+    "onlineRetryPreserved": true,
+    "automaticSiteCreation": false,
+    "newUserOnboardingPreserved": true
+  },
+  "preserved": {
+    "shellRescueV242": true,
+    "postsPagesWordLimit": 5000,
+    "themeMinimum": 100,
+    "widgetCount": 26,
+    "naraSmallMediumNonModal": true
+  },
+  "validation": {
+    "massLoginCapacityClaimed": false,
+    "physicalProviderLoginRequiredBeforeHundredPercentClaim": true,
+    "realDeviceVerificationRequiredBeforeHundredPercentClaim": true
+  }
+}
