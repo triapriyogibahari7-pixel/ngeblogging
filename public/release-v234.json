@@ -1,0 +1,43 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v234-data-gateway-safe-20260803",
+  "basedOn": "studio-production-v232-single-n-theme-actions-20260803",
+  "scope": "data-auth-gateway-fallback-only",
+  "dataTransport": {
+    "sameOriginGatewayFirst": true,
+    "dataGatewayDeadlineMs": 2800,
+    "authGatewayDeadlineMs": 4200,
+    "fallbackOnNetworkError": true,
+    "fallbackOnGatewayTimeout": true,
+    "fallbackOnStatuses": [404, 502, 503, 504],
+    "fallbackOnUnauthorizedWithoutGatewayHeader": [401, 403],
+    "fallbackOnHtmlShellWithoutGatewayHeader": true,
+    "callerAbortPreserved": true,
+    "directSupabaseFallback": true
+  },
+  "authentication": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "automaticLogoutAdded": false,
+    "storageClearAdded": false,
+    "oauthEndToEndClaimed": false
+  },
+  "preserved": {
+    "v232ResponsiveUi": true,
+    "singleNControl": true,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "themeGreenLayoutMap": true,
+    "htmlCssJavascriptPreview": true,
+    "naraCameraPhotoFile": true,
+    "naraSmallMediumNonmodal": true,
+    "domainMobileActions": true,
+    "analyticsProductionRpc": true
+  },
+  "validation": {
+    "buildRequiredBeforeMerge": true,
+    "productionDeploymentRequiredBeforeLiveClaim": true,
+    "realLoginCredentialsRequiredBeforeOauth100PercentClaim": true,
+    "massCapacityClaimed": false
+  }
+}
