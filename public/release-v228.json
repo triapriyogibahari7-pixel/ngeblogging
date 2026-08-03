@@ -1,0 +1,73 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v228-green-editor-nara-20260803",
+  "basedOn": [
+    "data-reauth-v224-20260803",
+    "studio-production-v225-20260803",
+    "studio-production-v226-native-green-layout-20260803",
+    "nara-fallback-model-contract-v227-20260803"
+  ],
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "largeVariants": ["laptop", "desktop", "computer"],
+    "desktopSiteOnPhysicalPhoneLocksLarge": true,
+    "browserDesktopModeDoesNotBounceToPhone": true
+  },
+  "theme": {
+    "builtInThemesRequired": 100,
+    "customThemePreserved": true,
+    "widgetCountRequired": 26,
+    "customHtmlJavascriptWidgetPreserved": true,
+    "nativeGreenMapPreserved": true,
+    "semanticSmallMap": true,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "postPageCenter": true,
+    "widgetListBelowMap": true,
+    "allSlotsClickable": true
+  },
+  "codeEditor": {
+    "htmlCssJavascriptTabs": true,
+    "actualLineNumbers": true,
+    "maxSupportedLines": 10000,
+    "smallPreviewAboveCode": true,
+    "largeCodeLeftPreviewRight": true,
+    "previewCentered": true,
+    "lightReadableSurface": true
+  },
+  "nara": {
+    "smallMediumNonModal": true,
+    "fullModal": true,
+    "launcherStable": true,
+    "cameraPhotoFile": true,
+    "attachmentMenuViewportFixed": true,
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelSelectorPreserved": true,
+    "intelligenceSelectorPreserved": true
+  },
+  "domain": {
+    "smallDeviceActionsHorizontalFullWidth": true
+  },
+  "analytics": {
+    "realProductionSourcePreserved": true,
+    "chartSurfaceEnlarged": true,
+    "fakeStatisticsAdded": false
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "v224SingleFlightDataReauthPreserved": true,
+    "forcedLogoutAdded": false
+  },
+  "serviceWorker": {
+    "cacheRotated": true,
+    "forcedNavigationAdded": false,
+    "sessionStorageCleared": false
+  },
+  "claims": {
+    "massCapacityClaimed": false,
+    "providerOAuthEndToEndClaimed": false,
+    "realDeviceVerificationRequired": true
+  }
+}
