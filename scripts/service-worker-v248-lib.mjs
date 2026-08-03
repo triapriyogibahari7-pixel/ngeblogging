@@ -17,13 +17,25 @@ function verifySourceContracts() {
   const widgets = read("src/widget-system.js");
   const themes = read("src/theme-catalog.js");
   const release = read("public/release-v248.json");
+  const vite = read("vite.config.js");
 
-  if (entry.includes('import "./studio-stable-shell-v244.js"')) throw new Error("V248_DUPLICATE_SHELL_RUNTIME_REENABLED");
-  if (entry.includes('import "./studio-sidebar-brand-v246.js"')) throw new Error("V248_DUPLICATE_BRAND_RUNTIME_REENABLED");
-  if (entry.includes('import "./studio-shell-controller-v147.js"')) throw new Error("V248_DUPLICATE_PROFILE_CONTROLLER_REENABLED");
+  const retiredRuntimeImports = [
+    "studio-shell-controller-v147.js",
+    "studio-production-v235.js",
+    "studio-visual-stability-v241.js",
+    "studio-shell-rescue-v242.js",
+    "studio-stable-shell-v244.js",
+    "studio-sidebar-brand-v246.js",
+  ];
+  for (const filename of retiredRuntimeImports) {
+    if (entry.includes(`import \"./${filename}\"`)) throw new Error(`V248_RETIRED_RUNTIME_REENABLED:${filename}`);
+  }
+
   const runtimePos = entry.indexOf('import "./studio-native-stability-v248.js"');
   const cssPos = entry.indexOf('import "./studio-native-stability-v248.css"');
   if (!(runtimePos >= 0 && cssPos > runtimePos)) throw new Error("V248_ENTRY_ORDER_INVALID");
+  if (/finalizeServiceWorkerV24[1-7]/.test(vite)) throw new Error("V248_RETIRED_SW_FINALIZER_REENABLED");
+  if (!vite.includes("finalizeServiceWorkerV248")) throw new Error("V248_SW_FINALIZER_MISSING");
 
   for (const marker of [
     "restoreReactChrome",
