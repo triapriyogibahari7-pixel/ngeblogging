@@ -68,5 +68,6 @@ import "./studio-final-authority-v239.js";
 import "./studio-react-safe-v240.css";
 import "./studio-visual-stability-v241.js";
 import "./studio-visual-stability-v241-final.css";
+import "./studio-shell-rescue-v242.js";
 
 export default StudioFastGate;
