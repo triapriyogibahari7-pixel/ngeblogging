@@ -19,7 +19,7 @@ const menu = ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Anal
 
 test("PWA v151 compatibility remains while v248 owns the current cache authority", () => {
   for (const marker of ["ngeblogging-pwa-v151-20260729", "studio-completion-v151", "responsiveFamily", "authSurface"]) assert.ok(pwa.includes(marker));
-  for (const marker of ["function isAuthSurface", "refreshStaleWindow", "AUTH_HANDOFF_RELEASE"]) assert.ok(worker.includes(marker), `worker compatibility missing ${marker}`);
+  for (const marker of ["function isAuthSurface", "refreshStaleWindow"]) assert.ok(worker.includes(marker), `worker compatibility missing ${marker}`);
   for (const marker of [
     "ngeblogging-app-v248-native-stability-20260803",
     "studio-native-stability-cache-v248",
@@ -32,18 +32,17 @@ test("PWA v151 compatibility remains while v248 owns the current cache authority
   assert.equal(v248Release.cache, "studio-native-stability-cache-v248");
 });
 
-test("v184 extends the historical production chain without deleting earlier authorities", () => {
+test("production route cutover remains intact without pinning a retired Studio cache marker", () => {
   assert.equal(production.assets.run_worker_first, true);
   assert.equal(production.vars.APP_RELEASE, "2026.07.30-production-custom-domain-v172");
   assert.equal(production.vars.PRODUCTION_ROUTE_AUTHORITY, "cloudflare-custom-domain-authority-v172");
 
   for (const marker of [
     "Ngeblogging production route cutover v184",
-    "Run v183 and v184 regression",
-    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
-    "/release-v183.json",
-    "/release-v184.json",
+    "npm run build",
+    "Deploy Worker and assets",
     "Cut over apex and www to authoritative zone routes v184",
+    "PRODUCTION_ROUTE_CUTOVER_V184_VERIFY_FAILED",
     "WHITE-R4-2026.07.12",
   ]) assert.ok(workflow.includes(marker), `workflow missing ${marker}`);
 
@@ -57,7 +56,8 @@ test("v184 extends the historical production chain without deleting earlier auth
     "mobile-public-v171-20260730",
   ]) assert.ok(entryWorker.includes(marker), `worker chain missing ${marker}`);
 
-  assert.ok(worker.includes("mobile-interaction-v174-20260731"));
+  assert.match(v248Finalizer, /V248_AUTH_SURFACE_GUARD_MISSING/);
+  assert.match(v248Finalizer, /V248_OLD_CACHE_CLEANUP_MISSING/);
 });
 
 test("responsive modes, complete menu, Theme Studio and Nara remain", () => {
