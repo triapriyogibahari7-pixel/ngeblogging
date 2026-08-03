@@ -66,9 +66,9 @@ await import("./patch-studio-persisted-session-v198.mjs");
 // Historical authorities remain executable for regression compatibility. v222
 // establishes the green map, line-number gutter and Nara attachment geometry.
 // v223 separates preview target from physical editor UI. v224 owns transient
-// data 401/403 session refresh recovery. v225 MUST execute last and changes only
-// responsive UI/Theme/Nara/Domain/Analytics plus the PWA cache generation; it
-// must preserve every v224 data reauth marker and must never destructively logout.
+// data 401/403 session refresh recovery. v225 owns the responsive Studio/Nara UI.
+// v226 executes last and only aligns the primary/fallback Nara model + intelligence
+// contract; it must preserve v224 session recovery and every v225 UI authority.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -94,3 +94,4 @@ await import("./patch-production-v223.mjs");
 await import("./patch-data-reauth-v224.mjs");
 await import("./patch-v225-mode-lock.mjs");
 await import("./patch-production-v225.mjs");
+await import("./patch-nara-fallback-v226.mjs");
