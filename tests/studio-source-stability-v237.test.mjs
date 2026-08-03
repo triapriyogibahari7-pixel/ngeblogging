@@ -86,8 +86,9 @@ test("Theme system keeps 100 distinct generated themes, 26 widgets and responsiv
   assert.equal(WIDGET_COUNT, 26);
   assert.equal(BUILT_IN_WIDGETS.length, 26);
   assert.ok(BUILT_IN_WIDGETS.some((widget) => widget.id === "custom-html"));
-  assert.match(css, /code-left-preview-right/);
-  assert.match(css, /preview-top-code-bottom/);
+  assert.match(runtime, /code-left-preview-right/);
+  assert.match(runtime, /preview-top-code-bottom/);
+  assert.match(css, /\.tn-code-workspace/);
 });
 
 test("production analytics enhancer is loaded and retains real RPC plus labeled simulation", () => {
