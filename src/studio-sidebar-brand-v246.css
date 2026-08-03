@@ -1,0 +1,281 @@
+/* Sidebar brand/toggle authority v246. Loaded after historical Studio CSS. */
+:root{
+  --v246-open:248px;
+  --v246-rail:70px;
+}
+
+html[data-studio-v246] #ngeblogging-studio-chrome-v244,
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-sidebar,
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-topbar{
+  opacity:1!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-brand-row{
+  min-height:64px!important;
+  height:64px!important;
+  display:grid!important;
+  grid-template-columns:44px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:10px 12px!important;
+  visibility:visible!important;
+  opacity:1!important;
+  background:#fff!important;
+  color:#17243a!important;
+  overflow:hidden!important;
+}
+
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-internal-n,
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-mobile-n{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  max-width:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid #cbd9ec!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,#3379ea,#5f54dc)!important;
+  color:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  overflow:hidden!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+  box-shadow:0 3px 12px rgba(43,92,178,.18)!important;
+}
+
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 :is(.v244-internal-n,.v244-mobile-n)>span{
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+  font:850 29px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.055em!important;
+  text-align:center!important;
+  text-shadow:none!important;
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+}
+
+/* Fallback glyph remains visible even if an old runtime mutates the inner span. */
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-internal-n::after,
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-mobile-n::after{
+  content:"n"!important;
+  position:absolute!important;
+  inset:0!important;
+  display:grid!important;
+  place-items:center!important;
+  color:#fff!important;
+  font:850 29px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.055em!important;
+  pointer-events:none!important;
+}
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 :is(.v244-internal-n,.v244-mobile-n){position:relative!important}
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 :is(.v244-internal-n,.v244-mobile-n)>span{color:transparent!important}
+
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-brand-row>strong{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  color:#17243a!important;
+  visibility:visible!important;
+  opacity:1!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  writing-mode:horizontal-tb!important;
+}
+
+html[data-studio-v246] #ngeblogging-studio-chrome-v244 .v244-avatar{
+  display:grid!important;
+  place-items:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  animation:none!important;
+}
+
+/* Large family: one internal n, expanded labels or collapsed icon rail. */
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-mobile-n{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-sidebar{
+  width:var(--v246-open)!important;
+  max-width:var(--v246-open)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-sidebar{
+  width:var(--v246-rail)!important;
+  max-width:var(--v246-rail)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-brand-row{
+  grid-template-columns:44px minmax(0,1fr)!important;
+  place-items:initial!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-brand-row>strong,
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] :is(.v244-create,.v244-nav>button,.v244-footer>button)>span{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-brand-row{
+  grid-template-columns:1fr!important;
+  place-items:center!important;
+  padding-inline:8px!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-brand-row>strong,
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] :is(.v244-create,.v244-nav>button,.v244-footer>button)>span{
+  display:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] :is(.v244-create,.v244-nav>button,.v244-footer>button){
+  grid-template-columns:1fr!important;
+  place-items:center!important;
+  padding-inline:0!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] :is(.v244-create,.v244-nav>button,.v244-footer>button){
+  grid-template-columns:22px minmax(0,1fr)!important;
+  justify-items:start!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="expanded"] .v244-topbar{left:var(--v246-open)!important}
+#ngeblogging-studio-chrome-v244[data-v246-family="large"][data-v246-sidebar="collapsed"] .v244-topbar{left:var(--v246-rail)!important}
+
+html[data-studio-v246-family="large"][data-studio-v246-sidebar="expanded"] .sn-shell .sn-main{
+  width:calc(100% - var(--v246-open))!important;
+  max-width:none!important;
+  margin-left:var(--v246-open)!important;
+  transform:none!important;
+  zoom:1!important;
+}
+html[data-studio-v246-family="large"][data-studio-v246-sidebar="collapsed"] .sn-shell .sn-main{
+  width:calc(100% - var(--v246-rail))!important;
+  max-width:none!important;
+  margin-left:var(--v246-rail)!important;
+  transform:none!important;
+  zoom:1!important;
+}
+
+/* Keep menus tight below Buat Post and retain bottom settings/logout. */
+#ngeblogging-studio-chrome-v244[data-v246-family="large"] .v244-nav,
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-nav{
+  justify-content:flex-start!important;
+  align-content:flex-start!important;
+  gap:2px!important;
+  padding-top:3px!important;
+}
+#ngeblogging-studio-chrome-v244 .v244-create{margin-bottom:3px!important}
+#ngeblogging-studio-chrome-v244 .v244-footer{margin-top:auto!important}
+
+/* Small family: only top-left n while closed; drawer opens without shifting or darkening content. */
+#ngeblogging-studio-chrome-v244[data-v246-family="small"] .v244-mobile-n{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-sidebar{
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:translateX(-105%)!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-sidebar{
+  width:min(78vw,328px)!important;
+  max-width:calc(100vw - 48px)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translateX(0)!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-brand-row>strong{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="closed"] .v244-drawer-backdrop{
+  display:none!important;
+  pointer-events:none!important;
+}
+#ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-drawer-backdrop{
+  display:block!important;
+  pointer-events:auto!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:min(78vw,328px)!important;
+  width:auto!important;
+  height:100dvh!important;
+  border:0!important;
+  background:transparent!important;
+  opacity:1!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-studio-v246-family="small"] .sn-shell .sn-main{
+  width:100%!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  transform:none!important;
+  zoom:1!important;
+}
+
+/* All content pages obey the available Studio width and cannot sit under the sidebar. */
+html[data-studio-v246] :is(.sn-main,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-welcome,.sn-home-grid,.sn-settings-grid,.sv124-page,.sv124-domain-page,.tn-studio,.ce-app){
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+html[data-studio-v246] :is(.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-welcome,.sn-home-grid,.sn-settings-grid,.sv124-page,.sv124-domain-page,.tn-studio,.ce-app){
+  max-width:100%!important;
+}
+html[data-studio-v246] :is(h1,h2,h3,h4,p,span,strong,b,small,label,button,a){
+  min-width:0!important;
+  overflow-wrap:break-word!important;
+  writing-mode:horizontal-tb!important;
+}
+html[data-studio-v246] :is(img,video,canvas,iframe){max-width:100%!important}
+html[data-studio-v246] .sn-table-scroll,
+html[data-studio-v246] [data-table-scroll]{max-width:100%!important;overflow-x:auto!important}
+
+@media(max-width:430px){
+  #ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-sidebar{
+    width:min(82vw,318px)!important;
+    max-width:calc(100vw - 42px)!important;
+  }
+  #ngeblogging-studio-chrome-v244[data-v246-family="small"][data-v246-sidebar="open"] .v244-drawer-backdrop{
+    left:min(82vw,318px)!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-studio-v246] #ngeblogging-studio-chrome-v244 *,
+  html[data-studio-v246] .sn-main{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
