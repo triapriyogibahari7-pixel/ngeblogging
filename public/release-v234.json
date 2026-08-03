@@ -1,0 +1,68 @@
+{
+  "status": "candidate",
+  "release": "studio-production-v234-screenshot-layout-sidebar-nara-20260803",
+  "basedOn": [
+    "studio-production-v232-single-n-theme-actions-20260803",
+    "studio-production-v233-data-session-bootstrap-20260803"
+  ],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+  "sidebar": {
+    "desktopSingleInternalN": true,
+    "mobileSingleNWhenClosed": true,
+    "drawerInternalNCloses": true,
+    "desktopAutoCollapseAfterNavigationPreserved": true,
+    "duplicateExternalControlsHidden": true,
+    "menuTightBelowCreatePost": true
+  },
+  "topbar": {
+    "deviceLabelRemoved": true,
+    "profileTopRight": true,
+    "siteManagerMovedToSummary": true,
+    "profileMenuMinimumActions": 5
+  },
+  "themeStudio": {
+    "themeCount": 100,
+    "widgetCount": 26,
+    "sameGreenReferenceMapEveryDevice": true,
+    "fourLeftPostCenterFourRight": true,
+    "slotContextPopover": true,
+    "customHtmlJavascriptChoice": true,
+    "desktopCodePreview5050": true,
+    "smallPreviewAboveCode": true,
+    "codeLineGutterPreparedTo": 10000,
+    "explicitHtmlCssJavascriptPreviewActions": true
+  },
+  "nara": {
+    "smallMediumNonmodal": true,
+    "fullscreenModal": true,
+    "cameraPhotoFileMenu": true,
+    "intelligenceVisible": true,
+    "modelVisible": true,
+    "smallLargeDeviceWidthPx": 430,
+    "noBlinkAnimation": true
+  },
+  "domain": {
+    "smallDevicePrimaryActionsFullRow": true,
+    "horizontalLabels": true
+  },
+  "analytics": {
+    "realRpcPreserved": "get_site_analytics_dashboard",
+    "largerTimeSeriesChart": true,
+    "largerTrafficDonut": true,
+    "simulationMustRemainLabeled": true
+  },
+  "auth": {
+    "v233DataFailoverPreserved": true,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "automaticLogoutAdded": false
+  },
+  "validation": {
+    "realDeviceRequiredBefore100PercentClaim": true,
+    "googleOAuthEndToEndClaimed": false,
+    "linkedinOAuthEndToEndClaimed": false,
+    "massCapacityClaimed": false
+  },
+  "legacyFeaturesPreserved": true
+}
