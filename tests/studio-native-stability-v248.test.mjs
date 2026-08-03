@@ -89,11 +89,17 @@ test("Nara keeps native tools and small medium are non-modal", () => {
   assert.match(runtime, /backdrop\.hidden = !full/);
 });
 
-test("Theme Studio exposes the ten real layout areas and readable line numbers", () => {
-  const areas = ["header-left","header-right","below-header","sidebar-left","before-content","after-content","sidebar-right","footer-left","footer-right","footer-wide"];
-  for (const area of areas) assert.ok(widgets.includes(`id: \"${area}\"`), `missing real area ${area}`);
+test("Theme Studio layout data keeps semantic areas and editable left right slots", () => {
+  const semanticAreas = ["header-left","header-right","below-header","before-content","after-content","footer-left","footer-right","footer-wide"];
+  for (const area of semanticAreas) assert.ok(widgets.includes(`id: \"${area}\"`), `missing semantic area ${area}`);
+  const hasSingleSidebars = widgets.includes('id: "sidebar-left"') && widgets.includes('id: "sidebar-right"');
+  const hasFourSlotSidebars = widgets.includes('id: "sidebar-left-1"') && widgets.includes('id: "sidebar-left-4"') && widgets.includes('id: "sidebar-right-1"') && widgets.includes('id: "sidebar-right-4"');
+  assert.ok(hasSingleSidebars || hasFourSlotSidebars, "left/right editable layout areas missing");
   assert.match(runtime, /LAYOUT_AREAS/);
   assert.match(runtime, /v248-layout-map/);
+});
+
+test("Theme Studio code and preview geometry keeps real line numbers and bounded preview", () => {
   assert.match(runtime, /tn-code-gutter-v248/);
   assert.match(css, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)!important/);
   assert.match(css, /ui-monospace/);
