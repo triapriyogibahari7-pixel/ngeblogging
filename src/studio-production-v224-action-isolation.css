@@ -1,0 +1,9 @@
+/* v224 isolates explicit Theme code actions from the legacy v209 direct-button sweep. */
+html[data-studio-production-v224-action-isolation] .tn-hero-actions>.v224-theme-code-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;min-width:0!important;max-width:100%!important;visibility:visible!important;opacity:1!important}
+html[data-studio-production-v224-action-isolation] .v224-theme-code-actions>button[data-v224-action-isolation="true"]{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-width:0!important;max-width:100%!important;min-height:48px!important;padding:10px 14px!important;border:1px solid #d7e1ec!important;border-radius:14px!important;background:#fff!important;color:#3b536d!important;font:800 14px/1.2 system-ui,sans-serif!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html[data-studio-production-v224-action-isolation] .v224-theme-code-actions>button[data-v224-action-isolation="true"] svg{width:18px!important;height:18px!important;flex:0 0 auto!important}
+html[data-studio-production-v224-action-isolation] .v224-theme-code-actions>button[data-v224-action-isolation="true"]>.v209-button-label{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+@media(max-width:560px){
+  html[data-studio-production-v224-action-isolation] .tn-hero-actions>.v224-theme-code-actions{grid-template-columns:1fr!important;gap:8px!important}
+  html[data-studio-production-v224-action-isolation] .v224-theme-code-actions>button[data-v224-action-isolation="true"]{width:100%!important;min-height:46px!important}
+}
