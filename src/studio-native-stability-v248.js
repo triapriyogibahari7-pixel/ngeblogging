@@ -1,4 +1,5 @@
 import { LAYOUT_AREAS } from "./widget-system.js";
+import { openProfile } from "./studio-finalization-v178.js";
 
 export const RELEASE_V248 = "studio-native-stability-v248-20260803";
 
@@ -214,7 +215,10 @@ function setAccountPane(kind) {
 function runProfileAction(action) {
   profileOpen = false;
   positionProfileMenu();
-  if (action === "profile") return setAccountPane("profile");
+  if (action === "profile") {
+    openProfile(document.querySelector(".sn-shell .sn-avatar"));
+    return;
+  }
   if (action === "settings") return setAccountPane("settings");
   if (action === "add-site") return document.querySelector(".sn-shell .sn-workspace")?.click();
   if (action === "view-site") {
