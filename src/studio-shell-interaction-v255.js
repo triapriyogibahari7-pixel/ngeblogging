@@ -3,6 +3,7 @@ export const RELEASE = "studio-shell-interaction-v255-20260804";
 const SMALL_FAMILIES = new Set(["application", "phone", "mobile", "compact", "small"]);
 const LARGE_FAMILIES = new Set(["tablet", "desktop", "laptop", "computer", "large"]);
 let frame = 0;
+let accountNavigation = "";
 
 function root() {
   return document.documentElement;
@@ -209,8 +210,10 @@ function handleProfileAction(event) {
   if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
 
   if (action === "profile" || action === "settings") {
+    accountNavigation = action;
     root().dataset.studioAccountViewV189 = action;
     document.querySelector(".sn-account-settings-v135")?.click();
+    queueMicrotask(() => { accountNavigation = ""; });
   } else if (action === "add-site") {
     document.querySelector(".sn-workspace")?.click();
   } else if (action === "view-site") {
@@ -224,6 +227,7 @@ function handleProfileAction(event) {
 function handleNavigationAutoClose(event) {
   const button = event.target.closest?.("#ngeblogging-studio-sidebar nav > button,#ngeblogging-studio-sidebar .sn-account-settings-v135");
   if (!button) return;
+  if (button.classList.contains("sn-account-settings-v135") && !accountNavigation) root().dataset.studioAccountViewV189 = "settings";
   const side = sidebar();
   if (!side) return;
   const currentFamily = family();
