@@ -34,8 +34,8 @@ jobs:
       - name: Production regression and build gate
         run: npm run build
 
-      - name: Verify v259 compatibility and v260 final authority
-        run: node --test tests/studio-six-mode-authority-v259.test.mjs tests/studio-stability-v260.test.mjs
+      - name: Verify v259 compatibility, v260 authority, and OAuth navigation
+        run: node --test tests/studio-six-mode-authority-v259.test.mjs tests/studio-stability-v260.test.mjs tests/auth-provider-navigation-v260.test.mjs
 
       - name: Archive validated production bundle
         uses: actions/upload-artifact@v4
