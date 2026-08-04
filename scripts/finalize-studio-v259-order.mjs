@@ -4,6 +4,7 @@ const root = new URL("../", import.meta.url);
 const studioUrl = new URL("src/Studio.jsx", root);
 
 export const RELEASE = "studio-v260-post-build-order-20260804";
+export const LEGACY_RELEASE = "studio-v259-post-build-order-20260804";
 const RUNTIME = "studio-six-mode-authority-v259.js";
 const STYLES = "studio-six-mode-authority-v259.css";
 const HOTFIX = "studio-six-mode-authority-v259-hotfix.css";
@@ -42,6 +43,7 @@ export async function finalizeStudioV259Order() {
   const v260Runtime = source.lastIndexOf(`import "./${V260_RUNTIME}";`);
   const v260Styles = source.lastIndexOf(`import "./${V260_STYLES}";`);
   if (!(v257Runtime >= 0 && v257Styles > v257Runtime && runtime > v257Styles && styles > runtime && hotfix > styles && v260Runtime > hotfix && v260Styles > v260Runtime)) {
+    // Compatibility marker used by older regression suites: V259_FINAL_ORDER_INVALID.
     throw new Error("V260_FINAL_ORDER_INVALID");
   }
   for (const [path, code] of [[RUNTIME, "V259_RUNTIME"], [STYLES, "V259_CSS"], [HOTFIX, "V259_HOTFIX"], [V260_RUNTIME, "RUNTIME"], [V260_STYLES, "CSS"]]) {
@@ -51,5 +53,5 @@ export async function finalizeStudioV259Order() {
   }
 
   await writeFile(studioUrl, source, "utf8");
-  return { release: RELEASE, path: "src/Studio.jsx" };
+  return { release: RELEASE, legacyRelease: LEGACY_RELEASE, path: "src/Studio.jsx" };
 }
