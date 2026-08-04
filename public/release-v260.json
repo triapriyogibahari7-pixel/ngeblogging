@@ -1,19 +1,22 @@
 {
-  "release": "studio-stability-v260-20260804",
+  "release": "studio-stability-v260-20260804-r2",
   "date": "2026-08-04",
   "scope": [
-    "six-mode device classification",
-    "Chrome Android desktop-site lock",
-    "desktop and tablet sidebar visibility",
-    "mobile single-n drawer",
-    "profile menu separation",
+    "physical six-mode device arbitration without stale desktop-site state",
+    "Chrome Android desktop-site large-layout lock and clean return to mobile",
+    "desktop laptop computer and large-tablet sidebar visibility",
+    "mobile single-n drawer without a reserved blank rail",
+    "top-right profile visibility on every Studio family",
+    "separate Profile and Settings account surfaces",
+    "working avatar menu action routed to profile avatar field",
+    "bounded add-site dialog on small devices",
     "mobile overflow prevention",
     "Theme code and preview geometry",
     "Domain action width",
     "Analytics presentation",
     "Nara floating launcher and non-modal small/medium modes",
     "service-worker cache rotation",
-    "auth session preservation"
+    "auth session preservation and bounded network retries"
   ],
   "responsiveModes": [
     "application",
