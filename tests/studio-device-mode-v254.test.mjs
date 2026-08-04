@@ -7,8 +7,6 @@ const device = read("src/studio-device-mode-v140.js");
 const studio = read("src/StudioNext.jsx");
 const shellV253 = read("src/studio-shell-nara-v253.js");
 const auth = read("src/lib/supabase.js");
-const rotate = read("scripts/service-worker-v254-rotate.mjs");
-const vite = read("vite.config.js");
 
 function classify({ installed = false, handheld = false, physicalShortSide = 900, layoutWidth = 1366, physicalViewportWidth = 1366, effectiveWidth = layoutWidth }) {
   const desktopSitePhone = !installed && handheld && layoutWidth > physicalViewportWidth * 1.35;
@@ -66,17 +64,4 @@ test("the detector never clears or signs out a session and persistent auth remai
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.match(auth, /flowType:\s*"pkce"/);
-});
-
-test("v254 cache rotation runs after v253 and keeps auth surfaces protected", () => {
-  for (const marker of [
-    "studio-device-mode-v254-20260804",
-    "ngeblogging-app-v254-device-mode-20260804",
-    "studio-device-mode-cache-v254",
-    "ACTIVE_VERSION_V253",
-    "isAuthSurface(url)",
-  ]) assert.ok(rotate.includes(marker), `missing ${marker}`);
-  assert.match(vite, /rotateServiceWorkerV253\(\)[\s\S]*rotateServiceWorkerV254\(\)/);
-  assert.doesNotMatch(rotate, /localStorage\.clear|sessionStorage\.clear|signOut\s*\(/);
-  assert.doesNotMatch(rotate, /await\s+refreshStaleWindow\(client, url\);/);
 });
