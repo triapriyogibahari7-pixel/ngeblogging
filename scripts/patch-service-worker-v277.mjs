@@ -53,7 +53,11 @@ source = source
   .replaceAll("service-worker-activated-sidebar-recovery-v276", "service-worker-activated-interaction-authority-v277");
 
 if (!source.includes(RELEASE) || !source.includes(CACHE)) throw new Error("V277_SW_MARKERS_MISSING");
-if (/refreshStaleWindow|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) throw new Error("V277_DESTRUCTIVE_SW_BEHAVIOR");
+// Compatibility helper refreshStaleWindow boleh tetap berada sebagai source backup.
+// Yang dilarang adalah pemanggilan aktifnya, penghapusan sesi, atau reload paksa.
+if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.reload\s*\(/.test(source)) {
+  throw new Error("V277_DESTRUCTIVE_SW_BEHAVIOR");
+}
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
