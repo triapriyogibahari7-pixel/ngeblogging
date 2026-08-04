@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { activateStudioNativeV250 } from "./scripts/activate-studio-native-v250.mjs";
+import { activateStudioFinalV256 } from "./scripts/activate-studio-final-v256.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
@@ -18,12 +19,14 @@ import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mj
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v253",
+      name: "ngeblogging-native-studio-v256",
       apply: "build",
       async buildStart() {
         const v250 = await activateStudioNativeV250();
         console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
-        console.log(`[vite] ${v250.shellNaraRelease} is the final Studio shell/Nara authority before bundling`);
+        const v256 = await activateStudioFinalV256();
+        console.log(`[vite] ${v256.shellInteractionRelease} kept after v253 as final shell interaction authority`);
+        console.log(`[vite] ${v256.themeLayoutRelease} kept last for Theme layout geometry`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
