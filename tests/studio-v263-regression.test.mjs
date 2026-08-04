@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 const studio = readFileSync(new URL("../src/Studio.jsx", import.meta.url), "utf8");
 const studioNext = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/studio-shell-v263.css", import.meta.url), "utf8");
+const hotfix = readFileSync(new URL("../src/studio-shell-v263-hotfix.css", import.meta.url), "utf8");
 const runtime = readFileSync(new URL("../src/studio-runtime-v263.js", import.meta.url), "utf8");
 const nara = readFileSync(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 const theme = readFileSync(new URL("../src/ThemeStudio.jsx", import.meta.url), "utf8");
@@ -21,8 +22,10 @@ test("v263 is the last Studio shell authority", () => {
   const v260 = indexOf(studio, 'import "./studio-stability-v260-hotfix.css"');
   const runtime263 = indexOf(studio, 'import "./studio-runtime-v263.js"');
   const css263 = indexOf(studio, 'import "./studio-shell-v263.css"');
+  const hotfix263 = indexOf(studio, 'import "./studio-shell-v263-hotfix.css"');
   assert.ok(runtime263 > v260);
   assert.ok(css263 > runtime263);
+  assert.ok(hotfix263 > css263);
 });
 
 test("large family has one internal n and mobile has one drawer trigger", () => {
@@ -32,6 +35,7 @@ test("large family has one internal n and mobile has one drawer trigger", () => 
   assert.match(css, /\.sn-side\.mobile-open \.sn-logo \.sn-logo-mark/);
   assert.match(runtime, /aria-controls", "ngeblogging-studio-sidebar/);
   assert.match(runtime, /aria-expanded/);
+  assert.match(hotfix, /#ngeblogging-studio-sidebar \.sn-logo-mark/);
 });
 
 test("all required Studio navigation remains in React source", () => {
@@ -63,6 +67,7 @@ test("Nara small and medium stay non-modal while full owns the viewport", () => 
   assert.match(css, /nara-assistant-shell\[data-nara-size="full"\]/);
   assert.match(runtime, /nara-composer-tools > button\.listening/);
   assert.match(runtime, /speechSynthesis/);
+  assert.match(hotfix, /data-nara-v263-modal="false"/);
 });
 
 test("Nara retains attachments microphone speaker models and intelligence", () => {
@@ -88,6 +93,7 @@ test("Theme Studio keeps 100-theme system, eight previews, widgets, code and res
   assert.match(runtime, /tn-code-gutter-v263/);
   assert.match(runtime, /Pilih dari 26 widget/);
   assert.match(runtime, /Custom HTML \/ CSS \/ JavaScript/);
+  assert.match(hotfix, /v259-code-gutter/);
 });
 
 test("mobile editor and Domain surfaces are protected from clipping", () => {
@@ -98,7 +104,13 @@ test("mobile editor and Domain surfaces are protected from clipping", () => {
   assert.match(css, /\.sv124-domain-register form\{display:grid!important;grid-template-columns:1fr!important/);
 });
 
-test("auth keeps persistent sessions, bounded network fallback and verified handoff", () => {
+test("auth is direct-first, persistent, bounded and keeps verified session handoff", () => {
+  assert.match(supabase, /AUTH_DIRECT_FIRST_RELEASE_V263/);
+  assert.match(supabase, /auth-direct-first-v263-20260804/);
+  assert.match(supabase, /async function directAuthFirstV263/);
+  assert.match(supabase, /if \(authProxyV190\) return directAuthFirstV263\(input, init, authProxyV190\)/);
+  assert.match(supabase, /direct-supabase-primary/);
+  assert.match(supabase, /same-origin-gateway-fallback/);
   assert.match(supabase, /persistSession: true/);
   assert.match(supabase, /autoRefreshToken: true/);
   assert.match(supabase, /GATEWAY_DEADLINE_MS_V259/);
@@ -106,5 +118,6 @@ test("auth keeps persistent sessions, bounded network fallback and verified hand
   assert.match(authModal, /settleAuthenticatedSession/);
   assert.match(authModal, /ngeblogging:auth-session-ready/);
   assert.doesNotMatch(supabase, /localStorage\.clear\s*\(/);
+  assert.doesNotMatch(supabase, /sessionStorage\.clear\s*\(/);
   assert.doesNotMatch(authModal, /localStorage\.clear\s*\(/);
 });
