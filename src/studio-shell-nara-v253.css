@@ -1,0 +1,495 @@
+/* v253 — final physical geometry for sidebar + Nara launcher/window. */
+:root{
+  --v253-side-open:248px;
+  --v253-side-rail:70px;
+  --v253-top:64px;
+  --v253-drawer:clamp(244px,74vw,320px);
+  --v253-safe-right:max(12px,env(safe-area-inset-right,0px));
+  --v253-safe-bottom:max(12px,env(safe-area-inset-bottom,0px));
+}
+
+html[data-studio-shell-nara-v253],
+html[data-studio-shell-nara-v253] body,
+html[data-studio-shell-nara-v253] #root,
+html[data-studio-shell-nara-v253] .sn-shell{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:clip!important;
+  transform:none!important;
+  scale:1!important;
+  zoom:1!important;
+}
+
+html[data-studio-shell-nara-v253] :is(.sn-main,.sn-main>*,.sn-view-pad,.sn-view-pad>*,.sn-top,.sn-top>*,.sn-side,.sn-side>*,.tn-studio,.tn-studio>*,.ce-app,.ce-app>*){
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+/* Desktop/laptop/computer/large tablet: sidebar may NEVER disappear. */
+html[data-studio-v253-family="large"] .sn-side{
+  display:flex!important;
+  position:fixed!important;
+  z-index:4200!important;
+  inset:0 auto 0 0!important;
+  height:100dvh!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  background:#fff!important;
+  overflow:hidden!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="expanded"] .sn-side{
+  width:var(--v253-side-open)!important;
+  min-width:var(--v253-side-open)!important;
+  max-width:var(--v253-side-open)!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] .sn-side{
+  width:var(--v253-side-rail)!important;
+  min-width:var(--v253-side-rail)!important;
+  max-width:var(--v253-side-rail)!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="expanded"] .sn-main{
+  margin-left:var(--v253-side-open)!important;
+  width:calc(100% - var(--v253-side-open))!important;
+  max-width:none!important;
+  padding-top:var(--v253-top)!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] .sn-main{
+  margin-left:var(--v253-side-rail)!important;
+  width:calc(100% - var(--v253-side-rail))!important;
+  max-width:none!important;
+  padding-top:var(--v253-top)!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="expanded"] .sn-top{
+  left:var(--v253-side-open)!important;
+  right:0!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] .sn-top{
+  left:var(--v253-side-rail)!important;
+  right:0!important;
+}
+html[data-studio-v253-family="large"] .sn-sidebar-toggle{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-studio-v253-family="large"] .sn-avatar{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+/* Brand n is always centered and readable. */
+html[data-studio-shell-nara-v253] .sn-logo{
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:11px!important;
+  min-height:66px!important;
+  height:66px!important;
+  padding:10px 12px!important;
+}
+html[data-studio-shell-nara-v253] .sn-logo-mark,
+html[data-studio-v253-family="small"] .sn-sidebar-toggle{
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  max-width:46px!important;
+  max-height:46px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:linear-gradient(145deg,#3379ea,#5a55dd)!important;
+  color:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  transform:none!important;
+  overflow:hidden!important;
+  cursor:pointer!important;
+}
+html[data-studio-shell-nara-v253] .sn-logo-mark strong,
+html[data-studio-v253-family="small"] .sn-mobile-menu-mark strong{
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  font:850 30px/1 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.055em!important;
+  text-align:center!important;
+  opacity:1!important;
+  visibility:visible!important;
+  transform:none!important;
+  text-shadow:none!important;
+}
+html[data-studio-shell-nara-v253] :is(.sn-logo-mark i,.sn-mobile-menu-mark i){display:none!important}
+html[data-studio-shell-nara-v253] .sn-logo>b{
+  margin:0!important;
+  align-self:center!important;
+  font:800 20px/1.1 system-ui,sans-serif!important;
+  color:#17243a!important;
+  white-space:nowrap!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] .sn-logo{
+  grid-template-columns:1fr!important;
+  place-items:center!important;
+  padding-inline:12px!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] .sn-logo>b{display:none!important}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] :is(.sn-new,.sn-side>nav>button,.sn-account-footer>button){
+  grid-template-columns:1fr!important;
+  place-items:center!important;
+  padding-inline:0!important;
+}
+html[data-studio-v253-family="large"][data-studio-v253-sidebar="collapsed"] :is(.sn-new,.sn-side>nav>button,.sn-account-footer>button)>span{display:none!important}
+
+/* Menu stays tight and scrollable; footer never vanishes. */
+html[data-studio-shell-nara-v253] .sn-new{
+  flex:0 0 46px!important;
+  min-height:46px!important;
+  margin:7px 9px 3px!important;
+}
+html[data-studio-shell-nara-v253] .sn-side>nav{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  gap:2px!important;
+  padding:3px 8px 8px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
+html[data-studio-shell-nara-v253] :is(.sn-side>nav>button,.sn-account-footer>button){
+  flex:0 0 42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  margin:0!important;
+}
+html[data-studio-shell-nara-v253] .sn-account-footer{
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  padding-bottom:max(9px,env(safe-area-inset-bottom,0px))!important;
+}
+
+/* Application / phone / mobile / compact: exactly one n while closed. */
+html[data-studio-v253-family="small"] .sn-main{
+  margin-left:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  padding-top:var(--v253-top)!important;
+  transform:none!important;
+}
+html[data-studio-v253-family="small"] .sn-top{
+  left:0!important;
+  right:0!important;
+  overflow:visible!important;
+}
+html[data-studio-v253-family="small"] .sn-sidebar-toggle{
+  display:grid!important;
+  flex:0 0 46px!important;
+}
+html[data-studio-v253-family="small"] .sn-sidebar-toggle .sn-desktop-sidebar-icon{display:none!important}
+html[data-studio-v253-family="small"] .sn-mobile-menu-mark{
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+}
+html[data-studio-v253-family="small"] .sn-side{
+  display:flex!important;
+  position:fixed!important;
+  z-index:4200!important;
+  inset:0 auto 0 0!important;
+  width:var(--v253-drawer)!important;
+  max-width:calc(100vw - 44px)!important;
+  height:100dvh!important;
+  overflow:hidden!important;
+  transform:translateX(-105%)!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+html[data-studio-v253-family="small"] .sn-side.mobile-open{
+  transform:translateX(0)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-studio-v253-family="small"][data-studio-v253-sidebar="open"] .sn-sidebar-toggle{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-studio-v253-family="small"] .sn-side-backdrop{
+  background:transparent!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+html[data-studio-v253-family="small"][data-studio-v253-sidebar="closed"] .sn-side-backdrop{
+  display:none!important;
+  pointer-events:none!important;
+}
+html[data-studio-v253-family="small"][data-studio-v253-sidebar="open"] .sn-side-backdrop{
+  display:block!important;
+  position:fixed!important;
+  z-index:4100!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:var(--v253-drawer)!important;
+  width:auto!important;
+  height:100dvh!important;
+  pointer-events:auto!important;
+}
+
+/* Never reintroduce duplicate controls/badges. */
+html[data-studio-shell-nara-v253] :is(
+  #ngeblogging-studio-chrome-v244,
+  .sn-sidebar-edge-toggle-v147,
+  .v227-sidebar-fab,
+  .studio-external-sidebar-toggle,
+  [data-v173-collapse-toggle],
+  [data-v187-sidebar-toggle],
+  [data-v208-sidebar-toggle],
+  [data-v223-sidebar-toggle],
+  [data-v229-sidebar-toggle],
+  [data-studio-mode-badge],
+  [data-device-mode-badge],
+  .studio-device-mode-badge,
+  .v225-mode-badge,
+  .sn-device-mode-badge-v148,
+  .sn-side-close
+){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* Nara launcher is always floating in the lower-right safe area. */
+html[data-studio-shell-nara-v253] .nara-floating-button{
+  position:fixed!important;
+  right:calc(var(--v253-safe-right) + 2px)!important;
+  bottom:calc(var(--v253-safe-bottom) + 2px)!important;
+  left:auto!important;
+  top:auto!important;
+  z-index:8800!important;
+  margin:0!important;
+  display:grid!important;
+  pointer-events:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+  filter:none!important;
+  will-change:auto!important;
+}
+html[data-studio-shell-nara-v253] .nara-floating-button[hidden]{display:none!important}
+
+/* Small + medium Nara are true non-modal floating windows. */
+.nara-assistant-layer[data-v253-interaction="nonmodal"]{
+  position:fixed!important;
+  inset:0!important;
+  z-index:8700!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:flex-end!important;
+  padding:max(10px,env(safe-area-inset-top,0px)) var(--v253-safe-right) var(--v253-safe-bottom) max(10px,env(safe-area-inset-left,0px))!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:none!important;
+}
+.nara-assistant-layer[data-v253-interaction="nonmodal"] .nara-assistant-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+.nara-assistant-layer[data-v253-interaction="nonmodal"] .nara-assistant-shell{
+  position:relative!important;
+  inset:auto!important;
+  margin:0!important;
+  pointer-events:auto!important;
+  overflow:hidden!important;
+  border:1px solid #dfe6f2!important;
+  border-radius:20px!important;
+  box-shadow:0 22px 70px rgba(18,38,72,.26)!important;
+  animation:none!important;
+  transform:none!important;
+}
+.nara-assistant-layer[data-v253-size="small"] .nara-assistant-shell{
+  width:min(440px,calc(100vw - 20px))!important;
+  height:min(580px,68dvh)!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:calc(100dvh - 20px)!important;
+}
+.nara-assistant-layer[data-v253-size="medium"] .nara-assistant-shell{
+  width:min(720px,calc(100vw - 20px))!important;
+  height:min(760px,84dvh)!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:calc(100dvh - 20px)!important;
+}
+.nara-assistant-layer[data-v253-interaction="modal"]{
+  position:fixed!important;
+  inset:0!important;
+  z-index:9000!important;
+  display:flex!important;
+  padding:0!important;
+  pointer-events:auto!important;
+}
+.nara-assistant-layer[data-v253-size="full"] .nara-assistant-shell{
+  width:100vw!important;
+  height:100dvh!important;
+  max-width:100vw!important;
+  max-height:100dvh!important;
+  border-radius:0!important;
+}
+
+/* Six header controls stay on one row. */
+html[data-studio-shell-nara-v253] .nara-assistant-header{
+  min-height:68px!important;
+  height:auto!important;
+  display:grid!important;
+  grid-template-columns:42px minmax(72px,1fr) auto 34px 34px 34px!important;
+  align-items:center!important;
+  gap:5px!important;
+  padding:8px 10px!important;
+  overflow:hidden!important;
+}
+html[data-studio-shell-nara-v253] .nara-brand-orb{
+  width:40px!important;
+  height:40px!important;
+}
+html[data-studio-shell-nara-v253] .nara-size-controls-v147{
+  display:flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  min-width:0!important;
+}
+html[data-studio-shell-nara-v253] .nara-size-controls-v147>button{
+  flex:0 0 30px!important;
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  min-height:30px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+html[data-studio-shell-nara-v253] .nara-assistant-header>button{
+  width:32px!important;
+  height:32px!important;
+  min-width:32px!important;
+  min-height:32px!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+/* The + dropdown must not be clipped by a horizontally scrolling toolbar. */
+html[data-studio-shell-nara-v253] .nara-composer,
+html[data-studio-shell-nara-v253] .nara-composer-tools,
+html[data-studio-shell-nara-v253] .nara-attachment-menu-wrap{
+  overflow:visible!important;
+}
+html[data-studio-shell-nara-v253] .nara-composer-tools{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  gap:4px!important;
+  min-width:0!important;
+}
+html[data-studio-shell-nara-v253] .nara-attachment-menu{
+  display:block!important;
+  position:absolute!important;
+  left:0!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:calc(100% + 8px)!important;
+  z-index:9200!important;
+  width:min(250px,calc(100vw - 30px))!important;
+  max-height:min(330px,56dvh)!important;
+  overflow:auto!important;
+}
+html[data-studio-shell-nara-v253] .nara-select.intelligence{margin-left:auto!important;width:74px!important;flex:0 0 74px!important}
+html[data-studio-shell-nara-v253] .nara-select.model{width:92px!important;flex:0 0 92px!important}
+
+/* Long text and page panels stay bounded. */
+html[data-studio-shell-nara-v253] :is(h1,h2,h3,h4,p,b,strong,span,small,label,a,button){
+  min-width:0!important;
+  max-width:100%;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+}
+html[data-studio-shell-nara-v253] .sn-welcome h1{
+  max-width:min(100%,980px)!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+html[data-studio-shell-nara-v253] :is(img,video,canvas,iframe,svg){max-width:100%!important}
+html[data-studio-shell-nara-v253] table{max-width:100%!important}
+
+@media(max-width:760px){
+  html[data-studio-shell-nara-v253] .nara-floating-button{
+    width:54px!important;
+    min-width:54px!important;
+    max-width:54px!important;
+    height:54px!important;
+    grid-template-columns:42px!important;
+    padding:6px!important;
+    border-radius:16px!important;
+  }
+  html[data-studio-shell-nara-v253] .nara-floating-button :is(b,small){display:none!important}
+  .nara-assistant-layer[data-v253-size="small"] .nara-assistant-shell{
+    width:min(430px,calc(100vw - 16px))!important;
+    height:min(590px,72dvh)!important;
+    max-width:calc(100vw - 16px)!important;
+  }
+  .nara-assistant-layer[data-v253-size="medium"] .nara-assistant-shell{
+    width:calc(100vw - 12px)!important;
+    height:min(780px,88dvh)!important;
+    max-width:calc(100vw - 12px)!important;
+  }
+}
+
+@media(max-width:390px){
+  html[data-studio-shell-nara-v253] .nara-assistant-header{
+    grid-template-columns:38px minmax(44px,1fr) auto 30px 30px 30px!important;
+    gap:3px!important;
+    padding:7px 8px!important;
+  }
+  html[data-studio-shell-nara-v253] .nara-brand-orb{width:36px!important;height:36px!important}
+  html[data-studio-shell-nara-v253] .nara-assistant-header>div:nth-child(2)>small{display:none!important}
+  html[data-studio-shell-nara-v253] .nara-assistant-header b{font-size:14px!important}
+  html[data-studio-shell-nara-v253] .nara-size-controls-v147>button{
+    width:27px!important;height:27px!important;min-width:27px!important;min-height:27px!important;flex-basis:27px!important;
+  }
+  html[data-studio-shell-nara-v253] .nara-assistant-header>button{
+    width:29px!important;height:29px!important;min-width:29px!important;min-height:29px!important;
+  }
+  html[data-studio-shell-nara-v253] .nara-composer-tools{gap:2px!important;padding-inline:4px!important}
+  html[data-studio-shell-nara-v253] .nara-select.intelligence{width:68px!important;flex-basis:68px!important}
+  html[data-studio-shell-nara-v253] .nara-select.model{width:82px!important;flex-basis:82px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-studio-shell-nara-v253] :is(.sn-side,.sn-top,.sn-main,.sn-logo-mark,.sn-avatar,.nara-floating-button,.nara-assistant-shell){
+    transition:none!important;
+    animation:none!important;
+  }
+}
