@@ -1,4 +1,4 @@
-name: Production Validation v268
+name: Production Validation v270
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: production-validation-v268-${{ github.ref }}
+  group: production-validation-v270-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,32 +29,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate v268 responsive shell contract
-        run: node --test tests/studio-final-device-authority-v268.test.mjs
+      - name: Validate v270 scroll-stable shell contract
+        run: node --test tests/studio-scroll-chrome-v270.test.mjs
 
       - name: Production regression tests and build
         run: npm run build
 
-      - name: Assert v268 source and cache markers
+      - name: Assert v270 source and cache markers
         run: |
-          test -f src/studio-screenshot-authority-v265.js
-          test -f src/studio-theme-layout-v264.js
-          test -f src/studio-shell-v265-final-hotfix.css
-          test -f src/studio-editor-navigation-v266.js
-          test -f src/studio-sidebar-single-toggle-v267.js
-          test -f src/studio-final-device-authority-v268.css
-          test -f src/studio-profile-menu-v268.js
-          test -f src/studio-nara-immediate-v268.css
-          test -f tests/studio-fixed-chrome-v267.test.mjs
-          test -f tests/studio-final-device-authority-v268.test.mjs
-          test -f public/release-v267.json
-          test -f public/release-v268.json
-          test -f scripts/patch-service-worker-v267.mjs
-          test -f scripts/patch-service-worker-v268.mjs
-          grep -q 'studio-sidebar-single-toggle-v267.js' src/Studio.jsx
-          grep -q 'studio-final-device-authority-v268.css' src/studio-sidebar-single-toggle-v267.js
-          grep -q 'studio-profile-menu-v268.js' src/studio-sidebar-single-toggle-v267.js
-          grep -q 'studio-nara-immediate-v268.css' src/studio-sidebar-single-toggle-v267.js
-          grep -q 'patch-service-worker-v268.mjs' scripts/patch-service-worker-v267.mjs
-          grep -q 'studio-final-device-cache-v268' public/sw.js
-          grep -q 'UI_PATCH_RELEASE_V268' public/sw.js
+          test -f src/studio-final-authority-v269.js
+          test -f src/studio-final-authority-v269.css
+          test -f src/studio-scroll-chrome-v270.js
+          test -f src/studio-scroll-chrome-v270.css
+          test -f tests/studio-scroll-chrome-v270.test.mjs
+          test -f scripts/patch-service-worker-v270.mjs
+          test -f public/release-v270.json
+          grep -q 'studio-final-authority-v269.js' src/Studio.jsx
+          grep -q 'studio-scroll-chrome-v270.js' src/Studio.jsx
+          grep -q 'studio-scroll-chrome-v270.css' src/Studio.jsx
+          grep -q 'patch-service-worker-v270.mjs' scripts/patch-service-worker-v269.mjs
+          grep -q 'studio-scroll-chrome-cache-v270' public/sw.js
+          grep -q 'UI_PATCH_RELEASE_V270' public/sw.js
+          grep -q 'UI_CACHE_RELEASE_V270' public/sw.js
