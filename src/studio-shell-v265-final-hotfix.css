@@ -78,3 +78,136 @@ html.studio-v265-small .tn-code-pane,html.studio-v265-small .tn-code-preview-pan
 /* Profile dropdown and site-manager remain inside the viewport. */
 .sn-profile-menu-v150{right:max(10px,env(safe-area-inset-right))!important;left:auto!important;max-width:calc(100vw - 20px)!important}
 .sn-site-manager{max-width:min(760px,calc(100vw - 20px))!important}
+
+/* --------------------------------------------------------------------------
+   v267 physical viewport authority
+   Fixes the four concrete failures visible on Android screenshots:
+   1) mobile n must stay clickable after scrolling,
+   2) Nara must remain pinned to the bottom-right viewport corner,
+   3) collapsed desktop sidebar must keep every icon visible,
+   4) the extra n outside the desktop sidebar must never be visible.
+   -------------------------------------------------------------------------- */
+
+/* A transformed/filtered ancestor changes the containing block of position:fixed.
+   Remove those historical containing blocks so fixed chrome is really viewport-fixed. */
+html,body,#root,.sn-shell,.sn-main{
+  transform:none!important;filter:none!important;perspective:none!important;
+  -webkit-perspective:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+html,body,#root,.sn-shell{max-width:100%!important;overflow-x:clip!important}
+
+/* Mobile/app/phone/compact: one fixed n in the physical viewport when drawer is closed. */
+html.studio-v265-small .sn-top>.sn-sidebar-toggle,
+html.studio-v265-small .sn-top .sn-sidebar-toggle{
+  position:fixed!important;z-index:2147483000!important;
+  left:max(10px,env(safe-area-inset-left))!important;right:auto!important;
+  top:max(10px,env(safe-area-inset-top))!important;bottom:auto!important;
+  width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;
+  display:grid!important;place-items:center!important;margin:0!important;padding:0!important;
+  transform:none!important;filter:none!important;opacity:1!important;visibility:visible!important;
+  pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important;
+  user-select:none!important;-webkit-user-select:none!important
+}
+html.studio-v265-small body.sn-mobile-sidebar-open .sn-top>.sn-sidebar-toggle,
+html.studio-v265-small body.sn-mobile-sidebar-open .sn-top .sn-sidebar-toggle{
+  display:none!important;visibility:hidden!important;pointer-events:none!important
+}
+html.studio-v265-small #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark{
+  touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important;pointer-events:auto!important
+}
+
+/* Desktop/laptop/computer/large tablet: hide every external toggle and keep only
+   the n inside the sidebar as the open/close control. */
+html.studio-v265-large .sn-top>.sn-sidebar-toggle,
+html.studio-v265-large .sn-top .sn-sidebar-toggle,
+html.studio-v265-large .sn-sidebar-edge-toggle-v147,
+html.studio-v265-large .v227-sidebar-fab,
+html.studio-v265-large .studio-external-sidebar-toggle,
+html.studio-v265-large [data-v173-collapse-toggle],
+html.studio-v265-large [data-v187-sidebar-toggle],
+html.studio-v265-large [data-v208-sidebar-toggle],
+html.studio-v265-large [data-v223-sidebar-toggle],
+html.studio-v265-large [data-v229-sidebar-toggle],
+html[data-studio-desktop-site-phone="true"] .sn-top>.sn-sidebar-toggle,
+html[data-studio-desktop-site-phone="true"] .sn-top .sn-sidebar-toggle{
+  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important
+}
+
+/* Desktop-site requested on a physical Android phone must behave exactly like
+   the large family even if a stale historical class briefly says "small". */
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar,
+html[data-v232-mode-lock="desktop-site-large"] #ngeblogging-studio-sidebar{
+  display:flex!important;position:fixed!important;left:0!important;right:auto!important;top:0!important;bottom:0!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important
+}
+html[data-studio-desktop-site-phone="true"] .sn-side-backdrop,
+html[data-v232-mode-lock="desktop-site-large"] .sn-side-backdrop{display:none!important;pointer-events:none!important}
+
+/* Collapsed desktop sidebar is a real icon rail, never a hidden sidebar. */
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed,
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed,
+html[data-v232-mode-lock="desktop-site-large"] #ngeblogging-studio-sidebar.collapsed{
+  display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  width:72px!important;min-width:72px!important;max-width:72px!important;overflow:hidden!important
+}
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed>nav,
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed>.sn-account-footer,
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed>nav,
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed>.sn-account-footer{
+  display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important
+}
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button),
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button){
+  display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  justify-content:center!important;align-items:center!important;min-width:0!important;max-width:100%!important;
+  margin-left:auto!important;margin-right:auto!important;padding-left:0!important;padding-right:0!important
+}
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>svg,
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>svg{
+  display:block!important;visibility:visible!important;opacity:1!important;flex:0 0 21px!important;width:21px!important;height:21px!important;margin:0!important
+}
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>span,
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:none!important}
+html.studio-v265-large #ngeblogging-studio-sidebar.collapsed .sn-logo-mark,
+html[data-studio-desktop-site-phone="true"] #ngeblogging-studio-sidebar.collapsed .sn-logo-mark{
+  display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;margin:auto!important
+}
+
+/* Menus remain close to + Buat Post. Only the navigation area scrolls on short screens. */
+#ngeblogging-studio-sidebar>nav{
+  justify-content:flex-start!important;align-content:flex-start!important;gap:2px!important;
+  margin-top:0!important;padding-top:2px!important;min-height:0!important;overflow-y:auto!important
+}
+#ngeblogging-studio-sidebar .sn-new{margin-bottom:3px!important}
+
+/* Nara launcher is always physically attached to the viewport corner. */
+.nara-floating-button{
+  position:fixed!important;z-index:2147483200!important;
+  left:auto!important;top:auto!important;
+  right:max(12px,env(safe-area-inset-right))!important;
+  bottom:max(14px,calc(env(safe-area-inset-bottom) + 12px))!important;
+  width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;max-width:58px!important;max-height:58px!important;
+  margin:0!important;padding:0!important;display:grid!important;place-items:center!important;
+  transform:none!important;filter:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+  touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important
+}
+.nara-floating-button>span,.nara-floating-button>span>svg{margin:auto!important;transform:none!important}
+.nara-assistant-layer{
+  position:fixed!important;z-index:2147483300!important;inset:0!important;width:100vw!important;height:100dvh!important;
+  transform:none!important;filter:none!important
+}
+.nara-assistant-shell[data-nara-size="small"],.nara-assistant-shell[data-nara-size="medium"]{
+  position:fixed!important;left:auto!important;top:auto!important;
+  right:max(8px,env(safe-area-inset-right))!important;
+  bottom:max(8px,calc(env(safe-area-inset-bottom) + 6px))!important;
+  transform:none!important;filter:none!important
+}
+
+/* Keep clickable floating chrome above content but below full-screen Nara. */
+html.studio-v265-small .sn-top{transform:none!important;filter:none!important;perspective:none!important}
+html.studio-v265-small .sn-view-pad{isolation:auto!important}
+
+/* No visual pulse/flicker on the two controls users touch most often. */
+.sn-sidebar-toggle,.sn-logo-mark,.nara-floating-button{
+  animation:none!important;transition:none!important;will-change:auto!important
+}
