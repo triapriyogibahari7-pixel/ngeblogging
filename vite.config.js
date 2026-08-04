@@ -14,16 +14,17 @@ import { finalizeServiceWorkerV247 } from "./scripts/service-worker-v247-lib.mjs
 import { finalizeServiceWorkerV249 } from "./scripts/service-worker-v249-lib.mjs";
 import { rotateServiceWorkerV250 } from "./scripts/service-worker-v250-rotate.mjs";
 import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mjs";
+import { rotateServiceWorkerV255 } from "./scripts/service-worker-v255-rotate.mjs";
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v253",
+      name: "ngeblogging-native-studio-v255",
       apply: "build",
       async buildStart() {
         const v250 = await activateStudioNativeV250();
         console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
-        console.log(`[vite] ${v250.shellNaraRelease} is the final Studio shell/Nara authority before bundling`);
+        console.log(`[vite] ${v250.shellNaraRelease} remains the v253 shell/Nara base before v255 stability`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
@@ -54,6 +55,8 @@ export default defineConfig({
         console.log(`[vite] ${v250.release} cache rotation finalized in ${v250.path}`);
         const v253 = rotateServiceWorkerV253();
         console.log(`[vite] ${v253.release} cache rotation finalized in ${v253.path}`);
+        const v255 = rotateServiceWorkerV255();
+        console.log(`[vite] ${v255.release} cache rotation finalized in ${v255.path}`);
       },
     },
   ],
