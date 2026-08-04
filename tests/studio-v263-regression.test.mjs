@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import "./studio-theme-layout-v264.test.mjs";
 
 const studio = readFileSync(new URL("../src/Studio.jsx", import.meta.url), "utf8");
 const studioNext = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
