@@ -1,0 +1,64 @@
+{
+  "release": "studio-six-mode-authority-v259-20260804",
+  "date": "2026-08-04",
+  "scope": "Six-mode Studio geometry, sidebar/profile, Nara non-modal behavior, Theme code readability and cache rotation",
+  "responsive": {
+    "application": "small",
+    "phone": "small",
+    "mobile": "small",
+    "compact": "small",
+    "tablet": "large",
+    "desktop": "large",
+    "variants": ["laptop", "computer"],
+    "desktopSiteOnAndroidLockedToLarge": true,
+    "smallLayoutReservesDesktopSidebarRail": false
+  },
+  "sidebar": {
+    "singleInternalNControl": true,
+    "largeExpandedWidthPx": 248,
+    "largeCollapsedWidthPx": 70,
+    "collapsedIconsRemainVisible": true,
+    "mobileDrawerComplete": true,
+    "mobileBackdropBlur": false,
+    "requiredMenuCount": 13
+  },
+  "profile": {
+    "fixedTopRight": true,
+    "viewportBoundedMenu": true,
+    "separateProfileAndSettings": true
+  },
+  "nara": {
+    "launcherFixedBottomRight": true,
+    "sizes": ["small", "medium", "full"],
+    "smallMediumNonModal": true,
+    "fullModal": true,
+    "attachments": ["camera", "photo", "file"],
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelSelectorPreserved": true,
+    "intelligenceSelectorPreserved": true
+  },
+  "theme": {
+    "catalogArchitectureCount": 100,
+    "widgetArchitectureCount": 26,
+    "largeCodePreview": "50:50",
+    "smallCodePreview": "preview-top-code-bottom",
+    "lineNumberLimit": 10000,
+    "layoutMapCentered": true
+  },
+  "validation": {
+    "viewportMatrix": [
+      "320x568", "360x640", "375x667", "390x844", "412x915", "430x932",
+      "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768",
+      "1440x900", "1920x1080"
+    ],
+    "staticRegressionGateAdded": true,
+    "productionBuildGuardAdded": true,
+    "serviceWorkerRotationAdded": true,
+    "realDeviceExecutionVerifiedByThisManifest": false,
+    "googleLoginEndToEndVerifiedByThisManifest": false,
+    "linkedinLoginEndToEndVerifiedByThisManifest": false,
+    "emailPasswordLoginEndToEndVerifiedByThisManifest": false,
+    "capacityClaim": "No 900-billion-user claim is made without infrastructure load-test evidence."
+  }
+}
