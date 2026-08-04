@@ -81,7 +81,6 @@ await import("./patch-production-v205-hotfix.mjs");
 await import("./patch-production-v206.mjs");
 await import("./patch-production-v207.mjs");
 await import("./patch-sidebar-left4-v207.mjs");
-await import("./patch-sidebar-right4-v256.mjs");
 await import("./patch-production-v208.mjs");
 await import("./patch-production-v209.mjs");
 await import("./patch-production-v209-compat.mjs");
@@ -113,3 +112,8 @@ await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
 await import("./patch-studio-bootstrap-v243.mjs");
 await import("./patch-auth-production-v245.mjs");
+
+// v256 is deliberately applied after every historical generator. The old chain
+// can validate its own v207 shape first; only the final generated source gains
+// the fourth right area before production regression and bundling.
+await import("./patch-sidebar-right4-v256.mjs");
