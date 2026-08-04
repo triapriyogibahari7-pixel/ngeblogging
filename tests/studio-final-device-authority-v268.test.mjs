@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const device = read("src/studio-device-mode-v140.js");
 const css = read("src/studio-final-device-authority-v268.css");
+const naraImmediate = read("src/studio-nara-immediate-v268.css");
 const singleToggle = read("src/studio-sidebar-single-toggle-v267.js");
 const profileMenu = read("src/studio-profile-menu-v268.js");
 const sw267 = read("scripts/patch-service-worker-v267.mjs");
@@ -22,6 +23,7 @@ test("six responsive classes remain available and feed a small or large layout f
 test("v268 is loaded last through the single-owner sidebar module", () => {
   assert.match(singleToggle, /import "\.\/studio-final-device-authority-v268\.css";/);
   assert.match(singleToggle, /import "\.\/studio-profile-menu-v268\.js";/);
+  assert.match(singleToggle, /import "\.\/studio-nara-immediate-v268\.css";/);
   assert.match(singleToggle, /event\.stopImmediatePropagation\(\)/);
   assert.match(singleToggle, /toggle\.click\(\)/);
 });
@@ -68,6 +70,8 @@ test("Nara remains viewport-fixed, non-modal in small/medium, and attachment cho
   assert.match(css, /\.nara-assistant-shell\[data-nara-size="small"\][\s\S]*width:min\(390px,calc\(100vw - 16px\)\)!important/);
   assert.match(css, /\.nara-assistant-shell\[data-nara-size="medium"\][\s\S]*width:min\(680px,calc\(100vw - 16px\)\)!important/);
   assert.match(css, /\.nara-attachment-menu[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+  assert.match(naraImmediate, /:has\(>\.nara-assistant-shell\[data-nara-size="small"\]\)[\s\S]*pointer-events:none!important/);
+  assert.match(naraImmediate, /:has\(>\.nara-assistant-shell\[data-nara-size="medium"\]\)>\.nara-assistant-backdrop[\s\S]*display:none!important/);
 });
 
 test("profile avatar owns five functional actions without automatic logout", () => {
