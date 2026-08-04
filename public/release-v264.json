@@ -1,0 +1,34 @@
+{
+  "release": "studio-theme-layout-v264-20260804",
+  "date": "2026-08-04",
+  "extends": "studio-shell-auth-v263-20260804",
+  "themeSystem": {
+    "themeCountContract": 100,
+    "widgetCountContract": 26,
+    "layoutAreaCount": 26,
+    "contentGeometry": "four left widget slots, centered Post/Page content, four right widget slots",
+    "quickWidgetChoices": [
+      "Pencarian",
+      "Post terbaru",
+      "Post populer",
+      "Kategori",
+      "Tag",
+      "Profil penulis",
+      "Komentar",
+      "HTML / JavaScript"
+    ],
+    "fullWidgetStudio": true,
+    "exactAreaAssignmentThroughReactChangeEvent": true,
+    "htmlCssJavaScriptEditorShortcut": true,
+    "mobileResponsiveDenah": true
+  },
+  "validation": {
+    "sourceRegressionContractAdded": true,
+    "productionTestGateImportsV264ThroughV263AndV236": true,
+    "ciResultObservedByThisManifest": false,
+    "productionDeploymentObservedByThisManifest": false,
+    "realBrowserThemeEditingVerifiedByThisManifest": false,
+    "realDeviceThemeEditingVerifiedByThisManifest": false,
+    "claimPolicy": "Source and regression contracts are recorded. Runtime deployment and real-device success are not claimed until an external build/deploy/test result is observed."
+  }
+}
