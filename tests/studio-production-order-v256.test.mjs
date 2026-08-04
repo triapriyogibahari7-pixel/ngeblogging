@@ -67,7 +67,7 @@ test("email password direct recovery uses the same public production client when
   assert.match(callback, /PRODUCTION_SUPABASE_URL_V245/);
   assert.match(callback, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245/);
   assert.match(callback, /officialProductionHost/);
-  assert.match(callback, /AUTH_GATEWAY_TIMEOUT/);
+  assert.match(callback, /auth_gateway_timeout/i);
   assert.match(callback, /supabase\.auth\.setSession/);
   assert.match(callback, /authPasswordFallbackV256/);
   assert.doesNotMatch(callback, /SUPABASE_SERVICE_ROLE_KEY|service_role_key|sb_secret_/i);
