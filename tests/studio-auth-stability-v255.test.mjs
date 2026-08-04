@@ -15,6 +15,8 @@ const studio = read("src/StudioNext.jsx");
 const themeCatalog = read("src/theme-catalog.js");
 const widgetSystem = read("src/widget-system.js");
 const nara = read("src/NaraAssistant.jsx");
+const vite = read("vite.config.js");
+const rotate = read("scripts/service-worker-v255-rotate.mjs");
 
 const requiredMenu = [
   "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
@@ -86,7 +88,7 @@ test("all mandatory sidebar items remain and one n geometry is centered in both 
 test("mobile drawer stays clickable without dark blur and desktop profile remains visible", () => {
   assert.match(css, /data-studio-v253-family="small"\] \.sn-side\.mobile-open[\s\S]*pointer-events:auto!important/);
   assert.match(css, /\.sn-side-backdrop[\s\S]*background:transparent!important[\s\S]*backdrop-filter:none!important/);
-  assert.match(css, /data-studio-v253-family="small"\] \.sn-side-backdrop[\s\S]*inset:0 0 0 var\(--v255-drawer\)!important/);
+  assert.match(css, /data-studio-v253-family="small"\]\[data-studio-v253-sidebar="open"\] \.sn-side-backdrop[\s\S]*inset:0 0 0 var\(--v255-drawer\)!important/);
   assert.match(css, /data-studio-v253-family="large"\] \.sn-avatar[\s\S]*display:grid!important[\s\S]*pointer-events:auto!important/);
   assert.match(runtime, /avatar\.setAttribute\("aria-label", "Buka menu profil"\)/);
 });
@@ -124,4 +126,16 @@ test("operational surfaces are protected from horizontal overflow and mobile Dom
   assert.match(css, /\.op41-table-wrap[\s\S]*overflow-x:auto!important/);
   assert.match(runtime, /min-width/);
   assert.match(runtime, /max-width/);
+});
+
+test("v255 rotates shell/assets after v253 without force navigation or session destruction", () => {
+  assert.match(vite, /rotateServiceWorkerV255/);
+  assert.ok(vite.indexOf("rotateServiceWorkerV255()") > vite.indexOf("rotateServiceWorkerV253()"));
+  assert.match(rotate, /ACTIVE_VERSION_V253/);
+  assert.match(rotate, /ACTIVE_VERSION_V255/);
+  assert.match(rotate, /studioAuthStabilityReleaseV255/);
+  assert.match(rotate, /NGE_BLOGGING_UPDATE_AVAILABLE_V255/);
+  assert.match(rotate, /V255_ROTATE_OLD_CACHE_CLEANUP_MISSING/);
+  assert.match(rotate, /V255_ROTATE_AUTH_SURFACE_GUARD_MISSING/);
+  assert.doesNotMatch(rotate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
