@@ -1,0 +1,100 @@
+name: Deploy Ngeblogging Production v273
+
+on:
+  push:
+    branches: [main, production]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-production-v273
+  cancel-in-progress: true
+
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+
+    steps:
+      - name: Checkout deployment source
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate rollout contract
+        run: node --test tests/production-rollout-v273.test.mjs
+
+      - name: Run complete production regression and build
+        run: npm run build
+
+      - name: Verify production source markers before deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -f public/release-v273.json
+          grep -q 'studio-production-rollout-v273-20260804' public/release-v273.json
+          grep -q 'studio-shell-authority-v272.js' src/Studio.jsx
+          grep -q 'studio-theme-layout-v264.js' src/Studio.jsx
+          grep -q 'studio-sidebar-single-toggle-v267.js' src/Studio.jsx
+          grep -q 'persistSession: true' src/lib/supabase.js
+          grep -q 'autoRefreshToken: true' src/lib/supabase.js
+          grep -q 'UI_PATCH_RELEASE_V272' public/sw.js
+          grep -q 'studio-shell-cache-v272' public/sw.js
+
+      - name: Deploy Worker and static assets to Cloudflare production
+        run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
+
+      - name: Verify live v273 release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v273.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-production-rollout-v273-20260804'; then
+              echo "Live v273 release manifest confirmed."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Live production did not expose release-v273.json after deployment." >&2
+          exit 1
+
+      - name: Verify live service worker contains v272 shell cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sw="$(curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}")"
+          printf '%s' "$sw" | grep -q 'UI_PATCH_RELEASE_V272'
+          printf '%s' "$sw" | grep -q 'studio-shell-cache-v272'
+
+      - name: Verify production health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health.json
+          test -s /tmp/ngeblogging-health.json
+
+      - name: Archive validated dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngeblogging-production-v273-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 30
