@@ -1,0 +1,30 @@
+{
+  "release": "studio-native-shell-v280-20260804",
+  "cache": "studio-native-shell-cache-v280",
+  "date": "2026-08-04",
+  "sourceBranch": "main",
+  "scope": [
+    "remove-scroll-time-shell-dom-churn",
+    "keep-mobile-n-fixed-and-centered",
+    "keep-desktop-sidebar-expanded-and-icon-rail",
+    "keep-complete-sidebar-menu-close-to-create-post",
+    "keep-profile-visible-top-right",
+    "keep-nara-launcher-fixed-safe-area",
+    "keep-nara-small-medium-nonmodal",
+    "keep-nara-attachment-menu-inside-viewport",
+    "compact-mobile-summary-with-readable-type",
+    "fix-mobile-domain-publication-actions",
+    "preserve-theme-layout-code-editor",
+    "preserve-persisted-auth"
+  ],
+  "verification": {
+    "requiredSidebarItems": 13,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "maxCodeLines": 10000,
+    "naraSizes": ["small", "medium", "full"],
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "scrollDomMutation": false
+  }
+}
