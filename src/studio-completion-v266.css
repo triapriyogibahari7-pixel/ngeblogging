@@ -1,0 +1,68 @@
+/* Ngeblogging Studio v266 — completion layer after screenshot/geometry authority v265. */
+
+.sn-shell :is(.sn-main,.sn-view-pad,.sn-view-pad>*,.sn-settings-grid,.sn-settings-grid>*,.sn-content-card,.sv124-page,.tn-studio,.tn-layout-studio,.tn-code-workspace,.op41-panel){min-width:0!important;max-width:100%!important}
+.sn-shell :is(img,video,iframe,canvas,svg){max-width:100%}
+.sn-shell :is(table,pre,code){max-width:100%}
+
+/* Theme: true 26-slot layout remains centered and editable. */
+.tn-layout-studio{width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important}
+.tn-layout-map-v264{width:100%!important;max-width:1120px!important;margin-inline:auto!important}
+.tn-layout-popover-v264{max-width:calc(100vw - 20px)!important;max-height:min(72dvh,520px)!important;overflow:auto!important}
+.tn-layout-post-v264{place-items:center!important;text-align:center!important}
+
+/* Theme code editor: 50:50 for tablet-large/laptop/desktop/computer; vertical for small devices. */
+.tn-code-workspace[data-code-workspace-v266],.tn-code-workspace{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;align-items:stretch!important}
+html.studio-v265-large .tn-code-workspace,
+html[data-studio-device-mode="large"] .tn-code-workspace{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important}
+html.studio-v265-small .tn-code-workspace,
+html[data-studio-device-mode="small"] .tn-code-workspace{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+.tn-code-pane,.tn-code-preview-pane{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+.tn-code-pane nav,.tn-code-preview-pane>header,.tn-device-switch{max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-inline:contain!important;scrollbar-width:thin!important}
+.tn-code-pane nav button,.tn-device-switch button{flex:0 0 auto!important}
+.tn-code-pane textarea{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:clamp(460px,62dvh,820px)!important;overflow:auto!important;resize:vertical!important;white-space:pre!important;tab-size:2!important;font:500 13px/1.55 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important}
+html.studio-v265-small .tn-code-pane textarea,
+html[data-studio-device-mode="small"] .tn-code-pane textarea{min-height:540px!important}
+.tn-code-preview-pane .tn-frame-shell{display:block!important;margin-inline:auto!important;max-width:100%!important;overflow:auto!important}
+.tn-code-preview-pane iframe{display:block!important;margin-inline:auto!important;max-width:100%!important}
+
+/* Nara: compact one-row composer for +, mic, intelligence, model and send. */
+.nara-composer-tools{display:grid!important;grid-template-columns:40px 40px minmax(98px,1fr) minmax(108px,1fr) 42px!important;gap:5px!important;align-items:center!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important}
+.nara-composer-tools>*{min-width:0!important;max-width:100%!important}
+.nara-select{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.nara-select>span{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+@media(max-width:430px){.nara-composer-tools{grid-template-columns:38px 38px minmax(0,1fr) minmax(0,1fr) 40px!important;gap:4px!important}.nara-select{font-size:11px!important}}
+
+/* Analytics: production-first surface, larger trend and human/bot visual. */
+.op41-panel{width:100%!important;max-width:100%!important;min-width:0!important}
+.op41-chart-grid{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr)!important;gap:14px!important;align-items:stretch!important}
+.op41-chart-grid.equal{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.op41-card{min-width:0!important;overflow:hidden!important}
+.op41-line{display:block!important;width:100%!important;height:auto!important;min-height:270px!important}
+.op41-donut-wrap{min-height:270px!important;align-items:center!important}
+.op41-donut{width:clamp(180px,19vw,240px)!important;height:clamp(180px,19vw,240px)!important}
+.op41-table-wrap{width:100%!important;max-width:100%!important;overflow-x:auto!important;overscroll-behavior-inline:contain!important}
+@media(max-width:900px){.op41-chart-grid,.op41-chart-grid.equal{grid-template-columns:minmax(0,1fr)!important}.op41-line{min-height:220px!important}.op41-donut-wrap{min-height:220px!important}}
+
+/* Domain/mobile: actions are full-width and text remains horizontal/readable. */
+@media(max-width:760px){
+  .sv124-page-title{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  .sv124-page-title>button{width:100%!important;min-height:44px!important;justify-content:center!important}
+  .sv124-free-domain>aside{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;width:100%!important}
+  .sv124-free-domain>aside>*{width:100%!important;min-height:44px!important;justify-content:center!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important}
+  .sv124-domain-register form{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .sv124-domain-register form>button{width:100%!important;min-height:44px!important;justify-content:center!important}
+  .sv124-domain-item,.sv124-domain-item>*{min-width:0!important;max-width:100%!important}
+  .sv124-domain-item :is(h2,h3,p,code,span,b){overflow-wrap:anywhere!important;word-break:normal!important}
+}
+
+/* Settings and content editor cannot collide on compact screens. */
+@media(max-width:760px){
+  .sn-settings-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+  .sn-settings-grid section{min-width:0!important;max-width:100%!important}
+  .sn-settings-grid :is(input,textarea,select,button){max-width:100%!important;min-width:0!important}
+  .ce-workspace,.ce-editor,.ce-panel,.ce-titlebar{min-width:0!important;max-width:100%!important}
+  .ce-editor :is(img,video,iframe){max-width:100%!important;height:auto!important}
+  .ce-editor table{display:block!important;max-width:100%!important;overflow-x:auto!important}
+}
+
+.tn-code-workspace,.tn-layout-map-v264,.op41-panel,.nara-composer-tools{animation:none!important;will-change:auto!important}
