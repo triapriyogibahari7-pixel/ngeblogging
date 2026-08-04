@@ -1,0 +1,29 @@
+{
+  "release": "studio-final-stability-v275-20260804",
+  "cache": "studio-final-stability-cache-v275",
+  "date": "2026-08-04",
+  "sourceBranch": "main",
+  "scope": [
+    "single-internal-n-sidebar-controller",
+    "desktop-expanded-and-collapsed-sidebar",
+    "compact-logo-trigger-and-drawer",
+    "profile-five-action-dropdown-preserved",
+    "nara-fixed-launcher-and-nonmodal-small-medium",
+    "nara-camera-photo-file-microphone-speaker-preserved",
+    "theme-100-cards-preserved",
+    "layout-26-slot-readable-mobile-map",
+    "theme-code-split-desktop-stacked-mobile",
+    "code-line-numbers-up-to-10000",
+    "domain-mobile-full-width-actions",
+    "global-overflow-and-containment-hardening",
+    "auth-session-persistence-preserved"
+  ],
+  "verification": {
+    "requiredMenus": 13,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "maxCodeLines": 10000,
+    "naraSizes": ["small", "medium", "full"],
+    "previewDevices": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]
+  }
+}
