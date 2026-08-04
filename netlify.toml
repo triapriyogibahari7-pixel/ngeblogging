@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "node --test tests/studio-theme-right4-v258.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
