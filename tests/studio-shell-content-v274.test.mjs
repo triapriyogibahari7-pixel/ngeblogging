@@ -11,7 +11,13 @@ const nara = read("src/NaraAssistant.jsx");
 const themeCatalog = read("src/theme-catalog.js");
 const widgets = read("src/widget-system.js");
 const auth = read("src/lib/supabase.js");
+const authModal = read("src/AuthModal.jsx");
 const analytics = read("src/studio-analytics-v41.js");
+const editorPatch = read("scripts/patch-content-editor-v162.mjs");
+const contentData = read("src/lib/content-data.js");
+const publicComments = read("public/comments-v93.js");
+const onboarding = read("src/StudioOnboardingGate.jsx");
+const sitePolicy = read("src/lib/site-policy-v169.js");
 
 const menu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
@@ -59,6 +65,40 @@ test("Theme Studio remains 100 themes, 26 widgets, readable layout map and split
   assert.match(css, /grid-template-areas:"code" "preview"/);
 });
 
+test("Post and Page keep the same full editor, 5000-word guard, SEO and social metadata", () => {
+  assert.match(studio, /<ContentEditor doc=\{active\}/);
+  assert.match(editorPatch, /words > 5000/);
+  assert.match(editorPatch, /words >= 4500/);
+  assert.match(editorPatch, /\/ 5\.000 kata/);
+  assert.match(editorPatch, /Draf tetap disimpan dan tulisan tidak dipotong/);
+  for (const marker of ["SEO title", "Meta description", "Focus keyword", "Canonical URL", "Twitter Card", "Gambar sosial", "Schema type", "ce-seo-preview-v162"]) {
+    assert.ok(editorPatch.includes(marker), `editor patch missing ${marker}`);
+  }
+  for (const marker of ["metadata", "seo", "scheduled_at", "featured_image_path"]) {
+    assert.ok(contentData.includes(marker), `content persistence missing ${marker}`);
+  }
+  assert.match(contentData, /payload\.metadata = normalizeMetadata/);
+  assert.match(contentData, /payload\.seo = normalizeSeo/);
+});
+
+test("public comments preserve empty state, ten primary moods and ten reactions", () => {
+  assert.match(publicComments, /PRIMARY_MOODS = \["😀","😃","😄","😁","😊","😍","🥰","😎","🤩","😂"\]/);
+  assert.match(publicComments, /REACTIONS = \["😀","😊","😍","😂","😮","😢","😡","👍","❤️","🎉"\]/);
+  assert.match(publicComments, /Belum ada komentar\. Jadilah yang pertama membuka diskusi\./);
+  assert.match(publicComments, /ngc-honeypot/);
+  assert.match(publicComments, /4000/);
+});
+
+test("first-site onboarding remains before Studio and enforces the real 25-site policy", () => {
+  for (const marker of ["Nama situs", "Subdomain gratis", "Deskripsi singkat", "Tema awal", "Bahasa", "Zona waktu", "is_site_slug_available", ".ngeblogging.com"]) {
+    assert.ok(onboarding.includes(marker), `onboarding missing ${marker}`);
+  }
+  for (const type of ["blog", "website", "news", "portfolio", "forum", "community", "landing", "profile", "knowledge"]) {
+    assert.ok(onboarding.includes(`value: "${type}"`), `onboarding missing ${type}`);
+  }
+  assert.match(sitePolicy, /MAX_SITES_PER_ACCOUNT = 25/);
+});
+
 test("analytics is production-first and keeps explicit simulation labeling", () => {
   assert.match(runtime, /loadAnalytics\(view, 30, false\)/);
   assert.match(analytics, /DATA PRODUKSI NYATA/);
@@ -66,7 +106,12 @@ test("analytics is production-first and keeps explicit simulation labeling", () 
   assert.match(css, /\.op41-line[\s\S]*min-height:320px!important/);
 });
 
-test("auth persistence is preserved and v274 never clears sessions", () => {
+test("all requested login methods remain wired and auth persistence is preserved", () => {
+  assert.match(authModal, /id: "google"/);
+  assert.match(authModal, /id: "linkedin_oidc"/);
+  assert.match(authModal, /signInWithPassword/);
+  assert.match(authModal, /signInWithMagicLink/);
+  assert.match(auth, /signInWithOAuth/);
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.doesNotMatch(runtime, /localStorage\.clear|sessionStorage\.clear|signOut\(|location\.reload\(/);
