@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const studio = read("src/Studio.jsx");
 const device = read("src/studio-device-mode-v140.js");
 const css = read("src/studio-shell-v265-final-hotfix.css");
+const singleToggle = read("src/studio-sidebar-single-toggle-v267.js");
 const sw265 = read("scripts/patch-service-worker-v265.mjs");
 const sw267 = read("scripts/patch-service-worker-v267.mjs");
 
@@ -24,6 +26,15 @@ test("mobile n is physically fixed to the viewport and remains touchable after s
   assert.match(css, /touch-action:manipulation!important/);
   assert.match(css, /body\.sn-mobile-sidebar-open \.sn-top>\.sn-sidebar-toggle[\s\S]*display:none!important/);
   assert.match(css, /#ngeblogging-studio-sidebar\.mobile-open \.sn-logo-mark[\s\S]*pointer-events:auto!important/);
+});
+
+test("internal sidebar n is captured once before historical v229/v231 target listeners", () => {
+  assert.match(studio, /import "\.\/studio-sidebar-single-toggle-v267\.js";/);
+  assert.match(singleToggle, /studio-sidebar-single-toggle-v267-20260804/);
+  assert.match(singleToggle, /document\.addEventListener\("click", activate, true\)/);
+  assert.match(singleToggle, /event\.stopImmediatePropagation\(\)/);
+  assert.match(singleToggle, /toggle\.click\(\)/);
+  assert.doesNotMatch(singleToggle, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
 test("desktop collapsed sidebar remains a visible icon rail and external n stays hidden", () => {
