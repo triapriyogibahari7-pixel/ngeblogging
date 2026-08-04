@@ -142,9 +142,11 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
     if (event.key === "Escape") setTimeout(schedule, 0);
   }, true);
 
-  for (const eventName of ["scroll", "resize", "orientationchange", "pageshow", "online"]) {
-    window.addEventListener(eventName, schedule, { passive: true });
-  }
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule, { passive: true });
+  window.addEventListener("orientationchange", schedule, { passive: true });
+  window.addEventListener("pageshow", schedule, { passive: true });
+  window.addEventListener("online", schedule, { passive: true });
   window.visualViewport?.addEventListener("scroll", schedule, { passive: true });
   window.visualViewport?.addEventListener("resize", schedule, { passive: true });
   window.addEventListener("ngeblogging:studio-device-mode-change", schedule);
