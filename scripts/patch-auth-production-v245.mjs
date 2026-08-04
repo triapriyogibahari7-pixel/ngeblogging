@@ -85,3 +85,10 @@ if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) {
 
 await write(path, source);
 console.log(`Applied ${RELEASE}: production login retains VITE config first and gains an official-host public fallback.`);
+
+// Final production build authority. Historical patch scripts above may rewrite
+// Studio or the service worker for compatibility; v252 is deliberately applied
+// last so the repository contract and generated deployment cannot diverge.
+const native = await import("./activate-studio-native-v250.mjs");
+await native.activateStudioNativeV250();
+await import("./patch-service-worker-v252.mjs");
