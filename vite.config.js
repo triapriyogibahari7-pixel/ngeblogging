@@ -1,7 +1,4 @@
 import { defineConfig } from "vite";
-import { activateStudioNativeV250 } from "./scripts/activate-studio-native-v250.mjs";
-import { finalizeStudioV255Order } from "./scripts/finalize-studio-v255-order.mjs";
-import { finalizeStudioV257Order } from "./scripts/finalize-studio-v257-order.mjs";
 import { finalizeStudioV259Order } from "./scripts/finalize-studio-v259-order.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
@@ -27,17 +24,17 @@ export default defineConfig({
       name: "ngeblogging-native-studio-v260",
       apply: "build",
       async buildStart() {
-        const v250 = await activateStudioNativeV250();
-        console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
-        console.log(`[vite] ${v250.shellNaraRelease} remains the v253 compatibility base`);
-        const v256 = await finalizeStudioV255Order();
-        console.log(`[vite] ${v256.release} keeps v255 interaction authority after legacy activators`);
-        const v257 = await finalizeStudioV257Order();
-        console.log(`[vite] ${v257.release} keeps v257 visual authority after historical activators`);
+        // v260 intentionally does not rewrite src/Studio.jsx at build time.
+        // The source is already committed in final cascade order. The historical
+        // v250/v255/v257 activators remain in scripts as backups, but invoking them
+        // here moved old CSS behind v260 and caused unstable Netlify builds.
         const v260 = await finalizeStudioV259Order();
-        console.log(`[vite] ${v260.release} read-only contract validation passed; committed v260 source remains final`);
+        console.log(`[vite] ${v260.release} read-only Studio/auth/Nara contract validation passed`);
       },
       closeBundle() {
+        // Keep the last Netlify-proven service-worker pipeline. v260 UI/auth code is
+        // in hashed Vite assets and network-first; v260 must not mutate dist/sw.js
+        // until its source-level migration is separately validated.
         const v237 = finalizeServiceWorkerV237();
         console.log(`[vite] ${v237.release} compatibility finalized in ${v237.path}`);
         const v238 = finalizeServiceWorkerV238();
@@ -72,7 +69,6 @@ export default defineConfig({
         console.log(`[vite] ${v257.release} cache rotation finalized in ${v257.path}`);
         const v258 = rotateServiceWorkerV258();
         console.log(`[vite] ${v258.release} cache rotation finalized in ${v258.path}`);
-        console.log("[vite] v260 does not mutate dist/sw.js; the last Netlify-proven v258 rotation remains active until source-level v260 SW migration is validated.");
       },
     },
   ],
