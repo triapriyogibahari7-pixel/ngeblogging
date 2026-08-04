@@ -4,6 +4,8 @@ import { finalizeStudioV259Order } from "./scripts/finalize-studio-v259-order.mj
 // Historical regression marker names intentionally retained as comments only.
 // These source-mutating Studio activators are backups, not build hooks in v260:
 // activateStudioNativeV250 / finalizeStudioV255Order / finalizeStudioV257Order.
+// Historical plugin marker retained for the v258 static regression contract:
+// ngeblogging-native-studio-v258
 //
 // These service-worker finalizers/rotations are also retained as source backups,
 // but are NOT executed after Vite bundling because Netlify diagnostics proved that
