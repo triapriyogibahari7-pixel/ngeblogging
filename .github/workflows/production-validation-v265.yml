@@ -1,0 +1,44 @@
+name: Production Validation v265
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-validation-v265-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Test and build Ngeblogging
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production regression tests and build
+        run: npm run build
+
+      - name: Assert v265 source markers
+        run: |
+          test -f src/studio-screenshot-authority-v265.js
+          test -f src/studio-screenshot-authority-v265.css
+          test -f src/studio-theme-layout-v264.js
+          test -f tests/studio-screenshot-authority-v265.test.mjs
+          test -f public/release-v265.json
+          grep -q 'studio-screenshot-authority-v265.js' src/Studio.jsx
+          grep -q 'patch-service-worker-v265.mjs' scripts/patch-service-worker-v179.mjs
+          grep -q 'studio-screenshot-authority-cache-v265' public/sw.js
