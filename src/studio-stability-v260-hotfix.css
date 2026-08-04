@@ -68,6 +68,32 @@ html[data-studio-v260-family="small"] .sn-side-backdrop{
   -webkit-backdrop-filter:none!important;
 }
 
+/* Nara defaults to non-modal from the very first React paint. Runtime v260 then
+   mirrors the same state in data-v260-*; this prevents one-frame white/blur locks. */
+html[data-studio-stability-v260] .nara-assistant-layer{
+  background:transparent!important;
+  pointer-events:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-studio-stability-v260] .nara-assistant-layer>.nara-assistant-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-studio-stability-v260] .nara-assistant-layer>.nara-assistant-shell{
+  pointer-events:auto!important;
+}
+html[data-studio-stability-v260] .nara-assistant-layer:has(.nara-assistant-shell[data-nara-size="full"]){
+  background:rgba(18,29,48,.22)!important;
+  pointer-events:auto!important;
+}
+html[data-studio-stability-v260] .nara-assistant-layer:has(.nara-assistant-shell[data-nara-size="full"])>.nara-assistant-backdrop{
+  display:block!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+
 /* Final Nara launcher paint: no blink, no text escaping the icon. */
 html[data-studio-stability-v260] .nara-floating-button:not([hidden]){
   background:linear-gradient(145deg,#315fe8,#5649d8)!important;
