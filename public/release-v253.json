@@ -1,0 +1,69 @@
+{
+  "release": "studio-shell-nara-v253-20260804",
+  "date": "2026-08-04",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "computer"],
+    "largeSidebarAlwaysPresent": true,
+    "largeExpandedWidth": 248,
+    "largeCollapsedWidth": 70,
+    "smallDrawerPartialViewport": true,
+    "smallBackdropBlur": false
+  },
+  "sidebar": {
+    "singleNControl": true,
+    "brandVisibleWhenExpanded": true,
+    "iconsRemainWhenCollapsed": true,
+    "requiredMenuCount": 13,
+    "settingsAndLogoutPinnedToFooter": true,
+    "contentTracksSidebarWidth": true,
+    "profileVisibleOnLargeAndSmall": true
+  },
+  "nara": {
+    "launcherFixedToLowerRightSafeArea": true,
+    "launcherAnimationDisabled": true,
+    "smallNonModal": true,
+    "mediumNonModal": true,
+    "fullModal": true,
+    "headerControlsSingleRow": true,
+    "attachmentMenuNotClipped": true,
+    "cameraPhotoFilePreserved": true,
+    "microphonePreserved": true,
+    "speakerPreserved": true,
+    "modelSelectorPreserved": true,
+    "intelligenceSelectorPreserved": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v253-shell-nara-20260804",
+    "cache": "studio-shell-nara-cache-v253",
+    "oldCachesDeletedOnActivate": true,
+    "forcedWindowNavigation": false,
+    "authSurfacesExcludedFromUpdateNavigation": true
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "pkcePreserved": true,
+    "automaticLogoutAdded": false,
+    "storageClearAdded": false
+  },
+  "preserved": {
+    "posts": true,
+    "pages": true,
+    "themes100Architecture": true,
+    "widgets26Architecture": true,
+    "themeCodeEditor": true,
+    "media": true,
+    "realAnalyticsRpc": true,
+    "members": true,
+    "comments": true,
+    "domain": true,
+    "apiKeys": true
+  },
+  "claims": {
+    "massCapacityClaimed": false,
+    "providerOAuthEndToEndClaimed": false,
+    "realDeviceVerificationRequired": true,
+    "liveCloudflareVerificationRequired": true
+  }
+}
