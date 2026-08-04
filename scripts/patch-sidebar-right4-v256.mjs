@@ -80,30 +80,10 @@ async function patchLayoutCss() {
   await write(path, source);
 }
 
-async function markThemeStudio() {
-  const path = "src/ThemeStudio.jsx";
-  let source = await read(path);
-  if (!source.includes("data-layout-right4-v256")) {
-    const anchor = '<section className="tn-layout-studio" aria-label="Peta tata letak 20 area widget + 1 area kiri tambahan, total 21 area">';
-    const replacement = '<section className="tn-layout-studio" data-layout-right4-v256="studio-theme-layout-right4-v256-20260804" aria-label="Peta tata letak dengan empat widget kiri, Post atau Page di tengah, dan empat widget kanan">';
-    if (source.includes(anchor)) source = source.replace(anchor, replacement);
-    else {
-      const generic = '<section className="tn-layout-studio"';
-      if (!source.includes(generic)) throw new Error("V256_RIGHT4_THEME_STUDIO_ANCHOR_MISSING");
-      source = source.replace(generic, '<section className="tn-layout-studio" data-layout-right4-v256="studio-theme-layout-right4-v256-20260804"');
-    }
-  }
-  if (!source.includes("Peta tata letak 20 area widget + 1 area kiri tambahan, total 21 area")) {
-    source += '\n/* v207 compatibility: Peta tata letak 20 area widget + 1 area kiri tambahan, total 21 area */\n';
-  }
-  await write(path, source);
-}
-
 async function verify() {
   const widgets = await read("src/widget-system.js");
   const runtime = await read("src/theme-layout-runtime-v170.js");
   const css = await read("src/theme-layout-v170.css");
-  const studio = await read("src/ThemeStudio.jsx");
 
   for (const marker of [
     'id: "sidebar-left-4"',
@@ -116,13 +96,11 @@ async function verify() {
   if (!runtime.includes("Empat area widget kanan postingan")) throw new Error("V256_RIGHT4_RUNTIME_LABEL_MISSING");
   if (!css.includes(".tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}")) throw new Error("V256_RIGHT4_CSS_AREA_MISSING");
   if (!css.includes('"sidebar-left-4 content-main content-main content-main content-main sidebar-right-4"')) throw new Error("V256_RIGHT4_DESKTOP_PAIR_MISSING");
-  if (!studio.includes('data-layout-right4-v256="studio-theme-layout-right4-v256-20260804"')) throw new Error("V256_RIGHT4_STUDIO_MARKER_MISSING");
 }
 
 await ensureHistoricalLeft4();
 await patchWidgets();
 await patchRuntime();
 await patchLayoutCss();
-await markThemeStudio();
 await verify();
 console.log(`Applied ${RELEASE}; four-left + center + four-right are real widget areas.`);
