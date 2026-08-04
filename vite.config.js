@@ -18,12 +18,12 @@ import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mj
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v256-order-isolation",
+      name: "ngeblogging-native-studio-v253",
       apply: "build",
       async buildStart() {
-        const activation = await activateStudioNativeV250();
-        console.log(`[vite] ${activation.release} activated after historical regressions and before bundling`);
-        console.log(`[vite] ${activation.finalInteractionRelease} is the final Studio interaction authority before bundling`);
+        const v250 = await activateStudioNativeV250();
+        console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
+        console.log(`[vite] ${v250.shellNaraRelease} is the final Studio shell/Nara authority before bundling`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
