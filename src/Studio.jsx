@@ -109,8 +109,10 @@ import "./studio-editor-navigation-v266.js";
 import "./studio-editor-navigation-v266.css";
 import "./studio-runtime-v266.js";
 import "./studio-sidebar-single-toggle-v267.js";
-// v269 is deliberately last: it is the live responsive shell authority and
-// therefore cannot be overwritten by historical compatibility CSS above.
+// v269 remains the full responsive authority; v270 only hardens fixed chrome
+// against long-scroll/address-bar movement and legacy hidden-rail regressions.
 import "./studio-final-authority-v269.js";
+import "./studio-scroll-chrome-v270.js";
+import "./studio-scroll-chrome-v270.css";
 
 export default StudioFastGate;
