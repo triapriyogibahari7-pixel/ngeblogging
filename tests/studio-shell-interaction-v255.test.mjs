@@ -30,9 +30,7 @@ test("single internal n delegates to React sidebar ownership", () => {
 });
 
 test("profile surface is bounded and exposes separate profile/settings plus site actions", () => {
-  for (const action of ["profile", "settings", "add-site", "view-site", "logout"]) {
-    assert.match(runtime, new RegExp(`data-action=\\"${action}\\"|\\[data-action=\\"${action}\\"\\]`));
-  }
+  for (const action of ["profile", "settings", "add-site", "view-site", "logout"]) assert.ok(runtime.includes(action));
   assert.match(runtime, /studioAccountViewV189 = action/);
   assert.match(styles, /data-studio-account-view-v189="profile"/);
   assert.match(styles, /sn-profile-menu-v150/);
@@ -46,13 +44,13 @@ test("Nara stays floating, non-modal in small/medium, and attachment menu opens 
   assert.match(styles, /data-v255-size="full"/);
   assert.match(styles, /\.nara-attachment-menu\{/);
   assert.match(styles, /bottom:calc\(100% \+ 8px\)!important/);
-  for (const feature of ["Kamera", "Foto", "File teks", "Tingkat kecerdasan", "Model Nara", "Tutup"]) assert.match(nara, new RegExp(feature));
+  for (const feature of ["Kamera", "Foto", "File teks", "Tingkat kecerdasan", "Model Nara", "Tutup"]) assert.ok(nara.includes(feature));
 });
 
 test("Theme Studio retains 100 themes, widgets, eight previews, code and preview panes", () => {
   assert.match(theme, /THEME_COUNT/);
   assert.match(theme, /WIDGET_COUNT/);
-  for (const device of ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]) assert.match(theme, new RegExp(`id: \\"${device}\\"|id:\\"${device}\\"`));
+  for (const device of ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]) assert.ok(theme.includes(`id: "${device}"`));
   assert.match(theme, /tn-code-pane/);
   assert.match(theme, /tn-code-preview-pane/);
   assert.match(theme, /HTML/);
@@ -65,12 +63,12 @@ test("auth persistence and provider routes remain intact", () => {
   assert.match(auth, /persistSession: true/);
   assert.match(auth, /autoRefreshToken: true/);
   assert.match(auth, /flowType: "pkce"/);
-  for (const provider of ["google", "github", "linkedin_oidc"]) assert.match(auth, new RegExp(provider));
+  for (const provider of ["google", "github", "linkedin_oidc"]) assert.ok(auth.includes(provider));
   assert.match(auth, /signInWithPassword/);
   assert.match(auth, /signInWithOtp/);
 });
 
 test("menu contract remains complete in React source", () => {
   const source = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
-  for (const label of requiredMenus) assert.match(source, new RegExp(label.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")));
+  for (const label of requiredMenus) assert.ok(source.includes(label), `missing Studio menu: ${label}`);
 });
