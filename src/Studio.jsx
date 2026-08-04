@@ -84,5 +84,7 @@ import "./studio-source-stability-v252.js";
 import "./studio-source-stability-v252.css";
 import "./studio-shell-nara-v253.js";
 import "./studio-shell-nara-v253.css";
+import "./studio-stability-v255.js";
+import "./studio-stability-v255.css";
 
 export default StudioFastGate;
