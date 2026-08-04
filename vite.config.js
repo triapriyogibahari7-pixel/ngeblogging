@@ -25,7 +25,7 @@ import { rotateServiceWorkerV259 } from "./scripts/service-worker-v259-rotate.mj
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v259",
+      name: "ngeblogging-native-studio-v260",
       apply: "build",
       async buildStart() {
         const v250 = await activateStudioNativeV250();
@@ -35,8 +35,8 @@ export default defineConfig({
         console.log(`[vite] ${v256.release} keeps v255 interaction authority after legacy activators`);
         const v257 = await finalizeStudioV257Order();
         console.log(`[vite] ${v257.release} keeps v257 visual authority after historical activators`);
-        const v259 = await finalizeStudioV259Order();
-        console.log(`[vite] ${v259.release} keeps v259 six-mode authority final before bundling`);
+        const v260 = await finalizeStudioV259Order();
+        console.log(`[vite] ${v260.release} validates shell/auth contracts and keeps v260 final after v259 compatibility layers`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
@@ -73,8 +73,8 @@ export default defineConfig({
         console.log(`[vite] ${v257.release} cache rotation finalized in ${v257.path}`);
         const v258 = rotateServiceWorkerV258();
         console.log(`[vite] ${v258.release} cache rotation finalized in ${v258.path}`);
-        const v259 = rotateServiceWorkerV259();
-        console.log(`[vite] ${v259.release} cache rotation finalized in ${v259.path}`);
+        const v260 = rotateServiceWorkerV259();
+        console.log(`[vite] ${v260.release} final cache rotation finalized in ${v260.path}`);
       },
     },
   ],
