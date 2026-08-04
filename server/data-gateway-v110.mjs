@@ -1,6 +1,4 @@
-export const DATA_GATEWAY_RELEASE = "2026.07.30-data-gateway-v110";
-export const DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE = "data-gateway-public-fallback-v256-20260804";
-export const DATA_GATEWAY_RESILIENCE_RELEASE_V256 = "data-gateway-resilience-v256-20260804";
+export const DATA_GATEWAY_RELEASE = "2026.07.28-data-gateway-v110";
 const PREFIX = "/api/data-proxy";
 const MAX_DECLARED_BODY_BYTES = 96 * 1024 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]);
@@ -37,96 +35,27 @@ const FORWARDED_RESPONSE_HEADERS = new Set([
   "x-supabase-api-version",
 ]);
 
-// Publishable browser credentials only. This is not a privileged key.
-const PRODUCTION_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
-const PRODUCTION_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
-
-function officialNgebloggingHost(value) {
-  try {
-    const url = value instanceof URL ? value : new URL(String(value || ""));
-    const hostname = url.hostname.toLowerCase();
-    return url.protocol === "https:" && (
-      hostname === "ngeblogging.com"
-      || hostname === "www.ngeblogging.com"
-      || hostname.endsWith(".ngeblogging.com")
-    );
-  } catch {
-    return false;
-  }
-}
-
-export function resolveDataGatewayConfig(env = {}, requestUrl = null) {
-  const configuredUrl = String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-  const configuredKey = String(
-    env.SUPABASE_PUBLISHABLE_KEY
-    || env.VITE_SUPABASE_PUBLISHABLE_KEY
-    || env.VITE_SUPABASE_ANON_KEY
-    || "",
-  ).trim();
-  const allowPublicFallback = officialNgebloggingHost(requestUrl);
-  const supabaseUrl = configuredUrl || (allowPublicFallback ? PRODUCTION_SUPABASE_URL : "");
-  const publishableKey = configuredKey || (allowPublicFallback ? PRODUCTION_SUPABASE_PUBLISHABLE_KEY : "");
-  const source = configuredUrl && configuredKey
-    ? "worker-env"
-    : supabaseUrl && publishableKey && allowPublicFallback
-      ? "production-public-fallback"
-      : "missing";
-  return { supabaseUrl, publishableKey, source, ready: Boolean(supabaseUrl && publishableKey) };
-}
-
-export function dataGatewayConfigured(env = {}, requestUrl = null) {
-  return resolveDataGatewayConfig(env, requestUrl).ready;
-}
-
 function allowedOrigin(origin) {
   if (!origin) return true;
   try {
     const url = new URL(origin);
     const hostname = url.hostname.toLowerCase();
     return url.protocol === "https:"
-      && (hostname === "ngeblogging.com"
-        || hostname.endsWith(".ngeblogging.com")
-        || hostname.endsWith(".netlify.app")
-        || hostname.endsWith(".pages.dev")
-        || hostname.endsWith(".workers.dev"));
+      && (hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com"));
   } catch {
     return false;
   }
 }
 
-function corsHeaders(origin, requestId, configSource = "") {
-  return {
-    "access-control-allow-origin": origin || "https://ngeblogging.com",
-    "access-control-allow-headers": [
-      "authorization", "apikey", "content-type", "prefer", "range",
-      "accept-profile", "content-profile", "x-client-info", "x-upsert",
-      "if-match", "if-none-match", "x-supabase-api-version",
-    ].join(", "),
-    "access-control-allow-methods": "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",
-    "access-control-expose-headers": "content-range, preference-applied, location, etag, x-request-id, x-ngeblogging-data-gateway, x-ngeblogging-data-config",
-    "access-control-max-age": "86400",
-    "cache-control": "no-store",
-    "x-ngeblogging-data-gateway": DATA_GATEWAY_RELEASE,
-    "x-ngeblogging-data-fallback": DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
-    "x-ngeblogging-data-resilience": DATA_GATEWAY_RESILIENCE_RELEASE_V256,
-    ...(configSource ? { "x-ngeblogging-data-config": configSource } : {}),
-    "x-request-id": requestId,
-  };
-}
-
-function json(status, payload, requestId, configSource = "") {
-  return new Response(JSON.stringify({
-    ...payload,
-    release: DATA_GATEWAY_RELEASE,
-    fallbackRelease: DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
-    resilienceRelease: DATA_GATEWAY_RESILIENCE_RELEASE_V256,
-    requestId,
-  }), {
+function json(status, payload, requestId) {
+  return new Response(JSON.stringify({ ...payload, release: DATA_GATEWAY_RELEASE, requestId }), {
     status,
     headers: {
-      ...corsHeaders("", requestId, configSource),
       "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
       "x-content-type-options": "nosniff",
+      "x-ngeblogging-data-gateway": DATA_GATEWAY_RELEASE,
+      "x-request-id": requestId,
     },
   });
 }
@@ -142,6 +71,23 @@ export function isDataGatewayRequest(url) {
     && ALLOWED_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
+function corsHeaders(origin, requestId) {
+  return {
+    "access-control-allow-origin": origin || "https://ngeblogging.com",
+    "access-control-allow-headers": [
+      "authorization", "apikey", "content-type", "prefer", "range",
+      "accept-profile", "content-profile", "x-client-info", "x-upsert",
+      "if-match", "if-none-match", "x-supabase-api-version",
+    ].join(", "),
+    "access-control-allow-methods": "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS",
+    "access-control-expose-headers": "content-range, preference-applied, location, etag, x-request-id, x-ngeblogging-data-gateway",
+    "access-control-max-age": "86400",
+    "cache-control": "no-store",
+    "x-ngeblogging-data-gateway": DATA_GATEWAY_RELEASE,
+    "x-request-id": requestId,
+  };
+}
+
 export async function handleDataGatewayRequest(request, env, requestId) {
   const origin = request.headers.get("origin") || "";
   if (!allowedOrigin(origin)) {
@@ -150,35 +96,35 @@ export async function handleDataGatewayRequest(request, env, requestId) {
   if (!ALLOWED_METHODS.has(request.method)) {
     return json(405, { code: "DATA_METHOD_NOT_ALLOWED", error: "Metode data tidak didukung." }, requestId);
   }
-
-  const sourceUrl = new URL(request.url);
-  const config = resolveDataGatewayConfig(env, sourceUrl);
   if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders(origin, requestId, config.source) });
+    return new Response(null, { status: 204, headers: corsHeaders(origin, requestId) });
   }
 
+  const supabaseUrl = String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+  const publishableKey = String(
+    env.SUPABASE_PUBLISHABLE_KEY
+    || env.VITE_SUPABASE_PUBLISHABLE_KEY
+    || env.VITE_SUPABASE_ANON_KEY
+    || "",
+  ).trim();
+  const sourceUrl = new URL(request.url);
   const path = targetPath(sourceUrl);
-  if (!config.ready || !path) {
-    return json(503, {
-      code: "DATA_GATEWAY_NOT_READY",
-      error: "Gateway data belum siap.",
-      configSource: config.source,
-    }, requestId, config.source);
+  if (!supabaseUrl || !publishableKey || !path) {
+    return json(503, { code: "DATA_GATEWAY_NOT_READY", error: "Gateway data belum siap." }, requestId);
   }
 
   const declaredLength = Number(request.headers.get("content-length") || 0);
   if (Number.isFinite(declaredLength) && declaredLength > MAX_DECLARED_BODY_BYTES) {
-    return json(413, { code: "DATA_PAYLOAD_TOO_LARGE", error: "Payload melebihi batas gateway data." }, requestId, config.source);
+    return json(413, { code: "DATA_PAYLOAD_TOO_LARGE", error: "Payload melebihi batas gateway data." }, requestId);
   }
 
-  const target = new URL(`${path}${sourceUrl.search}`, `${config.supabaseUrl}/`);
+  const target = new URL(`${path}${sourceUrl.search}`, `${supabaseUrl}/`);
   const headers = new Headers();
   for (const [name, value] of request.headers.entries()) {
     if (FORWARDED_REQUEST_HEADERS.has(name.toLowerCase())) headers.set(name, value);
   }
-  if (!headers.has("apikey")) headers.set("apikey", config.publishableKey);
+  if (!headers.has("apikey")) headers.set("apikey", publishableKey);
   headers.set("cache-control", "no-store");
-  headers.set("x-client-info", headers.get("x-client-info") || "ngeblogging-data-gateway-v256");
 
   try {
     const upstream = await fetch(target, {
@@ -187,15 +133,12 @@ export async function handleDataGatewayRequest(request, env, requestId) {
       body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
       redirect: "manual",
     });
-    const responseHeaders = new Headers(corsHeaders(origin, requestId, config.source));
+    const responseHeaders = new Headers(corsHeaders(origin, requestId));
     for (const [name, value] of upstream.headers.entries()) {
       if (FORWARDED_RESPONSE_HEADERS.has(name.toLowerCase())) responseHeaders.set(name, value);
     }
     responseHeaders.set("x-content-type-options", "nosniff");
     responseHeaders.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
-    responseHeaders.set("x-ngeblogging-data-fallback", DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE);
-    responseHeaders.set("x-ngeblogging-data-resilience", DATA_GATEWAY_RESILIENCE_RELEASE_V256);
-    responseHeaders.set("x-ngeblogging-data-config", config.source);
     return new Response(request.method === "HEAD" ? null : upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
@@ -206,7 +149,6 @@ export async function handleDataGatewayRequest(request, env, requestId) {
       code: "DATA_UPSTREAM_UNREACHABLE",
       error: "Layanan data belum dapat dijangkau melalui gateway. Sesi pengguna tetap dipertahankan.",
       detail: error?.name || "NetworkError",
-      configSource: config.source,
-    }, requestId, config.source);
+    }, requestId);
   }
 }
