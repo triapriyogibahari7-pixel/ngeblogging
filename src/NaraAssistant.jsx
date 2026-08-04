@@ -32,6 +32,146 @@ const NARA_SIZE_KEY = "ngeblogging-nara-size-v148";
 const NARA_VOICE_KEY = "ngeblogging-nara-auto-voice-v148";
 const VALID_NARA_SIZES = new Set(["small", "medium", "full"]);
 
+const NARA_GLOBAL_AUTHORITY_V271 = \`
+/* Nara v271: kecil/medium non-modal, penuh modal, dan header aman di layar sempit. */
+.nara-assistant-layer[data-nara-interaction="nonmodal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  display: block !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.nara-assistant-layer[data-nara-interaction="nonmodal"] > .nara-assistant-backdrop {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.nara-assistant-layer[data-nara-interaction="nonmodal"] > .nara-assistant-shell {
+  position: fixed !important;
+  pointer-events: auto !important;
+  max-width: calc(100vw - 24px) !important;
+  max-height: calc(100dvh - 24px) !important;
+}
+.nara-assistant-layer[data-nara-interaction="modal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  pointer-events: auto !important;
+  background: rgba(8, 18, 38, 0.54) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.nara-assistant-layer[data-nara-interaction="modal"] > .nara-assistant-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  background: transparent !important;
+}
+.nara-assistant-layer[data-nara-interaction="modal"] > .nara-assistant-shell {
+  position: fixed !important;
+  inset: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)) !important;
+  z-index: 2 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 20px !important;
+  pointer-events: auto !important;
+}
+body.nara-fullscreen-open-v148 {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+.nara-assistant-shell .nara-assistant-header,
+.nara-assistant-shell .nara-assistant-header > * {
+  min-width: 0 !important;
+  max-width: 100%;
+}
+.nara-assistant-shell .nara-assistant-header > button,
+.nara-assistant-shell .nara-size-controls-v147 > button {
+  flex: 0 0 auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.nara-assistant-shell .nara-assistant-header > button[aria-label="Tutup Nara"] {
+  display: inline-grid !important;
+  place-items: center !important;
+}
+@media (max-width: 600px) {
+  .nara-assistant-layer[data-nara-interaction="nonmodal"] > .nara-assistant-shell[data-nara-size="small"] {
+    inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) auto !important;
+    width: min(420px, calc(100vw - 24px)) !important;
+    height: min(640px, calc(100dvh - 24px)) !important;
+    border-radius: 20px !important;
+  }
+  .nara-assistant-layer[data-nara-interaction="nonmodal"] > .nara-assistant-shell[data-nara-size="medium"] {
+    inset: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: 20px !important;
+  }
+  .nara-assistant-layer[data-nara-interaction="modal"] > .nara-assistant-shell[data-nara-size="full"] {
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    padding-top: env(safe-area-inset-top) !important;
+    padding-right: env(safe-area-inset-right) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    padding-left: env(safe-area-inset-left) !important;
+  }
+  .nara-assistant-shell .nara-assistant-header {
+    display: grid !important;
+    grid-template-columns: 36px minmax(0, 1fr) 36px 36px 36px !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+  .nara-assistant-shell .nara-assistant-header > .nara-brand-orb {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+  .nara-assistant-shell .nara-assistant-header > div:nth-child(2) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    overflow: hidden !important;
+  }
+  .nara-assistant-shell .nara-assistant-header > .nara-size-controls-v147 {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+  .nara-assistant-shell .nara-assistant-header > .nara-auto-voice-v148 {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+  .nara-assistant-shell .nara-assistant-header > button[title="Percakapan baru"] {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+  }
+  .nara-assistant-shell .nara-assistant-header > button[aria-label="Tutup Nara"] {
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+  }
+  .nara-assistant-shell .nara-composer,
+  .nara-assistant-shell .nara-composer-tools,
+  .nara-assistant-shell .nara-quick-prompts {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+\`;
+
 const intelligenceOptions = [
   { id: "light", label: "Instan", description: "Cepat untuk pertanyaan singkat", pro: false },
   { id: "standard", label: "Sedang", description: "Seimbang untuk menulis dan SEO", pro: false },
@@ -264,6 +404,7 @@ export default function NaraAssistant({
   const recognition = useRef(null);
   const activeRequest = useRef(null);
   const scrollArea = useRef(null);
+  const layerRef = useRef(null);
 
   const stopSpeech = () => {
     try { window.speechSynthesis?.cancel(); } catch { /* Browser tanpa speech synthesis. */ }
@@ -345,8 +486,34 @@ export default function NaraAssistant({
 
   useEffect(() => {
     writePreference(NARA_SIZE_KEY, size);
-    document.body.classList.toggle("nara-fullscreen-open-v148", open && size === "full");
-    return () => document.body.classList.remove("nara-fullscreen-open-v148");
+    const layer = layerRef.current;
+    const fullScreen = open && size === "full";
+    const interaction = fullScreen ? "modal" : "nonmodal";
+    const synchronizeInteraction = () => {
+      if (layer) {
+        if (layer.dataset.naraInteraction !== interaction) layer.dataset.naraInteraction = interaction;
+        if (layer.getAttribute("aria-modal") !== String(fullScreen)) {
+          layer.setAttribute("aria-modal", String(fullScreen));
+        }
+      }
+      document.body.classList.toggle("nara-fullscreen-open-v148", fullScreen);
+    };
+
+    synchronizeInteraction();
+    const observer = layer && typeof MutationObserver !== "undefined"
+      ? new MutationObserver(synchronizeInteraction)
+      : null;
+    observer?.observe(layer, {
+      attributes: true,
+      attributeFilter: ["aria-modal", "data-nara-interaction"],
+    });
+    const frame = requestAnimationFrame(synchronizeInteraction);
+
+    return () => {
+      observer?.disconnect();
+      cancelAnimationFrame(frame);
+      if (fullScreen) document.body.classList.remove("nara-fullscreen-open-v148");
+    };
   }, [open, size]);
 
   useEffect(() => () => {
@@ -551,6 +718,7 @@ export default function NaraAssistant({
 
   return (
     <>
+      <style data-nara-global-authority-v271>{NARA_GLOBAL_AUTHORITY_V271}</style>
       <button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant">
         <span><Sparkles /></span>
         <b>Nara AI</b>
@@ -558,8 +726,8 @@ export default function NaraAssistant({
       </button>
 
       {open && (
-        <div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">
-          <button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />
+        <div ref={layerRef} className="nara-assistant-layer" data-nara-interaction={size === "full" ? "modal" : "nonmodal"} role="dialog" aria-modal={size === "full"} aria-label="Nara AI Assistant">
+          <button className="nara-assistant-backdrop" hidden={size !== "full"} aria-hidden={size !== "full"} onClick={closeNara} aria-label="Tutup Nara" />
           <aside className="nara-assistant-shell" aria-busy={busy} data-nara-size={size} data-nara-native-size="v149">
             <div className="nara-assistant-header">
               <div className="nara-brand-orb"><Sparkles /></div>
@@ -572,7 +740,7 @@ export default function NaraAssistant({
               </div>
               <button className={`nara-auto-voice-v148 nara-native-auto-voice-v149${autoVoice ? " active" : ""}`} onClick={toggleAutoVoice} aria-label="Balasan suara otomatis" aria-pressed={autoVoice} title={autoVoice ? "Matikan balasan suara otomatis" : "Aktifkan balasan suara otomatis"}><SpeakerIcon/></button>
               <button onClick={resetChat} title="Percakapan baru"><RotateCcw /></button>
-              <button onClick={closeNara} title="Tutup"><X /></button>
+              <button onClick={closeNara} aria-label="Tutup Nara" title="Tutup"><X /></button>
             </div>
 
             <div className="nara-context-bar">
