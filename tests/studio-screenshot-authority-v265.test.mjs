@@ -20,12 +20,13 @@ test("v265 loads after v264 as the last screenshot authority", () => {
   assert.ok(v265css > v265js);
 });
 
-test("the internal sidebar n proxies to the React-owned toggle instead of duplicating state", () => {
+test("the internal sidebar n keeps one historical owner and does not receive a second v265 toggle listener", () => {
   assert.match(source, /className="sn-icon sn-sidebar-toggle" onClick=\{toggleSidebar\}/);
   assert.match(source, /className="sn-logo-mark"/);
-  assert.match(runtime, /mark\.addEventListener\("click"/);
-  assert.match(runtime, /document\.querySelector\("\.sn-top \.sn-sidebar-toggle"\)\?\.click\(\)/);
-  assert.match(runtime, /mark\.addEventListener\("keydown"/);
+  assert.match(runtime, /single-owner-v232-react-proxy/);
+  assert.match(runtime, /Do not add another click\/keydown listener here/);
+  assert.doesNotMatch(runtime, /mark\.addEventListener\("click"/);
+  assert.doesNotMatch(runtime, /mark\.addEventListener\("keydown"/);
   assert.match(css, /\.sn-top>\.sn-sidebar-toggle,.sn-sidebar-toggle\{display:none!important\}/);
   assert.match(css, /#ngeblogging-studio-sidebar\.collapsed>nav button/);
 });
@@ -85,6 +86,7 @@ test("service-worker cache namespace rotates after the legacy migration chain wi
   assert.match(swPatch, /UI_PATCH_RELEASE_V263/);
   assert.match(swPatch, /UI_PATCH_RELEASE_V265/);
   assert.match(swPatch, /UI_CACHE_RELEASE_V265/);
+  assert.match(swPatch, /patch-service-worker-v267\.mjs/);
   assert.doesNotMatch(swPatch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
