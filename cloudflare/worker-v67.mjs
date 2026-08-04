@@ -10,8 +10,10 @@ import {
 } from "../server/comments-handler-v93.mjs";
 import {
   AUTH_GATEWAY_RELEASE,
+  AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE,
   handleAuthGatewayRequest,
   isAuthGatewayRequest,
+  resolveAuthGatewayConfig,
 } from "../server/auth-gateway-v108.mjs";
 import {
   DATA_GATEWAY_RELEASE,
@@ -81,7 +83,7 @@ async function enrichSaasDomainResponse(response, env) {
   }
 }
 
-async function enrichHealth(response, env) {
+async function enrichHealth(response, env, requestUrl) {
   if (!response.ok) return response;
   try {
     const payload = await response.clone().json();
@@ -89,16 +91,16 @@ async function enrichHealth(response, env) {
     const state = saasAccountState(env);
     const fullZone = provider === FULL_ZONE_PROVIDER;
     const comments = commentsReady(env);
-    const authConfigured = Boolean(
-      String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
-      && String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim(),
-    );
+    const authConfig = resolveAuthGatewayConfig(env, requestUrl);
+    const authConfigured = authConfig.ready;
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
     headers.set("x-ngeblogging-domain-engine", RELEASE);
     headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
     headers.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
+    headers.set("x-ngeblogging-auth-fallback", AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE);
+    headers.set("x-ngeblogging-auth-config", authConfig.source);
     headers.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
     headers.set("x-ngeblogging-release", String(env.APP_RELEASE || RELEASE));
     return new Response(JSON.stringify({
@@ -112,8 +114,12 @@ async function enrichHealth(response, env) {
       commentsRelease: "comments-v93-20260728",
       authGateway: authConfigured,
       authGatewayRelease: AUTH_GATEWAY_RELEASE,
+      authGatewayFallbackRelease: AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+      authConfigSource: authConfig.source,
       authProduction: authConfigured,
-      authTransport: "same-origin-gateway",
+      authTransport: authConfig.source === "production-public-fallback"
+        ? "same-origin-gateway-public-fallback"
+        : "same-origin-gateway",
       authMethods: {
         emailPassword: authConfigured,
         magicLink: authConfigured,
@@ -193,7 +199,7 @@ export default {
 
     const response = await baseWorker.fetch(request, env, context);
     if (request.method !== "HEAD" && url.pathname === "/api/health") {
-      return enrichHealth(response, env);
+      return enrichHealth(response, env, url);
     }
     if (request.method === "HEAD") return response;
     return injectPublicComments(request, response, env);
