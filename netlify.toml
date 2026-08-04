@@ -1,5 +1,5 @@
 [build]
-  command = "vite build"
+  command = "node scripts/patch-service-worker-v179.mjs && node --test tests/studio-real-device-v236.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
