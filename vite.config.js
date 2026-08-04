@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { activateStudioNativeV250 } from "./scripts/activate-studio-native-v250.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
@@ -11,12 +12,17 @@ import { finalizeServiceWorkerV245 } from "./scripts/service-worker-v245-lib.mjs
 import { finalizeServiceWorkerV246 } from "./scripts/service-worker-v246-lib.mjs";
 import { finalizeServiceWorkerV247 } from "./scripts/service-worker-v247-lib.mjs";
 import { finalizeServiceWorkerV249 } from "./scripts/service-worker-v249-lib.mjs";
+import { rotateServiceWorkerV250 } from "./scripts/service-worker-v250-rotate.mjs";
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-service-worker-v249",
+      name: "ngeblogging-native-studio-v250",
       apply: "build",
+      async buildStart() {
+        const v250 = await activateStudioNativeV250();
+        console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
+      },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
         console.log(`[vite] ${v237.release} compatibility finalized in ${v237.path}`);
@@ -41,7 +47,9 @@ export default defineConfig({
         const v247 = finalizeServiceWorkerV247();
         console.log(`[vite] ${v247.release} compatibility finalized in ${v247.path}`);
         const v249 = finalizeServiceWorkerV249();
-        console.log(`[vite] ${v249.release} finalized in ${v249.path}`);
+        console.log(`[vite] ${v249.release} compatibility finalized in ${v249.path}`);
+        const v250 = rotateServiceWorkerV250();
+        console.log(`[vite] ${v250.release} cache rotation finalized in ${v250.path}`);
       },
     },
   ],
