@@ -1,0 +1,92 @@
+{
+  "release": "studio-shell-auth-v263-20260804",
+  "date": "2026-08-04",
+  "scope": [
+    "production authentication transport",
+    "six-family responsive Studio shell",
+    "single n sidebar control",
+    "profile and settings separation",
+    "Nara small medium full behavior",
+    "Theme Studio layout map and code gutter",
+    "mobile Posts Pages editor containment",
+    "mobile Domain containment",
+    "service-worker cache namespace"
+  ],
+  "responsiveFamilies": {
+    "application": "small",
+    "phone": "small",
+    "mobile": "small",
+    "compact": "small",
+    "tablet": "large",
+    "desktopFamily": ["laptop", "desktop", "computer"]
+  },
+  "themePreviewProfiles": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "laptop",
+    "desktop",
+    "computer"
+  ],
+  "viewportMatrix": [
+    "320x568",
+    "360x640",
+    "375x667",
+    "390x844",
+    "412x915",
+    "430x932",
+    "600x960",
+    "768x1024",
+    "820x1180",
+    "1024x768",
+    "1280x720",
+    "1366x768",
+    "1440x900",
+    "1920x1080"
+  ],
+  "contracts": {
+    "sidebarRequiredItems": [
+      "Buat Post",
+      "Ringkasan",
+      "Posts",
+      "Pages",
+      "Tema",
+      "Media",
+      "Analitik",
+      "Anggota",
+      "Komentar",
+      "Domain",
+      "API Keys",
+      "Pengaturan",
+      "Keluar"
+    ],
+    "themeCount": 100,
+    "widgetCount": 26,
+    "contentWordLimit": 5000,
+    "naraSizes": ["small", "medium", "full"],
+    "naraAttachmentSources": ["camera", "photo", "file"],
+    "naraIntelligence": ["Instan", "Sedang", "Tinggi", "Maksimal"],
+    "naraModels": ["Nara Mini", "Nara Writer", "Nara Vision", "Nara Max"],
+    "sessionPersistenceRequired": true,
+    "logoutOnlyOnExplicitUserAction": true,
+    "authTransport": "direct Supabase primary with bounded same-origin gateway fallback",
+    "smallMediumNaraModal": false,
+    "fullNaraModal": true
+  },
+  "validation": {
+    "sourceRegressionContractAdded": true,
+    "productionTestGateImportsV263Contract": true,
+    "serviceWorkerUsesNewV263CacheNamespace": true,
+    "ciResultObservedByThisChange": false,
+    "productionDeploymentObservedByThisChange": false,
+    "realDeviceExecutionVerifiedByThisManifest": false,
+    "googleLoginEndToEndVerifiedByThisManifest": false,
+    "linkedinLoginEndToEndVerifiedByThisManifest": false,
+    "emailPasswordLoginEndToEndVerifiedByThisManifest": false,
+    "magicLinkLoginEndToEndVerifiedByThisManifest": false,
+    "capacityLoadTestExecutedByThisManifest": false,
+    "capacityClaim": "No claim that hundreds of billions of users can log in. That requires distributed load testing, database/auth quota engineering, rate-limit validation, and production infrastructure evidence."
+  }
+}
