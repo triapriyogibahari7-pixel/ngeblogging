@@ -37,12 +37,16 @@ if (entry.indexOf('import "./studio-live-shell-v279.css";') <= entry.indexOf('im
 
 for (const marker of [
   RELEASE,
+  "RETIRED_LIVE_OBSERVERS_BY",
   "resetContainingBlocks",
-  'window.addEventListener("scroll", schedule',
   "normalizeSidebar",
   "normalizeTopbar",
   "normalizeNara",
 ]) if (!runtime.includes(marker)) throw new Error(`V279_RUNTIME_MISSING:${marker}`);
+
+if (/addEventListener\("scroll"/.test(runtime) || /visualViewport\?\.addEventListener\("scroll"/.test(runtime)) {
+  throw new Error("V279_SCROLL_OBSERVER_NOT_RETIRED");
+}
 
 for (const marker of [
   'data-device-mode="small"',
@@ -77,4 +81,6 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 }
 
 await writeFile(swFile, source);
-console.log(`Validated ${RELEASE} and rotated live cache to ${CACHE}`);
+console.log(`Validated ${RELEASE} as compatibility boot layer and rotated live cache to ${CACHE}`);
+
+await import("./patch-service-worker-v280.mjs");

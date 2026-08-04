@@ -127,9 +127,11 @@ import "./studio-interaction-authority-v277.css";
 // v278 owns the single n click and complete responsive geometry.
 import "./studio-shell-precision-v278.js";
 import "./studio-shell-precision-v278.css";
-// v279 is last and only hardens live viewport chrome after scroll/address-bar movement.
-// It does not install another n click owner.
+// v279 keeps the viewport recovery layer, but v280 retires its scroll-time DOM writes.
 import "./studio-live-shell-v279.js";
 import "./studio-live-shell-v279.css";
+// v280 is the final lightweight authority for viewport geometry, profile, Nara and compact pages.
+import "./studio-native-shell-v280.js";
+import "./studio-native-shell-v280.css";
 
 export default StudioFastGate;
