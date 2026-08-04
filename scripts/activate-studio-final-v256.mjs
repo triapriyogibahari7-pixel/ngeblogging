@@ -24,6 +24,7 @@ export async function activateStudioFinalV256() {
   for (const path of [
     "studio-shell-interaction-v255.js",
     "studio-shell-interaction-v255.css",
+    "studio-theme-layout-v256.js",
     "studio-theme-layout-v256.css",
   ]) source = ensureLastImport(source, path);
   source = source.replace(/\n{3,}/g, "\n\n");
@@ -31,8 +32,9 @@ export async function activateStudioFinalV256() {
   const v253 = source.indexOf('import "./studio-shell-nara-v253.css";');
   const v255js = source.indexOf('import "./studio-shell-interaction-v255.js";');
   const v255css = source.indexOf('import "./studio-shell-interaction-v255.css";');
+  const v256js = source.indexOf('import "./studio-theme-layout-v256.js";');
   const v256css = source.indexOf('import "./studio-theme-layout-v256.css";');
-  if (!(v253 >= 0 && v255js > v253 && v255css > v255js && v256css > v255css)) {
+  if (!(v253 >= 0 && v255js > v253 && v255css > v255js && v256js > v255css && v256css > v256js)) {
     throw new Error("V256_FINAL_STUDIO_AUTHORITY_ORDER_INVALID");
   }
 
