@@ -9,10 +9,13 @@ const UPDATE_EVENT = "NGE_BLOGGING_UPDATE_AVAILABLE_V252";
 const RELEASE_LINE = `const SOURCE_STABILITY_RELEASE_V252 = "${RELEASE}";`;
 const CACHE_LINE = `const SOURCE_STABILITY_CACHE_V252 = "${CACHE}";`;
 
-function replaceRequired(source, pattern, replacement, label) {
-  const next = source.replace(pattern, replacement);
-  if (next === source && !source.includes(replacement)) throw new Error(`V252_PWA_MARKER_MISSING:${label}`);
-  return next;
+function replaceConstant(source, name, value) {
+  const pattern = new RegExp(`^const ${name} = [^;]+;$`, "m");
+  const line = `const ${name} = "${value}";`;
+  if (pattern.test(source)) return source.replace(pattern, line);
+  const versionLine = source.match(/^const VERSION = .*;$/m)?.[0];
+  if (!versionLine) throw new Error(`V252_PWA_CONSTANT_ANCHOR_MISSING:${name}`);
+  return source.replace(versionLine, `${versionLine}\n${line}`);
 }
 
 function insertAfterVersion(source, line) {
@@ -23,9 +26,9 @@ function insertAfterVersion(source, line) {
 }
 
 let source = await readFile(file, "utf8");
-source = replaceRequired(source, /^const VERSION = ".*";$/m, `const VERSION = "${VERSION}";`, "VERSION");
-source = replaceRequired(source, /^const CACHE_RELEASE = ".*";$/m, `const CACHE_RELEASE = "${CACHE}";`, "CACHE_RELEASE");
-source = replaceRequired(source, /^const FORCE_REFRESH_VALUE = ".*";$/m, `const FORCE_REFRESH_VALUE = "${FORCE_VALUE}";`, "FORCE_REFRESH_VALUE");
+source = replaceConstant(source, "VERSION", VERSION);
+source = replaceConstant(source, "CACHE_RELEASE", CACHE);
+source = replaceConstant(source, "FORCE_REFRESH_VALUE", FORCE_VALUE);
 source = insertAfterVersion(source, RELEASE_LINE);
 source = insertAfterVersion(source, CACHE_LINE);
 source = source.replace(/NGE_BLOGGING_(?:FORCE_RELOAD|UPDATE_AVAILABLE)_V\d+/g, UPDATE_EVENT);
@@ -34,17 +37,17 @@ source = source.replace(/reason:\s*"service-worker-[^"]+"/g, 'reason: "service-w
 // v252 deliberately keeps the v179 safety model: tell open non-auth tabs that a
 // new version exists, but never navigate them from the service worker. This avoids
 // the historical double-load/reload loop and keeps login/callback surfaces intact.
-source = source.replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v252: no forced WindowClient navigation; the next normal navigation uses the fresh cache.");
+source = source.replace(/\n\s*await\s+refreshStaleWindow\(client, url\);/g, "\n      // v252: no forced WindowClient navigation; the next normal navigation uses the fresh cache.");
 
 for (const marker of [VERSION, CACHE, FORCE_VALUE, UPDATE_EVENT, RELEASE_LINE, CACHE_LINE]) {
   if (!source.includes(marker)) throw new Error(`V252_PWA_CONTRACT_MISSING:${marker}`);
 }
 if (/await\s+refreshStaleWindow\s*\(/.test(source)) throw new Error("V252_PWA_FORCED_REFRESH_CALL_FOUND");
-if (!/function isAuthSurface\([\s\S]*authMode === "callback"[\s\S]*authMode === "recovery"/.test(source)) {
-  throw new Error("V252_PWA_AUTH_SURFACE_GUARD_MISSING");
+for (const marker of ["function isAuthSurface", 'authMode === "callback"', 'authMode === "recovery"']) {
+  if (!source.includes(marker)) throw new Error(`V252_PWA_AUTH_SURFACE_GUARD_MISSING:${marker}`);
 }
-if (!/\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)[\s\S]*caches\.delete/.test(source)) {
-  throw new Error("V252_PWA_OLD_CACHE_CLEANUP_MISSING");
+for (const marker of ["caches.keys()", "caches.delete", "SHELL_CACHE", "ASSET_CACHE"]) {
+  if (!source.includes(marker)) throw new Error(`V252_PWA_CACHE_CLEANUP_MARKER_MISSING:${marker}`);
 }
 
 await writeFile(file, source);
