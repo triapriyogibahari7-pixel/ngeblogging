@@ -1,17 +1,12 @@
-const RELEASE = "studio-device-mode-v265-20260804-r2";
+const RELEASE = "studio-device-mode-v267-20260804";
 const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
 const PHONE_MAX = 430;
 const HANDHELD_MAX = 600;
-// Android browsers do not all expose a 980px desktop layout viewport. Some
-// OEM builds use ~640-800 CSS px when “Desktop site” is enabled. Detect the
-// ratio against the physical screen as well, so desktop-site mode cannot
-// accidentally fall back to the mobile drawer just because its emulated
-// viewport is below 900px.
-const DESKTOP_SITE_MIN_LAYOUT = 620;
-const DESKTOP_SITE_WIDTH_RATIO = 1.38;
+const DESKTOP_SITE_MIN_LAYOUT = 600;
+const DESKTOP_SITE_WIDTH_RATIO = 1.32;
 const RESPONSIVE_MODES = Object.freeze([
   "application",
   "phone",
@@ -23,6 +18,7 @@ const RESPONSIVE_MODES = Object.freeze([
 
 let frame = 0;
 let lastSignature = "";
+let desktopSiteLock = false;
 
 function finitePositive(value, fallback = 1) {
   const number = Number(value);
@@ -104,14 +100,37 @@ function handheldSignal(view) {
   return userAgentHandheldSignal() || touchHandheldSignal(view);
 }
 
-function desktopSiteRequested(view, handheld) {
+function rawDesktopSiteRequested(view, handheld) {
   if (!handheld) return false;
   const physical = Math.max(1, view.physicalViewportWidth);
   const widenedLayout = view.layoutWidth >= DESKTOP_SITE_MIN_LAYOUT
     && view.layoutWidth / physical >= DESKTOP_SITE_WIDTH_RATIO;
   const widenedVisual = view.visualWidth >= DESKTOP_SITE_MIN_LAYOUT
     && view.visualWidth / physical >= DESKTOP_SITE_WIDTH_RATIO;
-  return widenedLayout || widenedVisual;
+  const explicitDesktopUaOnHandheld = platformHandheldSignal()
+    && navigator.userAgentData?.mobile === false
+    && Math.max(view.layoutWidth, view.visualWidth) >= DESKTOP_SITE_MIN_LAYOUT;
+  const wideTouchDesktopSurface = Number(navigator.maxTouchPoints || 0) > 1
+    && platformHandheldSignal()
+    && Math.max(view.layoutWidth, view.visualWidth) >= 768
+    && view.density >= 1.1;
+  return widenedLayout || widenedVisual || explicitDesktopUaOnHandheld || wideTouchDesktopSurface;
+}
+
+function desktopSiteRequested(view, handheld) {
+  const requested = rawDesktopSiteRequested(view, handheld);
+  if (requested) desktopSiteLock = true;
+
+  // Keep Chrome/Android "Desktop site" stable while the browser bars, zoom,
+  // visualViewport, or keyboard briefly change dimensions. Release the lock
+  // only after the viewport is unmistakably back in a handheld layout.
+  if (desktopSiteLock) {
+    const clearlyMobileAgain = view.layoutWidth <= HANDHELD_MAX
+      && view.visualWidth <= HANDHELD_MAX
+      && navigator.userAgentData?.mobile !== false;
+    if (clearlyMobileAgain) desktopSiteLock = false;
+  }
+  return desktopSiteLock;
 }
 
 function classifyResponsiveMode(view, handheld) {
@@ -146,8 +165,6 @@ export function detectStudioResponsiveMode() {
 }
 
 export function currentStudioResponsiveMode() {
-  // Do not trust a stale dataset written by an older compatibility layer.
-  // React interactions must use the live viewport/physical-device decision.
   return detectStudioResponsiveMode();
 }
 
@@ -156,9 +173,6 @@ export function detectStudioDeviceMode() {
 }
 
 export function currentStudioDeviceMode() {
-  // The sidebar toggle is React-owned. Using live detection here prevents an
-  // older MutationObserver from turning a requested desktop site back into a
-  // mobile drawer between pointerdown and click.
   return detectStudioDeviceMode();
 }
 
@@ -194,6 +208,7 @@ function applyDeviceMode() {
   root.dataset.studioSiteDesktop = String(responsiveMode === "desktop");
   root.dataset.studioDeviceRelease = RELEASE;
   root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
+  root.dataset.studioDesktopSiteLock = String(desktopSiteLock);
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
   root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
   root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
