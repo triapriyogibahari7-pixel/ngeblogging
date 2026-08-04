@@ -1,0 +1,53 @@
+{
+  "release": "studio-scroll-chrome-v270-20260804",
+  "date": "2026-08-04",
+  "focus": "scroll stability for sidebar and Nara on real mobile browsers plus visible collapsed desktop rail",
+  "fixes": {
+    "mobileToggle": {
+      "singleN": true,
+      "fixedToViewport": true,
+      "clickableAfterScroll": true,
+      "touchActionManipulation": true,
+      "drawerUsesSameInternalNWhenOpen": true
+    },
+    "mobileDrawer": {
+      "width": "clamp(248px, 74vw, 320px)",
+      "fullHeight": true,
+      "allRequiredMenuItemsPreserved": true,
+      "darkBackdropRemoved": true,
+      "outsideCloseTargetOnly": true,
+      "drawerMenuRemainsClickable": true
+    },
+    "desktopRail": {
+      "oneInternalN": true,
+      "externalNHidden": true,
+      "collapsedWidth": 72,
+      "allMenuIconsVisibleWhenCollapsed": true,
+      "contentWidthFollowsRail": true
+    },
+    "nara": {
+      "launcherFixedBottomRight": true,
+      "smallMediumNonModal": true,
+      "fullScreenModalOnly": true,
+      "cameraPhotoFileMenuAboveComposer": true,
+      "noBlinkOrScrollDrift": true
+    }
+  },
+  "safety": {
+    "featuresDeleted": false,
+    "storageCleared": false,
+    "automaticLogoutAdded": false,
+    "forcedSecondNavigationAdded": false,
+    "sessionPersistenceContractPreserved": true
+  },
+  "validation": {
+    "testFile": "tests/studio-scroll-chrome-v270.test.mjs",
+    "productionGateImport": "tests/studio-real-device-v236.test.mjs",
+    "serviceWorkerPatch": "scripts/patch-service-worker-v270.mjs",
+    "cacheNamespace": "studio-scroll-chrome-cache-v270",
+    "sourceValidated": true,
+    "realDeviceObservedByAssistant": false,
+    "loginEndToEndObservedByAssistant": false,
+    "massiveCapacityClaim": "No 900-billion-user login claim is made without measured distributed load testing and production infrastructure evidence."
+  }
+}
