@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-export const RELEASE = "studio-stability-v260-20260804";
-export const VERSION = "ngeblogging-app-v260-stability-20260804";
-export const CACHE = "studio-stability-cache-v260";
+export const RELEASE = "studio-stability-v260-20260804-r2";
+export const VERSION = "ngeblogging-app-v260-stability-r2-20260804";
+export const CACHE = "studio-stability-cache-v260-r2";
 export const LEGACY_RELEASE_V259 = "studio-six-mode-authority-v259-20260804";
 
 export function rotateServiceWorkerV259(target = resolve("dist", "sw.js")) {
@@ -22,7 +22,7 @@ export function rotateServiceWorkerV259(target = resolve("dist", "sw.js")) {
     source = next;
   };
 
-  // Keep the v259 markers for regression compatibility, then make v260 authoritative.
+  // Keep the v259 markers for regression compatibility, then make v260-r2 authoritative.
   insertAfterVersion('const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";');
   insertAfterVersion('const ACTIVE_CACHE_RELEASE_V259 = "studio-six-mode-cache-v259";');
   insertAfterVersion(`const STUDIO_SIX_MODE_RELEASE_V259 = "${LEGACY_RELEASE_V259}";`);
@@ -35,8 +35,9 @@ export function rotateServiceWorkerV259(target = resolve("dist", "sw.js")) {
     .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-assets`;')
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V258", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V259", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
-    .replaceAll("service-worker-activated-theme-right4-v258", "service-worker-activated-stability-v260")
-    .replaceAll("service-worker-activated-six-mode-v259", "service-worker-activated-stability-v260");
+    .replaceAll("service-worker-activated-theme-right4-v258", "service-worker-activated-stability-v260-r2")
+    .replaceAll("service-worker-activated-six-mode-v259", "service-worker-activated-stability-v260-r2")
+    .replaceAll("service-worker-activated-stability-v260", "service-worker-activated-stability-v260-r2");
 
   if (source.includes("function versionPayload(type)") && !source.includes("studioStabilityReleaseV260:")) {
     source = source.replace(
