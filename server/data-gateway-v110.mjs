@@ -1,5 +1,6 @@
-export const DATA_GATEWAY_RELEASE = "2026.08.04-data-gateway-v256";
+export const DATA_GATEWAY_RELEASE = "2026.07.30-data-gateway-v110";
 export const DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE = "data-gateway-public-fallback-v256-20260804";
+export const DATA_GATEWAY_RESILIENCE_RELEASE_V256 = "data-gateway-resilience-v256-20260804";
 const PREFIX = "/api/data-proxy";
 const MAX_DECLARED_BODY_BYTES = 96 * 1024 * 1024;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]);
@@ -107,6 +108,7 @@ function corsHeaders(origin, requestId, configSource = "") {
     "cache-control": "no-store",
     "x-ngeblogging-data-gateway": DATA_GATEWAY_RELEASE,
     "x-ngeblogging-data-fallback": DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+    "x-ngeblogging-data-resilience": DATA_GATEWAY_RESILIENCE_RELEASE_V256,
     ...(configSource ? { "x-ngeblogging-data-config": configSource } : {}),
     "x-request-id": requestId,
   };
@@ -117,6 +119,7 @@ function json(status, payload, requestId, configSource = "") {
     ...payload,
     release: DATA_GATEWAY_RELEASE,
     fallbackRelease: DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+    resilienceRelease: DATA_GATEWAY_RESILIENCE_RELEASE_V256,
     requestId,
   }), {
     status,
@@ -191,6 +194,7 @@ export async function handleDataGatewayRequest(request, env, requestId) {
     responseHeaders.set("x-content-type-options", "nosniff");
     responseHeaders.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
     responseHeaders.set("x-ngeblogging-data-fallback", DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE);
+    responseHeaders.set("x-ngeblogging-data-resilience", DATA_GATEWAY_RESILIENCE_RELEASE_V256);
     responseHeaders.set("x-ngeblogging-data-config", config.source);
     return new Response(request.method === "HEAD" ? null : upstream.body, {
       status: upstream.status,
