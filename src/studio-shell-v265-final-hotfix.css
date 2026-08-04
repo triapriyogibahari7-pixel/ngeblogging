@@ -1,0 +1,80 @@
+/* Final v265 hotfix: live family classes win over viewport-only legacy media rules. */
+
+/* Keep desktop-family navigation fully visible and tied to the live family decision. */
+html.studio-v265-large #ngeblogging-studio-sidebar{
+  left:0!important;right:auto!important;top:0!important;bottom:0!important;display:flex!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important
+}
+html.studio-v265-large .sn-main{transform:none!important;filter:none!important}
+html.studio-v265-large .sn-side-backdrop{display:none!important;pointer-events:none!important}
+
+/* On the small family, the page remains usable; only the drawer and its transparent close area intercept clicks. */
+html.studio-v265-small .sn-shell,html.studio-v265-small .sn-main{filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.studio-v265-small body.sn-mobile-sidebar-open .sn-main{filter:none!important;pointer-events:auto!important}
+html.studio-v265-small #ngeblogging-studio-sidebar.mobile-open{filter:none!important;backdrop-filter:none!important}
+html.studio-v265-small .sn-side-backdrop{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important}
+
+/* Nara must not blink, stretch, or cover the site unless full screen was explicitly selected. */
+.nara-floating-button,.nara-assistant-layer,.nara-assistant-shell,.nara-attachment-menu{
+  animation:none!important;transition:none!important;will-change:auto!important
+}
+.nara-floating-button:hover{transform:none!important}
+.nara-assistant-layer[data-nara-v265-interaction="nonmodal"],
+.nara-assistant-layer[data-nara-modal-v265="false"]{
+  background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important;pointer-events:none!important
+}
+.nara-assistant-layer[data-nara-v265-interaction="nonmodal"]>.nara-assistant-backdrop,
+.nara-assistant-layer[data-nara-modal-v265="false"]>.nara-assistant-backdrop{
+  display:none!important;visibility:hidden!important;pointer-events:none!important
+}
+.nara-assistant-layer[data-nara-v265-interaction="nonmodal"]>.nara-assistant-shell,
+.nara-assistant-layer[data-nara-modal-v265="false"]>.nara-assistant-shell{pointer-events:auto!important}
+
+/* + opens Camera / Photo / File as a compact horizontal chooser on every family. */
+.nara-attachment-menu{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;
+  width:min(300px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;
+  overflow:visible!important;padding:6px!important
+}
+.nara-attachment-menu>button{
+  display:grid!important;grid-template-columns:1fr!important;place-items:center!important;align-content:center!important;gap:4px!important;
+  min-width:0!important;min-height:62px!important;padding:7px 5px!important;text-align:center!important;overflow:hidden!important
+}
+.nara-attachment-menu>button>svg{width:19px!important;height:19px!important;margin:0!important}
+.nara-attachment-menu>button>span{display:block!important;width:100%!important;min-width:0!important;text-align:center!important}
+.nara-attachment-menu>button b{display:block!important;font-size:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.nara-attachment-menu>button small{display:none!important}
+
+/* Compact controls stay on one row rather than spilling out of Nara's header/composer. */
+.nara-assistant-header{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.nara-size-controls-v147,.nara-native-size-controls-v149{display:flex!important;flex:0 0 auto!important;min-width:0!important;gap:2px!important}
+.nara-size-controls-v147>button,.nara-native-size-controls-v149>button,
+.nara-auto-voice-v148,.nara-native-auto-voice-v149,.nara-assistant-header>button{
+  flex:0 0 30px!important;width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;padding:0!important
+}
+.nara-composer-tools{min-width:0!important;max-width:100%!important;overflow:visible!important}
+.nara-composer-tools>.nara-attachment-menu-wrap{flex:0 0 auto!important;min-width:0!important}
+.nara-select{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.nara-select>span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+/* The final code editor owns one line-number gutter only. */
+.v222-code-line-gutter,.v235-code-gutter,.v259-code-gutter,.tn-code-gutter-v263{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.tn-code-gutter-v265{display:block!important;visibility:visible!important;pointer-events:none!important}
+
+/* Mobile Theme denah stays a recognizable map, not a horizontal strip of tiny boxes. */
+html.studio-v265-small .tn-layout-map-v264{width:100%!important;max-width:100%!important;margin-inline:auto!important;overflow:hidden!important}
+html.studio-v265-small .tn-layout-content-v264{
+  grid-template-columns:minmax(62px,.68fr) minmax(118px,1.7fr) minmax(62px,.68fr)!important;
+  align-items:stretch!important
+}
+html.studio-v265-small .tn-layout-post-v264{place-items:center!important;text-align:center!important;min-height:210px!important}
+html.studio-v265-small .tn-layout-slot-v264{min-width:0!important;white-space:normal!important;overflow-wrap:break-word!important}
+
+/* Theme code: large is 50:50; small is code then preview, both readable and vertically scrollable. */
+html.studio-v265-large .tn-code-workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+html.studio-v265-small .tn-code-workspace{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto!important}
+html.studio-v265-small .tn-code-pane,html.studio-v265-small .tn-code-preview-pane{min-height:48dvh!important;max-height:64dvh!important}
+
+/* Profile dropdown and site-manager remain inside the viewport. */
+.sn-profile-menu-v150{right:max(10px,env(safe-area-inset-right))!important;left:auto!important;max-width:calc(100vw - 20px)!important}
+.sn-site-manager{max-width:min(760px,calc(100vw - 20px))!important}
