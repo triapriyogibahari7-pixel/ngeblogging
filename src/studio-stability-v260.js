@@ -1,21 +1,77 @@
-export const RELEASE = "studio-stability-v260-20260804";
+export const RELEASE = "studio-stability-v260-20260804-r2";
 
 const SMALL = new Set(["application", "phone", "mobile", "compact"]);
 const PROFILE_ORDER = ["profile", "avatar", "settings", "add-site", "view-site", "nara", "logout"];
+const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 let frame = 0;
 
 function html() { return document.documentElement; }
 function side() { return document.getElementById("ngeblogging-studio-sidebar"); }
 function text(node) { return String(node?.textContent || "").replace(/\s+/g, " ").trim(); }
+function setData(node, key, value) {
+  if (!node || node.dataset[key] === String(value)) return false;
+  node.dataset[key] = String(value);
+  return true;
+}
+
+function mediaMatches(query) {
+  try { return window.matchMedia?.(query)?.matches === true; }
+  catch { return false; }
+}
+
+function normalizedScreenDimension(raw, density, fallback) {
+  const value = Number(raw || fallback || 1);
+  if (!Number.isFinite(value) || value <= 0) return fallback;
+  if (value <= 900) return value;
+  return density >= 1.25 ? value / density : fallback;
+}
+
+function deviceMetrics() {
+  const layoutWidth = Number(document.documentElement.clientWidth || window.innerWidth || 1);
+  const layoutHeight = Number(document.documentElement.clientHeight || window.innerHeight || 1);
+  const visualWidth = Number(window.visualViewport?.width || layoutWidth);
+  const density = Math.max(1, Number(window.devicePixelRatio || 1));
+  const screenWidth = normalizedScreenDimension(window.screen?.width, density, layoutWidth);
+  const screenHeight = normalizedScreenDimension(window.screen?.height, density, layoutHeight);
+  const shortSide = Math.min(screenWidth, screenHeight);
+  const longSide = Math.max(screenWidth, screenHeight);
+  const ua = navigator.userAgent || "";
+  const platform = `${navigator.userAgentData?.platform || ""} ${navigator.platform || ""}`;
+  const coarse = mediaMatches("(pointer: coarse)") || mediaMatches("(any-pointer: coarse)");
+  const handheld = navigator.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(ua)
+    || /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform)
+    || (Number(navigator.maxTouchPoints || 0) > 1 && coarse && shortSide < 768);
+  const physicalViewportWidth = layoutHeight >= layoutWidth ? shortSide : longSide;
+  const desktopSitePhone = handheld
+    && shortSide < 768
+    && Math.max(layoutWidth, visualWidth) >= 900
+    && Math.max(layoutWidth, visualWidth) > physicalViewportWidth * 1.2;
+  const standalone = mediaMatches("(display-mode: standalone)") || navigator.standalone === true;
+  return { layoutWidth, layoutHeight, visualWidth, density, screenWidth, screenHeight, shortSide, longSide, handheld, desktopSitePhone, standalone };
+}
+
+function responsiveMode(view = deviceMetrics()) {
+  if (view.standalone) return "application";
+  if (view.desktopSitePhone) return "desktop";
+  if (view.handheld && view.shortSide <= 430) return "phone";
+  if (view.handheld && view.shortSide <= 600) return "mobile";
+  if (view.handheld && view.shortSide < 768) return "compact";
+  if (view.handheld) return "tablet";
+  const effectiveWidth = Math.min(view.layoutWidth, view.visualWidth);
+  if (effectiveWidth <= 760) return "compact";
+  if (effectiveWidth <= 1180) return "tablet";
+  return "desktop";
+}
+
+function deviceVariant(mode, view) {
+  if (mode !== "desktop") return mode;
+  if (view.desktopSitePhone) return "desktop";
+  return Math.min(view.layoutWidth, view.visualWidth) <= 1536 ? "laptop" : "computer";
+}
 
 function family() {
-  const root = html();
-  const mode = String(root.dataset.studioResponsiveMode || "").toLowerCase();
-  const width = Number(document.documentElement.clientWidth || window.innerWidth || 1);
-  if (root.dataset.studioDesktopSitePhone === "true" || width >= 900) return "large";
-  if (mode === "tablet" || mode === "desktop") return "large";
-  if (SMALL.has(mode)) return "small";
-  return width >= 768 ? "large" : "small";
+  return SMALL.has(responsiveMode()) ? "small" : "large";
 }
 
 function reveal(node) {
@@ -58,8 +114,8 @@ function openProfileMenu(avatar) {
   menu.setAttribute("role", "menu");
   menu.setAttribute("aria-label", "Menu akun");
   menu.append(
-    actionButton("profile", "Profil", "Identitas dan biografi"),
-    actionButton("avatar", "Ganti avatar", "Unggah foto profil"),
+    actionButton("profile", "Profil", "Identitas, biografi, website, dan avatar"),
+    actionButton("avatar", "Ganti avatar", "Buka pengaturan avatar profil"),
     actionButton("settings", "Pengaturan", "Situs, bahasa, zona waktu, dan preferensi"),
     actionButton("add-site", "Tambahkan situs", "Buat atau pilih situs lain"),
     actionButton("view-site", "Lihat situs", "Buka situs aktif di tab baru"),
@@ -87,10 +143,29 @@ function openNaraFromProfile() {
   return Boolean(panel);
 }
 
+function focusAvatarField() {
+  let attempts = 0;
+  const focus = () => {
+    attempts += 1;
+    const labels = [...document.querySelectorAll(".sn-settings-grid label")];
+    const label = labels.find((node) => /avatar/i.test(text(node)));
+    const input = label?.querySelector("input");
+    if (input) {
+      input.focus({ preventScroll: false });
+      input.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (attempts < 24) requestAnimationFrame(focus);
+  };
+  requestAnimationFrame(focus);
+}
+
 function performProfileAction(action) {
-  if (action === "profile" || action === "settings") {
-    html().dataset.studioAccountViewV189 = action;
+  if (action === "profile" || action === "avatar" || action === "settings") {
+    const accountView = action === "settings" ? "settings" : "profile";
+    html().dataset.studioAccountViewV189 = accountView;
     document.querySelector(".sn-account-settings-v135")?.click();
+    if (action === "avatar") focusAvatarField();
   } else if (action === "add-site") {
     document.querySelector(".sn-workspace")?.click();
   } else if (action === "view-site") {
@@ -106,12 +181,25 @@ function performProfileAction(action) {
 
 function syncFamily() {
   const root = html();
-  const current = family();
-  root.dataset.studioStabilityV260 = RELEASE;
-  root.dataset.studioV260Family = current;
-  root.dataset.studioV253Family = current;
-  root.dataset.studioV259Family = current;
-  root.dataset.studioDeviceMode = current;
+  const view = deviceMetrics();
+  const mode = responsiveMode(view);
+  const current = SMALL.has(mode) ? "small" : "large";
+  const variant = deviceVariant(mode, view);
+  const previousDeviceMode = root.dataset.studioDeviceMode || "";
+
+  setData(root, "studioStabilityV260", RELEASE);
+  setData(root, "studioV260Family", current);
+  setData(root, "studioV253Family", current);
+  setData(root, "studioV259Family", current);
+  setData(root, "studioResponsiveMode", mode);
+  setData(root, "studioDeviceMode", current);
+  setData(root, "studioDeviceVariant", variant);
+  setData(root, "studioDesktopSitePhone", String(view.desktopSitePhone));
+  setData(root, "studioHandheld", String(view.handheld));
+  setData(root, "studioSurfaceMode", view.standalone ? "application" : "browser");
+
+  if (view.desktopSitePhone) setData(root, "v232ModeLock", "desktop-site-large");
+  else if (root.dataset.v232ModeLock === "desktop-site-large") delete root.dataset.v232ModeLock;
 
   const sidebar = side();
   if (!sidebar) return current;
@@ -123,7 +211,8 @@ function syncFamily() {
     document.body.style.removeProperty("touch-action");
   }
   const open = current === "small" ? sidebar.classList.contains("mobile-open") : !sidebar.classList.contains("collapsed");
-  root.dataset.studioV260Sidebar = current === "small" ? (open ? "open" : "closed") : (open ? "expanded" : "collapsed");
+  setData(root, "studioV260Sidebar", current === "small" ? (open ? "open" : "closed") : (open ? "expanded" : "collapsed"));
+  setData(root, "studioV259Sidebar", current === "small" ? (open ? "open" : "closed") : (open ? "expanded" : "collapsed"));
 
   const logo = sidebar.querySelector(".sn-logo-mark");
   reveal(logo);
@@ -142,12 +231,19 @@ function syncFamily() {
 
   sidebar.querySelectorAll(".sn-new,nav>button,.sn-account-footer>button").forEach((button) => {
     reveal(button);
+    button.disabled = false;
     const label = text(button.querySelector("span")) || text(button);
     if (label) {
       button.setAttribute("title", label);
       button.setAttribute("aria-label", label);
     }
   });
+
+  if (previousDeviceMode && previousDeviceMode !== current) {
+    window.dispatchEvent(new CustomEvent(MODE_EVENT, {
+      detail: { mode: current, responsiveMode: mode, variant, release: RELEASE, handheld: view.handheld, desktopSitePhone: view.desktopSitePhone },
+    }));
+  }
   return current;
 }
 
@@ -226,7 +322,6 @@ if (typeof document !== "undefined") {
     }
     const action = event.target.closest?.(".sn-profile-menu-v260 button[data-action]");
     if (action) {
-      if (action.dataset.action === "avatar") return;
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation?.();
@@ -241,16 +336,16 @@ if (typeof document !== "undefined") {
   }, true);
 
   new MutationObserver((records) => {
-    if (records.some((record) => record.type === "childList" || record.attributeName === "class" || record.attributeName === "hidden" || record.attributeName === "data-nara-size" || record.attributeName === "data-studio-responsive-mode" || record.attributeName === "data-studio-device-mode")) schedule();
+    if (records.some((record) => record.type === "childList" || record.attributeName === "class" || record.attributeName === "hidden" || record.attributeName === "data-nara-size" || record.attributeName === "data-studio-responsive-mode" || record.attributeName === "data-studio-device-mode" || record.attributeName === "data-studio-desktop-site-phone" || record.attributeName === "data-v232-mode-lock")) schedule();
   }).observe(document.documentElement, {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "hidden", "data-nara-size", "data-studio-responsive-mode", "data-studio-device-mode", "data-studio-desktop-site-phone"],
+    attributeFilter: ["class", "hidden", "data-nara-size", "data-studio-responsive-mode", "data-studio-device-mode", "data-studio-desktop-site-phone", "data-v232-mode-lock"],
   });
   for (const name of ["pageshow", "resize", "orientationchange", "online"]) window.addEventListener(name, schedule, { passive: true });
   window.visualViewport?.addEventListener("resize", schedule, { passive: true });
   schedule();
 }
 
-export { family, schedule, sync, openNaraFromProfile };
+export { deviceMetrics, responsiveMode, family, schedule, sync, openNaraFromProfile };
