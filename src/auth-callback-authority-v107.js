@@ -1,17 +1,31 @@
 import { consumeAuthCallbackV162, AUTH_CALLBACK_RELEASE } from "./lib/auth-callback-v162.js";
-import { supabase, supabaseConfigured } from "./lib/supabase.js";
+import {
+  PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245,
+  PRODUCTION_SUPABASE_URL_V245,
+  supabase,
+  supabaseConfigured,
+} from "./lib/supabase.js";
 
 const RELEASE = "auth-callback-authority-v162-20260730";
 const COMPAT_RELEASE = "auth-callback-authority-v142-20260729";
+const PASSWORD_FALLBACK_RELEASE_V256 = "auth-password-direct-fallback-v256-20260804";
 const GATE_ID = "ngeblogging-auth-callback-gate-v162";
 const PASSWORD_PATCH = Symbol.for("ngeblogging.auth.passwordFallbackV142");
 const AUTHORITY_INSTALL_FLAG = Symbol.for("ngeblogging.auth.callbackAuthorityV162");
-const SUPABASE_URL = String(import.meta.env?.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const SUPABASE_KEY = String(
+const envUrl = String(import.meta.env?.VITE_SUPABASE_URL || "").replace(/\/$/, "");
+const envKey = String(
   import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY
   || import.meta.env?.VITE_SUPABASE_ANON_KEY
   || "",
 );
+const officialProductionHost = typeof window !== "undefined" && (() => {
+  const hostname = String(window.location.hostname || "").toLowerCase();
+  return hostname === "ngeblogging.com"
+    || hostname === "www.ngeblogging.com"
+    || hostname.endsWith(".ngeblogging.com");
+})();
+const SUPABASE_URL = envUrl || (officialProductionHost ? PRODUCTION_SUPABASE_URL_V245 : "");
+const SUPABASE_KEY = envKey || (officialProductionHost ? PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245 : "");
 
 function callbackState() {
   const url = new URL(window.location.href);
@@ -77,6 +91,7 @@ function transportFailure(error) {
     || name === "timeouterror"
     || name === "authtransporterror"
     || code === "auth_network_unavailable"
+    || code === "auth_gateway_timeout"
     || code === "gateway_response_mismatch"
     || /failed to fetch|network|jaringan|gateway|timeout|unreachable|tidak dapat dijangkau/.test(message);
 }
@@ -91,7 +106,7 @@ async function directPasswordGrant(credentials) {
       apikey: SUPABASE_KEY,
       authorization: `Bearer ${SUPABASE_KEY}`,
       "content-type": "application/json",
-      "x-client-info": "ngeblogging-auth-v162",
+      "x-client-info": "ngeblogging-auth-v256",
     },
     body: JSON.stringify({
       email: String(credentials?.email || "").trim().toLowerCase(),
@@ -129,16 +144,19 @@ function installPasswordFallback() {
       const recovered = await directPasswordGrant(credentials);
       document.documentElement.dataset.authPasswordTransportV142 = "direct-recovery";
       document.documentElement.dataset.authPasswordTransportV162 = "direct-recovery";
+      document.documentElement.dataset.authPasswordTransportV256 = "direct-recovery";
       return recovered;
     } catch (fallbackError) {
       document.documentElement.dataset.authPasswordTransportV142 = "failed";
       document.documentElement.dataset.authPasswordTransportV162 = "failed";
+      document.documentElement.dataset.authPasswordTransportV256 = "failed";
       return { data: originalResult?.data || null, error: fallbackError };
     }
   };
   Object.defineProperty(supabase.auth, PASSWORD_PATCH, { value: true, configurable: false });
   document.documentElement.dataset.authPasswordFallbackV142 = "installed";
   document.documentElement.dataset.authPasswordFallbackV162 = "installed";
+  document.documentElement.dataset.authPasswordFallbackV256 = PASSWORD_FALLBACK_RELEASE_V256;
 }
 
 function studioVisible() {
