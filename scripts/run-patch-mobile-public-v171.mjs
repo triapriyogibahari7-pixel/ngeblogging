@@ -12,7 +12,17 @@ function replaceRequired(source, search, replacement, label) {
   return source.replace(search, replacement);
 }
 
+function v256WidgetModelActive() {
+  const widgets = read("src/widget-system.js");
+  return widgets.includes("SIDEBAR_LEFT_SLOTS")
+    && widgets.includes('"sidebar-left-4"')
+    && widgets.includes('"sidebar-right-4"')
+    && read("src/theme-system.js").includes("composeMainWidgetLayout")
+    && read("src/Studio.jsx").includes('import "./studio-theme-layout-v256.css"');
+}
+
 function patchWidgets() {
+  if (v256WidgetModelActive()) return;
   const file = "src/widget-system.js";
   let source = read(file);
   if (source.includes(`WIDGET_LAYOUT_EXTENSION_V171 = "${AUTHORITY}"`)) return;
@@ -124,11 +134,6 @@ function patchServiceWorker() {
 
 function verifyComplete() {
   const checks = [
-    ["src/widget-system.js", `WIDGET_LAYOUT_EXTENSION_V171 = "${AUTHORITY}"`],
-    ["src/widget-system.js", 'id: "header-primary-left"'],
-    ["src/widget-system.js", 'id: "header-primary-right"'],
-    ["src/widget-system.js", 'id: "footer-copyright-left"'],
-    ["src/widget-system.js", 'id: "footer-copyright-right"'],
     ["src/main.jsx", 'import "./mobile-public-v171.css";'],
     ["src/main.jsx", 'import "./theme-map-extension-v171.css";'],
     ["src/StudioNext.jsx", `data-mobile-layout-authority="${AUTHORITY}"`],
@@ -137,6 +142,21 @@ function verifyComplete() {
     ["public/sw.js", 'ngeblogging-app-v171-mobile-public-20260730'],
     ["public/sw.js", 'mobile-public-cache-v171'],
   ];
+  if (v256WidgetModelActive()) {
+    checks.push(
+      ["src/widget-system.js", '"sidebar-left-4"'],
+      ["src/widget-system.js", '"sidebar-right-4"'],
+      ["src/theme-system.js", "composeMainWidgetLayout"],
+    );
+  } else {
+    checks.push(
+      ["src/widget-system.js", `WIDGET_LAYOUT_EXTENSION_V171 = "${AUTHORITY}"`],
+      ["src/widget-system.js", 'id: "header-primary-left"'],
+      ["src/widget-system.js", 'id: "header-primary-right"'],
+      ["src/widget-system.js", 'id: "footer-copyright-left"'],
+      ["src/widget-system.js", 'id: "footer-copyright-right"'],
+    );
+  }
   const missing = checks.filter(([file, marker]) => !read(file).includes(marker));
   if (missing.length) throw new Error(`Patch v171 tidak lengkap: ${missing.map(([file, marker]) => `${file}:${marker}`).join(", ")}`);
 }
@@ -148,4 +168,4 @@ patchNaraNonModal();
 patchRuntimeContentOnly();
 patchServiceWorker();
 verifyComplete();
-console.log(`[${AUTHORITY}] patch applied exactly once and verified`);
+console.log(`[${AUTHORITY}] patch applied exactly once and verified${v256WidgetModelActive() ? " with v256 widget-layout compatibility" : ""}`);
