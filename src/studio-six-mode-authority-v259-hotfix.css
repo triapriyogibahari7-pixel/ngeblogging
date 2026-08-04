@@ -1,0 +1,53 @@
+/* v259 critical cascade hotfix: resolves hidden-launcher, legacy gutter and layer conflicts. */
+html[data-studio-six-mode-authority-v259] .nara-floating-button[hidden],
+html[data-studio-six-mode-authority-v259] .nara-floating-button[aria-hidden="true"]{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+html[data-studio-six-mode-authority-v259] .nara-floating-button:not([hidden]):not([aria-hidden="true"]){
+  z-index:10950!important;
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+html[data-studio-six-mode-authority-v259] .nara-assistant-layer[data-v259-interaction="nonmodal"]{
+  z-index:10920!important;
+}
+
+html[data-studio-six-mode-authority-v259] :is(
+  .v216-code-line-gutter,
+  .v219-code-line-gutter,
+  .v220-code-line-gutter,
+  .v222-code-line-gutter,
+  .v231-code-line-gutter,
+  .v234-code-gutter,
+  .v235-code-gutter
+){
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+html[data-studio-six-mode-authority-v259] .v259-code-gutter{
+  display:block!important;
+  visibility:visible!important;
+}
+
+html[data-studio-v259-family="small"] .sn-side-backdrop{
+  background:transparent!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+html[data-studio-v259-family="large"] .sn-avatar{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
