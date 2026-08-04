@@ -29,7 +29,7 @@ async function validateV269Authority() {
   }
 
   for (const marker of [
-    'data.v269DesktopFamily',
+    'dataset.v269DesktopFamily',
     'viewportWidth() >= 760',
     'sn-mobile-sidebar-open',
     'studioFinalAuthorityV269',
