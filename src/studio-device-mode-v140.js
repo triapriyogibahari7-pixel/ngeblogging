@@ -1,11 +1,17 @@
-const RELEASE = "studio-device-mode-v260-20260804";
+const RELEASE = "studio-device-mode-v265-20260804";
 const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
 const PHONE_MAX = 430;
 const HANDHELD_MAX = 600;
-const DESKTOP_SITE_MIN_LAYOUT = 900;
+// Android browsers do not all expose a 980px desktop layout viewport. Some
+// OEM builds use ~640-800 CSS px when “Desktop site” is enabled. Detect the
+// *ratio* against the physical screen as well, so desktop-site mode cannot
+// accidentally fall back to the mobile drawer just because its emulated
+// viewport is below 900px.
+const DESKTOP_SITE_MIN_LAYOUT = 620;
+const DESKTOP_SITE_WIDTH_RATIO = 1.38;
 const RESPONSIVE_MODES = Object.freeze([
   "application",
   "phone",
@@ -100,10 +106,11 @@ function handheldSignal(view) {
 
 function desktopSiteRequested(view, handheld) {
   if (!handheld) return false;
+  const physical = Math.max(1, view.physicalViewportWidth);
   const widenedLayout = view.layoutWidth >= DESKTOP_SITE_MIN_LAYOUT
-    && view.layoutWidth > view.physicalViewportWidth * 1.25;
+    && view.layoutWidth / physical >= DESKTOP_SITE_WIDTH_RATIO;
   const widenedVisual = view.visualWidth >= DESKTOP_SITE_MIN_LAYOUT
-    && view.visualWidth > view.physicalViewportWidth * 1.25;
+    && view.visualWidth / physical >= DESKTOP_SITE_WIDTH_RATIO;
   return widenedLayout || widenedVisual;
 }
 
