@@ -1,5 +1,6 @@
 const RELEASE = "studio-device-mode-v188-20260801";
 const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
+const DEVICE_MODE_HOTFIX_RELEASE = "studio-device-mode-v254-hotfix-20260804";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
@@ -154,23 +155,27 @@ function applyDeviceMode() {
   const root = document.documentElement;
   const view = viewportMetrics();
   const handheld = handheldSignal(view);
-  const responsiveMode = classifyResponsiveMode(view, handheld);
+  let responsiveMode = classifyResponsiveMode(view, handheld);
+  const physicalResponsiveMode = responsiveMode;
+  const desktopSitePhone = handheld && !standaloneSurface() && view.layoutWidth > view.physicalViewportWidth * 1.35;
+  if (desktopSitePhone) responsiveMode = "desktop";
   const nextLayoutMode = layoutMode(responsiveMode);
-  const variant = desktopVariant(view, responsiveMode);
-  const desktopSitePhone = handheld && view.layoutWidth > view.physicalViewportWidth * 1.35;
+  const variant = desktopSitePhone ? "computer" : desktopVariant(view, responsiveMode);
   const signature = [responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
   const previousMode = root.dataset.studioResponsiveMode || "";
 
   ensureViewportMeta();
   root.dataset.studioResponsiveMode = responsiveMode;
+  root.dataset.studioPhysicalResponsiveMode = physicalResponsiveMode;
   root.dataset.studioDeviceMode = nextLayoutMode;
   root.dataset.studioDeviceVariant = variant;
   root.dataset.studioSurfaceMode = standaloneSurface() ? "application" : "browser";
   root.dataset.studioHandheld = String(handheld);
   root.dataset.studioDesktopSitePhone = String(desktopSitePhone);
-  root.dataset.studioSiteDesktop = String(!handheld && responsiveMode === "desktop");
+  root.dataset.studioSiteDesktop = String(responsiveMode === "desktop");
   root.dataset.studioDeviceRelease = RELEASE;
   root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
+  root.dataset.studioDeviceHotfixRelease = DEVICE_MODE_HOTFIX_RELEASE;
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
   root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
   root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
@@ -184,9 +189,11 @@ function applyDeviceMode() {
       detail: {
         mode: nextLayoutMode,
         responsiveMode,
+        physicalResponsiveMode,
         variant,
         previous: previousMode,
         release: RELEASE,
+        hotfixRelease: DEVICE_MODE_HOTFIX_RELEASE,
         handheld,
         desktopSitePhone,
         ...view,
@@ -213,6 +220,7 @@ applyDeviceMode();
 export {
   RELEASE,
   LEGACY_RELEASE,
+  DEVICE_MODE_HOTFIX_RELEASE,
   MODE_EVENT,
   COMPACT_MAX,
   TABLET_MAX,
