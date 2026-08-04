@@ -6,7 +6,6 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const sw = read("public/sw.js");
 const patch = read("scripts/patch-service-worker-v252.mjs");
 const authFinalizer = read("scripts/patch-auth-production-v245.mjs");
-const studioFinalizer = read("scripts/finalize-studio-v252.mjs");
 
 test("production build rotates shell and asset caches to v252", () => {
   assert.match(sw, /ngeblogging-app-v252-source-stability-20260804/);
@@ -39,12 +38,10 @@ test("auth and callback surfaces remain excluded from update notifications", () 
   assert.match(sw, /if \(url\.origin !== self\.location\.origin \|\| isAuthSurface\(url\)\) return/);
 });
 
-test("v252 Studio and cache finalizers run after historical production patches", () => {
-  assert.match(authFinalizer, /finalize-studio-v252\.mjs/);
+test("v252 cache finalizer runs after historical production patches without rewriting Studio", () => {
   assert.match(authFinalizer, /patch-service-worker-v252\.mjs/);
   assert.doesNotMatch(authFinalizer, /activateStudioNativeV250\(\)/);
-  assert.match(studioFinalizer, /studio-source-stability-v252\.js/);
-  assert.match(studioFinalizer, /studio-source-stability-v252\.css/);
-  assert.match(studioFinalizer, /does not touch auth|without touching auth/i);
+  assert.doesNotMatch(authFinalizer, /finalize-studio-v252\.mjs/);
+  assert.match(authFinalizer, /Studio source is intentionally left untouched/);
   assert.ok(authFinalizer.indexOf("patch-service-worker-v252.mjs") > authFinalizer.indexOf("Applied ${RELEASE}"));
 });
