@@ -91,5 +91,7 @@ import "./studio-visual-native-v257.css";
 import "./studio-six-mode-authority-v259.js";
 import "./studio-six-mode-authority-v259.css";
 import "./studio-six-mode-authority-v259-hotfix.css";
+import "./studio-stability-v260.js";
+import "./studio-stability-v260.css";
 
 export default StudioFastGate;
