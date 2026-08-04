@@ -63,6 +63,16 @@ await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
 
+// Historical authorities remain executable for regression compatibility. v222
+// establishes the code gutter/Nara attachment geometry; v223 locks physical UI;
+// v224 owns transient data re-auth; v225 owns responsive Studio/Nara UI; v226
+// owns the native React green Theme map; v227 aligns Nara model/intelligence;
+// v228 locks physical layout/editor/Nara; v229 locks map/sidebar/profile; v230
+// owns bounded-preview/bootstrap recovery; v231 owns the green map and single-n
+// geometry; v232 owns screenshot controls; v233 owns bounded data failover; v234
+// owns screenshot geometry; v235 preempts historical interaction listeners and
+// owns single-n/layout/code/Nara interactions; v236 guards real-device geometry;
+// v237 corrects the React source and physical-device geometry after all of them.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -102,4 +112,6 @@ await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
 await import("./patch-studio-bootstrap-v243.mjs");
 await import("./patch-auth-production-v245.mjs");
+// v258 extends the generated Theme model only after every historical migration,
+// preserving the current v257 visual authority and old patch anchors.
 await import("./patch-sidebar-right4-v258.mjs");
