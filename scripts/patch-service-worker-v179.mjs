@@ -115,3 +115,6 @@ await import("./patch-auth-production-v245.mjs");
 // v258 extends the generated Theme model only after every historical migration,
 // preserving the current v257 visual authority and old patch anchors.
 await import("./patch-sidebar-right4-v258.mjs");
+// v259 restores only the final physical-shell imports after every historical
+// generator has finished rewriting Studio.jsx.
+await import("./patch-studio-physical-shell-v259.mjs");
