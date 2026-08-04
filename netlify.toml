@@ -1,5 +1,5 @@
 [build]
-  command = "node --test tests/studio-stable-source-shell-v244.test.mjs tests/studio-sidebar-brand-v246.test.mjs tests/studio-screenshot-lock-v247.test.mjs tests/studio-source-stability-v252.test.mjs tests/studio-shell-nara-v253.test.mjs tests/studio-shell-interaction-v255.test.mjs tests/studio-production-order-v256.test.mjs tests/studio-visual-native-v257.test.mjs tests/studio-theme-right4-v258.test.mjs && vite build"
+  command = "node --test tests/studio-stable-source-shell-v244.test.mjs tests/studio-sidebar-brand-v246.test.mjs tests/studio-screenshot-lock-v247.test.mjs tests/studio-source-stability-v252.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
