@@ -86,7 +86,6 @@ function syncModeLock() {
 function revealControl(node) {
   if (!node) return;
   node.hidden = false;
-  node.disabled = false;
   node.removeAttribute("hidden");
   node.removeAttribute("inert");
   node.removeAttribute("aria-hidden");
@@ -133,6 +132,7 @@ function syncSidebar(mode) {
     const label = cleanText(button.querySelector("span")) || cleanText(button);
     if (!REQUIRED_MENU_LABELS.has(label)) return;
     revealControl(button);
+    button.disabled = false;
     button.dataset.v259RequiredMenu = "true";
     button.setAttribute("aria-label", label);
     button.setAttribute("title", label);
@@ -154,6 +154,7 @@ function syncSidebar(mode) {
   const topToggle = shell.querySelector(".sn-sidebar-toggle");
   if (topToggle) {
     revealControl(topToggle);
+    topToggle.disabled = false;
     const mark = topToggle.querySelector(".sn-mobile-menu-mark strong");
     if (mark) mark.textContent = "n";
     topToggle.dataset.v259Toggle = small ? "mobile-single-n" : "react-owner-hidden-large";
