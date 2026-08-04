@@ -43,6 +43,7 @@ jobs:
           test -f src/studio-editor-navigation-v266.js
           test -f src/studio-sidebar-single-toggle-v267.js
           test -f src/studio-final-device-authority-v268.css
+          test -f src/studio-profile-menu-v268.js
           test -f tests/studio-fixed-chrome-v267.test.mjs
           test -f tests/studio-final-device-authority-v268.test.mjs
           test -f public/release-v267.json
@@ -51,6 +52,7 @@ jobs:
           test -f scripts/patch-service-worker-v268.mjs
           grep -q 'studio-sidebar-single-toggle-v267.js' src/Studio.jsx
           grep -q 'studio-final-device-authority-v268.css' src/studio-sidebar-single-toggle-v267.js
+          grep -q 'studio-profile-menu-v268.js' src/studio-sidebar-single-toggle-v267.js
           grep -q 'patch-service-worker-v268.mjs' scripts/patch-service-worker-v267.mjs
           grep -q 'studio-final-device-cache-v268' public/sw.js
           grep -q 'UI_PATCH_RELEASE_V268' public/sw.js
