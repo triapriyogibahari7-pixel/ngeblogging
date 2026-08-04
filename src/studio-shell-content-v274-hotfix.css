@@ -1,0 +1,43 @@
+/* v274 final hotfix: keep every native Nara header control visible and ordered on narrow screens. */
+@media (max-width:600px){
+  .nara-assistant-shell .nara-assistant-header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 30px 30px 30px!important;
+    grid-template-rows:40px 34px!important;
+    grid-template-areas:
+      "title voice newchat close"
+      "sizes sizes sizes sizes"!important;
+    align-items:center!important;
+    gap:4px!important;
+    min-width:0!important;
+    min-height:80px!important;
+    padding:6px 8px!important;
+    overflow:hidden!important
+  }
+  .nara-assistant-shell .nara-assistant-header>.nara-brand-orb{display:none!important}
+  .nara-assistant-shell .nara-assistant-header>div:nth-child(2){
+    grid-area:title!important;display:block!important;min-width:0!important;overflow:hidden!important
+  }
+  .nara-assistant-shell .nara-assistant-header>div:nth-child(2)>span{
+    display:flex!important;align-items:center!important;gap:3px!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important
+  }
+  .nara-assistant-shell .nara-assistant-header>div:nth-child(2)>small{display:none!important}
+  .nara-assistant-shell .nara-size-controls-v147{
+    grid-area:sizes!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    width:100%!important;max-width:180px!important;justify-self:center!important;gap:4px!important;margin:0!important
+  }
+  .nara-assistant-shell .nara-size-controls-v147>button{
+    width:100%!important;height:30px!important;min-width:0!important;min-height:30px!important;padding:5px!important;margin:0!important
+  }
+  .nara-assistant-shell .nara-auto-voice-v148{
+    grid-area:voice!important;width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;padding:5px!important;margin:0!important
+  }
+  .nara-assistant-shell .nara-assistant-header>button[title="Percakapan baru"]{
+    grid-area:newchat!important;display:grid!important;place-items:center!important;width:30px!important;height:30px!important;
+    min-width:30px!important;min-height:30px!important;padding:5px!important;margin:0!important;visibility:visible!important;opacity:1!important
+  }
+  .nara-assistant-shell .nara-assistant-header>button[aria-label="Tutup Nara"]{
+    grid-area:close!important;display:grid!important;place-items:center!important;width:30px!important;height:30px!important;
+    min-width:30px!important;min-height:30px!important;padding:5px!important;margin:0!important;visibility:visible!important;opacity:1!important
+  }
+}
