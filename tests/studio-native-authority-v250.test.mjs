@@ -5,6 +5,9 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const runtime = read("src/studio-native-authority-v250.js");
 const css = read("src/studio-native-authority-v250.css");
+const rescue = read("src/studio-sidebar-rescue-v251.js");
+const rescueCss = read("src/studio-sidebar-rescue-v251.css");
+const entry = read("src/Studio.jsx");
 const auth = read("src/lib/supabase.js");
 const authReadiness = read("src/auth-readiness-bridge.js");
 const provider = read("src/auth-provider-gateway-v250.js");
@@ -45,6 +48,34 @@ test("six responsive families keep one centered n and complete menu", () => {
   ]) assert.ok(runtime.includes(marker), marker);
   for (const marker of ["--v250-side-open:248px","--v250-side-rail:70px",'data-studio-v250-family="small"','data-studio-v250-family="large"']) assert.ok(css.includes(marker), marker);
   for (const label of ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"]) assert.ok(studio.includes(label), label);
+});
+
+test("v251 defensively restores native large sidebar, topbar and profile after stale inline mutations", () => {
+  for (const marker of [
+    "studio-sidebar-rescue-v251-20260804",
+    "v244-legacy-sidebar",
+    "data-v244-legacy-top",
+    "removeAttribute(\"inert\")",
+    "removeAttribute(\"aria-hidden\")",
+    "studioV251Family",
+    "studioV251Sidebar",
+    "sn-mobile-sidebar-open",
+  ]) assert.ok(rescue.includes(marker), marker);
+  for (const marker of [
+    "--v251-open:248px",
+    "--v251-rail:70px",
+    'data-studio-v251-family="large"',
+    'data-studio-v251-sidebar="expanded"',
+    'data-studio-v251-sidebar="collapsed"',
+    'data-studio-v251-family="small"',
+    ".sn-avatar",
+    ".sn-logo-mark",
+  ]) assert.ok(rescueCss.includes(marker), marker);
+  assert.ok(entry.indexOf('import "./studio-sidebar-rescue-v251.js";') > entry.indexOf('import "./studio-native-authority-v250.css";'));
+  assert.ok(entry.indexOf('import "./studio-sidebar-rescue-v251.css";') > entry.indexOf('import "./studio-sidebar-rescue-v251.js";'));
+  assert.ok(activator.includes('ensureLastImport(source, "studio-sidebar-rescue-v251.js")'));
+  assert.ok(activator.includes('ensureLastImport(source, "studio-sidebar-rescue-v251.css")'));
+  assert.doesNotMatch(rescue, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
 test("profile is visible and exposes five distinct actions", () => {
