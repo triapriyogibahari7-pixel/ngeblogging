@@ -11,6 +11,7 @@ const account = read("src/studio-production-mobile-v189-account.js");
 const studio = read("src/Studio.jsx");
 const finalizer = read("scripts/finalize-studio-v259-order.mjs");
 const sw = read("scripts/service-worker-v259-rotate.mjs");
+const publicSw = read("public/sw.js");
 const auth = read("src/lib/supabase.js");
 const release = JSON.parse(read("public/release-v260.json"));
 
@@ -24,11 +25,12 @@ const viewports = [
   "1440x900", "1920x1080",
 ];
 
-test("v260 physical classifier overrides stale desktop-site datasets instead of leaving a mobile blank rail", () => {
+test("v260 physical classifier overrides stale desktop-site datasets and stale inline shell geometry", () => {
   assert.match(device, /studio-device-mode-v260-20260804/);
-  assert.match(runtime, /studio-stability-v260-20260804-r2/);
+  assert.match(runtime, /studio-stability-v260-20260804-r3/);
   assert.match(runtime, /function deviceMetrics\(\)/);
   assert.match(runtime, /function responsiveMode\(view = deviceMetrics\(\)\)/);
+  assert.match(runtime, /function clearLegacyShellGeometry\(current\)/);
   assert.match(runtime, /desktopSitePhone/);
   assert.match(runtime, /if \(view\.handheld && view\.shortSide <= 430\) return "phone"/);
   assert.match(runtime, /if \(view\.handheld && view\.shortSide <= 600\) return "mobile"/);
@@ -36,6 +38,8 @@ test("v260 physical classifier overrides stale desktop-site datasets instead of 
   assert.match(runtime, /setData\(root, "studioResponsiveMode", mode\)/);
   assert.match(runtime, /setData\(root, "studioDeviceMode", current\)/);
   assert.match(runtime, /setData\(root, "studioDesktopSitePhone", String\(view\.desktopSitePhone\)\)/);
+  assert.match(runtime, /clearInline\(main, \["margin-left"/);
+  assert.match(runtime, /clearInline\(sidebar, \["display"/);
 });
 
 test("v260 is last after v259 and the build finalizer preserves that order", () => {
@@ -47,7 +51,7 @@ test("v260 is last after v259 and the build finalizer preserves that order", () 
   assert.ok(runtimeIndex > v259);
   assert.ok(cssIndex > runtimeIndex);
   assert.ok(hotfixIndex > cssIndex);
-  assert.match(finalizer, /studio-v260-post-build-order-20260804-r2/);
+  assert.match(finalizer, /studio-v260-post-build-order-20260804-r3/);
   assert.match(finalizer, /const V260_RUNTIME = "studio-stability-v260\.js"/);
   assert.match(finalizer, /const V260_STYLES = "studio-stability-v260\.css"/);
   assert.match(finalizer, /const V260_HOTFIX = "studio-stability-v260-hotfix\.css"/);
@@ -135,21 +139,24 @@ test("Nara launcher stays fixed and small/medium remain non-modal with camera-ph
   assert.match(hotfix, /nara-floating-button:not\(\[hidden\]\)[\s\S]*position:fixed!important/);
 });
 
-test("auth persistence and v260 cache rotation do not contain destructive session clearing", () => {
+test("auth persistence and committed v260-r3 cache cannot trigger destructive session actions or double reload", () => {
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.match(auth, /flowType:\s*"pkce"/);
   assert.match(auth, /fetchWithDeadlineV259/);
   assert.match(sw, /ACTIVE_VERSION_V260/);
   assert.match(sw, /ACTIVE_CACHE_RELEASE_V260/);
-  assert.match(sw, /NGE_BLOGGING_UPDATE_AVAILABLE_V260/);
-  assert.match(sw, /studioStabilityReleaseV260/);
+  assert.match(publicSw, /ngeblogging-app-v260-stability-r3-20260804/);
+  assert.match(publicSw, /studio-stability-cache-v260-r3/);
+  assert.match(publicSw, /NGE_BLOGGING_UPDATE_AVAILABLE_V260/);
+  assert.match(publicSw, /reloadRequired: false/);
+  assert.doesNotMatch(publicSw, /await refreshStaleWindow\(client, url\)/);
   assert.doesNotMatch(auth, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
-  assert.doesNotMatch(sw, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  assert.doesNotMatch(publicSw, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
 test("v260 manifest carries the requested viewport matrix without fake live-device or login claims", () => {
-  assert.match(release.release, /^studio-stability-v260-20260804/);
+  assert.equal(release.release, "studio-stability-v260-20260804-r3");
   for (const viewport of viewports) assert.ok(release.viewportMatrix.includes(viewport), viewport);
   assert.equal(release.validation.realDeviceExecutionVerifiedByManifest, false);
   assert.equal(release.validation.googleLoginEndToEndVerifiedByManifest, false);
