@@ -108,5 +108,6 @@ import "./studio-shell-v265-final-hotfix.css";
 import "./studio-editor-navigation-v266.js";
 import "./studio-editor-navigation-v266.css";
 import "./studio-runtime-v266.js";
+import "./studio-sidebar-single-toggle-v267.js";
 
 export default StudioFastGate;
