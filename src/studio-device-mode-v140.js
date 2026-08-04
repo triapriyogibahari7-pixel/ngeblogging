@@ -1,4 +1,4 @@
-const RELEASE = "studio-device-mode-v265-20260804";
+const RELEASE = "studio-device-mode-v265-20260804-r2";
 const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
@@ -7,7 +7,7 @@ const PHONE_MAX = 430;
 const HANDHELD_MAX = 600;
 // Android browsers do not all expose a 980px desktop layout viewport. Some
 // OEM builds use ~640-800 CSS px when “Desktop site” is enabled. Detect the
-// *ratio* against the physical screen as well, so desktop-site mode cannot
+// ratio against the physical screen as well, so desktop-site mode cannot
 // accidentally fall back to the mobile drawer just because its emulated
 // viewport is below 900px.
 const DESKTOP_SITE_MIN_LAYOUT = 620;
@@ -146,8 +146,9 @@ export function detectStudioResponsiveMode() {
 }
 
 export function currentStudioResponsiveMode() {
-  const stored = document.documentElement.dataset.studioResponsiveMode;
-  return RESPONSIVE_MODES.includes(stored) ? stored : detectStudioResponsiveMode();
+  // Do not trust a stale dataset written by an older compatibility layer.
+  // React interactions must use the live viewport/physical-device decision.
+  return detectStudioResponsiveMode();
 }
 
 export function detectStudioDeviceMode() {
@@ -155,8 +156,10 @@ export function detectStudioDeviceMode() {
 }
 
 export function currentStudioDeviceMode() {
-  const stored = document.documentElement.dataset.studioDeviceMode;
-  return stored === "small" || stored === "large" ? stored : detectStudioDeviceMode();
+  // The sidebar toggle is React-owned. Using live detection here prevents an
+  // older MutationObserver from turning a requested desktop site back into a
+  // mobile drawer between pointerdown and click.
+  return detectStudioDeviceMode();
 }
 
 function ensureViewportMeta() {
