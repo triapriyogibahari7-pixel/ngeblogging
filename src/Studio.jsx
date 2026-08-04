@@ -101,5 +101,7 @@ import "./studio-theme-layout-v264.js";
 import "./studio-theme-layout-v264.css";
 import "./studio-screenshot-authority-v265.js";
 import "./studio-screenshot-authority-v265.css";
+import "./studio-completion-v266.js";
+import "./studio-completion-v266.css";
 
 export default StudioFastGate;
