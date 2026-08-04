@@ -1,0 +1,203 @@
+/* Ngeblogging Studio shell v261 — responsive navigation + floating Nara stability.
+   This file is intentionally an override layer: it preserves existing Studio pages while
+   making the single React sidebar and Nara surfaces authoritative across all device modes. */
+
+html[data-studio-responsive-mode] .sn-shell,
+html[data-studio-responsive-mode] .sn-shell *,
+html[data-studio-responsive-mode] .sn-shell *::before,
+html[data-studio-responsive-mode] .sn-shell *::after{box-sizing:border-box}
+html[data-studio-responsive-mode] .sn-shell{min-width:0;overflow-x:clip}
+html[data-studio-responsive-mode] .sn-shell .sn-main,
+html[data-studio-responsive-mode] .sn-shell .sn-main>*,
+html[data-studio-responsive-mode] .sn-shell .sn-view-pad,
+html[data-studio-responsive-mode] .sn-shell .sn-content-card,
+html[data-studio-responsive-mode] .sn-shell .sn-home-grid,
+html[data-studio-responsive-mode] .sn-shell .sn-settings-grid,
+html[data-studio-responsive-mode] .sn-shell .sn-info-grid{min-width:0;max-width:100%}
+html[data-studio-responsive-mode] .sn-shell img,
+html[data-studio-responsive-mode] .sn-shell video,
+html[data-studio-responsive-mode] .sn-shell iframe{max-width:100%;height:auto}
+html[data-studio-responsive-mode] .sn-shell h1,
+html[data-studio-responsive-mode] .sn-shell h2,
+html[data-studio-responsive-mode] .sn-shell h3,
+html[data-studio-responsive-mode] .sn-shell p,
+html[data-studio-responsive-mode] .sn-shell b,
+html[data-studio-responsive-mode] .sn-shell span{overflow-wrap:anywhere}
+
+/* One sidebar authority. Desktop/tablet variants always retain the sidebar. */
+html[data-studio-device-mode="large"] .sn-shell .sn-side,
+html[data-studio-site-desktop="true"] .sn-shell .sn-side{display:flex!important;position:fixed!important;z-index:410!important;left:0!important;top:0!important;bottom:0!important;width:236px!important;min-width:236px!important;overflow:hidden!important;flex-direction:column!important;background:#fff!important;border-right:1px solid #dde5ef!important;box-shadow:none!important;transform:none!important;transition:width .14s ease!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-side.collapsed,
+html[data-studio-site-desktop="true"] .sn-shell .sn-side.collapsed{width:72px!important;min-width:72px!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-main,
+html[data-studio-site-desktop="true"] .sn-shell .sn-main{width:auto!important;min-width:0!important;margin-left:236px!important;transition:margin-left .14s ease!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-side.collapsed+.sn-main,
+html[data-studio-site-desktop="true"] .sn-shell .sn-side.collapsed+.sn-main{margin-left:72px!important}
+
+/* The existing React sidebar toggle is visually moved into the sidebar, so there is only one n button. */
+html[data-studio-responsive-mode] .sn-shell .sn-sidebar-toggle{position:fixed!important;z-index:430!important;left:14px!important;top:max(11px,env(safe-area-inset-top))!important;width:44px!important;height:44px!important;display:grid!important;place-items:center!important;padding:0!important;border:1px solid #d7e0ec!important;border-radius:13px!important;background:linear-gradient(145deg,#3476e7,#4c55dc)!important;color:#fff!important;box-shadow:0 8px 24px rgba(39,85,185,.18)!important;transform:none!important;animation:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-sidebar-toggle .sn-desktop-sidebar-icon{display:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark{width:100%!important;height:100%!important;display:grid!important;place-items:center!important;color:#fff!important;font-size:0!important;line-height:1!important}
+html[data-studio-responsive-mode] .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark strong{display:block!important;color:#fff!important;font:800 24px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;text-shadow:none!important;opacity:1!important}
+html[data-studio-responsive-mode] .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark i{display:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-logo{height:66px!important;min-height:66px!important;display:flex!important;align-items:center!important;padding:0 14px 0 68px!important;gap:8px!important;overflow:hidden!important;background:#fff!important}
+html[data-studio-responsive-mode] .sn-shell .sn-logo .sn-logo-mark{display:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-logo>b{display:block!important;margin:0!important;color:#20324b!important;font:800 18px/1.1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed .sn-logo{padding:0!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed .sn-logo>b{display:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side-close{display:none!important}
+
+/* Keep + Post and the navigation tightly grouped; footer stays at the bottom. */
+html[data-studio-responsive-mode] .sn-shell .sn-new{flex:0 0 auto!important;width:auto!important;min-height:44px!important;margin:6px 10px 7px!important;padding:0 12px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;border-radius:11px!important;font-size:10px!important;white-space:nowrap!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side>nav{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;gap:2px!important;padding:0 8px 8px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:thin!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side>nav button,
+html[data-studio-responsive-mode] .sn-shell .sn-account-footer button{width:100%!important;min-width:0!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;padding:0 11px!important;border:0!important;border-radius:9px!important;background:transparent!important;color:#607087!important;font-size:10px!important;font-weight:700!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side>nav button.active,
+html[data-studio-responsive-mode] .sn-shell .sn-account-footer button.active{background:#eaf2ff!important;color:#245fc9!important;font-weight:900!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side>nav svg,
+html[data-studio-responsive-mode] .sn-shell .sn-account-footer svg{width:18px!important;height:18px!important;min-width:18px!important;flex:0 0 18px!important}
+html[data-studio-responsive-mode] .sn-shell .sn-account-footer{flex:0 0 auto!important;margin-top:auto!important;display:flex!important;flex-direction:column!important;gap:2px!important;padding:8px!important;border-top:1px solid #e3e9f1!important;background:#fff!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed .sn-new{width:48px!important;height:44px!important;margin-left:auto!important;margin-right:auto!important;padding:0!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed .sn-new span,
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed>nav span,
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed .sn-account-footer span{display:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed>nav button,
+html[data-studio-responsive-mode] .sn-shell .sn-side.collapsed .sn-account-footer button{justify-content:center!important;padding:0!important}
+
+/* Topbar/profile: no duplicate n, profile remains visible in every large mode. */
+html[data-studio-device-mode="large"] .sn-shell .sn-top,
+html[data-studio-site-desktop="true"] .sn-shell .sn-top{min-width:0!important;height:66px!important;padding:0 16px!important;gap:10px!important;z-index:320!important;background:rgba(255,255,255,.97)!important;backdrop-filter:none!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-top>.sn-sidebar-toggle,
+html[data-studio-site-desktop="true"] .sn-shell .sn-top>.sn-sidebar-toggle{display:grid!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-top-actions,
+html[data-studio-site-desktop="true"] .sn-shell .sn-top-actions{min-width:0!important;margin-left:auto!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important}
+html[data-studio-device-mode="large"] .sn-shell .sn-avatar,
+html[data-studio-site-desktop="true"] .sn-shell .sn-avatar{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 38px!important;width:38px!important;height:38px!important;border-radius:50%!important;overflow:hidden!important}
+
+/* Home list is kept structurally separate from its heading to prevent the overlap shown in the screenshots. */
+html[data-studio-responsive-mode] .sn-shell .sn-home-grid>section{min-width:0!important;overflow:hidden!important}
+html[data-studio-responsive-mode] .sn-shell .sn-home-grid>section>header{position:static!important;inset:auto!important;width:100%!important;height:auto!important;min-height:48px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;margin:0!important;padding:10px 8px 12px!important;background:#fff!important;transform:none!important;z-index:auto!important}
+html[data-studio-responsive-mode] .sn-shell .sn-home-grid>section>header h2{position:static!important;margin:0!important;transform:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-home-grid>section>button{position:relative!important;inset:auto!important;min-width:0!important;margin:0!important;transform:none!important}
+html[data-studio-responsive-mode] .sn-shell .sn-doc-row>*{min-width:0!important}
+
+/* Small/app/phone/mobile/compact modes: n only when closed, drawer when opened. */
+html[data-studio-device-mode="small"] .sn-shell{padding-bottom:max(12px,env(safe-area-inset-bottom))!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-main,
+html[data-studio-device-mode="small"] .sn-shell .sn-side.collapsed+.sn-main{width:100%!important;margin-left:0!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side:not(.mobile-open){display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open{display:flex!important;z-index:510!important;left:0!important;top:0!important;bottom:0!important;width:min(78vw,320px)!important;min-width:min(78vw,320px)!important;max-width:320px!important;transform:none!important;border-right:1px solid #dae3ef!important;background:#fff!important;box-shadow:18px 0 55px rgba(18,37,70,.18)!important;transition:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open .sn-logo{padding-left:68px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open .sn-logo>b{display:block!important;font-size:17px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open .sn-new span,
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open nav span,
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open .sn-account-footer span{display:inline!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open .sn-new{width:auto!important;margin:6px 10px 7px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open nav button,
+html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open .sn-account-footer button{justify-content:flex-start!important;padding:0 11px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-side-backdrop{display:block!important;position:fixed!important;z-index:500!important;inset:0!important;border:0!important;background:rgba(17,34,58,.16)!important;backdrop-filter:none!important;animation:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-sidebar-toggle{z-index:530!important;left:max(12px,env(safe-area-inset-left))!important;top:max(10px,env(safe-area-inset-top))!important;width:46px!important;height:46px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-top{height:66px!important;min-height:66px!important;padding:0 12px 0 70px!important;gap:7px!important;z-index:320!important;background:#fff!important;backdrop-filter:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-top>.sn-sidebar-toggle{display:grid!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-workspace,
+html[data-studio-device-mode="small"] .sn-shell .sn-cloud,
+html[data-studio-device-mode="small"] .sn-shell .sn-view-site,
+html[data-studio-device-mode="small"] .sn-shell .sn-top-actions>button:not(.sn-avatar){display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-top-actions{margin-left:auto!important;display:flex!important;align-items:center!important;justify-content:flex-end!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-avatar{display:flex!important;width:42px!important;height:42px!important;flex:0 0 42px!important;font-size:15px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-view-pad{width:100%!important;padding:20px clamp(12px,4vw,20px) 80px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-page-title,
+html[data-studio-device-mode="small"] .sn-shell .sn-welcome{width:100%!important;display:flex!important;flex-direction:column!important;gap:14px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-page-title h1,
+html[data-studio-device-mode="small"] .sn-shell .sn-welcome h1{font-size:clamp(30px,9vw,46px)!important;line-height:1.02!important;letter-spacing:-.025em!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-welcome>div:last-child{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-welcome>div:last-child>a,
+html[data-studio-device-mode="small"] .sn-shell .sn-welcome>div:last-child>button{width:100%!important;min-height:54px!important;justify-content:center!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-metrics article{min-width:0!important;min-height:118px!important;padding:16px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-home-grid{grid-template-columns:1fr!important;gap:12px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-content-tools{min-width:0!important;flex-wrap:wrap!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-content-tools label{width:100%!important;min-width:0!important;flex:1 1 100%!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-content-tools input{width:100%!important;min-width:0!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-table-head{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-doc-row{grid-template-columns:minmax(0,1fr) auto 36px!important;gap:8px!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-doc-row time{display:none!important}
+html[data-studio-device-mode="small"] .sn-shell .sn-settings-grid,
+html[data-studio-device-mode="small"] .sn-shell .sn-info-grid{grid-template-columns:1fr!important}
+
+@media(max-width:350px){
+  html[data-studio-device-mode="small"] .sn-shell .sn-metrics{grid-template-columns:1fr!important}
+  html[data-studio-device-mode="small"] .sn-shell .sn-side.mobile-open{width:86vw!important;min-width:86vw!important}
+}
+
+/* PWA/application safe areas. */
+html[data-studio-responsive-mode="application"] .sn-shell .sn-top{padding-top:env(safe-area-inset-top)!important;height:calc(66px + env(safe-area-inset-top))!important}
+html[data-studio-responsive-mode="application"] .sn-shell .sn-sidebar-toggle{top:max(10px,env(safe-area-inset-top))!important}
+
+/* Nara launcher: always floats over the Studio and never becomes part of page flow. */
+.nara-floating-button{position:fixed!important;z-index:9200!important;right:max(14px,env(safe-area-inset-right))!important;bottom:max(14px,calc(env(safe-area-inset-bottom) + 14px))!important;left:auto!important;top:auto!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important;border:0!important;border-radius:18px!important;background:linear-gradient(145deg,#3476ec,#5145d9)!important;color:#fff!important;box-shadow:0 14px 34px rgba(48,80,190,.3)!important;transform:none!important;animation:none!important;opacity:1!important;visibility:visible!important;overflow:hidden!important}
+.nara-floating-button>span{width:100%!important;height:100%!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important}
+.nara-floating-button svg{width:30px!important;height:30px!important;margin:0!important;stroke-width:1.8!important}
+.nara-floating-button>b,.nara-floating-button>small{display:none!important}
+
+/* Small/medium Nara are genuinely non-modal: no white/blur layer intercepting the website. */
+.nara-assistant-layer{position:fixed!important;z-index:9300!important;inset:0!important;width:100vw!important;height:100dvh!important;pointer-events:none!important;background:transparent!important;backdrop-filter:none!important;overflow:visible!important}
+.nara-assistant-backdrop{display:none!important;pointer-events:none!important;background:transparent!important;backdrop-filter:none!important}
+.nara-assistant-shell{position:absolute!important;z-index:1!important;right:max(12px,env(safe-area-inset-right))!important;bottom:max(12px,calc(env(safe-area-inset-bottom) + 12px))!important;left:auto!important;top:auto!important;pointer-events:auto!important;margin:0!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;overflow:hidden!important;transform:none!important;animation:none!important;box-shadow:0 22px 70px rgba(18,37,70,.25)!important;contain:layout paint!important}
+.nara-assistant-shell[data-nara-size="small"]{width:min(400px,calc(100vw - 24px))!important;height:min(590px,calc(100dvh - 90px))!important;border-radius:18px!important}
+.nara-assistant-shell[data-nara-size="medium"]{width:min(680px,calc(100vw - 24px))!important;height:min(760px,calc(100dvh - 44px))!important;border-radius:20px!important}
+.nara-assistant-shell[data-nara-size="full"]{position:fixed!important;z-index:2!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;border-radius:0!important;contain:none!important}
+.nara-assistant-header{min-width:0!important;display:flex!important;align-items:center!important;gap:7px!important;padding-left:10px!important;padding-right:8px!important;overflow:visible!important}
+.nara-assistant-header>div:nth-child(2){min-width:0!important;flex:1 1 auto!important}
+.nara-size-controls-v147,.nara-native-size-controls-v149{flex:0 0 auto!important;display:flex!important;align-items:center!important;gap:2px!important;white-space:nowrap!important}
+.nara-size-controls-v147 button,.nara-native-size-controls-v149 button,
+.nara-auto-voice-v148,.nara-native-auto-voice-v149,
+.nara-assistant-header>button{flex:0 0 32px!important;width:32px!important;height:32px!important;min-width:32px!important;padding:0!important;display:grid!important;place-items:center!important}
+.nara-assistant-header svg{max-width:18px!important;max-height:18px!important}
+.nara-assistant-messages{min-width:0!important;overflow-x:hidden!important;overscroll-behavior:contain!important}
+.nara-message,.nara-message>div,.nara-message-content,.nara-rich-text{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important}
+.nara-message pre{max-width:100%!important;overflow:auto!important}
+.nara-quick-prompts{min-width:0!important;display:flex!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important}
+.nara-quick-prompts::-webkit-scrollbar{display:none!important}
+.nara-quick-prompts button{flex:0 0 auto!important;white-space:nowrap!important}
+.nara-composer{min-width:0!important}
+.nara-composer textarea{max-width:100%!important;resize:none!important}
+.nara-composer-tools{position:relative!important;min-width:0!important;display:flex!important;align-items:center!important;gap:5px!important;overflow:visible!important}
+.nara-composer-tools>button{flex:0 0 auto!important}
+.nara-select{min-width:0!important;max-width:150px!important;flex:1 1 110px!important;overflow:hidden!important}
+.nara-select>span{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.nara-attachment-menu-wrap{position:relative!important;flex:0 0 auto!important}
+.nara-attachment-menu{position:absolute!important;z-index:20!important;left:0!important;right:auto!important;top:auto!important;bottom:calc(100% + 10px)!important;width:min(330px,calc(100vw - 32px))!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;padding:8px!important;border:1px solid #dfe6ef!important;border-radius:13px!important;background:#fff!important;box-shadow:0 18px 45px rgba(18,37,70,.2)!important;transform:none!important;overflow:visible!important}
+.nara-attachment-menu>button{min-width:0!important;min-height:72px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:5px!important;padding:8px!important;overflow:hidden!important}
+.nara-attachment-menu>button span,.nara-attachment-menu>button b,.nara-attachment-menu>button small{min-width:0!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.nara-upgrade-card{pointer-events:auto!important}
+
+@media(max-width:760px){
+  .nara-floating-button{right:max(12px,env(safe-area-inset-right))!important;bottom:max(14px,calc(env(safe-area-inset-bottom) + 14px))!important;width:56px!important;height:56px!important;border-radius:17px!important}
+  .nara-assistant-shell[data-nara-size="small"]{width:min(360px,calc(100vw - 20px))!important;height:min(56dvh,520px)!important;right:max(10px,env(safe-area-inset-right))!important;bottom:max(10px,calc(env(safe-area-inset-bottom) + 10px))!important;border-radius:17px!important}
+  .nara-assistant-shell[data-nara-size="medium"]{width:calc(100vw - 16px)!important;height:min(82dvh,720px)!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom))!important;border-radius:18px!important}
+  .nara-assistant-header{gap:4px!important;padding-left:8px!important;padding-right:6px!important}
+  .nara-brand-orb{flex:0 0 30px!important;width:30px!important;height:30px!important}
+  .nara-assistant-header>div:nth-child(2)>small{display:none!important}
+  .nara-size-controls-v147 button,.nara-native-size-controls-v149 button,
+  .nara-auto-voice-v148,.nara-native-auto-voice-v149,
+  .nara-assistant-header>button{flex-basis:29px!important;width:29px!important;height:29px!important;min-width:29px!important}
+  .nara-composer-tools{gap:4px!important}
+  .nara-select{max-width:105px!important;flex-basis:82px!important;font-size:10px!important}
+  .nara-attachment-menu{left:0!important;width:min(310px,calc(100vw - 28px))!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .nara-attachment-menu>button{min-height:66px!important;padding:7px!important}
+}
+
+@media(max-width:380px){
+  .nara-assistant-shell[data-nara-size="small"]{width:calc(100vw - 14px)!important;right:7px!important;height:min(60dvh,520px)!important}
+  .nara-assistant-header>div:nth-child(2){display:none!important}
+  .nara-select.model{display:none!important}
+  .nara-attachment-menu{width:calc(100vw - 24px)!important;grid-template-columns:1fr!important}
+  .nara-attachment-menu>button{min-height:48px!important;flex-direction:row!important;align-items:center!important}
+}
+
+/* Remove expensive perpetual visual effects from navigation and Nara. */
+html[data-studio-responsive-mode] .sn-shell .sn-side,
+html[data-studio-responsive-mode] .sn-shell .sn-top,
+html[data-studio-responsive-mode] .sn-shell .sn-sidebar-toggle,
+.nara-floating-button,.nara-assistant-layer,.nara-assistant-shell{will-change:auto!important}
