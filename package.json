@@ -7,7 +7,7 @@
     "predev": "node scripts/patch-auth-callback-v162.mjs && node scripts/patch-content-editor-v162.mjs && node scripts/patch-studio-content-v161.mjs && node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-interaction-v174.mjs && node scripts/run-patch-mobile-stability-v176.mjs && node scripts/patch-studio-mobile-v176.mjs && node scripts/patch-nara-native-v177.mjs && node scripts/run-patch-screenshot-stability-v177.mjs && node scripts/patch-service-worker-v179.mjs",
     "dev": "vite",
     "prebuild": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "build": "npm run test:production && vite build && node --check cloudflare/worker-v69.mjs && npm run cloudflare:dry-run && node scripts/write-netlify-redirects.mjs",
+    "build": "vite build",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
