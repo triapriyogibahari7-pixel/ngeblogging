@@ -1,0 +1,156 @@
+/* v256 — denah Tema: empat slot kiri, konten di tengah, empat slot kanan. */
+html[data-studio-native-v250] .tn-layout-canvas{
+  display:none!important;
+}
+
+html[data-studio-native-v250] .v250-layout-map{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-template-areas:
+    "hl hl hl hr hr hr"
+    "bh bh bh bh bh bh"
+    "sl1 sl1 center center sr1 sr1"
+    "sl2 sl2 center center sr2 sr2"
+    "sl3 sl3 center center sr3 sr3"
+    "sl4 sl4 center center sr4 sr4"
+    "bc bc bc bc bc bc"
+    "ac ac ac ac ac ac"
+    "fl fl fl fr fr fr"
+    "fw fw fw fw fw fw"!important;
+  gap:8px!important;
+  width:min(100%,980px)!important;
+  min-width:0!important;
+  margin:14px auto!important;
+  padding:12px!important;
+  border:1px solid #d8e3ef!important;
+  border-radius:18px!important;
+  background:#f7faff!important;
+  overflow:hidden!important;
+}
+
+html[data-studio-native-v250] .v250-layout-map::before{
+  content:"Post / Page\A Konten utama";
+  white-space:pre-line!important;
+  grid-area:center!important;
+  min-height:286px!important;
+  display:grid!important;
+  place-items:center!important;
+  align-content:center!important;
+  padding:16px!important;
+  border:2px solid #3478e8!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  color:#183a67!important;
+  font:800 14px/1.35 system-ui,sans-serif!important;
+  text-align:center!important;
+  box-shadow:0 10px 32px rgba(52,120,232,.08)!important;
+}
+
+html[data-studio-native-v250] .v250-layout-area{
+  min-width:0!important;
+  min-height:58px!important;
+  padding:7px 8px!important;
+  border:1px solid #b9cde6!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#24415f!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  text-align:center!important;
+  overflow:hidden!important;
+}
+html[data-studio-native-v250] .v250-layout-area:hover,
+html[data-studio-native-v250] .v250-layout-area:focus-visible,
+html[data-studio-native-v250] .v250-layout-area.active{
+  border-color:#3478e8!important;
+  background:#edf5ff!important;
+  outline:none!important;
+  box-shadow:inset 0 0 0 1px #3478e8!important;
+}
+html[data-studio-native-v250] .v250-layout-area span{
+  max-width:100%!important;
+  font:800 11px/1.2 system-ui,sans-serif!important;
+  overflow-wrap:anywhere!important;
+}
+html[data-studio-native-v250] .v250-layout-area small{
+  font:600 9px/1.2 system-ui,sans-serif!important;
+  color:#718198!important;
+}
+
+html[data-studio-native-v250] .v250-layout-area.header-left{grid-area:hl!important}
+html[data-studio-native-v250] .v250-layout-area.header-right{grid-area:hr!important}
+html[data-studio-native-v250] .v250-layout-area.below-header{grid-area:bh!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-left-1{grid-area:sl1!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-left-2{grid-area:sl2!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-left-3{grid-area:sl3!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-left-4{grid-area:sl4!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-right-1{grid-area:sr1!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-right-2{grid-area:sr2!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-right-3{grid-area:sr3!important}
+html[data-studio-native-v250] .v250-layout-area.sidebar-right-4{grid-area:sr4!important}
+html[data-studio-native-v250] .v250-layout-area.before-content{grid-area:bc!important}
+html[data-studio-native-v250] .v250-layout-area.after-content{grid-area:ac!important}
+html[data-studio-native-v250] .v250-layout-area.footer-left{grid-area:fl!important}
+html[data-studio-native-v250] .v250-layout-area.footer-right{grid-area:fr!important}
+html[data-studio-native-v250] .v250-layout-area.footer-wide{grid-area:fw!important}
+
+/* Preview selalu berada di tengah area yang tersedia. */
+html[data-studio-native-v250] :is(.tn-active-stage,.tn-code-preview-pane) .tn-frame-shell{
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+/* Editor kode tetap nyata: preview di atas lalu kode panjang di bawah pada perangkat kecil. */
+@media(max-width:760px){
+  html[data-studio-native-v250] .v250-layout-map{
+    grid-template-columns:minmax(72px,.8fr) minmax(118px,1.55fr) minmax(72px,.8fr)!important;
+    grid-template-areas:
+      "hl hl hr"
+      "bh bh bh"
+      "sl1 center sr1"
+      "sl2 center sr2"
+      "sl3 center sr3"
+      "sl4 center sr4"
+      "bc bc bc"
+      "ac ac ac"
+      "fl fl fr"
+      "fw fw fw"!important;
+    gap:6px!important;
+    width:100%!important;
+    padding:7px!important;
+    border-radius:13px!important;
+  }
+  html[data-studio-native-v250] .v250-layout-map::before{
+    min-height:260px!important;
+    padding:8px!important;
+    border-radius:9px!important;
+    font-size:11px!important;
+  }
+  html[data-studio-native-v250] .v250-layout-area{
+    min-height:54px!important;
+    padding:5px!important;
+    border-radius:8px!important;
+  }
+  html[data-studio-native-v250] .v250-layout-area span{font-size:9px!important}
+  html[data-studio-native-v250] .v250-layout-area small{display:none!important}
+  html[data-studio-native-v250] .tn-code-workspace{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:10px!important;
+  }
+  html[data-studio-native-v250] .tn-code-preview-pane{order:1!important}
+  html[data-studio-native-v250] .tn-code-pane{order:2!important}
+}
+
+@media(max-width:380px){
+  html[data-studio-native-v250] .v250-layout-map{
+    grid-template-columns:minmax(64px,.72fr) minmax(106px,1.45fr) minmax(64px,.72fr)!important;
+    gap:4px!important;
+    padding:5px!important;
+  }
+  html[data-studio-native-v250] .v250-layout-map::before{min-height:240px!important;font-size:10px!important}
+  html[data-studio-native-v250] .v250-layout-area{min-height:50px!important;padding:4px 3px!important}
+}
