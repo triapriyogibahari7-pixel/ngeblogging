@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const studioUrl = new URL("src/Studio.jsx", root);
@@ -14,19 +14,15 @@ const V260_HOTFIX = "studio-stability-v260-hotfix.css";
 const V257_RUNTIME = "studio-visual-native-v257.js";
 const V257_STYLES = "studio-visual-native-v257.css";
 
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function removeLiveImport(source, path) {
-  const pattern = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(path)}[\"'];?\\s*$`, "gm");
-  return source.replace(pattern, "");
-}
-
 function requireMarkers(source, markers, code) {
   for (const marker of markers) {
     if (!source.includes(marker)) throw new Error(`V260_${code}_MISSING:${marker}`);
   }
+}
+
+function importCount(source, path) {
+  const needle = `import "./${path}";`;
+  return source.split(needle).length - 1;
 }
 
 async function validateV260Contracts() {
@@ -56,30 +52,32 @@ async function validateV260Contracts() {
     'actionButton("logout"',
     'v260Interaction = full ? "modal" : "nonmodal"',
     "Tambah kamera, foto, atau file",
+    "openNaraFromProfile",
   ], "RUNTIME_CONTRACT");
 
   requireMarkers(css, [
-    '--v260-side-open:248px',
-    '--v260-side-rail:70px',
+    "--v260-side-open:248px",
+    "--v260-side-rail:70px",
     'data-studio-v260-family="large"',
     'data-studio-v260-family="small"',
-    '.sn-main{margin-left:0!important',
-    '.sn-profile-menu-v260',
-    '.nara-floating-button:not([hidden])',
+    ".sn-main{margin-left:0!important",
+    ".sn-profile-menu-v260",
+    ".nara-floating-button:not([hidden])",
     'data-v260-interaction="nonmodal"',
-    '.nara-attachment-menu',
-    '.tn-code-workspace',
-    '.op41-chart-grid',
-    'writing-mode:horizontal-tb!important',
+    ".nara-attachment-menu",
+    ".tn-code-workspace",
+    ".op41-chart-grid",
+    "writing-mode:horizontal-tb!important",
   ], "CSS_CONTRACT");
 
   requireMarkers(hotfix, [
-    '.sn-logo-mark',
-    '.sn-mobile-menu-mark',
-    '-webkit-text-fill-color:#fff!important',
-    'background:transparent!important',
-    '.nara-floating-button:not([hidden])',
-    '@media (min-width:360px) and (max-width:760px)',
+    ".sn-logo-mark",
+    ".sn-mobile-menu-mark",
+    "-webkit-text-fill-color:#fff!important",
+    "background:transparent!important",
+    ".nara-floating-button:not([hidden])",
+    "@media (min-width:360px) and (max-width:760px)",
+    ':has(.nara-assistant-shell[data-nara-size="full"])',
   ], "HOTFIX_CONTRACT");
 
   requireMarkers(device, [
@@ -125,18 +123,17 @@ async function validateV260Contracts() {
 }
 
 export async function finalizeStudioV259Order() {
+  // Historical function name retained because vite.config.js and older regression
+  // suites import it. Since v260 this is intentionally READ ONLY: build hooks must
+  // never rewrite source files in Netlify/CI. The committed source order is checked
+  // and a regression fails the build without mutating the working tree.
   await validateV260Contracts();
-  let source = await readFile(studioUrl, "utf8");
-  for (const required of [V257_RUNTIME, V257_STYLES, RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES, V260_HOTFIX]) {
-    if (!source.includes(`import "./${required}";`)) throw new Error(`V260_SOURCE_AUTHORITY_MISSING:${required}`);
+  const source = await readFile(studioUrl, "utf8");
+  const required = [V257_RUNTIME, V257_STYLES, RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES, V260_HOTFIX];
+  for (const path of required) {
+    if (!source.includes(`import "./${path}";`)) throw new Error(`V260_SOURCE_AUTHORITY_MISSING:${path}`);
+    if (importCount(source, path) !== 1) throw new Error(`V260_IMPORT_DUPLICATE:${path}`);
   }
-
-  for (const path of [RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES, V260_HOTFIX]) source = removeLiveImport(source, path);
-  const anchor = "export default StudioFastGate;";
-  if (!source.includes(anchor)) throw new Error("V260_STUDIO_EXPORT_ANCHOR_MISSING");
-  source = source
-    .replace(anchor, `import "./${RUNTIME}";\nimport "./${STYLES}";\nimport "./${HOTFIX}";\nimport "./${V260_RUNTIME}";\nimport "./${V260_STYLES}";\nimport "./${V260_HOTFIX}";\n\n${anchor}`)
-    .replace(/\n{3,}/g, "\n\n");
 
   const v257Runtime = source.lastIndexOf(`import "./${V257_RUNTIME}";`);
   const v257Styles = source.lastIndexOf(`import "./${V257_STYLES}";`);
@@ -146,18 +143,18 @@ export async function finalizeStudioV259Order() {
   const v260Runtime = source.lastIndexOf(`import "./${V260_RUNTIME}";`);
   const v260Styles = source.lastIndexOf(`import "./${V260_STYLES}";`);
   const v260Hotfix = source.lastIndexOf(`import "./${V260_HOTFIX}";`);
+
   if (!(v257Runtime >= 0 && v257Styles > v257Runtime && runtime > v257Styles && styles > runtime && hotfix > styles && v260Runtime > hotfix && v260Styles > v260Runtime && v260Hotfix > v260Styles)) {
     // Compatibility marker used by older regression suites: V259_FINAL_ORDER_INVALID.
     throw new Error("V260_FINAL_ORDER_INVALID");
   }
-  for (const [path, code] of [[RUNTIME, "V259_RUNTIME"], [STYLES, "V259_CSS"], [HOTFIX, "V259_HOTFIX"], [V260_RUNTIME, "RUNTIME"], [V260_STYLES, "CSS"], [V260_HOTFIX, "HOTFIX"]]) {
-    if ((source.match(new RegExp(escapeRegExp(`import "./${path}";`), "g")) || []).length !== 1) {
-      throw new Error(`V260_${code}_DUPLICATE`);
-    }
-  }
 
-  await writeFile(studioUrl, source, "utf8");
-  return { release: RELEASE, legacyRelease: LEGACY_RELEASE, path: "src/Studio.jsx" };
+  return {
+    release: RELEASE,
+    legacyRelease: LEGACY_RELEASE,
+    path: "src/Studio.jsx",
+    mode: "read-only-validation",
+  };
 }
 
 export { validateV260Contracts };
