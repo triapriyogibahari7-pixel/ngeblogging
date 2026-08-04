@@ -4,6 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const patch = read("scripts/patch-sidebar-right4-v257.mjs");
+const chain = read("scripts/patch-service-worker-v179.mjs");
 const left4 = read("scripts/patch-sidebar-left4-v207.mjs");
 const finalCss = read("src/studio-theme-layout-v257.css");
 const finalRuntime = read("src/studio-theme-layout-v257.js");
@@ -15,12 +16,14 @@ const activator = read("scripts/activate-studio-final-v257.mjs");
 const vite = read("vite.config.js");
 
 
-test("v257 extends the proven v207 left4 Theme engine instead of replacing it", () => {
+test("v257 extends the proven v207 left4 engine after all historical patches", () => {
   assert.match(left4, /sidebar-left-4-v207/);
   assert.match(patch, /await import\("\.\/patch-sidebar-left4-v207\.mjs"\)/);
   assert.match(patch, /sidebar-right-4-v257/);
   assert.match(patch, /id: \"sidebar-right-4\"/);
   assert.match(patch, /RIGHT_AREAS = \[\"sidebar-right-1\", \"sidebar-right-2\", \"sidebar-right-3\", \"sidebar-right-4\"\]/);
+  assert.ok(chain.indexOf('patch-sidebar-right4-v257.mjs') > chain.indexOf('patch-auth-production-v245.mjs'));
+  assert.match(patch, /Do not rewrite the historical v170\/v207 grid templates here/);
 });
 
 
@@ -79,8 +82,9 @@ test("100-theme architecture and 26 existing widgets remain intact", () => {
 });
 
 
-test("build order preserves v256 auth/cache and then applies Theme v257", () => {
-  assert.match(activator, /await import\("\.\/patch-sidebar-right4-v257\.mjs"\)/);
+test("build order preserves v256 auth/cache then applies import-only Theme v257", () => {
+  assert.doesNotMatch(activator, /await import\("\.\/patch-sidebar-right4-v257\.mjs"\)/);
+  assert.match(activator, /Theme area migration runs at the end of the established production patch/);
   assert.match(activator, /studio-shell-interaction-v255\.js/);
   assert.match(activator, /studio-theme-layout-v257\.css/);
   assert.match(activator, /V257_FINAL_STUDIO_AUTHORITY_ORDER_INVALID/);
