@@ -1,0 +1,49 @@
+{
+  "release": "studio-fixed-chrome-v267-20260804",
+  "date": "2026-08-04",
+  "scope": "Targeted regression repair for the latest Android screenshots and Studio navigation reports.",
+  "changes": {
+    "deviceMode": {
+      "desktopSiteLock": true,
+      "desktopSiteDoesNotBounceToMobileDuringBrowserChromeResize": true,
+      "sixResponsiveClassesPreserved": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+      "desktopVariantsPreserved": ["laptop", "desktop", "computer"]
+    },
+    "sidebar": {
+      "mobileClosed": "one viewport-fixed n in the top-left corner",
+      "mobileOpen": "full-height bounded drawer; internal n closes it",
+      "desktopOpen": "one internal n plus Ngeblogging and all menu labels",
+      "desktopCollapsed": "72px icon rail with n, Create Post, all navigation icons, Settings, and Logout visible",
+      "externalDesktopNHidden": true,
+      "duplicateToggleListenersNeutralized": true,
+      "menuStackTightUnderCreatePost": true
+    },
+    "nara": {
+      "launcherViewportFixed": true,
+      "safeAreaBottomRight": true,
+      "smallMediumNonModal": true,
+      "fullScreenOnlyWhenSelected": true,
+      "attachmentChooser": ["Kamera", "Foto", "File teks"],
+      "noBlinkAnimation": true
+    },
+    "serviceWorker": {
+      "cacheNamespace": "studio-fixed-chrome-cache-v267",
+      "forcedSecondNavigation": false,
+      "sessionStorageWipe": false
+    }
+  },
+  "validation": {
+    "regressionTestsAdded": [
+      "tests/studio-fixed-chrome-v267.test.mjs",
+      "tests/studio-screenshot-authority-v265.test.mjs",
+      "tests/studio-shell-v265.test.mjs",
+      "tests/studio-v263-regression.test.mjs"
+    ],
+    "productionTestAggregatorIncludesV267": true,
+    "ciStatusObservedAtManifestCreation": false,
+    "productionDeploymentObservedAtManifestCreation": false,
+    "physicalDeviceRetestObservedAtManifestCreation": false,
+    "loginEndToEndObservedAtManifestCreation": false,
+    "capacityClaim": "No unmeasured claim is made for hundreds of billions of simultaneous logins. Capacity must be established by distributed load tests on the deployed production infrastructure."
+  }
+}
