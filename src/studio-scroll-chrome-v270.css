@@ -1,0 +1,422 @@
+/* Ngeblogging Studio v270 — scroll-stable chrome authority.
+   Scope: the exact remaining screenshot/device regressions reported on Android:
+   one fixed mobile n, clickable after long scroll, Nara pinned to the viewport,
+   visible collapsed desktop icons, no external duplicate n, no dark drawer freeze. */
+
+:root{
+  --v270-drawer:clamp(248px,74vw,320px);
+  --v270-top:66px;
+  --v270-side-open:240px;
+  --v270-side-rail:72px;
+  --v270-safe-left:max(10px,env(safe-area-inset-left,0px));
+  --v270-safe-right:max(10px,env(safe-area-inset-right,0px));
+  --v270-safe-bottom:max(14px,calc(env(safe-area-inset-bottom,0px) + 12px));
+}
+
+/* A transformed/contained ancestor can make position:fixed behave like absolute.
+   Keep the Studio/Nara ancestor chain viewport-native. */
+html,body,#root,.sn-shell{
+  max-width:100%!important;
+  transform:none!important;
+  translate:none!important;
+  perspective:none!important;
+  filter:none!important;
+  contain:none!important;
+}
+.sn-shell,.sn-main,.sn-main>.sn-top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* Historical duplicate/edge controls are never the live toggle. */
+.sn-sidebar-edge-toggle-v147,
+.v227-sidebar-fab,
+.studio-external-sidebar-toggle,
+[data-v173-collapse-toggle],
+[data-v187-sidebar-toggle],
+[data-v208-sidebar-toggle],
+[data-v223-sidebar-toggle],
+[data-v229-sidebar-toggle],
+#ngeblogging-studio-chrome-v244,
+.sn-side-close{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* --------------------------------------------------------------------------
+   LARGE FAMILY — desktop site, laptop, desktop, computer, large tablet. */
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  left:0!important;
+  right:auto!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+html[data-v269-desktop-family="true"] .sn-top>.sn-sidebar-toggle{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* Closed desktop rail MUST keep every icon from n through Keluar visible. */
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed{
+  display:flex!important;
+  width:var(--v270-side-rail)!important;
+  min-width:var(--v270-side-rail)!important;
+  max-width:var(--v270-side-rail)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed>.sn-logo,
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed>nav,
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed>.sn-account-footer{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed>nav{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  flex-direction:column!important;
+  gap:2px!important;
+  overflow-y:auto!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:48px!important;
+  min-width:48px!important;
+  max-width:48px!important;
+  min-height:42px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  overflow:visible!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>span{
+  display:none!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>svg{
+  display:block!important;
+  flex:0 0 21px!important;
+  width:21px!important;
+  height:21px!important;
+  min-width:21px!important;
+  min-height:21px!important;
+  margin:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed .sn-logo-mark,
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed .sn-logo-mark strong{
+  display:grid!important;
+  place-items:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  color:#fff!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar.collapsed+.sn-main{
+  margin-left:var(--v270-side-rail)!important;
+  width:calc(100% - var(--v270-side-rail))!important;
+  max-width:calc(100% - var(--v270-side-rail))!important;
+}
+html[data-v269-desktop-family="true"] #ngeblogging-studio-sidebar:not(.collapsed)+.sn-main{
+  margin-left:var(--v270-side-open)!important;
+  width:calc(100% - var(--v270-side-open))!important;
+  max-width:calc(100% - var(--v270-side-open))!important;
+}
+
+/* --------------------------------------------------------------------------
+   SMALL FAMILY — application, handphone, mobile, compact, Android/iPhone. */
+html[data-v269-desktop-family="false"] .sn-main>.sn-top{
+  position:fixed!important;
+  z-index:2147482500!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  height:var(--v270-top)!important;
+  min-height:var(--v270-top)!important;
+  padding-left:66px!important;
+  padding-right:var(--v270-safe-right)!important;
+  transform:none!important;
+  filter:none!important;
+  contain:none!important;
+  overflow:visible!important;
+}
+
+/* The single closed-state n is fixed directly to the viewport, not merely relative
+   to the header. This keeps it clickable after long Android scrolls/address-bar moves. */
+html[data-v269-desktop-family="false"] .sn-top>.sn-sidebar-toggle{
+  display:grid!important;
+  place-items:center!important;
+  position:fixed!important;
+  z-index:2147483050!important;
+  left:var(--v270-safe-left)!important;
+  right:auto!important;
+  top:max(10px,env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  max-width:46px!important;
+  max-height:46px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:linear-gradient(145deg,#3476e7,#4b55dc)!important;
+  color:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  contain:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+html[data-v269-desktop-family="false"] .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark,
+html[data-v269-desktop-family="false"] .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark strong{
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+  transform:none!important;
+  font:850 27px/1 Arial,Helvetica,sans-serif!important;
+}
+html[data-v269-desktop-family="false"] body.sn-mobile-sidebar-open .sn-top>.sn-sidebar-toggle{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+html[data-v269-desktop-family="false"] #ngeblogging-studio-sidebar{
+  display:flex!important;
+  position:fixed!important;
+  z-index:2147483200!important;
+  top:0!important;
+  bottom:0!important;
+  left:0!important;
+  right:auto!important;
+  width:var(--v270-drawer)!important;
+  min-width:var(--v270-drawer)!important;
+  max-width:var(--v270-drawer)!important;
+  height:100dvh!important;
+  transform:translate3d(-105%,0,0)!important;
+  visibility:hidden!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  filter:none!important;
+  contain:none!important;
+  overflow:hidden!important;
+  transition:none!important;
+  animation:none!important;
+}
+html[data-v269-desktop-family="false"] #ngeblogging-studio-sidebar.mobile-open{
+  transform:translate3d(0,0,0)!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  box-shadow:16px 0 45px rgba(20,42,76,.16)!important;
+}
+html[data-v269-desktop-family="false"] #ngeblogging-studio-sidebar.mobile-open *{
+  pointer-events:auto!important;
+}
+
+/* No dark/full-screen freeze: backdrop exists only as an invisible close target
+   to the right of the drawer. The drawer itself is never covered by it. */
+html[data-v269-desktop-family="false"] .sn-side-backdrop{
+  display:block!important;
+  position:fixed!important;
+  z-index:2147483150!important;
+  top:0!important;
+  bottom:0!important;
+  left:var(--v270-drawer)!important;
+  right:0!important;
+  width:auto!important;
+  height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+html[data-v269-desktop-family="false"] body:not(.sn-mobile-sidebar-open) .sn-side-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+html[data-v269-desktop-family="false"] body.sn-mobile-sidebar-open :is(.sn-main,.sn-shell){
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:auto!important;
+}
+
+/* --------------------------------------------------------------------------
+   NARA — launcher is pinned to the real viewport in every Studio/editor mode. */
+.nara-floating-button{
+  display:grid!important;
+  place-items:center!important;
+  position:fixed!important;
+  z-index:2147483000!important;
+  right:var(--v270-safe-right)!important;
+  left:auto!important;
+  bottom:var(--v270-safe-bottom)!important;
+  top:auto!important;
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  min-height:58px!important;
+  max-width:58px!important;
+  max-height:58px!important;
+  margin:0!important;
+  padding:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  contain:none!important;
+  animation:none!important;
+  transition:none!important;
+  will-change:auto!important;
+}
+.nara-floating-button>span{
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+}
+.nara-floating-button>span>svg{
+  display:block!important;
+  width:28px!important;
+  height:28px!important;
+  margin:auto!important;
+  transform:none!important;
+}
+
+/* Small and medium stay non-modal and never own page clicks/scroll. */
+.nara-assistant-layer[data-v270-interaction="nonmodal"],
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="small"]),
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="medium"]){
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  filter:none!important;
+  pointer-events:none!important;
+  transform:none!important;
+}
+.nara-assistant-layer[data-v270-interaction="nonmodal"]>.nara-assistant-backdrop,
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="small"])>.nara-assistant-backdrop,
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="medium"])>.nara-assistant-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.nara-assistant-shell[data-nara-size="small"],
+.nara-assistant-shell[data-nara-size="medium"]{
+  position:fixed!important;
+  left:auto!important;
+  top:auto!important;
+  right:max(8px,env(safe-area-inset-right,0px))!important;
+  bottom:max(8px,calc(env(safe-area-inset-bottom,0px) + 6px))!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  contain:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+.nara-assistant-shell[data-nara-size="small"]{
+  width:min(400px,calc(100vw - 16px))!important;
+  height:min(590px,74dvh)!important;
+}
+.nara-assistant-shell[data-nara-size="medium"]{
+  width:min(680px,calc(100vw - 16px))!important;
+  height:min(760px,86dvh)!important;
+}
+.nara-assistant-shell[data-nara-size="full"]{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  max-width:100vw!important;
+  max-height:100dvh!important;
+}
+
+/* Camera / Photo / File stays above the composer instead of falling below it. */
+.nara-attachment-menu{
+  position:absolute!important;
+  left:0!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:calc(100% + 8px)!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:min(310px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+/* No blink/jitter on reported fixed chrome. */
+#ngeblogging-studio-sidebar,
+#ngeblogging-studio-sidebar *,
+.sn-top,
+.sn-sidebar-toggle,
+.nara-floating-button,
+.nara-assistant-layer,
+.nara-assistant-shell,
+.nara-attachment-menu{
+  animation:none!important;
+  transition:none!important;
+  will-change:auto!important;
+}
+
+@media (max-width:360px){
+  :root{--v270-drawer:clamp(248px,78vw,286px)}
+  .nara-floating-button{width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important}
+  .nara-assistant-shell[data-nara-size="small"]{width:calc(100vw - 12px)!important;right:6px!important}
+}
