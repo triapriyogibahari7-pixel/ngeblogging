@@ -1,4 +1,4 @@
-name: Production Validation v270
+name: Production Validation v272
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: production-validation-v270-${{ github.ref }}
+  group: production-validation-v272-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,13 +29,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate v270 scroll-stable shell contract
-        run: node --test tests/studio-scroll-chrome-v270.test.mjs
+      - name: Validate v272 responsive shell and auth contract
+        run: node --test tests/studio-scroll-chrome-v270.test.mjs tests/nara-global-authority-v271.test.mjs tests/studio-shell-authority-v272.test.mjs
 
       - name: Production regression tests and build
         run: npm run build
 
-      - name: Assert v270 source and cache markers
+      - name: Assert v272 source and cache markers
         run: |
           test -f src/studio-final-authority-v269.js
           test -f src/studio-final-authority-v269.css
@@ -44,10 +44,21 @@ jobs:
           test -f tests/studio-scroll-chrome-v270.test.mjs
           test -f scripts/patch-service-worker-v270.mjs
           test -f public/release-v270.json
+          test -f src/studio-shell-authority-v272.js
+          test -f src/studio-shell-authority-v272.css
+          test -f tests/studio-shell-authority-v272.test.mjs
+          test -f scripts/patch-service-worker-v272.mjs
+          test -f public/release-v272.json
           grep -q 'studio-final-authority-v269.js' src/Studio.jsx
           grep -q 'studio-scroll-chrome-v270.js' src/Studio.jsx
           grep -q 'studio-scroll-chrome-v270.css' src/Studio.jsx
+          grep -q 'studio-shell-authority-v272.js' src/Studio.jsx
+          grep -q 'consumeAuthCallbackV162().then' src/main.jsx
           grep -q 'patch-service-worker-v270.mjs' scripts/patch-service-worker-v269.mjs
+          grep -q 'patch-service-worker-v272.mjs' scripts/patch-service-worker-v270.mjs
           grep -q 'studio-scroll-chrome-cache-v270' public/sw.js
           grep -q 'UI_PATCH_RELEASE_V270' public/sw.js
           grep -q 'UI_CACHE_RELEASE_V270' public/sw.js
+          grep -q 'studio-shell-cache-v272' public/sw.js
+          grep -q 'UI_PATCH_RELEASE_V272' public/sw.js
+          grep -q 'UI_CACHE_RELEASE_V272' public/sw.js
