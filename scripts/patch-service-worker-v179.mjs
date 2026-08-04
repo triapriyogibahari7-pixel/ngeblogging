@@ -4,6 +4,9 @@ const file = new URL("../public/sw.js", import.meta.url);
 const RELEASE = "studio-mobile-runtime-v179-20260731";
 const VERSION = "ngeblogging-app-v179-mobile-runtime-20260731";
 const CACHE = "mobile-runtime-cache-v179";
+const CURRENT_RELEASE = "studio-stability-v260-20260804-r3";
+const CURRENT_VERSION = "ngeblogging-app-v260-stability-r3-20260804";
+const CURRENT_CACHE = "studio-stability-cache-v260-r3";
 const FIRST_SITE_VERSION = 'const FIRST_SITE_COMPAT_VERSION_V169 = "ngeblogging-app-v169-first-site-20260730";';
 const FIRST_SITE_CACHE = 'const FIRST_SITE_COMPAT_CACHE_V169 = "first-site-cache-v169";';
 const SCREENSHOT_VERSION = 'const SCREENSHOT_STABILITY_COMPAT_VERSION_V177 = "ngeblogging-app-v177-screenshot-stability-20260731";';
@@ -15,6 +18,44 @@ function insertAfterVersion(source, line) {
   const next = source.replace(/^(const VERSION = .*;\n)/m, `$1${line}\n`);
   if (next === source) throw new Error(`Patch service worker v179 tidak menemukan VERSION untuk ${line}.`);
   return next;
+}
+
+function replaceOrInsert(source, name, expression) {
+  const line = `const ${name} = ${expression};`;
+  const pattern = new RegExp(`^const ${name} = .*;$`, "m");
+  if (pattern.test(source)) return source.replace(pattern, line);
+  return insertAfterVersion(source, line);
+}
+
+async function restoreCurrentServiceWorker() {
+  let current = await readFile(file, "utf8");
+  current = current
+    .replace(/^const VERSION = .*;$/m, `const VERSION = "${CURRENT_VERSION}";`)
+    .replace(/^const CACHE_RELEASE = .*;$/m, `const CACHE_RELEASE = "${CURRENT_CACHE}";`)
+    .replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v260-r3: no automatic second navigation after service-worker activation.");
+  current = replaceOrInsert(current, "STUDIO_STABILITY_RELEASE_V260", `"${CURRENT_RELEASE}"`);
+  current = replaceOrInsert(current, "ACTIVE_VERSION_V260", "VERSION");
+  current = replaceOrInsert(current, "ACTIVE_CACHE_RELEASE_V260", "CACHE_RELEASE");
+  current = current
+    .replace(/^const SHELL_CACHE = .*;$/m, 'const SHELL_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-shell`;')
+    .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-assets`;')
+    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V179", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
+    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V258", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
+    .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V259", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
+    .replaceAll("service-worker-activated-stability-v260-r2", "service-worker-activated-stability-v260-r3");
+
+  if (!current.includes("reloadRequired: false")) {
+    current = current.replace(
+      /reason:\s*"service-worker-activated-stability-v260-r3",/,
+      'reason: "service-worker-activated-stability-v260-r3",\n        reloadRequired: false,',
+    );
+  }
+  for (const marker of [CURRENT_VERSION, CURRENT_CACHE, CURRENT_RELEASE, "ACTIVE_VERSION_V260", "ACTIVE_CACHE_RELEASE_V260", "NGE_BLOGGING_UPDATE_AVAILABLE_V260"]) {
+    if (!current.includes(marker)) throw new Error(`V260_POST_PATCH_RESTORE_MISSING:${marker}`);
+  }
+  if (/await refreshStaleWindow\(client, url\);/.test(current)) throw new Error("V260_POST_PATCH_DOUBLE_RELOAD_REGRESSION");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(current)) throw new Error("V260_POST_PATCH_SESSION_DESTRUCTIVE_ACTION");
+  await writeFile(file, current);
 }
 
 let source = await readFile(file, "utf8");
@@ -62,17 +103,6 @@ await import("./patch-studio-bootstrap-v196.mjs");
 await import("./patch-studio-bootstrap-v196-compat.mjs");
 await import("./patch-studio-session-race-v197.mjs");
 await import("./patch-studio-persisted-session-v198.mjs");
-
-// Historical authorities remain executable for regression compatibility. v222
-// establishes the code gutter/Nara attachment geometry; v223 locks physical UI;
-// v224 owns transient data re-auth; v225 owns responsive Studio/Nara UI; v226
-// owns the native React green Theme map; v227 aligns Nara model/intelligence;
-// v228 locks physical layout/editor/Nara; v229 locks map/sidebar/profile; v230
-// owns bounded-preview/bootstrap recovery; v231 owns the green map and single-n
-// geometry; v232 owns screenshot controls; v233 owns bounded data failover; v234
-// owns screenshot geometry; v235 preempts historical interaction listeners and
-// owns single-n/layout/code/Nara interactions; v236 guards real-device geometry;
-// v237 corrects the React source and physical-device geometry after all of them.
 await import("./patch-production-v202.mjs");
 await import("./patch-production-v203.mjs");
 await import("./patch-production-v204.mjs");
@@ -112,6 +142,10 @@ await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
 await import("./patch-studio-bootstrap-v243.mjs");
 await import("./patch-auth-production-v245.mjs");
-// v258 extends the generated Theme model only after every historical migration,
-// preserving the current v257 visual authority and old patch anchors.
 await import("./patch-sidebar-right4-v258.mjs");
+
+// Historical migrations above are allowed to validate/migrate old repositories,
+// but production v260-r3 must always leave the committed current service worker
+// authoritative before tests and Vite bundling continue.
+await restoreCurrentServiceWorker();
+console.log(`Restored public/sw.js to ${CURRENT_RELEASE} after historical migration chain.`);
