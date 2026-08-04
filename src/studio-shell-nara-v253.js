@@ -1,4 +1,5 @@
 export const RELEASE = "studio-shell-nara-v253-20260804";
+export const FAMILY_SYNC_RELEASE = "studio-family-sync-v254-hotfix-20260804";
 
 let frame = 0;
 
@@ -28,6 +29,22 @@ function sidebarState(side, family) {
   return side.classList.contains("collapsed") ? "collapsed" : "expanded";
 }
 
+function synchronizeReactDeviceMode(html, family) {
+  const expected = family === "small" ? "small" : "large";
+  html.dataset.studioFamilySyncV254 = FAMILY_SYNC_RELEASE;
+  if (html.dataset.studioDeviceMode === expected) return false;
+  html.dataset.studioDeviceMode = expected;
+  window.dispatchEvent(new CustomEvent("ngeblogging:studio-device-mode-change", {
+    detail: {
+      mode: expected,
+      family,
+      release: FAMILY_SYNC_RELEASE,
+      source: "studio-shell-nara-v253",
+    },
+  }));
+  return true;
+}
+
 function syncSidebar() {
   const html = root();
   const shell = document.querySelector(".sn-shell");
@@ -35,6 +52,7 @@ function syncSidebar() {
   if (!shell || !side) return;
 
   const family = responsiveFamily();
+  synchronizeReactDeviceMode(html, family);
   const state = sidebarState(side, family);
   html.dataset.studioShellNaraV253 = RELEASE;
   html.dataset.studioV253Family = family;
