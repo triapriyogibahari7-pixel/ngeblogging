@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const studioUrl = new URL("src/Studio.jsx", root);
 
-export const RELEASE = "studio-v260-post-build-order-20260804";
+export const RELEASE = "studio-v260-post-build-order-20260804-r2";
 export const LEGACY_RELEASE = "studio-v259-post-build-order-20260804";
 const RUNTIME = "studio-six-mode-authority-v259.js";
 const STYLES = "studio-six-mode-authority-v259.css";
@@ -26,7 +26,7 @@ function importCount(source, path) {
 }
 
 async function validateV260Contracts() {
-  const [runtime, css, hotfix, device, provider, auth, studioNext, nara] = await Promise.all([
+  const [runtime, css, hotfix, device, provider, auth, studioNext, nara, account] = await Promise.all([
     readFile(new URL(`src/${V260_RUNTIME}`, root), "utf8"),
     readFile(new URL(`src/${V260_STYLES}`, root), "utf8"),
     readFile(new URL(`src/${V260_HOTFIX}`, root), "utf8"),
@@ -35,12 +35,17 @@ async function validateV260Contracts() {
     readFile(new URL("src/lib/supabase.js", root), "utf8"),
     readFile(new URL("src/StudioNext.jsx", root), "utf8"),
     readFile(new URL("src/NaraAssistant.jsx", root), "utf8"),
+    readFile(new URL("src/studio-production-mobile-v189-account.js", root), "utf8"),
   ]);
 
   requireMarkers(runtime, [
-    "studio-stability-v260-20260804",
-    "studioV253Family = current",
-    "studioV259Family = current",
+    "studio-stability-v260-20260804-r2",
+    "function deviceMetrics()",
+    "function responsiveMode(view = deviceMetrics())",
+    'setData(root, "studioV253Family", current)',
+    'setData(root, "studioV259Family", current)',
+    'setData(root, "studioResponsiveMode", mode)',
+    'setData(root, "studioDesktopSitePhone", String(view.desktopSitePhone))',
     "v260SingleN",
     "sn-profile-menu-v260",
     'actionButton("profile"',
@@ -50,6 +55,7 @@ async function validateV260Contracts() {
     'actionButton("view-site"',
     'actionButton("nara"',
     'actionButton("logout"',
+    "focusAvatarField",
     'v260Interaction = full ? "modal" : "nonmodal"',
     "Tambah kamera, foto, atau file",
     "openNaraFromProfile",
@@ -71,14 +77,28 @@ async function validateV260Contracts() {
   ], "CSS_CONTRACT");
 
   requireMarkers(hotfix, [
+    ".sn-top-actions",
     ".sn-logo-mark",
     ".sn-mobile-menu-mark",
     "-webkit-text-fill-color:#fff!important",
     "background:transparent!important",
+    ".sn-site-manager",
+    'data-account-surface-v189="profile"',
+    'data-account-surface-v189="settings"',
     ".nara-floating-button:not([hidden])",
     "@media (min-width:360px) and (max-width:760px)",
     ':has(.nara-assistant-shell[data-nara-size="full"])',
   ], "HOTFIX_CONTRACT");
+
+  requireMarkers(account, [
+    "studio-production-mobile-v189-account-20260804-r2",
+    'title, "Profil"',
+    'title, "Pengaturan"',
+    "profileSection.hidden = false",
+    "settingsSection.hidden = true",
+    "profileSection.hidden = true",
+    "settingsSection.hidden = false",
+  ], "ACCOUNT_CONTRACT");
 
   requireMarkers(device, [
     "studio-device-mode-v260-20260804",
