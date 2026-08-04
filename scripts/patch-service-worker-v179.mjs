@@ -115,3 +115,6 @@ await import("./patch-auth-production-v245.mjs");
 // v258 extends the generated Theme model only after every historical migration,
 // preserving the current v257 visual authority and old patch anchors.
 await import("./patch-sidebar-right4-v258.mjs");
+// v259 fixes the existing v257 authority itself so Theme preview mode can never
+// push the physical Studio shell off a phone/tablet viewport.
+await import("./patch-studio-physical-mode-v259.mjs");
