@@ -1,0 +1,36 @@
+/* v263 last-mile conflict cleanup. */
+.v222-code-line-gutter,
+.v235-code-gutter,
+.v259-code-gutter{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.tn-code-gutter-v263{display:block!important;visibility:visible!important}
+
+@media (min-width:761px){
+  .sn-top .sn-avatar{
+    position:relative!important;inset:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    margin-left:auto!important;transform:none!important
+  }
+}
+@media (max-width:760px){
+  .sn-top .sn-avatar{
+    position:relative!important;inset:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    margin-left:auto!important;transform:none!important
+  }
+}
+
+/* Do not let any retired observer add blur or a click-capturing layer back to non-full Nara. */
+.nara-assistant-layer[data-nara-v263-modal="false"]{
+  background:transparent!important;backdrop-filter:none!important;filter:none!important;pointer-events:none!important
+}
+.nara-assistant-layer[data-nara-v263-modal="false"]>.nara-assistant-backdrop{
+  display:none!important;visibility:hidden!important;pointer-events:none!important
+}
+.nara-assistant-layer[data-nara-v263-modal="false"]>.nara-assistant-shell{
+  display:flex!important;visibility:visible!important;pointer-events:auto!important
+}
+
+/* Keep the single internal desktop n visibly centered even when older CSS targets strong/i separately. */
+@media (min-width:761px){
+  #ngeblogging-studio-sidebar .sn-logo-mark,
+  #ngeblogging-studio-sidebar.collapsed .sn-logo-mark{display:grid!important;place-items:center!important}
+  #ngeblogging-studio-sidebar .sn-logo-mark strong{position:static!important;inset:auto!important;display:block!important;opacity:1!important;visibility:visible!important;color:#fff!important;line-height:1!important}
+}
