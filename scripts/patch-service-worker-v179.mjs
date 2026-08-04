@@ -81,6 +81,7 @@ await import("./patch-production-v205-hotfix.mjs");
 await import("./patch-production-v206.mjs");
 await import("./patch-production-v207.mjs");
 await import("./patch-sidebar-left4-v207.mjs");
+await import("./patch-sidebar-right4-v256.mjs");
 await import("./patch-production-v208.mjs");
 await import("./patch-production-v209.mjs");
 await import("./patch-production-v209-compat.mjs");
