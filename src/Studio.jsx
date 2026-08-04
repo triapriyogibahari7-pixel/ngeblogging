@@ -94,5 +94,7 @@ import "./studio-six-mode-authority-v259-hotfix.css";
 import "./studio-stability-v260.js";
 import "./studio-stability-v260.css";
 import "./studio-stability-v260-hotfix.css";
+import "./studio-runtime-v263.js";
+import "./studio-shell-v263.css";
 
 export default StudioFastGate;
