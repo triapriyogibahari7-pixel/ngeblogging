@@ -112,3 +112,6 @@ await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
 await import("./patch-studio-bootstrap-v243.mjs");
 await import("./patch-auth-production-v245.mjs");
+// v257 extends the final generated Theme layout only after all historical
+// migrations finish, so old anchors cannot be invalidated mid-chain.
+await import("./patch-sidebar-right4-v257.mjs");
