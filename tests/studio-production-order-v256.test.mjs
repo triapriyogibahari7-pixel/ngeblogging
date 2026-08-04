@@ -21,7 +21,8 @@ test("v255 interaction source remains after v253 and the build activator preserv
   assert.ok(v255Runtime > v253);
   assert.ok(v255Css > v255Runtime);
 
-  assert.match(activation, /studio-native-bundle-activation-v256-20260804/);
+  assert.match(activation, /studio-native-bundle-activation-v250-20260804/);
+  assert.match(activation, /PRODUCTION_ORDER_RELEASE_V256 = "studio-production-order-v256-20260804"/);
   assert.match(activation, /FINAL_INTERACTION_RELEASE = "studio-shell-interaction-v255-20260804"/);
   assert.match(activation, /ensureLastImport\(source, "studio-shell-interaction-v255\.js"\)/);
   assert.match(activation, /ensureLastImport\(source, "studio-shell-interaction-v255\.css"\)/);
@@ -31,6 +32,7 @@ test("v255 interaction source remains after v253 and the build activator preserv
 
 test("production data gateway has an official-host publishable fallback and never embeds a privileged Supabase key", () => {
   assert.match(dataGateway, /DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE/);
+  assert.match(dataGateway, /DATA_GATEWAY_RESILIENCE_RELEASE_V256/);
   assert.match(dataGateway, /PRODUCTION_SUPABASE_URL/);
   assert.match(dataGateway, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY/);
   assert.match(dataGateway, /resolveDataGatewayConfig/);
@@ -41,6 +43,8 @@ test("production data gateway has an official-host publishable fallback and neve
 });
 
 test("health reports real auth and data readiness instead of hard-coding data as ready", () => {
+  assert.match(worker, /2026\.07\.30-auth-production-v153/);
+  assert.match(worker, /PRODUCTION_ORDER_DATA_RELEASE_V256/);
   assert.match(worker, /resolveAuthGatewayConfig/);
   assert.match(worker, /resolveDataGatewayConfig/);
   assert.match(worker, /const dataConfigured = dataConfig\.ready/);
