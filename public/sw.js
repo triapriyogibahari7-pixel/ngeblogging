@@ -1,5 +1,10 @@
-const VERSION = "ngeblogging-app-v262-responsive-shell-r1-20260804";
-const CACHE_RELEASE = "studio-responsive-shell-cache-v262-r1";
+const VERSION = "ngeblogging-app-v275-final-stability-20260804";
+const CACHE_RELEASE = "studio-final-stability-cache-v275";
+const STUDIO_FINAL_STABILITY_RELEASE_V275 = "studio-final-stability-v275-20260804";
+const UI_PATCH_RELEASE_V274 = "studio-shell-content-v274-20260804";
+const UI_PATCH_CACHE_V274 = "studio-shell-content-cache-v274";
+const UI_PATCH_RELEASE_V272 = "studio-shell-authority-v272-20260804";
+const UI_PATCH_CACHE_V272 = "studio-shell-cache-v272";
 const STUDIO_STABILITY_RELEASE_V260 = "studio-stability-v260-20260804-r3";
 const STUDIO_SIX_MODE_RELEASE_V259 = "studio-six-mode-authority-v259-20260804";
 const ROUTE_RECOVERY_COMPAT_VERSION = "ngeblogging-app-v168-route-recovery-20260730";
@@ -36,10 +41,14 @@ const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
 const ACTIVE_CACHE_RELEASE_V258 = "studio-theme-right4-cache-v258";
 const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";
 const ACTIVE_CACHE_RELEASE_V259 = "studio-six-mode-cache-v259";
-const ACTIVE_VERSION_V260 = VERSION;
-const ACTIVE_CACHE_RELEASE_V260 = CACHE_RELEASE;
-const SHELL_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-shell`;
-const ASSET_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-assets`;
+const ACTIVE_VERSION_V260 = "ngeblogging-app-v262-responsive-shell-r1-20260804";
+const ACTIVE_CACHE_RELEASE_V260 = "studio-responsive-shell-cache-v262-r1";
+const ACTIVE_VERSION_V274 = "ngeblogging-app-v274-shell-content-20260804";
+const ACTIVE_CACHE_RELEASE_V274 = UI_PATCH_CACHE_V274;
+const ACTIVE_VERSION_V275 = VERSION;
+const ACTIVE_CACHE_RELEASE_V275 = CACHE_RELEASE;
+const SHELL_CACHE = `${ACTIVE_VERSION_V275}-${ACTIVE_CACHE_RELEASE_V275}-${AUTH_HANDOFF_RELEASE}-shell`;
+const ASSET_CACHE = `${ACTIVE_VERSION_V275}-${ACTIVE_CACHE_RELEASE_V275}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -83,8 +92,17 @@ function versionPayload(type) {
   return {
     type,
     version: VERSION,
+    studioFinalStabilityReleaseV275: STUDIO_FINAL_STABILITY_RELEASE_V275,
+    uiPatchReleaseV274: UI_PATCH_RELEASE_V274,
+    uiPatchCacheV274: UI_PATCH_CACHE_V274,
+    uiPatchReleaseV272: UI_PATCH_RELEASE_V272,
+    uiPatchCacheV272: UI_PATCH_CACHE_V272,
     studioStabilityReleaseV260: STUDIO_STABILITY_RELEASE_V260,
     studioSixModeReleaseV259: STUDIO_SIX_MODE_RELEASE_V259,
+    activeVersionV275: ACTIVE_VERSION_V275,
+    activeCacheReleaseV275: ACTIVE_CACHE_RELEASE_V275,
+    activeVersionV274: ACTIVE_VERSION_V274,
+    activeCacheReleaseV274: ACTIVE_CACHE_RELEASE_V274,
     activeVersionV260: ACTIVE_VERSION_V260,
     activeCacheReleaseV260: ACTIVE_CACHE_RELEASE_V260,
     routeRecoveryCompatVersion: ROUTE_RECOVERY_COMPAT_VERSION,
@@ -126,13 +144,13 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V260"),
-        reason: "service-worker-activated-responsive-shell-v262-r1",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V275"),
+        reason: "service-worker-activated-final-stability-v275",
         reloadRequired: false,
       });
-      // Deliberately no client.navigate(): avoids a second loading pass and preserves sessions.
+      // No client.navigate(): preserves login/session and avoids the historical double-loading pass.
     } catch {
-      // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
+      // One problematic tab must not block the rest.
     }
   }));
 }
