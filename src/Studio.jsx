@@ -78,5 +78,7 @@ import "./studio-visual-stability-v241-final.css";
 // compatibility-only CSS marker: import "./studio-final-visual-v249-hotfix.css";
 import "./studio-native-authority-v250.js";
 import "./studio-native-authority-v250.css";
+import "./studio-sidebar-rescue-v251.js";
+import "./studio-sidebar-rescue-v251.css";
 
 export default StudioFastGate;
