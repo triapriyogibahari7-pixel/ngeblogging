@@ -1,0 +1,188 @@
+/* Ngeblogging Studio v280 — final responsive shell berdasarkan screenshot perangkat nyata. */
+:root{
+  --v280-top:64px;
+  --v280-side-open:240px;
+  --v280-side-rail:72px;
+  --v280-drawer:min(76vw,320px);
+  --v280-safe-left:max(10px,env(safe-area-inset-left,0px));
+  --v280-safe-right:max(10px,env(safe-area-inset-right,0px));
+  --v280-safe-bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 16px));
+}
+
+html,body,#root,.sn-shell{max-width:100%!important;overflow-x:clip!important;transform:none!important;filter:none!important;perspective:none!important;contain:none!important;will-change:auto!important}
+.sn-shell,.sn-main,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-content-card>*,.ce-app,.ce-app>*,.tn-studio,.tn-studio>*,.sv124-page,.sv124-page>*{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+img,video,canvas,svg{max-width:100%}
+
+/* Satu kontrol saja: n di dalam sidebar. Tombol X/edge/duplikat tetap menjadi bridge tersembunyi. */
+.sn-main>.sn-top>.sn-sidebar-toggle,
+#ngeblogging-studio-sidebar .sn-side-close,
+.sn-sidebar-edge-toggle-v147,.v227-sidebar-fab,.studio-external-sidebar-toggle,
+[data-v173-collapse-toggle],[data-v187-sidebar-toggle],[data-v208-sidebar-toggle],[data-v223-sidebar-toggle],[data-v229-sidebar-toggle],#ngeblogging-studio-chrome-v244{
+  position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;clip-path:inset(50%)!important
+}
+
+#ngeblogging-studio-sidebar{display:flex!important;flex-direction:column!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;animation:none!important;filter:none!important}
+#ngeblogging-studio-sidebar>.sn-logo{flex:0 0 auto!important;min-height:62px!important}
+#ngeblogging-studio-sidebar .sn-logo-mark{
+  display:grid!important;place-items:center!important;flex:0 0 44px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+  padding:0!important;margin:0!important;border-radius:12px!important;background:linear-gradient(145deg,#3476e7,#4b55dc)!important;color:#fff!important;
+  cursor:pointer!important;touch-action:manipulation!important;user-select:none!important;-webkit-user-select:none!important;overflow:hidden!important
+}
+#ngeblogging-studio-sidebar .sn-logo-mark strong{
+  display:grid!important;place-items:center!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;
+  font:850 27px/1 Arial,Helvetica,sans-serif!important;letter-spacing:0!important;text-align:center!important;color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;transform:none!important
+}
+#ngeblogging-studio-sidebar>.sn-new{flex:0 0 auto!important;margin:2px 10px 4px!important;min-height:44px!important}
+#ngeblogging-studio-sidebar>nav{
+  flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:3px!important;
+  margin:0!important;padding:2px 10px 8px!important;overflow-y:auto!important;overscroll-behavior:contain!important
+}
+#ngeblogging-studio-sidebar>nav>button,#ngeblogging-studio-sidebar>.sn-account-footer>button{
+  flex:0 0 auto!important;min-height:42px!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+#ngeblogging-studio-sidebar>.sn-account-footer{flex:0 0 auto!important;margin-top:auto!important;padding:8px 10px max(10px,env(safe-area-inset-bottom,0px))!important}
+
+/* Desktop family = laptop + desktop site + computer + tablet besar. */
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar{
+  position:fixed!important;inset:0 auto 0 0!important;z-index:2147483600!important;width:var(--v280-side-open)!important;min-width:var(--v280-side-open)!important;max-width:var(--v280-side-open)!important;height:100dvh!important;
+  overflow:hidden!important;background:#fff!important;border-right:1px solid #e0e7f0!important;transform:none!important
+}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar>.sn-logo{display:flex!important;align-items:center!important;gap:10px!important;padding:9px 12px!important}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar>.sn-logo>b{display:block!important;min-width:0!important;font-size:18px!important;line-height:1.1!important;white-space:nowrap!important}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed{
+  width:var(--v280-side-rail)!important;min-width:var(--v280-side-rail)!important;max-width:var(--v280-side-rail)!important
+}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed>.sn-logo{justify-content:center!important;padding-inline:14px!important}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed>.sn-logo>b{display:none!important}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed>.sn-new,
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed>nav>button,
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed>.sn-account-footer>button{
+  display:flex!important;width:48px!important;min-width:48px!important;max-width:48px!important;margin-inline:auto!important;justify-content:center!important;align-items:center!important;padding-inline:0!important;visibility:visible!important;opacity:1!important
+}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:none!important}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar:not(.collapsed)+.sn-main{
+  margin-left:var(--v280-side-open)!important;width:calc(100% - var(--v280-side-open))!important;max-width:calc(100% - var(--v280-side-open))!important
+}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed+.sn-main{
+  margin-left:var(--v280-side-rail)!important;width:calc(100% - var(--v280-side-rail))!important;max-width:calc(100% - var(--v280-side-rail))!important
+}
+.sn-shell[data-device-mode="large"]>.sn-main>.sn-top{
+  position:fixed!important;z-index:2147483400!important;top:0!important;right:0!important;left:var(--v280-side-open)!important;height:var(--v280-top)!important;min-height:var(--v280-top)!important;
+  display:flex!important;align-items:center!important;background:#fff!important;border-bottom:1px solid #e0e7f0!important;visibility:visible!important;opacity:1!important;transform:none!important
+}
+.sn-shell[data-device-mode="large"]>#ngeblogging-studio-sidebar.collapsed+.sn-main>.sn-top{left:var(--v280-side-rail)!important}
+.sn-shell[data-device-mode="large"]>.sn-main{padding-top:var(--v280-top)!important;transition:margin-left .18s ease,width .18s ease!important}
+
+/* App/handphone/mobile/perangkat kecil: tutup = hanya n, buka = drawer lengkap. */
+.sn-shell[data-device-mode="small"]>.sn-main{width:100%!important;max-width:100%!important;margin-left:0!important;padding-top:var(--v280-top)!important;transform:none!important;filter:none!important}
+.sn-shell[data-device-mode="small"]>.sn-main>.sn-top{
+  position:fixed!important;z-index:2147483400!important;inset:0 0 auto 0!important;width:100%!important;height:var(--v280-top)!important;min-height:var(--v280-top)!important;
+  display:flex!important;align-items:center!important;padding:0 var(--v280-safe-right) 0 calc(var(--v280-safe-left) + 56px)!important;background:#fff!important;border-bottom:1px solid #e0e7f0!important;
+  visibility:visible!important;opacity:1!important;transform:none!important;filter:none!important
+}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar:not(.mobile-open){
+  position:fixed!important;z-index:2147483800!important;top:0!important;left:0!important;right:auto!important;bottom:auto!important;
+  width:calc(var(--v280-safe-left) + 56px)!important;min-width:calc(var(--v280-safe-left) + 56px)!important;max-width:calc(var(--v280-safe-left) + 56px)!important;
+  height:var(--v280-top)!important;min-height:var(--v280-top)!important;max-height:var(--v280-top)!important;padding:0!important;margin:0!important;overflow:visible!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;transform:none!important
+}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo{
+  display:flex!important;width:100%!important;height:var(--v280-top)!important;min-height:var(--v280-top)!important;align-items:center!important;justify-content:flex-start!important;padding:0 0 0 var(--v280-safe-left)!important;margin:0!important;overflow:visible!important
+}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark{display:grid!important;width:44px!important;height:44px!important}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>:not(.sn-logo-mark),
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar:not(.mobile-open)>:not(.sn-logo){display:none!important;visibility:hidden!important;pointer-events:none!important}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.mobile-open{
+  position:fixed!important;z-index:2147483800!important;inset:0 auto 0 0!important;width:var(--v280-drawer)!important;min-width:var(--v280-drawer)!important;max-width:var(--v280-drawer)!important;height:100dvh!important;
+  overflow:hidden!important;background:#fff!important;border-right:1px solid #e0e7f0!important;box-shadow:16px 0 42px rgba(20,42,76,.16)!important;transform:none!important
+}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.mobile-open>.sn-logo{display:flex!important;align-items:center!important;gap:10px!important;padding:9px 12px!important;visibility:visible!important;opacity:1!important}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.mobile-open>.sn-logo>b{display:block!important;font-size:18px!important;line-height:1.1!important}
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.mobile-open>.sn-new,
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.mobile-open>nav,
+.sn-shell[data-device-mode="small"]>#ngeblogging-studio-sidebar.mobile-open>.sn-account-footer{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.sn-shell[data-device-mode="small"]>.sn-side-backdrop{
+  position:fixed!important;z-index:2147483700!important;inset:0 0 0 var(--v280-drawer)!important;background:transparent!important;opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important
+}
+body.sn-mobile-sidebar-open{overflow:auto!important;touch-action:auto!important}
+
+/* Topbar/profile tetap terlihat di semua mode dan tidak diganti label perangkat. */
+.sn-main>.sn-top .sn-top-actions{display:flex!important;align-items:center!important;gap:6px!important;min-width:0!important;margin-left:auto!important;overflow:visible!important}
+.sn-main>.sn-top .sn-avatar{
+  display:grid!important;place-items:center!important;flex:0 0 40px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;margin-left:auto!important;border-radius:50%!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important;animation:none!important
+}
+.sn-profile-menu-v150,.sn-profile-menu-v260{
+  position:fixed!important;z-index:2147483950!important;top:calc(var(--v280-top) + 7px)!important;right:var(--v280-safe-right)!important;left:auto!important;
+  width:min(330px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - var(--v280-top) - 18px)!important;overflow:auto!important;
+  background:#fff!important;border:1px solid #dce5ef!important;border-radius:16px!important;box-shadow:0 20px 60px rgba(17,37,68,.22)!important
+}
+
+/* Ringkasan perangkat kecil dipadatkan tanpa mengecilkan tulisan menjadi desktop-mini. */
+.sn-shell[data-device-mode="small"] .sn-view-pad{padding:12px!important}
+.sn-shell[data-device-mode="small"] .sn-welcome{padding:18px!important;gap:14px!important;border-radius:18px!important}
+.sn-shell[data-device-mode="small"] .sn-welcome h1{font-size:clamp(24px,7vw,34px)!important;line-height:1.08!important;overflow-wrap:anywhere!important}
+.sn-shell[data-device-mode="small"] .sn-welcome p,.sn-shell[data-device-mode="small"] .sn-welcome small{font-size:13px!important;line-height:1.45!important}
+.sn-shell[data-device-mode="small"] .sn-welcome-actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;width:100%!important}
+.sn-shell[data-device-mode="small"] .sn-welcome-actions>*{width:100%!important;min-height:42px!important}
+.sn-shell[data-device-mode="small"] .sn-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.sn-shell[data-device-mode="small"] .sn-metrics>article{min-height:96px!important;padding:14px!important;margin:0!important}
+.sn-shell[data-device-mode="small"] .sn-home-grid{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}
+.sn-shell[data-device-mode="small"] :is(.sn-card,.sn-content-card,.sn-home-grid>section){max-width:100%!important;overflow:hidden!important}
+
+/* Nara selalu melayang; small/medium non-modal, + menu naik dan tetap dalam viewport. */
+.nara-floating-button{
+  position:fixed!important;z-index:2147483650!important;right:var(--v280-safe-right)!important;bottom:var(--v280-safe-bottom)!important;left:auto!important;top:auto!important;
+  width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;max-width:56px!important;max-height:56px!important;padding:0!important;margin:0!important;
+  display:grid!important;place-items:center!important;border-radius:18px!important;overflow:hidden!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  transform:none!important;animation:none!important;filter:none!important;will-change:auto!important
+}
+.nara-floating-button>span{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important}
+.nara-floating-button>span>svg{display:block!important;margin:auto!important}
+.nara-floating-button>b,.nara-floating-button>small{display:none!important}
+.nara-assistant-layer[data-nara-interaction="nonmodal"]{position:fixed!important;inset:0!important;z-index:2147483900!important;pointer-events:none!important;background:transparent!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-backdrop{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-shell{position:fixed!important;pointer-events:auto!important;transform:none!important;animation:none!important;max-width:calc(100vw - 16px)!important}
+.nara-assistant-shell,.nara-assistant-shell *{min-width:0;box-sizing:border-box}
+.nara-assistant-shell .nara-assistant-header{overflow:visible!important}
+.nara-assistant-shell .nara-assistant-header>button{flex:0 0 auto!important}
+.nara-assistant-shell .nara-attachment-menu-wrap{position:relative!important;overflow:visible!important}
+.nara-assistant-shell .nara-attachment-menu{
+  position:absolute!important;left:0!important;right:auto!important;bottom:calc(100% + 9px)!important;top:auto!important;z-index:2147484000!important;
+  width:min(286px,calc(100vw - 34px))!important;max-width:calc(100vw - 34px)!important;max-height:min(320px,60dvh)!important;overflow:auto!important;
+  background:#fff!important;border:1px solid #dbe5f1!important;border-radius:14px!important;box-shadow:0 18px 50px rgba(16,37,70,.24)!important
+}
+.nara-assistant-shell .nara-attachment-menu>button{width:100%!important;min-height:56px!important;text-align:left!important}
+.nara-assistant-shell .nara-select{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.nara-assistant-shell .nara-select>span{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+/* Domain mobile: tombol publikasi tidak lagi terpecah vertikal. */
+.sn-shell[data-device-mode="small"] .sv124-free-domain{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}
+.sn-shell[data-device-mode="small"] .sv124-free-domain>aside{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;width:100%!important;max-width:100%!important}
+.sn-shell[data-device-mode="small"] .sv124-free-domain>aside :is(button,a){display:flex!important;width:100%!important;max-width:100%!important;min-height:44px!important;justify-content:center!important;white-space:nowrap!important}
+.sn-shell[data-device-mode="small"] .sv124-page-title{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}
+.sn-shell[data-device-mode="small"] .sv124-page-title>button{width:100%!important;min-height:44px!important}
+
+@media (max-width:760px){
+  .sn-main>.sn-top>.sn-workspace,.sn-main>.sn-top>.sn-cloud,.sn-main>.sn-top .sn-view-site,.sn-main>.sn-top .sn-nara-button,.sn-main>.sn-top .sn-top-actions>button:not(.sn-avatar),.sn-main>.sn-top .sn-search{display:none!important}
+  .sn-main>.sn-top .sn-top-actions{display:flex!important;margin-left:auto!important}
+  .sn-main>.sn-top .sn-avatar{display:grid!important}
+
+  .nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-shell[data-nara-size="small"]{
+    right:max(8px,env(safe-area-inset-right,0px))!important;bottom:calc(var(--v280-safe-bottom) + 66px)!important;left:auto!important;top:auto!important;
+    width:min(390px,calc(100vw - 16px))!important;height:min(520px,calc(100dvh - 112px))!important;max-height:calc(100dvh - 112px)!important;border-radius:18px!important
+  }
+  .nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-shell[data-nara-size="medium"]{
+    right:max(8px,env(safe-area-inset-right,0px))!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important;left:auto!important;top:auto!important;
+    width:calc(100vw - 16px)!important;height:min(78dvh,720px)!important;max-height:calc(100dvh - 16px)!important;border-radius:18px!important
+  }
+  .nara-assistant-shell .nara-composer-tools{display:grid!important;grid-template-columns:42px 42px minmax(0,1fr) minmax(0,1fr) 44px!important;gap:5px!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+  .nara-assistant-shell .nara-size-controls-v147{display:flex!important;flex-wrap:nowrap!important;gap:3px!important}
+}
+
+@media (max-width:340px){
+  .sn-shell[data-device-mode="small"] .sn-metrics{grid-template-columns:1fr!important}
+  .nara-assistant-shell .nara-composer-tools{grid-template-columns:40px 40px minmax(0,1fr) 42px!important}
+  .nara-assistant-shell .nara-select.intelligence{display:none!important}
+  .nara-assistant-shell .nara-select.model{grid-column:3!important}
+}
