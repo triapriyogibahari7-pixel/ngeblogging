@@ -5,7 +5,8 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 
-export const RELEASE = "studio-native-bundle-activation-v256-20260804";
+export const RELEASE = "studio-native-bundle-activation-v250-20260804";
+export const PRODUCTION_ORDER_RELEASE_V256 = "studio-production-order-v256-20260804";
 export const SIDEBAR_RESCUE_RELEASE = "studio-sidebar-rescue-v251-20260804";
 export const SOURCE_STABILITY_RELEASE = "studio-source-stability-v252-20260804";
 export const SHELL_NARA_RELEASE = "studio-shell-nara-v253-20260804";
@@ -177,6 +178,7 @@ export async function activateStudioNativeV250() {
   await activateAuthFallback();
   return {
     release: RELEASE,
+    productionOrderReleaseV256: PRODUCTION_ORDER_RELEASE_V256,
     sidebarRescueRelease: SIDEBAR_RESCUE_RELEASE,
     sourceStabilityRelease: SOURCE_STABILITY_RELEASE,
     shellNaraRelease: SHELL_NARA_RELEASE,
