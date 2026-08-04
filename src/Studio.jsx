@@ -99,5 +99,7 @@ import "./studio-shell-v263.css";
 import "./studio-shell-v263-hotfix.css";
 import "./studio-theme-layout-v264.js";
 import "./studio-theme-layout-v264.css";
+import "./studio-stability-v265.js";
+import "./studio-stability-v265.css";
 
 export default StudioFastGate;
