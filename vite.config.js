@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { activateStudioNativeV250 } from "./scripts/activate-studio-native-v250.mjs";
 import { finalizeStudioV255Order } from "./scripts/finalize-studio-v255-order.mjs";
+import { finalizeStudioV257Order } from "./scripts/finalize-studio-v257-order.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
@@ -16,18 +17,21 @@ import { finalizeServiceWorkerV249 } from "./scripts/service-worker-v249-lib.mjs
 import { rotateServiceWorkerV250 } from "./scripts/service-worker-v250-rotate.mjs";
 import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mjs";
 import { rotateServiceWorkerV256 } from "./scripts/service-worker-v256-rotate.mjs";
+import { rotateServiceWorkerV257 } from "./scripts/service-worker-v257-rotate.mjs";
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v256",
+      name: "ngeblogging-native-studio-v257",
       apply: "build",
       async buildStart() {
         const v250 = await activateStudioNativeV250();
         console.log(`[vite] ${v250.release} activated after historical regressions and before bundling`);
         console.log(`[vite] ${v250.shellNaraRelease} remains the v253 compatibility base`);
         const v256 = await finalizeStudioV255Order();
-        console.log(`[vite] ${v256.release} keeps v255 interaction authority last before bundling`);
+        console.log(`[vite] ${v256.release} keeps v255 interaction authority after legacy activators`);
+        const v257 = await finalizeStudioV257Order();
+        console.log(`[vite] ${v257.release} keeps six-mode visual authority last before bundling`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
@@ -60,6 +64,8 @@ export default defineConfig({
         console.log(`[vite] ${v253.release} cache rotation finalized in ${v253.path}`);
         const v256 = rotateServiceWorkerV256();
         console.log(`[vite] ${v256.release} cache rotation finalized in ${v256.path}`);
+        const v257 = rotateServiceWorkerV257();
+        console.log(`[vite] ${v257.release} cache rotation finalized in ${v257.path}`);
       },
     },
   ],
