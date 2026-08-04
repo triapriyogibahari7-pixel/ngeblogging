@@ -72,6 +72,21 @@ function openProfileMenu(avatar) {
   requestAnimationFrame(() => menu.querySelector("button")?.focus({ preventScroll: true }));
 }
 
+function openNaraFromProfile() {
+  const liveLauncher = document.querySelector(".nara-floating-button:not([hidden]):not([aria-hidden='true'])");
+  if (liveLauncher) {
+    liveLauncher.click();
+    return true;
+  }
+  const topButton = document.querySelector(".sn-nara-button:not(:disabled)");
+  if (topButton) {
+    topButton.click();
+    return true;
+  }
+  const panel = document.querySelector(".nara-assistant-layer .nara-assistant-shell");
+  return Boolean(panel);
+}
+
 function performProfileAction(action) {
   if (action === "profile" || action === "settings") {
     html().dataset.studioAccountViewV189 = action;
@@ -82,7 +97,7 @@ function performProfileAction(action) {
     const link = document.querySelector(".sn-view-site,[data-site-public-link],a[href*='.ngeblogging.com']");
     link?.click();
   } else if (action === "nara") {
-    (document.querySelector(".sn-nara-button") || document.querySelector(".nara-floating-button"))?.click();
+    openNaraFromProfile();
   } else if (action === "logout") {
     document.querySelector(".sn-account-logout-v135")?.click();
   }
@@ -238,4 +253,4 @@ if (typeof document !== "undefined") {
   schedule();
 }
 
-export { family, schedule, sync };
+export { family, schedule, sync, openNaraFromProfile };
