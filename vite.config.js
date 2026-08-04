@@ -18,11 +18,12 @@ import { rotateServiceWorkerV250 } from "./scripts/service-worker-v250-rotate.mj
 import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mjs";
 import { rotateServiceWorkerV256 } from "./scripts/service-worker-v256-rotate.mjs";
 import { rotateServiceWorkerV257 } from "./scripts/service-worker-v257-rotate.mjs";
+import { rotateServiceWorkerV258 } from "./scripts/service-worker-v258-rotate.mjs";
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v257",
+      name: "ngeblogging-native-studio-v258",
       apply: "build",
       async buildStart() {
         const v250 = await activateStudioNativeV250();
@@ -66,6 +67,8 @@ export default defineConfig({
         console.log(`[vite] ${v256.release} cache rotation finalized in ${v256.path}`);
         const v257 = rotateServiceWorkerV257();
         console.log(`[vite] ${v257.release} cache rotation finalized in ${v257.path}`);
+        const v258 = rotateServiceWorkerV258();
+        console.log(`[vite] ${v258.release} cache rotation finalized in ${v258.path}`);
       },
     },
   ],
