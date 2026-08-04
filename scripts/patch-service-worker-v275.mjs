@@ -55,7 +55,7 @@ for (const marker of [
   'import "./studio-final-device-authority-v268.css";',
   'import "./studio-profile-menu-v268.js";',
   'import "./studio-nara-immediate-v268.css";',
-  'import "./studio-final-stability-v275.js";',
+  "studio-final-stability-v275.js",
   "event.stopImmediatePropagation()",
 ]) if (!toggle.includes(marker)) throw new Error(`V275_TOGGLE_COMPAT_MARKER_MISSING:${marker}`);
 
