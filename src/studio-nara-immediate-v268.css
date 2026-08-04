@@ -1,0 +1,17 @@
+/* v268 immediate Nara interaction guard.
+   React already renders data-nara-size synchronously. These :has selectors make
+   small/medium non-modal before legacy observers have their first frame, so
+   opening Nara never flashes a dark/white page or captures the whole website. */
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="small"]),
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="medium"]){
+  pointer-events:none!important;background:transparent!important;filter:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="small"])>.nara-assistant-backdrop,
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="medium"])>.nara-assistant-backdrop{
+  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important
+}
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="small"])>.nara-assistant-shell,
+.nara-assistant-layer:has(>.nara-assistant-shell[data-nara-size="medium"])>.nara-assistant-shell{
+  pointer-events:auto!important
+}
