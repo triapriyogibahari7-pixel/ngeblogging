@@ -70,7 +70,11 @@ source = source
   .replaceAll("service-worker-activated-interaction-authority-v277", "service-worker-activated-shell-precision-v278");
 
 if (!source.includes(RELEASE) || !source.includes(CACHE)) throw new Error("V278_SW_MARKERS_MISSING");
-if (/refreshStaleWindow|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) throw new Error("V278_DESTRUCTIVE_SW_BEHAVIOR");
+if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.reload\s*\(/.test(source)) {
+  throw new Error("V278_DESTRUCTIVE_SW_BEHAVIOR");
+}
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
+
+await import("./patch-service-worker-v279.mjs");
