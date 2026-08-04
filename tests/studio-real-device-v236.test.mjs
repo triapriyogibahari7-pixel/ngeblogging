@@ -4,6 +4,7 @@ import test from "node:test";
 import "./studio-stable-source-shell-v244.test.mjs";
 import "./studio-sidebar-brand-v246.test.mjs";
 import "./studio-screenshot-lock-v247.test.mjs";
+import "./studio-source-stability-v252.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
