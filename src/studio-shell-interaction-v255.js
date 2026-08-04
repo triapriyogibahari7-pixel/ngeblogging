@@ -16,7 +16,9 @@ function family() {
   const responsive = String(html.dataset.studioResponsiveMode || html.dataset.studioDeviceVariant || "").toLowerCase();
   if (SMALL_FAMILIES.has(responsive)) return "small";
   if (LARGE_FAMILIES.has(responsive)) return "large";
-  return Math.min(document.documentElement.clientWidth || innerWidth || 1, visualViewport?.width || innerWidth || 1) <= 760 ? "small" : "large";
+  const layoutWidth = document.documentElement.clientWidth || window.innerWidth || 1;
+  const visualWidth = window.visualViewport?.width || layoutWidth;
+  return Math.min(layoutWidth, visualWidth) <= 760 ? "small" : "large";
 }
 
 function sidebar() {
@@ -172,7 +174,6 @@ function normalizeGeometry() {
     ".studio-device-mode-badge",
     ".v225-mode-badge",
     ".sn-device-mode-badge-v148",
-    ".sn-side-close",
   ].join(",")).forEach((node) => node.remove());
 }
 
