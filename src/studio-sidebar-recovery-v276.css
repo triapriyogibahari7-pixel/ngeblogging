@@ -1,0 +1,371 @@
+/* Studio v276: authoritative sidebar recovery keyed to React shell data-device-mode. */
+:root{
+  --v276-top:66px;
+  --v276-side-open:240px;
+  --v276-side-rail:72px;
+  --v276-drawer:clamp(252px,76vw,326px);
+  --v276-safe-left:max(10px,env(safe-area-inset-left,0px));
+  --v276-safe-right:max(10px,env(safe-area-inset-right,0px));
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  animation:none!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-logo,
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-new,
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > nav,
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-account-footer{
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-logo{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:68px!important;
+  height:68px!important;
+  padding:10px 12px!important;
+  overflow:hidden!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar .sn-logo-mark{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 44px!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  border-radius:13px!important;
+  background:linear-gradient(145deg,#3476e7,#4b55dc)!important;
+  color:#fff!important;
+  opacity:1!important;
+  cursor:pointer!important;
+  transform:none!important;
+  animation:none!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar .sn-logo-mark strong{
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font:850 27px/1 Arial,Helvetica,sans-serif!important;
+  text-align:center!important;
+  opacity:1!important;
+  transform:none!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar .sn-logo-mark i{display:none!important}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-logo > b{
+  margin:0!important;
+  min-width:0!important;
+  color:#20334d!important;
+  font:800 17px/1.1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-new{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:44px!important;
+  margin:4px 9px!important;
+  padding:10px 12px!important;
+  white-space:nowrap!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > nav{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  gap:3px!important;
+  margin:0!important;
+  padding:3px 8px 8px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > nav > button,
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-account-footer > button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  padding:9px 10px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+.sn-shell[data-device-mode] > #ngeblogging-studio-sidebar > .sn-account-footer{
+  flex:0 0 auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:3px!important;
+  margin-top:auto!important;
+  padding:8px!important;
+  background:#fff!important;
+  border-top:1px solid #edf1f6!important;
+}
+
+/* LARGE: tablet besar, laptop, desktop site, computer. */
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar{
+  position:fixed!important;
+  z-index:2147483200!important;
+  inset:0 auto 0 0!important;
+  width:var(--v276-side-open)!important;
+  min-width:var(--v276-side-open)!important;
+  max-width:var(--v276-side-open)!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border-right:1px solid #dfe6ef!important;
+  box-shadow:none!important;
+  transform:translate3d(0,0,0)!important;
+  transition:width .14s ease!important;
+}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed{
+  width:var(--v276-side-rail)!important;
+  min-width:var(--v276-side-rail)!important;
+  max-width:var(--v276-side-rail)!important;
+  transform:translate3d(0,0,0)!important;
+}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed > .sn-logo{
+  justify-content:center!important;
+  gap:0!important;
+  padding-inline:0!important;
+}
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed > .sn-logo > b{display:none!important}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed > .sn-new,
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed > nav > button,
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed > .sn-account-footer > button{
+  width:48px!important;
+  min-width:48px!important;
+  max-width:48px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  padding-inline:0!important;
+  justify-content:center!important;
+  overflow:visible!important;
+}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button) > span{
+  display:none!important;
+}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar:not(.collapsed) + .sn-main{
+  width:calc(100% - var(--v276-side-open))!important;
+  max-width:calc(100% - var(--v276-side-open))!important;
+  margin-left:var(--v276-side-open)!important;
+}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed + .sn-main{
+  width:calc(100% - var(--v276-side-rail))!important;
+  max-width:calc(100% - var(--v276-side-rail))!important;
+  margin-left:var(--v276-side-rail)!important;
+}
+
+.sn-shell[data-device-mode="large"] > .sn-main{
+  min-width:0!important;
+  padding-top:var(--v276-top)!important;
+  transform:none!important;
+  filter:none!important;
+  transition:margin-left .14s ease,width .14s ease!important;
+}
+
+.sn-shell[data-device-mode="large"] > .sn-main > .sn-top{
+  position:fixed!important;
+  z-index:2147483000!important;
+  top:0!important;
+  right:0!important;
+  left:var(--v276-side-open)!important;
+  width:auto!important;
+  min-width:0!important;
+  height:var(--v276-top)!important;
+  min-height:var(--v276-top)!important;
+  display:flex!important;
+  align-items:center!important;
+  overflow:visible!important;
+  background:#fff!important;
+  border-bottom:1px solid #dfe6ef!important;
+  transform:none!important;
+  transition:left .14s ease!important;
+}
+
+.sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed + .sn-main > .sn-top{
+  left:var(--v276-side-rail)!important;
+}
+
+.sn-shell[data-device-mode="large"] > .sn-side-backdrop{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* SMALL: app, handphone, mobile, compact/foldable. Closed state is exactly one internal n. */
+.sn-shell[data-device-mode="small"] > .sn-main,
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar + .sn-main,
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.collapsed + .sn-main{
+  width:100%!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  padding-top:var(--v276-top)!important;
+  transform:none!important;
+  filter:none!important;
+}
+
+.sn-shell[data-device-mode="small"] > .sn-main > .sn-top{
+  position:fixed!important;
+  z-index:2147483000!important;
+  inset:0 0 auto 0!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:var(--v276-top)!important;
+  min-height:var(--v276-top)!important;
+  padding:0 var(--v276-safe-right) 0 calc(var(--v276-safe-left) + 58px)!important;
+  display:flex!important;
+  align-items:center!important;
+  overflow:visible!important;
+  background:#fff!important;
+  border-bottom:1px solid #dfe6ef!important;
+  transform:none!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar:not(.mobile-open){
+  position:fixed!important;
+  z-index:2147483400!important;
+  top:0!important;
+  left:0!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:calc(var(--v276-safe-left) + 58px)!important;
+  min-width:calc(var(--v276-safe-left) + 58px)!important;
+  max-width:calc(var(--v276-safe-left) + 58px)!important;
+  height:var(--v276-top)!important;
+  min-height:var(--v276-top)!important;
+  max-height:var(--v276-top)!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  transform:translate3d(0,0,0)!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar:not(.mobile-open) > .sn-logo{
+  width:100%!important;
+  height:var(--v276-top)!important;
+  min-height:var(--v276-top)!important;
+  padding:0 0 0 var(--v276-safe-left)!important;
+  justify-content:flex-start!important;
+  overflow:visible!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar:not(.mobile-open) > .sn-logo > .sn-logo-mark{
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar:not(.mobile-open) > .sn-logo > :not(.sn-logo-mark),
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar:not(.mobile-open) > :not(.sn-logo){
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.mobile-open{
+  position:fixed!important;
+  z-index:2147483400!important;
+  inset:0 auto 0 0!important;
+  width:var(--v276-drawer)!important;
+  min-width:var(--v276-drawer)!important;
+  max-width:var(--v276-drawer)!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border-right:1px solid #dfe6ef!important;
+  box-shadow:16px 0 45px rgba(20,42,76,.16)!important;
+  transform:translate3d(0,0,0)!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.mobile-open > .sn-logo > b,
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.mobile-open > .sn-new,
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.mobile-open > nav,
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.mobile-open > .sn-account-footer{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+.sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar.mobile-open > .sn-logo > b{display:block!important}
+
+/* Old external/duplicate toggles stay retired. Only the internal n is visible. */
+.sn-shell[data-device-mode] .sn-main > .sn-top > .sn-sidebar-toggle,
+.sn-shell[data-device-mode] .sn-side-close,
+.sn-sidebar-edge-toggle-v147,.v227-sidebar-fab,.studio-external-sidebar-toggle,
+[data-v173-collapse-toggle],[data-v187-sidebar-toggle],[data-v208-sidebar-toggle],
+[data-v223-sidebar-toggle],[data-v229-sidebar-toggle],#ngeblogging-studio-chrome-v244{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* Never allow any old rule to translate the large sidebar off canvas. */
+@media (min-width:761px){
+  .sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar,
+  .sn-shell[data-device-mode="large"] > #ngeblogging-studio-sidebar.collapsed{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    left:0!important;
+    transform:translate3d(0,0,0)!important;
+  }
+}
+
+@media (max-width:760px){
+  .sn-shell[data-device-mode="small"] > #ngeblogging-studio-sidebar:not(.mobile-open){
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    transform:translate3d(0,0,0)!important;
+  }
+}
