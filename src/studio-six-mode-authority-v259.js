@@ -198,12 +198,22 @@ function syncProfile() {
 
 function syncNara(mode) {
   const launcher = document.querySelector(".nara-floating-button");
-  revealControl(launcher);
-  if (launcher) launcher.dataset.v259Launcher = "fixed-safe-corner";
-
   const layer = document.querySelector(".nara-assistant-layer");
   const panel = layer?.querySelector(".nara-assistant-shell");
-  if (!layer || !panel) return;
+
+  if (!layer || !panel) {
+    revealControl(launcher);
+    if (launcher) launcher.dataset.v259Launcher = "fixed-safe-corner";
+    return;
+  }
+
+  // The launcher floats only while closed. Once the React panel is open, the
+  // visible X/size controls become the single assistant-window controls.
+  if (launcher) {
+    launcher.hidden = true;
+    launcher.setAttribute("aria-hidden", "true");
+  }
+
   const size = ["small", "medium", "full"].includes(panel.dataset.naraSize)
     ? panel.dataset.naraSize
     : "small";
