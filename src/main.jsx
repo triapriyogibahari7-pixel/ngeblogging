@@ -31,6 +31,7 @@ import "./styles.css";
 import AuthModal from "./AuthModal";
 import NaraAssistant from "./NaraAssistant";
 import { signOut, supabase, supabaseConfigured } from "./lib/supabase";
+import { consumeAuthCallbackV162 } from "./lib/auth-callback-v162.js";
 
 const Studio = lazy(() => import("./Studio"));
 const PublicSite = lazy(() => import("./PublicSite"));
@@ -210,14 +211,16 @@ function App() {
     let active = true;
     const params = new URLSearchParams(window.location.search);
     const isRecovery = params.get("auth") === "recovery";
-    const oauthError = params.get("error_description") || params.get("error");
+    let subscription = null;
 
-    if (oauthError) {
-      setAuthMode("signin");
-      setAuthMessage(oauthError);
-      setDemo(true);
-      clearAuthQuery();
-    }
+    const openVerifiedStudio = (nextSession) => {
+      if (!active || !nextSession?.access_token || !nextSession?.refresh_token) return;
+      setSession(nextSession);
+      setAuthMessage("");
+      setDemo(false);
+      setStudio(true);
+      document.documentElement.dataset.authStudioOpenV162 = "verified-session";
+    };
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!active) return;
@@ -226,32 +229,54 @@ function App() {
         setStudio(false);
         setAuthMode("recovery");
         setDemo(true);
-      } else if (event === "SIGNED_IN") {
+      } else if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && nextSession?.access_token && nextSession?.refresh_token) {
         clearAuthQuery();
-        setAuthMessage("");
-        setDemo(false);
-        setStudio(true);
+        openVerifiedStudio(nextSession);
       } else if (event === "SIGNED_OUT") {
         setStudio(false);
       }
     });
+    subscription = listener.subscription;
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active || !data.session) return;
-      setSession(data.session);
+    consumeAuthCallbackV162().then(async (callback) => {
+      if (!active) return;
+      if (callback.status === "error") {
+        setAuthMode("signin");
+        setAuthMessage(callback.error?.message || "Callback login belum berhasil.");
+        setDemo(true);
+        return;
+      }
+      if (callback.session?.access_token && callback.session?.refresh_token) {
+        openVerifiedStudio(callback.session);
+        return;
+      }
+      const { data, error } = await supabase.auth.getSession();
+      if (!active) return;
+      if (error) {
+        console.error("Pembacaan sesi awal gagal:", error);
+        setAuthMessage("Sesi lokal tetap dipertahankan. Verifikasi akan dicoba kembali saat koneksi stabil.");
+        return;
+      }
+      if (!data.session) return;
       if (isRecovery) {
+        setSession(data.session);
         setAuthMode("recovery");
         setDemo(true);
       } else {
         clearAuthQuery();
-        setAuthMessage("");
-        setStudio(true);
+        openVerifiedStudio(data.session);
       }
+    }).catch((error) => {
+      if (!active) return;
+      console.error("Bootstrap auth v162 gagal:", error);
+      setAuthMode("signin");
+      setAuthMessage(error?.message || "Login belum dapat diselesaikan.");
+      setDemo(true);
     });
 
     return () => {
       active = false;
-      listener.subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
@@ -260,7 +285,8 @@ function App() {
     setAuthMessage("");
     setDemo(true);
   };
-  const finishAuth = () => {
+  const finishAuth = (nextSession = null) => {
+    if (nextSession?.access_token && nextSession?.refresh_token) setSession(nextSession);
     clearAuthQuery();
     setAuthMode("signin");
     setAuthMessage("");
