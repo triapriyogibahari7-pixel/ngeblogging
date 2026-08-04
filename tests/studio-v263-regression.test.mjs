@@ -13,6 +13,7 @@ const shell265 = readFileSync(new URL("../src/studio-shell-v265.js", import.meta
 const shellCss265 = readFileSync(new URL("../src/studio-shell-v265.css", import.meta.url), "utf8");
 const finalCss265 = readFileSync(new URL("../src/studio-shell-v265-final-hotfix.css", import.meta.url), "utf8");
 const screenshot265 = readFileSync(new URL("../src/studio-screenshot-authority-v265.js", import.meta.url), "utf8");
+const singleToggle267 = readFileSync(new URL("../src/studio-sidebar-single-toggle-v267.js", import.meta.url), "utf8");
 const nara = readFileSync(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 const theme = readFileSync(new URL("../src/ThemeStudio.jsx", import.meta.url), "utf8");
 const supabase = readFileSync(new URL("../src/lib/supabase.js", import.meta.url), "utf8");
@@ -24,7 +25,7 @@ const indexOf = (source, marker) => {
   return index;
 };
 
-test("v263 observer is retired while v264 and live v265 authorities load in final order", () => {
+test("v263 observer is retired while v264-v267 authorities load in final order", () => {
   const retired = indexOf(studio, 'v265 retirement marker; v263 JS is kept as backup');
   const css263 = indexOf(studio, 'import "./studio-shell-v263.css"');
   const hotfix263 = indexOf(studio, 'import "./studio-shell-v263-hotfix.css"');
@@ -33,6 +34,7 @@ test("v263 observer is retired while v264 and live v265 authorities load in fina
   const shell = indexOf(studio, 'import "./studio-shell-v265.js"');
   const shellCss = indexOf(studio, 'import "./studio-shell-v265.css"');
   const finalHotfix = indexOf(studio, 'import "./studio-shell-v265-final-hotfix.css"');
+  const singleToggle = indexOf(studio, 'import "./studio-sidebar-single-toggle-v267.js"');
   assert.ok(css263 > retired);
   assert.ok(hotfix263 > css263);
   assert.ok(v264 > hotfix263);
@@ -40,6 +42,7 @@ test("v263 observer is retired while v264 and live v265 authorities load in fina
   assert.ok(shell > screenshot);
   assert.ok(shellCss > shell);
   assert.ok(finalHotfix > shellCss);
+  assert.ok(singleToggle > finalHotfix);
   assert.doesNotMatch(studio, /^import "\.\/studio-runtime-v263\.js";/m);
 });
 
@@ -48,7 +51,10 @@ test("large family has one internal n and small family has one React drawer trig
   assert.match(shell265, /studio-v265-large/);
   assert.match(shell265, /studio-v265-small/);
   assert.match(shell265, /aria-controls", "ngeblogging-studio-sidebar/);
-  assert.match(screenshot265, /document\.querySelector\("\.sn-top \.sn-sidebar-toggle"\)\?\.click\(\)/);
+  assert.match(screenshot265, /single-owner-v232-react-proxy/);
+  assert.doesNotMatch(screenshot265, /mark\.addEventListener\("click"/);
+  assert.match(singleToggle267, /event\.stopImmediatePropagation\(\)/);
+  assert.match(singleToggle267, /toggle\.click\(\)/);
   assert.match(shellCss265, /html\.studio-v265-large \.sn-sidebar-toggle\{display:none!important/);
   assert.match(shellCss265, /html\.studio-v265-small \.sn-sidebar-toggle/);
   assert.match(finalCss265, /html\.studio-v265-large #ngeblogging-studio-sidebar/);
