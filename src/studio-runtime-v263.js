@@ -13,7 +13,8 @@ function currentFamily() {
   const responsive = String(root().dataset.studioResponsiveMode || "").toLowerCase();
   if (["application", "phone", "mobile", "compact"].includes(responsive)) return "small";
   if (["tablet", "desktop"].includes(responsive)) return "large";
-  const viewport = Math.min(document.documentElement.clientWidth || innerWidth || 1, window.visualViewport?.width || innerWidth || 1);
+  const browserWidth = window.innerWidth || document.documentElement.clientWidth || 1;
+  const viewport = Math.min(document.documentElement.clientWidth || browserWidth, window.visualViewport?.width || browserWidth);
   return viewport <= 760 ? "small" : "large";
 }
 
@@ -31,9 +32,9 @@ function syncLogo() {
   logo.setAttribute("title", logo.getAttribute("aria-label"));
   logo.dataset.studioToggleV263 = RELEASE;
   const strong = logo.querySelector("strong");
-  if (strong) strong.textContent = "n";
+  if (strong && strong.textContent !== "n") strong.textContent = "n";
   const brand = side.querySelector(".sn-logo > b");
-  if (brand) brand.textContent = "Ngeblogging";
+  if (brand && brand.textContent !== "Ngeblogging") brand.textContent = "Ngeblogging";
 }
 
 function syncNara() {
@@ -49,7 +50,7 @@ function syncNara() {
 
   const backdrop = layer.querySelector(".nara-assistant-backdrop");
   if (backdrop) {
-    backdrop.hidden = !full;
+    if (backdrop.hidden !== !full) backdrop.hidden = !full;
     backdrop.setAttribute("aria-hidden", String(!full));
     backdrop.tabIndex = full ? 0 : -1;
   }
@@ -64,8 +65,8 @@ function syncNara() {
 
   const launcher = document.querySelector(".nara-floating-button");
   if (launcher) {
-    launcher.hidden = false;
-    launcher.removeAttribute("aria-hidden");
+    if (launcher.hidden) launcher.hidden = false;
+    if (launcher.hasAttribute("aria-hidden")) launcher.removeAttribute("aria-hidden");
     launcher.dataset.naraLauncherV263 = "viewport-fixed";
   }
 }
@@ -90,18 +91,18 @@ function syncAccountView() {
   const description = view.querySelector(".sn-page-title p");
   const save = view.querySelector(".sn-save-settings");
   if (mode === "profile") {
-    if (title) title.textContent = "Profil";
-    if (description) description.textContent = "Identitas, avatar, biografi, website, bahasa, dan zona waktu akun.";
+    if (title && title.textContent !== "Profil") title.textContent = "Profil";
+    if (description && description.textContent !== "Identitas, avatar, biografi, website, bahasa, dan zona waktu akun.") description.textContent = "Identitas, avatar, biografi, website, bahasa, dan zona waktu akun.";
     if (save) {
       const label = [...save.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
-      if (label) label.textContent = " Simpan profil";
+      if (label && label.textContent !== " Simpan profil") label.textContent = " Simpan profil";
     }
   } else {
-    if (title) title.textContent = "Pengaturan";
-    if (description) description.textContent = "Nama situs, deskripsi, bahasa, zona waktu, serta konfigurasi workspace aktif.";
+    if (title && title.textContent !== "Pengaturan") title.textContent = "Pengaturan";
+    if (description && description.textContent !== "Nama situs, deskripsi, bahasa, zona waktu, serta konfigurasi workspace aktif.") description.textContent = "Nama situs, deskripsi, bahasa, zona waktu, serta konfigurasi workspace aktif.";
     if (save) {
       const label = [...save.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
-      if (label) label.textContent = " Simpan pengaturan";
+      if (label && label.textContent !== " Simpan pengaturan") label.textContent = " Simpan pengaturan";
     }
   }
 }
@@ -123,8 +124,8 @@ function syncProfileMenu() {
     if (!copy) return;
     const span = button.querySelector("span");
     const small = button.querySelector("small");
-    if (span) span.textContent = copy[0];
-    if (small) small.textContent = copy[1];
+    if (span && span.textContent !== copy[0]) span.textContent = copy[0];
+    if (small && small.textContent !== copy[1]) small.textContent = copy[1];
   });
 }
 
@@ -278,7 +279,6 @@ if (typeof document !== "undefined") {
     attributes: true,
     attributeFilter: [
       "class",
-      "hidden",
       "data-nara-size",
       "data-studio-device-mode",
       "data-studio-responsive-mode",
