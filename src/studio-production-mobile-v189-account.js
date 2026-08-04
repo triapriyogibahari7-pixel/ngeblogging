@@ -1,4 +1,4 @@
-const RELEASE = "studio-production-mobile-v189-account-20260801";
+const RELEASE = "studio-production-mobile-v189-account-20260804-r2";
 let frame = 0;
 
 function setTextIfChanged(node, value) {
@@ -12,7 +12,7 @@ function setButtonTextIfChanged(button, value) {
 
 function syncAccountSurface() {
   frame = 0;
-  const mode = document.documentElement.dataset.studioAccountViewV189 || "settings";
+  const mode = document.documentElement.dataset.studioAccountViewV189 === "profile" ? "profile" : "settings";
   const grid = document.querySelector(".sn-settings-grid");
   const page = grid?.closest(".sn-view-pad");
   if (!page) return;
@@ -20,18 +20,37 @@ function syncAccountSurface() {
   const title = page.querySelector(".sn-page-title h1");
   const description = page.querySelector(".sn-page-title p");
   const save = page.querySelector(".sn-save-settings");
+  const sections = [...grid.querySelectorAll(":scope>section")];
+  const profileSection = sections[0] || null;
+  const settingsSection = sections[1] || null;
 
+  page.dataset.accountSurfaceV189 = mode;
   if (mode === "profile") {
     setTextIfChanged(title, "Profil");
-    setTextIfChanged(description, "Kelola identitas, biografi, avatar, dan informasi publik akun Anda.");
+    setTextIfChanged(description, "Kelola nama tampilan, biografi, website, dan avatar akun Anda.");
     setButtonTextIfChanged(save, " Simpan profil");
+    if (profileSection) {
+      profileSection.hidden = false;
+      profileSection.removeAttribute("aria-hidden");
+    }
+    if (settingsSection) {
+      settingsSection.hidden = true;
+      settingsSection.setAttribute("aria-hidden", "true");
+    }
   } else {
-    setTextIfChanged(title, "Profil & pengaturan");
-    setTextIfChanged(description, "Identitas pengguna dan situs aktif.");
-    setButtonTextIfChanged(save, " Simpan perubahan");
+    setTextIfChanged(title, "Pengaturan");
+    setTextIfChanged(description, "Kelola nama situs, deskripsi, bahasa, zona waktu, dan preferensi situs aktif.");
+    setButtonTextIfChanged(save, " Simpan pengaturan");
+    if (profileSection) {
+      profileSection.hidden = true;
+      profileSection.setAttribute("aria-hidden", "true");
+    }
+    if (settingsSection) {
+      settingsSection.hidden = false;
+      settingsSection.removeAttribute("aria-hidden");
+    }
   }
 
-  if (page.dataset.accountSurfaceV189 !== mode) page.dataset.accountSurfaceV189 = mode;
   document.documentElement.dataset.studioAccountSurfaceReleaseV189 = RELEASE;
 }
 
