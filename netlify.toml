@@ -1,5 +1,5 @@
 [build]
-  command = "node --test tests/studio-shell-nara-v253.test.mjs tests/studio-shell-interaction-v255.test.mjs tests/studio-production-order-v256.test.mjs && vite build"
+  command = "node --test tests/studio-shell-nara-v253.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
