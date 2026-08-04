@@ -17,11 +17,13 @@ import {
 } from "../server/auth-gateway-v108.mjs";
 import {
   DATA_GATEWAY_RELEASE,
+  DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
   handleDataGatewayRequest,
   isDataGatewayRequest,
+  resolveDataGatewayConfig,
 } from "../server/data-gateway-v110.mjs";
 
-const RELEASE = "2026.07.30-auth-production-v153";
+const RELEASE = "2026.08.04-production-order-data-v256";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
 const SAAS_PROVIDERS = new Set(["cloudflare", "cloudflare-custom-hostnames"]);
 
@@ -92,7 +94,9 @@ async function enrichHealth(response, env, requestUrl) {
     const fullZone = provider === FULL_ZONE_PROVIDER;
     const comments = commentsReady(env);
     const authConfig = resolveAuthGatewayConfig(env, requestUrl);
+    const dataConfig = resolveDataGatewayConfig(env, requestUrl);
     const authConfigured = authConfig.ready;
+    const dataConfigured = dataConfig.ready;
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
@@ -102,6 +106,8 @@ async function enrichHealth(response, env, requestUrl) {
     headers.set("x-ngeblogging-auth-fallback", AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE);
     headers.set("x-ngeblogging-auth-config", authConfig.source);
     headers.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
+    headers.set("x-ngeblogging-data-fallback", DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE);
+    headers.set("x-ngeblogging-data-config", dataConfig.source);
     headers.set("x-ngeblogging-release", String(env.APP_RELEASE || RELEASE));
     return new Response(JSON.stringify({
       ...payload,
@@ -119,7 +125,7 @@ async function enrichHealth(response, env, requestUrl) {
       authProduction: authConfigured,
       authTransport: authConfig.source === "production-public-fallback"
         ? "same-origin-gateway-public-fallback"
-        : "same-origin-gateway",
+        : authConfigured ? "same-origin-gateway" : "not-configured",
       authMethods: {
         emailPassword: authConfigured,
         magicLink: authConfigured,
@@ -128,9 +134,14 @@ async function enrichHealth(response, env, requestUrl) {
         github: authConfigured,
         providerConfigurationExternal: true,
       },
-      dataGateway: true,
+      dataGateway: dataConfigured,
       dataGatewayRelease: DATA_GATEWAY_RELEASE,
-      dataGatewayServices: ["rest", "storage"],
+      dataGatewayFallbackRelease: DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+      dataConfigSource: dataConfig.source,
+      dataTransport: dataConfig.source === "production-public-fallback"
+        ? "same-origin-data-gateway-public-fallback"
+        : dataConfigured ? "same-origin-data-gateway" : "not-configured",
+      dataGatewayServices: dataConfigured ? ["rest", "storage"] : [],
       commentsArchitecture: {
         database: "supabase-postgres-rls",
         publicSubmission: true,
