@@ -1,5 +1,5 @@
 [build]
-  command = "node scripts/run-patch-theme-layout-v170.mjs && npx vite build --config vite.v256-diagnostic.config.js"
+  command = "node scripts/run-patch-theme-layout-v170.mjs && node scripts/run-patch-mobile-public-v171.mjs && node scripts/run-patch-mobile-interaction-v174.mjs && node scripts/run-patch-mobile-stability-v176.mjs && node scripts/patch-studio-mobile-v176.mjs && npx vite build --config vite.v256-diagnostic.config.js"
   publish = "dist"
 
 [build.environment]
