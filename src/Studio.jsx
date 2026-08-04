@@ -116,5 +116,6 @@ import "./studio-scroll-chrome-v270.js";
 import "./studio-scroll-chrome-v270.css";
 import "./studio-shell-authority-v272.js";
 import "./studio-shell-content-v274.js";
+import "./studio-shell-content-v274-hotfix.css";
 
 export default StudioFastGate;
