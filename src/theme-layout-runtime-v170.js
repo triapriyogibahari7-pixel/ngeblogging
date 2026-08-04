@@ -6,8 +6,8 @@ const TOP_AREAS = [
   "top-left-1", "top-left-2", "top-left-3",
   "top-right-1", "top-right-2", "top-right-3",
 ];
-const LEFT_AREAS = ["sidebar-left-1", "sidebar-left-2", "sidebar-left-3"];
-const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3"];
+const LEFT_AREAS = ["sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4"];
+const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"];
 const BOTTOM_AREAS = [
   "bottom-left-1", "bottom-left-2", "bottom-left-3",
   "bottom-right-1", "bottom-right-2", "bottom-right-3",
@@ -58,8 +58,8 @@ function contentGridClass(left, right) {
 function wrapMain(sourceHtml, widgets, renderWidgets) {
   const before = slotMarkup(widgets, renderWidgets, "before-content", "before-content");
   const after = slotMarkup(widgets, renderWidgets, "after-content", "after-content");
-  const left = zoneMarkup(widgets, renderWidgets, LEFT_AREAS, "sidebar-left", "Tiga area widget kiri postingan");
-  const right = zoneMarkup(widgets, renderWidgets, RIGHT_AREAS, "sidebar-right", "Tiga area widget kanan postingan");
+  const left = zoneMarkup(widgets, renderWidgets, LEFT_AREAS, "sidebar-left", "Empat area widget kiri postingan");
+  const right = zoneMarkup(widgets, renderWidgets, RIGHT_AREAS, "sidebar-right", "Empat area widget kanan postingan");
   const gridClass = contentGridClass(left, right);
   const opening = sourceHtml.match(/<main\b[^>]*>/i);
 
@@ -127,7 +127,9 @@ export const THEME_LAYOUT_CSS_V170 = `
 .ng-widget img,.ng-widget video,.ng-widget iframe{max-width:100%;height:auto}
 .ng-widget table,.ng-main-content-v170 table{display:block;max-width:100%;overflow-x:auto}.widget-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.widget-gallery i{aspect-ratio:1;background:currentColor;opacity:.12;border-radius:8px}
 @media(max-width:1100px){.ng-content-grid-v170.has-left{grid-template-columns:minmax(145px,210px) minmax(0,1fr)}.ng-content-grid-v170.has-right{grid-template-columns:minmax(0,1fr) minmax(145px,210px)}.ng-content-grid-v170.has-left.has-right{grid-template-columns:minmax(145px,210px) minmax(0,1fr) minmax(145px,210px);gap:14px}.ng-widget-zone.top-grid,.ng-widget-zone.bottom-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:820px){.ng-widget-zone.header-primary,.ng-widget-zone.footer-copyright,.ng-widget-zone.top-grid,.ng-widget-zone.bottom-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:18px 14px}.ng-content-grid-v170,.ng-content-grid-v170.has-left,.ng-content-grid-v170.has-right,.ng-content-grid-v170.has-left.has-right{grid-template-columns:minmax(0,1fr);gap:14px}.ng-main-content-v170{order:1}.ng-widget-zone.sidebar-left{order:2;grid-template-columns:repeat(3,minmax(0,1fr))}.ng-widget-zone.sidebar-right{order:3;grid-template-columns:repeat(3,minmax(0,1fr))}.ng-widget-slot.before-content,.ng-widget-slot.after-content{margin:14px 0}.ng-widget{padding:15px}}
+@media(max-width:820px){.ng-widget-zone.header-primary,.ng-widget-zone.footer-copyright,.ng-widget-zone.top-grid,.ng-widget-zone.bottom-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:18px 14px}.ng-content-grid-v170,.ng-content-grid-v170.has-left,.ng-content-grid-v170.has-right,.ng-content-grid-v170.has-left.has-right{grid-template-columns:minmax(0,1fr);gap:14px}.ng-main-content-v170{order:1}.ng-widget-zone.sidebar-left{order:2;grid-template-columns:repeat(2,minmax(0,1fr))}.ng-widget-zone.sidebar-right{order:3;grid-template-columns:repeat(2,minmax(0,1fr))}.ng-widget-slot.before-content,.ng-widget-slot.after-content{margin:14px 0}.ng-widget{padding:15px}}
 @media(max-width:560px){.ng-widget-zone.top-grid,.ng-widget-zone.bottom-grid,.ng-widget-zone.sidebar-left,.ng-widget-zone.sidebar-right{grid-template-columns:repeat(2,minmax(0,1fr))}.ng-widget-zone.header-primary,.ng-widget-zone.footer-copyright,.ng-widget-zone.top-grid,.ng-widget-zone.bottom-grid{padding:12px 10px;gap:9px}.ng-widget form{display:grid;grid-template-columns:minmax(0,1fr)}.ng-widget input,.ng-widget textarea,.ng-widget select,.ng-widget button{width:100%;max-width:100%}.ng-main-content-v170{width:100%;min-width:0}.ng-widget{padding:12px}}
 @media(max-width:340px){.ng-widget-zone.header-primary,.ng-widget-zone.footer-copyright,.ng-widget-zone.top-grid,.ng-widget-zone.bottom-grid,.ng-widget-zone.sidebar-left,.ng-widget-zone.sidebar-right{grid-template-columns:minmax(0,1fr)}}
 `;
+
+/* sidebar-left-4-v207 + sidebar-right-4-v258 are source-level production layout areas. */
