@@ -17,6 +17,7 @@ import { finalizeServiceWorkerV249 } from "./scripts/service-worker-v249-lib.mjs
 import { rotateServiceWorkerV250 } from "./scripts/service-worker-v250-rotate.mjs";
 import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mjs";
 import { rotateServiceWorkerV256 } from "./scripts/service-worker-v256-rotate.mjs";
+import { rotateServiceWorkerV257 } from "./scripts/service-worker-v257-rotate.mjs";
 
 export default defineConfig({
   plugins: [
@@ -63,6 +64,8 @@ export default defineConfig({
         console.log(`[vite] ${v253.release} cache rotation finalized in ${v253.path}`);
         const v256 = rotateServiceWorkerV256();
         console.log(`[vite] ${v256.release} cache rotation finalized in ${v256.path}`);
+        const v257 = rotateServiceWorkerV257();
+        console.log(`[vite] ${v257.release} cache rotation finalized in ${v257.path}`);
       },
     },
   ],
