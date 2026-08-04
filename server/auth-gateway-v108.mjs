@@ -1,7 +1,9 @@
 export const AUTH_GATEWAY_RELEASE = "2026.07.30-auth-gateway-v153";
 export const AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE = "auth-gateway-public-fallback-v255-20260804";
+export const AUTH_GATEWAY_TIMEOUT_RELEASE_V256 = "auth-gateway-timeout-v256-20260804";
 const PREFIX = "/api/auth-proxy";
 const MAX_AUTH_BODY_BYTES = 128 * 1024;
+const AUTH_UPSTREAM_TIMEOUT_MS = 7_000;
 const ALLOWED_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]);
 const FORWARDED_HEADERS = new Set([
   "accept",
@@ -93,18 +95,25 @@ function corsHeaders(origin, requestId, configSource = "") {
     "access-control-allow-origin": origin || "https://ngeblogging.com",
     "access-control-allow-headers": "authorization, apikey, content-type, x-client-info, x-supabase-api-version",
     "access-control-allow-methods": "GET, HEAD, POST, PUT, DELETE, OPTIONS",
-    "access-control-expose-headers": "location, www-authenticate, x-request-id, x-ngeblogging-auth-gateway, x-ngeblogging-auth-config",
+    "access-control-expose-headers": "location, www-authenticate, x-request-id, x-ngeblogging-auth-gateway, x-ngeblogging-auth-config, x-ngeblogging-auth-timeout",
     "access-control-max-age": "86400",
     "cache-control": "no-store",
     "x-ngeblogging-auth-gateway": AUTH_GATEWAY_RELEASE,
     "x-ngeblogging-auth-fallback": AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+    "x-ngeblogging-auth-timeout": AUTH_GATEWAY_TIMEOUT_RELEASE_V256,
     ...(configSource ? { "x-ngeblogging-auth-config": configSource } : {}),
     "x-request-id": requestId,
   };
 }
 
 function json(status, payload, requestId, origin = "", configSource = "") {
-  return new Response(JSON.stringify({ ...payload, release: AUTH_GATEWAY_RELEASE, fallbackRelease: AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE, requestId }), {
+  return new Response(JSON.stringify({
+    ...payload,
+    release: AUTH_GATEWAY_RELEASE,
+    fallbackRelease: AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+    timeoutRelease: AUTH_GATEWAY_TIMEOUT_RELEASE_V256,
+    requestId,
+  }), {
     status,
     headers: {
       ...corsHeaders(origin, requestId, configSource),
@@ -159,7 +168,7 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
   }
   if (!headers.has("apikey")) headers.set("apikey", config.publishableKey);
   headers.set("cache-control", "no-store");
-  headers.set("x-client-info", headers.get("x-client-info") || "ngeblogging-auth-gateway-v255");
+  headers.set("x-client-info", headers.get("x-client-info") || "ngeblogging-auth-gateway-v256");
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
   const body = hasBody ? await request.arrayBuffer() : undefined;
@@ -167,12 +176,15 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
     return json(413, { code: "AUTH_PAYLOAD_TOO_LARGE", error: "Payload autentikasi terlalu besar." }, requestId, origin, config.source);
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort("auth-upstream-timeout"), AUTH_UPSTREAM_TIMEOUT_MS);
   try {
     const upstream = await fetch(target, {
       method: request.method,
       headers,
       body,
       redirect: "manual",
+      signal: controller.signal,
     });
     const responseHeaders = new Headers(corsHeaders(origin, requestId, config.source));
     for (const name of ["content-type", "content-language", "location", "www-authenticate", "x-supabase-api-version"]) {
@@ -182,6 +194,7 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
     responseHeaders.set("x-content-type-options", "nosniff");
     responseHeaders.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
     responseHeaders.set("x-ngeblogging-auth-fallback", AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE);
+    responseHeaders.set("x-ngeblogging-auth-timeout", AUTH_GATEWAY_TIMEOUT_RELEASE_V256);
     responseHeaders.set("x-ngeblogging-auth-config", config.source);
     return new Response(request.method === "HEAD" ? null : upstream.body, {
       status: upstream.status,
@@ -189,11 +202,16 @@ export async function handleAuthGatewayRequest(request, env, requestId) {
       headers: responseHeaders,
     });
   } catch (error) {
-    return json(502, {
-      code: "AUTH_UPSTREAM_UNREACHABLE",
-      error: "Layanan autentikasi belum dapat dijangkau. Sesi lokal tidak dihapus; coba kembali.",
-      detail: error?.name || "NetworkError",
+    const timedOut = controller.signal.aborted;
+    return json(timedOut ? 504 : 502, {
+      code: timedOut ? "AUTH_UPSTREAM_TIMEOUT" : "AUTH_UPSTREAM_UNREACHABLE",
+      error: timedOut
+        ? "Layanan autentikasi terlalu lama merespons. Browser akan mencoba jalur login langsung tanpa menghapus sesi lokal."
+        : "Layanan autentikasi belum dapat dijangkau. Sesi lokal tidak dihapus; coba kembali.",
+      detail: error?.name || (timedOut ? "AbortError" : "NetworkError"),
       configSource: config.source,
     }, requestId, origin, config.source);
+  } finally {
+    clearTimeout(timeout);
   }
 }
