@@ -111,6 +111,14 @@ function normalizeNara() {
   const layer = panel?.closest(".nara-assistant-layer");
   if (!panel || !layer) return;
 
+  // Layar 320px pun tidak boleh menyembunyikan model atau tingkat kecerdasan.
+  panel.querySelectorAll(".nara-select").forEach((control) => {
+    reveal(control);
+    control.style.setProperty("display", "flex", "important");
+    control.style.setProperty("grid-column", "auto", "important");
+    control.style.setProperty("max-width", "100%", "important");
+  });
+
   const full = panel.dataset.naraSize === "full";
   layer.dataset.naraInteraction = full ? "modal" : "nonmodal";
   layer.setAttribute("aria-modal", String(full));
