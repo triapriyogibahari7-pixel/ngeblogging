@@ -1,0 +1,57 @@
+{
+  "release": "studio-stability-v260-20260804",
+  "date": "2026-08-04",
+  "scope": [
+    "six-mode device classification",
+    "Chrome Android desktop-site lock",
+    "desktop and tablet sidebar visibility",
+    "mobile single-n drawer",
+    "profile menu separation",
+    "mobile overflow prevention",
+    "Theme code and preview geometry",
+    "Domain action width",
+    "Analytics presentation",
+    "Nara floating launcher and non-modal small/medium modes",
+    "service-worker cache rotation",
+    "auth session preservation"
+  ],
+  "responsiveModes": [
+    "application",
+    "phone",
+    "mobile",
+    "compact",
+    "tablet",
+    "desktop"
+  ],
+  "desktopVariants": [
+    "laptop",
+    "desktop-site",
+    "computer"
+  ],
+  "viewportMatrix": [
+    "320x568",
+    "360x640",
+    "375x667",
+    "390x844",
+    "412x915",
+    "430x932",
+    "600x960",
+    "768x1024",
+    "820x1180",
+    "1024x768",
+    "1280x720",
+    "1366x768",
+    "1440x900",
+    "1920x1080"
+  ],
+  "validation": {
+    "sourceRegressionGateAdded": true,
+    "productionBuildWorkflowConfigured": true,
+    "realDeviceExecutionVerifiedByManifest": false,
+    "googleLoginEndToEndVerifiedByManifest": false,
+    "linkedinLoginEndToEndVerifiedByManifest": false,
+    "emailPasswordLoginEndToEndVerifiedByManifest": false,
+    "productionDeploymentVerifiedByManifest": false,
+    "capacityClaim": "No 900-billion-user login claim is made. Capacity must be established by measured load tests and infrastructure limits."
+  }
+}
