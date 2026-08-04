@@ -1,5 +1,6 @@
 import "./studio-final-device-authority-v268.css";
 import "./studio-profile-menu-v268.js";
+import "./studio-nara-immediate-v268.css";
 
 export const RELEASE = "studio-sidebar-single-toggle-v267-20260804";
 
