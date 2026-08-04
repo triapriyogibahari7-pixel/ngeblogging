@@ -1,6 +1,7 @@
 export const RELEASE = "studio-stability-v260-20260804";
 
 const SMALL = new Set(["application", "phone", "mobile", "compact"]);
+const PROFILE_ORDER = ["profile", "avatar", "settings", "add-site", "view-site", "nara", "logout"];
 let frame = 0;
 
 function html() { return document.documentElement; }
@@ -39,6 +40,15 @@ function actionButton(action, label, description) {
   return button;
 }
 
+function normalizeProfileOrder(menu) {
+  if (!menu) return;
+  const buttons = new Map([...menu.querySelectorAll("button[data-action]")].map((button) => [button.dataset.action, button]));
+  PROFILE_ORDER.forEach((action) => {
+    const button = buttons.get(action);
+    if (button) menu.append(button);
+  });
+}
+
 function openProfileMenu(avatar) {
   const existing = document.querySelector(".sn-profile-menu-v260");
   if (existing) { closeProfileMenu(); return; }
@@ -48,7 +58,8 @@ function openProfileMenu(avatar) {
   menu.setAttribute("role", "menu");
   menu.setAttribute("aria-label", "Menu akun");
   menu.append(
-    actionButton("profile", "Profil", "Avatar, identitas, dan biografi"),
+    actionButton("profile", "Profil", "Identitas dan biografi"),
+    actionButton("avatar", "Ganti avatar", "Unggah foto profil"),
     actionButton("settings", "Pengaturan", "Situs, bahasa, zona waktu, dan preferensi"),
     actionButton("add-site", "Tambahkan situs", "Buat atau pilih situs lain"),
     actionButton("view-site", "Lihat situs", "Buka situs aktif di tab baru"),
@@ -56,6 +67,7 @@ function openProfileMenu(avatar) {
     actionButton("logout", "Keluar", "Akhiri sesi pada perangkat ini"),
   );
   document.body.append(menu);
+  normalizeProfileOrder(menu);
   avatar.setAttribute("aria-expanded", "true");
   requestAnimationFrame(() => menu.querySelector("button")?.focus({ preventScroll: true }));
 }
@@ -127,11 +139,13 @@ function syncFamily() {
 function syncProfile() {
   const avatar = document.querySelector(".sn-avatar");
   reveal(avatar);
-  if (!avatar) return;
-  avatar.dataset.nativeProfileMenu = "v260";
-  avatar.dataset.v260Profile = "fixed-top-right";
-  avatar.setAttribute("aria-haspopup", "menu");
-  avatar.setAttribute("aria-label", "Buka menu profil");
+  if (avatar) {
+    avatar.dataset.nativeProfileMenu = "v260";
+    avatar.dataset.v260Profile = "fixed-top-right";
+    avatar.setAttribute("aria-haspopup", "menu");
+    avatar.setAttribute("aria-label", "Buka menu profil");
+  }
+  normalizeProfileOrder(document.querySelector(".sn-profile-menu-v260"));
 }
 
 function syncNara() {
@@ -197,6 +211,7 @@ if (typeof document !== "undefined") {
     }
     const action = event.target.closest?.(".sn-profile-menu-v260 button[data-action]");
     if (action) {
+      if (action.dataset.action === "avatar") return;
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation?.();
