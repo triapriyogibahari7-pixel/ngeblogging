@@ -20,11 +20,9 @@ function ensureLastImport(source, path) {
 }
 
 export async function activateStudioFinalV257() {
-  // Apply the real persisted area extension during every direct Vite build too.
-  // This avoids depending on historical patch-chain side effects and keeps the
-  // change isolated from the auth/service-worker v256 work already proven.
-  await import("./patch-sidebar-right4-v257.mjs");
-
+  // Theme area migration runs at the end of the established production patch
+  // chain. Vite only owns final import order, avoiding mutation of layout core
+  // while the bundler is starting.
   let source = await readFile(studioUrl, "utf8");
   for (const path of [
     "studio-shell-interaction-v255.js",
