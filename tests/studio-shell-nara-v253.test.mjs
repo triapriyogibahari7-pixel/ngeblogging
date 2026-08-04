@@ -50,6 +50,17 @@ test("small family keeps one n drawer with transparent non-blurring backdrop", (
   assert.match(css, /data-studio-v253-sidebar="open"\] \.sn-sidebar-toggle[\s\S]*display:none!important/);
 });
 
+test("v254 hotfix keeps React device mode synchronized with the final v253 family", () => {
+  assert.match(runtime, /studio-family-sync-v254-hotfix-20260804/);
+  assert.match(runtime, /function synchronizeReactDeviceMode\(html, family\)/);
+  assert.match(runtime, /const expected = family === "small" \? "small" : "large"/);
+  assert.match(runtime, /html\.dataset\.studioDeviceMode = expected/);
+  assert.match(runtime, /ngeblogging:studio-device-mode-change/);
+  assert.match(runtime, /const desktopSitePhone = html\.dataset\.studioDesktopSitePhone === "true"/);
+  assert.match(runtime, /if \(desktopSitePhone\) return "large"/);
+  assert.match(runtime, /synchronizeReactDeviceMode\(html, family\)/);
+});
+
 test("all mandatory menu labels remain in React Studio source", () => {
   for (const label of requiredMenu) assert.ok(studio.includes(label), `missing ${label}`);
 });
