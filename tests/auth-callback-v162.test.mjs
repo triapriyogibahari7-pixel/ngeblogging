@@ -70,10 +70,19 @@ test("legacy bootstrap and React consume the same callback promise instead of ra
   assert.match(index, /auth-studio-bootstrap-v106\.js\?v=162/);
 });
 
-test("email password and immediate signup sessions are passed directly to Studio", () => {
+test("email password and immediate signup sessions are verified before Studio handoff", () => {
   assert.match(modal, /const data = await signInWithPassword\(email, password\)/);
-  const handoffs = modal.match(/onAuthenticated\(data\.session\)/g) || [];
-  assert.ok(handoffs.length >= 2, "signin and signup must both pass the created session");
+  if (modal.includes("auth-session-handoff-v255-20260804")) {
+    assert.match(modal, /settleAuthenticatedSession/);
+    assert.match(modal, /await settleAuthenticatedSession\(data\?\.session \|\| null\)/);
+    assert.match(modal, /await settleAuthenticatedSession\(data\.session\)/);
+    assert.match(modal, /supabase\.auth\.getSession\(\)/);
+    assert.match(modal, /await onAuthenticated\?\.\(nextSession\)/);
+    assert.match(modal, /ngeblogging:auth-session-ready/);
+  } else {
+    const handoffs = modal.match(/onAuthenticated\(data\.session\)/g) || [];
+    assert.ok(handoffs.length >= 2, "signin and signup must both pass the created session");
+  }
   assert.match(main, /finishAuth = \(nextSession = null\)/);
   assert.match(main, /setSession\(nextSession\)/);
 });
@@ -85,7 +94,7 @@ test("Google LinkedIn email and persistent refresh remain configured", () => {
   }
   assert.match(supabase, /detectSessionInUrl: false/);
   assert.match(patcher, /PATCH_AUTH_V162/);
-  assert.match(patcher, /satu pertukaran PKCE/);
+  assert.match(patcher, /modalHasV255Handoff/);
 });
 
 test("logout remains explicit and callback recovery never clears the stored session", () => {

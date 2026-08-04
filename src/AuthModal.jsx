@@ -20,9 +20,13 @@ import {
   signInWithPassword,
   signInWithProvider,
   signUpWithPassword,
+  supabase,
   supabaseConfigured,
   updatePassword,
 } from "./lib/supabase";
+import "./auth-provider-gateway-v250.js";
+
+const AUTH_SESSION_HANDOFF_RELEASE = "auth-session-handoff-v255-20260804";
 
 const titles = {
   signin: "Masuk ke Ngeblogging",
@@ -50,6 +54,9 @@ function friendlyError(error) {
   if (value.includes("redirect_uri_mismatch") || value.includes("redirect uri")) return "Alamat kembali login belum cocok dengan konfigurasi produksi.";
   if (value.includes("access_denied")) return "Login dibatalkan sebelum izin diberikan.";
   if (value.includes("expired") || value.includes("invalid token")) return "Tautan sudah kedaluwarsa atau tidak valid. Minta tautan baru.";
+  if (value.includes("failed to fetch") || value.includes("network") || value.includes("jaringan") || value.includes("timeout")) {
+    return "Koneksi autentikasi sedang terganggu. Sesi yang sudah ada tidak akan dihapus; coba lagi ketika jaringan stabil.";
+  }
   return error?.message || "Proses belum berhasil. Silakan coba lagi.";
 }
 
@@ -96,6 +103,34 @@ export default function AuthModal({
     setConfirmPassword("");
   };
 
+  const settleAuthenticatedSession = async (sessionHint = null) => {
+    let nextSession = sessionHint || null;
+    if (!nextSession && supabase) {
+      for (let attempt = 0; attempt < 4 && !nextSession; attempt += 1) {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        nextSession = data?.session || null;
+        if (!nextSession && attempt < 3) await new Promise((resolve) => window.setTimeout(resolve, 40));
+      }
+    }
+    if (!nextSession?.user?.id || !nextSession?.access_token) {
+      throw new Error("Sesi login belum terbentuk. Silakan coba masuk kembali tanpa menutup halaman ini.");
+    }
+
+    document.documentElement.dataset.authSessionHandoffV255 = AUTH_SESSION_HANDOFF_RELEASE;
+    window.dispatchEvent(new CustomEvent("ngeblogging:auth-session-ready", {
+      detail: {
+        release: AUTH_SESSION_HANDOFF_RELEASE,
+        source: "AuthModal",
+        userId: nextSession.user.id,
+      },
+    }));
+
+    await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+    await onAuthenticated?.(nextSession);
+    return nextSession;
+  };
+
   const run = async (action, actionName = "form") => {
     setBusy(true);
     setBusyAction(actionName);
@@ -116,8 +151,8 @@ export default function AuthModal({
     event.preventDefault();
     run(async () => {
       if (mode === "signin") {
-        await signInWithPassword(email, password);
-        onAuthenticated();
+        const data = await signInWithPassword(email, password);
+        await settleAuthenticatedSession(data?.session || null);
         return;
       }
 
@@ -127,7 +162,7 @@ export default function AuthModal({
         if (password !== confirmPassword) throw new Error("Konfirmasi password belum sama.");
         const data = await signUpWithPassword(email, password, fullName);
         if (data.session) {
-          onAuthenticated();
+          await settleAuthenticatedSession(data.session);
           return;
         }
         if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
@@ -152,9 +187,7 @@ export default function AuthModal({
       if (password.length < 8) throw new Error("Password minimal 8 karakter.");
       if (password !== confirmPassword) throw new Error("Konfirmasi password belum sama.");
       await updatePassword(password);
-      setSuccess(true);
-      setMessage("Password berhasil diperbarui. Anda sekarang sudah masuk.");
-      window.setTimeout(onAuthenticated, 700);
+      await settleAuthenticatedSession();
     });
   };
 
@@ -175,7 +208,7 @@ export default function AuthModal({
   const isPasswordMode = mode === "signin" || mode === "signup" || mode === "recovery";
 
   return (
-    <div className="modal auth-modal" onMouseDown={(event) => event.target === event.currentTarget && mode !== "recovery" && onClose()}>
+    <div className="modal auth-modal" data-auth-session-handoff-v255={AUTH_SESSION_HANDOFF_RELEASE} onMouseDown={(event) => event.target === event.currentTarget && mode !== "recovery" && onClose()}>
       <div>
         {mode !== "recovery" && <button className="close" onClick={onClose} aria-label="Tutup"><X /></button>}
         <div className="modal-icon">{mode === "recovery" ? <KeyRound /> : <Sparkles />}</div>
@@ -242,3 +275,5 @@ export default function AuthModal({
     </div>
   );
 }
+
+export { AUTH_SESSION_HANDOFF_RELEASE };
