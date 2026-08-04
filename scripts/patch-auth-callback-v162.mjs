@@ -15,6 +15,10 @@ let index = readFileSync(indexPath, "utf8");
 const authority = readFileSync(authorityPath, "utf8");
 const callback = readFileSync(callbackPath, "utf8");
 const release = "auth-callback-singleflight-v162-20260730";
+const modalHasV255Handoff = modal.includes("auth-session-handoff-v255-20260804")
+  && modal.includes("settleAuthenticatedSession")
+  && modal.includes("await settleAuthenticatedSession(data?.session || null)")
+  && modal.includes("await settleAuthenticatedSession(data.session)");
 
 function insertOnce(source, anchor, replacement, label) {
   if (source.includes(replacement)) return source;
@@ -46,18 +50,20 @@ main = insertOnce(
   "FINISH_AUTH",
 );
 
-modal = insertOnce(
-  modal,
-  '        await signInWithPassword(email, password);\n        onAuthenticated();',
-  '        const data = await signInWithPassword(email, password);\n        onAuthenticated(data.session);',
-  "PASSWORD_SESSION",
-);
-modal = insertOnce(
-  modal,
-  '        if (data.session) {\n          onAuthenticated();',
-  '        if (data.session) {\n          onAuthenticated(data.session);',
-  "SIGNUP_SESSION",
-);
+if (!modalHasV255Handoff) {
+  modal = insertOnce(
+    modal,
+    '        await signInWithPassword(email, password);\n        onAuthenticated();',
+    '        const data = await signInWithPassword(email, password);\n        onAuthenticated(data.session);',
+    "PASSWORD_SESSION",
+  );
+  modal = insertOnce(
+    modal,
+    '        if (data.session) {\n          onAuthenticated();',
+    '        if (data.session) {\n          onAuthenticated(data.session);',
+    "SIGNUP_SESSION",
+  );
+}
 
 bootstrap = bootstrap
   .replace('const AUTH_HANDOFF_RELEASE = "auth-studio-route-v158-20260730";', 'const AUTH_HANDOFF_RELEASE = "auth-studio-route-v162-20260730";')
@@ -69,7 +75,9 @@ index = index
 
 for (const [label, source, markers] of [
   ["MAIN", main, ["consumeAuthCallbackV162", "openVerifiedStudio", "authStudioOpenV162"]],
-  ["MODAL", modal, ["onAuthenticated(data.session)"]],
+  ["MODAL", modal, modalHasV255Handoff
+    ? ["auth-session-handoff-v255-20260804", "settleAuthenticatedSession", "ngeblogging:auth-session-ready"]
+    : ["onAuthenticated(data.session)"]],
   ["BOOTSTRAP", bootstrap, ["auth-studio-route-v162-20260730", 'AUTH_SUCCESS_VALUE = "v162"']],
   ["INDEX", index, ["auth-studio-bootstrap-v106.js?v=162", 'data-auth-studio-bootstrap="v162"']],
   ["AUTHORITY", authority, ["consumeAuthCallbackV162", "AUTH_CALLBACK_RELEASE"]],
@@ -84,4 +92,4 @@ writeFileSync(mainPath, main, "utf8");
 writeFileSync(modalPath, modal, "utf8");
 writeFileSync(bootstrapPath, bootstrap, "utf8");
 writeFileSync(indexPath, index, "utf8");
-console.log(`Auth callback authority ${release} aktif dan hanya memakai satu pertukaran PKCE.`);
+console.log(`Auth callback authority ${release} aktif; v255 session handoff ${modalHasV255Handoff ? "dipertahankan" : "belum aktif"}.`);
