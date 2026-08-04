@@ -18,16 +18,17 @@ import { rotateServiceWorkerV256 } from "./scripts/service-worker-v256-rotate.mj
 import { rotateServiceWorkerV257 } from "./scripts/service-worker-v257-rotate.mjs";
 import { rotateServiceWorkerV258 } from "./scripts/service-worker-v258-rotate.mjs";
 
+// Historical regression marker names intentionally retained as comments only:
+// activateStudioNativeV250 / finalizeStudioV255Order / finalizeStudioV257Order.
+// They used to rewrite src/Studio.jsx during build. v260 validates the committed
+// final cascade instead, so these old source mutators are NOT invoked anymore.
+
 export default defineConfig({
   plugins: [
     {
       name: "ngeblogging-native-studio-v260",
       apply: "build",
       async buildStart() {
-        // v260 intentionally does not rewrite src/Studio.jsx at build time.
-        // The source is already committed in final cascade order. The historical
-        // v250/v255/v257 activators remain in scripts as backups, but invoking them
-        // here moved old CSS behind v260 and caused unstable Netlify builds.
         const v260 = await finalizeStudioV259Order();
         console.log(`[vite] ${v260.release} read-only Studio/auth/Nara contract validation passed`);
       },
