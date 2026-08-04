@@ -1,0 +1,87 @@
+/* v260 visual hotfix — explicit brand paint and final compact-phone geometry. */
+html[data-studio-stability-v260] .sn-logo-mark,
+html[data-studio-v260-family="small"] .sn-mobile-menu-mark{
+  background:linear-gradient(145deg,#315fe8,#3d53d9)!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.32)!important;
+  box-shadow:0 5px 14px rgba(45,79,208,.22)!important;
+}
+html[data-studio-stability-v260] .sn-logo-mark strong,
+html[data-studio-v260-family="small"] .sn-mobile-menu-mark strong{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  mix-blend-mode:normal!important;
+  filter:none!important;
+  opacity:1!important;
+  transform:none!important;
+}
+html[data-studio-v260-family="small"] .sn-sidebar-toggle{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+html[data-studio-v260-family="small"] .sn-mobile-menu-mark{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  max-width:42px!important;
+  max-height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+}
+html[data-studio-v260-family="small"] .sn-mobile-menu-mark strong{font-size:25px!important;line-height:1!important}
+html[data-studio-v260-family="large"] .sn-logo>b{
+  display:flex!important;
+  align-items:center!important;
+  height:46px!important;
+  font-size:20px!important;
+  line-height:1!important;
+  letter-spacing:-.025em!important;
+}
+html[data-studio-v260-family="large"][data-studio-v260-sidebar="collapsed"] .sn-logo>b{display:none!important}
+
+/* Keep dense dashboard cards useful without becoming one extremely long phone page. */
+@media (min-width:360px) and (max-width:760px){
+  html[data-studio-v260-family="small"] .sn-metrics,
+  html[data-studio-v260-family="small"] .op41-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media (max-width:359px){
+  html[data-studio-v260-family="small"] .sn-metrics,
+  html[data-studio-v260-family="small"] .op41-metrics{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+
+/* Drawer never paints a dark/blurred page lock. Outside remains readable and clickable-to-close. */
+html[data-studio-v260-family="small"] .sn-side-backdrop{
+  background:transparent!important;
+  background-color:transparent!important;
+  opacity:1!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* Final Nara launcher paint: no blink, no text escaping the icon. */
+html[data-studio-stability-v260] .nara-floating-button:not([hidden]){
+  background:linear-gradient(145deg,#315fe8,#5649d8)!important;
+  color:#fff!important;
+  box-shadow:0 14px 34px rgba(43,75,184,.28)!important;
+}
+html[data-studio-stability-v260] .nara-floating-button:not([hidden])>span{
+  position:absolute!important;
+  inset:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
+html[data-studio-stability-v260] .nara-floating-button:not([hidden]) :is(b,small){display:none!important}
+
+/* Profile is always above the topbar/sidebar while staying inside the viewport. */
+html[data-studio-stability-v260] .sn-avatar{z-index:11140!important}
+html[data-studio-stability-v260] .sn-profile-menu-v260{z-index:11220!important}
