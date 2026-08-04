@@ -36,3 +36,4 @@ if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(sour
 
 await writeFile(file, source);
 console.log(`Rotated service-worker shell/assets for ${RELEASE}`);
+await import("./patch-service-worker-v267.mjs");
