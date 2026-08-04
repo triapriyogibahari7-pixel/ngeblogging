@@ -17,12 +17,14 @@ const auth = read("src/lib/supabase.js");
 
 const menu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
-test("v279 loads last without adding a second n click owner", () => {
+test("v279 remains a compatibility boot layer without another n click or scroll owner", () => {
   assert.ok(entry.indexOf('import "./studio-live-shell-v279.js";') > entry.indexOf('import "./studio-shell-precision-v278.css";'));
   assert.ok(entry.indexOf('import "./studio-live-shell-v279.css";') > entry.indexOf('import "./studio-live-shell-v279.js";'));
   assert.match(runtime, /studio-live-shell-v279-20260804/);
+  assert.match(runtime, /RETIRED_LIVE_OBSERVERS_BY/);
   assert.doesNotMatch(runtime, /addEventListener\("click",\s*activateLogo/);
-  assert.match(runtime, /window\.addEventListener\("scroll",\s*schedule/);
+  assert.doesNotMatch(runtime, /addEventListener\("scroll"/);
+  assert.doesNotMatch(runtime, /visualViewport\?\.addEventListener\("scroll"/);
   assert.match(runtime, /contain", "none"/);
 });
 
