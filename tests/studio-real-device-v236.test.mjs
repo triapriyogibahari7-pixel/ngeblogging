@@ -18,6 +18,7 @@ import "./studio-fixed-chrome-v267.test.mjs";
 import "./studio-scroll-chrome-v270.test.mjs";
 import "./nara-global-authority-v271.test.mjs";
 import "./studio-shell-authority-v272.test.mjs";
+import "./studio-shell-content-v274.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
