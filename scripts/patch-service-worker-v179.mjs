@@ -7,6 +7,7 @@ const CACHE = "mobile-runtime-cache-v179";
 const CURRENT_RELEASE = "studio-responsive-shell-v262-20260804-r1";
 const CURRENT_VERSION = "ngeblogging-app-v262-responsive-shell-r1-20260804";
 const CURRENT_CACHE = "studio-responsive-shell-cache-v262-r1";
+const UI_PATCH_RELEASE_V263 = "studio-shell-v263-20260804";
 const FIRST_SITE_VERSION = 'const FIRST_SITE_COMPAT_VERSION_V169 = "ngeblogging-app-v169-first-site-20260730";';
 const FIRST_SITE_CACHE = 'const FIRST_SITE_COMPAT_CACHE_V169 = "first-site-cache-v169";';
 const SCREENSHOT_VERSION = 'const SCREENSHOT_STABILITY_COMPAT_VERSION_V177 = "ngeblogging-app-v177-screenshot-stability-20260731";';
@@ -32,13 +33,14 @@ async function restoreCurrentServiceWorker() {
   current = current
     .replace(/^const VERSION = .*;$/m, `const VERSION = "${CURRENT_VERSION}";`)
     .replace(/^const CACHE_RELEASE = .*;$/m, `const CACHE_RELEASE = "${CURRENT_CACHE}";`)
-    .replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v262: no automatic second navigation after service-worker activation.");
+    .replace(/\n\s*await refreshStaleWindow\(client, url\);/g, "\n      // v263: no automatic second navigation after service-worker activation.");
   current = replaceOrInsert(current, "STUDIO_STABILITY_RELEASE_V260", `"${CURRENT_RELEASE}"`);
+  current = replaceOrInsert(current, "UI_PATCH_RELEASE_V263", `"${UI_PATCH_RELEASE_V263}"`);
   current = replaceOrInsert(current, "ACTIVE_VERSION_V260", "VERSION");
   current = replaceOrInsert(current, "ACTIVE_CACHE_RELEASE_V260", "CACHE_RELEASE");
   current = current
-    .replace(/^const SHELL_CACHE = .*;$/m, 'const SHELL_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-shell`;')
-    .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-assets`;')
+    .replace(/^const SHELL_CACHE = .*;$/m, 'const SHELL_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${UI_PATCH_RELEASE_V263}-${AUTH_HANDOFF_RELEASE}-shell`;')
+    .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${UI_PATCH_RELEASE_V263}-${AUTH_HANDOFF_RELEASE}-assets`;')
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V179", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V258", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
     .replaceAll("NGE_BLOGGING_UPDATE_AVAILABLE_V259", "NGE_BLOGGING_UPDATE_AVAILABLE_V260")
@@ -51,11 +53,11 @@ async function restoreCurrentServiceWorker() {
       'reason: "service-worker-activated-responsive-shell-v262-r1",\n        reloadRequired: false,',
     );
   }
-  for (const marker of [CURRENT_VERSION, CURRENT_CACHE, CURRENT_RELEASE, "ACTIVE_VERSION_V260", "ACTIVE_CACHE_RELEASE_V260", "NGE_BLOGGING_UPDATE_AVAILABLE_V260"]) {
-    if (!current.includes(marker)) throw new Error(`V262_POST_PATCH_RESTORE_MISSING:${marker}`);
+  for (const marker of [CURRENT_VERSION, CURRENT_CACHE, CURRENT_RELEASE, UI_PATCH_RELEASE_V263, "ACTIVE_VERSION_V260", "ACTIVE_CACHE_RELEASE_V260", "NGE_BLOGGING_UPDATE_AVAILABLE_V260"]) {
+    if (!current.includes(marker)) throw new Error(`V263_POST_PATCH_RESTORE_MISSING:${marker}`);
   }
-  if (/await refreshStaleWindow\(client, url\);/.test(current)) throw new Error("V262_POST_PATCH_DOUBLE_RELOAD_REGRESSION");
-  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(current)) throw new Error("V262_POST_PATCH_SESSION_DESTRUCTIVE_ACTION");
+  if (/await refreshStaleWindow\(client, url\);/.test(current)) throw new Error("V263_POST_PATCH_DOUBLE_RELOAD_REGRESSION");
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(current)) throw new Error("V263_POST_PATCH_SESSION_DESTRUCTIVE_ACTION");
   await writeFile(file, current);
 }
 
@@ -146,6 +148,6 @@ await import("./patch-auth-production-v245.mjs");
 await import("./patch-sidebar-right4-v258.mjs");
 
 // Historical migrations above may validate/migrate older repositories. The v262
-// responsive shell cache remains authoritative before tests and Vite bundling continue.
+// compatibility version stays intact, while v263 adds a unique shell/asset cache namespace.
 await restoreCurrentServiceWorker();
-console.log(`Restored public/sw.js to ${CURRENT_RELEASE} after historical migration chain.`);
+console.log(`Restored public/sw.js to ${CURRENT_RELEASE} + ${UI_PATCH_RELEASE_V263} after historical migration chain.`);
