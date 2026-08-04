@@ -8,6 +8,8 @@ const themeSystem = read("src/theme-system.js");
 const themeStudio = read("src/ThemeStudio.jsx");
 const layoutRuntime = read("src/theme-layout-runtime-v170.js");
 const layoutCss = read("src/theme-layout-v170.css");
+const layoutV256 = read("src/studio-theme-layout-v256.css");
+const entry = read("src/Studio.jsx");
 const studio = read("src/StudioNext.jsx");
 const pageAudit = read("src/studio-page-audit-v170.css");
 const main = read("src/main.jsx");
@@ -22,8 +24,25 @@ const AREAS = [
   "sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "after-content",
   "bottom-left-1", "bottom-left-2", "bottom-left-3", "bottom-right-1", "bottom-right-2", "bottom-right-3",
 ];
+const v256Active = widgets.includes("SIDEBAR_LEFT_SLOTS")
+  && widgets.includes('"sidebar-left-4"')
+  && widgets.includes('"sidebar-right-4"')
+  && entry.includes('import "./studio-theme-layout-v256.css"');
 
-test("v170 exposes 20 real widget areas and migrates legacy placements", () => {
+test("theme widget areas retain v170 compatibility or use the newer real v256 4+4 model", () => {
+  if (v256Active) {
+    for (let index = 1; index <= 4; index += 1) {
+      assert.ok(widgets.includes(`"sidebar-left-${index}"`), `v256 missing left slot ${index}`);
+      assert.ok(widgets.includes(`"sidebar-right-${index}"`), `v256 missing right slot ${index}`);
+    }
+    for (const legacy of ["header", "sidebar", "sidebar-left", "sidebar-right", "footer"]) {
+      assert.ok(widgets.includes(legacy), `v256 migration missing ${legacy}`);
+    }
+    assert.match(widgets, /migrateLegacyArea/);
+    assert.match(widgets, /SIDEBAR_RIGHT_SLOTS\[index % SIDEBAR_RIGHT_SLOTS\.length\]/);
+    return;
+  }
+
   assert.ok(widgets.includes(`WIDGET_LAYOUT_AUTHORITY = "${AUTHORITY}"`));
   for (const area of AREAS) assert.ok(widgets.includes(`id: "${area}"`), `missing area ${area}`);
   for (const legacy of ["header-left", "header-right", "below-header", "sidebar-left", "sidebar-right", "footer-left", "footer-right", "footer-wide", "sidebar", "footer"]) {
@@ -34,21 +53,43 @@ test("v170 exposes 20 real widget areas and migrates legacy placements", () => {
   assert.ok(widgets.includes('"sidebar-right-1", "sidebar-right-2", "sidebar-left-1", "bottom-left-1"'));
 });
 
-test("Theme Studio displays the same detailed map on all device previews", () => {
+test("Theme Studio keeps a detailed responsive map on every device preview", () => {
+  for (const device of ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]) {
+    assert.ok(themeStudio.includes(`id: "${device}"`), `preview missing ${device}`);
+  }
+
+  if (v256Active) {
+    assert.match(layoutV256, /Post \/ Page\\A Konten utama/);
+    for (const area of ["sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4", "sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"]) {
+      assert.ok(layoutV256.includes(area), `v256 layout CSS missing ${area}`);
+    }
+    assert.ok(layoutV256.includes("@media(max-width:760px)"));
+    assert.ok(layoutV256.includes("@media(max-width:380px)"));
+    assert.ok(themeStudio.includes("WIDGET TERPILIH"));
+    return;
+  }
+
   for (const marker of [
     AUTHORITY, "theme-layout-v170.css", "LAYOUT_AREAS", "PETA TATA LETAK V170",
     "Enam widget atas, konten tiga kolom, dan enam widget bawah", "tn-layout-canvas-v170",
     "tn-widget-order-v170", "Naikkan ", "Turunkan ", "WIDGET TERPILIH",
   ]) assert.ok(themeStudio.includes(marker), `Theme Studio missing ${marker}`);
-  for (const device of ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]) {
-    assert.ok(themeStudio.includes(`id: "${device}"`), `preview missing ${device}`);
-  }
   for (const area of AREAS) assert.ok(layoutCss.includes(area), `layout CSS missing ${area}`);
   assert.ok(layoutCss.includes("@media(max-width:760px)"));
   assert.ok(layoutCss.includes("@media(max-width:390px)"));
 });
 
 test("theme preview renders widget placement instead of a decorative-only map", () => {
+  if (v256Active) {
+    for (const marker of [
+      "composeMainWidgetLayout", 'widgetsMarkup(widgets, "sidebar-left")', 'widgetsMarkup(widgets, "sidebar-right")',
+      'widgetsMarkup(widgets, "before-content")', 'widgetsMarkup(widgets, "after-content")',
+      "ng-main-layout", "ng-main-content", "ng-widget-stack left", "ng-widget-stack right",
+    ]) assert.ok(themeSystem.includes(marker), `v256 preview runtime missing ${marker}`);
+    assert.ok(widgets.includes("data-layout-area"));
+    return;
+  }
+
   for (const marker of [
     "composeThemeLayoutV170", "THEME_LAYOUT_CSS_V170", "data-layout-area",
     "ng-content-grid-v170", "ng-main-content-v170", "top-grid", "bottom-grid",
@@ -97,7 +138,7 @@ test("v170 rotates PWA cache while preserving v169 auth and onboarding compatibi
 
 test("v170 patch and regression cannot be skipped by production build", () => {
   for (const command of [packageJson.scripts.predev, packageJson.scripts.test, packageJson.scripts["test:production"]]) {
-    assert.ok(command.includes("patch-theme-layout-v170.mjs"));
+    assert.ok(command.includes("run-patch-theme-layout-v170.mjs"));
   }
   assert.ok(packageJson.scripts.build.includes("verify:v170") || packageJson.scripts.build.includes("test:production"));
   assert.ok(packageJson.scripts["test:production"].includes("tests/theme-layout-v170.test.mjs"));
