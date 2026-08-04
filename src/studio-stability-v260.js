@@ -1,4 +1,4 @@
-export const RELEASE = "studio-stability-v260-20260804-r2";
+export const RELEASE = "studio-stability-v260-20260804-r3";
 
 const SMALL = new Set(["application", "phone", "mobile", "compact"]);
 const PROFILE_ORDER = ["profile", "avatar", "settings", "add-site", "view-site", "nara", "logout"];
@@ -12,6 +12,11 @@ function setData(node, key, value) {
   if (!node || node.dataset[key] === String(value)) return false;
   node.dataset[key] = String(value);
   return true;
+}
+
+function clearInline(node, properties) {
+  if (!node) return;
+  for (const property of properties) node.style.removeProperty(property);
 }
 
 function mediaMatches(query) {
@@ -80,6 +85,29 @@ function reveal(node) {
   node.removeAttribute("hidden");
   node.removeAttribute("inert");
   node.removeAttribute("aria-hidden");
+}
+
+function clearLegacyShellGeometry(current) {
+  const sidebar = side();
+  const shell = document.querySelector(".sn-shell");
+  const main = document.querySelector(".sn-main");
+  const top = document.querySelector(".sn-top");
+  const toggle = document.querySelector(".sn-sidebar-toggle");
+  const avatar = document.querySelector(".sn-avatar");
+  clearInline(shell, ["margin-left", "width", "max-width", "transform", "filter", "opacity", "visibility"]);
+  clearInline(main, ["margin-left", "left", "right", "width", "max-width", "transform", "filter", "opacity", "visibility", "overflow"]);
+  clearInline(top, ["display", "left", "right", "width", "max-width", "transform", "filter", "opacity", "visibility", "pointer-events"]);
+  clearInline(sidebar, ["display", "left", "right", "width", "min-width", "max-width", "transform", "filter", "opacity", "visibility", "pointer-events", "margin-left"]);
+  clearInline(toggle, ["display", "visibility", "opacity", "pointer-events", "transform", "filter"]);
+  clearInline(avatar, ["display", "visibility", "opacity", "pointer-events", "transform", "filter", "left", "right", "top"]);
+  sidebar?.querySelectorAll(".sn-new,nav>button,.sn-account-footer>button,.sn-logo,.sn-logo-mark,.sn-logo>b").forEach((node) => {
+    clearInline(node, ["display", "visibility", "opacity", "pointer-events", "transform", "filter", "left", "right", "margin-left"]);
+  });
+  if (current === "small") {
+    // CSS owns the off-canvas position. Removing stale large-rail dimensions is
+    // what eliminates the blank strip visible in the supplied phone screenshots.
+    clearInline(main, ["padding-left"]);
+  }
 }
 
 function closeProfileMenu() {
@@ -201,6 +229,7 @@ function syncFamily() {
   if (view.desktopSitePhone) setData(root, "v232ModeLock", "desktop-site-large");
   else if (root.dataset.v232ModeLock === "desktop-site-large") delete root.dataset.v232ModeLock;
 
+  clearLegacyShellGeometry(current);
   const sidebar = side();
   if (!sidebar) return current;
   reveal(sidebar);
@@ -250,6 +279,7 @@ function syncFamily() {
 function syncProfile() {
   const avatar = document.querySelector(".sn-avatar");
   reveal(avatar);
+  clearInline(avatar, ["display", "visibility", "opacity", "pointer-events", "transform", "filter", "left", "right", "top"]);
   if (avatar) {
     avatar.dataset.nativeProfileMenu = "v260";
     avatar.dataset.v260Profile = "fixed-top-right";
@@ -265,6 +295,7 @@ function syncNara() {
   const panel = layer?.querySelector(".nara-assistant-shell");
   if (!panel || !layer) {
     reveal(launcher);
+    clearInline(launcher, ["position", "left", "right", "top", "bottom", "display", "visibility", "opacity", "transform", "filter", "animation", "transition"]);
     if (launcher) launcher.dataset.v260Launcher = "fixed-corner";
     return;
   }
@@ -288,15 +319,22 @@ function syncNara() {
     document.body.style.removeProperty("touch-action");
     document.documentElement.style.removeProperty("overflow");
   }
-  panel.querySelectorAll(".nara-size-controls-v147,.nara-auto-voice-v148,.nara-select.intelligence,.nara-select.model,.nara-attachment-menu-wrap").forEach(reveal);
+  panel.querySelectorAll(".nara-size-controls-v147,.nara-auto-voice-v148,.nara-select.intelligence,.nara-select.model,.nara-attachment-menu-wrap").forEach((control) => {
+    reveal(control);
+    clearInline(control, ["display", "visibility", "opacity", "pointer-events", "transform", "filter"]);
+  });
   const plus = panel.querySelector(".nara-attachment-menu-wrap>button");
   if (plus) {
     reveal(plus);
+    clearInline(plus, ["display", "visibility", "opacity", "pointer-events"]);
     plus.setAttribute("aria-label", "Tambah kamera, foto, atau file");
     plus.setAttribute("aria-haspopup", "menu");
   }
   const menu = panel.querySelector(".nara-attachment-menu");
-  if (menu) menu.dataset.v260AttachmentMenu = "camera-photo-file";
+  if (menu) {
+    clearInline(menu, ["display", "visibility", "opacity", "pointer-events", "transform", "left", "right", "top", "bottom", "width", "max-width"]);
+    menu.dataset.v260AttachmentMenu = "camera-photo-file";
+  }
 }
 
 function sync() {
