@@ -104,5 +104,6 @@ import "./studio-screenshot-authority-v265.js";
 import "./studio-screenshot-authority-v265.css";
 import "./studio-shell-v265.js";
 import "./studio-shell-v265.css";
+import "./studio-shell-v265-final-hotfix.css";
 
 export default StudioFastGate;
