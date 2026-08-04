@@ -118,9 +118,12 @@ import "./studio-shell-authority-v272.js";
 import "./studio-shell-content-v274.js";
 import "./studio-shell-content-v274-hotfix.css";
 import "./studio-final-stability-v275.css";
-// v276 is the final sidebar authority. It reads the React shell's own device mode
-// so a stale html-level mode can never hide the large sidebar again.
+// v276 recovers sidebar geometry from the React shell's own device mode.
 import "./studio-sidebar-recovery-v276.js";
 import "./studio-sidebar-recovery-v276.css";
+// v277 is loaded last and owns the final interaction geometry. It intentionally
+// has no competing sidebar click handler; v276 remains the single internal n owner.
+import "./studio-interaction-authority-v277.js";
+import "./studio-interaction-authority-v277.css";
 
 export default StudioFastGate;
