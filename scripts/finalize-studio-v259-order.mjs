@@ -22,7 +22,99 @@ function removeLiveImport(source, path) {
   return source.replace(pattern, "");
 }
 
+function requireMarkers(source, markers, code) {
+  for (const marker of markers) {
+    if (!source.includes(marker)) throw new Error(`V260_${code}_MISSING:${marker}`);
+  }
+}
+
+async function validateV260Contracts() {
+  const [runtime, css, device, provider, auth, studioNext, nara] = await Promise.all([
+    readFile(new URL(`src/${V260_RUNTIME}`, root), "utf8"),
+    readFile(new URL(`src/${V260_STYLES}`, root), "utf8"),
+    readFile(new URL("src/studio-device-mode-v140.js", root), "utf8"),
+    readFile(new URL("src/auth-provider-gateway-v250.js", root), "utf8"),
+    readFile(new URL("src/lib/supabase.js", root), "utf8"),
+    readFile(new URL("src/StudioNext.jsx", root), "utf8"),
+    readFile(new URL("src/NaraAssistant.jsx", root), "utf8"),
+  ]);
+
+  requireMarkers(runtime, [
+    "studio-stability-v260-20260804",
+    "studioV253Family = current",
+    "studioV259Family = current",
+    "v260SingleN",
+    "sn-profile-menu-v260",
+    'actionButton("profile"',
+    'actionButton("avatar"',
+    'actionButton("settings"',
+    'actionButton("add-site"',
+    'actionButton("view-site"',
+    'actionButton("nara"',
+    'actionButton("logout"',
+    'v260Interaction = full ? "modal" : "nonmodal"',
+    "Tambah kamera, foto, atau file",
+  ], "RUNTIME_CONTRACT");
+
+  requireMarkers(css, [
+    '--v260-side-open:248px',
+    '--v260-side-rail:70px',
+    'data-studio-v260-family="large"',
+    'data-studio-v260-family="small"',
+    '.sn-main{margin-left:0!important',
+    '.sn-profile-menu-v260',
+    '.nara-floating-button:not([hidden])',
+    'data-v260-interaction="nonmodal"',
+    '.nara-attachment-menu',
+    '.tn-code-workspace',
+    '.op41-chart-grid',
+    'writing-mode:horizontal-tb!important',
+  ], "CSS_CONTRACT");
+
+  requireMarkers(device, [
+    "studio-device-mode-v260-20260804",
+    "desktopSiteRequested(view, handheld)",
+    'return "desktop"',
+    'return "application"',
+    'return "phone"',
+    'return "mobile"',
+    'return "compact"',
+    'return "tablet"',
+    "studioDesktopSitePhone",
+  ], "DEVICE_CONTRACT");
+
+  requireMarkers(provider, [
+    "auth-provider-navigation-v260-20260804",
+    "direct-provider-authorize",
+    "return new URL(String(value)).toString()",
+  ], "OAUTH_CONTRACT");
+
+  requireMarkers(auth, [
+    "persistSession: true",
+    "autoRefreshToken: true",
+    'flowType: "pkce"',
+    "fetchWithDeadlineV259",
+    "signInWithPassword",
+    "signInWithMagicLink",
+  ], "SESSION_CONTRACT");
+
+  for (const label of ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"]) {
+    if (!studioNext.includes(label)) throw new Error(`V260_MENU_CONTRACT_MISSING:${label}`);
+  }
+  requireMarkers(nara, [
+    "Kamera",
+    "Foto",
+    "File teks",
+    "Tingkat kecerdasan",
+    "Model Nara",
+    "Balasan suara otomatis",
+    "Pertanyaan suara",
+    'data-size={option}',
+  ], "NARA_CONTRACT");
+}
+
 export async function finalizeStudioV259Order() {
+  await validateV260Contracts();
   let source = await readFile(studioUrl, "utf8");
   for (const required of [V257_RUNTIME, V257_STYLES, RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES]) {
     if (!source.includes(`import "./${required}";`)) throw new Error(`V260_SOURCE_AUTHORITY_MISSING:${required}`);
@@ -55,3 +147,5 @@ export async function finalizeStudioV259Order() {
   await writeFile(studioUrl, source, "utf8");
   return { release: RELEASE, legacyRelease: LEGACY_RELEASE, path: "src/Studio.jsx" };
 }
+
+export { validateV260Contracts };
