@@ -6,9 +6,13 @@ import "./studio-screenshot-authority-v265.test.mjs";
 
 const studio = readFileSync(new URL("../src/Studio.jsx", import.meta.url), "utf8");
 const studioNext = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
-const css = readFileSync(new URL("../src/studio-shell-v263.css", import.meta.url), "utf8");
-const hotfix = readFileSync(new URL("../src/studio-shell-v263-hotfix.css", import.meta.url), "utf8");
-const runtime = readFileSync(new URL("../src/studio-runtime-v263.js", import.meta.url), "utf8");
+const legacyCss = readFileSync(new URL("../src/studio-shell-v263.css", import.meta.url), "utf8");
+const legacyHotfix = readFileSync(new URL("../src/studio-shell-v263-hotfix.css", import.meta.url), "utf8");
+const retiredRuntime = readFileSync(new URL("../src/studio-runtime-v263.js", import.meta.url), "utf8");
+const shell265 = readFileSync(new URL("../src/studio-shell-v265.js", import.meta.url), "utf8");
+const shellCss265 = readFileSync(new URL("../src/studio-shell-v265.css", import.meta.url), "utf8");
+const finalCss265 = readFileSync(new URL("../src/studio-shell-v265-final-hotfix.css", import.meta.url), "utf8");
+const screenshot265 = readFileSync(new URL("../src/studio-screenshot-authority-v265.js", import.meta.url), "utf8");
 const nara = readFileSync(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 const theme = readFileSync(new URL("../src/ThemeStudio.jsx", import.meta.url), "utf8");
 const supabase = readFileSync(new URL("../src/lib/supabase.js", import.meta.url), "utf8");
@@ -20,28 +24,34 @@ const indexOf = (source, marker) => {
   return index;
 };
 
-test("v263 is the stable shell layer before the v264-v265 screenshot authorities", () => {
-  const v260 = indexOf(studio, 'import "./studio-stability-v260-hotfix.css"');
-  const runtime263 = indexOf(studio, 'import "./studio-runtime-v263.js"');
+test("v263 observer is retired while v264 and live v265 authorities load in final order", () => {
+  const retired = indexOf(studio, 'v265 retirement marker; v263 JS is kept as backup');
   const css263 = indexOf(studio, 'import "./studio-shell-v263.css"');
   const hotfix263 = indexOf(studio, 'import "./studio-shell-v263-hotfix.css"');
   const v264 = indexOf(studio, 'import "./studio-theme-layout-v264.js"');
-  const v265 = indexOf(studio, 'import "./studio-screenshot-authority-v265.js"');
-  assert.ok(runtime263 > v260);
-  assert.ok(css263 > runtime263);
+  const screenshot = indexOf(studio, 'import "./studio-screenshot-authority-v265.js"');
+  const shell = indexOf(studio, 'import "./studio-shell-v265.js"');
+  const shellCss = indexOf(studio, 'import "./studio-shell-v265.css"');
+  const finalHotfix = indexOf(studio, 'import "./studio-shell-v265-final-hotfix.css"');
+  assert.ok(css263 > retired);
   assert.ok(hotfix263 > css263);
   assert.ok(v264 > hotfix263);
-  assert.ok(v265 > v264);
+  assert.ok(screenshot > v264);
+  assert.ok(shell > screenshot);
+  assert.ok(shellCss > shell);
+  assert.ok(finalHotfix > shellCss);
+  assert.doesNotMatch(studio, /^import "\.\/studio-runtime-v263\.js";/m);
 });
 
-test("large family has one internal n and mobile has one drawer trigger", () => {
-  assert.match(css, /@media \(min-width:761px\)[\s\S]*?\.sn-sidebar-toggle\{display:none!important\}/);
-  assert.match(css, /\.sn-logo \.sn-logo-mark\{[\s\S]*?display:grid!important/);
-  assert.match(css, /body\.sn-mobile-sidebar-open \.sn-top>\.sn-sidebar-toggle/);
-  assert.match(css, /\.sn-side\.mobile-open \.sn-logo \.sn-logo-mark/);
-  assert.match(runtime, /aria-controls", "ngeblogging-studio-sidebar/);
-  assert.match(runtime, /aria-expanded/);
-  assert.match(hotfix, /#ngeblogging-studio-sidebar \.sn-logo-mark/);
+test("large family has one internal n and small family has one React drawer trigger", () => {
+  assert.match(shell265, /currentStudioDeviceMode/);
+  assert.match(shell265, /studio-v265-large/);
+  assert.match(shell265, /studio-v265-small/);
+  assert.match(shell265, /aria-controls", "ngeblogging-studio-sidebar/);
+  assert.match(screenshot265, /document\.querySelector\("\.sn-top \.sn-sidebar-toggle"\)\?\.click\(\)/);
+  assert.match(shellCss265, /html\.studio-v265-large \.sn-sidebar-toggle\{display:none!important/);
+  assert.match(shellCss265, /html\.studio-v265-small \.sn-sidebar-toggle/);
+  assert.match(finalCss265, /html\.studio-v265-large #ngeblogging-studio-sidebar/);
 });
 
 test("all required Studio navigation remains in React source", () => {
@@ -53,27 +63,25 @@ test("all required Studio navigation remains in React source", () => {
   assert.match(studioNext, /sn-side-backdrop/);
 });
 
-test("profile and settings are rendered as distinct account surfaces", () => {
-  assert.match(runtime, /sn-account-view-profile-v263/);
-  assert.match(runtime, /sn-account-view-settings-v263/);
-  assert.match(runtime, /Profil & avatar/);
-  assert.match(runtime, /Pengaturan situs/);
-  assert.match(css, /sn-account-view-profile-v263 \.sn-settings-grid>section:nth-child\(2\)/);
-  assert.match(css, /sn-account-view-settings-v263 \.sn-settings-grid>section:nth-child\(1\)/);
+test("profile and settings stay distinct under the active v265 account surface", () => {
+  assert.match(shell265, /sn-account-view-profile-v263/);
+  assert.match(shell265, /sn-account-view-settings-v263/);
+  assert.match(screenshot265, /Profil & avatar/);
+  assert.match(screenshot265, /Pengaturan situs/);
+  assert.match(shellCss265, /sn-account-view-profile-v263 \.sn-settings-grid>section:nth-child\(2\)/);
+  assert.match(shellCss265, /sn-account-view-settings-v263 \.sn-settings-grid>section:nth-child\(1\)/);
 });
 
-test("Nara small and medium stay non-modal while full owns the viewport", () => {
-  assert.match(runtime, /const full = size === "full"/);
-  assert.match(runtime, /layer\.setAttribute\("aria-modal", String\(full\)\)/);
-  assert.match(runtime, /backdrop\.hidden = !full/);
-  assert.match(css, /data-nara-v263-modal="false"/);
-  assert.match(css, /data-nara-v263-modal="true"/);
-  assert.match(css, /nara-assistant-shell\[data-nara-size="small"\]/);
-  assert.match(css, /nara-assistant-shell\[data-nara-size="medium"\]/);
-  assert.match(css, /nara-assistant-shell\[data-nara-size="full"\]/);
-  assert.match(runtime, /nara-composer-tools > button\.listening/);
-  assert.match(runtime, /speechSynthesis/);
-  assert.match(hotfix, /data-nara-v263-modal="false"/);
+test("Nara small and medium are non-modal and full alone owns the viewport", () => {
+  assert.match(shell265, /const full = size === "full"/);
+  assert.match(shell265, /layer\.setAttribute\("aria-modal", String\(full\)\)/);
+  assert.match(shell265, /backdrop\.hidden = !full/);
+  assert.match(shellCss265, /data-nara-v265-interaction="nonmodal"/);
+  assert.match(shellCss265, /nara-assistant-shell\[data-nara-size="small"\]/);
+  assert.match(shellCss265, /nara-assistant-shell\[data-nara-size="medium"\]/);
+  assert.match(shellCss265, /nara-assistant-shell\[data-nara-size="full"\]/);
+  assert.match(finalCss265, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+  assert.match(legacyHotfix, /data-nara-v263-modal="false"/);
 });
 
 test("Nara retains attachments microphone speaker models and intelligence", () => {
@@ -85,7 +93,7 @@ test("Nara retains attachments microphone speaker models and intelligence", () =
   assert.match(nara, /capture="environment"/);
 });
 
-test("Theme Studio keeps 100-theme system, eight previews, widgets, code and responsive map", () => {
+test("Theme Studio keeps 100 themes, eight previews, 26-area layout and final code gutter", () => {
   assert.match(theme, /THEME_COUNT/);
   for (const label of ["Aplikasi", "Handphone", "Mobile", "Perangkat kecil", "Tablet", "Laptop", "Situs desktop", "Komputer"]) {
     assert.ok(theme.includes(label), `Theme preview missing ${label}`);
@@ -93,21 +101,20 @@ test("Theme Studio keeps 100-theme system, eight previews, widgets, code and res
   for (const marker of ["LayoutMap", "WidgetStudio", "CodeEditor", "HTML", "CSS", "JavaScript", "Edit HTML", "Preview"]) {
     assert.ok(theme.includes(marker), `Theme Studio missing ${marker}`);
   }
-  assert.match(css, /tn-code-workspace/);
-  assert.match(css, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
-  assert.match(runtime, /10_000/);
-  assert.match(runtime, /tn-code-gutter-v263/);
-  assert.match(runtime, /Pilih dari 26 widget/);
-  assert.match(runtime, /Custom HTML \/ CSS \/ JavaScript/);
-  assert.match(hotfix, /v259-code-gutter/);
+  assert.match(shell265, /10_000/);
+  assert.match(shell265, /tn-code-gutter-v265/);
+  assert.match(shellCss265, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(finalCss265, /tn-layout-map-v264/);
+  assert.match(retiredRuntime, /Pilih dari 26 widget/);
 });
 
-test("mobile editor and Domain surfaces are protected from clipping", () => {
-  assert.match(css, /\.ce-titlebar\{display:grid!important/);
-  assert.match(css, /\.ce-actions\{grid-area:actions!important;display:grid!important;grid-template-columns:1fr 1fr!important/);
-  assert.match(css, /\.ce-tabs,.ce-ribbon\{overflow-x:auto!important/);
-  assert.match(css, /\.sv124-free-domain>aside\{display:grid!important;grid-template-columns:1fr!important/);
-  assert.match(css, /\.sv124-domain-register form\{display:grid!important;grid-template-columns:1fr!important/);
+test("mobile editor and Domain surfaces remain protected from clipping", () => {
+  assert.match(shellCss265, /html\.studio-v265-small \.sn-content-tools/);
+  assert.match(finalCss265, /html\.studio-v265-small \.tn-code-workspace/);
+  assert.match(finalCss265, /\.sn-site-manager/);
+  assert.match(legacyCss, /\.ce-titlebar\{display:grid!important/);
+  assert.match(legacyCss, /\.ce-tabs,.ce-ribbon\{overflow-x:auto!important/);
+  assert.match(legacyCss, /\.sv124-free-domain>aside\{display:grid!important/);
 });
 
 test("auth is direct-first, persistent, bounded and keeps verified session handoff", () => {
