@@ -1,0 +1,26 @@
+{
+  "release": "studio-live-shell-v279-20260804",
+  "cache": "studio-live-shell-cache-v279",
+  "date": "2026-08-04",
+  "sourceBranch": "main",
+  "scope": [
+    "unblock-service-worker-build-gate",
+    "rotate-live-cache-after-v278",
+    "mobile-n-fixed-after-scroll",
+    "desktop-sidebar-visible-expanded-and-icon-rail",
+    "profile-fixed-top-right",
+    "nara-launcher-fixed-after-scroll",
+    "nara-small-medium-nonmodal",
+    "preserve-theme-layout-code-editor",
+    "preserve-persisted-auth"
+  ],
+  "verification": {
+    "requiredSidebarItems": 13,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "maxCodeLines": 10000,
+    "naraSizes": ["small", "medium", "full"],
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"]
+  }
+}

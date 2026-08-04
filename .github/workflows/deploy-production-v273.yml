@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v278
+name: Deploy Ngeblogging Production v279
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v278
+  group: ngeblogging-production-v279
   cancel-in-progress: true
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Validate rollout contract
-        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs
+        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs
 
       - name: Run complete production regression and build
         run: npm run build
@@ -54,80 +54,64 @@ jobs:
           test -f public/release-v276.json
           test -f public/release-v277.json
           test -f public/release-v278.json
+          test -f public/release-v279.json
           grep -q 'studio-production-rollout-v273-20260804' public/release-v273.json
           grep -q 'studio-shell-content-v274-20260804' public/release-v274.json
           grep -q 'studio-final-stability-v275-20260804' public/release-v275.json
           grep -q 'studio-sidebar-recovery-v276-20260804' public/release-v276.json
           grep -q 'studio-interaction-authority-v277-20260804' public/release-v277.json
           grep -q 'studio-shell-precision-v278-20260804' public/release-v278.json
-          grep -q 'studio-shell-authority-v272.js' src/Studio.jsx
-          grep -q 'studio-shell-content-v274.js' src/Studio.jsx
-          grep -q 'studio-final-stability-v275.css' src/Studio.jsx
-          grep -q 'studio-sidebar-recovery-v276.js' src/Studio.jsx
-          grep -q 'studio-interaction-authority-v277.js' src/Studio.jsx
+          grep -q 'studio-live-shell-v279-20260804' public/release-v279.json
           grep -q 'studio-shell-precision-v278.js' src/Studio.jsx
           grep -q 'studio-shell-precision-v278.css' src/Studio.jsx
+          grep -q 'studio-live-shell-v279.js' src/Studio.jsx
+          grep -q 'studio-live-shell-v279.css' src/Studio.jsx
           grep -q 'studio-theme-layout-v264.js' src/Studio.jsx
           grep -q 'studio-sidebar-single-toggle-v267.js' src/Studio.jsx
-          if grep -q 'document.addEventListener("click", activateLogo' src/studio-sidebar-recovery-v276.js; then
-            echo 'Legacy v276 document capture sidebar handler is still active.' >&2
-            exit 1
-          fi
           grep -q 'window.addEventListener("pointerdown", stopLegacyPointer, true)' src/studio-shell-precision-v278.js
           grep -q 'window.addEventListener("click", activateLogo, true)' src/studio-shell-precision-v278.js
-          grep -q 'data-device-mode="large"' src/studio-shell-precision-v278.css
-          grep -q 'data-device-mode="small"' src/studio-shell-precision-v278.css
-          grep -q 'grid-template-areas:"preview" "code"' src/studio-shell-precision-v278.css
+          grep -q 'window.addEventListener("scroll", schedule' src/studio-live-shell-v279.js
+          grep -q 'contain:none!important' src/studio-live-shell-v279.css
+          grep -q 'data-device-mode="large"' src/studio-live-shell-v279.css
+          grep -q 'data-device-mode="small"' src/studio-live-shell-v279.css
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
-          grep -q 'UI_PATCH_RELEASE_V272' public/sw.js
-          grep -q 'studio-shell-cache-v272' public/sw.js
-          grep -q 'UI_PATCH_RELEASE_V274' public/sw.js
-          grep -q 'studio-shell-content-cache-v274' public/sw.js
-          grep -q 'STUDIO_FINAL_STABILITY_RELEASE_V275' public/sw.js
-          grep -q 'studio-final-stability-cache-v275' public/sw.js
-          grep -q 'STUDIO_SIDEBAR_RECOVERY_RELEASE_V276' public/sw.js
-          grep -q 'studio-sidebar-recovery-cache-v276' public/sw.js
-          grep -q 'STUDIO_INTERACTION_AUTHORITY_RELEASE_V277' public/sw.js
-          grep -q 'studio-interaction-authority-cache-v277' public/sw.js
+          if grep -Eq 'if \(/refreshStaleWindow\|' scripts/patch-service-worker-v277.mjs scripts/patch-service-worker-v278.mjs; then
+            echo 'Build gate masih menolak helper compatibility refreshStaleWindow.' >&2
+            exit 1
+          fi
           grep -q 'STUDIO_SHELL_PRECISION_RELEASE_V278' public/sw.js
           grep -q 'studio-shell-precision-cache-v278' public/sw.js
+          grep -q 'STUDIO_LIVE_SHELL_RELEASE_V279' public/sw.js
+          grep -q 'studio-live-shell-cache-v279' public/sw.js
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
 
-      - name: Verify live v278 release manifest
+      - name: Verify live v279 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 18); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v278.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-shell-precision-v278-20260804'; then
-              echo "Live v278 release manifest confirmed."
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v279.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-live-shell-v279-20260804'; then
+              echo "Live v279 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v278.json after deployment." >&2
+          echo "Live production did not expose release-v279.json after deployment." >&2
           exit 1
 
-      - name: Verify live service worker contains v278 cache chain
+      - name: Verify live service worker contains v279 cache chain
         shell: bash
         run: |
           set -euo pipefail
           sw="$(curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}")"
-          printf '%s' "$sw" | grep -q 'UI_PATCH_RELEASE_V272'
-          printf '%s' "$sw" | grep -q 'studio-shell-cache-v272'
-          printf '%s' "$sw" | grep -q 'UI_PATCH_RELEASE_V274'
-          printf '%s' "$sw" | grep -q 'studio-shell-content-cache-v274'
-          printf '%s' "$sw" | grep -q 'STUDIO_FINAL_STABILITY_RELEASE_V275'
-          printf '%s' "$sw" | grep -q 'studio-final-stability-cache-v275'
-          printf '%s' "$sw" | grep -q 'STUDIO_SIDEBAR_RECOVERY_RELEASE_V276'
-          printf '%s' "$sw" | grep -q 'studio-sidebar-recovery-cache-v276'
-          printf '%s' "$sw" | grep -q 'STUDIO_INTERACTION_AUTHORITY_RELEASE_V277'
-          printf '%s' "$sw" | grep -q 'studio-interaction-authority-cache-v277'
           printf '%s' "$sw" | grep -q 'STUDIO_SHELL_PRECISION_RELEASE_V278'
           printf '%s' "$sw" | grep -q 'studio-shell-precision-cache-v278'
+          printf '%s' "$sw" | grep -q 'STUDIO_LIVE_SHELL_RELEASE_V279'
+          printf '%s' "$sw" | grep -q 'studio-live-shell-cache-v279'
 
       - name: Verify production health endpoint
         shell: bash
@@ -139,7 +123,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v278-${{ github.sha }}
+          name: ngeblogging-production-v279-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30

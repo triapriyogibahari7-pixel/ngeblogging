@@ -1,4 +1,4 @@
-name: Studio v278 CI
+name: Studio v279 CI
 
 on:
   pull_request:
@@ -26,8 +26,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Studio v274-v278 regression tests
-        run: node --test tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs
+      - name: Run Studio v274-v279 regression tests
+        run: node --test tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs
 
       - name: Run production build regression suite
         env:
