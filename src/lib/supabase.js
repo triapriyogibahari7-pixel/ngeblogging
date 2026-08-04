@@ -4,12 +4,15 @@ import { createAppUrl } from "./site-url.js";
 const AUTH_RELEASE = "auth-resilience-v190-20260801";
 const AUTH_LEGACY_RELEASE = "auth-production-v153-20260730";
 const AUTH_PRODUCTION_READINESS_V245 = "auth-production-readiness-v245-20260803";
+const AUTH_NETWORK_DEADLINE_RELEASE_V259 = "auth-network-deadline-v259-20260804";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const DATA_GATEWAY_PREFIX = "/api/data-proxy";
 const DATA_TRANSPORT_RELEASE_V190 = "studio-data-gateway-v190-20260801";
 const DATA_GATEWAY_PATHS_V190 = ["/rest/v1/", "/storage/v1/"];
 const OAUTH_PROVIDERS = new Set(["google", "github", "linkedin_oidc"]);
 const GATEWAY_FALLBACK_STATUSES = new Set([404, 502, 503, 504]);
+const GATEWAY_DEADLINE_MS_V259 = 8_500;
+const DIRECT_DEADLINE_MS_V259 = 12_000;
 /* Historical build-patch compatibility markers. v190 implements these behaviors
    natively, so v186 must not replace the transport during production builds. */
 const AUTH_V186_COMPAT = "direct-fallback-v186 direct-supabase-oauth-v186";
@@ -97,10 +100,47 @@ function directRequestV190(input) {
   return input instanceof Request ? input.clone() : input;
 }
 
+async function fetchWithDeadlineV259(input, init, timeoutMs, label) {
+  if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada browser ini.");
+  const controller = new AbortController();
+  const externalSignal = init?.signal || null;
+  let timedOut = false;
+  const forwardAbort = () => {
+    if (!controller.signal.aborted) controller.abort(externalSignal?.reason);
+  };
+  if (externalSignal) {
+    if (externalSignal.aborted) forwardAbort();
+    else externalSignal.addEventListener("abort", forwardAbort, { once: true });
+  }
+  const timer = setTimeout(() => {
+    timedOut = true;
+    if (!controller.signal.aborted) controller.abort("ngeblogging-network-timeout-v259");
+  }, timeoutMs);
+  try {
+    return await nativeFetch(input, { ...(init || {}), signal: controller.signal });
+  } catch (error) {
+    if (timedOut) {
+      const timeout = new Error(`${label} timeout setelah ${Math.round(timeoutMs / 1000)} detik.`);
+      timeout.name = "TimeoutError";
+      timeout.cause = error;
+      throw timeout;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    externalSignal?.removeEventListener?.("abort", forwardAbort);
+  }
+}
+
 async function gatewayFirstV190(input, init, proxy, kind) {
   const directInput = directRequestV190(input);
   try {
-    const response = await nativeFetch(proxyRequestV190(input, proxy), init);
+    const response = await fetchWithDeadlineV259(
+      proxyRequestV190(input, proxy),
+      init,
+      GATEWAY_DEADLINE_MS_V259,
+      `Gateway ${kind}`,
+    );
     const gatewayHeader = kind === "auth"
       ? response.headers.get("x-ngeblogging-auth-gateway")
       : response.headers.get("x-ngeblogging-data-gateway");
@@ -120,7 +160,12 @@ async function gatewayFirstV190(input, init, proxy, kind) {
     if (kind === "auth") document.documentElement.dataset.authTransportV190 = "direct-supabase-fallback";
     else document.documentElement.dataset.dataTransportV190 = "direct-supabase-fallback";
   }
-  return nativeFetch(directInput, init);
+  return fetchWithDeadlineV259(
+    directInput,
+    init,
+    DIRECT_DEADLINE_MS_V259,
+    kind === "auth" ? "Koneksi autentikasi langsung" : "Koneksi data langsung",
+  );
 }
 
 async function authAwareFetch(input, init) {
@@ -151,6 +196,7 @@ export const supabase = supabaseConfigured
 
 if (typeof document !== "undefined") {
   document.documentElement.dataset.authProductionReadinessV245 = AUTH_PRODUCTION_READINESS_V245;
+  document.documentElement.dataset.authNetworkDeadlineV259 = AUTH_NETWORK_DEADLINE_RELEASE_V259;
   document.documentElement.dataset.supabaseConfigSourceV245 = authConfigSourceV245;
   document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v190" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
@@ -349,10 +395,12 @@ export {
   AUTH_RELEASE,
   AUTH_LEGACY_RELEASE,
   AUTH_PRODUCTION_READINESS_V245,
+  AUTH_NETWORK_DEADLINE_RELEASE_V259,
   AUTH_GATEWAY_PREFIX,
   DATA_GATEWAY_PREFIX,
   DATA_TRANSPORT_RELEASE_V190,
   AUTH_V186_COMPAT,
   authAwareFetch,
+  fetchWithDeadlineV259,
   installAuthEntryBridge,
 };
