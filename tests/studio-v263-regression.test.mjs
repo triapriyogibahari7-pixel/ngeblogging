@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import "./studio-theme-layout-v264.test.mjs";
+import "./studio-screenshot-authority-v265.test.mjs";
 
 const studio = readFileSync(new URL("../src/Studio.jsx", import.meta.url), "utf8");
 const studioNext = readFileSync(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
@@ -19,14 +20,18 @@ const indexOf = (source, marker) => {
   return index;
 };
 
-test("v263 is the last Studio shell authority", () => {
+test("v263 is the stable shell layer before the v264-v265 screenshot authorities", () => {
   const v260 = indexOf(studio, 'import "./studio-stability-v260-hotfix.css"');
   const runtime263 = indexOf(studio, 'import "./studio-runtime-v263.js"');
   const css263 = indexOf(studio, 'import "./studio-shell-v263.css"');
   const hotfix263 = indexOf(studio, 'import "./studio-shell-v263-hotfix.css"');
+  const v264 = indexOf(studio, 'import "./studio-theme-layout-v264.js"');
+  const v265 = indexOf(studio, 'import "./studio-screenshot-authority-v265.js"');
   assert.ok(runtime263 > v260);
   assert.ok(css263 > runtime263);
   assert.ok(hotfix263 > css263);
+  assert.ok(v264 > hotfix263);
+  assert.ok(v265 > v264);
 });
 
 test("large family has one internal n and mobile has one drawer trigger", () => {
