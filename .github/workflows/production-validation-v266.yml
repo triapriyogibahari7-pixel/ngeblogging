@@ -1,0 +1,50 @@
+name: Production Validation v266
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-validation-v266-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Studio v266
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Focused v266 regression
+        run: node --test tests/studio-runtime-v266.test.mjs
+
+      - name: Full production regression and build
+        run: npm run build
+
+      - name: Assert active authorities
+        run: |
+          test -f src/studio-runtime-v266.js
+          test -f src/studio-shell-v265.js
+          test -f src/studio-shell-v265.css
+          test -f src/studio-shell-v265-final-hotfix.css
+          test -f src/studio-theme-layout-v264.js
+          test -f tests/studio-runtime-v266.test.mjs
+          grep -q 'studio-runtime-v266.js' src/Studio.jsx
+          grep -q 'studio-shell-v265-final-hotfix.css' src/Studio.jsx
+          grep -q 'patch-service-worker-v265.mjs' scripts/patch-service-worker-v179.mjs
