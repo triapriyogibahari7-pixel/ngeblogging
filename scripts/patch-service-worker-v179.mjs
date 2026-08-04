@@ -148,6 +148,7 @@ await import("./patch-auth-production-v245.mjs");
 await import("./patch-sidebar-right4-v258.mjs");
 
 // Historical migrations above may validate/migrate older repositories. The v262
-// compatibility version stays intact, while v263 adds a unique shell/asset cache namespace.
+// compatibility version stays intact, while v263 preserves the compatibility marker.
 await restoreCurrentServiceWorker();
-console.log(`Restored public/sw.js to ${CURRENT_RELEASE} + ${UI_PATCH_RELEASE_V263} after historical migration chain.`);
+await import("./patch-service-worker-v265.mjs");
+console.log(`Restored public/sw.js to ${CURRENT_RELEASE} + ${UI_PATCH_RELEASE_V263}, then rotated the final v265 UI cache namespace.`);
