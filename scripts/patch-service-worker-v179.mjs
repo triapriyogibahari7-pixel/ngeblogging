@@ -112,3 +112,6 @@ await import("./patch-production-v237-preflight.mjs");
 await import("./patch-production-v237.mjs");
 await import("./patch-studio-bootstrap-v243.mjs");
 await import("./patch-auth-production-v245.mjs");
+// v258 extends the generated Theme model only after every historical migration,
+// preserving the current v257 visual authority and old patch anchors.
+await import("./patch-sidebar-right4-v258.mjs");
