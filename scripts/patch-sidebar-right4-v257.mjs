@@ -7,7 +7,6 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 
 export const RELEASE = "studio-theme-layout-right4-v257-20260804";
 const MARKER = "sidebar-right-4-v257";
-const V207_DESKTOP_ROW = '"sidebar-left-4 content-main content-main content-main content-main ."';
 
 function replaceRequired(source, search, replacement, label) {
   if (!source.includes(search)) throw new Error(`V257_RIGHT4_ANCHOR_MISSING:${label}`);
@@ -51,32 +50,14 @@ async function patchRuntime() {
 async function patchLayoutCss() {
   const path = "src/theme-layout-v170.css";
   let source = await read(path);
-
-  if (!source.includes(".tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}")) {
-    source = replaceRequired(
-      source,
-      '.tn-layout-slot-v170.sidebar-right-1{grid-area:sidebar-right-1}.tn-layout-slot-v170.sidebar-right-2{grid-area:sidebar-right-2}.tn-layout-slot-v170.sidebar-right-3{grid-area:sidebar-right-3}',
-      '.tn-layout-slot-v170.sidebar-right-1{grid-area:sidebar-right-1}.tn-layout-slot-v170.sidebar-right-2{grid-area:sidebar-right-2}.tn-layout-slot-v170.sidebar-right-3{grid-area:sidebar-right-3}.tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}',
-      "right4-grid-area",
-    );
+  const marker = ".tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}";
+  if (!source.includes(marker)) {
+    // Do not rewrite the historical v170/v207 grid templates here. Later
+    // compatibility releases may have changed their exact text. v257 owns the
+    // final visual placement, while this class only preserves the real grid-area
+    // identity for older preview paths.
+    source += `\n${marker}\n`;
   }
-
-  source = source.replace(
-    V207_DESKTOP_ROW,
-    '"sidebar-left-4 content-main content-main content-main content-main sidebar-right-4"',
-  );
-  source = source.replace(
-    '"sidebar-left-4 sidebar-left-4"\n      "content-main content-main"',
-    '"sidebar-left-4 sidebar-right-4"\n      "content-main content-main"',
-  );
-  source = source.replace(
-    '"sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "after-content"',
-    '"sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "sidebar-right-4" "after-content"',
-  );
-  if (!source.includes("v207 historical desktop relation")) {
-    source += `\n/* v207 historical desktop relation retained for compatibility: ${V207_DESKTOP_ROW} */\n`;
-  }
-
   await write(path, source);
 }
 
@@ -95,7 +76,6 @@ async function verify() {
   if (!runtime.includes('const RIGHT_AREAS = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"];')) throw new Error("V257_RIGHT4_RUNTIME_MISSING");
   if (!runtime.includes("Empat area widget kanan postingan")) throw new Error("V257_RIGHT4_RUNTIME_LABEL_MISSING");
   if (!css.includes(".tn-layout-slot-v170.sidebar-right-4{grid-area:sidebar-right-4}")) throw new Error("V257_RIGHT4_CSS_AREA_MISSING");
-  if (!css.includes('"sidebar-left-4 content-main content-main content-main content-main sidebar-right-4"')) throw new Error("V257_RIGHT4_DESKTOP_PAIR_MISSING");
 }
 
 await ensureHistoricalLeft4();
@@ -103,4 +83,4 @@ await patchWidgets();
 await patchRuntime();
 await patchLayoutCss();
 await verify();
-console.log(`Applied ${RELEASE}; four-left + center + four-right are real widget areas.`);
+console.log(`Applied ${RELEASE}; real fourth-right data area added without rewriting historical grid geometry.`);
