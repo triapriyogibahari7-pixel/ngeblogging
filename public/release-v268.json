@@ -1,7 +1,7 @@
 {
   "release": "studio-final-device-authority-v268-20260804",
   "date": "2026-08-04",
-  "scope": "Final CSS authority for the current Studio sidebar, responsive shell, Nara floating assistant, mobile overlap protection, and Theme code/layout geometry. Existing features and production data paths remain intact.",
+  "scope": "Final responsive authority for the current Studio sidebar, profile menu, Nara floating assistant, mobile overlap protection, and Theme code/layout geometry. Existing pages, features, and production data paths remain intact.",
   "responsive": {
     "classes": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
     "desktopVariants": ["laptop", "desktop", "computer"],
@@ -19,6 +19,12 @@
     "settingsAndLogoutPinnedToFooter": true,
     "mobileBackdropBlur": false,
     "mobileContentPermanentShift": false
+  },
+  "profile": {
+    "avatarVisibleAllFamilies": true,
+    "dropdownActions": ["Profil", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"],
+    "profileAndSettingsSeparated": true,
+    "logoutOnlyOnExplicitAction": true
   },
   "layoutSafety": {
     "globalMinWidthZero": true,
