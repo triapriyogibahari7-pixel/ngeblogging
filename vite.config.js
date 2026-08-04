@@ -20,7 +20,6 @@ import { rotateServiceWorkerV253 } from "./scripts/service-worker-v253-rotate.mj
 import { rotateServiceWorkerV256 } from "./scripts/service-worker-v256-rotate.mjs";
 import { rotateServiceWorkerV257 } from "./scripts/service-worker-v257-rotate.mjs";
 import { rotateServiceWorkerV258 } from "./scripts/service-worker-v258-rotate.mjs";
-import { rotateServiceWorkerV259 } from "./scripts/service-worker-v259-rotate.mjs";
 
 export default defineConfig({
   plugins: [
@@ -36,7 +35,7 @@ export default defineConfig({
         const v257 = await finalizeStudioV257Order();
         console.log(`[vite] ${v257.release} keeps v257 visual authority after historical activators`);
         const v260 = await finalizeStudioV259Order();
-        console.log(`[vite] ${v260.release} validates shell/auth contracts and keeps v260 final after v259 compatibility layers`);
+        console.log(`[vite] ${v260.release} read-only contract validation passed; committed v260 source remains final`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
@@ -73,8 +72,7 @@ export default defineConfig({
         console.log(`[vite] ${v257.release} cache rotation finalized in ${v257.path}`);
         const v258 = rotateServiceWorkerV258();
         console.log(`[vite] ${v258.release} cache rotation finalized in ${v258.path}`);
-        const v260 = rotateServiceWorkerV259();
-        console.log(`[vite] ${v260.release} final cache rotation finalized in ${v260.path}`);
+        console.log("[vite] v260 does not mutate dist/sw.js; the last Netlify-proven v258 rotation remains active until source-level v260 SW migration is validated.");
       },
     },
   ],
