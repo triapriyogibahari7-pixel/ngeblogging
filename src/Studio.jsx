@@ -94,12 +94,15 @@ import "./studio-six-mode-authority-v259-hotfix.css";
 import "./studio-stability-v260.js";
 import "./studio-stability-v260.css";
 import "./studio-stability-v260-hotfix.css";
-import "./studio-runtime-v263.js";
+// v265 retirement marker; v263 JS is kept as backup because its Nara observer
+// conflicts with the stable v255/v260 launcher ownership: import "./studio-runtime-v263.js";
 import "./studio-shell-v263.css";
 import "./studio-shell-v263-hotfix.css";
 import "./studio-theme-layout-v264.js";
 import "./studio-theme-layout-v264.css";
 import "./studio-screenshot-authority-v265.js";
 import "./studio-screenshot-authority-v265.css";
+import "./studio-shell-v265.js";
+import "./studio-shell-v265.css";
 
 export default StudioFastGate;
