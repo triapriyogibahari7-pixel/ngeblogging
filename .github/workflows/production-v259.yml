@@ -1,4 +1,4 @@
-name: Production v259 validation
+name: Production v260 validation
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: production-v259-${{ github.ref }}
+  group: production-v260-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -34,13 +34,13 @@ jobs:
       - name: Production regression and build gate
         run: npm run build
 
-      - name: Verify v259 authority remains last after build activators
-        run: node --test tests/studio-six-mode-authority-v259.test.mjs
+      - name: Verify v259 compatibility and v260 final authority
+        run: node --test tests/studio-six-mode-authority-v259.test.mjs tests/studio-stability-v260.test.mjs
 
       - name: Archive validated production bundle
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-v259-production-dist
+          name: ngeblogging-v260-production-dist
           path: dist
           if-no-files-found: error
           retention-days: 30
