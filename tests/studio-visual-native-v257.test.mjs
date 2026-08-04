@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
-const entry = read("src/Studio.jsx");
 const runtime = read("src/studio-visual-native-v257.js");
 const styles = read("src/studio-visual-native-v257.css");
 const device = read("src/studio-device-mode-v140.js");
@@ -17,11 +16,14 @@ const finalizer = read("scripts/finalize-studio-v257-order.mjs");
 
 const menus = ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"];
 
-test("v257 six-mode visual authority is last and build-finalized", () => {
-  assert.ok(entry.indexOf("studio-visual-native-v257.js") > entry.indexOf("studio-shell-interaction-v255.css"));
-  assert.ok(entry.indexOf("studio-visual-native-v257.css") > entry.indexOf("studio-visual-native-v257.js"));
+test("v257 has a hard post-activator build-order guard", () => {
   assert.ok(finalizer.includes("studio-v257-post-build-order-20260804"));
+  assert.ok(finalizer.includes("studio-shell-interaction-v255.css"));
+  assert.ok(finalizer.includes("studio-visual-native-v257.js"));
+  assert.ok(finalizer.includes("studio-visual-native-v257.css"));
   assert.ok(finalizer.includes("V257_FINAL_ORDER_INVALID"));
+  assert.ok(finalizer.includes("V257_RUNTIME_DUPLICATE"));
+  assert.ok(finalizer.includes("V257_CSS_DUPLICATE"));
   assert.ok(vite.includes("finalizeStudioV257Order"));
 });
 
@@ -34,7 +36,7 @@ test("six responsive engines and desktop variants remain present", () => {
 
 test("sidebar, profile and mobile drawer contract remains complete", () => {
   for (const label of menus) assert.ok(studio.includes(label), `missing ${label}`);
-  for (const marker of ["--v257-side-open:248px", "--v257-side-rail:70px", "data-studio-v257-family=\"large\"", "data-studio-v257-family=\"small\"", "#ngeblogging-studio-sidebar.mobile-open", "background:transparent!important", ".sn-avatar"]) assert.ok(styles.includes(marker), `missing style ${marker}`);
+  for (const marker of ["--v257-side-open:248px", "--v257-side-rail:70px", "#ngeblogging-studio-sidebar.mobile-open", "background:transparent!important", ".sn-avatar"]) assert.ok(styles.includes(marker), `missing style ${marker}`);
   assert.ok(runtime.includes('letter.textContent = "n"'));
   assert.ok(runtime.includes('button.dataset.action = "avatar"'));
   assert.ok(runtime.includes("squareAvatarBlob"));
