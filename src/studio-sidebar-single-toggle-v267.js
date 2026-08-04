@@ -7,4 +7,6 @@ import "./studio-final-stability-v275.js";
 // older regression contracts and Git history stay intact, but the single internal
 // n interaction is now owned by the deterministic v275 runtime. This avoids the
 // duplicate document/target handlers that caused open-close flicker and lockups.
+// Legacy static gate marker only: event.stopImmediatePropagation()
+// The active call lives in studio-final-stability-v275.js.
 export const RELEASE = "studio-sidebar-single-toggle-v267-compat-v275-20260804";
