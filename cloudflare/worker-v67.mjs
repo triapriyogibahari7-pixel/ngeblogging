@@ -10,16 +10,20 @@ import {
 } from "../server/comments-handler-v93.mjs";
 import {
   AUTH_GATEWAY_RELEASE,
+  authGatewayConfigured,
   handleAuthGatewayRequest,
   isAuthGatewayRequest,
+  resolveAuthGatewayConfig,
 } from "../server/auth-gateway-v108.mjs";
 import {
   DATA_GATEWAY_RELEASE,
+  dataGatewayConfigured,
   handleDataGatewayRequest,
   isDataGatewayRequest,
+  resolveDataGatewayConfig,
 } from "../server/data-gateway-v110.mjs";
 
-const RELEASE = "2026.07.30-auth-production-v153";
+const RELEASE = "2026.08.04-auth-data-production-v255";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
 const SAAS_PROVIDERS = new Set(["cloudflare", "cloudflare-custom-hostnames"]);
 
@@ -81,7 +85,7 @@ async function enrichSaasDomainResponse(response, env) {
   }
 }
 
-async function enrichHealth(response, env) {
+async function enrichHealth(response, env, requestUrl = "https://ngeblogging.com/api/health") {
   if (!response.ok) return response;
   try {
     const payload = await response.clone().json();
@@ -89,10 +93,10 @@ async function enrichHealth(response, env) {
     const state = saasAccountState(env);
     const fullZone = provider === FULL_ZONE_PROVIDER;
     const comments = commentsReady(env);
-    const authConfigured = Boolean(
-      String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
-      && String(env.SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || "").trim(),
-    );
+    const authConfig = resolveAuthGatewayConfig(env, requestUrl);
+    const dataConfig = resolveDataGatewayConfig(env, requestUrl);
+    const authConfigured = authGatewayConfigured(env, requestUrl);
+    const dataConfigured = dataGatewayConfigured(env, requestUrl);
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
@@ -100,6 +104,8 @@ async function enrichHealth(response, env) {
     headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
     headers.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
     headers.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
+    headers.set("x-ngeblogging-auth-config", authConfig.source);
+    headers.set("x-ngeblogging-data-config", dataConfig.source);
     headers.set("x-ngeblogging-release", String(env.APP_RELEASE || RELEASE));
     return new Response(JSON.stringify({
       ...payload,
@@ -112,8 +118,9 @@ async function enrichHealth(response, env) {
       commentsRelease: "comments-v93-20260728",
       authGateway: authConfigured,
       authGatewayRelease: AUTH_GATEWAY_RELEASE,
+      authGatewayConfigSource: authConfig.source,
       authProduction: authConfigured,
-      authTransport: "same-origin-gateway",
+      authTransport: authConfigured ? "same-origin-gateway-with-direct-fallback" : "not-configured",
       authMethods: {
         emailPassword: authConfigured,
         magicLink: authConfigured,
@@ -122,9 +129,10 @@ async function enrichHealth(response, env) {
         github: authConfigured,
         providerConfigurationExternal: true,
       },
-      dataGateway: true,
+      dataGateway: dataConfigured,
       dataGatewayRelease: DATA_GATEWAY_RELEASE,
-      dataGatewayServices: ["rest", "storage"],
+      dataGatewayConfigSource: dataConfig.source,
+      dataGatewayServices: dataConfigured ? ["rest", "storage"] : [],
       commentsArchitecture: {
         database: "supabase-postgres-rls",
         publicSubmission: true,
@@ -193,7 +201,7 @@ export default {
 
     const response = await baseWorker.fetch(request, env, context);
     if (request.method !== "HEAD" && url.pathname === "/api/health") {
-      return enrichHealth(response, env);
+      return enrichHealth(response, env, request.url);
     }
     if (request.method === "HEAD") return response;
     return injectPublicComments(request, response, env);
