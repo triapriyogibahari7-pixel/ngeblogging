@@ -80,5 +80,7 @@ import "./studio-native-authority-v250.js";
 import "./studio-native-authority-v250.css";
 import "./studio-sidebar-rescue-v251.js";
 import "./studio-sidebar-rescue-v251.css";
+import "./studio-source-stability-v252.js";
+import "./studio-source-stability-v252.css";
 
 export default StudioFastGate;
