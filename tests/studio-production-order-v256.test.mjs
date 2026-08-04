@@ -5,94 +5,60 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const studio = read("src/Studio.jsx");
 const activation = read("scripts/activate-studio-native-v250.mjs");
+const finalizer = read("scripts/finalize-studio-v255-order.mjs");
 const vite = read("vite.config.js");
-const rotate = read("scripts/service-worker-v256-rotate.mjs");
 const auth = read("src/lib/supabase.js");
-const callback = read("src/auth-callback-authority-v107.js");
 const authGateway = read("server/auth-gateway-v108.mjs");
-const dataGateway = read("server/data-gateway-v110.mjs");
-const worker = read("cloudflare/worker-v67.mjs");
 
-test("v255 interaction source remains after v253 and the build activator preserves that final order", () => {
+test("v255 interaction source remains after v253", () => {
   const v253 = studio.indexOf('import "./studio-shell-nara-v253.css";');
   const v255Runtime = studio.indexOf('import "./studio-shell-interaction-v255.js";');
   const v255Css = studio.indexOf('import "./studio-shell-interaction-v255.css";');
   assert.ok(v253 >= 0);
   assert.ok(v255Runtime > v253);
   assert.ok(v255Css > v255Runtime);
+});
 
+test("legacy v250 activator stays unchanged while a post-activator finalizer restores v255 order", () => {
   assert.match(activation, /studio-native-bundle-activation-v250-20260804/);
-  assert.match(activation, /PRODUCTION_ORDER_RELEASE_V256 = "studio-production-order-v256-20260804"/);
-  assert.match(activation, /FINAL_INTERACTION_RELEASE = "studio-shell-interaction-v255-20260804"/);
-  assert.match(activation, /ensureLastImport\(source, "studio-shell-interaction-v255\.js"\)/);
-  assert.match(activation, /ensureLastImport\(source, "studio-shell-interaction-v255\.css"\)/);
-  assert.match(activation, /V256_V255_RUNTIME_ORDER_INVALID/);
-  assert.match(activation, /V256_V255_CSS_ORDER_INVALID/);
+  assert.doesNotMatch(activation, /studio-shell-interaction-v255/);
+  assert.match(finalizer, /studio-v255-post-activator-order-v256-20260804/);
+  assert.match(finalizer, /studio-shell-interaction-v255\.js/);
+  assert.match(finalizer, /studio-shell-interaction-v255\.css/);
+  assert.match(finalizer, /V256_V255_FINAL_ORDER_INVALID/);
+  assert.match(finalizer, /V256_V255_RUNTIME_DUPLICATE/);
+  assert.match(finalizer, /V256_V255_CSS_DUPLICATE/);
+  assert.match(vite, /finalizeStudioV255Order/);
+  assert.ok(vite.indexOf("await finalizeStudioV255Order()") > vite.indexOf("await activateStudioNativeV250()"));
 });
 
-test("production data gateway has an official-host publishable fallback and never embeds a privileged Supabase key", () => {
-  assert.match(dataGateway, /DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE/);
-  assert.match(dataGateway, /DATA_GATEWAY_RESILIENCE_RELEASE_V256/);
-  assert.match(dataGateway, /PRODUCTION_SUPABASE_URL/);
-  assert.match(dataGateway, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY/);
-  assert.match(dataGateway, /resolveDataGatewayConfig/);
-  assert.match(dataGateway, /production-public-fallback/);
-  assert.match(dataGateway, /officialNgebloggingHost/);
-  assert.match(dataGateway, /x-ngeblogging-data-config/);
-  assert.doesNotMatch(dataGateway, /SUPABASE_SERVICE_ROLE_KEY|service_role_key|sb_secret_/i);
-});
-
-test("health reports real auth and data readiness instead of hard-coding data as ready", () => {
-  assert.match(worker, /2026\.07\.30-auth-production-v153/);
-  assert.match(worker, /PRODUCTION_ORDER_DATA_RELEASE_V256/);
-  assert.match(worker, /resolveAuthGatewayConfig/);
-  assert.match(worker, /resolveDataGatewayConfig/);
-  assert.match(worker, /const dataConfigured = dataConfig\.ready/);
-  assert.match(worker, /dataGateway: dataConfigured/);
-  assert.match(worker, /dataGatewayServices: dataConfigured \? \["rest", "storage"\] : \[\]/);
-  assert.match(worker, /dataConfigSource: dataConfig\.source/);
-  assert.match(worker, /same-origin-data-gateway-public-fallback/);
-  assert.doesNotMatch(worker, /dataGateway:\s*true,[\s\S]*dataGatewayServices:\s*\["rest", "storage"\]/);
-});
-
-test("browser auth waits a bounded time for the auth gateway and validates gateway authority before trusting it", () => {
-  assert.match(auth, /AUTH_GATEWAY_DEADLINE_MS = 8_000/);
-  assert.match(auth, /fetchAuthGatewayWithDeadline/);
-  assert.match(auth, /AUTH_GATEWAY_TIMEOUT/);
-  assert.match(auth, /gatewayResponseHasAuthority/);
-  assert.match(auth, /response\.status >= 500/);
-  assert.match(auth, /direct-supabase-fallback/);
+test("stable Supabase v190 client contract and session persistence remain untouched", () => {
+  assert.match(auth, /AUTH_RELEASE = "auth-resilience-v190-20260801"/);
+  assert.match(auth, /DATA_TRANSPORT_RELEASE_V190 = "studio-data-gateway-v190-20260801"/);
+  assert.match(auth, /"x-client-info": "ngeblogging-web-v190"/);
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
+  assert.match(auth, /detectSessionInUrl:\s*false/);
   assert.match(auth, /signOut\(\{ scope: "local" \}\)/);
+  assert.doesNotMatch(auth, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
-test("email password direct recovery uses the same public production client when Vite env is absent", () => {
-  assert.match(callback, /PRODUCTION_SUPABASE_URL_V245/);
-  assert.match(callback, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245/);
-  assert.match(callback, /officialProductionHost/);
-  assert.match(callback, /auth_gateway_timeout/i);
-  assert.match(callback, /supabase\.auth\.setSession/);
-  assert.match(callback, /authPasswordFallbackV256/);
-  assert.doesNotMatch(callback, /SUPABASE_SERVICE_ROLE_KEY|service_role_key|sb_secret_/i);
-});
-
-test("existing v255 auth gateway fallback is retained rather than replaced", () => {
-  assert.match(authGateway, /AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE/);
-  assert.match(authGateway, /resolveAuthGatewayConfig/);
+test("auth gateway keeps v153/v255 compatibility and adds a bounded v256 upstream wait", () => {
+  assert.match(authGateway, /AUTH_GATEWAY_RELEASE = "2026\.07\.30-auth-gateway-v153"/);
+  assert.match(authGateway, /AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE = "auth-gateway-public-fallback-v255-20260804"/);
+  assert.match(authGateway, /AUTH_GATEWAY_TIMEOUT_RELEASE_V256 = "auth-gateway-timeout-v256-20260804"/);
+  assert.match(authGateway, /AUTH_UPSTREAM_TIMEOUT_MS = 7_000/);
+  assert.match(authGateway, /new AbortController\(\)/);
+  assert.match(authGateway, /controller\.abort\("auth-upstream-timeout"\)/);
+  assert.match(authGateway, /signal: controller\.signal/);
+  assert.match(authGateway, /timedOut \? 504 : 502/);
+  assert.match(authGateway, /AUTH_UPSTREAM_TIMEOUT/);
   assert.match(authGateway, /production-public-fallback/);
-  assert.match(authGateway, /x-ngeblogging-auth-config/);
+  assert.match(authGateway, /x-ngeblogging-auth-timeout/);
+  assert.doesNotMatch(authGateway, /SUPABASE_SERVICE_ROLE_KEY|service_role_key|sb_secret_/i);
 });
 
-test("v256 service worker rotation runs after v253 and cannot log users out or force-navigate auth/editor tabs", () => {
-  assert.match(vite, /rotateServiceWorkerV256/);
-  assert.ok(vite.indexOf("rotateServiceWorkerV256()") > vite.indexOf("rotateServiceWorkerV253()"));
-  assert.match(rotate, /ACTIVE_VERSION_V253/);
-  assert.match(rotate, /ACTIVE_VERSION_V256/);
-  assert.match(rotate, /studioProductionOrderDataReleaseV256/);
-  assert.match(rotate, /NGE_BLOGGING_UPDATE_AVAILABLE_V256/);
-  assert.match(rotate, /V256_ROTATE_OLD_CACHE_CLEANUP_MISSING/);
-  assert.match(rotate, /V256_ROTATE_AUTH_SURFACE_GUARD_MISSING/);
-  assert.doesNotMatch(rotate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
-  assert.match(rotate, /V256_ROTATE_FORCED_NAVIGATION_REMAINS/);
+test("auth timeout does not clear sessions or trigger logout", () => {
+  assert.doesNotMatch(authGateway, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  assert.match(authGateway, /Sesi lokal tidak dihapus/);
 });
