@@ -28,24 +28,40 @@ export const BUILT_IN_WIDGETS = [
 ];
 
 export const LAYOUT_AREAS = [
-  { id: "header-left", label: "Header kiri", group: "header" },
-  { id: "header-right", label: "Header kanan", group: "header" },
-  { id: "below-header", label: "Di bawah header", group: "header" },
-  { id: "sidebar-left", label: "Sidebar kiri", group: "content" },
+  { id: "header-primary-left", label: "Header kiri", group: "header" },
+  { id: "header-primary-right", label: "Header kanan", group: "header" },
+  { id: "top-left-1", label: "Area atas kiri 1", group: "top" },
+  { id: "top-left-2", label: "Area atas kiri 2", group: "top" },
+  { id: "top-left-3", label: "Area atas kiri 3", group: "top" },
+  { id: "top-right-1", label: "Area atas kanan 1", group: "top" },
+  { id: "top-right-2", label: "Area atas kanan 2", group: "top" },
+  { id: "top-right-3", label: "Area atas kanan 3", group: "top" },
   { id: "before-content", label: "Di atas postingan", group: "content" },
+  { id: "sidebar-left-1", label: "Sidebar kiri 1", group: "content" },
+  { id: "sidebar-left-2", label: "Sidebar kiri 2", group: "content" },
+  { id: "sidebar-left-3", label: "Sidebar kiri 3", group: "content" },
+  { id: "sidebar-left-4", label: "Sidebar kiri 4", group: "content" },
+  { id: "sidebar-right-1", label: "Sidebar kanan 1", group: "content" },
+  { id: "sidebar-right-2", label: "Sidebar kanan 2", group: "content" },
+  { id: "sidebar-right-3", label: "Sidebar kanan 3", group: "content" },
+  { id: "sidebar-right-4", label: "Sidebar kanan 4", group: "content" },
   { id: "after-content", label: "Di bawah postingan", group: "content" },
-  { id: "sidebar-right", label: "Sidebar kanan", group: "content" },
-  { id: "footer-left", label: "Footer kiri", group: "footer" },
-  { id: "footer-right", label: "Footer kanan", group: "footer" },
-  { id: "footer-wide", label: "Footer panjang", group: "footer" },
+  { id: "bottom-left-1", label: "Area bawah kiri 1", group: "bottom" },
+  { id: "bottom-left-2", label: "Area bawah kiri 2", group: "bottom" },
+  { id: "bottom-left-3", label: "Area bawah kiri 3", group: "bottom" },
+  { id: "bottom-right-1", label: "Area bawah kanan 1", group: "bottom" },
+  { id: "bottom-right-2", label: "Area bawah kanan 2", group: "bottom" },
+  { id: "bottom-right-3", label: "Area bawah kanan 3", group: "bottom" },
+  { id: "footer-copyright-left", label: "Footer kiri", group: "footer" },
+  { id: "footer-copyright-right", label: "Footer kanan", group: "footer" },
 ];
 
-const LEGACY_AREAS = ["sidebar", "after-content", "footer"];
+const LEGACY_AREAS = ["sidebar", "sidebar-left", "sidebar-right", "after-content", "footer", "footer-left", "footer-right", "footer-wide", "header-left", "header-right", "below-header"];
 const VALID_AREAS = new Set([...LAYOUT_AREAS.map((area) => area.id), ...LEGACY_AREAS]);
 const RENDER_GROUPS = {
-  sidebar: new Set(["sidebar", "sidebar-left", "sidebar-right"]),
-  "after-content": new Set(["header-left", "header-right", "below-header", "before-content", "after-content"]),
-  footer: new Set(["footer", "footer-left", "footer-right", "footer-wide"]),
+  sidebar: new Set(["sidebar", "sidebar-left", "sidebar-right", "sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4", "sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4"]),
+  "after-content": new Set(["header-left", "header-right", "below-header", "header-primary-left", "header-primary-right", "top-left-1", "top-left-2", "top-left-3", "top-right-1", "top-right-2", "top-right-3", "before-content", "after-content"]),
+  footer: new Set(["footer", "footer-left", "footer-right", "footer-wide", "bottom-left-1", "bottom-left-2", "bottom-left-3", "bottom-right-1", "bottom-right-2", "bottom-right-3", "footer-copyright-left", "footer-copyright-right"]),
 };
 
 export function getWidget(widgetId) {
@@ -57,11 +73,11 @@ export function getLayoutArea(areaId) {
 }
 
 export function createDefaultWidgetState(ids = ["search", "recent-posts", "categories", "newsletter"]) {
-  const defaults = ["sidebar-right", "sidebar-right", "sidebar-right", "footer-left"];
+  const defaults = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "footer-copyright-left"];
   return ids.filter((id, index, all) => getWidget(id) && all.indexOf(id) === index).map((id, index) => ({
     id,
     enabled: true,
-    area: defaults[index] || "sidebar-right",
+    area: defaults[index] || "sidebar-right-1",
     order: index,
     title: getWidget(id)?.name || id,
     settings: {},
@@ -77,7 +93,7 @@ export function normalizeWidgetState(input, fallbackIds) {
     const widget = getWidget(id);
     if (!widget || seen.has(id)) return [];
     seen.add(id);
-    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar-right";
+    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar-right-1";
     return [{
       id,
       enabled: entry?.enabled !== false,
@@ -105,7 +121,7 @@ function customWidgetSrcDoc(settings = {}) {
   return escapeAttribute(source);
 }
 
-export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right", settings = {}) {
+export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right-1", settings = {}) {
   const widget = getWidget(widgetId);
   if (!widget) return "";
   const heading = `<h3>${escapeHtml(title || widget.name)}</h3>`;
@@ -149,3 +165,5 @@ export function widgetsMarkup(state, renderGroup) {
 }
 
 export const WIDGET_COUNT = BUILT_IN_WIDGETS.length;
+
+/* sidebar-left-4-v207 + sidebar-right-4-v258: fourth left/right areas are committed production targets, not build-time decorations. */
