@@ -7,6 +7,8 @@ const runtime = read("src/studio-six-mode-authority-v259.js");
 const css = read("src/studio-six-mode-authority-v259.css");
 const shellV255 = read("src/studio-shell-interaction-v255.js");
 const studio = read("src/Studio.jsx");
+const auth = read("src/lib/supabase.js");
+const authGateway = read("server/auth-gateway-v108.mjs");
 const finalizer = read("scripts/finalize-studio-v259-order.mjs");
 const vite = read("vite.config.js");
 const sw = read("scripts/service-worker-v259-rotate.mjs");
@@ -92,6 +94,19 @@ test("mobile editors and Domain actions are bounded instead of clipping horizont
   assert.match(css, /data-v259-domain-action="full-row"[\s\S]*width:100%!important/);
   assert.match(css, /writing-mode:horizontal-tb!important/);
   assert.match(css, /overflow-x:auto!important/);
+});
+
+test("login gateway and direct fallback have deadlines without weakening persisted sessions", () => {
+  assert.match(auth, /auth-network-deadline-v259-20260804/);
+  assert.match(auth, /GATEWAY_DEADLINE_MS_V259 = 8_500/);
+  assert.match(auth, /DIRECT_DEADLINE_MS_V259 = 12_000/);
+  assert.match(auth, /fetchWithDeadlineV259/);
+  assert.match(auth, /persistSession:\s*true/);
+  assert.match(auth, /autoRefreshToken:\s*true/);
+  assert.match(auth, /flowType:\s*"pkce"/);
+  assert.match(authGateway, /AUTH_UPSTREAM_TIMEOUT_MS = 7_000/);
+  assert.match(authGateway, /production-public-fallback/);
+  assert.doesNotMatch(auth, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
 test("v259 release manifest keeps the requested viewport matrix without fake E2E claims", () => {
