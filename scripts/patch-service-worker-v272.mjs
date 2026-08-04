@@ -75,3 +75,5 @@ for (const marker of ["UI_PATCH_RELEASE_V272","UI_CACHE_RELEASE_V272",RELEASE,CA
 if (/await refreshStaleWindow\(client, url\);/.test(source)) throw new Error("V272_SW_DOUBLE_RELOAD_REGRESSION");
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated service-worker assets to ${CACHE_RELEASE}`);
+
+await import("./patch-service-worker-v274.mjs");
