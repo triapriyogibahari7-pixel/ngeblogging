@@ -1,9 +1,10 @@
 {
-  "release": "studio-stability-v260-20260804-r2",
+  "release": "studio-stability-v260-20260804-r3",
   "date": "2026-08-04",
   "scope": [
     "physical six-mode device arbitration without stale desktop-site state",
     "Chrome Android desktop-site large-layout lock and clean return to mobile",
+    "legacy inline shell geometry cleanup",
     "desktop laptop computer and large-tablet sidebar visibility",
     "mobile single-n drawer without a reserved blank rail",
     "top-right profile visibility on every Studio family",
@@ -15,7 +16,7 @@
     "Domain action width",
     "Analytics presentation",
     "Nara floating launcher and non-modal small/medium modes",
-    "service-worker cache rotation",
+    "service-worker cache rotation without automatic double reload",
     "auth session preservation and bounded network retries"
   ],
   "responsiveModes": [
