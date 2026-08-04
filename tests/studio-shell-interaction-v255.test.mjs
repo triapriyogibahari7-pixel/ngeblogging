@@ -7,6 +7,8 @@ const runtime = readFileSync(new URL("../src/studio-shell-interaction-v255.js", 
 const styles = readFileSync(new URL("../src/studio-shell-interaction-v255.css", import.meta.url), "utf8");
 const nara = readFileSync(new URL("../src/NaraAssistant.jsx", import.meta.url), "utf8");
 const auth = readFileSync(new URL("../src/lib/supabase.js", import.meta.url), "utf8");
+const authGateway = readFileSync(new URL("../server/auth-gateway-v108.mjs", import.meta.url), "utf8");
+const worker = readFileSync(new URL("../cloudflare/worker-v67.mjs", import.meta.url), "utf8");
 const theme = readFileSync(new URL("../src/ThemeStudio.jsx", import.meta.url), "utf8");
 
 const requiredMenus = ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"];
@@ -23,6 +25,7 @@ test("single internal n delegates to React sidebar ownership", () => {
   assert.match(runtime, /toggleThroughReact/);
   assert.match(runtime, /\.sn-shell \.sn-sidebar-toggle/);
   assert.match(runtime, /stopImmediatePropagation/);
+  assert.match(runtime, /window\.visualViewport/);
   assert.match(styles, /data-studio-v255-family="large"/);
   assert.match(styles, /data-studio-v255-family="small"/);
   assert.match(styles, /sn-sidebar-toggle\{display:none!important/);
@@ -66,6 +69,18 @@ test("auth persistence and provider routes remain intact", () => {
   for (const provider of ["google", "github", "linkedin_oidc"]) assert.ok(auth.includes(provider));
   assert.match(auth, /signInWithPassword/);
   assert.match(auth, /signInWithOtp/);
+});
+
+test("official-host OAuth gateway no longer depends only on Worker env vars", () => {
+  assert.match(authGateway, /AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE/);
+  assert.match(authGateway, /PRODUCTION_SUPABASE_URL/);
+  assert.match(authGateway, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY/);
+  assert.match(authGateway, /production-public-fallback/);
+  assert.match(authGateway, /officialNgebloggingHost/);
+  assert.doesNotMatch(authGateway, /service[_-]?role/i);
+  assert.match(worker, /resolveAuthGatewayConfig/);
+  assert.match(worker, /authConfigSource/);
+  assert.match(worker, /same-origin-gateway-public-fallback/);
 });
 
 test("menu contract remains complete in React source", () => {
