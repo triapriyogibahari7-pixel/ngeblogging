@@ -27,26 +27,49 @@ export const BUILT_IN_WIDGETS = [
   { id: "custom-html", name: "HTML / JavaScript", category: "Kode", description: "Widget kode kustom dalam iframe sandbox terisolasi.", icon: "</>" },
 ];
 
+export const SIDEBAR_LEFT_SLOTS = Object.freeze([
+  "sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4",
+]);
+export const SIDEBAR_RIGHT_SLOTS = Object.freeze([
+  "sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4",
+]);
+
 export const LAYOUT_AREAS = [
   { id: "header-left", label: "Header kiri", group: "header" },
   { id: "header-right", label: "Header kanan", group: "header" },
-  { id: "below-header", label: "Di bawah header", group: "header" },
-  { id: "sidebar-left", label: "Sidebar kiri", group: "content" },
-  { id: "before-content", label: "Di atas postingan", group: "content" },
-  { id: "after-content", label: "Di bawah postingan", group: "content" },
-  { id: "sidebar-right", label: "Sidebar kanan", group: "content" },
+  { id: "below-header", label: "Area atas", group: "header" },
+  ...SIDEBAR_LEFT_SLOTS.map((id, index) => ({ id, label: `Widget kiri ${index + 1}`, group: "sidebar-left" })),
+  { id: "before-content", label: "Di atas Post / Page", group: "content" },
+  { id: "after-content", label: "Di bawah Post / Page", group: "content" },
+  ...SIDEBAR_RIGHT_SLOTS.map((id, index) => ({ id, label: `Widget kanan ${index + 1}`, group: "sidebar-right" })),
   { id: "footer-left", label: "Footer kiri", group: "footer" },
   { id: "footer-right", label: "Footer kanan", group: "footer" },
-  { id: "footer-wide", label: "Footer panjang", group: "footer" },
+  { id: "footer-wide", label: "Area bawah / footer panjang", group: "footer" },
 ];
 
-const LEGACY_AREAS = ["sidebar", "after-content", "footer"];
-const VALID_AREAS = new Set([...LAYOUT_AREAS.map((area) => area.id), ...LEGACY_AREAS]);
+const VALID_AREAS = new Set(LAYOUT_AREAS.map((area) => area.id));
+const LEGACY_AREAS = new Set(["header", "sidebar", "sidebar-left", "sidebar-right", "after-content", "footer"]);
 const RENDER_GROUPS = {
-  sidebar: new Set(["sidebar", "sidebar-left", "sidebar-right"]),
-  "after-content": new Set(["header-left", "header-right", "below-header", "before-content", "after-content"]),
-  footer: new Set(["footer", "footer-left", "footer-right", "footer-wide"]),
+  header: new Set(["header-left", "header-right", "below-header"]),
+  "sidebar-left": new Set(SIDEBAR_LEFT_SLOTS),
+  "sidebar-right": new Set(SIDEBAR_RIGHT_SLOTS),
+  sidebar: new Set([...SIDEBAR_LEFT_SLOTS, ...SIDEBAR_RIGHT_SLOTS]),
+  "before-content": new Set(["before-content"]),
+  "after-content": new Set(["after-content"]),
+  content: new Set(["before-content", "after-content"]),
+  footer: new Set(["footer-left", "footer-right", "footer-wide"]),
 };
+
+function migrateLegacyArea(area, index = 0) {
+  const value = String(area || "");
+  if (VALID_AREAS.has(value)) return value;
+  if (value === "sidebar-left") return SIDEBAR_LEFT_SLOTS[index % SIDEBAR_LEFT_SLOTS.length];
+  if (value === "sidebar" || value === "sidebar-right") return SIDEBAR_RIGHT_SLOTS[index % SIDEBAR_RIGHT_SLOTS.length];
+  if (value === "header") return "below-header";
+  if (value === "footer") return "footer-wide";
+  if (value === "after-content") return "after-content";
+  return SIDEBAR_RIGHT_SLOTS[index % SIDEBAR_RIGHT_SLOTS.length];
+}
 
 export function getWidget(widgetId) {
   return BUILT_IN_WIDGETS.find((widget) => widget.id === widgetId) || null;
@@ -57,11 +80,11 @@ export function getLayoutArea(areaId) {
 }
 
 export function createDefaultWidgetState(ids = ["search", "recent-posts", "categories", "newsletter"]) {
-  const defaults = ["sidebar-right", "sidebar-right", "sidebar-right", "footer-left"];
+  const defaults = ["sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "footer-left"];
   return ids.filter((id, index, all) => getWidget(id) && all.indexOf(id) === index).map((id, index) => ({
     id,
     enabled: true,
-    area: defaults[index] || "sidebar-right",
+    area: defaults[index] || SIDEBAR_RIGHT_SLOTS[index % SIDEBAR_RIGHT_SLOTS.length],
     order: index,
     title: getWidget(id)?.name || id,
     settings: {},
@@ -77,7 +100,10 @@ export function normalizeWidgetState(input, fallbackIds) {
     const widget = getWidget(id);
     if (!widget || seen.has(id)) return [];
     seen.add(id);
-    const area = VALID_AREAS.has(entry?.area) ? entry.area : "sidebar-right";
+    const rawArea = String(entry?.area || "");
+    const area = VALID_AREAS.has(rawArea) || LEGACY_AREAS.has(rawArea)
+      ? migrateLegacyArea(rawArea, index)
+      : SIDEBAR_RIGHT_SLOTS[index % SIDEBAR_RIGHT_SLOTS.length];
     return [{
       id,
       enabled: entry?.enabled !== false,
@@ -105,7 +131,7 @@ function customWidgetSrcDoc(settings = {}) {
   return escapeAttribute(source);
 }
 
-export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right", settings = {}) {
+export function widgetPreviewMarkup(widgetId, title = "", area = "sidebar-right-1", settings = {}) {
   const widget = getWidget(widgetId);
   if (!widget) return "";
   const heading = `<h3>${escapeHtml(title || widget.name)}</h3>`;
