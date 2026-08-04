@@ -1,5 +1,6 @@
-const RELEASE = "studio-device-mode-v254-20260804";
-const LEGACY_RELEASE = "studio-device-mode-v188-20260801";
+const RELEASE = "studio-device-mode-v188-20260801";
+const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
+const DEVICE_MODE_HOTFIX_RELEASE = "studio-device-mode-v254-hotfix-20260804";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
@@ -99,28 +100,16 @@ function handheldSignal(view) {
   return userAgentHandheldSignal() || touchHandheldSignal(view);
 }
 
-function desktopSiteRequested(view, handheld, installed = standaloneSurface()) {
-  if (installed || !handheld) return false;
-  return view.layoutWidth > view.physicalViewportWidth * 1.35;
-}
-
-function classifyPhysicalResponsiveMode(view, handheld, installed = standaloneSurface()) {
-  if (installed) return "application";
+function classifyResponsiveMode(view, handheld) {
+  if (standaloneSurface()) return "application";
   if (handheld && view.physicalShortSide <= PHONE_MAX) return "phone";
-  if (handheld && view.physicalShortSide <= HANDHELD_MAX) return "mobile";
-  if (handheld) return "tablet";
+  if (handheld) return "mobile";
   if (view.effectiveWidth <= COMPACT_MAX) return "compact";
   if (view.effectiveWidth <= TABLET_MAX) return "tablet";
   return "desktop";
 }
 
-function classifyResponsiveMode(view, handheld, installed = standaloneSurface()) {
-  if (desktopSiteRequested(view, handheld, installed)) return "desktop";
-  return classifyPhysicalResponsiveMode(view, handheld, installed);
-}
-
-function desktopVariant(view, responsiveMode, desktopSitePhone = false) {
-  if (desktopSitePhone) return "computer";
+function desktopVariant(view, responsiveMode) {
   if (responsiveMode !== "desktop") return responsiveMode;
   if (view.effectiveWidth <= 1536) return "laptop";
   return "computer";
@@ -134,8 +123,7 @@ function layoutMode(responsiveMode) {
 
 export function detectStudioResponsiveMode() {
   const view = viewportMetrics();
-  const handheld = handheldSignal(view);
-  return classifyResponsiveMode(view, handheld);
+  return classifyResponsiveMode(view, handheldSignal(view));
 }
 
 export function currentStudioResponsiveMode() {
@@ -167,13 +155,13 @@ function applyDeviceMode() {
   const root = document.documentElement;
   const view = viewportMetrics();
   const handheld = handheldSignal(view);
-  const installed = standaloneSurface();
-  const physicalResponsiveMode = classifyPhysicalResponsiveMode(view, handheld, installed);
-  const desktopSitePhone = desktopSiteRequested(view, handheld, installed);
-  const responsiveMode = desktopSitePhone ? "desktop" : physicalResponsiveMode;
+  let responsiveMode = classifyResponsiveMode(view, handheld);
+  const physicalResponsiveMode = responsiveMode;
+  const desktopSitePhone = handheld && !standaloneSurface() && view.layoutWidth > view.physicalViewportWidth * 1.35;
+  if (desktopSitePhone) responsiveMode = "desktop";
   const nextLayoutMode = layoutMode(responsiveMode);
-  const variant = desktopVariant(view, responsiveMode, desktopSitePhone);
-  const signature = [physicalResponsiveMode, responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
+  const variant = desktopSitePhone ? "computer" : desktopVariant(view, responsiveMode);
+  const signature = [responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
   const previousMode = root.dataset.studioResponsiveMode || "";
 
   ensureViewportMeta();
@@ -181,12 +169,13 @@ function applyDeviceMode() {
   root.dataset.studioPhysicalResponsiveMode = physicalResponsiveMode;
   root.dataset.studioDeviceMode = nextLayoutMode;
   root.dataset.studioDeviceVariant = variant;
-  root.dataset.studioSurfaceMode = installed ? "application" : "browser";
+  root.dataset.studioSurfaceMode = standaloneSurface() ? "application" : "browser";
   root.dataset.studioHandheld = String(handheld);
   root.dataset.studioDesktopSitePhone = String(desktopSitePhone);
   root.dataset.studioSiteDesktop = String(responsiveMode === "desktop");
   root.dataset.studioDeviceRelease = RELEASE;
   root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
+  root.dataset.studioDeviceHotfixRelease = DEVICE_MODE_HOTFIX_RELEASE;
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
   root.style.setProperty("--studio-layout-height", `${view.layoutHeight}px`);
   root.style.setProperty("--studio-visual-width", `${view.visualWidth}px`);
@@ -204,6 +193,7 @@ function applyDeviceMode() {
         variant,
         previous: previousMode,
         release: RELEASE,
+        hotfixRelease: DEVICE_MODE_HOTFIX_RELEASE,
         handheld,
         desktopSitePhone,
         ...view,
@@ -230,12 +220,9 @@ applyDeviceMode();
 export {
   RELEASE,
   LEGACY_RELEASE,
+  DEVICE_MODE_HOTFIX_RELEASE,
   MODE_EVENT,
   COMPACT_MAX,
   TABLET_MAX,
   RESPONSIVE_MODES,
-  classifyPhysicalResponsiveMode,
-  classifyResponsiveMode,
-  desktopSiteRequested,
-  layoutMode,
 };
