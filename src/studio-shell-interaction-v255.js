@@ -1,4 +1,5 @@
 export const RELEASE = "studio-shell-interaction-v255-20260804";
+export const NARA_LAUNCHER_STABILITY_V259 = "nara-launcher-stability-v259-20260804";
 
 const SMALL_FAMILIES = new Set(["application", "phone", "mobile", "compact", "small"]);
 const LARGE_FAMILIES = new Set(["tablet", "desktop", "laptop", "computer", "large"]);
@@ -99,19 +100,31 @@ function normalizeProfileMenu() {
 
 function normalizeNara() {
   const launcher = document.querySelector(".nara-floating-button");
-  if (launcher) {
-    launcher.dataset.v255Launcher = "fixed-corner";
-    launcher.hidden = false;
-    launcher.removeAttribute("aria-hidden");
-  }
-
   const layer = document.querySelector(".nara-assistant-layer");
   const panel = layer?.querySelector(".nara-assistant-shell");
-  if (!layer || !panel) return;
+
+  if (!layer || !panel) {
+    if (launcher) {
+      launcher.dataset.v255Launcher = "fixed-corner-closed";
+      launcher.hidden = false;
+      launcher.removeAttribute("aria-hidden");
+    }
+    return;
+  }
+
+  // v253 and final v259 both hide the launcher while the panel is open. The old
+  // unconditional reveal caused two MutationObservers to fight and visibly blink.
+  if (launcher) {
+    launcher.dataset.v255Launcher = "hidden-while-panel-open";
+    launcher.hidden = true;
+    launcher.setAttribute("aria-hidden", "true");
+  }
+
   const size = ["small", "medium", "full"].includes(panel.dataset.naraSize) ? panel.dataset.naraSize : "small";
   const full = size === "full";
   layer.dataset.v255Size = size;
   layer.dataset.v255Interaction = full ? "modal" : "nonmodal";
+  layer.dataset.v259LauncherStability = NARA_LAUNCHER_STABILITY_V259;
   layer.setAttribute("aria-modal", String(full));
   panel.dataset.v255Panel = "stable";
 
@@ -250,7 +263,7 @@ if (typeof document !== "undefined") {
   document.addEventListener("keydown", handleLogoActivation, true);
 
   new MutationObserver((records) => {
-    if (records.some((record) => record.type === "childList" || record.attributeName === "class" || record.attributeName?.startsWith("data-"))) schedule();
+    if (records.some((record) => record.type === "childList" || record.attributeName === "class" || record.attributeName?.startsWith("data-") || record.attributeName === "hidden")) schedule();
   }).observe(document.documentElement, {
     childList: true,
     subtree: true,
