@@ -33,7 +33,7 @@ test("v254 makes the source device detector the same authority React and v253 co
   assert.match(device, /if \(desktopSiteRequested\(view, handheld, installed\)\) return "desktop"/);
   assert.match(device, /root\.dataset\.studioPhysicalResponsiveMode = physicalResponsiveMode/);
   assert.match(device, /root\.dataset\.studioDeviceMode = nextLayoutMode/);
-  assert.match(device, /desktopSitePhone \? "computer"/);
+  assert.match(device, /if \(desktopSitePhone\) return "computer"/);
   assert.match(studio, /currentStudioDeviceMode\(\) === "small"/);
   assert.match(shellV253, /studioDesktopSitePhone === "true"/);
 });
@@ -44,8 +44,8 @@ test("six-family matrix stays stable across phone, application, compact, tablet,
   });
   assert.equal(classify({ handheld: true, physicalShortSide: 390, layoutWidth: 390, physicalViewportWidth: 390 }).responsive, "phone");
   assert.equal(classify({ handheld: true, physicalShortSide: 500, layoutWidth: 500, physicalViewportWidth: 500 }).responsive, "mobile");
-  assert.deepEqual(classify({ handheld: false, physicalShortSide: 600, layoutWidth: 600, physicalViewportWidth: 600, effectiveWidth: 600 }).responsive, "compact");
-  assert.deepEqual(classify({ handheld: true, physicalShortSide: 820, layoutWidth: 820, physicalViewportWidth: 820, effectiveWidth: 820 }).layout, "large");
+  assert.equal(classify({ handheld: false, physicalShortSide: 600, layoutWidth: 600, physicalViewportWidth: 600, effectiveWidth: 600 }).responsive, "compact");
+  assert.equal(classify({ handheld: true, physicalShortSide: 820, layoutWidth: 820, physicalViewportWidth: 820, effectiveWidth: 820 }).layout, "large");
   assert.equal(classify({ handheld: true, physicalShortSide: 820, layoutWidth: 820, physicalViewportWidth: 820, effectiveWidth: 820 }).responsive, "tablet");
   assert.equal(classify({ handheld: false, physicalShortSide: 900, layoutWidth: 1366, physicalViewportWidth: 1366, effectiveWidth: 1366 }).variant, "laptop");
   assert.equal(classify({ handheld: false, physicalShortSide: 1080, layoutWidth: 1920, physicalViewportWidth: 1920, effectiveWidth: 1920 }).variant, "computer");
