@@ -26,7 +26,7 @@ function importCount(source, path) {
 }
 
 async function validateV260Contracts() {
-  const [runtime, css, hotfix, device, provider, auth, studioNext, nara, account] = await Promise.all([
+  const [runtime, css, hotfix, device, provider, auth, studioNext, nara, account, publicSw] = await Promise.all([
     readFile(new URL(`src/${V260_RUNTIME}`, root), "utf8"),
     readFile(new URL(`src/${V260_STYLES}`, root), "utf8"),
     readFile(new URL(`src/${V260_HOTFIX}`, root), "utf8"),
@@ -36,6 +36,7 @@ async function validateV260Contracts() {
     readFile(new URL("src/StudioNext.jsx", root), "utf8"),
     readFile(new URL("src/NaraAssistant.jsx", root), "utf8"),
     readFile(new URL("src/studio-production-mobile-v189-account.js", root), "utf8"),
+    readFile(new URL("public/sw.js", root), "utf8"),
   ]);
 
   requireMarkers(runtime, [
@@ -126,6 +127,23 @@ async function validateV260Contracts() {
     "signInWithPassword",
     "signInWithMagicLink",
   ], "SESSION_CONTRACT");
+
+  requireMarkers(publicSw, [
+    "ngeblogging-app-v260-stability-r2-20260804",
+    "studio-stability-cache-v260-r2",
+    "studio-stability-v260-20260804-r2",
+    "NGE_BLOGGING_UPDATE_AVAILABLE_V260",
+    "service-worker-activated-stability-v260-r2",
+    "reloadRequired: false",
+    "ACTIVE_VERSION_V260",
+    "ACTIVE_CACHE_RELEASE_V260",
+  ], "SERVICE_WORKER_CONTRACT");
+  if (publicSw.includes("await refreshStaleWindow(client, url)")) {
+    throw new Error("V260_SERVICE_WORKER_DOUBLE_RELOAD_REGRESSION");
+  }
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(publicSw)) {
+    throw new Error("V260_SERVICE_WORKER_SESSION_DESTRUCTIVE_ACTION");
+  }
 
   for (const label of ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"]) {
     if (!studioNext.includes(label)) throw new Error(`V260_MENU_CONTRACT_MISSING:${label}`);
