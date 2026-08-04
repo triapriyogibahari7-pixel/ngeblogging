@@ -1,0 +1,54 @@
+{
+  "status": "production-rollout",
+  "release": "studio-production-rollout-v273-20260804",
+  "date": "2026-08-04",
+  "sourceAuthority": "studio-shell-authority-v272-20260804",
+  "reason": "The complete v272 source existed on main while the production branch and live deployment path were not consistently following the latest source.",
+  "branchSafety": {
+    "productionBackupCreated": "backup/production-before-v272-sync-20260804",
+    "mainAndProductionMustMatch": true,
+    "destructiveFeatureRemoval": false
+  },
+  "responsive": {
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop-family"],
+    "desktopFamilyIncludes": ["desktop-site", "laptop", "computer", "large-tablet"],
+    "themePreviewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"]
+  },
+  "requiredStudio": {
+    "singleInternalNButton": true,
+    "desktopExpandedAndCollapsedSidebar": true,
+    "mobileNOnlyClosedState": true,
+    "profileMenuFiveActions": true,
+    "naraViewportFixed": true,
+    "naraSmallMediumNonModal": true,
+    "naraCameraPhotoFile": true,
+    "naraModelsAndIntelligence": true,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "layoutFourLeftFourRight": true,
+    "layoutCompactPopover": true,
+    "htmlCssJavascriptEditor": true,
+    "analyticsProductionFirst": true,
+    "apiKeysPreserved": true,
+    "domainPreserved": true,
+    "postsPagesSeo5000WordsPreserved": true
+  },
+  "authentication": {
+    "persistSessionRequired": true,
+    "autoRefreshTokenRequired": true,
+    "logoutOnlyOnExplicitAction": true,
+    "temporaryNetworkFailureMustNotLogout": true
+  },
+  "deployment": {
+    "cloudflareWorker": "ngeblogging",
+    "publicDomain": "https://ngeblogging.com",
+    "automaticWorkflowRequired": true,
+    "liveReleaseVerificationRequired": true,
+    "liveServiceWorkerVerificationRequired": true
+  },
+  "validation": {
+    "regressionTest": "tests/production-rollout-v273.test.mjs",
+    "physicalDeviceVerificationStillRequiredBeforeAbsolute100PercentClaim": true,
+    "massLoginCapacityClaimed": false
+  }
+}
