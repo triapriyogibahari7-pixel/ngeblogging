@@ -53,8 +53,8 @@ test("Nara attachments and six-mode content foundations are preserved", () => {
 test("service-worker build gate no longer rejects an unused compatibility helper", () => {
   assert.doesNotMatch(v277Patch, /if \(\/refreshStaleWindow\|/);
   assert.doesNotMatch(v278Patch, /if \(\/refreshStaleWindow\|/);
-  assert.match(v277Patch, /await\\s\+refreshStaleWindow/);
-  assert.match(v278Patch, /await\\s\+refreshStaleWindow/);
+  assert.ok(v277Patch.includes("/await\\s+refreshStaleWindow"));
+  assert.ok(v278Patch.includes("/await\\s+refreshStaleWindow"));
   assert.match(v278Patch, /patch-service-worker-v279\.mjs/);
 });
 
