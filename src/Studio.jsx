@@ -117,8 +117,10 @@ import "./studio-scroll-chrome-v270.css";
 import "./studio-shell-authority-v272.js";
 import "./studio-shell-content-v274.js";
 import "./studio-shell-content-v274-hotfix.css";
-// v275 is intentionally last. It resolves final geometry without deleting any
-// earlier feature module, so old production components remain available as backups.
 import "./studio-final-stability-v275.css";
+// v276 is the final sidebar authority. It reads the React shell's own device mode
+// so a stale html-level mode can never hide the large sidebar again.
+import "./studio-sidebar-recovery-v276.js";
+import "./studio-sidebar-recovery-v276.css";
 
 export default StudioFastGate;
