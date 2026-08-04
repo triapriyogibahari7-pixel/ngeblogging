@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import { finalizeStudioV259Order } from "./scripts/finalize-studio-v259-order.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
@@ -18,24 +17,18 @@ import { rotateServiceWorkerV256 } from "./scripts/service-worker-v256-rotate.mj
 import { rotateServiceWorkerV257 } from "./scripts/service-worker-v257-rotate.mjs";
 import { rotateServiceWorkerV258 } from "./scripts/service-worker-v258-rotate.mjs";
 
-// Historical regression marker names intentionally retained as comments only:
-// activateStudioNativeV250 / finalizeStudioV255Order / finalizeStudioV257Order.
-// They used to rewrite src/Studio.jsx during build. v260 validates the committed
-// final cascade instead, so these old source mutators are NOT invoked anymore.
+// Diagnostic compatibility markers only; none of these Studio source mutators run:
+// activateStudioNativeV250 / finalizeStudioV255Order / finalizeStudioV257Order / finalizeStudioV259Order.
 
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v260",
+      name: "ngeblogging-native-studio-v260-diagnostic",
       apply: "build",
-      async buildStart() {
-        const v260 = await finalizeStudioV259Order();
-        console.log(`[vite] ${v260.release} read-only Studio/auth/Nara contract validation passed`);
+      buildStart() {
+        console.log("[vite] diagnostic: committed Studio source is bundled without source-mutating or v260 validation hooks");
       },
       closeBundle() {
-        // Keep the last Netlify-proven service-worker pipeline. v260 UI/auth code is
-        // in hashed Vite assets and network-first; v260 must not mutate dist/sw.js
-        // until its source-level migration is separately validated.
         const v237 = finalizeServiceWorkerV237();
         console.log(`[vite] ${v237.release} compatibility finalized in ${v237.path}`);
         const v238 = finalizeServiceWorkerV238();
