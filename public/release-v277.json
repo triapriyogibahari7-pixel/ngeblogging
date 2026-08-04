@@ -1,0 +1,26 @@
+{
+  "release": "studio-interaction-authority-v277-20260804",
+  "cache": "studio-interaction-authority-cache-v277",
+  "date": "2026-08-04",
+  "sourceBranch": "main",
+  "scope": [
+    "single-sidebar-click-owner-v276",
+    "desktop-sidebar-visible-and-collapsed-icon-rail",
+    "small-single-n-drawer",
+    "profile-always-visible",
+    "nara-fixed-small-medium-nonmodal",
+    "nara-attachment-menu-above-composer",
+    "real-code-line-numbers-up-to-10000",
+    "responsive-code-split-stack",
+    "mobile-domain-actions",
+    "non-destructive-session-cache"
+  ],
+  "verification": {
+    "requiredSidebarItems": 13,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "maxCodeLines": 10000,
+    "naraSizes": ["small", "medium", "full"],
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"]
+  }
+}

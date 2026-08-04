@@ -51,3 +51,5 @@ source = source
 if (!source.includes(RELEASE) || !source.includes(CACHE)) throw new Error("V276_SW_MARKERS_MISSING");
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
+
+await import("./patch-service-worker-v277.mjs");
