@@ -82,5 +82,7 @@ import "./studio-sidebar-rescue-v251.js";
 import "./studio-sidebar-rescue-v251.css";
 import "./studio-source-stability-v252.js";
 import "./studio-source-stability-v252.css";
+import "./studio-shell-nara-v253.js";
+import "./studio-shell-nara-v253.css";
 
 export default StudioFastGate;

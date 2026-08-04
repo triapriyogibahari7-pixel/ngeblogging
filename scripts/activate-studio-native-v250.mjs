@@ -8,6 +8,7 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 export const RELEASE = "studio-native-bundle-activation-v250-20260804";
 export const SIDEBAR_RESCUE_RELEASE = "studio-sidebar-rescue-v251-20260804";
 export const SOURCE_STABILITY_RELEASE = "studio-source-stability-v252-20260804";
+export const SHELL_NARA_RELEASE = "studio-shell-nara-v253-20260804";
 const PRODUCTION_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
 const PRODUCTION_SUPABASE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
 const PRODUCTION_PROJECT_REF = "polvmlrhqoiflumibfqs";
@@ -56,6 +57,8 @@ async function activateNativeShell() {
   source = ensureLastImport(source, "studio-sidebar-rescue-v251.css");
   source = ensureLastImport(source, "studio-source-stability-v252.js");
   source = ensureLastImport(source, "studio-source-stability-v252.css");
+  source = ensureLastImport(source, "studio-shell-nara-v253.js");
+  source = ensureLastImport(source, "studio-shell-nara-v253.css");
   source = source.replace(/\n{3,}/g, "\n\n");
 
   for (const item of [...RETIRED_RUNTIME_IMPORTS, ...RETIRED_CSS_IMPORTS]) {
@@ -69,9 +72,11 @@ async function activateNativeShell() {
     "studio-sidebar-rescue-v251.css",
     "studio-source-stability-v252.js",
     "studio-source-stability-v252.css",
+    "studio-shell-nara-v253.js",
+    "studio-shell-nara-v253.css",
   ]) {
     const live = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(active)}[\"'];?\\s*$`, "m");
-    if (!live.test(source)) throw new Error(`V252_NATIVE_IMPORT_NOT_LIVE:${active}`);
+    if (!live.test(source)) throw new Error(`V253_NATIVE_IMPORT_NOT_LIVE:${active}`);
   }
   if (!(source.indexOf('import "./studio-sidebar-rescue-v251.js";') > source.indexOf('import "./studio-native-authority-v250.css";'))) {
     throw new Error("V251_RESCUE_RUNTIME_ORDER_INVALID");
@@ -84,6 +89,12 @@ async function activateNativeShell() {
   }
   if (!(source.indexOf('import "./studio-source-stability-v252.css";') > source.indexOf('import "./studio-source-stability-v252.js";'))) {
     throw new Error("V252_SOURCE_CSS_ORDER_INVALID");
+  }
+  if (!(source.indexOf('import "./studio-shell-nara-v253.js";') > source.indexOf('import "./studio-source-stability-v252.css";'))) {
+    throw new Error("V253_SHELL_NARA_RUNTIME_ORDER_INVALID");
+  }
+  if (!(source.indexOf('import "./studio-shell-nara-v253.css";') > source.indexOf('import "./studio-shell-nara-v253.js";'))) {
+    throw new Error("V253_SHELL_NARA_CSS_ORDER_INVALID");
   }
   await write(path, source);
 }
@@ -111,11 +122,10 @@ function replaceDirectMembershipFallback(source) {
 
 function replacePersistedProjectRef(source) {
   if (!source.includes("function supabaseProjectRefV198")) return source;
-  const next = source.replace(
+  return source.replace(
     /function supabaseProjectRefV198\(\) \{[\s\S]*?\n\}/,
     `function supabaseProjectRefV198() {\n  try {\n    const configured = String(import.meta.env?.VITE_SUPABASE_URL || "${PRODUCTION_SUPABASE_URL}").trim();\n    return configured ? new URL(configured).hostname.split(".")[0] || "${PRODUCTION_PROJECT_REF}" : "${PRODUCTION_PROJECT_REF}";\n  } catch {\n    return "${PRODUCTION_PROJECT_REF}";\n  }\n}`,
   );
-  return next;
 }
 
 async function activateAuthFallback() {
@@ -158,5 +168,6 @@ export async function activateStudioNativeV250() {
     release: RELEASE,
     sidebarRescueRelease: SIDEBAR_RESCUE_RELEASE,
     sourceStabilityRelease: SOURCE_STABILITY_RELEASE,
+    shellNaraRelease: SHELL_NARA_RELEASE,
   };
 }
