@@ -86,8 +86,7 @@ if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) {
 await write(path, source);
 console.log(`Applied ${RELEASE}: production login retains VITE config first and gains an official-host public fallback.`);
 
-// Final production build authority. Historical patch scripts above may rewrite
-// Studio or the service worker for compatibility; v252 finalization is deliberately
-// last and does not touch authentication or onboarding state.
-await import("./finalize-studio-v252.mjs");
+// Rotate the PWA cache only after all historical compatibility patches. Studio
+// source is intentionally left untouched here so older regression contracts can
+// validate their compatibility layers before Vite bundles the already-present v252.
 await import("./patch-service-worker-v252.mjs");
