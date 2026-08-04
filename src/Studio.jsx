@@ -88,5 +88,7 @@ import "./studio-shell-interaction-v255.js";
 import "./studio-shell-interaction-v255.css";
 import "./studio-visual-native-v257.js";
 import "./studio-visual-native-v257.css";
+import "./studio-six-mode-authority-v259.js";
+import "./studio-six-mode-authority-v259.css";
 
 export default StudioFastGate;
