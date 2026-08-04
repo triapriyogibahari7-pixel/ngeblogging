@@ -1,6 +1,6 @@
-const VERSION = "ngeblogging-app-v260-stability-r2-20260804";
-const CACHE_RELEASE = "studio-stability-cache-v260-r2";
-const STUDIO_STABILITY_RELEASE_V260 = "studio-stability-v260-20260804-r2";
+const VERSION = "ngeblogging-app-v260-stability-r3-20260804";
+const CACHE_RELEASE = "studio-stability-cache-v260-r3";
+const STUDIO_STABILITY_RELEASE_V260 = "studio-stability-v260-20260804-r3";
 const STUDIO_SIX_MODE_RELEASE_V259 = "studio-six-mode-authority-v259-20260804";
 const ROUTE_RECOVERY_COMPAT_VERSION = "ngeblogging-app-v168-route-recovery-20260730";
 const AUTH_EDITOR_COMPAT_VERSION = "ngeblogging-app-v162-auth-editor-20260730";
@@ -30,8 +30,6 @@ const CONTENT_EDITOR_RELEASE = "content-editor-v162-20260730";
 const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
-// Compatibility markers retained for old probes; v260-r2 does NOT automatically
-// navigate/reload a signed-in page during activation.
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
 const FORCE_REFRESH_VALUE = "first-site-v169";
 const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
@@ -70,8 +68,6 @@ function isAuthSurface(url) {
     || authMode === "callback-error";
 }
 
-// Historical helper retained so old compatibility tests can find the original
-// recovery markers. v260-r2 intentionally never calls this during activate.
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
@@ -79,7 +75,7 @@ async function refreshStaleWindow(client, url) {
   try {
     await client.navigate(url.href);
   } catch {
-    // Compatibility-only fallback; no activation path invokes this helper in v260-r2.
+    // Compatibility-only helper. v260-r3 never invokes it from activate.
   }
 }
 
@@ -131,11 +127,10 @@ async function notifyOpenWindows() {
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
         ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V260"),
-        reason: "service-worker-activated-stability-v260-r2",
+        reason: "service-worker-activated-stability-v260-r3",
         reloadRequired: false,
       });
-      // No client.navigate() here. This removes the visible second loading pass and
-      // guarantees activation cannot interfere with an authenticated Studio session.
+      // Deliberately no client.navigate(): avoids the visible second loading pass.
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
     }
