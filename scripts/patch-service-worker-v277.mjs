@@ -57,3 +57,5 @@ if (/refreshStaleWindow|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.cl
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
+
+await import("./patch-service-worker-v278.mjs");
