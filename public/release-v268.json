@@ -1,0 +1,61 @@
+{
+  "release": "studio-final-device-authority-v268-20260804",
+  "date": "2026-08-04",
+  "scope": "Final CSS authority for the current Studio sidebar, responsive shell, Nara floating assistant, mobile overlap protection, and Theme code/layout geometry. Existing features and production data paths remain intact.",
+  "responsive": {
+    "classes": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "largeFamily": "tablet and desktop-family layouts use a persistent open/collapsible sidebar",
+    "smallFamily": "application, phone, mobile, and compact layouts use one top-left n launcher and a full-height drawer",
+    "authority": "live data-studio-device-mode attributes from studio-device-mode-v140.js"
+  },
+  "sidebar": {
+    "desktopOpenWidth": 236,
+    "desktopCollapsedWidth": 72,
+    "singleInternalLogoToggle": true,
+    "externalDesktopToggleHidden": true,
+    "collapsedIconsCentered": true,
+    "menuStackTightUnderCreatePost": true,
+    "settingsAndLogoutPinnedToFooter": true,
+    "mobileBackdropBlur": false,
+    "mobileContentPermanentShift": false
+  },
+  "layoutSafety": {
+    "globalMinWidthZero": true,
+    "globalHorizontalOverflowGuard": true,
+    "mobileSummaryHeaderOverlapRepair": true,
+    "mobileRowsWrapInsteadOfClipping": true,
+    "domainAndSettingsMobileWidthProtection": true
+  },
+  "nara": {
+    "launcherViewportFixed": true,
+    "safeAreaBottomRight": true,
+    "smallMediumNonModal": true,
+    "fullScreenOnlyWhenSelected": true,
+    "headerControlsStayOnOneRow": true,
+    "attachmentChooser": ["Kamera", "Foto", "File"],
+    "attachmentChooserColumns": 3,
+    "blinkAnimationDisabled": true
+  },
+  "themeStudio": {
+    "largeCodePreview": "50:50",
+    "smallCodePreview": "stacked",
+    "smallLayoutMapPreserved": true,
+    "previewCenteredAndBounded": true
+  },
+  "serviceWorker": {
+    "cacheNamespace": "studio-final-device-cache-v268",
+    "forcedSecondNavigation": false,
+    "sessionStorageWipe": false,
+    "logoutSideEffect": false
+  },
+  "validation": {
+    "regressionTest": "tests/studio-final-device-authority-v268.test.mjs",
+    "ciConfigured": true,
+    "ciStatusObservedAtManifestCreation": false,
+    "productionDeploymentObservedAtManifestCreation": false,
+    "physicalAndroidRetestObservedAtManifestCreation": false,
+    "providerLoginEndToEndObservedAtManifestCreation": false,
+    "capacityClaim": "No claim is made that hundreds of billions of simultaneous logins are supported. Production capacity requires measured distributed load testing against the deployed authentication, database, edge, and origin infrastructure."
+  }
+}
