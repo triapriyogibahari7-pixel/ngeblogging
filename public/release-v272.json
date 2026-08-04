@@ -1,0 +1,22 @@
+{
+  "release": "studio-shell-authority-v272-20260804",
+  "date": "2026-08-04",
+  "scope": [
+    "Permanent PKCE callback bootstrap in src/main.jsx",
+    "Single internal sidebar n on compact layouts",
+    "Stable collapsed desktop rail with all menu icons",
+    "Profile visibility and viewport-safe dropdown",
+    "Viewport-fixed Nara launcher and compact small panel",
+    "Camera, photo, and file menu above the composer",
+    "Horizontal-overflow and overlap guards"
+  ],
+  "invariants": [
+    "No existing Studio page or feature removed",
+    "No localStorage/sessionStorage clear",
+    "No forced reload",
+    "Small and medium Nara remain non-modal",
+    "Full Nara remains modal",
+    "Logout occurs only through the explicit exit action"
+  ],
+  "verification": "tests/studio-shell-authority-v272.test.mjs"
+}
