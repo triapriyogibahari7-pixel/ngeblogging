@@ -10,6 +10,7 @@ const STYLES = "studio-six-mode-authority-v259.css";
 const HOTFIX = "studio-six-mode-authority-v259-hotfix.css";
 const V260_RUNTIME = "studio-stability-v260.js";
 const V260_STYLES = "studio-stability-v260.css";
+const V260_HOTFIX = "studio-stability-v260-hotfix.css";
 const V257_RUNTIME = "studio-visual-native-v257.js";
 const V257_STYLES = "studio-visual-native-v257.css";
 
@@ -29,9 +30,10 @@ function requireMarkers(source, markers, code) {
 }
 
 async function validateV260Contracts() {
-  const [runtime, css, device, provider, auth, studioNext, nara] = await Promise.all([
+  const [runtime, css, hotfix, device, provider, auth, studioNext, nara] = await Promise.all([
     readFile(new URL(`src/${V260_RUNTIME}`, root), "utf8"),
     readFile(new URL(`src/${V260_STYLES}`, root), "utf8"),
+    readFile(new URL(`src/${V260_HOTFIX}`, root), "utf8"),
     readFile(new URL("src/studio-device-mode-v140.js", root), "utf8"),
     readFile(new URL("src/auth-provider-gateway-v250.js", root), "utf8"),
     readFile(new URL("src/lib/supabase.js", root), "utf8"),
@@ -70,6 +72,15 @@ async function validateV260Contracts() {
     '.op41-chart-grid',
     'writing-mode:horizontal-tb!important',
   ], "CSS_CONTRACT");
+
+  requireMarkers(hotfix, [
+    '.sn-logo-mark',
+    '.sn-mobile-menu-mark',
+    '-webkit-text-fill-color:#fff!important',
+    'background:transparent!important',
+    '.nara-floating-button:not([hidden])',
+    '@media (min-width:360px) and (max-width:760px)',
+  ], "HOTFIX_CONTRACT");
 
   requireMarkers(device, [
     "studio-device-mode-v260-20260804",
@@ -116,15 +127,15 @@ async function validateV260Contracts() {
 export async function finalizeStudioV259Order() {
   await validateV260Contracts();
   let source = await readFile(studioUrl, "utf8");
-  for (const required of [V257_RUNTIME, V257_STYLES, RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES]) {
+  for (const required of [V257_RUNTIME, V257_STYLES, RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES, V260_HOTFIX]) {
     if (!source.includes(`import "./${required}";`)) throw new Error(`V260_SOURCE_AUTHORITY_MISSING:${required}`);
   }
 
-  for (const path of [RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES]) source = removeLiveImport(source, path);
+  for (const path of [RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES, V260_HOTFIX]) source = removeLiveImport(source, path);
   const anchor = "export default StudioFastGate;";
   if (!source.includes(anchor)) throw new Error("V260_STUDIO_EXPORT_ANCHOR_MISSING");
   source = source
-    .replace(anchor, `import "./${RUNTIME}";\nimport "./${STYLES}";\nimport "./${HOTFIX}";\nimport "./${V260_RUNTIME}";\nimport "./${V260_STYLES}";\n\n${anchor}`)
+    .replace(anchor, `import "./${RUNTIME}";\nimport "./${STYLES}";\nimport "./${HOTFIX}";\nimport "./${V260_RUNTIME}";\nimport "./${V260_STYLES}";\nimport "./${V260_HOTFIX}";\n\n${anchor}`)
     .replace(/\n{3,}/g, "\n\n");
 
   const v257Runtime = source.lastIndexOf(`import "./${V257_RUNTIME}";`);
@@ -134,11 +145,12 @@ export async function finalizeStudioV259Order() {
   const hotfix = source.lastIndexOf(`import "./${HOTFIX}";`);
   const v260Runtime = source.lastIndexOf(`import "./${V260_RUNTIME}";`);
   const v260Styles = source.lastIndexOf(`import "./${V260_STYLES}";`);
-  if (!(v257Runtime >= 0 && v257Styles > v257Runtime && runtime > v257Styles && styles > runtime && hotfix > styles && v260Runtime > hotfix && v260Styles > v260Runtime)) {
+  const v260Hotfix = source.lastIndexOf(`import "./${V260_HOTFIX}";`);
+  if (!(v257Runtime >= 0 && v257Styles > v257Runtime && runtime > v257Styles && styles > runtime && hotfix > styles && v260Runtime > hotfix && v260Styles > v260Runtime && v260Hotfix > v260Styles)) {
     // Compatibility marker used by older regression suites: V259_FINAL_ORDER_INVALID.
     throw new Error("V260_FINAL_ORDER_INVALID");
   }
-  for (const [path, code] of [[RUNTIME, "V259_RUNTIME"], [STYLES, "V259_CSS"], [HOTFIX, "V259_HOTFIX"], [V260_RUNTIME, "RUNTIME"], [V260_STYLES, "CSS"]]) {
+  for (const [path, code] of [[RUNTIME, "V259_RUNTIME"], [STYLES, "V259_CSS"], [HOTFIX, "V259_HOTFIX"], [V260_RUNTIME, "RUNTIME"], [V260_STYLES, "CSS"], [V260_HOTFIX, "HOTFIX"]]) {
     if ((source.match(new RegExp(escapeRegExp(`import "./${path}";`), "g")) || []).length !== 1) {
       throw new Error(`V260_${code}_DUPLICATE`);
     }
