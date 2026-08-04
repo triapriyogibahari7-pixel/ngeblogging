@@ -38,7 +38,7 @@ test("v264 denah keeps four left widgets, centered Post Page, and four right wid
   for (const id of [
     "sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4",
     "sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4",
-  ]) assert.ok(runtime.includes(`[\"${id}\"`) || runtime.includes(`"${id}"`), `runtime missing ${id}`);
+  ]) assert.ok(runtime.includes(`"${id}"`), `runtime missing ${id}`);
   assert.match(runtime, /tn-layout-post-v264/);
   assert.match(runtime, /POST \/ PAGE/);
   assert.match(css, /\.tn-layout-content-v264[\s\S]*grid-template-columns:minmax\(100px,.72fr\) minmax\(220px,2fr\) minmax\(100px,.72fr\)/);
@@ -49,11 +49,18 @@ test("clicking a layout slot can assign a real widget to its exact area", () => 
   assert.match(runtime, /pendingAssignment = \{ widgetId: action\.dataset\.widget, area \}/);
   assert.match(runtime, /setReactSelect\(select, area\)/);
   assert.match(runtime, /select\.dispatchEvent\(new Event\("change", \{ bubbles: true \}\)\)/);
-  assert.match(runtime, /addAreaOptions/);
+  assert.match(runtime, /ensureAreaOptions/);
   assert.match(runtime, /data-layout-area-v264/);
   assert.match(runtime, /Semua 26 widget/);
   assert.match(runtime, /HTML \/ JavaScript/);
   assert.match(runtime, /Edit HTML \/ CSS \/ JavaScript/);
+});
+
+test("r2 updates counts in place instead of replacing the whole denah on every observer pass", () => {
+  assert.match(runtime, /studio\.querySelector\(":scope > \.tn-layout-map-v264"\)/);
+  assert.match(runtime, /badge\.textContent !== String\(count\)/);
+  assert.doesNotMatch(runtime, /map\.outerHTML\s*=/);
+  assert.match(runtime, /addedNodes\.length \|\| record\.removedNodes\.length/);
 });
 
 test("detailed denah remains readable on small screens without changing content order", () => {
