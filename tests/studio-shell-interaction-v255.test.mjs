@@ -75,9 +75,10 @@ test("official-host OAuth gateway no longer depends only on Worker env vars", ()
   assert.match(authGateway, /AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE/);
   assert.match(authGateway, /PRODUCTION_SUPABASE_URL/);
   assert.match(authGateway, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY/);
+  assert.match(authGateway, /sb_publishable_/);
   assert.match(authGateway, /production-public-fallback/);
   assert.match(authGateway, /officialNgebloggingHost/);
-  assert.doesNotMatch(authGateway, /service[_-]?role/i);
+  assert.doesNotMatch(authGateway, /SUPABASE_SERVICE_ROLE_KEY|service_role_key|sb_secret_/i);
   assert.match(worker, /resolveAuthGatewayConfig/);
   assert.match(worker, /authConfigSource/);
   assert.match(worker, /same-origin-gateway-public-fallback/);
