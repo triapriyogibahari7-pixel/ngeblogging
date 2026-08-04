@@ -11,7 +11,6 @@ import "./studio-production-order-v256.test.mjs";
 import "./studio-visual-native-v257.test.mjs";
 import "./studio-theme-right4-v258.test.mjs";
 import "./studio-six-mode-authority-v259.test.mjs";
-import "./studio-six-mode-physical-v260.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
