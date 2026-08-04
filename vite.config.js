@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import { activateStudioNativeV250 } from "./scripts/activate-studio-native-v250.mjs";
 import { finalizeStudioV255Order } from "./scripts/finalize-studio-v255-order.mjs";
 import { finalizeStudioV257Order } from "./scripts/finalize-studio-v257-order.mjs";
-import { finalizeStudioV259Order } from "./scripts/finalize-studio-v259-order.mjs";
 import { finalizeServiceWorkerV237 } from "./scripts/service-worker-v237-lib.mjs";
 import { finalizeServiceWorkerV238 } from "./scripts/service-worker-v238-lib.mjs";
 import { finalizeServiceWorkerV239 } from "./scripts/service-worker-v239-lib.mjs";
@@ -24,7 +23,7 @@ import { rotateServiceWorkerV258 } from "./scripts/service-worker-v258-rotate.mj
 export default defineConfig({
   plugins: [
     {
-      name: "ngeblogging-native-studio-v259-finalizer-test",
+      name: "ngeblogging-native-studio-v259-unified-order",
       apply: "build",
       async buildStart() {
         const v250 = await activateStudioNativeV250();
@@ -33,9 +32,7 @@ export default defineConfig({
         const v256 = await finalizeStudioV255Order();
         console.log(`[vite] ${v256.release} keeps v255 interaction authority after legacy activators`);
         const v257 = await finalizeStudioV257Order();
-        console.log(`[vite] ${v257.release} keeps six-mode visual authority after v255`);
-        const v259 = await finalizeStudioV259Order();
-        console.log(`[vite] ${v259.release} keeps physical viewport authority last before bundling`);
+        console.log(`[vite] ${v257.release} keeps visual preview authority and ${v257.physicalReleaseV259} last in one source write`);
       },
       closeBundle() {
         const v237 = finalizeServiceWorkerV237();
