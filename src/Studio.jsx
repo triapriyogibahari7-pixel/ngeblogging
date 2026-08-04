@@ -86,5 +86,6 @@ import "./studio-shell-nara-v253.js";
 import "./studio-shell-nara-v253.css";
 import "./studio-shell-interaction-v255.js";
 import "./studio-shell-interaction-v255.css";
+import "./studio-theme-layout-v256.css";
 
 export default StudioFastGate;
