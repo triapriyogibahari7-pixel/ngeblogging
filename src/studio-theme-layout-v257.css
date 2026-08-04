@@ -1,0 +1,296 @@
+/* v257 — Theme map nyata: 4 kiri + Post/Page di tengah + 4 kanan, tanpa desktop-mini di perangkat kecil. */
+.tn-layout-studio[data-layout-right4-v257],
+.tn-layout-studio[data-layout-right4-v257] > *,
+.tn-code-workspace[data-theme-code-layout-v257],
+.tn-code-workspace[data-theme-code-layout-v257] > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-studio-header {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-canvas-v170 {
+  width: min(100%, 1080px) !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  grid-template-rows: 72px 68px repeat(4, minmax(82px, 1fr)) 68px 72px !important;
+  grid-template-areas:
+    "top-left-1 top-left-2 top-left-3 top-right-1 top-right-2 top-right-3"
+    "before-content before-content before-content before-content before-content before-content"
+    "sidebar-left-1 content-main content-main content-main content-main sidebar-right-1"
+    "sidebar-left-2 content-main content-main content-main content-main sidebar-right-2"
+    "sidebar-left-3 content-main content-main content-main content-main sidebar-right-3"
+    "sidebar-left-4 content-main content-main content-main content-main sidebar-right-4"
+    "after-content after-content after-content after-content after-content after-content"
+    "bottom-left-1 bottom-left-2 bottom-left-3 bottom-right-1 bottom-right-2 bottom-right-3" !important;
+  gap: 8px !important;
+  min-height: 720px !important;
+  padding: 12px !important;
+  border: 1px solid #d7e2ef !important;
+  border-radius: 18px !important;
+  background: #f3f6fa !important;
+  overflow: hidden !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-content: center !important;
+  gap: 3px 7px !important;
+  padding: 8px !important;
+  writing-mode: horizontal-tb !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > :is(small,b) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  writing-mode: horizontal-tb !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+  text-overflow: clip !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > b {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.content-main {
+  grid-area: content-main !important;
+  min-height: 310px !important;
+  place-content: center !important;
+  align-self: stretch !important;
+  border: 2px solid #4d83dc !important;
+  background: linear-gradient(145deg, #fff, #f5f9ff) !important;
+  color: #203f69 !important;
+  box-shadow: 0 10px 32px rgba(42, 103, 197, .08) !important;
+  text-align: center !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.content-main > span {
+  min-width: 46px !important;
+  height: 32px !important;
+  padding-inline: 8px !important;
+  justify-self: center !important;
+  background: #2f73df !important;
+  color: #fff !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.content-main > small {
+  font-size: 12px !important;
+  color: #24476f !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.content-main > b {
+  font-size: 9px !important;
+  color: #6b7f98 !important;
+}
+
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-left-1 { grid-area: sidebar-left-1 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-left-2 { grid-area: sidebar-left-2 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-left-3 { grid-area: sidebar-left-3 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-left-4 { grid-area: sidebar-left-4 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-right-1 { grid-area: sidebar-right-1 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-right-2 { grid-area: sidebar-right-2 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-right-3 { grid-area: sidebar-right-3 !important; }
+.tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.sidebar-right-4 { grid-area: sidebar-right-4 !important; }
+
+/* Popover slot harus kecil dan lokal, bukan menutupi satu layar. */
+.v235-layout-popover {
+  width: min(320px, calc(100vw - 20px)) !important;
+  max-width: calc(100vw - 20px) !important;
+  max-height: min(430px, calc(100dvh - 20px)) !important;
+  overflow: auto !important;
+  overscroll-behavior: contain !important;
+  border-radius: 16px !important;
+  z-index: 2600 !important;
+}
+
+.v235-layout-popover > div {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+}
+
+.v235-layout-popover button {
+  min-width: 0 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Preview selalu dipusatkan di ruang Theme Studio. */
+.tn-studio :is(.tn-active-stage, .tn-code-preview-pane) .tn-frame-shell {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 100% !important;
+}
+
+/* Desktop/large: kode dan preview 50:50, keduanya bounded. */
+html[data-studio-device-mode="large"] .tn-code-workspace[data-theme-code-layout-v257] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+html[data-studio-device-mode="large"] .tn-code-workspace[data-theme-code-layout-v257] .tn-code-pane,
+html[data-studio-device-mode="large"] .tn-code-workspace[data-theme-code-layout-v257] .tn-code-preview-pane {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: min(72dvh, 820px) !important;
+  max-height: min(82dvh, 920px) !important;
+  overflow: hidden !important;
+}
+
+.tn-code-pane textarea {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: auto !important;
+  white-space: pre !important;
+  tab-size: 2 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
+}
+
+@media (max-width: 760px) {
+  .tn-layout-studio[data-layout-right4-v257] {
+    overflow: hidden !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-canvas-v170 {
+    width: 100% !important;
+    grid-template-columns: minmax(68px, .82fr) minmax(116px, 1.5fr) minmax(68px, .82fr) !important;
+    grid-template-rows: repeat(2, 58px) 58px repeat(4, minmax(68px, auto)) 58px repeat(2, 58px) !important;
+    grid-template-areas:
+      "top-left-1 top-left-2 top-left-3"
+      "top-right-1 top-right-2 top-right-3"
+      "before-content before-content before-content"
+      "sidebar-left-1 content-main sidebar-right-1"
+      "sidebar-left-2 content-main sidebar-right-2"
+      "sidebar-left-3 content-main sidebar-right-3"
+      "sidebar-left-4 content-main sidebar-right-4"
+      "after-content after-content after-content"
+      "bottom-left-1 bottom-left-2 bottom-left-3"
+      "bottom-right-1 bottom-right-2 bottom-right-3" !important;
+    gap: 5px !important;
+    min-height: 0 !important;
+    padding: 6px !important;
+    border-radius: 13px !important;
+    overflow: hidden !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 {
+    min-height: 54px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    place-content: center !important;
+    gap: 2px !important;
+    padding: 5px 4px !important;
+    text-align: center !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > span {
+    display: none !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > small {
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > b {
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.content-main {
+    min-height: 294px !important;
+    padding: 7px !important;
+  }
+
+  .tn-code-workspace[data-theme-code-layout-v257] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .tn-code-workspace[data-theme-code-layout-v257] .tn-code-preview-pane {
+    order: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 42dvh !important;
+    max-height: 56dvh !important;
+    overflow: auto !important;
+  }
+
+  .tn-code-workspace[data-theme-code-layout-v257] .tn-code-pane {
+    order: 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 56dvh !important;
+    max-height: 72dvh !important;
+    overflow: hidden !important;
+  }
+
+  .v235-layout-popover {
+    width: min(300px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: min(68dvh, 420px) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-canvas-v170 {
+    grid-template-columns: minmax(60px, .72fr) minmax(100px, 1.42fr) minmax(60px, .72fr) !important;
+    gap: 4px !important;
+    padding: 5px !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 {
+    min-height: 50px !important;
+    padding: 4px 3px !important;
+  }
+
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > small { font-size: 7.2px !important; }
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170 > b { font-size: 6.4px !important; }
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170.content-main { min-height: 274px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tn-layout-studio[data-layout-right4-v257] .tn-layout-slot-v170,
+  .tn-code-workspace[data-theme-code-layout-v257] * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
