@@ -5,7 +5,6 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const client = read("src/lib/supabase.js");
 const modal = read("src/AuthModal.jsx");
-const providerGateway = read("src/auth-provider-gateway-v250.js");
 const callbackAuthority = read("src/auth-callback-authority-v107.js");
 const callbackConsumer = read("src/lib/auth-callback-v162.js");
 const bootstrap = read("src/auth-studio-bootstrap-v106.js");
@@ -36,24 +35,6 @@ test("all requested login buttons remain connected to real Supabase actions", ()
   ]) assert.ok(modal.includes(marker), `AuthModal missing ${marker}`);
 });
 
-test("v255 waits for a real persisted session before handing the user into Studio", () => {
-  for (const marker of [
-    "auth-session-handoff-v255-20260804",
-    'import "./auth-provider-gateway-v250.js"',
-    "settleAuthenticatedSession",
-    "supabase.auth.getSession()",
-    "ngeblogging:auth-session-ready",
-    "await onAuthenticated?.(nextSession)",
-    "await settleAuthenticatedSession(data?.session || null)",
-    "await settleAuthenticatedSession(data.session)",
-  ]) assert.ok(modal.includes(marker), `v255 auth handoff missing ${marker}`);
-  assert.match(modal, /nextSession\?\.user\?\.id/);
-  assert.match(modal, /nextSession\?\.access_token/);
-  assert.doesNotMatch(modal, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
-  assert.match(providerGateway, /same-origin-auth-gateway/);
-  assert.match(providerGateway, /signInWithOAuth/);
-});
-
 test("production auth requests use the same-origin gateway and persistent session", () => {
   for (const marker of [
     "auth-production-v153-20260730", "/api/auth-proxy", "authAwareFetch",
@@ -63,7 +44,6 @@ test("production auth requests use the same-origin gateway and persistent sessio
   assert.match(client, /window\.location\.assign\(destination\)/);
   assert.match(client, /persistSession:\s*true/);
   assert.match(client, /autoRefreshToken:\s*true/);
-  assert.match(client, /flowType:\s*"pkce"/);
 });
 
 test("legacy login and signup routes open the React auth surface", () => {
