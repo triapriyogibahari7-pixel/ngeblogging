@@ -1,5 +1,5 @@
-const VERSION = "ngeblogging-app-v260-stability-r3-20260804";
-const CACHE_RELEASE = "studio-stability-cache-v260-r3";
+const VERSION = "ngeblogging-app-v262-responsive-shell-r1-20260804";
+const CACHE_RELEASE = "studio-responsive-shell-cache-v262-r1";
 const STUDIO_STABILITY_RELEASE_V260 = "studio-stability-v260-20260804-r3";
 const STUDIO_SIX_MODE_RELEASE_V259 = "studio-six-mode-authority-v259-20260804";
 const ROUTE_RECOVERY_COMPAT_VERSION = "ngeblogging-app-v168-route-recovery-20260730";
@@ -75,7 +75,7 @@ async function refreshStaleWindow(client, url) {
   try {
     await client.navigate(url.href);
   } catch {
-    // Compatibility-only helper. v260-r3 never invokes it from activate.
+    // Compatibility-only helper. The active worker never invokes it from activate.
   }
 }
 
@@ -127,10 +127,10 @@ async function notifyOpenWindows() {
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
         ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V260"),
-        reason: "service-worker-activated-stability-v260-r3",
+        reason: "service-worker-activated-responsive-shell-v262-r1",
         reloadRequired: false,
       });
-      // Deliberately no client.navigate(): avoids the visible second loading pass.
+      // Deliberately no client.navigate(): avoids a second loading pass and preserves sessions.
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
     }
