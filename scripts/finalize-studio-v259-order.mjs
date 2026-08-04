@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const studioUrl = new URL("src/Studio.jsx", root);
 
-export const RELEASE = "studio-v260-post-build-order-20260804-r2";
+export const RELEASE = "studio-v260-post-build-order-20260804-r3";
 export const LEGACY_RELEASE = "studio-v259-post-build-order-20260804";
 const RUNTIME = "studio-six-mode-authority-v259.js";
 const STYLES = "studio-six-mode-authority-v259.css";
@@ -40,9 +40,10 @@ async function validateV260Contracts() {
   ]);
 
   requireMarkers(runtime, [
-    "studio-stability-v260-20260804-r2",
+    "studio-stability-v260-20260804-r3",
     "function deviceMetrics()",
     "function responsiveMode(view = deviceMetrics())",
+    "function clearLegacyShellGeometry(current)",
     'setData(root, "studioV253Family", current)',
     'setData(root, "studioV259Family", current)',
     'setData(root, "studioResponsiveMode", mode)',
@@ -129,11 +130,11 @@ async function validateV260Contracts() {
   ], "SESSION_CONTRACT");
 
   requireMarkers(publicSw, [
-    "ngeblogging-app-v260-stability-r2-20260804",
-    "studio-stability-cache-v260-r2",
-    "studio-stability-v260-20260804-r2",
+    "ngeblogging-app-v260-stability-r3-20260804",
+    "studio-stability-cache-v260-r3",
+    "studio-stability-v260-20260804-r3",
     "NGE_BLOGGING_UPDATE_AVAILABLE_V260",
-    "service-worker-activated-stability-v260-r2",
+    "service-worker-activated-stability-v260-r3",
     "reloadRequired: false",
     "ACTIVE_VERSION_V260",
     "ACTIVE_CACHE_RELEASE_V260",
@@ -161,10 +162,6 @@ async function validateV260Contracts() {
 }
 
 export async function finalizeStudioV259Order() {
-  // Historical function name retained because vite.config.js and older regression
-  // suites import it. Since v260 this is intentionally READ ONLY: build hooks must
-  // never rewrite source files in Netlify/CI. The committed source order is checked
-  // and a regression fails the build without mutating the working tree.
   await validateV260Contracts();
   const source = await readFile(studioUrl, "utf8");
   const required = [V257_RUNTIME, V257_STYLES, RUNTIME, STYLES, HOTFIX, V260_RUNTIME, V260_STYLES, V260_HOTFIX];
@@ -183,7 +180,6 @@ export async function finalizeStudioV259Order() {
   const v260Hotfix = source.lastIndexOf(`import "./${V260_HOTFIX}";`);
 
   if (!(v257Runtime >= 0 && v257Styles > v257Runtime && runtime > v257Styles && styles > runtime && hotfix > styles && v260Runtime > hotfix && v260Styles > v260Runtime && v260Hotfix > v260Styles)) {
-    // Compatibility marker used by older regression suites: V259_FINAL_ORDER_INVALID.
     throw new Error("V260_FINAL_ORDER_INVALID");
   }
 
