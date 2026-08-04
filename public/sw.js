@@ -1,5 +1,7 @@
-const VERSION = "ngeblogging-app-v262-responsive-shell-r1-20260804";
-const CACHE_RELEASE = "studio-responsive-shell-cache-v262-r1";
+const VERSION = "ngeblogging-app-v266-studio-completion-20260804";
+const CACHE_RELEASE = "studio-completion-cache-v266";
+const STUDIO_COMPLETION_RELEASE_V266 = "studio-completion-v266-20260804";
+const STUDIO_SCREENSHOT_RELEASE_V265 = "studio-screenshot-authority-v265-20260804";
 const STUDIO_STABILITY_RELEASE_V260 = "studio-stability-v260-20260804-r3";
 const STUDIO_SIX_MODE_RELEASE_V259 = "studio-six-mode-authority-v259-20260804";
 const ROUTE_RECOVERY_COMPAT_VERSION = "ngeblogging-app-v168-route-recovery-20260730";
@@ -83,6 +85,8 @@ function versionPayload(type) {
   return {
     type,
     version: VERSION,
+    studioCompletionReleaseV266: STUDIO_COMPLETION_RELEASE_V266,
+    studioScreenshotReleaseV265: STUDIO_SCREENSHOT_RELEASE_V265,
     studioStabilityReleaseV260: STUDIO_STABILITY_RELEASE_V260,
     studioSixModeReleaseV259: STUDIO_SIX_MODE_RELEASE_V259,
     activeVersionV260: ACTIVE_VERSION_V260,
@@ -126,13 +130,13 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V260"),
-        reason: "service-worker-activated-responsive-shell-v262-r1",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V266"),
+        reason: "service-worker-activated-studio-completion-v266",
         reloadRequired: false,
       });
-      // Deliberately no client.navigate(): avoids a second loading pass and preserves sessions.
+      // No client.navigate(): prevents double loading and preserves authenticated sessions.
     } catch {
-      // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
+      // One bad tab must not block other tabs.
     }
   }));
 }
