@@ -109,5 +109,8 @@ import "./studio-editor-navigation-v266.js";
 import "./studio-editor-navigation-v266.css";
 import "./studio-runtime-v266.js";
 import "./studio-sidebar-single-toggle-v267.js";
+// v269 is deliberately last: it is the live responsive shell authority and
+// therefore cannot be overwritten by historical compatibility CSS above.
+import "./studio-final-authority-v269.js";
 
 export default StudioFastGate;
