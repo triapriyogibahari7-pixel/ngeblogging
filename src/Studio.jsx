@@ -124,9 +124,12 @@ import "./studio-sidebar-recovery-v276.css";
 // v277 remains geometry/history authority without owning the n click.
 import "./studio-interaction-authority-v277.js";
 import "./studio-interaction-authority-v277.css";
-// v278 is loaded last: one window-capture owner for n, fixed mobile/profile/Nara,
-// responsive Theme map and code editor geometry.
+// v278 owns the single n click and complete responsive geometry.
 import "./studio-shell-precision-v278.js";
 import "./studio-shell-precision-v278.css";
+// v279 is last and only hardens live viewport chrome after scroll/address-bar movement.
+// It does not install another n click owner.
+import "./studio-live-shell-v279.js";
+import "./studio-live-shell-v279.css";
 
 export default StudioFastGate;
