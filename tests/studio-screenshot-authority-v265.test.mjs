@@ -8,6 +8,8 @@ const source = read("src/StudioNext.jsx");
 const runtime = read("src/studio-screenshot-authority-v265.js");
 const css = read("src/studio-screenshot-authority-v265.css");
 const nara = read("src/NaraAssistant.jsx");
+const swPatch = read("scripts/patch-service-worker-v265.mjs");
+const swChain = read("scripts/patch-service-worker-v179.mjs");
 
 test("v265 loads after v264 as the last screenshot authority", () => {
   const v264css = studio.indexOf('import "./studio-theme-layout-v264.css";');
@@ -71,6 +73,19 @@ test("editor Domain and add-site dialog cannot overflow the mobile viewport", ()
   assert.match(css, /\.ce-tabs,.ce-ribbon[\s\S]*overflow-x:auto!important/);
   assert.match(css, /\.sv124-free-domain>aside,.sv124-domain-register form\{display:grid!important;grid-template-columns:minmax\(0,1fr\)!important/);
   assert.match(css, /\.sn-site-manager[\s\S]*width:min\(760px,calc\(100vw - 24px\)\)!important/);
+});
+
+test("service-worker cache namespace rotates after the legacy migration chain without forcing a second navigation", () => {
+  const restore = swChain.indexOf("await restoreCurrentServiceWorker();");
+  const patch265 = swChain.indexOf('await import("./patch-service-worker-v265.mjs");');
+  assert.ok(restore >= 0);
+  assert.ok(patch265 > restore);
+  assert.match(swPatch, /studio-screenshot-authority-v265-20260804/);
+  assert.match(swPatch, /studio-screenshot-authority-cache-v265/);
+  assert.match(swPatch, /UI_PATCH_RELEASE_V263/);
+  assert.match(swPatch, /UI_PATCH_RELEASE_V265/);
+  assert.match(swPatch, /UI_CACHE_RELEASE_V265/);
+  assert.doesNotMatch(swPatch, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
 test("v265 does not contain destructive session or automatic logout operations", () => {
