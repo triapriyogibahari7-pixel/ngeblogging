@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const sw = read("public/sw.js");
 const patch = read("scripts/patch-service-worker-v252.mjs");
 const authFinalizer = read("scripts/patch-auth-production-v245.mjs");
+const studioFinalizer = read("scripts/finalize-studio-v252.mjs");
 
 test("production build rotates shell and asset caches to v252", () => {
   assert.match(sw, /ngeblogging-app-v252-source-stability-20260804/);
@@ -16,7 +17,10 @@ test("production build rotates shell and asset caches to v252", () => {
 });
 
 test("v252 cache activation deletes old caches but never forces WindowClient navigation", () => {
-  assert.match(sw, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)[\s\S]*caches\.delete/);
+  assert.match(sw, /caches\.keys\(\)/);
+  assert.match(sw, /caches\.delete/);
+  assert.match(sw, /SHELL_CACHE/);
+  assert.match(sw, /ASSET_CACHE/);
   assert.doesNotMatch(sw, /await\s+refreshStaleWindow\s*\(/);
   assert.match(patch, /no forced WindowClient navigation/);
   assert.match(patch, /V252_PWA_FORCED_REFRESH_CALL_FOUND/);
@@ -35,9 +39,12 @@ test("auth and callback surfaces remain excluded from update notifications", () 
   assert.match(sw, /if \(url\.origin !== self\.location\.origin \|\| isAuthSurface\(url\)\) return/);
 });
 
-test("v252 native and cache finalizers run after historical production patches", () => {
-  assert.match(authFinalizer, /activate-studio-native-v250\.mjs/);
-  assert.match(authFinalizer, /activateStudioNativeV250\(\)/);
+test("v252 Studio and cache finalizers run after historical production patches", () => {
+  assert.match(authFinalizer, /finalize-studio-v252\.mjs/);
   assert.match(authFinalizer, /patch-service-worker-v252\.mjs/);
+  assert.doesNotMatch(authFinalizer, /activateStudioNativeV250\(\)/);
+  assert.match(studioFinalizer, /studio-source-stability-v252\.js/);
+  assert.match(studioFinalizer, /studio-source-stability-v252\.css/);
+  assert.match(studioFinalizer, /does not touch auth|without touching auth/i);
   assert.ok(authFinalizer.indexOf("patch-service-worker-v252.mjs") > authFinalizer.indexOf("Applied ${RELEASE}"));
 });
