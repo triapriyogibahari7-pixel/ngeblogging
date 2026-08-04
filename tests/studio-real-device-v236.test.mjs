@@ -14,6 +14,7 @@ import "./studio-six-mode-authority-v259.test.mjs";
 import "./studio-v263-regression.test.mjs";
 import "./studio-shell-v265.test.mjs";
 import "./studio-editor-navigation-v266.test.mjs";
+import "./studio-fixed-chrome-v267.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
