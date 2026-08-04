@@ -1,0 +1,80 @@
+{
+  "release": "studio-screenshot-authority-v265-20260804",
+  "date": "2026-08-04",
+  "extends": [
+    "studio-shell-auth-v263-20260804",
+    "studio-theme-layout-v264-20260804-r2"
+  ],
+  "changes": {
+    "sidebar": {
+      "desktop": "one internal n toggles the React sidebar; expanded shows icon plus text; collapsed keeps centered icons",
+      "smallDevices": "one top n when closed; bounded full-height drawer when open; no extra x control",
+      "desktopSiteOnPhone": "large-family sidebar pinned to the left edge without mode bouncing",
+      "menuOrderPreserved": [
+        "Buat Post",
+        "Ringkasan",
+        "Posts",
+        "Pages",
+        "Tema",
+        "Media",
+        "Analitik",
+        "Anggota",
+        "Komentar",
+        "Domain",
+        "API Keys",
+        "Pengaturan",
+        "Keluar"
+      ]
+    },
+    "profile": {
+      "topRightAvatar": true,
+      "actions": [
+        "Profil & avatar",
+        "Pengaturan situs",
+        "+ Tambahkan situs",
+        "Lihat situs",
+        "Dapatkan aplikasi",
+        "Keluar"
+      ],
+      "profileAndSettingsSeparated": true
+    },
+    "nara": {
+      "launcherFixedBottomRight": true,
+      "smallAndMediumNonModal": true,
+      "fullScreenModalOnly": true,
+      "attachmentMenu": ["Kamera", "Foto", "File teks"],
+      "sizes": ["small", "medium", "full"],
+      "noBackdropBlurInSmallMedium": true
+    },
+    "themeStudio": {
+      "layoutSlots": 26,
+      "fourLeftWidgets": true,
+      "centeredPostPage": true,
+      "fourRightWidgets": true,
+      "widgetAssignment": true,
+      "htmlCssJavaScriptShortcut": true
+    },
+    "mobileContainment": {
+      "postPageEditor": true,
+      "domain": true,
+      "profileMenu": true,
+      "siteManager": true
+    },
+    "serviceWorker": {
+      "cacheNamespace": "studio-screenshot-authority-cache-v265",
+      "forcedSecondNavigation": false,
+      "sessionClearing": false
+    }
+  },
+  "validation": {
+    "sourceRegressionContractAdded": true,
+    "productionRegressionChainIncludesV265": true,
+    "serviceWorkerBuildPatchIncludesV265": true,
+    "ciResultObservedAtManifestCreation": false,
+    "productionDeploymentObservedAtManifestCreation": false,
+    "realDeviceExecutionObservedAtManifestCreation": false,
+    "loginEndToEndObservedAtManifestCreation": false,
+    "capacityLoadTestObservedAtManifestCreation": false,
+    "capacityClaim": "No claim is made that hundreds of billions of users can log in. That requires measured distributed load tests and production infrastructure evidence."
+  }
+}
