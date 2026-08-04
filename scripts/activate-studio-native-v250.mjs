@@ -6,6 +6,7 @@ const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 
 export const RELEASE = "studio-native-bundle-activation-v250-20260804";
+export const SIDEBAR_RESCUE_RELEASE = "studio-sidebar-rescue-v251-20260804";
 const PRODUCTION_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
 const PRODUCTION_SUPABASE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
 const PRODUCTION_PROJECT_REF = "polvmlrhqoiflumibfqs";
@@ -50,14 +51,29 @@ async function activateNativeShell() {
   for (const item of [...RETIRED_RUNTIME_IMPORTS, ...RETIRED_CSS_IMPORTS]) source = retireImport(source, item);
   source = ensureLastImport(source, "studio-native-authority-v250.js");
   source = ensureLastImport(source, "studio-native-authority-v250.css");
+  source = ensureLastImport(source, "studio-sidebar-rescue-v251.js");
+  source = ensureLastImport(source, "studio-sidebar-rescue-v251.css");
   source = source.replace(/\n{3,}/g, "\n\n");
 
   for (const item of [...RETIRED_RUNTIME_IMPORTS, ...RETIRED_CSS_IMPORTS]) {
     const live = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(item)}[\"'];?\\s*$`, "m");
     if (live.test(source)) throw new Error(`V250_CONFLICTING_IMPORT_STILL_LIVE:${item}`);
   }
-  if (!/^\s*import "\.\/studio-native-authority-v250\.js";\s*$/m.test(source)) throw new Error("V250_NATIVE_RUNTIME_NOT_LIVE");
-  if (!/^\s*import "\.\/studio-native-authority-v250\.css";\s*$/m.test(source)) throw new Error("V250_NATIVE_CSS_NOT_LIVE");
+  for (const active of [
+    "studio-native-authority-v250.js",
+    "studio-native-authority-v250.css",
+    "studio-sidebar-rescue-v251.js",
+    "studio-sidebar-rescue-v251.css",
+  ]) {
+    const live = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(active)}[\"'];?\\s*$`, "m");
+    if (!live.test(source)) throw new Error(`V251_NATIVE_IMPORT_NOT_LIVE:${active}`);
+  }
+  if (!(source.indexOf('import "./studio-sidebar-rescue-v251.js";') > source.indexOf('import "./studio-native-authority-v250.css";'))) {
+    throw new Error("V251_RESCUE_RUNTIME_ORDER_INVALID");
+  }
+  if (!(source.indexOf('import "./studio-sidebar-rescue-v251.css";') > source.indexOf('import "./studio-sidebar-rescue-v251.js";'))) {
+    throw new Error("V251_RESCUE_CSS_ORDER_INVALID");
+  }
   await write(path, source);
 }
 
@@ -127,5 +143,5 @@ async function activateAuthFallback() {
 export async function activateStudioNativeV250() {
   await activateNativeShell();
   await activateAuthFallback();
-  return { release: RELEASE };
+  return { release: RELEASE, sidebarRescueRelease: SIDEBAR_RESCUE_RELEASE };
 }
