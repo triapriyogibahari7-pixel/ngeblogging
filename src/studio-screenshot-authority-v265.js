@@ -1,4 +1,4 @@
-export const RELEASE = "studio-screenshot-authority-v265-20260804";
+export const RELEASE = "studio-screenshot-authority-v265-20260804-r3";
 
 const SMALL_MODES = new Set(["application", "phone", "mobile", "compact", "small"]);
 const LARGE_MODES = new Set(["tablet", "desktop", "laptop", "computer", "large"]);
@@ -121,23 +121,14 @@ function repairSidebar() {
   if (letter && letter.textContent !== "n") letter.textContent = "n";
   if (brand && brand.textContent !== "Ngeblogging") brand.textContent = "Ngeblogging";
 
-  if (mark && !mark.dataset.sidebarToggleV265) {
-    mark.dataset.sidebarToggleV265 = RELEASE;
+  // IMPORTANT: v229/v231/v232 already own the internal logo click and proxy it
+  // to React's .sn-sidebar-toggle. Do not add another click/keydown listener here:
+  // two owners would toggle twice and make the n appear frozen or laggy.
+  if (mark) {
+    mark.dataset.sidebarToggleV265 = "single-owner-v232-react-proxy";
     mark.setAttribute("role", "button");
     mark.setAttribute("tabindex", "0");
     mark.setAttribute("aria-controls", "ngeblogging-studio-sidebar");
-    mark.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      document.querySelector(".sn-top .sn-sidebar-toggle")?.click();
-      schedule();
-    });
-    mark.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      document.querySelector(".sn-top .sn-sidebar-toggle")?.click();
-      schedule();
-    });
   }
 
   const mode = family();
