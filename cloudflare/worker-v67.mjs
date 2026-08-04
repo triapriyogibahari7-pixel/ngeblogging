@@ -18,12 +18,14 @@ import {
 import {
   DATA_GATEWAY_RELEASE,
   DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+  DATA_GATEWAY_RESILIENCE_RELEASE_V256,
   handleDataGatewayRequest,
   isDataGatewayRequest,
   resolveDataGatewayConfig,
 } from "../server/data-gateway-v110.mjs";
 
-const RELEASE = "2026.08.04-production-order-data-v256";
+const RELEASE = "2026.07.30-auth-production-v153";
+const PRODUCTION_ORDER_DATA_RELEASE_V256 = "2026.08.04-production-order-data-v256";
 const FULL_ZONE_PROVIDER = "cloudflare-full-zone";
 const SAAS_PROVIDERS = new Set(["cloudflare", "cloudflare-custom-hostnames"]);
 
@@ -66,7 +68,7 @@ async function enrichSaasDomainResponse(response, env) {
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
-    headers.set("x-ngeblogging-domain-engine", RELEASE);
+    headers.set("x-ngeblogging-domain-engine", PRODUCTION_ORDER_DATA_RELEASE_V256);
     return new Response(JSON.stringify({
       ...payload,
       activationReady: Boolean(readiness.activationReady && state.active),
@@ -74,7 +76,7 @@ async function enrichSaasDomainResponse(response, env) {
       saasEnabled: state.saasEnabled,
       accountActionRequired: state.accountActionRequired,
       providerBlocker: state.providerBlocker,
-      release: RELEASE,
+      release: PRODUCTION_ORDER_DATA_RELEASE_V256,
     }), {
       status: response.status,
       statusText: response.statusText,
@@ -100,14 +102,16 @@ async function enrichHealth(response, env, requestUrl) {
     const headers = new Headers(response.headers);
     headers.set("content-type", "application/json; charset=utf-8");
     headers.set("cache-control", "no-store");
-    headers.set("x-ngeblogging-domain-engine", RELEASE);
+    headers.set("x-ngeblogging-domain-engine", PRODUCTION_ORDER_DATA_RELEASE_V256);
     headers.set("x-ngeblogging-comments", comments ? "comments-v93" : "comments-not-configured");
     headers.set("x-ngeblogging-auth-gateway", AUTH_GATEWAY_RELEASE);
     headers.set("x-ngeblogging-auth-fallback", AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE);
     headers.set("x-ngeblogging-auth-config", authConfig.source);
     headers.set("x-ngeblogging-data-gateway", DATA_GATEWAY_RELEASE);
     headers.set("x-ngeblogging-data-fallback", DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE);
+    headers.set("x-ngeblogging-data-resilience", DATA_GATEWAY_RESILIENCE_RELEASE_V256);
     headers.set("x-ngeblogging-data-config", dataConfig.source);
+    headers.set("x-ngeblogging-production-order", PRODUCTION_ORDER_DATA_RELEASE_V256);
     headers.set("x-ngeblogging-release", String(env.APP_RELEASE || RELEASE));
     return new Response(JSON.stringify({
       ...payload,
@@ -115,7 +119,8 @@ async function enrichHealth(response, env, requestUrl) {
       appRelease: String(env.APP_RELEASE || RELEASE),
       uiAuthorityRelease: String(env.UI_AUTHORITY_RELEASE || ""),
       workerRelease: RELEASE,
-      domainReleaseCurrent: RELEASE,
+      productionOrderDataReleaseV256: PRODUCTION_ORDER_DATA_RELEASE_V256,
+      domainReleaseCurrent: PRODUCTION_ORDER_DATA_RELEASE_V256,
       comments,
       commentsRelease: "comments-v93-20260728",
       authGateway: authConfigured,
@@ -137,6 +142,7 @@ async function enrichHealth(response, env, requestUrl) {
       dataGateway: dataConfigured,
       dataGatewayRelease: DATA_GATEWAY_RELEASE,
       dataGatewayFallbackRelease: DATA_GATEWAY_PUBLIC_FALLBACK_RELEASE,
+      dataGatewayResilienceReleaseV256: DATA_GATEWAY_RESILIENCE_RELEASE_V256,
       dataConfigSource: dataConfig.source,
       dataTransport: dataConfig.source === "production-public-fallback"
         ? "same-origin-data-gateway-public-fallback"
@@ -175,7 +181,7 @@ async function enrichHealth(response, env, requestUrl) {
       customDomainDnsV67: {
         enabled: state.active,
         optional: true,
-        release: RELEASE,
+        release: PRODUCTION_ORDER_DATA_RELEASE_V256,
         provider: "cloudflare-custom-hostnames",
         mode: "cloudflare-for-saas",
       },
