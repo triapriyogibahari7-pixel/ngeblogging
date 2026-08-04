@@ -1,4 +1,5 @@
 import "./studio-shell-v261.css";
+import "./studio-shell-v262.css";
 
 export {
   COMPACT_MAX as SMALL_MAX,
