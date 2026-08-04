@@ -117,5 +117,8 @@ import "./studio-scroll-chrome-v270.css";
 import "./studio-shell-authority-v272.js";
 import "./studio-shell-content-v274.js";
 import "./studio-shell-content-v274-hotfix.css";
+// v275 is intentionally last. It resolves final geometry without deleting any
+// earlier feature module, so old production components remain available as backups.
+import "./studio-final-stability-v275.css";
 
 export default StudioFastGate;
