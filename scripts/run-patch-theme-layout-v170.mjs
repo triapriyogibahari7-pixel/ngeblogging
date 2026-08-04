@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(path.join(root, file), "utf8");
+const write = (file, content) => writeFileSync(path.join(root, file), content);
 
 const checks = [
   ["src/widget-system.js", 'WIDGET_LAYOUT_AUTHORITY = "theme-layout-v170-20260730"'],
@@ -33,9 +34,38 @@ function inspect(list = checks) {
   return list.map(([file, marker]) => ({ file, marker, present: read(file).includes(marker) }));
 }
 
+function prepareV170ServiceWorkerCompatibility() {
+  const file = "public/sw.js";
+  let source = read(file);
+  if (source.includes("ngeblogging-app-v170-theme-layout-20260730")) return;
+  if (!source.includes('const VERSION = "ngeblogging-app-v169-first-site-20260730";')) {
+    throw new Error("V256_V170_COMPAT_SERVICE_WORKER_BASELINE_MISSING");
+  }
+  source = source
+    .replace('const VERSION = "ngeblogging-app-v169-first-site-20260730";', 'const VERSION = "ngeblogging-app-v170-theme-layout-20260730";\nconst FIRST_SITE_COMPAT_VERSION = "ngeblogging-app-v169-first-site-20260730";')
+    .replace('const CACHE_RELEASE = "first-site-cache-v169";', 'const CACHE_RELEASE = "theme-layout-cache-v170";\nconst FIRST_SITE_COMPAT_RELEASE = "first-site-cache-v169";')
+    .replace('const FORCE_REFRESH_VALUE = "first-site-v169";', 'const FORCE_REFRESH_VALUE = "theme-layout-v170";')
+    .replace('service-worker-stale-shell-v169', 'service-worker-stale-shell-v170')
+    .replace('version: VERSION,', 'version: VERSION,\n    firstSiteCompatVersion: FIRST_SITE_COMPAT_VERSION,')
+    .replace('release: CACHE_RELEASE,', 'release: CACHE_RELEASE,\n    firstSiteCompatRelease: FIRST_SITE_COMPAT_RELEASE,')
+    .replace('sitePolicyRelease: SITE_POLICY_RELEASE,', 'sitePolicyRelease: SITE_POLICY_RELEASE,\n    themeLayoutRelease: "theme-layout-v170-20260730",')
+    .replace('NGE_BLOGGING_FORCE_RELOAD_V169', 'NGE_BLOGGING_FORCE_RELOAD_V170')
+    .replace('service-worker-activated-first-site-v169', 'service-worker-activated-theme-layout-v170');
+  for (const marker of [
+    "ngeblogging-app-v170-theme-layout-20260730",
+    "theme-layout-cache-v170",
+    "theme-layout-v170",
+    "theme-layout-v170-20260730",
+  ]) {
+    if (!source.includes(marker)) throw new Error(`V256_V170_COMPAT_SERVICE_WORKER_MARKER_MISSING:${marker}`);
+  }
+  write(file, source);
+}
+
 const v256 = inspect(supersedingV256Checks);
 if (v256.every((entry) => entry.present)) {
-  console.log("[theme-layout-v170-20260730] superseded safely by theme-layout-v256; historical patch skipped to preserve the newer real 4+4 widget model");
+  prepareV170ServiceWorkerCompatibility();
+  console.log("[theme-layout-v170-20260730] UI/widget source superseded by theme-layout-v256; v170 service-worker baseline preserved for later compatibility patches");
   process.exit(0);
 }
 
