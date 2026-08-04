@@ -86,7 +86,21 @@ if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/.test(source)) {
 await write(path, source);
 console.log(`Applied ${RELEASE}: production login retains VITE config first and gains an official-host public fallback.`);
 
-// Rotate the PWA cache only after all historical compatibility patches. Studio
-// source is intentionally left untouched here so older regression contracts can
-// validate their compatibility layers before Vite bundles the already-present v252.
-await import("./patch-service-worker-v252.mjs");
+// The existing production patch chain already owns service-worker compatibility.
+// Rotate only its public cache identity here, after that chain has completed. No
+// WindowClient navigation is added, so auth callbacks and editors keep their state.
+const workerPath = "public/sw.js";
+let worker = await read(workerPath);
+worker = worker.replace(/^const VERSION = ".*";$/m, 'const VERSION = "ngeblogging-app-v252-source-stability-20260804";');
+worker = worker.replace(/^const CACHE_RELEASE = ".*";$/m, 'const CACHE_RELEASE = "source-stability-cache-v252";');
+worker = worker.replace(/^const FORCE_REFRESH_VALUE = ".*";$/m, 'const FORCE_REFRESH_VALUE = "source-stability-v252";');
+if (!worker.includes("SOURCE_STABILITY_RELEASE_V252")) {
+  worker = worker.replace(
+    /^(const VERSION = .*;\n)/m,
+    '$1const SOURCE_STABILITY_RELEASE_V252 = "pwa-source-stability-v252-20260804";\n',
+  );
+}
+worker = worker.replace(/NGE_BLOGGING_(?:FORCE_RELOAD|UPDATE_AVAILABLE)_V\d+/g, "NGE_BLOGGING_UPDATE_AVAILABLE_V252");
+worker = worker.replace(/\n\s*await\s+refreshStaleWindow\(client, url\);/g, "\n      // v252 keeps updates non-disruptive: no forced WindowClient navigation.");
+await write(workerPath, worker);
+console.log("Rotated PWA cache identity to v252 without forced navigation.");
