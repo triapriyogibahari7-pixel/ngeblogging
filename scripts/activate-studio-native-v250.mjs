@@ -5,10 +5,11 @@ const fileUrl = (path) => new URL(path, root);
 const read = (path) => readFile(fileUrl(path), "utf8");
 const write = (path, value) => writeFile(fileUrl(path), value);
 
-export const RELEASE = "studio-native-bundle-activation-v250-20260804";
+export const RELEASE = "studio-native-bundle-activation-v256-20260804";
 export const SIDEBAR_RESCUE_RELEASE = "studio-sidebar-rescue-v251-20260804";
 export const SOURCE_STABILITY_RELEASE = "studio-source-stability-v252-20260804";
 export const SHELL_NARA_RELEASE = "studio-shell-nara-v253-20260804";
+export const FINAL_INTERACTION_RELEASE = "studio-shell-interaction-v255-20260804";
 const PRODUCTION_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
 const PRODUCTION_SUPABASE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
 const PRODUCTION_PROJECT_REF = "polvmlrhqoiflumibfqs";
@@ -43,7 +44,7 @@ function ensureLastImport(source, path) {
   const live = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(path)}[\"'];?\\s*$`, "gm");
   source = source.replace(live, "");
   const anchor = "export default StudioFastGate;";
-  if (!source.includes(anchor)) throw new Error(`V250_BUNDLE_IMPORT_ANCHOR_MISSING:${path}`);
+  if (!source.includes(anchor)) throw new Error(`V256_BUNDLE_IMPORT_ANCHOR_MISSING:${path}`);
   return source.replace(anchor, `import "./${path}";\n\n${anchor}`);
 }
 
@@ -59,11 +60,13 @@ async function activateNativeShell() {
   source = ensureLastImport(source, "studio-source-stability-v252.css");
   source = ensureLastImport(source, "studio-shell-nara-v253.js");
   source = ensureLastImport(source, "studio-shell-nara-v253.css");
+  source = ensureLastImport(source, "studio-shell-interaction-v255.js");
+  source = ensureLastImport(source, "studio-shell-interaction-v255.css");
   source = source.replace(/\n{3,}/g, "\n\n");
 
   for (const item of [...RETIRED_RUNTIME_IMPORTS, ...RETIRED_CSS_IMPORTS]) {
     const live = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(item)}[\"'];?\\s*$`, "m");
-    if (live.test(source)) throw new Error(`V250_CONFLICTING_IMPORT_STILL_LIVE:${item}`);
+    if (live.test(source)) throw new Error(`V256_CONFLICTING_IMPORT_STILL_LIVE:${item}`);
   }
   for (const active of [
     "studio-native-authority-v250.js",
@@ -74,9 +77,11 @@ async function activateNativeShell() {
     "studio-source-stability-v252.css",
     "studio-shell-nara-v253.js",
     "studio-shell-nara-v253.css",
+    "studio-shell-interaction-v255.js",
+    "studio-shell-interaction-v255.css",
   ]) {
     const live = new RegExp(`^\\s*import\\s+[\"']\\./${escapeRegExp(active)}[\"'];?\\s*$`, "m");
-    if (!live.test(source)) throw new Error(`V253_NATIVE_IMPORT_NOT_LIVE:${active}`);
+    if (!live.test(source)) throw new Error(`V256_NATIVE_IMPORT_NOT_LIVE:${active}`);
   }
   if (!(source.indexOf('import "./studio-sidebar-rescue-v251.js";') > source.indexOf('import "./studio-native-authority-v250.css";'))) {
     throw new Error("V251_RESCUE_RUNTIME_ORDER_INVALID");
@@ -95,6 +100,12 @@ async function activateNativeShell() {
   }
   if (!(source.indexOf('import "./studio-shell-nara-v253.css";') > source.indexOf('import "./studio-shell-nara-v253.js";'))) {
     throw new Error("V253_SHELL_NARA_CSS_ORDER_INVALID");
+  }
+  if (!(source.indexOf('import "./studio-shell-interaction-v255.js";') > source.indexOf('import "./studio-shell-nara-v253.css";'))) {
+    throw new Error("V256_V255_RUNTIME_ORDER_INVALID");
+  }
+  if (!(source.indexOf('import "./studio-shell-interaction-v255.css";') > source.indexOf('import "./studio-shell-interaction-v255.js";'))) {
+    throw new Error("V256_V255_CSS_ORDER_INVALID");
   }
   await write(path, source);
 }
@@ -169,5 +180,6 @@ export async function activateStudioNativeV250() {
     sidebarRescueRelease: SIDEBAR_RESCUE_RELEASE,
     sourceStabilityRelease: SOURCE_STABILITY_RELEASE,
     shellNaraRelease: SHELL_NARA_RELEASE,
+    finalInteractionRelease: FINAL_INTERACTION_RELEASE,
   };
 }
