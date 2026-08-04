@@ -6,6 +6,10 @@ const REQUIRED_MENU_LABELS = new Set([
   "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
   "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar",
 ]);
+const LEGACY_CODE_GUTTERS = [
+  ".v216-code-line-gutter", ".v219-code-line-gutter", ".v220-code-line-gutter",
+  ".v222-code-line-gutter", ".v231-code-line-gutter", ".v234-code-gutter", ".v235-code-gutter",
+].join(",");
 
 let frame = 0;
 let resizeTimer = 0;
@@ -264,6 +268,11 @@ function lineNumbersFor(textarea) {
 
   const pane = textarea.closest(".tn-code-pane");
   if (!pane) return null;
+  pane.querySelectorAll(LEGACY_CODE_GUTTERS).forEach((legacy) => {
+    legacy.hidden = true;
+    legacy.setAttribute("aria-hidden", "true");
+    legacy.style.setProperty("display", "none", "important");
+  });
   let gutter = pane.querySelector(`.v259-code-gutter[data-for="${textarea.getAttribute("aria-label") || "code"}"]`);
   if (!gutter) {
     gutter = document.createElement("pre");
