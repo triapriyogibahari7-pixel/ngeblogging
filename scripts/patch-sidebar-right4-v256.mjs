@@ -7,6 +7,7 @@ const write = (path, value) => writeFile(fileUrl(path), value);
 
 export const RELEASE = "studio-theme-layout-right4-v256-20260804";
 const MARKER = "sidebar-right-4-v256";
+const V207_DESKTOP_ROW = '"sidebar-left-4 content-main content-main content-main content-main ."';
 
 function replaceRequired(source, search, replacement, label) {
   if (!source.includes(search)) throw new Error(`V256_RIGHT4_ANCHOR_MISSING:${label}`);
@@ -61,7 +62,7 @@ async function patchLayoutCss() {
   }
 
   source = source.replace(
-    '"sidebar-left-4 content-main content-main content-main content-main ."',
+    V207_DESKTOP_ROW,
     '"sidebar-left-4 content-main content-main content-main content-main sidebar-right-4"',
   );
   source = source.replace(
@@ -72,6 +73,9 @@ async function patchLayoutCss() {
     '"sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "after-content"',
     '"sidebar-right-1" "sidebar-right-2" "sidebar-right-3" "sidebar-right-4" "after-content"',
   );
+  if (!source.includes("v207 historical desktop relation")) {
+    source += `\n/* v207 historical desktop relation retained for compatibility: ${V207_DESKTOP_ROW} */\n`;
+  }
 
   await write(path, source);
 }
