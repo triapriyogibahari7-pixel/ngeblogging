@@ -7,6 +7,7 @@ const studio = read("src/Studio.jsx");
 const device = read("src/studio-device-mode-v140.js");
 const runtime = read("src/studio-shell-v265.js");
 const css = read("src/studio-shell-v265.css");
+const finalCss = read("src/studio-shell-v265-final-hotfix.css");
 const source = read("src/StudioNext.jsx");
 const nara = read("src/NaraAssistant.jsx");
 
@@ -14,17 +15,23 @@ test("v265 final shell loads after screenshot/theme authorities and v263 observe
   const screenshotCss = studio.indexOf('import "./studio-screenshot-authority-v265.css";');
   const runtime265 = studio.indexOf('import "./studio-shell-v265.js";');
   const css265 = studio.indexOf('import "./studio-shell-v265.css";');
+  const finalHotfix = studio.indexOf('import "./studio-shell-v265-final-hotfix.css";');
   assert.ok(screenshotCss >= 0);
   assert.ok(runtime265 > screenshotCss);
   assert.ok(css265 > runtime265);
+  assert.ok(finalHotfix > css265);
   assert.doesNotMatch(studio, /^import "\.\/studio-runtime-v263\.js";/m);
   assert.match(studio, /v263 JS is kept as backup/);
 });
 
-test("physical Android desktop-site detection does not depend on a 900px viewport", () => {
-  assert.match(device, /DESKTOP_SITE_MIN_LAYOUT = 620/);
-  assert.match(device, /DESKTOP_SITE_WIDTH_RATIO = 1\.38/);
+test("physical Android desktop-site detection is sticky and does not depend on a 900px viewport", () => {
+  assert.match(device, /studio-device-mode-v267-20260804/);
+  assert.match(device, /DESKTOP_SITE_MIN_LAYOUT = 600/);
+  assert.match(device, /DESKTOP_SITE_WIDTH_RATIO = 1\.32/);
   assert.match(device, /view\.layoutWidth \/ physical >= DESKTOP_SITE_WIDTH_RATIO/);
+  assert.match(device, /navigator\.userAgentData\?\.mobile === false/);
+  assert.match(device, /let desktopSiteLock = false/);
+  assert.match(device, /if \(requested\) desktopSiteLock = true/);
   assert.match(device, /export function currentStudioDeviceMode\(\)[\s\S]*return detectStudioDeviceMode\(\)/);
   assert.match(device, /export function currentStudioResponsiveMode\(\)[\s\S]*return detectStudioResponsiveMode\(\)/);
 });
@@ -33,18 +40,22 @@ test("large family always exposes one internal sidebar and centered collapsed ic
   assert.match(css, /html\.studio-v265-large #ngeblogging-studio-sidebar\{[\s\S]*display:flex!important[\s\S]*position:fixed!important/);
   assert.match(css, /#ngeblogging-studio-sidebar\.collapsed :is\(\.sn-new,nav>button,\.sn-account-footer>button\)>span\{display:none!important\}/);
   assert.match(css, /#ngeblogging-studio-sidebar\.collapsed :is\(nav>button,\.sn-account-footer>button\)\{justify-content:center!important/);
+  assert.match(finalCss, /#ngeblogging-studio-sidebar\.collapsed[\s\S]*width:72px!important/);
+  assert.match(finalCss, /#ngeblogging-studio-sidebar\.collapsed :is\(\.sn-new,nav>button,\.sn-account-footer>button\)>svg[\s\S]*display:block!important/);
   assert.match(css, /\.sn-sidebar-edge-toggle-v147[\s\S]*display:none!important/);
   for (const label of ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"]) {
     assert.ok(source.includes(label), `missing sidebar label ${label}`);
   }
 });
 
-test("small family has one n trigger and a bounded full-height drawer without blur", () => {
+test("small family has one fixed n trigger and a bounded full-height drawer without blur", () => {
   assert.match(css, /html\.studio-v265-small \.sn-sidebar-toggle\{[\s\S]*display:grid!important/);
   assert.match(css, /html\.studio-v265-small #ngeblogging-studio-sidebar\{[\s\S]*translate3d\(-105%,0,0\)!important/);
   assert.match(css, /html\.studio-v265-small #ngeblogging-studio-sidebar\.mobile-open\{[\s\S]*translate3d\(0,0,0\)!important/);
   assert.match(css, /html\.studio-v265-small \.sn-side-backdrop\{[\s\S]*background:transparent!important[\s\S]*backdrop-filter:none!important/);
   assert.match(css, /body\.sn-mobile-sidebar-open \.sn-sidebar-toggle\{display:none!important/);
+  assert.match(finalCss, /html\.studio-v265-small \.sn-top>\.sn-sidebar-toggle[\s\S]*position:fixed!important/);
+  assert.match(finalCss, /touch-action:manipulation!important/);
 });
 
 test("home content cannot overlap its section heading on compact devices", () => {
@@ -55,6 +66,7 @@ test("home content cannot overlap its section heading on compact devices", () =>
 
 test("Nara stays fixed, non-modal in small and medium, and keeps attachment tools", () => {
   assert.match(css, /\.nara-floating-button\{[\s\S]*position:fixed!important[\s\S]*bottom:var\(--v265-safe-bottom\)!important/);
+  assert.match(finalCss, /\.nara-floating-button\{[\s\S]*right:max\(12px,env\(safe-area-inset-right\)\)!important/);
   assert.match(css, /\.nara-assistant-layer\{[\s\S]*pointer-events:none!important/);
   assert.match(runtime, /const full = size === "full"/);
   assert.match(runtime, /backdrop\.hidden = !full/);
@@ -71,8 +83,8 @@ test("Theme code editor uses real line-number gutter and responsive split geomet
   assert.match(css, /\.tn-code-pane textarea\{[\s\S]*white-space:pre!important[\s\S]*overflow:auto!important/);
 });
 
-test("v265 shell contains no automatic logout, storage wipe, or forced reload", () => {
-  for (const text of [runtime, css]) {
+test("v265/v267 shell contains no automatic logout, storage wipe, or forced reload", () => {
+  for (const text of [runtime, css, finalCss]) {
     assert.doesNotMatch(text, /localStorage\.clear\s*\(/);
     assert.doesNotMatch(text, /sessionStorage\.clear\s*\(/);
     assert.doesNotMatch(text, /signOut\s*\(/);
