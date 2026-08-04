@@ -1,8 +1,8 @@
 export const RELEASE = "studio-live-shell-v279-20260804";
+export const RETIRED_LIVE_OBSERVERS_BY = "studio-native-shell-v280-20260804";
 
-let frame = 0;
 let bootPass = 0;
-const BOOT_PASSES = 8;
+const BOOT_PASSES = 2;
 
 function root() { return document.documentElement; }
 function shell() { return document.querySelector(".sn-shell[data-device-mode]") || document.querySelector(".sn-shell"); }
@@ -128,17 +128,11 @@ function normalizeNara() {
 }
 
 function sync() {
-  frame = 0;
-  root().dataset.studioLiveShellV279 = RELEASE;
+  root().dataset.studioLiveShellV279 = `${RELEASE}:compat-v280`;
   resetContainingBlocks();
   normalizeSidebar();
   normalizeTopbar();
   normalizeNara();
-}
-
-function schedule() {
-  if (frame) return;
-  frame = requestAnimationFrame(sync);
 }
 
 function start() {
@@ -146,21 +140,14 @@ function start() {
   const pulse = () => {
     sync();
     bootPass += 1;
-    if (bootPass < BOOT_PASSES) setTimeout(pulse, 180);
+    if (bootPass < BOOT_PASSES) setTimeout(pulse, 160);
   };
-  setTimeout(pulse, 90);
+  setTimeout(pulse, 70);
 }
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  window.addEventListener("scroll", schedule, { passive: true });
-  window.addEventListener("resize", schedule, { passive: true });
-  window.addEventListener("orientationchange", schedule, { passive: true });
-  window.addEventListener("pageshow", schedule, { passive: true });
-  window.visualViewport?.addEventListener("resize", schedule, { passive: true });
-  window.visualViewport?.addEventListener("scroll", schedule, { passive: true });
-  window.addEventListener("ngeblogging:studio-device-mode-change", schedule);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
-  document.addEventListener("click", () => setTimeout(schedule, 0), false);
+  // Compatibility boot only. v280 owns live resize/orientation/device-mode synchronization.
+  // No scroll listener, no visualViewport scroll listener, no MutationObserver.
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
 }
