@@ -1,0 +1,31 @@
+{
+  "release": "studio-shell-precision-v278-20260804",
+  "cache": "studio-shell-precision-cache-v278",
+  "date": "2026-08-04",
+  "sourceBranch": "main",
+  "scope": [
+    "single-window-capture-n-owner",
+    "retire-v276-competing-capture-runtime",
+    "small-fixed-n-and-profile-topbar",
+    "desktop-visible-expanded-and-icon-rail-sidebar",
+    "transparent-mobile-drawer-backdrop",
+    "fixed-nara-launcher",
+    "nara-small-medium-nonmodal",
+    "nara-attachment-menu-above-composer",
+    "theme-grid-visible-100",
+    "layout-map-centered-4-left-post-4-right",
+    "mobile-preview-before-code",
+    "code-editor-max-10000-lines",
+    "mobile-domain-full-width-actions",
+    "persisted-auth-non-destructive"
+  ],
+  "verification": {
+    "requiredSidebarItems": 13,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "maxCodeLines": 10000,
+    "naraSizes": ["small", "medium", "full"],
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"]
+  }
+}
