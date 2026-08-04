@@ -1,0 +1,40 @@
+name: Studio v275 CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-v275-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run v274 and v275 shell regression tests
+        run: node --test tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs
+
+      - name: Run production build regression suite
+        run: npm run build
