@@ -25,15 +25,17 @@ const viewports = [
   "1440x900", "1920x1080",
 ];
 
-test("v259 is installed after v257 and protected by the production finalizer", () => {
+test("v259 remains installed before the v260 final authority", () => {
   const v257 = studio.indexOf('import "./studio-visual-native-v257.css";');
   const runtimeIndex = studio.indexOf('import "./studio-six-mode-authority-v259.js";');
   const cssIndex = studio.indexOf('import "./studio-six-mode-authority-v259.css";');
   const hotfixIndex = studio.indexOf('import "./studio-six-mode-authority-v259-hotfix.css";');
+  const v260Index = studio.indexOf('import "./studio-stability-v260.js";');
   assert.ok(v257 >= 0);
   assert.ok(runtimeIndex > v257);
   assert.ok(cssIndex > runtimeIndex);
   assert.ok(hotfixIndex > cssIndex);
+  assert.ok(v260Index > hotfixIndex);
   assert.match(finalizer, /studio-v259-post-build-order-20260804/);
   assert.match(finalizer, /const HOTFIX = "studio-six-mode-authority-v259-hotfix\.css"/);
   assert.match(finalizer, /hotfix > styles/);
@@ -131,11 +133,13 @@ test("v259 release manifest keeps the requested viewport matrix without fake E2E
   assert.match(release.validation.capacityClaim, /No 900-billion-user claim/i);
 });
 
-test("v259 service worker rotates cache without destructive session behavior", () => {
+test("v259/v260 service-worker candidate is preserved but the failed post-bundle rotation is not invoked", () => {
   assert.match(sw, /ACTIVE_VERSION_V258/);
   assert.match(sw, /ACTIVE_VERSION_V259/);
-  assert.match(sw, /NGE_BLOGGING_UPDATE_AVAILABLE_V259/);
-  assert.match(vite, /rotateServiceWorkerV259/);
+  assert.match(sw, /ACTIVE_VERSION_V260/);
+  assert.match(sw, /NGE_BLOGGING_UPDATE_AVAILABLE_V260/);
+  assert.match(vite, /rotateServiceWorkerV258/);
+  assert.doesNotMatch(vite, /rotateServiceWorkerV259/);
   assert.doesNotMatch(runtime, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
-  assert.match(sw, /V259_ROTATE_DESTRUCTIVE_SESSION_ACTION/);
+  assert.match(sw, /V259_ROTATE_DESTRUCTIVE_SESSION_ACTION|V260_ROTATE_DESTRUCTIVE_SESSION_ACTION/);
 });
