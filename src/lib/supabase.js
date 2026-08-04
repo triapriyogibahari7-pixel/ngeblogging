@@ -5,6 +5,7 @@ const AUTH_RELEASE = "auth-resilience-v190-20260801";
 const AUTH_LEGACY_RELEASE = "auth-production-v153-20260730";
 const AUTH_PRODUCTION_READINESS_V245 = "auth-production-readiness-v245-20260803";
 const AUTH_NETWORK_DEADLINE_RELEASE_V259 = "auth-network-deadline-v259-20260804";
+const AUTH_DIRECT_FIRST_RELEASE_V263 = "auth-direct-first-v263-20260804";
 const AUTH_GATEWAY_PREFIX = "/api/auth-proxy";
 const DATA_GATEWAY_PREFIX = "/api/data-proxy";
 const DATA_TRANSPORT_RELEASE_V190 = "studio-data-gateway-v190-20260801";
@@ -168,12 +169,50 @@ async function gatewayFirstV190(input, init, proxy, kind) {
   );
 }
 
+// Login is deliberately direct-first in v263. Authentication must not depend on the
+// same-origin API gateway being healthy. A real 4xx from Supabase is returned immediately;
+// only transport/5xx failures use the gateway as a bounded fallback.
+async function directAuthFirstV263(input, init, proxy) {
+  const directInput = directRequestV190(input);
+  try {
+    const response = await fetchWithDeadlineV259(
+      directInput,
+      init,
+      DIRECT_DEADLINE_MS_V259,
+      "Koneksi autentikasi langsung",
+    );
+    if (!GATEWAY_FALLBACK_STATUSES.has(response.status)) {
+      if (typeof document !== "undefined") {
+        document.documentElement.dataset.authTransportV190 = "direct-supabase-primary";
+        document.documentElement.dataset.authTransportV263 = AUTH_DIRECT_FIRST_RELEASE_V263;
+      }
+      return response;
+    }
+    console.warn(`Supabase autentikasi langsung mengembalikan ${response.status}; mencoba gateway.`);
+  } catch (error) {
+    console.warn("Supabase autentikasi langsung tidak terjangkau; mencoba gateway.", error);
+  }
+
+  if (!proxy) throw new Error("Jalur autentikasi langsung tidak dapat dijangkau.");
+  const response = await fetchWithDeadlineV259(
+    proxyRequestV190(input, proxy),
+    init,
+    GATEWAY_DEADLINE_MS_V259,
+    "Gateway autentikasi cadangan",
+  );
+  if (typeof document !== "undefined") {
+    document.documentElement.dataset.authTransportV190 = "same-origin-gateway-fallback";
+    document.documentElement.dataset.authTransportV263 = AUTH_DIRECT_FIRST_RELEASE_V263;
+  }
+  return response;
+}
+
 async function authAwareFetch(input, init) {
   if (!nativeFetch) throw new Error("Fetch API tidak tersedia pada browser ini.");
   const dataProxyV190 = proxiedDataUrlV190(input);
   if (dataProxyV190) return gatewayFirstV190(input, init, dataProxyV190, "data");
   const authProxyV190 = proxiedAuthUrl(input);
-  if (authProxyV190) return gatewayFirstV190(input, init, authProxyV190, "auth");
+  if (authProxyV190) return directAuthFirstV263(input, init, authProxyV190);
   return nativeFetch(input, init);
 }
 
@@ -197,6 +236,7 @@ export const supabase = supabaseConfigured
 if (typeof document !== "undefined") {
   document.documentElement.dataset.authProductionReadinessV245 = AUTH_PRODUCTION_READINESS_V245;
   document.documentElement.dataset.authNetworkDeadlineV259 = AUTH_NETWORK_DEADLINE_RELEASE_V259;
+  document.documentElement.dataset.authDirectFirstV263 = AUTH_DIRECT_FIRST_RELEASE_V263;
   document.documentElement.dataset.supabaseConfigSourceV245 = authConfigSourceV245;
   document.documentElement.dataset.supabaseTransport = supabaseConfigured ? "auth-data-resilience-v190" : "not-configured";
   document.documentElement.dataset.authProductionRelease = AUTH_RELEASE;
@@ -396,11 +436,13 @@ export {
   AUTH_LEGACY_RELEASE,
   AUTH_PRODUCTION_READINESS_V245,
   AUTH_NETWORK_DEADLINE_RELEASE_V259,
+  AUTH_DIRECT_FIRST_RELEASE_V263,
   AUTH_GATEWAY_PREFIX,
   DATA_GATEWAY_PREFIX,
   DATA_TRANSPORT_RELEASE_V190,
   AUTH_V186_COMPAT,
   authAwareFetch,
   fetchWithDeadlineV259,
+  directAuthFirstV263,
   installAuthEntryBridge,
 };
