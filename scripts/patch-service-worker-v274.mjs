@@ -66,3 +66,5 @@ for (const marker of ["UI_PATCH_RELEASE_V274", "UI_CACHE_RELEASE_V274", RELEASE,
 }
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated service-worker assets to ${CACHE_RELEASE}`);
+
+await import("./patch-service-worker-v275.mjs");
