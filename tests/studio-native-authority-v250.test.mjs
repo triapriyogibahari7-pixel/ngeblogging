@@ -92,12 +92,20 @@ test("Nara native controls remain and small medium are non-modal", () => {
   assert.doesNotMatch(css, /\.nara-floating-button[^}]*animation:[^n]/);
 });
 
-test("Theme editor keeps device preview, real gutter, 10 areas and custom HTML widget", () => {
+test("Theme editor keeps device preview, real gutter, detailed areas and custom HTML widget", () => {
   for (const label of ["Aplikasi","Handphone","Mobile","Perangkat kecil","Tablet","Laptop","Situs desktop","Komputer"]) assert.ok(theme.includes(label), label);
   assert.ok(runtime.includes("tn-code-gutter-v250"));
   assert.ok(runtime.includes("LAYOUT_AREAS"));
   assert.ok(css.includes(".v250-layout-map"));
-  assert.equal((widgets.match(/id: \"(?:header-left|header-right|below-header|sidebar-left|before-content|after-content|sidebar-right|footer-left|footer-right|footer-wide)\"/g) || []).length, 10);
+  if (widgets.includes("SIDEBAR_LEFT_SLOTS") && entry.includes("studio-theme-layout-v256.css")) {
+    for (let index = 1; index <= 4; index += 1) {
+      assert.ok(widgets.includes(`"sidebar-left-${index}"`), `v256 missing left ${index}`);
+      assert.ok(widgets.includes(`"sidebar-right-${index}"`), `v256 missing right ${index}`);
+    }
+    assert.ok(widgets.includes("migrateLegacyArea"));
+  } else {
+    assert.equal((widgets.match(/id: \"(?:header-left|header-right|below-header|sidebar-left|before-content|after-content|sidebar-right|footer-left|footer-right|footer-wide)\"/g) || []).length, 10);
+  }
   assert.ok(widgets.includes('id: "custom-html"'));
 });
 
