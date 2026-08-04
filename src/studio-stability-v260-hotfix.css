@@ -1,4 +1,25 @@
-/* v260 visual hotfix — explicit brand paint and final compact-phone geometry. */
+/* v260 visual hotfix — explicit brand paint and final compact/desktop geometry. */
+html[data-studio-stability-v260] .sn-top{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+}
+html[data-studio-stability-v260] .sn-top-actions{
+  display:flex!important;
+  align-items:center!important;
+  margin-left:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+}
+html[data-studio-v260-family="large"] :is(.sn-workspace,.sn-cloud){
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+
 html[data-studio-stability-v260] .sn-logo-mark,
 html[data-studio-v260-family="small"] .sn-mobile-menu-mark{
   background:linear-gradient(145deg,#315fe8,#3d53d9)!important;
@@ -44,6 +65,57 @@ html[data-studio-v260-family="large"] .sn-logo>b{
 }
 html[data-studio-v260-family="large"][data-studio-v260-sidebar="collapsed"] .sn-logo>b{display:none!important}
 
+/* Large mode must never degrade to an empty rail: every menu icon remains visible. */
+html[data-studio-v260-family="large"] #ngeblogging-studio-sidebar>nav,
+html[data-studio-v260-family="large"] #ngeblogging-studio-sidebar>.sn-account-footer{
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-studio-v260-family="large"] :is(
+  #ngeblogging-studio-sidebar>.sn-new,
+  #ngeblogging-studio-sidebar>nav>button,
+  #ngeblogging-studio-sidebar>.sn-account-footer>button
+){
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html[data-studio-v260-family="large"] :is(
+  #ngeblogging-studio-sidebar>.sn-new,
+  #ngeblogging-studio-sidebar>nav>button,
+  #ngeblogging-studio-sidebar>.sn-account-footer>button
+)>svg{
+  display:block!important;
+  width:21px!important;
+  height:21px!important;
+  min-width:21px!important;
+  color:currentColor!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+/* Small mode must use the complete viewport; there is no leftover desktop rail. */
+html[data-studio-v260-family="small"] :is(.sn-shell,.sn-main,.sn-view-pad){
+  margin-left:0!important;
+  left:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  transform:none!important;
+}
+html[data-studio-v260-family="small"][data-studio-v260-sidebar="closed"] #ngeblogging-studio-sidebar{
+  transform:translate3d(-105%,0,0)!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  box-shadow:none!important;
+}
+html[data-studio-v260-family="small"][data-studio-v260-sidebar="open"] #ngeblogging-studio-sidebar{
+  transform:translate3d(0,0,0)!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+
 /* Keep dense dashboard cards useful without becoming one extremely long phone page. */
 @media (min-width:360px) and (max-width:760px){
   html[data-studio-v260-family="small"] .sn-metrics,
@@ -67,6 +139,27 @@ html[data-studio-v260-family="small"] .sn-side-backdrop{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* Add/switch site stays a medium, bounded dialog on small devices instead of a clipped full screen. */
+html[data-studio-v260-family="small"] .sn-modal-layer{
+  display:grid!important;
+  place-items:center!important;
+  padding:max(10px,env(safe-area-inset-top,0px)) 10px max(10px,env(safe-area-inset-bottom,0px))!important;
+}
+html[data-studio-v260-family="small"] .sn-site-manager{
+  width:min(560px,calc(100vw - 20px))!important;
+  height:auto!important;
+  max-height:calc(100dvh - 20px)!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+}
+html[data-studio-v260-family="small"] .sn-site-manager :is(.sn-sites-list,.sn-create-site){min-width:0!important;max-width:100%!important}
+
+/* Profile and Settings are two separate surfaces even though React shares one form component. */
+html[data-studio-stability-v260] [data-account-surface-v189="profile"] .sn-settings-grid>section:nth-child(2),
+html[data-studio-stability-v260] [data-account-surface-v189="settings"] .sn-settings-grid>section:nth-child(1),
+html[data-studio-stability-v260] .sn-settings-grid>section[hidden]{display:none!important}
+html[data-studio-stability-v260] [data-account-surface-v189] .sn-settings-grid{grid-template-columns:minmax(0,1fr)!important}
 
 /* Nara defaults to non-modal from the very first React paint. Runtime v260 then
    mirrors the same state in data-v260-*; this prevents one-frame white/blur locks. */
@@ -96,9 +189,17 @@ html[data-studio-stability-v260] .nara-assistant-layer:has(.nara-assistant-shell
 
 /* Final Nara launcher paint: no blink, no text escaping the icon. */
 html[data-studio-stability-v260] .nara-floating-button:not([hidden]){
+  position:fixed!important;
+  right:calc(max(10px,env(safe-area-inset-right,0px)) + 2px)!important;
+  bottom:calc(max(10px,env(safe-area-inset-bottom,0px)) + 2px)!important;
+  left:auto!important;
+  top:auto!important;
+  z-index:11020!important;
   background:linear-gradient(145deg,#315fe8,#5649d8)!important;
   color:#fff!important;
   box-shadow:0 14px 34px rgba(43,75,184,.28)!important;
+  animation:none!important;
+  transition:none!important;
 }
 html[data-studio-stability-v260] .nara-floating-button:not([hidden])>span{
   position:absolute!important;
@@ -109,5 +210,5 @@ html[data-studio-stability-v260] .nara-floating-button:not([hidden])>span{
 html[data-studio-stability-v260] .nara-floating-button:not([hidden]) :is(b,small){display:none!important}
 
 /* Profile is always above the topbar/sidebar while staying inside the viewport. */
-html[data-studio-stability-v260] .sn-avatar{z-index:11140!important}
+html[data-studio-stability-v260] .sn-avatar{z-index:11140!important;display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
 html[data-studio-stability-v260] .sn-profile-menu-v260{z-index:11220!important}
