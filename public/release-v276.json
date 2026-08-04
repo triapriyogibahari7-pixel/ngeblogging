@@ -1,0 +1,14 @@
+{
+  "release": "studio-sidebar-recovery-v276-20260804",
+  "cache": "studio-sidebar-recovery-cache-v276",
+  "date": "2026-08-04",
+  "scope": [
+    "large-sidebar-always-visible",
+    "large-collapsed-icon-rail-visible",
+    "large-content-resizes-with-sidebar",
+    "small-single-n-trigger",
+    "small-full-height-drawer",
+    "react-shell-device-mode-authority",
+    "retire-duplicate-external-sidebar-controls"
+  ]
+}

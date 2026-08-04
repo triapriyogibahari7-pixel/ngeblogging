@@ -103,3 +103,5 @@ if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/.test(sour
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated final service-worker caches to ${CACHE_RELEASE}`);
+
+await import("./patch-service-worker-v276.mjs");
