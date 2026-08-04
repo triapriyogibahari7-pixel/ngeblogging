@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "node --test tests/studio-shell-interaction-v255.test.mjs tests/studio-production-order-v256.test.mjs tests/studio-visual-native-v257.test.mjs tests/studio-theme-right4-v258.test.mjs tests/studio-six-mode-authority-v259.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
