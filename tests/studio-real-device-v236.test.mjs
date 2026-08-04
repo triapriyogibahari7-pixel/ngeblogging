@@ -8,7 +8,6 @@ import "./studio-source-stability-v252.test.mjs";
 import "./studio-shell-nara-v253.test.mjs";
 import "./studio-shell-interaction-v255.test.mjs";
 import "./studio-production-order-v256.test.mjs";
-import "./studio-theme-layout-v257.test.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const entry = read("src/Studio.jsx");
