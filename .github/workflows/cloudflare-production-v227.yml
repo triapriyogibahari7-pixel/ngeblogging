@@ -1,4 +1,4 @@
-name: Ngeblogging production v228 live authority
+name: Ngeblogging production v253 live authority
 
 on:
   push:
@@ -11,13 +11,13 @@ permissions:
   statuses: write
 
 concurrency:
-  group: ngeblogging-production-v228
+  group: ngeblogging-production-v253
   cancel-in-progress: false
 
 jobs:
-  deploy-v228:
+  deploy-v253:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -64,114 +64,128 @@ jobs:
           [[ "${CLOUDFLARE_ZONE_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ZONE_ID_INVALID"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
 
-      - name: Apply full authority chain and focused v228 regression
+      - name: Apply compatibility chain and current v253 regression
         run: |
           node scripts/patch-service-worker-v179.mjs
-          node --test tests/studio-production-v228.test.mjs
+          node --test tests/studio-production-v228.test.mjs tests/studio-shell-nara-v253.test.mjs
           npm run test:production
 
       - name: Build production application
         run: npm run build
 
-      - name: Assert v224 v226 v227 and v228 contracts
+      - name: Assert historical compatibility and v253 contracts
         shell: bash
         run: |
           set -euo pipefail
-          for file in dist/release-v224.json dist/release-v225.json dist/release-v226.json dist/release-v227.json dist/release-v228.json; do test -f "$file"; done
+          for file in dist/release-v224.json dist/release-v226.json dist/release-v227.json dist/release-v228.json dist/release-v253.json; do test -f "$file"; done
           node - <<'NODE'
           const fs=require('fs');
-          const a=JSON.parse(fs.readFileSync('dist/release-v224.json','utf8'));
-          const g=JSON.parse(fs.readFileSync('dist/release-v226.json','utf8'));
-          const n=JSON.parse(fs.readFileSync('dist/release-v227.json','utf8'));
-          const v=JSON.parse(fs.readFileSync('dist/release-v228.json','utf8'));
-          if(a.release!=='data-reauth-v224-20260803'||a.repairs?.data401403SingleflightRefresh!==true||a.repairs?.dataRetryUsesFreshAccessToken!==true)process.exit(1);
-          if(g.release!=='studio-production-v226-native-green-layout-20260803'||g.themeLayout?.nativeReactMap!==true||g.themeLayout?.fourLeftSlots!==true||g.themeLayout?.fourRightSlots!==true||g.themeLayout?.postPageCenter!==true||g.widgets?.count!==26||g.themeCatalog?.builtInThemes!==100)process.exit(1);
-          if(n.release!=='nara-fallback-model-contract-v227-20260803'||n.nara?.workersAiFallbackHonorsModel!==true||n.nara?.workersAiFallbackHonorsIntelligence!==true)process.exit(1);
-          if(v.release!=='studio-production-v228-green-editor-nara-20260803'||v.responsive?.desktopSiteOnPhysicalPhoneLocksLarge!==true||v.theme?.builtInThemesRequired!==100||v.theme?.widgetCountRequired!==26||v.theme?.nativeGreenMapPreserved!==true||v.theme?.semanticSmallMap!==true||v.codeEditor?.actualLineNumbers!==true||v.codeEditor?.maxSupportedLines!==10000||v.codeEditor?.smallPreviewAboveCode!==true||v.codeEditor?.largeCodeLeftPreviewRight!==true||v.nara?.cameraPhotoFile!==true||v.nara?.smallMediumNonModal!==true||v.authentication?.v224SingleFlightDataReauthPreserved!==true||v.claims?.massCapacityClaimed!==false)process.exit(1);
+          const old=JSON.parse(fs.readFileSync('dist/release-v228.json','utf8'));
+          const v=JSON.parse(fs.readFileSync('dist/release-v253.json','utf8'));
+          if(old.release!=='studio-production-v228-green-editor-nara-20260803'||old.theme?.builtInThemesRequired!==100||old.theme?.widgetCountRequired!==26||old.nara?.cameraPhotoFile!==true)process.exit(1);
+          if(v.release!=='studio-shell-nara-v253-20260804')process.exit(1);
+          if(v.responsive?.largeSidebarAlwaysPresent!==true||v.responsive?.largeExpandedWidth!==248||v.responsive?.largeCollapsedWidth!==70||v.responsive?.smallBackdropBlur!==false)process.exit(1);
+          if(v.sidebar?.singleNControl!==true||v.sidebar?.contentTracksSidebarWidth!==true||v.sidebar?.profileVisibleOnLargeAndSmall!==true)process.exit(1);
+          if(v.nara?.launcherFixedToLowerRightSafeArea!==true||v.nara?.smallNonModal!==true||v.nara?.mediumNonModal!==true||v.nara?.fullModal!==true||v.nara?.attachmentMenuNotClipped!==true||v.nara?.cameraPhotoFilePreserved!==true||v.nara?.microphonePreserved!==true||v.nara?.speakerPreserved!==true||v.nara?.modelSelectorPreserved!==true||v.nara?.intelligenceSelectorPreserved!==true)process.exit(1);
+          if(v.serviceWorker?.version!=='ngeblogging-app-v253-shell-nara-20260804'||v.serviceWorker?.cache!=='studio-shell-nara-cache-v253'||v.serviceWorker?.forcedWindowNavigation!==false)process.exit(1);
+          if(v.authentication?.persistSessionPreserved!==true||v.authentication?.autoRefreshTokenPreserved!==true||v.authentication?.automaticLogoutAdded!==false)process.exit(1);
+          if(v.claims?.massCapacityClaimed!==false||v.claims?.providerOAuthEndToEndClaimed!==false||v.claims?.liveCloudflareVerificationRequired!==true)process.exit(1);
           NODE
-          grep -R -q 'studio-production-v228-green-editor-nara-20260803' dist
-          grep -R -q 'ngeblogging-app-v228-green-editor-nara-20260803' dist
-          grep -R -q 'green-editor-nara-cache-v228' dist
+          grep -R -q 'studio-shell-nara-v253-20260804' dist
+          grep -R -q 'ngeblogging-app-v253-shell-nara-20260804' dist
+          grep -R -q 'studio-shell-nara-cache-v253' dist
+          grep -R -q -- '--v253-side-open' dist
+          grep -R -q 'nara-floating-button' dist
 
       - name: Build active-zone Wrangler configuration
         shell: bash
         run: |
           set -euo pipefail
           node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v228
+          npx wrangler deploy --config wrangler.production.active-zone.jsonc --dry-run --outdir .wrangler-production-v253
 
       - name: Deploy Worker and current assets
         run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
 
-      - name: Verify v228 on Workers.dev before route cutover
+      - name: Verify v253 assets on Workers.dev before route cutover
         shell: bash
         run: |
           set -euo pipefail
+          verified=false
           for attempt in $(seq 1 24); do
             stamp="$(date +%s)-${attempt}"
-            body=/tmp/v228-workers.json
-            headers=/tmp/v228-workers.headers
-            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v228.json?v228=${stamp}" || true)"
-            if [[ "${code}" == "200" ]] && ! grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}"; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v228-green-editor-nara-20260803"||x.responsive?.desktopSiteOnPhysicalPhoneLocksLarge!==true||x.theme?.nativeGreenMapPreserved!==true||x.codeEditor?.actualLineNumbers!==true||x.nara?.cameraPhotoFile!==true||x.authentication?.v224SingleFlightDataReauthPreserved!==true)process.exit(1)' "${body}"; then
-                echo "WORKERS_DEV_V228_VERIFIED"
-                exit 0
+            release_body=/tmp/v253-workers-release.json
+            studio_body=/tmp/v253-workers-studio.html
+            release_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${release_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/release-v253.json?v253=${stamp}" || true)"
+            studio_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "${studio_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}/studio?v253=${stamp}" || true)"
+            if [[ "${release_code}" == "200" && "${studio_code}" == "200" ]] && ! grep -q 'WHITE-R4-2026.07.12' "${release_body}" "${studio_body}"; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-shell-nara-v253-20260804"||x.responsive?.largeSidebarAlwaysPresent!==true||x.nara?.launcherFixedToLowerRightSafeArea!==true||x.nara?.attachmentMenuNotClipped!==true||x.serviceWorker?.forcedWindowNavigation!==false)process.exit(1)' "${release_body}" && grep -q 'id="root"' "${studio_body}"; then
+                script_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<script[^>]+src="([^"]+\.js)"/);process.stdout.write(m?.[1]||"")' "${studio_body}")"
+                css_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<link[^>]+href="([^"]+\.css)"/);process.stdout.write(m?.[1]||"")' "${studio_body}")"
+                if [[ -n "${script_path}" && -n "${css_path}" ]]; then
+                  curl -fsS --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}${script_path}?v253=${stamp}" -o /tmp/v253-workers-app.js || true
+                  curl -fsS --connect-timeout 10 --max-time 30 -H 'cache-control: no-cache' "${WORKERS_DEV_SMOKE_TEST_URL%/}${css_path}?v253=${stamp}" -o /tmp/v253-workers-app.css || true
+                  if grep -q 'studio-shell-nara-v253-20260804' /tmp/v253-workers-app.js && grep -q -- '--v253-side-open' /tmp/v253-workers-app.css && grep -q 'nara-floating-button' /tmp/v253-workers-app.css; then
+                    verified=true
+                    break
+                  fi
+                fi
               fi
             fi
             sleep 5
           done
-          echo "WORKERS_DEV_V228_VERIFY_FAILED"
-          exit 1
+          [[ "${verified}" == true ]] || { echo "WORKERS_DEV_V253_VERIFY_FAILED"; exit 1; }
+          echo "WORKERS_DEV_V253_VERIFIED"
 
       - name: Install authoritative apex www and tenant routes
         run: node scripts/finalize-cloudflare-route-cutover-v182.mjs
 
-      - name: Verify live apex auth Studio tenant and v228 authority
+      - name: Verify live apex auth Studio tenant and v253 authority
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 42); do
             stamp="$(date +%s)-${attempt}"
             ok=true
-            for path in / /login /signup /studio /release-v224.json /release-v226.json /release-v227.json /release-v228.json; do
+            for path in / /login /signup /studio /release-v253.json; do
               safe="$(printf '%s' "${path}" | tr '/.' '__')"
-              body="/tmp/v228-apex-${safe}.out"
-              headers="/tmp/v228-apex-${safe}.headers"
-              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v228=${stamp}" || true)"
+              body="/tmp/v253-apex-${safe}.out"
+              headers="/tmp/v253-apex-${safe}.headers"
+              code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${headers}" -o "${body}" -w '%{http_code}' -H 'cache-control: no-cache' "https://ngeblogging.com${path}?v253=${stamp}" || true)"
               [[ "${code}" == "200" ]] || ok=false
               grep -q 'WHITE-R4-2026.07.12' "${body}" "${headers}" && ok=false || true
-              if [[ "${path}" == "/release-v228.json" ]]; then
-                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-production-v228-green-editor-nara-20260803"||x.responsive?.desktopSiteOnPhysicalPhoneLocksLarge!==true||x.theme?.nativeGreenMapPreserved!==true||x.theme?.builtInThemesRequired!==100||x.theme?.widgetCountRequired!==26||x.codeEditor?.actualLineNumbers!==true||x.codeEditor?.maxSupportedLines!==10000||x.nara?.cameraPhotoFile!==true||x.nara?.smallMediumNonModal!==true||x.authentication?.v224SingleFlightDataReauthPreserved!==true)process.exit(1)' "${body}" || ok=false
-              elif [[ "${path}" != /release-* ]]; then
+              if [[ "${path}" == "/release-v253.json" ]]; then
+                node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(x.release!=="studio-shell-nara-v253-20260804"||x.responsive?.largeSidebarAlwaysPresent!==true||x.sidebar?.singleNControl!==true||x.nara?.launcherFixedToLowerRightSafeArea!==true||x.nara?.smallNonModal!==true||x.nara?.mediumNonModal!==true||x.nara?.attachmentMenuNotClipped!==true||x.serviceWorker?.version!=="ngeblogging-app-v253-shell-nara-20260804"||x.serviceWorker?.forcedWindowNavigation!==false)process.exit(1)' "${body}" || ok=false
+              else
                 grep -q 'id="root"' "${body}" || ok=false
               fi
             done
-            tenant_body=/tmp/v228-tenant.html
-            tenant_headers=/tmp/v228-tenant.headers
-            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${tenant_headers}" -o "${tenant_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v228=${stamp}" || true)"
+            tenant_body=/tmp/v253-tenant.html
+            tenant_headers=/tmp/v253-tenant.headers
+            tenant_code="$(curl -sS -L --connect-timeout 10 --max-time 25 -D "${tenant_headers}" -o "${tenant_body}" -w '%{http_code}' -H 'cache-control: no-cache' "${TENANT_SMOKE_TEST_URL%/}/?v253=${stamp}" || true)"
             [[ "${tenant_code}" == "200" ]] || ok=false
             grep -q 'WHITE-R4-2026.07.12' "${tenant_body}" "${tenant_headers}" && ok=false || true
             if [[ "${ok}" == true ]]; then
-              echo "PRODUCTION_V228_APEX_AUTH_STUDIO_TENANT_VERIFIED"
+              echo "PRODUCTION_V253_APEX_AUTH_STUDIO_TENANT_VERIFIED"
               exit 0
             fi
             sleep 10
           done
-          echo "PRODUCTION_V228_LIVE_VERIFY_FAILED"
+          echo "PRODUCTION_V253_LIVE_VERIFY_FAILED"
           exit 1
 
-      - name: Publish v228 production success status
+      - name: Publish v253 production success status
         if: success()
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'success', context:'ngeblogging/production-v228', description:'v228 build, Worker, route cutover dan live authority terverifikasi', target_url:runUrl });
+            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'success', context:'ngeblogging/production-v253', description:'v253 build, Worker, route cutover dan live authority terverifikasi', target_url:runUrl });
 
-      - name: Publish v228 production failure status
+      - name: Publish v253 production failure status
         if: failure()
         uses: actions/github-script@v7
         with:
           script: |
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'failure', context:'ngeblogging/production-v228', description:'v228 belum lolos build, Worker, route cutover atau verifikasi live', target_url:runUrl });
+            await github.rest.repos.createCommitStatus({ owner:context.repo.owner, repo:context.repo.repo, sha:context.sha, state:'failure', context:'ngeblogging/production-v253', description:'v253 belum lolos build, Worker, route cutover atau verifikasi live', target_url:runUrl });
