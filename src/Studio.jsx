@@ -114,5 +114,6 @@ import "./studio-sidebar-single-toggle-v267.js";
 import "./studio-final-authority-v269.js";
 import "./studio-scroll-chrome-v270.js";
 import "./studio-scroll-chrome-v270.css";
+import "./studio-shell-authority-v272.js";
 
 export default StudioFastGate;
