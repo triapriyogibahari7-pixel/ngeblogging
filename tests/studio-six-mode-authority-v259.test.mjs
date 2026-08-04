@@ -5,14 +5,21 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const runtime = read("src/studio-six-mode-authority-v259.js");
 const css = read("src/studio-six-mode-authority-v259.css");
+const shellV255 = read("src/studio-shell-interaction-v255.js");
 const studio = read("src/Studio.jsx");
 const finalizer = read("scripts/finalize-studio-v259-order.mjs");
 const vite = read("vite.config.js");
 const sw = read("scripts/service-worker-v259-rotate.mjs");
+const release = JSON.parse(read("public/release-v259.json"));
 
 const requiredMenu = [
   "Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik",
   "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar",
+];
+const viewports = [
+  "320x568", "360x640", "375x667", "390x844", "412x915", "430x932",
+  "600x960", "768x1024", "820x1180", "1024x768", "1280x720", "1366x768",
+  "1440x900", "1920x1080",
 ];
 
 test("v259 is installed after v257 and protected by the production finalizer", () => {
@@ -54,19 +61,24 @@ test("profile remains fixed and bounded on both small and large layouts", () => 
   assert.match(css, /sn-profile-menu-v150[\s\S]*max-width:calc\(100vw - 20px\)!important/);
 });
 
-test("Nara small and medium are non-modal with fixed launcher and usable attachments", () => {
+test("Nara small and medium are non-modal and the launcher does not fight between observers", () => {
   assert.match(runtime, /v259Interaction = full \? "modal" : "nonmodal"/);
   assert.match(runtime, /camera-photo-file/);
   assert.match(runtime, /nara-select\.intelligence/);
   assert.match(runtime, /nara-select\.model/);
+  assert.match(runtime, /launcher\.hidden = true/);
+  assert.match(shellV255, /nara-launcher-stability-v259-20260804/);
+  assert.match(shellV255, /hidden-while-panel-open/);
   assert.match(css, /\.nara-floating-button[\s\S]*position:fixed!important/);
   assert.match(css, /data-v259-interaction="nonmodal"[\s\S]*pointer-events:none!important/);
   assert.match(css, /data-v259-interaction="nonmodal"[\s\S]*\.nara-assistant-shell[\s\S]*pointer-events:auto!important/);
   assert.match(css, /\.nara-attachment-menu[\s\S]*bottom:calc\(100% \+ 8px\)!important/);
 });
 
-test("Theme code editor gets real synchronized line numbers up to 10000 and responsive split", () => {
+test("Theme code editor gets one synchronized gutter up to 10000 and responsive split", () => {
   assert.match(runtime, /Math\.min\(10_000/);
+  assert.match(runtime, /LEGACY_CODE_GUTTERS/);
+  assert.match(runtime, /legacy\.style\.setProperty\("display", "none", "important"\)/);
   assert.match(runtime, /v259-code-gutter/);
   assert.match(runtime, /gutter\.scrollTop = textarea\.scrollTop/);
   assert.match(css, /data-studio-v259-family="large"\] \.tn-code-workspace[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)!important/);
@@ -80,6 +92,16 @@ test("mobile editors and Domain actions are bounded instead of clipping horizont
   assert.match(css, /data-v259-domain-action="full-row"[\s\S]*width:100%!important/);
   assert.match(css, /writing-mode:horizontal-tb!important/);
   assert.match(css, /overflow-x:auto!important/);
+});
+
+test("v259 release manifest keeps the requested viewport matrix without fake E2E claims", () => {
+  assert.equal(release.release, "studio-six-mode-authority-v259-20260804");
+  for (const viewport of viewports) assert.ok(release.validation.viewportMatrix.includes(viewport), viewport);
+  assert.equal(release.validation.realDeviceExecutionVerifiedByThisManifest, false);
+  assert.equal(release.validation.googleLoginEndToEndVerifiedByThisManifest, false);
+  assert.equal(release.validation.linkedinLoginEndToEndVerifiedByThisManifest, false);
+  assert.equal(release.validation.emailPasswordLoginEndToEndVerifiedByThisManifest, false);
+  assert.match(release.validation.capacityClaim, /No 900-billion-user claim/i);
 });
 
 test("v259 service worker rotates cache without destructive session behavior", () => {
