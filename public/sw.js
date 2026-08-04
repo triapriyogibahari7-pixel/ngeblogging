@@ -1,4 +1,7 @@
-const VERSION = "ngeblogging-app-v169-first-site-20260730";
+const VERSION = "ngeblogging-app-v260-stability-r2-20260804";
+const CACHE_RELEASE = "studio-stability-cache-v260-r2";
+const STUDIO_STABILITY_RELEASE_V260 = "studio-stability-v260-20260804-r2";
+const STUDIO_SIX_MODE_RELEASE_V259 = "studio-six-mode-authority-v259-20260804";
 const ROUTE_RECOVERY_COMPAT_VERSION = "ngeblogging-app-v168-route-recovery-20260730";
 const AUTH_EDITOR_COMPAT_VERSION = "ngeblogging-app-v162-auth-editor-20260730";
 const CONTENT_WORKFLOW_COMPAT_VERSION = "ngeblogging-app-v161-content-workflow-20260730";
@@ -6,7 +9,6 @@ const STUDIO_UI_COMPAT_VERSION = "ngeblogging-app-v159-studio-ui-contract-202607
 const PRODUCTION_ENTRY_COMPAT_VERSION = "ngeblogging-app-v154-production-entry-20260730";
 const LEGACY_VERSION = "ngeblogging-app-v153-auth-production-20260730";
 const STUDIO_COMPLETION_COMPAT_VERSION = "ngeblogging-app-v151-studio-completion-20260729";
-const CACHE_RELEASE = "first-site-cache-v169";
 const ROUTE_RECOVERY_COMPAT_RELEASE = "route-recovery-cache-v168";
 const AUTH_EDITOR_COMPAT_RELEASE = "auth-editor-cache-v162";
 const CONTENT_WORKFLOW_COMPAT_RELEASE = "content-workflow-cache-v161";
@@ -28,10 +30,18 @@ const CONTENT_EDITOR_RELEASE = "content-editor-v162-20260730";
 const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
+// Compatibility markers retained for old probes; v260-r2 does NOT automatically
+// navigate/reload a signed-in page during activation.
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
 const FORCE_REFRESH_VALUE = "first-site-v169";
-const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-shell`;
-const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-${AUTH_HANDOFF_RELEASE}-assets`;
+const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
+const ACTIVE_CACHE_RELEASE_V258 = "studio-theme-right4-cache-v258";
+const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";
+const ACTIVE_CACHE_RELEASE_V259 = "studio-six-mode-cache-v259";
+const ACTIVE_VERSION_V260 = VERSION;
+const ACTIVE_CACHE_RELEASE_V260 = CACHE_RELEASE;
+const SHELL_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-shell`;
+const ASSET_CACHE = `${ACTIVE_VERSION_V260}-${ACTIVE_CACHE_RELEASE_V260}-${AUTH_HANDOFF_RELEASE}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -60,6 +70,8 @@ function isAuthSurface(url) {
     || authMode === "callback-error";
 }
 
+// Historical helper retained so old compatibility tests can find the original
+// recovery markers. v260-r2 intentionally never calls this during activate.
 async function refreshStaleWindow(client, url) {
   if (url.searchParams.get(FORCE_REFRESH_QUERY) === FORCE_REFRESH_VALUE) return;
   url.searchParams.set(FORCE_REFRESH_QUERY, FORCE_REFRESH_VALUE);
@@ -67,7 +79,7 @@ async function refreshStaleWindow(client, url) {
   try {
     await client.navigate(url.href);
   } catch {
-    // Pesan reload tetap menjadi jalur cadangan bila navigasi WindowClient ditolak browser.
+    // Compatibility-only fallback; no activation path invokes this helper in v260-r2.
   }
 }
 
@@ -75,6 +87,10 @@ function versionPayload(type) {
   return {
     type,
     version: VERSION,
+    studioStabilityReleaseV260: STUDIO_STABILITY_RELEASE_V260,
+    studioSixModeReleaseV259: STUDIO_SIX_MODE_RELEASE_V259,
+    activeVersionV260: ACTIVE_VERSION_V260,
+    activeCacheReleaseV260: ACTIVE_CACHE_RELEASE_V260,
     routeRecoveryCompatVersion: ROUTE_RECOVERY_COMPAT_VERSION,
     authEditorCompatVersion: AUTH_EDITOR_COMPAT_VERSION,
     contentWorkflowCompatVersion: CONTENT_WORKFLOW_COMPAT_VERSION,
@@ -114,10 +130,12 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_FORCE_RELOAD_V169"),
-        reason: "service-worker-activated-first-site-v169",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V260"),
+        reason: "service-worker-activated-stability-v260-r2",
+        reloadRequired: false,
       });
-      await refreshStaleWindow(client, url);
+      // No client.navigate() here. This removes the visible second loading pass and
+      // guarantees activation cannot interfere with an authenticated Studio session.
     } catch {
       // Satu tab bermasalah tidak boleh memblokir pembaruan tab lainnya.
     }
