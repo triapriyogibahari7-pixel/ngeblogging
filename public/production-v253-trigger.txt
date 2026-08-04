@@ -1,5 +1,5 @@
 Ngeblogging Cloudflare production deployment trigger
-release=studio-shell-nara-v253-20260804
-workflow=ngeblogging-production-v253
+release=studio-theme-right4-v258-20260804
+workflow=ngeblogging-production-v258
 created=2026-08-04
-purpose=Trigger production branch push after v253 workflow promotion; no product data or session changes.
+purpose=Trigger production branch push after six-mode visual v257 and Theme right4 v258 promotion; no product data or session changes.
