@@ -18,8 +18,25 @@ const checks = [
   ["public/sw.js", "ngeblogging-app-v170-theme-layout-20260730"],
 ];
 
-function inspect() {
-  return checks.map(([file, marker]) => ({ file, marker, present: read(file).includes(marker) }));
+const supersedingV256Checks = [
+  ["src/widget-system.js", "SIDEBAR_LEFT_SLOTS"],
+  ["src/widget-system.js", "sidebar-left-4"],
+  ["src/widget-system.js", "sidebar-right-4"],
+  ["src/theme-system.js", "composeMainWidgetLayout"],
+  ["src/theme-system.js", 'widgetsMarkup(widgets, "sidebar-left")'],
+  ["src/theme-system.js", 'widgetsMarkup(widgets, "sidebar-right")'],
+  ["src/Studio.jsx", 'import "./studio-theme-layout-v256.css"'],
+  ["src/studio-theme-layout-v256.css", 'content:"Post / Page\\A Konten utama"'],
+];
+
+function inspect(list = checks) {
+  return list.map(([file, marker]) => ({ file, marker, present: read(file).includes(marker) }));
+}
+
+const v256 = inspect(supersedingV256Checks);
+if (v256.every((entry) => entry.present)) {
+  console.log("[theme-layout-v170-20260730] superseded safely by theme-layout-v256; historical patch skipped to preserve the newer real 4+4 widget model");
+  process.exit(0);
 }
 
 const before = inspect();
