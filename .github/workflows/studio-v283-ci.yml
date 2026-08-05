@@ -1,4 +1,4 @@
-name: Studio v283 CI
+name: Studio v284 CI
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: studio-v283-${{ github.event.pull_request.number || github.ref }}
+  group: studio-v284-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,18 +29,20 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v283 focused regression
-        run: node --test tests/studio-native-recovery-v283.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs
+      - name: Run v284 focused regression
+        run: node --test tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs
 
       - name: Run production build regression
         env:
           VITE_PUBLIC_SITE_URL: https://ngeblogging.com
         run: npm run build
 
-      - name: Confirm generated service worker is v283
+      - name: Confirm generated service worker is v284
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'STUDIO_NATIVE_RECOVERY_RELEASE_V283' public/sw.js
-          grep -q 'studio-native-recovery-cache-v283' public/sw.js
+          grep -q 'STUDIO_NATIVE_POLISH_RELEASE_V284' public/sw.js
+          grep -q 'studio-native-polish-cache-v284' public/sw.js
+          grep -q 'ngeblogging-app-v284-native-polish-20260805' public/sw.js
           test -f dist/index.html
