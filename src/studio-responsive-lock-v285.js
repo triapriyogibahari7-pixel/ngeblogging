@@ -149,3 +149,5 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
 }
+
+void import("./studio-live-visual-v286.js");
