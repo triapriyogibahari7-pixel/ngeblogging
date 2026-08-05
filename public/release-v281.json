@@ -1,0 +1,37 @@
+{
+  "release": "studio-native-controls-v281-20260805",
+  "cache": "studio-native-controls-cache-v281",
+  "date": "2026-08-05",
+  "sourceBranch": "main",
+  "scope": [
+    "retire-touch-pointerdown-capture",
+    "single-centered-sidebar-n-control",
+    "complete-mobile-drawer-and-desktop-icon-rail",
+    "keep-profile-avatar-visible-with-five-actions",
+    "keep-nara-fixed-small-medium-nonmodal",
+    "keep-camera-photo-file-microphone-speaker-model-intelligence",
+    "preserve-5000-word-drafts-and-guard-publication",
+    "readable-26-area-theme-layout-map",
+    "four-left-centered-content-four-right",
+    "single-10000-line-code-gutter",
+    "desktop-code-preview-50-50",
+    "mobile-preview-first-code-below",
+    "production-analytics-readable",
+    "mobile-domain-actions-readable",
+    "preserve-persisted-auth"
+  ],
+  "verification": {
+    "requiredSidebarItems": 13,
+    "layoutFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "themeCount": 100,
+    "widgetCount": 26,
+    "sideWidgetSlots": {"left": 4, "right": 4},
+    "maxContentWords": 5000,
+    "contentWarningWords": 4500,
+    "maxCodeLines": 10000,
+    "naraSizes": ["small", "medium", "full"],
+    "scrollDomMutation": false,
+    "pointerdownSidebarCapture": false
+  }
+}
