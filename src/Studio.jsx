@@ -202,4 +202,9 @@ import "./studio-native-polish-v284.css";
 import "./studio-responsive-lock-v285.js";
 import "./studio-responsive-lock-v285.css";
 
+// v300 is deliberately last. It owns the visible n target and final geometry
+// after every historical stylesheet, while preserving their page-level visuals.
+import "./studio-sidebar-direct-v300.js";
+import "./studio-sidebar-direct-v300.css";
+
 export default StudioFastGate;
