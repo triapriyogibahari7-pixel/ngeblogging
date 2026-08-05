@@ -1,4 +1,5 @@
 import "./studio-final-authority-v288.css";
+import "./studio-final-authority-v288-hotfix.css";
 
 export const RELEASE = "studio-final-authority-v288-20260805";
 
