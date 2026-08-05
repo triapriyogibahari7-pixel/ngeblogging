@@ -1,0 +1,43 @@
+{
+  "release": "studio-direct-shell-boot-v299-20260805",
+  "cache": "studio-direct-shell-cache-v299",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-shell-authority-v298-20260805",
+    "studio-mode-startup-authority-v297-20260805",
+    "studio-theme-catalog-100-v296-20260805",
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805"
+  ],
+  "fixes": {
+    "shellBootNoLongerDependsOnV284PromiseChain": true,
+    "v298ShellImportedStaticallyFromStudioEntry": true,
+    "oneVisibleSidebarN": true,
+    "smallClosedOnlyN": true,
+    "smallDrawerComplete": true,
+    "smallDrawerNoDesktopRail": true,
+    "smallDrawerNoBlurNoBlockingBackdrop": true,
+    "largeSidebarOpenPx": 220,
+    "largeSidebarRailPx": 70,
+    "largeCollapsedIconsCentered": true,
+    "profileTopRightPreserved": true,
+    "naraFixedBottomRightPreserved": true,
+    "themeCatalogCount": 100,
+    "themeLayout26AreaPreserved": true,
+    "postPageWordLimit": 5000,
+    "codeLineLimit": 10000,
+    "authPersistSessionPreserved": true,
+    "authAutoRefreshPreserved": true,
+    "authLegacyRedirectStillRetired": true
+  },
+  "reason": "Physical mobile screenshots still showed the old rail/closed shell and the n did not expose the complete sidebar. The v298 authority existed in source, but its primary bootstrap still depended on a promise chain. v299 makes the shell authority a synchronous Studio-module dependency so sidebar geometry and interaction load independently of optional editor/theme bootstraps.",
+  "validation": {
+    "sourceMergedClaimed": false,
+    "productionDeploymentClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "linkedinCredentialLoginClaimed": false,
+    "emailCredentialLoginClaimed": false,
+    "capacityClaimed": false
+  }
+}
