@@ -53,7 +53,8 @@ test("v287 retires stacked shell/Nara observers and the v208 hard reload", async
 test("v287 owns one n interaction and a viewport-safe profile menu", async () => {
   const runtime = await read("src/studio-react-shell-v287.js");
   const css = await read("src/studio-react-shell-v287.css");
-  for (const label of ["Profil", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"]) assert.ok(runtime.includes(label), `missing ${label}`);
+  for (const label of ["Profil", "Ganti avatar", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"]) assert.ok(runtime.includes(label), `missing ${label}`);
+  assert.match(runtime, /__ngebloggingOpenAvatarPicker/);
   assert.match(runtime, /#ngeblogging-studio-sidebar \.sn-logo-mark/);
   assert.match(runtime, /reactToggle\(\)/);
   assert.match(css, /data-device-mode="large"/);
@@ -62,13 +63,20 @@ test("v287 owns one n interaction and a viewport-safe profile menu", async () =>
   assert.match(css, /collapsed~\.sn-main/);
 });
 
-test("v287 keeps Nara non-modal and responsive Theme Studio geometry", async () => {
+test("v287 keeps Nara native, non-modal and responsive", async () => {
   const css = await read("src/studio-react-shell-v287.css");
   const nara = await read("src/NaraAssistant.jsx");
+  const legacy = await read("src/nara-controls-v135.js");
   for (const label of ["Kamera", "Foto", "File teks", "Nara Mini", "Nara Writer", "Nara Vision", "Nara Max", "Instan", "Sedang", "Tinggi", "Maksimal"]) assert.ok(nara.includes(label), `missing ${label}`);
   assert.match(css, /nara-floating-button\{position:fixed!important/);
   assert.match(css, /data-nara-interaction="nonmodal"/);
   assert.match(css, /nara-attachment-menu/);
+  assert.match(legacy, /nara-controls-v135-compat-v287-20260805/);
+  assert.doesNotMatch(legacy, /new MutationObserver|createElement\("button"\)|nara-fullscreen-v135/);
+});
+
+test("v287 keeps responsive Theme Studio geometry", async () => {
+  const css = await read("src/studio-react-shell-v287.css");
   assert.match(css, /tn-layout-map-v264/);
   assert.match(css, /grid-template-areas:"preview" "code"/);
   assert.match(css, /grid-template-areas:"code preview"/);
@@ -82,6 +90,13 @@ test("v287 retains avatar upload without the old drawer/Nara observer", async ()
   assert.match(avatar, /__ngebloggingOpenAvatarPicker/);
   assert.doesNotMatch(avatar, /new MutationObserver/);
   assert.doesNotMatch(avatar, /syncDrawer|syncNara/);
+});
+
+test("v287 default build does not replay historical UI patchers", async () => {
+  const pkg = JSON.parse(await read("package.json"));
+  assert.match(pkg.scripts.build, /patch-service-worker-v287\.mjs/);
+  assert.doesNotMatch(pkg.scripts.build, /patch-studio-mobile-v176|patch-nara-native-v177|run-patch-screenshot-stability-v177/);
+  assert.doesNotMatch(pkg.scripts["test:production"], /run-patch-screenshot-stability-v177|patch-studio-mobile-v176/);
 });
 
 test("v287 preserves auth persistence and does not add destructive logout", async () => {
