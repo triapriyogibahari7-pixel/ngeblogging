@@ -1,0 +1,23 @@
+/* v290 selector hardening: explicit child selectors so collapsed/closed states are valid in every browser. */
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>.sn-logo>b,
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>.sn-new>span,
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>nav>button>span,
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>.sn-account-footer>button>span{display:none!important}
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>.sn-new,
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>nav>button,
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>.sn-account-footer>button{
+  width:48px!important;min-width:48px!important;max-width:48px!important;margin-left:auto!important;margin-right:auto!important;
+  padding-inline:0!important;justify-content:center!important;overflow:visible!important
+}
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>b,
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-new,
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>nav,
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-account-footer{
+  display:none!important;visibility:hidden!important;pointer-events:none!important
+}
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar.mobile-open>.sn-logo>b,
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar.mobile-open>.sn-new,
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar.mobile-open>nav,
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar.mobile-open>.sn-account-footer{
+  display:flex!important;visibility:visible!important;pointer-events:auto!important
+}
