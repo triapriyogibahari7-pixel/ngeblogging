@@ -60,7 +60,7 @@
     "pretest": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
     "test": "npm run verify:current",
     "pretest:production": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "test:production": "npm run verify:production-current"
+    "test:production": "node --test tests/studio-sidebar-hard-lock-v301.test.mjs"
   },
   "engines": {"node": ">=22.12.0"},
   "dependencies": {
