@@ -1,4 +1,5 @@
 import "./studio-final-authority-v292.css";
+import "./studio-theme-layout-v264.css";
 import "./studio-theme-layout-v264.js";
 
 export const RELEASE = "studio-final-authority-v292-20260805";
