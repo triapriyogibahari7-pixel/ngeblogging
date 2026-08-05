@@ -1,0 +1,50 @@
+/* Studio v301 — final visual fallback. Runtime v301 also applies inline !important geometry. */
+:root{--v301-open:220px;--v301-rail:70px;--v301-safe-left:max(8px,env(safe-area-inset-left,0px));--v301-safe-top:max(8px,env(safe-area-inset-top,0px));--v301-safe-right:max(10px,env(safe-area-inset-right,0px));--v301-safe-bottom:max(10px,calc(env(safe-area-inset-bottom,0px) + 8px))}
+html,body,#root,.sn-shell,.sn-main,.sn-view-pad{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+.sn-shell :is(img,video,canvas,iframe,svg){max-width:100%!important}
+.sn-shell :is(h1,h2,h3,h4,p,b,strong,span,small,label,a,button){overflow-wrap:anywhere}
+.sn-side-backdrop{display:none!important;visibility:hidden!important;pointer-events:none!important;opacity:0!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html,body,#root,.sn-shell,.sn-main{filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* Physical small-family guarantee: no inherited desktop rail. */
+html[data-studio-device-mode="small"] .sn-shell,
+html[data-studio-responsive-mode="application"] .sn-shell,
+html[data-studio-responsive-mode="phone"] .sn-shell,
+html[data-studio-responsive-mode="mobile"] .sn-shell,
+html[data-studio-responsive-mode="compact"] .sn-shell{position:relative!important;left:0!important;margin:0!important;padding:0!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;transform:none!important}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main,
+html[data-studio-responsive-mode="application"] .sn-shell>.sn-main,
+html[data-studio-responsive-mode="phone"] .sn-shell>.sn-main,
+html[data-studio-responsive-mode="mobile"] .sn-shell>.sn-main,
+html[data-studio-responsive-mode="compact"] .sn-shell>.sn-main{position:relative!important;left:0!important;margin:0!important;padding-left:0!important;width:100%!important;max-width:100%!important;transform:none!important}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar:not(.mobile-open),
+html[data-studio-responsive-mode="application"] #ngeblogging-studio-sidebar:not(.mobile-open),
+html[data-studio-responsive-mode="phone"] #ngeblogging-studio-sidebar:not(.mobile-open),
+html[data-studio-responsive-mode="mobile"] #ngeblogging-studio-sidebar:not(.mobile-open),
+html[data-studio-responsive-mode="compact"] #ngeblogging-studio-sidebar:not(.mobile-open){display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;left:var(--v301-safe-left)!important;top:var(--v301-safe-top)!important;right:auto!important;bottom:auto!important;z-index:12100!important;width:54px!important;min-width:54px!important;max-width:54px!important;height:54px!important;min-height:54px!important;max-height:54px!important;margin:0!important;padding:4px!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;transform:none!important;filter:none!important}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>:is(.sn-new,nav,.sn-account-footer),
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>b{display:none!important}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-responsive-mode="application"] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-responsive-mode="phone"] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-responsive-mode="mobile"] #ngeblogging-studio-sidebar.mobile-open,
+html[data-studio-responsive-mode="compact"] #ngeblogging-studio-sidebar.mobile-open{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;inset:0 auto 0 0!important;z-index:12150!important;width:min(78vw,336px)!important;min-width:min(78vw,336px)!important;max-width:min(78vw,336px)!important;height:100dvh!important;margin:0!important;padding:var(--v301-safe-top) 8px var(--v301-safe-bottom)!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;border-right:1px solid #dfe6ef!important;border-radius:0 18px 18px 0!important;box-shadow:14px 0 42px rgba(21,40,70,.18)!important;transform:none!important;filter:none!important}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open :is(.sn-new,nav,.sn-account-footer),
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open :is(.sn-new,nav>button,.sn-account-footer>button),
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:inline!important;white-space:nowrap!important}
+
+/* Large family: one persistent rail when collapsed, complete menu when open. */
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;inset:0 auto 0 0!important;z-index:4300!important;width:var(--v301-open)!important;min-width:var(--v301-open)!important;max-width:var(--v301-open)!important;height:100dvh!important;margin:0!important;padding:10px 8px!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;border-right:1px solid #dfe6ef!important;transform:none!important}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed{width:var(--v301-rail)!important;min-width:var(--v301-rail)!important;max-width:var(--v301-rail)!important}
+html[data-studio-device-mode="large"] .sn-shell>.sn-main{margin-left:var(--v301-open)!important;padding-left:0!important;width:calc(100% - var(--v301-open))!important;max-width:calc(100% - var(--v301-open))!important;transform:none!important}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed~.sn-main{margin-left:var(--v301-rail)!important;width:calc(100% - var(--v301-rail))!important;max-width:calc(100% - var(--v301-rail))!important}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed>.sn-logo>b,
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:none!important}
+
+/* One visible n and one profile surface. */
+#ngeblogging-studio-sidebar .sn-logo-mark{display:grid!important;place-items:center!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;margin:0!important;padding:0!important;border-radius:14px!important;background:linear-gradient(145deg,#2f6ee8,#4745d7)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;visibility:visible!important;filter:none!important;transform:none!important;animation:none!important;touch-action:manipulation!important}
+#ngeblogging-studio-sidebar .sn-logo-mark strong{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font:800 25px/1 system-ui,sans-serif!important;opacity:1!important;visibility:visible!important}
+#ngeblogging-studio-sidebar .sn-side-close,.sn-top>.sn-sidebar-toggle{display:none!important}
+.sn-top .sn-avatar{display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.nara-floating-button{position:fixed!important;right:var(--v301-safe-right)!important;bottom:var(--v301-safe-bottom)!important;left:auto!important;top:auto!important;z-index:11900!important;animation:none!important;transform:none!important;filter:none!important}
