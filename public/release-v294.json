@@ -1,0 +1,46 @@
+{
+  "release": "studio-mobile-classifier-v294-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-mobile-classifier-cache-v294",
+  "inherits": [
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805",
+    "studio-auth-sidebar-v291-20260805"
+  ],
+  "scope": "remove false desktop rail on normal mobile browsers without weakening real desktop-site mode",
+  "fixes": {
+    "responsive": {
+      "viewportMetaAppliedBeforeMeasurement": true,
+      "explicitMobileUaCannotBecomeDesktopFromTransientWidth": true,
+      "wideTouchAloneCannotForceDesktop": true,
+      "explicitDesktopSiteStillSupported": true,
+      "desktopSiteLockReleasedWhenMobileUaReturns": true,
+      "layoutClassesPreserved": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+      "desktopVariantsPreserved": ["laptop", "desktop", "computer"]
+    },
+    "sidebar": {
+      "normalMobileClosedState": "single-n-launcher",
+      "normalMobileMainMargin": 0,
+      "desktopRailPreservedForLargeFamily": true,
+      "singleNClickOwnerPreserved": true
+    },
+    "authentication": {
+      "startupV292Preserved": true,
+      "persistSessionPreserved": true,
+      "autoRefreshTokenPreserved": true,
+      "noLogoutOnNetworkFailure": true
+    },
+    "regression": {
+      "screenshotSymptom": "mobile content must not begin after a 70/72px desktop rail",
+      "historicalV267DesktopSiteContractPreserved": true,
+      "productionBuildGate": true,
+      "serviceWorkerRotation": true
+    }
+  },
+  "truthfulness": {
+    "realCredentialLoginRequiresProviderOrUserCredential": true,
+    "massiveUserCapacityNotClaimedWithoutLoadTest": true,
+    "noSyntheticAnalyticsClaim": true
+  }
+}
