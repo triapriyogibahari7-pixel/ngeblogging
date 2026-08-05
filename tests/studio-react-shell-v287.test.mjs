@@ -103,9 +103,12 @@ test("v287 resumes a verified/recovered site without destructive reload", async 
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
-test("v287 default build does not replay historical UI patchers", async () => {
+test("v289 build keeps the v287 prerequisite and does not replay historical UI patchers", async () => {
   const pkg = JSON.parse(await read("package.json"));
-  assert.match(pkg.scripts.build, /patch-service-worker-v287\.mjs/);
+  const v288Patch = await read("scripts/patch-service-worker-v288.mjs");
+  assert.match(pkg.scripts.build, /patch-service-worker-v288\.mjs/);
+  assert.match(v288Patch, /import "\.\/patch-service-worker-v287\.mjs"/);
+  assert.match(v288Patch, /import\("\.\/patch-service-worker-v289\.mjs"\)/);
   assert.doesNotMatch(pkg.scripts.build, /patch-studio-mobile-v176|patch-nara-native-v177|run-patch-screenshot-stability-v177/);
   assert.doesNotMatch(pkg.scripts["test:production"], /run-patch-screenshot-stability-v177|patch-studio-mobile-v176/);
 });
