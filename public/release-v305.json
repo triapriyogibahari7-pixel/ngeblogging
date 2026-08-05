@@ -1,0 +1,73 @@
+{
+  "release": "studio-site-switch-first-site-v305-20260805",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-workspaces-members-v304-20260805",
+    "studio-add-site-free-subdomain-v303-20260805",
+    "studio-shell-authority-v298-20260805",
+    "studio-startup-direct-data-v292-20260805"
+  ],
+  "siteSwitcher": {
+    "readsFreshDataEveryOpen": true,
+    "membershipAndOwnedSitesUnion": true,
+    "existingOwnedSitesVisibleEvenIfLegacyMembershipIsMissing": true,
+    "activeSiteMarked": true,
+    "explicitManageButton": "Kelola situs ini",
+    "currentSiteLabel": "Sedang dikelola",
+    "search": true,
+    "manualReload": true,
+    "addSiteSeparate": true,
+    "mobileContained": true,
+    "backdropBlur": false
+  },
+  "firstSite": {
+    "requiredWhenAccountHasNoRealSite": true,
+    "staleSnapshotCannotBelongToAnotherUser": true,
+    "authSessionCleared": false,
+    "activeSitePointersOnlyClearedWhenFirstSiteIsRequired": true,
+    "fields": [
+      "name",
+      "freeSubdomain",
+      "description",
+      "siteType",
+      "initialTheme",
+      "language",
+      "timezone"
+    ],
+    "siteTypes": [
+      "blog",
+      "website",
+      "news",
+      "forum",
+      "community",
+      "landing",
+      "diary",
+      "portfolio",
+      "profile",
+      "knowledge",
+      "general-knowledge"
+    ],
+    "subdomainAvailabilityRpc": "is_site_slug_available"
+  },
+  "startup": {
+    "membershipEndpoint": "site_members",
+    "ownedSitesEndpoint": "sites.owner_id",
+    "parallelDirectRead": true,
+    "deduplicatesBySiteId": true,
+    "sessionPersisted": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v305-site-switch-first-site-20260805",
+    "cache": "studio-site-switch-first-site-cache-v305",
+    "authSurfaceReloadForced": false,
+    "sessionStorageCleared": false
+  },
+  "validation": {
+    "sourceRegressionAdded": true,
+    "productionBuildClaimed": false,
+    "cloudflareProductionDeploymentClaimed": false,
+    "realCredentialLoginClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "capacityClaimed": false
+  }
+}
