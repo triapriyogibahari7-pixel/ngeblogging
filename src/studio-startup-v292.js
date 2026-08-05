@@ -4,6 +4,7 @@ import { listUserSites } from "./lib/studio-data.js";
 export const STUDIO_STARTUP_RELEASE_V292 = "studio-startup-direct-data-v292-20260805";
 export const AUTH_SESSION_HANDOFF_RELEASE_V292 = "auth-session-handoff-v292-20260805";
 export const STARTUP_DATA_RELEASE_V292 = "startup-membership-direct-first-v292-20260805";
+export const STARTUP_SITE_UNION_RELEASE_V305 = "startup-membership-plus-owned-sites-v305-20260805";
 
 const DIRECT_TIMEOUT_MS = 4_500;
 const FALLBACK_TIMEOUT_MS = 5_500;
@@ -96,6 +97,19 @@ function membershipSite(record) {
   return { ...record.sites, role: record.role };
 }
 
+function mergeSiteCollections(...collections) {
+  const merged = new Map();
+  collections.flat().filter(Boolean).forEach((site) => {
+    if (!site?.id) return;
+    const key = String(site.id);
+    const current = merged.get(key) || {};
+    const next = { ...current, ...site };
+    if (String(current.role || "").toLowerCase() === "owner" || String(site.role || "").toLowerCase() === "owner") next.role = "owner";
+    merged.set(key, next);
+  });
+  return [...merged.values()];
+}
+
 async function currentSessionForUser(userId) {
   const handed = window.__ngebloggingVerifiedSession;
   if (handed?.user?.id === userId && usableSession(handed.session)) return handed.session;
@@ -111,44 +125,62 @@ async function currentSessionForUser(userId) {
   return data.session;
 }
 
+function responseError(response, label) {
+  const error = new Error(`${label} gagal (${response.status}).`);
+  error.status = response.status;
+  error.code = response.status === 401
+    ? "SESSION_REAUTH_REQUIRED"
+    : response.status === 403
+      ? "STARTUP_DATA_FORBIDDEN"
+      : "STARTUP_DATA_DIRECT_FAILED";
+  return error;
+}
+
 async function directMembership(userId) {
   const { url, key } = publicConfig();
   if (!url || !key || !supabaseConfigured || !supabase) throw new Error("Konfigurasi data Studio belum tersedia.");
   const session = await currentSessionForUser(userId);
-  const select = "site_id,role,joined_at,sites(id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at)";
-  const endpoint = new URL(`${url}/rest/v1/site_members`);
-  endpoint.searchParams.set("select", select);
-  endpoint.searchParams.set("user_id", `eq.${userId}`);
-  endpoint.searchParams.set("order", "joined_at.asc");
-  endpoint.searchParams.set("limit", "100");
+  const siteFields = "id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at";
+  const membershipEndpoint = new URL(`${url}/rest/v1/site_members`);
+  membershipEndpoint.searchParams.set("select", `site_id,role,joined_at,sites(${siteFields})`);
+  membershipEndpoint.searchParams.set("user_id", `eq.${userId}`);
+  membershipEndpoint.searchParams.set("order", "joined_at.asc");
+  membershipEndpoint.searchParams.set("limit", "100");
+
+  const ownedEndpoint = new URL(`${url}/rest/v1/sites`);
+  ownedEndpoint.searchParams.set("select", siteFields);
+  ownedEndpoint.searchParams.set("owner_id", `eq.${userId}`);
+  ownedEndpoint.searchParams.set("order", "created_at.asc");
+  ownedEndpoint.searchParams.set("limit", "100");
 
   const controller = new AbortController();
-  const timer = globalThis.setTimeout(() => controller.abort("studio-startup-direct-timeout-v292"), DIRECT_TIMEOUT_MS);
+  const timer = globalThis.setTimeout(() => controller.abort("studio-startup-direct-timeout-v305"), DIRECT_TIMEOUT_MS);
+  const headers = {
+    accept: "application/json",
+    apikey: key,
+    authorization: `Bearer ${session.access_token}`,
+    "cache-control": "no-cache",
+    "x-client-info": "ngeblogging-startup-v305-site-union",
+  };
   try {
-    const response = await fetch(endpoint.toString(), {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        apikey: key,
-        authorization: `Bearer ${session.access_token}`,
-        "cache-control": "no-cache",
-        "x-client-info": "ngeblogging-startup-v292",
-      },
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      const error = new Error(`Pembacaan situs langsung gagal (${response.status}).`);
-      error.status = response.status;
-      error.code = response.status === 401 ? "SESSION_REAUTH_REQUIRED" : response.status === 403 ? "STARTUP_DATA_FORBIDDEN" : "STARTUP_DATA_DIRECT_FAILED";
-      throw error;
-    }
-    const rows = await response.json();
+    const [membershipResponse, ownedResponse] = await Promise.all([
+      fetch(membershipEndpoint.toString(), { method: "GET", headers, cache: "no-store", signal: controller.signal }),
+      fetch(ownedEndpoint.toString(), { method: "GET", headers, cache: "no-store", signal: controller.signal }),
+    ]);
+    if (!membershipResponse.ok) throw responseError(membershipResponse, "Pembacaan membership situs langsung");
+    if (!ownedResponse.ok) throw responseError(ownedResponse, "Pembacaan situs milik akun langsung");
+
+    const [membershipRows, ownedRows] = await Promise.all([membershipResponse.json(), ownedResponse.json()]);
+    const membershipSites = (Array.isArray(membershipRows) ? membershipRows : []).map(membershipSite).filter(Boolean);
+    const ownedSites = (Array.isArray(ownedRows) ? ownedRows : []).map((site) => ({ ...site, role: "owner" }));
+    const result = mergeSiteCollections(membershipSites, ownedSites);
     if (typeof document !== "undefined") {
       document.documentElement.dataset.studioStartupDataV292 = "direct-supabase-primary";
       document.documentElement.dataset.studioStartupReleaseV292 = STUDIO_STARTUP_RELEASE_V292;
+      document.documentElement.dataset.studioStartupSiteUnionV305 = STARTUP_SITE_UNION_RELEASE_V305;
+      document.documentElement.dataset.studioStartupSiteCountV305 = String(result.length);
     }
-    return (Array.isArray(rows) ? rows : []).map(membershipSite).filter(Boolean);
+    return result;
   } finally {
     globalThis.clearTimeout(timer);
   }
