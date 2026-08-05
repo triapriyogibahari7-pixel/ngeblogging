@@ -1,4 +1,4 @@
-name: Validate Studio v296
+name: Validate Studio v297
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-studio-v296-${{ github.ref }}
+  group: validate-studio-v297-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -41,23 +41,25 @@ jobs:
             tests/studio-auth-sidebar-v291.test.mjs \
             tests/studio-startup-v292.test.mjs \
             tests/studio-production-recovery-v295.test.mjs \
-            tests/studio-theme-catalog-v296.test.mjs
+            tests/studio-theme-catalog-v296.test.mjs \
+            tests/studio-mode-startup-v297.test.mjs
 
       - name: Build application with service-worker chain
         run: npm run check
 
-      - name: Verify v292-v296 build markers
+      - name: Verify v292-v297 build markers
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' public/sw.js
           grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' public/sw.js
           grep -q 'STUDIO_THEME_CATALOG_RELEASE_V296' public/sw.js
-          grep -q 'studio-theme-catalog-cache-v296' public/sw.js
-          grep -q 'ngeblogging-app-v296-theme-catalog-100-20260805' public/sw.js
+          grep -q 'STUDIO_MODE_STARTUP_AUTHORITY_RELEASE_V297' public/sw.js
+          grep -q 'studio-mode-startup-cache-v297' public/sw.js
+          grep -q 'ngeblogging-app-v297-mode-startup-authority-20260805' public/sw.js
           grep -R -q 'studio-startup-direct-data-v292-20260805' dist/assets
-          grep -R -q 'studio-polish-v295-20260805' dist/assets
           grep -R -q 'studio-theme-catalog-100-v296-20260805' dist/assets
+          grep -R -q 'studio-mode-startup-authority-v297-20260805' dist/assets
           test -f public/release-v292.json
-          test -f public/release-v295.json
           test -f public/release-v296.json
+          test -f public/release-v297.json
