@@ -130,8 +130,10 @@ import "./studio-shell-precision-v278.css";
 // v279 keeps the viewport recovery layer, but v280 retires its scroll-time DOM writes.
 import "./studio-live-shell-v279.js";
 import "./studio-live-shell-v279.css";
-// v280 is the final lightweight authority for viewport geometry, profile, Nara and compact pages.
+// v280 is retained as a compatibility shell. v281 is the final authority below.
 import "./studio-native-shell-v280.js";
 import "./studio-native-shell-v280.css";
+import "./studio-native-controls-v281.js";
+import "./studio-native-controls-v281.css";
 
 export default StudioFastGate;
