@@ -3,6 +3,7 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 
 export const STUDIO_MEMBERS_RELEASE_V304 = "studio-members-real-invite-v304-20260805";
+export const STUDIO_MEMBERS_ACTION_RELEASE_V306 = "studio-members-actions-v306-20260805";
 
 const ROLES = [
   ["admin", "Admin"],
@@ -167,7 +168,9 @@ function renderMembers() {
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "danger";
-      remove.textContent = "Hapus";
+      remove.dataset.memberRemoveV306 = "true";
+      remove.textContent = "Hapus anggota";
+      remove.setAttribute("aria-label", `Hapus anggota ${memberName(member)}`);
       remove.addEventListener("click", async () => {
         if (!window.confirm(`Hapus ${memberName(member)} dari situs ini?`)) return;
         remove.disabled = true;
@@ -254,7 +257,7 @@ export function openMembersManagerV304() {
   const siteId = activeSiteId();
   const wrapper = document.createElement("div");
   wrapper.className = "sn-members-v304-layer";
-  wrapper.dataset.release = STUDIO_MEMBERS_RELEASE_V304;
+  wrapper.dataset.release = STUDIO_MEMBERS_ACTION_RELEASE_V306;
   wrapper.innerHTML = `
     <button class="sn-members-v304-backdrop" type="button" aria-label="Tutup pengelola anggota"></button>
     <section class="sn-members-v304" role="dialog" aria-modal="true" aria-labelledby="sn-members-v304-title">
@@ -275,6 +278,7 @@ export function openMembersManagerV304() {
   layer = wrapper;
   document.documentElement.classList.add("members-v304-open");
   document.documentElement.dataset.studioMembersV304 = STUDIO_MEMBERS_RELEASE_V304;
+  document.documentElement.dataset.studioMembersActionsV306 = STUDIO_MEMBERS_ACTION_RELEASE_V306;
   wrapper.querySelector("form")?.addEventListener("submit", submitInvite);
   wrapper.querySelector("[data-members-v304-refresh]")?.addEventListener("click", loadMembers);
   wrapper.querySelectorAll("[data-members-v304-close],.sn-members-v304-backdrop").forEach((node) => node.addEventListener("click", closeMembersManagerV304));
@@ -300,7 +304,9 @@ function syncMembersButton() {
   }
   button.hidden = false;
   button.disabled = false;
+  button.dataset.membersActionRelease = STUDIO_MEMBERS_ACTION_RELEASE_V306;
   pageTitle.dataset.membersReleaseV304 = STUDIO_MEMBERS_RELEASE_V304;
+  pageTitle.dataset.membersActionsV306 = STUDIO_MEMBERS_ACTION_RELEASE_V306;
 }
 
 function scheduleSync() {
@@ -330,5 +336,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   window.addEventListener("pageshow", scheduleSync, { passive: true });
   window.addEventListener("ngeblogging:active-site-change", scheduleSync);
   document.documentElement.dataset.studioMembersV304 = STUDIO_MEMBERS_RELEASE_V304;
+  document.documentElement.dataset.studioMembersActionsV306 = STUDIO_MEMBERS_ACTION_RELEASE_V306;
   scheduleSync();
 }

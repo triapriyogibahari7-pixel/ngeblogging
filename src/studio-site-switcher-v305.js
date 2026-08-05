@@ -1,4 +1,5 @@
 import "./studio-site-switcher-v305.css";
+import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import { ACTIVE_SITE_STORAGE_KEY, setActiveSiteId } from "./lib/studio-data.js";
 import { getVerifiedSession } from "./lib/auth-session-v76.js";
 import { listUserSitesStartupV292 } from "./studio-startup-v292.js";
@@ -6,6 +7,7 @@ import { openCreateSiteV303 } from "./studio-add-site-v303.js";
 
 export const STUDIO_SITE_SWITCHER_RELEASE_V305 = "studio-real-site-switcher-v305-20260805";
 export const STUDIO_FIRST_SITE_GUARD_RELEASE_V305 = "studio-first-site-required-v305-20260805";
+export const STUDIO_SITE_MANAGER_ACTION_RELEASE_V306 = "studio-site-manager-actions-v306-20260805";
 
 const SNAPSHOT_KEYS = [
   "ngeblogging-active-site-snapshot-v292",
@@ -150,6 +152,59 @@ async function selectSite(site) {
   }
 }
 
+async function deleteSiteV306(site, button) {
+  if (!site?.id) return;
+  if (String(site.role || "").toLowerCase() !== "owner") {
+    setStatus("Hanya pemilik situs yang dapat menghapus situs.", "error");
+    return;
+  }
+  if (!supabaseConfigured || !supabase) {
+    setStatus("Koneksi data situs belum tersedia. Sesi akun tetap aktif.", "error");
+    return;
+  }
+  const name = site.name || site.slug || "situs ini";
+  const confirmed = window.confirm(`Hapus ${name}? Semua konten dan data yang terkait dengan situs ini akan ikut dihapus. Tindakan ini tidak dapat dibatalkan.`);
+  if (!confirmed) return;
+
+  const deletingActive = String(site.id) === activeSiteId();
+  button.disabled = true;
+  setStatus(`Menghapus ${name}…`, "loading");
+  try {
+    await currentUserId();
+    const { data, error } = await supabase.from("sites").delete().eq("id", site.id).select("id");
+    if (error) throw error;
+    const deleted = Array.isArray(data) && data.some((row) => String(row?.id) === String(site.id));
+    if (!deleted) throw new Error("Situs tidak terhapus. Pastikan akun ini adalah pemilik situs.");
+
+    sites = sites.filter((candidate) => String(candidate.id) !== String(site.id));
+    if (deletingActive) clearStaleActiveSitePointers();
+
+    if (!sites.length) {
+      setStatus(`${name} dihapus. Buat situs pertama untuk melanjutkan.`, "success");
+      requireFirstSite();
+      return;
+    }
+
+    if (deletingActive) {
+      const userId = await currentUserId();
+      const replacement = sites[0];
+      publishSelectedSite(replacement, userId);
+      const target = new URL("/studio", window.location.origin);
+      target.searchParams.set("site", replacement.id);
+      target.searchParams.set("site_delete", "v306");
+      window.location.assign(target.href);
+      return;
+    }
+
+    renderSites();
+    setStatus(`${name} berhasil dihapus.`, "success");
+  } catch (error) {
+    console.error("Delete site v306 failed", error);
+    button.disabled = false;
+    setStatus(error?.message || "Situs belum dapat dihapus.", "error");
+  }
+}
+
 function renderEmpty() {
   const host = listHost();
   if (!host) return;
@@ -224,6 +279,7 @@ function renderSites() {
     const actions = document.createElement("div");
     actions.className = "site-actions";
     const manage = createButton(isCurrent ? "Sedang dikelola" : "Kelola situs ini", isCurrent ? "current" : "primary");
+    manage.dataset.siteManageV306 = "true";
     manage.addEventListener("click", () => selectSite(site));
     actions.append(manage);
 
@@ -236,10 +292,17 @@ function renderSites() {
       actions.append(view);
     }
 
+    if (String(site.role || "").toLowerCase() === "owner") {
+      const remove = createButton("Hapus situs", "danger");
+      remove.dataset.siteDeleteV306 = "true";
+      remove.addEventListener("click", () => deleteSiteV306(site, remove));
+      actions.append(remove);
+    }
+
     row.append(avatar, info, actions);
     host.append(row);
   });
-  setStatus(`${sites.length} situs nyata tersedia. Pilih tombol “Kelola situs ini” untuk berpindah.`, "ready");
+  setStatus(`${sites.length} situs nyata tersedia. Pilih “Kelola situs ini” untuk berpindah.`, "ready");
 }
 
 async function loadSites() {
@@ -285,7 +348,7 @@ export function openSiteSwitcherV305() {
 
   const wrapper = document.createElement("div");
   wrapper.className = "sn-site-switcher-v305-layer";
-  wrapper.dataset.release = STUDIO_SITE_SWITCHER_RELEASE_V305;
+  wrapper.dataset.release = STUDIO_SITE_MANAGER_ACTION_RELEASE_V306;
   wrapper.innerHTML = `
     <button class="sn-site-switcher-v305-backdrop" type="button" aria-label="Tutup Ganti situs"></button>
     <section class="sn-site-switcher-v305" role="dialog" aria-modal="true" aria-labelledby="sn-site-switcher-v305-title">
@@ -305,6 +368,7 @@ export function openSiteSwitcherV305() {
   layer = wrapper;
   document.documentElement.classList.add("site-switcher-v305-open");
   document.documentElement.dataset.studioSiteSwitcherV305 = STUDIO_SITE_SWITCHER_RELEASE_V305;
+  document.documentElement.dataset.studioSiteManagerActionsV306 = STUDIO_SITE_MANAGER_ACTION_RELEASE_V306;
 
   wrapper.querySelectorAll("[data-site-switcher-close],.sn-site-switcher-v305-backdrop")
     .forEach((node) => node.addEventListener("click", closeSiteSwitcherV305));
@@ -361,4 +425,5 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   window.addEventListener("ngeblogging:site-created-v303", () => { if (layer) loadSites(); });
   document.addEventListener("keydown", onKeydown, true);
   document.documentElement.dataset.studioSiteSwitcherV305 = STUDIO_SITE_SWITCHER_RELEASE_V305;
+  document.documentElement.dataset.studioSiteManagerActionsV306 = STUDIO_SITE_MANAGER_ACTION_RELEASE_V306;
 }
