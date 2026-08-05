@@ -146,3 +146,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { schedule(); schedule(400); }, { once: true });
   else { schedule(); schedule(400); }
 }
+
+/* v293 is visual/containment only; v290 remains the single n interaction owner. */
+import("./studio-final-authority-v293.js").catch((error) => console.error("Studio v293 final authority failed to load", error));
