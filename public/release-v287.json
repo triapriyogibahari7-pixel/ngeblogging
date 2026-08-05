@@ -1,0 +1,62 @@
+{
+  "release": "studio-stable-ui-v287-20260805",
+  "date": "2026-08-05",
+  "scope": "final screenshot-driven stability pass for six responsive families, single-n sidebar, profile dropdown, Nara non-modal controls, Theme Studio layout/code containment, and production auth guards",
+  "cache": "studio-stable-ui-cache-v287",
+  "sourceBranch": "main",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "deviceModeAuthority": "studio-device-mode-v267",
+    "smallClosedSidebarOnlyN": true,
+    "largeCollapsedRailKeepsIcons": true,
+    "contentTracksSidebarWidth": true,
+    "desktopSiteLockRespected": true
+  },
+  "sidebar": {
+    "singleInternalN": true,
+    "duplicateExternalTogglesHidden": true,
+    "requiredMenuCount": 13,
+    "mobileDrawerFullHeight": true,
+    "mobileBackdropBlur": false
+  },
+  "profile": {
+    "dropdown": true,
+    "actions": ["profile", "add-site", "view-site", "settings", "logout"],
+    "logoutOnlyOnExplicitAction": true
+  },
+  "nara": {
+    "launcherFixed": true,
+    "launcherIconOnly": true,
+    "sizes": ["small", "medium", "full"],
+    "smallMediumNonModal": true,
+    "attachments": ["camera", "photo", "file"],
+    "microphone": true,
+    "speaker": true,
+    "modelAndIntelligencePreserved": true
+  },
+  "themeStudio": {
+    "themeCount": 100,
+    "previewProfiles": 8,
+    "layoutSlots": 26,
+    "leftPostWidgets": 4,
+    "rightPostWidgets": 4,
+    "codeTabs": ["html", "css", "javascript"],
+    "maxCodeLines": 10000,
+    "desktopCodePreview": "50:50",
+    "mobileCodePreview": "preview-top-code-bottom"
+  },
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "productionPublicFallback": true,
+    "noDestructiveRuntimeLogout": true
+  },
+  "verification": {
+    "regressionTest": "tests/studio-stable-ui-v287.test.mjs",
+    "productionBuildRequired": true,
+    "liveReleaseGateRequired": true,
+    "realCredentialLoginStillRequiresEndToEndProviderVerification": true,
+    "realDeviceVerificationRequired": true
+  }
+}
