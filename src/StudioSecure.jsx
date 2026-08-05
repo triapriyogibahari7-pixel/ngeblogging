@@ -15,6 +15,7 @@ const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
 const SOURCE_NAVIGATION_RELEASE = "studio-source-navigation-v135-20260729";
 const ACCOUNT_FOOTER_RELEASE = "sidebar-home-actions-v135-20260729";
+const SECURE_EVENT_RELEASE_V290 = "studio-secure-event-sync-v290-20260805";
 
 function ensureExtrasContainer() {
   const saveButton = document.querySelector(".sn-save-settings");
@@ -94,15 +95,11 @@ function syncReadinessChrome() {
   shell.dataset.sourceNavigation = SOURCE_NAVIGATION_RELEASE;
   shell.dataset.accountFooterRelease = ACCOUNT_FOOTER_RELEASE;
   shell.dataset.stableLayout = "v135";
+  shell.dataset.secureEventSyncV290 = SECURE_EVENT_RELEASE_V290;
 
-  // Do not remove .sn-mobile-nav, .sn-mobile-sheet-layer, .sn-side-close,
-  // backdrops, or React-owned sidebar nodes. Removing them caused the mobile
-  // navigation to disappear and left an empty page area.
   hideDuplicateNaraNavigation(shell);
   syncAccountFooter(shell);
 
-  // Nara is opened through the single floating mini button. The duplicate
-  // top-bar and editor shortcuts stay hidden without touching the assistant.
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
     button.disabled = true;
@@ -121,27 +118,41 @@ function syncReadinessChrome() {
   }
 }
 
+function installSettledSync(sync) {
+  let frame = 0;
+  let timer = 0;
+  const settle = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      sync();
+    });
+    if (timer) clearTimeout(timer);
+    timer = window.setTimeout(sync, 100);
+  };
+
+  document.addEventListener("click", settle, false);
+  window.addEventListener("pageshow", settle, { passive: true });
+  window.addEventListener("ngeblogging:studio-device-mode-change", settle);
+  window.addEventListener("ngeblogging:auth-session-ready", settle);
+  window.addEventListener("ngeblogging:auth-callback-complete", settle);
+  settle();
+
+  return () => {
+    if (frame) cancelAnimationFrame(frame);
+    if (timer) clearTimeout(timer);
+    document.removeEventListener("click", settle, false);
+    window.removeEventListener("pageshow", settle);
+    window.removeEventListener("ngeblogging:studio-device-mode-change", settle);
+    window.removeEventListener("ngeblogging:auth-session-ready", settle);
+    window.removeEventListener("ngeblogging:auth-callback-complete", settle);
+  };
+}
+
 export default function StudioSecure(props) {
   const [backupMount, setBackupMount] = useState(null);
 
-  useLayoutEffect(() => {
-    let frame = 0;
-    const sync = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(syncReadinessChrome);
-    };
-
-    const observer = new MutationObserver((mutations) => {
-      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) sync();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    syncReadinessChrome();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-    };
-  }, []);
+  useLayoutEffect(() => installSettledSync(syncReadinessChrome), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,14 +205,9 @@ export default function StudioSecure(props) {
       setBackupMount((current) => current === host ? current : host);
     };
 
-    const observer = new MutationObserver((mutations) => {
-      if (mutations.some((mutation) => mutation.addedNodes.length || mutation.removedNodes.length)) sync();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    sync();
-
+    const uninstall = installSettledSync(sync);
     return () => {
-      observer.disconnect();
+      uninstall();
       if (ownedHost?.isConnected) ownedHost.remove();
       const extras = document.getElementById(EXTRAS_ID);
       if (extras && !extras.children.length) extras.remove();

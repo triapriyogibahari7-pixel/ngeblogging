@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v289
+name: Deploy Ngeblogging Production v290
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v289
+  group: ngeblogging-production-v290
   cancel-in-progress: true
 
 jobs:
@@ -40,9 +40,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v289 regression, service-worker rotation and production build
+      - name: Run v289 and v290 regression, service-worker rotation and production build
         run: |
-          node --test tests/studio-final-pass-v289.test.mjs
+          node --test tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs
           npm run build
 
       - name: Verify production source and built markers before deploy
@@ -50,26 +50,34 @@ jobs:
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289; do test -f "public/release-v${release}.json"; done
+          for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290; do test -f "public/release-v${release}.json"; done
+          grep -q 'studio-native-controls-v290-20260805' public/release-v290.json
+          grep -q 'auth-studio-handoff-v290-20260805' public/release-v290.json
+          grep -q 'import "./auth-studio-handoff-v290.js"' src/auth-provider-gateway-v250.js
+          grep -Fq 'import("./studio-native-controls-v290.js")' src/studio-final-pass-v289.js
+          if grep -q 'import "./studio-native-controls-v290.js"' src/auth-provider-gateway-v250.js; then
+            echo 'v290 UI must load after the Studio v289 CSS authority, not from the early auth entry.' >&2
+            exit 1
+          fi
+          grep -q '/studio?auth=callback' src/auth-studio-handoff-v290.js
+          grep -q 'moveCallbackPathToStudio' src/auth-studio-handoff-v290.js
+          grep -q 'immediateNativeToggle' src/studio-native-controls-v290.js
+          grep -q 'pointerdown' src/studio-native-controls-v290.js
+          grep -q 'body.sn-mobile-sidebar-open .sn-side-backdrop' src/studio-native-controls-v290.css
+          grep -q 'pointer-events:none!important' src/studio-native-controls-v290.css
+          grep -q '.nara-floating-button{' src/studio-native-controls-v290.css
+          grep -q 'position:fixed!important' src/studio-native-controls-v290.css
           grep -q 'studio-final-pass-v289-20260805' public/release-v289.json
-          grep -q 'studio-final-pass-v289.js' src/studio-screenshot-polish-v288.js
-          grep -q 'studio-final-pass-v289.css' src/studio-final-pass-v289.js
-          grep -q 'syncSidebarPersistence' src/studio-final-pass-v289.js
-          grep -q 'loadAnalytics(view, 30, false)' src/studio-final-pass-v289.js
-          grep -q 'body.sn-mobile-sidebar-open .sn-side-backdrop' src/studio-final-pass-v289.css
-          grep -q '.nara-floating-button{position:fixed!important' src/studio-final-pass-v289.css
-          grep -q '.tn-layout-map-v264{display:block!important;width:100%!important' src/studio-final-pass-v289.css
-          grep -q 'grid-template-areas:"preview" "code"' src/studio-final-pass-v289.css
-          grep -q 'grid-template-areas:"code preview"' src/studio-final-pass-v289.css
-          grep -q 'sn-profile-menu-v287' src/studio-react-shell-v287.js
-          grep -q 'Ganti avatar' src/studio-react-shell-v287.js
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-final-pass-v289-20260805"' wrangler.production.jsonc
-          grep -q 'STUDIO_FINAL_PASS_RELEASE_V289' public/sw.js
-          grep -q 'studio-final-pass-cache-v289' public/sw.js
-          grep -q 'ngeblogging-app-v289-final-pass-20260805' public/sw.js
-          grep -R -q 'studio-final-pass-v289-20260805' dist/assets
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-native-controls-v290-20260805"' wrangler.production.jsonc
+          grep -q '"AUTH_STUDIO_HANDOFF_RELEASE": "auth-studio-handoff-v290-20260805"' wrangler.production.jsonc
+          grep -q 'STUDIO_NATIVE_CONTROLS_RELEASE_V290' public/sw.js
+          grep -q 'AUTH_STUDIO_HANDOFF_RELEASE_V290' public/sw.js
+          grep -q 'studio-native-controls-cache-v290' public/sw.js
+          grep -q 'ngeblogging-app-v290-native-controls-20260805' public/sw.js
+          grep -R -q 'studio-native-controls-v290-20260805' dist/assets
+          grep -R -q 'auth-studio-handoff-v290-20260805' dist/assets
           if grep -q '^import "./studio-production-v208.js";' src/Studio.jsx; then
             echo 'v208 legacy hard-reload runtime must not be active in production.' >&2
             exit 1
@@ -100,39 +108,43 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler custom-domain deployment tetap dijalankan dan live gate berikutnya wajib membuktikan apex.'
           fi
 
-      - name: Verify live v289 release manifest
+      - name: Verify live v290 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v289.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-final-pass-v289-20260805'; then
-              echo "Live v289 release manifest confirmed."
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v290.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-native-controls-v290-20260805' && printf '%s' "$body" | grep -q 'auth-studio-handoff-v290-20260805'; then
+              echo "Live v290 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v289.json after deployment." >&2
+          echo "Live production did not expose release-v290.json after deployment." >&2
           exit 1
 
-      - name: Verify live Studio v289 chunk
+      - name: Verify live Studio v290 bundle
         shell: bash
         run: |
           set -euo pipefail
-          chunk_path="$(grep -Rl 'studio-final-pass-v289-20260805' dist/assets | head -n 1)"
+          chunk_path="$(grep -Rl 'studio-native-controls-v290-20260805' dist/assets | head -n 1)"
           test -n "$chunk_path"
           live_path="/${chunk_path#dist/}"
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${live_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v289.js
-          grep -q 'studio-final-pass-v289-20260805' /tmp/studio-v289.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${live_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v290.js
+          grep -q 'studio-native-controls-v290-20260805' /tmp/studio-v290.js
+          grep -q 'auth-studio-handoff-v290-20260805' /tmp/studio-v290.js
 
-      - name: Verify live service worker and v289 cache
+      - name: Verify live Studio callback shell and service worker v290
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v289.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_FINAL_PASS_RELEASE_V289' /tmp/sw-v289.js
-          grep -q 'studio-final-pass-cache-v289' /tmp/sw-v289.js
-          grep -q 'ngeblogging-app-v289-final-pass-20260805' /tmp/sw-v289.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/studio?auth=callback&commit=${GITHUB_SHA}" -o /tmp/studio-callback-v290.html
+          grep -q 'id="root"' /tmp/studio-callback-v290.html
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v290.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_NATIVE_CONTROLS_RELEASE_V290' /tmp/sw-v290.js
+          grep -q 'AUTH_STUDIO_HANDOFF_RELEASE_V290' /tmp/sw-v290.js
+          grep -q 'studio-native-controls-cache-v290' /tmp/sw-v290.js
+          grep -q 'ngeblogging-app-v290-native-controls-20260805' /tmp/sw-v290.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -144,7 +156,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v289-${{ github.sha }}
+          name: ngeblogging-production-v290-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30

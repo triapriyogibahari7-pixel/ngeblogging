@@ -1,0 +1,58 @@
+{
+  "release": "studio-native-controls-v290-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-native-controls-cache-v290",
+  "authRelease": "auth-studio-handoff-v290-20260805",
+  "inherits": [
+    "studio-react-shell-v287-20260805",
+    "studio-screenshot-polish-v288-20260805",
+    "studio-final-pass-v289-20260805"
+  ],
+  "scope": "login callback handoff and native mobile controls without replacing existing Studio pages",
+  "fixes": {
+    "authentication": {
+      "oauthCallbackPath": "/studio?auth=callback",
+      "magicLinkCallbackPath": "/studio?auth=callback",
+      "signupCallbackPath": "/studio?auth=callback",
+      "recoveryPath": "/reset-password?auth=recovery",
+      "callbackUsesHistoryWithoutReload": true,
+      "persistentSessionPreserved": true,
+      "automaticRefreshPreserved": true
+    },
+    "sidebar": {
+      "singleVisibleN": true,
+      "nativePointerDownToggle": true,
+      "mobileBackdropTransparent": true,
+      "mobileBackdropClickThrough": true,
+      "desktopRailPreserved": true
+    },
+    "nara": {
+      "launcherViewportFixed": true,
+      "smallMediumNonModal": true,
+      "attachmentMenuViewportSafe": true,
+      "cameraPhotoFilePreserved": true,
+      "microphoneSpeakerModelIntelligencePreserved": true
+    },
+    "containment": {
+      "globalMinWidthZero": true,
+      "globalMaxWidth100Percent": true,
+      "domainActionsFullWidthOnSmall": true,
+      "settingsSingleColumnOnSmall": true
+    }
+  },
+  "evidence": {
+    "supabaseProjectHealthChecked": true,
+    "googlePkceTokenObserved200": true,
+    "authenticatedUserReadsObserved200": true,
+    "realProviderCapacityClaimed": false,
+    "allDeviceMatrixClaimed": false
+  },
+  "verification": {
+    "sourceRegression": "tests/studio-native-controls-v290.test.mjs",
+    "productionBuildRequired": true,
+    "serviceWorkerRotationRequired": true,
+    "liveManifestRequired": true,
+    "liveBundleRequired": true,
+    "liveHealthRequired": true
+  }
+}

@@ -225,3 +225,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { sync(); schedule(120); schedule(420); }, { once: true });
   else { sync(); schedule(120); schedule(420); }
 }
+
+/* v290 must load after v289 so its CSS and native input rules are the last Studio authority. */
+import("./studio-native-controls-v290.js").catch((error) => console.error("Studio v290 controls failed to load", error));
