@@ -40,16 +40,15 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v289 and v290 regression, service-worker rotation and production build
-        run: |
-          node --test tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs
-          npm run build
+      - name: Run v289 and v290 regression, service-worker rotation and portable production build
+        run: npm run build
 
       - name: Verify production source and built markers before deploy
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
+          node -e 'const p=require("./package.json"); if (p.scripts.build.includes("cloudflare:dry-run")) throw new Error("generic build must stay platform-neutral"); if (!p.scripts["test:production"].includes("studio-final-pass-v289.test.mjs") || !p.scripts["test:production"].includes("studio-native-controls-v290.test.mjs")) throw new Error("v289/v290 regression missing from production test");'
           for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290; do test -f "public/release-v${release}.json"; done
           grep -q 'studio-native-controls-v290-20260805' public/release-v290.json
           grep -q 'auth-studio-handoff-v290-20260805' public/release-v290.json
@@ -94,6 +93,9 @@ jobs:
             echo 'legacy Nara fullscreen observer must remain retired.' >&2
             exit 1
           fi
+
+      - name: Validate Cloudflare bundle separately from the portable app build
+        run: npm run cloudflare:dry-run
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
