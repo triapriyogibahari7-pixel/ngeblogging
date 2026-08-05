@@ -1,0 +1,5 @@
+Studio v300 production deployment trigger
+release=studio-sidebar-direct-v300-20260805
+reason=retry production push after confirmed source audit and physical mobile screenshot review
+attempt=2
+requested_at=2026-08-05
