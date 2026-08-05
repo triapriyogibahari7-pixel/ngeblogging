@@ -1,34 +1,20 @@
 import { defineConfig } from "vite";
-import { finalizeStudioV259Order } from "./scripts/finalize-studio-v259-order.mjs";
 
-// Historical regression marker names intentionally retained as comments only.
-// These source-mutating Studio activators are backups, not build hooks in v260:
-// activateStudioNativeV250 / finalizeStudioV255Order / finalizeStudioV257Order.
-// Historical plugin marker retained for the v258 static regression contract:
-// ngeblogging-native-studio-v258
+// Build authority v302.
 //
-// These service-worker finalizers/rotations are also retained as source backups,
-// but are NOT executed after Vite bundling because Netlify diagnostics proved that
-// the post-bundle mutation chain is what fails an otherwise successful v260 compile:
-// finalizeServiceWorkerV237(); finalizeServiceWorkerV238(); finalizeServiceWorkerV239();
-// finalizeServiceWorkerV240(); finalizeServiceWorkerV241(); finalizeServiceWorkerV242();
-// finalizeServiceWorkerV243(); finalizeServiceWorkerV244(); finalizeServiceWorkerV245();
-// finalizeServiceWorkerV246(); finalizeServiceWorkerV247(); finalizeServiceWorkerV249();
-// rotateServiceWorkerV250(); rotateServiceWorkerV253(); rotateServiceWorkerV256();
-// rotateServiceWorkerV257(); rotateServiceWorkerV258();
+// IMPORTANT: `scripts/finalize-studio-v259-order.mjs` remains in Git as a
+// historical audit/backup, but it must not execute from Vite anymore. Its v260
+// contract requires v257/v259/v260 shell runtimes to be live imports in
+// `Studio.jsx`; those runtimes were intentionally retired when v287-v301 moved
+// sidebar, profile and Nara ownership to the newer single-owner chain.
 //
-// Do not add rotateServiceWorkerV259 here. v260 uses the committed public/sw.js
-// source and a separate source-level cache migration instead of rewriting dist/sw.js.
+// Historical diagnostics already proved this exact hook was the build breaker:
+// the pre-hook control compiled, while enabling `finalizeStudioV259Order()` alone
+// made the provider build fail. Re-enabling it would force obsolete shell owners
+// back into production just to satisfy a stale validator.
+//
+// Current validation lives in source tests v289-v301 and release/service-worker
+// contracts. Vite is therefore kept as a pure bundler and does not mutate or
+// re-activate historical Studio authorities during build.
 
-export default defineConfig({
-  plugins: [
-    {
-      name: "ngeblogging-native-studio-v260",
-      apply: "build",
-      async buildStart() {
-        const v260 = await finalizeStudioV259Order();
-        console.log(`[vite] ${v260.release} read-only Studio/auth/Nara contract validation passed`);
-      },
-    },
-  ],
-});
+export default defineConfig({});
