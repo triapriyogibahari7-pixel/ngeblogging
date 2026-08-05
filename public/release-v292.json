@@ -1,0 +1,58 @@
+{
+  "release": "studio-startup-direct-data-v292-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-startup-direct-data-cache-v292",
+  "authRelease": "auth-session-handoff-v292-20260805",
+  "startupDataRelease": "startup-membership-direct-first-v292-20260805",
+  "inherits": [
+    "studio-react-shell-v287-20260805",
+    "studio-screenshot-polish-v288-20260805",
+    "studio-final-pass-v289-20260805",
+    "studio-native-controls-v290-20260805",
+    "studio-auth-sidebar-v291-20260805"
+  ],
+  "scope": "remove the indefinite Studio startup wait after a valid login without replacing existing Studio pages",
+  "fixes": {
+    "authentication": {
+      "providerLoginPreserved": true,
+      "passwordLoginPreserved": true,
+      "magicLinkPreserved": true,
+      "persistentSessionPreserved": true,
+      "automaticRefreshPreserved": true,
+      "verifiedSessionHandedToStudio": true,
+      "repeatedForcedUserVerificationRemoved": true,
+      "networkFailureDoesNotLogout": true
+    },
+    "startup": {
+      "membershipTransport": "direct-supabase-first-with-existing-client-fallback",
+      "boundedLoading": true,
+      "activeSiteSnapshot": "ngeblogging-active-site-snapshot-v292",
+      "knownSiteFastResume": true,
+      "newUsersStillUseOnboarding": true
+    },
+    "preserves": {
+      "sixResponsiveModes": true,
+      "sidebarAndProfile": true,
+      "NaraNonModalSmallMedium": true,
+      "themeStudioAnd100ThemeCatalog": true,
+      "productionAnalytics": true,
+      "postsPagesMediaMembersCommentsDomainApiKeys": true
+    }
+  },
+  "evidence": {
+    "googlePkceObserved200BeforePatch": true,
+    "authenticatedUserReadObserved200BeforePatch": true,
+    "siteMembershipReadObserved200BeforePatch": true,
+    "analyticsRpcObserved200BeforePatch": true,
+    "realDeviceMatrixClaimed": false,
+    "capacityClaimed": false
+  },
+  "verification": {
+    "sourceRegression": "tests/studio-startup-v292.test.mjs",
+    "productionBuildRequired": true,
+    "serviceWorkerRotationRequired": true,
+    "liveManifestRequired": true,
+    "liveBundleRequired": true,
+    "liveHealthRequired": true
+  }
+}
