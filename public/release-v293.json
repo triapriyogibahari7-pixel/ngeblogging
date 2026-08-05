@@ -1,0 +1,21 @@
+{
+  "release": "studio-final-authority-v293-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-final-authority-cache-v293",
+  "inherits": [
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805",
+    "studio-auth-sidebar-v291-20260805",
+    "studio-native-controls-v290-20260805"
+  ],
+  "scope": "complete non-destructive Studio recovery: login startup plus six-mode layout, sidebar, Theme Studio, editor, analytics and Nara containment",
+  "fixes": {
+    "authentication": {"startupDirectDataV292Preserved": true, "persistentSessionPreserved": true, "autoRefreshPreserved": true, "offlineDoesNotLogout": true},
+    "responsive": {"layoutClasses": ["application", "phone", "mobile", "compact", "tablet", "desktop"], "desktopVariants": ["laptop", "desktop", "computer"], "desktopSidebarOpenPx": 220, "desktopSidebarRailPx": 70, "mobileClosedOnlyN": true, "mobileDrawerNonBlocking": true, "contentTracksSidebar": true},
+    "themeStudio": {"themeCatalog100Preserved": true, "previewModes": 8, "layoutMap26Areas": true, "leftWidgetSlots": 4, "rightWidgetSlots": 4, "areaPopover": true, "htmlCssJavascriptEditor": true, "desktopCodePreview50_50": true, "smallPreviewAboveCode": true, "codeLineLimit": 10000},
+    "content": {"postsPagesSharedEditor": true, "wordLimit": 5000, "warningAt": 4500, "draftNeverTruncated": true, "publishBlockedAboveLimit": true, "mobileToolbarScrollable": true},
+    "nara": {"launcherViewportFixed": true, "smallMediumNonModal": true, "fullModalOnly": true, "cameraPhotoFilePreserved": true, "microphoneSpeakerPreserved": true, "modelIntelligencePreserved": true},
+    "analytics": {"realProductionRpcPreserved": true, "simulationMustStayLabeled": true, "largerCharts": true}
+  },
+  "verification": {"realCredentialLoginRequiresProviderOrUserCredential": true, "capacityClaimed": false, "realDeviceMatrixClaimed": false, "productionBuildRequired": true, "serviceWorkerRotationRequired": true}
+}

@@ -16,9 +16,7 @@ test("v292 hands every valid Supabase session to Studio without logging out", as
   assert.match(provider, /import "\.\/studio-startup-v292\.js"/);
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
-  for (const source of [startup, provider]) {
-    assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
-  }
+  for (const source of [startup, provider]) assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
 
 test("v292 reads membership directly first and keeps the existing client as fallback", async () => {
@@ -71,4 +69,35 @@ test("v292 release metadata does not invent device or capacity proof", async () 
   assert.match(release, /"realDeviceMatrixClaimed": false/);
   assert.match(release, /"capacityClaimed": false/);
   assert.doesNotMatch(release, /900juta|900 juta|100% berhasil/i);
+});
+
+test("v293 completes UI recovery without replacing v292 login startup", async () => {
+  const runtime = await read("src/studio-final-authority-v293.js");
+  const css = await read("src/studio-final-authority-v293.css");
+  const native = await read("src/studio-native-controls-v290.js");
+  const device = await read("src/studio-device-mode-v140.js");
+  const theme = await read("src/ThemeStudio.jsx");
+  const nara = await read("src/NaraAssistant.jsx");
+  const release = await read("public/release-v293.json");
+  assert.match(runtime, /studio-final-authority-v293-20260805/);
+  assert.match(runtime, /studio-theme-layout-v264\.css/);
+  assert.match(runtime, /CONTENT_WORD_LIMIT = 5_000/);
+  assert.match(runtime, /CONTENT_WORD_WARNING = 4_500/);
+  assert.match(runtime, /CODE_LINE_LIMIT = 10_000/);
+  assert.match(runtime, /guardPublish/);
+  assert.doesNotMatch(runtime, /new MutationObserver|setInterval\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
+  assert.match(native, /import\("\.\/studio-final-authority-v293\.js"\)/);
+  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"), `missing layout mode ${mode}`);
+  for (const preview of ["Aplikasi", "Handphone", "Mobile", "Perangkat kecil", "Tablet", "Laptop", "Situs desktop", "Komputer"]) assert.ok(theme.includes(preview), `missing preview ${preview}`);
+  for (const capability of ["Kamera", "Foto", "File teks", "nara-mini", "nara-writer", "nara-vision", "nara-max"]) assert.ok(nara.includes(capability), `missing Nara ${capability}`);
+  assert.match(css, /--v293-side-open:220px/);
+  assert.match(css, /--v293-side-rail:70px/);
+  assert.match(css, /data-studio-device-mode="small"[^]*#ngeblogging-studio-sidebar:not\(\.mobile-open\)/);
+  assert.match(css, /grid-template-areas:"code preview"/);
+  assert.match(css, /grid-template-areas:"preview" "code"/);
+  assert.match(css, /\.tn-code-gutter-v293/);
+  assert.match(css, /\.nara-floating-button\{position:fixed!important/);
+  assert.match(css, /nara-assistant-layer\[data-nara-interaction="nonmodal"\]/);
+  assert.match(release, /studio-final-authority-cache-v293/);
+  assert.match(release, /studio-startup-direct-data-v292-20260805/);
 });
