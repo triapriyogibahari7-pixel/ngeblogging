@@ -59,3 +59,6 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+
+// v297 makes data-device-mode authoritative and retires legacy Nara/auth races.
+await import("./patch-service-worker-v297.mjs");
