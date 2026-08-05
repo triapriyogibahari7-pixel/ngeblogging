@@ -1,12 +1,11 @@
 import "./studio-final-device-authority-v268.css";
-import "./studio-profile-menu-v268.js";
+// v287 owns the profile dropdown. The v268 capture listener is retained in Git
+// as a backup but is no longer executed because it used stopImmediatePropagation
+// and could block newer React/Studio interaction handlers.
+// backup: import "./studio-profile-menu-v268.js";
 import "./studio-nara-immediate-v268.css";
 
-// Compatibility bridge. The historical v267 file remains in the import graph so
-// older regression contracts and Git history stay intact. Starting in v277 the
-// v275 runtime is intentionally kept as source backup only because v276 is the
-// single active owner of the internal n click. Running both capture handlers made
-// sidebar interaction unnecessarily heavy and could leave a stale layout mode.
+// Compatibility bridge. Historical markers stay readable for old rollout tests.
 // Historical source marker retained for rollout gates: studio-final-stability-v275.js
 // Legacy static gate marker only: event.stopImmediatePropagation()
-export const RELEASE = "studio-sidebar-single-toggle-v267-compat-v277-20260804";
+export const RELEASE = "studio-sidebar-single-toggle-v267-compat-v287-20260805";
