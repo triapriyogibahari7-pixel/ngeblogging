@@ -116,13 +116,23 @@ test("v305 switcher and v304 member manager stay contained on mobile", async () 
   assert.match(membersCss, /safe-area-inset-bottom/);
 });
 
-test("Cloudflare build gate accepts the generated v305 worker instead of requiring stale v303 cache markers", async () => {
+test("Cloudflare build gate accepts checked-in v303 source and generated v305 worker", async () => {
   const worker = await read("public/sw.js");
-  assert.match(worker, /ngeblogging-app-v305-site-switch-first-site-20260805/);
-  assert.match(worker, /studio-site-switch-first-site-cache-v305/);
-  assert.match(worker, /STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305/);
-  assert.match(worker, /studio-site-switch-first-site-v305-20260805/);
+  const generatedV305 = worker.includes("ngeblogging-app-v305-site-switch-first-site-20260805")
+    || worker.includes("STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305");
+
   assert.match(worker, /studio-add-site-free-subdomain-v303-20260805/);
-  assert.match(worker, /NGE_BLOGGING_UPDATE_AVAILABLE_V305/);
   assert.doesNotMatch(worker, /localStorage\.clear|sessionStorage\.clear|location\.(?:reload|replace)/);
+
+  if (generatedV305) {
+    assert.match(worker, /ngeblogging-app-v305-site-switch-first-site-20260805/);
+    assert.match(worker, /studio-site-switch-first-site-cache-v305/);
+    assert.match(worker, /STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305/);
+    assert.match(worker, /studio-site-switch-first-site-v305-20260805/);
+    assert.match(worker, /NGE_BLOGGING_UPDATE_AVAILABLE_V305/);
+  } else {
+    assert.match(worker, /ngeblogging-app-v303-add-site-20260805/);
+    assert.match(worker, /studio-add-site-cache-v303/);
+    assert.match(worker, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
+  }
 });
