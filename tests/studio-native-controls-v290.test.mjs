@@ -4,10 +4,13 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("v290 loads auth handoff and native controls from the active Auth entry", async () => {
+test("v290 loads auth handoff early but UI controls only after v289 Studio authority", async () => {
   const entry = await read("src/auth-provider-gateway-v250.js");
+  const v289 = await read("src/studio-final-pass-v289.js");
   assert.match(entry, /import "\.\/auth-studio-handoff-v290\.js"/);
-  assert.match(entry, /import "\.\/studio-native-controls-v290\.js"/);
+  assert.doesNotMatch(entry, /import "\.\/studio-native-controls-v290\.js"/);
+  assert.match(v289, /import\("\.\/studio-native-controls-v290\.js"\)/);
+  assert.match(v289, /v290 must load after v289/);
 });
 
 test("v290 sends OAuth, email links and registration callbacks straight to Studio", async () => {
