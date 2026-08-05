@@ -49,7 +49,7 @@ for (const marker of [
   'grid-template-areas:"code preview"',
   '.nara-assistant-layer[data-nara-interaction="nonmodal"]',
 ]) if (!css.includes(marker)) throw new Error(`V297_CSS_MISSING:${marker}`);
-if (!native.includes('import("./studio-mode-authority-v297.js")')) throw new Error("V297_ENTRY_MISSING");
+if (!native.includes('import("./studio-shell-authority-v298.js")')) throw new Error("V297_V298_ENTRY_MISSING");
 for (const legacy of [naraSize, naraNonmodal]) {
   if (!legacy.includes("retired-v297")) throw new Error("V297_NARA_LEGACY_NOT_RETIRED");
   if (/new MutationObserver|setInterval\s*\(/.test(legacy)) throw new Error("V297_NARA_OBSERVER_REGRESSION");
@@ -87,3 +87,5 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+
+await import("./patch-service-worker-v298.mjs");

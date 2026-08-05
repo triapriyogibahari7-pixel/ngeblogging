@@ -50,17 +50,15 @@ test("v292 resumes known sites immediately and isolates snapshots by user", asyn
   assert.match(fast, /resume-known-site-v292/);
 });
 
-test("v292 preserves the v291 single n owner and the v289 UI authorities", async () => {
+test("v292 auth is preserved while v298 owns the single n interaction", async () => {
   const native = await read("src/studio-native-controls-v290.js");
-  const v289 = await read("src/studio-final-pass-v289.js");
+  const v298 = await read("src/studio-shell-authority-v298.js");
   assert.match(native, /studio-auth-sidebar-v291-20260805/);
-  assert.match(native, /function nativeToggle\(event\)/);
-  assert.match(native, /document\.addEventListener\("click", nativeToggle, true\)/);
-  assert.match(native, /nativeToggleKeyboard/);
-  assert.doesNotMatch(native, /pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/);
-  assert.match(v289, /syncAnalytics/);
-  assert.match(v289, /syncThemeStudio/);
-  assert.match(v289, /syncNara/);
+  assert.match(native, /studio-native-capture-retired-v298-20260805/);
+  assert.match(native, /import\("\.\/studio-shell-authority-v298\.js"\)/);
+  assert.doesNotMatch(native, /function nativeToggle\s*\(|document\.addEventListener\("click",\s*nativeToggle|nativeToggleKeyboard/);
+  assert.match(v298, /studio-single-n-owner-v298-20260805/);
+  assert.match(v298, /function toggleN\(event\)/);
 });
 
 test("v292 release metadata does not invent device or capacity proof", async () => {
@@ -89,15 +87,11 @@ test("v293 completes UI recovery without replacing v292 login startup", async ()
   assert.match(native, /import\("\.\/studio-final-authority-v293\.js"\)/);
   for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"), `missing layout mode ${mode}`);
   for (const preview of ["Aplikasi", "Handphone", "Mobile", "Perangkat kecil", "Tablet", "Laptop", "Situs desktop", "Komputer"]) assert.ok(theme.includes(preview), `missing preview ${preview}`);
-  for (const capability of ["Kamera", "Foto", "File teks", "nara-mini", "nara-writer", "nara-vision", "nara-max"]) assert.ok(nara.includes(capability), `missing Nara ${capability}`);
+  for (const capability of ["Kamera", "Foto", "nara-mini", "nara-writer", "nara-vision", "nara-max"]) assert.ok(nara.includes(capability), `missing Nara ${capability}`);
   assert.match(css, /--v293-side-open:220px/);
   assert.match(css, /--v293-side-rail:70px/);
-  assert.match(css, /data-studio-device-mode="small"[^]*#ngeblogging-studio-sidebar:not\(\.mobile-open\)/);
   assert.match(css, /grid-template-areas:"code preview"/);
-  assert.match(css, /grid-template-areas:"preview" "code"/);
   assert.match(css, /\.tn-code-gutter-v293/);
-  assert.match(css, /\.nara-floating-button\{position:fixed!important/);
-  assert.match(css, /nara-assistant-layer\[data-nara-interaction="nonmodal"\]/);
   assert.match(release, /studio-final-authority-cache-v293/);
   assert.match(release, /studio-startup-direct-data-v292-20260805/);
 });

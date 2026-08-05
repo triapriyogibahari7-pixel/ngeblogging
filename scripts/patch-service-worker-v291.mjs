@@ -34,13 +34,14 @@ for (const marker of ['appUrl("/?auth=callback")', 'appUrl("/?auth=recovery")', 
   if (!supabase.includes(marker)) throw new Error(`V291_AUTH_MISSING:${marker}`);
 if (!legacyShell.includes("Sidebar n ownership was retired in v291") || legacyShell.includes("const reactToggle"))
   throw new Error("V291_LEGACY_N_OWNER_NOT_RETIRED");
-for (const marker of ["function nativeToggle(event)", 'document.addEventListener("click", nativeToggle, true)', "nativeToggleKeyboard", "v291SingleOwnerToggle"])
-  if (!native.includes(marker)) throw new Error(`V291_NATIVE_OWNER_MISSING:${marker}`);
-if (/pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/.test(native)) throw new Error("V291_DOUBLE_TOGGLE_REGRESSION");
+for (const marker of ["studio-native-capture-retired-v298-20260805", 'import("./studio-shell-authority-v298.js")'])
+  if (!native.includes(marker)) throw new Error(`V291_V298_OWNER_MISSING:${marker}`);
+if (/function nativeToggle\s*\(|document\.addEventListener\("click",\s*nativeToggle|pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/.test(native))
+  throw new Error("V291_OLD_NATIVE_OWNER_REACTIVATED");
 if (!release.includes(RELEASE) || !release.includes(CACHE)) throw new Error("V291_RELEASE_INVALID");
-for (const source of [provider, legacyShell, native]) {
-  if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(source)) throw new Error("V291_RUNTIME_CHURN_OR_BLOCKING_REGRESSION");
-  if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source)) throw new Error("V291_DESTRUCTIVE_RUNTIME");
+for (const sourceText of [provider, legacyShell, native]) {
+  if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(sourceText)) throw new Error("V291_RUNTIME_CHURN_OR_BLOCKING_REGRESSION");
+  if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(sourceText)) throw new Error("V291_DESTRUCTIVE_RUNTIME");
 }
 
 let source = await readFile(swFile, "utf8");
@@ -61,6 +62,6 @@ if (!source.includes(RELEASE) || !source.includes(CACHE) || !source.includes(VER
 if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source)) throw new Error("V291_DESTRUCTIVE_SW_BEHAVIOR");
 
 await writeFile(swFile, source);
-console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+console.log(`Validated ${RELEASE} compatibility and rotated Studio cache to ${CACHE}`);
 
 await import("./patch-service-worker-v292.mjs");

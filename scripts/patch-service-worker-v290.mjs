@@ -35,16 +35,17 @@ if (!provider.includes("auth-provider-navigation-v291-20260805")) throw new Erro
 if (provider.includes('import "./auth-studio-handoff-v290.js"')) throw new Error("V290_CALLBACK_PATCH_MUST_STAY_RETIRED");
 for (const marker of ['appUrl("/?auth=callback")', "persistSession: true", "autoRefreshToken: true"])
   if (!supabase.includes(marker)) throw new Error(`V290_AUTH_COMPAT_MISSING:${marker}`);
-for (const marker of [RELEASE, "function nativeToggle(event)", 'document.addEventListener("click", nativeToggle, true)', "syncNara", "syncContainment"])
+for (const marker of [RELEASE, "studio-native-capture-retired-v298-20260805", 'import("./studio-shell-authority-v298.js")'])
   if (!runtime.includes(marker)) throw new Error(`V290_RUNTIME_MISSING:${marker}`);
-if (/pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/.test(runtime)) throw new Error("V290_DOUBLE_TOGGLE_REGRESSION");
+if (/function nativeToggle\s*\(|document\.addEventListener\("click",\s*nativeToggle|pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/.test(runtime))
+  throw new Error("V290_OLD_CAPTURE_OWNER_REACTIVATED");
 for (const marker of ["body.sn-mobile-sidebar-open .sn-side-backdrop", "pointer-events:none!important", ".nara-floating-button{", "position:fixed!important", 'data-nara-interaction="nonmodal"'])
   if (!css.includes(marker)) throw new Error(`V290_CSS_MISSING:${marker}`);
-if (!tests.includes("exactly one repeatable n click owner")) throw new Error("V290_TEST_MISSING");
+if (!tests.includes("v298 retires the old v290 capture owner")) throw new Error("V290_TEST_MISSING");
 if (!release.includes(RELEASE) || !release.includes(CACHE)) throw new Error("V290_RELEASE_INVALID");
-for (const source of [provider, runtime]) {
-  if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(source)) throw new Error("V290_RUNTIME_CHURN_OR_BLOCKING_REGRESSION");
-  if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source)) throw new Error("V290_DESTRUCTIVE_RUNTIME");
+for (const sourceText of [provider, runtime]) {
+  if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(sourceText)) throw new Error("V290_RUNTIME_CHURN_OR_BLOCKING_REGRESSION");
+  if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(sourceText)) throw new Error("V290_DESTRUCTIVE_RUNTIME");
 }
 
 let source = await readFile(swFile, "utf8");
@@ -63,10 +64,10 @@ source = source
   .replaceAll("service-worker-activated-final-pass-v289", "service-worker-activated-native-controls-v290");
 
 if (!source.includes(RELEASE) || !source.includes(CACHE) || !source.includes(VERSION)) throw new Error("V290_SW_MARKERS_MISSING");
-if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source)) throw new Error("V290_DESTRUCTIVE_SW_BEHAVIOR");
+if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source))
+  throw new Error("V290_DESTRUCTIVE_SW_BEHAVIOR");
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} compatibility and rotated Studio cache to ${CACHE}`);
 
-// v291 retires the speculative callback-path patch and makes the n click owner singular.
 await import("./patch-service-worker-v291.mjs");

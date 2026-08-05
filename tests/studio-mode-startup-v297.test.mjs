@@ -17,11 +17,12 @@ test("v297 makes data-small authoritative even when CSS viewport is widened", as
   assert.match(css, /--v297-side-rail:70px/);
 });
 
-test("v297 keeps one n, profile, nonblocking Nara and latest mobile Theme order", async () => {
-  const [runtime, css, native] = await Promise.all([
+test("v297 visual source is preserved while v298 becomes the only live shell owner", async () => {
+  const [runtime, css, native, v298] = await Promise.all([
     read("src/studio-mode-authority-v297.js"),
     read("src/studio-mode-authority-v297.css"),
     read("src/studio-native-controls-v290.js"),
+    read("src/studio-shell-authority-v298.js"),
   ]);
   assert.match(runtime, /studio-mode-startup-authority-v297-20260805/);
   assert.match(runtime, /nara-react-single-owner-v297-20260805/);
@@ -33,7 +34,9 @@ test("v297 keeps one n, profile, nonblocking Nara and latest mobile Theme order"
   assert.match(css, /bottom:calc\(100% \+ 8px\)!important/);
   assert.match(css, /html\[data-studio-device-mode="small"\] \.tn-code-workspace\{[^}]*grid-template-areas:"code" "preview"/);
   assert.match(css, /\.tn-code-workspace\{[^}]*grid-template-areas:"code preview"/);
-  assert.match(native, /studio-mode-authority-v297\.js/);
+  assert.doesNotMatch(native, /import\("\.\/studio-mode-authority-v297\.js"\)/);
+  assert.match(native, /import\("\.\/studio-shell-authority-v298\.js"\)/);
+  assert.match(v298, /studio-shell-authority-v298-20260805/);
 });
 
 test("v297 retires legacy Nara observers and legacy auth redirect gate", async () => {

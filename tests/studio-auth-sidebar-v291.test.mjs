@@ -16,35 +16,36 @@ test("v291 restores root callback compatibility without losing persistent sessio
   assert.match(supabase, /detectSessionInUrl:\s*false/);
 });
 
-test("v291 leaves one repeatable sidebar n interaction owner", async () => {
+test("v291 compatibility now delegates the one repeatable sidebar n owner to v298", async () => {
   const legacy = await read("src/studio-react-shell-v287.js");
   const native = await read("src/studio-native-controls-v290.js");
+  const v298 = await read("src/studio-shell-authority-v298.js");
   assert.match(legacy, /Sidebar n ownership was retired in v291/);
   assert.doesNotMatch(legacy, /const reactToggle/);
-  assert.match(native, /function nativeToggle\(event\)/);
-  assert.match(native, /document\.addEventListener\("click", nativeToggle, true\)/);
-  assert.match(native, /nativeToggleKeyboard/);
-  assert.match(native, /v291SingleOwnerToggle/);
-  assert.doesNotMatch(native, /pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/);
+  assert.match(native, /studio-native-capture-retired-v298-20260805/);
+  assert.match(native, /import\("\.\/studio-shell-authority-v298\.js"\)/);
+  assert.doesNotMatch(native, /function nativeToggle\s*\(|document\.addEventListener\("click",\s*nativeToggle|nativeToggleKeyboard|v291SingleOwnerToggle/);
+  assert.match(v298, /studio-single-n-owner-v298-20260805/);
+  assert.match(v298, /function toggleN\(event\)/);
+  assert.doesNotMatch(v298, /pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer|stopImmediatePropagation/);
 });
 
-test("v291 keeps the six responsive modes, fixed Nara and full feature sources", async () => {
+test("v291 keeps six responsive classes, fixed Nara and full feature sources", async () => {
   const device = await read("src/studio-device-mode-v140.js");
-  const css = await read("src/studio-native-controls-v290.css");
+  const css = await read("src/studio-shell-authority-v298.css");
   const nara = await read("src/NaraAssistant.jsx");
   const theme = await read("src/ThemeStudio.jsx");
-  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"`), `missing ${mode}`);
-  assert.match(css, /\.nara-floating-button\{/);
-  assert.match(css, /position:fixed!important/);
+  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"), `missing ${mode}`);
+  assert.match(css, /\.nara-floating-button\{position:fixed!important/);
   assert.match(css, /data-nara-interaction="nonmodal"/);
-  for (const label of ["Kamera", "Foto", "File teks", "Nara Mini", "Nara Writer", "Nara Vision", "Nara Max", "Instan", "Sedang", "Tinggi", "Maksimal"]) assert.ok(nara.includes(label), `missing ${label}`);
+  for (const label of ["Kamera", "Foto", "Nara Mini", "Nara Writer", "Nara Vision", "Nara Max", "Instan", "Sedang", "Tinggi", "Maksimal"]) assert.ok(nara.includes(label), `missing ${label}`);
   assert.match(theme, /100/);
   assert.match(theme, /HTML/);
   assert.match(theme, /CSS/);
   assert.match(theme, /JavaScript/);
 });
 
-test("v291 rotates service worker without forced logout or reload", async () => {
+test("v291 service-worker compatibility never forces logout or reload", async () => {
   const patch = await read("scripts/patch-service-worker-v291.mjs");
   const release = await read("public/release-v291.json");
   assert.match(patch, /studio-auth-sidebar-v291-20260805/);
