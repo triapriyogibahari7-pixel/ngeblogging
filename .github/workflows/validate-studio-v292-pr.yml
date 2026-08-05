@@ -1,4 +1,4 @@
-name: Validate Studio v300
+name: Validate Studio v301
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-studio-v300-${{ github.ref }}
+  group: validate-studio-v301-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -45,12 +45,13 @@ jobs:
             tests/studio-mode-startup-v297.test.mjs \
             tests/studio-shell-authority-v298.test.mjs \
             tests/studio-direct-shell-v299.test.mjs \
-            tests/studio-sidebar-direct-v300.test.mjs
+            tests/studio-sidebar-direct-v300.test.mjs \
+            tests/studio-sidebar-hard-lock-v301.test.mjs
 
       - name: Build application with service-worker chain
         run: npm run check
 
-      - name: Verify v292-v300 build markers
+      - name: Verify v292-v301 build markers
         shell: bash
         run: |
           set -euo pipefail
@@ -61,16 +62,19 @@ jobs:
           grep -q 'STUDIO_SHELL_AUTHORITY_RELEASE_V298' public/sw.js
           grep -q 'STUDIO_DIRECT_SHELL_BOOT_RELEASE_V299' public/sw.js
           grep -q 'STUDIO_SIDEBAR_DIRECT_RELEASE_V300' public/sw.js
-          grep -q 'studio-sidebar-direct-cache-v300' public/sw.js
-          grep -q 'ngeblogging-app-v300-sidebar-direct-20260805' public/sw.js
+          grep -q 'STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301' public/sw.js
+          grep -q 'studio-sidebar-hard-lock-cache-v301' public/sw.js
+          grep -q 'ngeblogging-app-v301-sidebar-hard-lock-20260805' public/sw.js
           grep -R -q 'studio-startup-direct-data-v292-20260805' dist/assets
           grep -R -q 'studio-theme-catalog-100-v296-20260805' dist/assets
           grep -R -q 'studio-shell-authority-v298-20260805' dist/assets
           grep -R -q 'studio-direct-shell-boot-v299-20260805' dist/assets
           grep -R -q 'studio-sidebar-direct-v300-20260805' dist/assets
+          grep -R -q 'studio-sidebar-hard-lock-v301-20260805' dist/assets
           test -f public/release-v292.json
           test -f public/release-v296.json
           test -f public/release-v297.json
           test -f public/release-v298.json
           test -f public/release-v299.json
           test -f public/release-v300.json
+          test -f public/release-v301.json
