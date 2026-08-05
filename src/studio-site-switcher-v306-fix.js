@@ -90,12 +90,15 @@ async function deleteOwnedSite(siteId, button) {
     );
     if (!confirmed) return null;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("sites")
       .delete()
       .eq("id", site.id)
-      .eq("owner_id", userId);
+      .eq("owner_id", userId)
+      .select("id");
     if (error) throw error;
+    const deleted = Array.isArray(data) && data.some((row) => String(row?.id) === String(site.id));
+    if (!deleted) throw new Error("Situs tidak terhapus. Pastikan akun ini adalah pemilik situs.");
 
     deletedIds.add(String(site.id));
     const wasActive = String(activeSiteId()) === String(site.id);
@@ -164,7 +167,7 @@ function decorateV305() {
     const meta = row.querySelector(".site-copy p")?.textContent || "";
     const owner = /(^|·|\s)Pemilik($|·|\s)/i.test(meta);
     const actions = row.querySelector(".site-actions");
-    if (!owner || !actions || actions.querySelector(".site-delete-v306")) return;
+    if (!owner || !actions || actions.querySelector(".site-delete-v306,[data-site-delete-v306]")) return;
     const button = document.createElement("button");
     button.type = "button";
     button.className = "site-delete-v306";
@@ -203,11 +206,11 @@ async function decorateLegacy() {
         row.remove();
         return;
       }
-      if (String(site.role || "").toLowerCase() !== "owner" || row.querySelector(".site-delete-v306")) return;
+      if (String(site.role || "").toLowerCase() !== "owner" || row.querySelector(".site-delete-v306,[data-site-delete-v306]")) return;
       const button = document.createElement("button");
       button.type = "button";
       button.className = "site-delete-v306";
-      button.textContent = "Hapus";
+      button.textContent = "Hapus situs";
       button.setAttribute("aria-label", `Hapus ${site.name || "situs"}`);
       button.addEventListener("click", async (event) => {
         event.preventDefault();
@@ -220,7 +223,7 @@ async function decorateLegacy() {
           row.remove();
           legacyToast(`Situs “${result.site.name}” berhasil dihapus.`);
           if (result.wasActive) {
-            const nextManage = alternatives[0]?.querySelector("button:not(.site-delete-v306)");
+            const nextManage = alternatives[0]?.querySelector("button:not(.site-delete-v306):not([data-site-delete-v306])");
             if (nextManage) nextManage.click();
             else requireFirstSite();
           }
