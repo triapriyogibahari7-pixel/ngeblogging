@@ -1,0 +1,46 @@
+{
+  "release": "studio-live-visual-v286-20260805",
+  "date": "2026-08-05",
+  "scope": "screenshot-driven production visual recovery for sidebar, fixed Nara launcher, compact drawer, profile visibility, Theme Studio and Domain containment",
+  "cache": "studio-live-visual-cache-v286",
+  "sourceBranch": "main",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "breakpoint": 761,
+    "smallClosedSidebarOnlyN": true,
+    "largeCollapsedRailKeepsIcons": true,
+    "contentTracksSidebarWidth": true
+  },
+  "sidebar": {
+    "singleInternalN": true,
+    "requiredItems": 13,
+    "menuSpacingCompact": true,
+    "mobileDrawerFullHeight": true,
+    "pageBlurDisabled": true
+  },
+  "nara": {
+    "launcherViewportFixed": true,
+    "smallNonModal": true,
+    "mediumNonModal": true,
+    "fullModal": true,
+    "attachmentMenuAboveComposer": true,
+    "controlsPreserved": true
+  },
+  "themeStudio": {
+    "layoutMapPreserved": true,
+    "desktopCodePreviewSplit": true,
+    "mobilePreviewAboveCode": true,
+    "maxCodeLines": 10000
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "automaticLogoutAdded": false
+  },
+  "claims": {
+    "hundredPercentProductionClaim": false,
+    "nineHundredMillionOrBillionLoginClaim": false,
+    "realDeviceVerificationRequired": true
+  }
+}

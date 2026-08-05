@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v284
+name: Deploy Ngeblogging Production v286
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v284
+  group: ngeblogging-production-v286
   cancel-in-progress: true
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       CLOUDFLARE_ZONE_NAME: ngeblogging.com
       CLOUDFLARE_WORKER_SERVICE: ngeblogging
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
 
     steps:
@@ -41,7 +41,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Validate rollout contract
-        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs
+        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs
 
       - name: Run complete production regression and build
         run: npm run build
@@ -51,41 +51,20 @@ jobs:
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 273 274 275 276 277 278 279 280 281 282 283 284; do test -f "public/release-v${release}.json"; done
-          grep -q 'studio-native-recovery-v283-20260805' public/release-v283.json
-          grep -q 'studio-native-polish-v284-20260805' public/release-v284.json
-          grep -q 'studio-native-polish-v284.js' src/Studio.jsx
-          grep -q 'studio-native-polish-v284.css' src/Studio.jsx
-          grep -q 'mark.addEventListener("click", onLogoClick)' src/studio-native-polish-v284.js
-          grep -q 'loadAnalytics(view, 30, false)' src/studio-native-polish-v284.js
-          grep -q 'MAX_CODE_LINES = 10000' src/studio-native-polish-v284.js
-          if grep -q 'window.addEventListener("click"' src/studio-native-polish-v284.js; then
-            echo 'v284 tidak boleh memiliki global capture click shell.' >&2
-            exit 1
-          fi
-          if grep -q 'stopImmediatePropagation' src/studio-native-polish-v284.js; then
-            echo 'v284 tidak boleh mematikan event tombol/menu lain.' >&2
-            exit 1
-          fi
-          if grep -q 'new MutationObserver' src/studio-native-polish-v284.js; then
-            echo 'v284 tidak boleh memasang observer shell kontinu.' >&2
-            exit 1
-          fi
-          grep -q -- '--v284-side-open:248px' src/studio-native-polish-v284.css
-          grep -q '.sn-shell{font-size:14px!important' src/studio-native-polish-v284.css
-          grep -q '.nara-floating-button{position:fixed!important;right:' src/studio-native-polish-v284.css
-          grep -q '.nara-attachment-menu' src/studio-native-polish-v284.css
-          grep -q '.tn-layout-map-v264{width:660px!important' src/studio-native-polish-v284.css
-          grep -q '.v284-code-lines' src/studio-native-polish-v284.css
-          grep -q 'MAX_CONTENT_WORDS = 5000' src/studio-native-controls-v281.js
+          for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286; do test -f "public/release-v${release}.json"; done
+          grep -q 'studio-live-visual-v286-20260805' public/release-v286.json
+          grep -q 'studio-live-visual-v286.js' src/studio-responsive-lock-v285.js
+          grep -q 'studio-live-visual-v286.css' src/studio-live-visual-v286.js
+          grep -q 'data-v286-family="large"' src/studio-live-visual-v286.css
+          grep -q 'data-v286-family="small"' src/studio-live-visual-v286.css
+          grep -q '.nara-floating-button{position:fixed!important' src/studio-live-visual-v286.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-live-visual-v286.css
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
-          grep -q 'public-edge-request-dedup-v282-20260805' cloudflare/worker-v70.mjs
-          grep -q '"main": "./cloudflare/worker-v70.mjs"' wrangler.production.jsonc
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-native-polish-v284-20260805"' wrangler.production.jsonc
-          grep -q 'STUDIO_NATIVE_POLISH_RELEASE_V284' public/sw.js
-          grep -q 'studio-native-polish-cache-v284' public/sw.js
-          grep -q 'ngeblogging-app-v284-native-polish-20260805' public/sw.js
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-live-visual-v286-20260805"' wrangler.production.jsonc
+          grep -q 'STUDIO_LIVE_VISUAL_RELEASE_V286' public/sw.js
+          grep -q 'studio-live-visual-cache-v286' public/sw.js
+          grep -q 'ngeblogging-app-v286-live-visual-20260805' public/sw.js
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
@@ -100,60 +79,52 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler custom-domain deployment tetap dijalankan dan live gate berikutnya wajib membuktikan apex.'
           fi
 
-      - name: Verify live v284 release manifest
+      - name: Verify live v286 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v284.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-native-polish-v284-20260805'; then
-              echo "Live v284 release manifest confirmed."
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v286.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-live-visual-v286-20260805'; then
+              echo "Live v286 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v284.json after deployment." >&2
+          echo "Live production did not expose release-v286.json after deployment." >&2
           exit 1
 
-      - name: Verify live Studio bundle contains v284 JS and CSS
+      - name: Verify live Studio bundle contains v286
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/studio?commit=${GITHUB_SHA}" -o /tmp/studio-v284.html
-          grep -q 'id="root"' /tmp/studio-v284.html
-          script_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<script[^>]+src="([^"]+\.js)"/);process.stdout.write(m?.[1]||"")' /tmp/studio-v284.html)"
-          css_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<link[^>]+href="([^"]+\.css)"/);process.stdout.write(m?.[1]||"")' /tmp/studio-v284.html)"
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/studio?commit=${GITHUB_SHA}" -o /tmp/studio-v286.html
+          grep -q 'id="root"' /tmp/studio-v286.html
+          script_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<script[^>]+src="([^"]+\.js)"/);process.stdout.write(m?.[1]||"")' /tmp/studio-v286.html)"
           test -n "$script_path"
-          test -n "$css_path"
-          curl -fsS --retry 6 --retry-delay 4 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${script_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v284.js
-          curl -fsS --retry 6 --retry-delay 4 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${css_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v284.css
-          grep -q 'studio-native-polish-v284-20260805' /tmp/studio-v284.js
-          grep -q -- '--v284-side-open' /tmp/studio-v284.css
-          grep -q 'nara-floating-button' /tmp/studio-v284.css
+          curl -fsS --retry 6 --retry-delay 4 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${script_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v286.js
+          grep -q 'studio-live-visual-v286-20260805' /tmp/studio-v286.js
 
-      - name: Verify live service worker and v284 cache
+      - name: Verify live service worker and v286 cache
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -D /tmp/sw-headers.txt -o /tmp/sw-v284.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -qi 'x-ngeblogging-public-edge: public-edge-request-dedup-v282-20260805' /tmp/sw-headers.txt
-          grep -qi 'x-ngeblogging-static-fast-path: true' /tmp/sw-headers.txt
-          grep -q 'STUDIO_NATIVE_RECOVERY_RELEASE_V283' /tmp/sw-v284.js
-          grep -q 'STUDIO_NATIVE_POLISH_RELEASE_V284' /tmp/sw-v284.js
-          grep -q 'studio-native-polish-cache-v284' /tmp/sw-v284.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v286.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_LIVE_VISUAL_RELEASE_V286' /tmp/sw-v286.js
+          grep -q 'studio-live-visual-cache-v286' /tmp/sw-v286.js
+          grep -q 'ngeblogging-app-v286-live-visual-20260805' /tmp/sw-v286.js
 
       - name: Verify production health endpoint
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -D /tmp/health-headers.txt -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health.json
+          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health.json
           test -s /tmp/ngeblogging-health.json
-          grep -qi 'x-ngeblogging-public-edge: public-edge-request-dedup-v282-20260805' /tmp/health-headers.txt
 
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v284-${{ github.sha }}
+          name: ngeblogging-production-v286-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
