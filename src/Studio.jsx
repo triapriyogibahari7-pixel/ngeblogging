@@ -60,12 +60,17 @@ import "./studio-production-v232.js";
 import "./studio-production-v234.js";
 // v250 retirement marker; capture handler lama disimpan sebagai backup: import "./studio-production-v235.js";
 import "./studio-production-v235-widget-target.js";
-import "./studio-real-device-v236.js";
-import "./studio-source-stability-v237.js";
-import "./studio-source-stability-v237-ui.js";
-import "./studio-desktop-sidebar-v238.js";
-import "./studio-react-safe-v240.js";
-import "./studio-final-authority-v239.js";
+
+// v283 runtime pruning: authority v236-v280 di bawah disimpan utuh di Git sebagai
+// backup/regression source, tetapi tidak lagi dieksekusi. Beberapa versi lama
+// memasang MutationObserver/scroll/capture handler bersamaan dan saling menimpa
+// mode Desktop Site, n sidebar, profil, Nara, serta Theme Studio.
+// backup: import "./studio-real-device-v236.js";
+// backup: import "./studio-source-stability-v237.js";
+// backup: import "./studio-source-stability-v237-ui.js";
+// backup: import "./studio-desktop-sidebar-v238.js";
+// backup: import "./studio-final-authority-v239.js";
+// backup: import "./studio-react-safe-v240.js";
 import "./studio-react-safe-v240.css";
 // v250 retirement marker; capture handler lama disimpan sebagai backup: import "./studio-visual-stability-v241.js";
 import "./studio-visual-stability-v241-final.css";
@@ -76,64 +81,67 @@ import "./studio-visual-stability-v241-final.css";
 // compatibility-only CSS marker: import "./studio-screenshot-lock-v247.css";
 // compatibility-only CSS marker: import "./studio-final-visual-v249.css";
 // compatibility-only CSS marker: import "./studio-final-visual-v249-hotfix.css";
-import "./studio-native-authority-v250.js";
+// backup: import "./studio-native-authority-v250.js";
 import "./studio-native-authority-v250.css";
-import "./studio-sidebar-rescue-v251.js";
+// backup: import "./studio-sidebar-rescue-v251.js";
 import "./studio-sidebar-rescue-v251.css";
-import "./studio-source-stability-v252.js";
+// backup: import "./studio-source-stability-v252.js";
 import "./studio-source-stability-v252.css";
-import "./studio-shell-nara-v253.js";
+// backup: import "./studio-shell-nara-v253.js";
 import "./studio-shell-nara-v253.css";
-import "./studio-shell-interaction-v255.js";
+// backup: import "./studio-shell-interaction-v255.js";
 import "./studio-shell-interaction-v255.css";
-import "./studio-visual-native-v257.js";
+// backup: import "./studio-visual-native-v257.js";
 import "./studio-visual-native-v257.css";
-import "./studio-six-mode-authority-v259.js";
+// backup: import "./studio-six-mode-authority-v259.js";
 import "./studio-six-mode-authority-v259.css";
 import "./studio-six-mode-authority-v259-hotfix.css";
-import "./studio-stability-v260.js";
+// backup: import "./studio-stability-v260.js";
 import "./studio-stability-v260.css";
 import "./studio-stability-v260-hotfix.css";
 // v265 retirement marker; v263 JS is kept as backup because its Nara observer
-// conflicts with the stable v255/v260 launcher ownership: import "./studio-runtime-v263.js";
+// conflicts with the stable native shell: import "./studio-runtime-v263.js";
 import "./studio-shell-v263.css";
 import "./studio-shell-v263-hotfix.css";
+
+// Theme/layout dan editor navigation tetap aktif karena berisi fungsi produk,
+// bukan controller shell duplikat.
 import "./studio-theme-layout-v264.js";
 import "./studio-theme-layout-v264.css";
-import "./studio-screenshot-authority-v265.js";
+// backup: import "./studio-screenshot-authority-v265.js";
 import "./studio-screenshot-authority-v265.css";
-import "./studio-shell-v265.js";
+// backup: import "./studio-shell-v265.js";
 import "./studio-shell-v265.css";
 import "./studio-shell-v265-final-hotfix.css";
 import "./studio-editor-navigation-v266.js";
 import "./studio-editor-navigation-v266.css";
-import "./studio-runtime-v266.js";
+// backup: import "./studio-runtime-v266.js";
+
+// v267 tetap menjadi jembatan profil v268 + CSS Nara, tanpa click handler n.
 import "./studio-sidebar-single-toggle-v267.js";
-// v269 remains the full responsive authority; v270 only hardens fixed chrome
-// against long-scroll/address-bar movement and legacy hidden-rail regressions.
-import "./studio-final-authority-v269.js";
-import "./studio-scroll-chrome-v270.js";
+// backup: import "./studio-final-authority-v269.js";
+// backup: import "./studio-scroll-chrome-v270.js";
 import "./studio-scroll-chrome-v270.css";
-import "./studio-shell-authority-v272.js";
-import "./studio-shell-content-v274.js";
+// backup: import "./studio-shell-authority-v272.js";
+// backup: import "./studio-shell-content-v274.js";
 import "./studio-shell-content-v274-hotfix.css";
 import "./studio-final-stability-v275.css";
-// v276 compatibility reader; active click ownership moved to v278.
 import "./studio-sidebar-recovery-v276.js";
 import "./studio-sidebar-recovery-v276.css";
-// v277 remains geometry/history authority without owning the n click.
-import "./studio-interaction-authority-v277.js";
+// backup: import "./studio-interaction-authority-v277.js";
 import "./studio-interaction-authority-v277.css";
-// v278 owns the single n click and complete responsive geometry.
-import "./studio-shell-precision-v278.js";
+// backup: import "./studio-shell-precision-v278.js";
 import "./studio-shell-precision-v278.css";
-// v279 keeps the viewport recovery layer, but v280 retires its scroll-time DOM writes.
-import "./studio-live-shell-v279.js";
+// backup: import "./studio-live-shell-v279.js";
 import "./studio-live-shell-v279.css";
-// v280 is retained as a compatibility shell. v281 is the final authority below.
-import "./studio-native-shell-v280.js";
+// backup: import "./studio-native-shell-v280.js";
 import "./studio-native-shell-v280.css";
+
+// v281 hanya lightweight normalizer/5000-word guard; v283 menjadi owner interaksi
+// dan geometri terakhir sehingga tidak ada lagi banyak capture owner bersamaan.
 import "./studio-native-controls-v281.js";
 import "./studio-native-controls-v281.css";
+import "./studio-native-recovery-v283.js";
+import "./studio-native-recovery-v283.css";
 
 export default StudioFastGate;
