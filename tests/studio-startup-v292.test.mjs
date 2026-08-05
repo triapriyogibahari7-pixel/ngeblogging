@@ -39,7 +39,7 @@ test("v292 startup gate does not force remote auth verification and cannot spin 
   assert.doesNotMatch(gate, /getVerifiedSession\(\{\s*force:\s*true\s*\}\)/);
   assert.doesNotMatch(gate, /STARTUP_RETRY_DELAYS/);
   assert.match(gate, /ngeblogging-active-site-snapshot-v292/);
-  assert.match(gate, /Data Studio belum merespons dalam batas waktu/);
+  assert.match(gate, /Data situs belum merespons dalam batas waktu/);
 });
 
 test("v292 resumes known sites immediately and isolates snapshots by user", async () => {
