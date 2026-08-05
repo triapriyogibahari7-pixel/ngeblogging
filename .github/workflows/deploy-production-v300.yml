@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v300
+name: Deploy Ngeblogging Production v301
 
 on:
   push:
@@ -9,11 +9,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v300
+  group: ngeblogging-production-v301
   cancel-in-progress: true
 
 jobs:
-  deploy-v300:
+  deploy-v301:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -36,9 +36,10 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Verify sidebar direct target, shell, auth and content timeout
+      - name: Verify v301 sidebar hard-lock, direct target, shell, auth and content timeout
         run: |
           node --test \
+            tests/studio-sidebar-hard-lock-v301.test.mjs \
             tests/studio-sidebar-direct-v300.test.mjs \
             tests/studio-direct-shell-v299.test.mjs \
             tests/studio-shell-authority-v298.test.mjs \
@@ -47,47 +48,51 @@ jobs:
       - name: Build current production bundle
         run: npm run build
 
-      - name: Verify v300 build markers
+      - name: Verify v301 build markers
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          test -f public/release-v300.json
-          grep -q 'studio-sidebar-direct-v300-20260805' public/release-v300.json
-          grep -q 'STUDIO_SIDEBAR_DIRECT_RELEASE_V300' public/sw.js
-          grep -q 'studio-sidebar-direct-cache-v300' public/sw.js
-          grep -q 'ngeblogging-app-v300-sidebar-direct-20260805' public/sw.js
-          grep -q 'import "./studio-sidebar-direct-v300.js"' src/Studio.jsx
+          test -f public/release-v301.json
+          grep -q 'studio-sidebar-hard-lock-v301-20260805' public/release-v301.json
+          grep -q 'STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301' public/sw.js
+          grep -q 'studio-sidebar-hard-lock-cache-v301' public/sw.js
+          grep -q 'ngeblogging-app-v301-sidebar-hard-lock-20260805' public/sw.js
+          grep -q 'import("./studio-sidebar-hard-lock-v301.js")' src/studio-sidebar-direct-v300.js
+          grep -q 'physicalShortSide() <= 760' src/studio-sidebar-hard-lock-v301.js
+          grep -q 'important(content, "margin-left", "0")' src/studio-sidebar-hard-lock-v301.js
+          grep -q 'data-studio-responsive-mode="phone"' src/studio-sidebar-hard-lock-v301.css
           grep -q 'mark.addEventListener("click", directToggle' src/studio-sidebar-direct-v300.js
           grep -q 'CONTENT_QUERY_TIMEOUT_MS = 12_000' src/lib/content-data.js
+          grep -R -q 'studio-sidebar-hard-lock-v301-20260805' dist/assets
           grep -R -q 'studio-sidebar-direct-v300-20260805' dist/assets
-          grep -R -q 'studio-direct-shell-boot-v299-20260805' dist/assets
           grep -R -q 'studio-startup-direct-data-v292-20260805' dist/assets
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-sidebar-hard-lock-v301-20260805"' wrangler.production.jsonc
 
       - name: Deploy Worker and assets to Cloudflare
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
 
-      - name: Verify live v300 manifest
+      - name: Verify live v301 manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v300.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-sidebar-direct-v300-20260805'; then
-              echo 'Live v300 manifest confirmed.'
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v301.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-sidebar-hard-lock-v301-20260805'; then
+              echo 'Live v301 manifest confirmed.'
               exit 0
             fi
             sleep 10
           done
-          echo 'Live production did not expose release-v300.json.' >&2
+          echo 'Live production did not expose release-v301.json.' >&2
           exit 1
 
       - name: Verify live service worker and health
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}" -o /tmp/sw-v300.js
-          grep -q 'STUDIO_SIDEBAR_DIRECT_RELEASE_V300' /tmp/sw-v300.js
-          grep -q 'studio-sidebar-direct-cache-v300' /tmp/sw-v300.js
-          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health-v300.json
-          test -s /tmp/ngeblogging-health-v300.json
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}" -o /tmp/sw-v301.js
+          grep -q 'STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301' /tmp/sw-v301.js
+          grep -q 'studio-sidebar-hard-lock-cache-v301' /tmp/sw-v301.js
+          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health-v301.json
+          test -s /tmp/ngeblogging-health-v301.json
