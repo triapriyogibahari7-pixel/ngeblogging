@@ -1,0 +1,11 @@
+{
+  "release": "studio-v305-cloudflare-retry-20260805",
+  "reason": "Trigger a fresh Cloudflare build from the current v305 source after older queued deployments still executed the retired v303 service-worker assertion.",
+  "siteSwitcher": "studio-real-site-switcher-v305-20260805",
+  "firstSiteOnboarding": "first-site-required-guard-v305-20260805",
+  "buildGate": "current-v305-worker",
+  "staleTestNameRemoved": "v303 rotates the PWA cache without clearing sessions or forcing auth reloads",
+  "expectedCurrentTestName": "PWA worker preserves the v303 add-site contract while allowing the current v305 cache rotation",
+  "sessionPreserved": true,
+  "createdAt": "2026-08-05T16:00:00Z"
+}
