@@ -7,16 +7,18 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const REQUIRED_MENU = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
 test("v302 keeps the complete sidebar and hard-locks correct small/large geometry", async () => {
-  const [studio, lock, css] = await Promise.all([
+  const [studio, lock, css, shellCss] = await Promise.all([
     read("src/StudioNext.jsx"),
     read("src/studio-sidebar-hard-lock-v301.js"),
     read("src/studio-sidebar-hard-lock-v301.css"),
+    read("src/studio-shell-authority-v298.css"),
   ]);
   for (const label of REQUIRED_MENU) assert.ok(studio.includes(label), `sidebar missing ${label}`);
-  for (const marker of ["studio-sidebar-hard-lock-v301-20260805", "54px", "78vw", "336px", "220px", "70px", "marginLeft: \"0\"", "width: \"100%\""]) assert.ok(lock.includes(marker), `hard-lock missing ${marker}`);
+  for (const marker of ["studio-sidebar-hard-lock-v301-20260805", "54px", "78vw", "336px", "220px", "70px", '"margin-left", "0"', '"width", "100%"']) assert.ok(lock.includes(marker), `hard-lock missing ${marker}`);
   assert.match(css, /data-studio-device-mode="small"/);
   assert.match(css, /data-studio-device-mode="large"/);
-  assert.match(css, /\.sn-profile-menu-v298/);
+  assert.match(css, /\.sn-top \.sn-avatar/);
+  assert.match(shellCss, /\.sn-profile-menu-v298/);
 });
 
 test("v302 preserves six responsive classifier modes and eight Theme preview labels", async () => {
@@ -24,7 +26,7 @@ test("v302 preserves six responsive classifier modes and eight Theme preview lab
     read("src/studio-device-mode-v140.js"),
     read("src/ThemeStudio.jsx"),
   ]);
-  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"), `mode missing ${mode}`);
+  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"`), `mode missing ${mode}`);
   for (const label of ["Aplikasi","Handphone","Mobile","Perangkat kecil","Tablet","Laptop","Situs desktop","Komputer"]) assert.ok(theme.includes(label), `preview missing ${label}`);
 });
 
