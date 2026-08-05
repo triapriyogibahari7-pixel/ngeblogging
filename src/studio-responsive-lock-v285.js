@@ -31,7 +31,7 @@ function safeToggle() {
 }
 
 function bindLogo(mark) {
-  if (!mark || mark.dataset.v285Bound === "true") return;
+  if (!mark || mark.dataset.v284NativeBound === "true" || mark.dataset.v285Bound === "true") return;
   mark.dataset.v285Bound = "true";
   mark.addEventListener("click", (event) => {
     event.preventDefault();
