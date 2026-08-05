@@ -1,0 +1,55 @@
+{
+  "release": "studio-sidebar-hard-lock-v301-20260805",
+  "cache": "studio-sidebar-hard-lock-cache-v301",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-sidebar-direct-v300-20260805",
+    "studio-direct-shell-boot-v299-20260805",
+    "studio-shell-authority-v298-20260805",
+    "studio-mode-startup-authority-v297-20260805",
+    "studio-theme-catalog-100-v296-20260805",
+    "studio-polish-v295-20260805",
+    "studio-mobile-classifier-v294-20260805",
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805"
+  ],
+  "screenshotFixes": {
+    "mobileBlankLeftRailRemoved": true,
+    "mobileNFixedAfterScroll": true,
+    "mobileClosedOnlySingleN": true,
+    "mobileOpenDrawerWidth": "min(78vw,336px)",
+    "mobileOpenDrawerAllMenuLabelsVisible": true,
+    "mobileDrawerDoesNotShiftMain": true,
+    "mobileBackdropNeverBlursStudio": true,
+    "largeSidebarOpen": 220,
+    "largeSidebarCollapsed": 70,
+    "largeCollapsedIconsRemainVisible": true,
+    "mainTracksLargeSidebar": true,
+    "profileRemainsTopRight": true,
+    "naraLauncherFixedBottomRight": true,
+    "physicalMobileUaCannotInheritTransientDesktopRail": true,
+    "inlineImportantGeometryWinsHistoricalCss": true,
+    "singleNClickOwnerPreservedFromV300": true
+  },
+  "preserved": {
+    "sidebarMenus": ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"],
+    "sixResponsiveModes": ["application","phone","mobile","compact","tablet","desktop"],
+    "themePreviewLabels": ["Aplikasi","Handphone","Mobile","Perangkat kecil","Tablet","Laptop","Desktop","Komputer"],
+    "themeCatalogCount": 100,
+    "themeLayoutAreas": 26,
+    "postPageWordLimit": 5000,
+    "themeCodeLineLimit": 10000,
+    "analyticsProductionRuntime": true,
+    "authPersistSession": true,
+    "authAutoRefreshToken": true,
+    "naraSmallMediumNonModal": true
+  },
+  "validation": {
+    "sourceMergedClaimed": false,
+    "productionDeploymentClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "capacity900MillionClaimed": false,
+    "note": "Release manifest describes source behavior only until CI/build/deployment and physical-device checks actually complete."
+  }
+}
