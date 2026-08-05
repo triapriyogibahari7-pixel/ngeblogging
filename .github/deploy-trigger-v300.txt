@@ -1,0 +1,3 @@
+Studio v300 production deployment trigger
+release=studio-sidebar-direct-v300-20260805
+reason=ensure production push occurs after deploy-production-v300.yml already exists on branch
