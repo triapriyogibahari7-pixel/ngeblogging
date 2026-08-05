@@ -1,0 +1,55 @@
+{
+  "release": "studio-mode-startup-authority-v297-20260805",
+  "cache": "studio-mode-startup-cache-v297",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-theme-catalog-100-v296-20260805",
+    "studio-polish-v295-20260805",
+    "studio-mobile-classifier-v294-20260805",
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805"
+  ],
+  "fixes": {
+    "dataModeOwnsGeometry": true,
+    "smallModeIndependentOfCssViewportWidth": true,
+    "smallModeNoReservedDesktopRail": true,
+    "smallClosedSidebarOnlyN": true,
+    "smallDrawerCompleteAndNonBlocking": true,
+    "largeSidebar220Rail70": true,
+    "largeCollapsedIconsCentered": true,
+    "singleSidebarN": true,
+    "profileAlwaysTopRight": true,
+    "legacyNaraMutationObserversRetired": true,
+    "naraReactSingleOwner": true,
+    "naraSmallMediumNonModal": true,
+    "naraFixedBottomRight": true,
+    "naraAttachmentMenuOpensUpward": true,
+    "legacyAuthFullScreenGateRetired": true,
+    "authRouteUsesHistoryWithoutReload": true,
+    "themeSmallCodeOrder": "code-top-preview-bottom",
+    "themeDesktopCodeOrder": "code-left-preview-right",
+    "themeLayout26AreaPreserved": true,
+    "themeCatalogCount": 100,
+    "postPageWordLimit": 5000,
+    "codeLineLimit": 10000,
+    "analyticsProductionPreserved": true,
+    "authPersistSessionPreserved": true,
+    "authAutoRefreshPreserved": true
+  },
+  "liveEvidenceBeforeV297": {
+    "supabaseProjectHealthy": true,
+    "googleOauthAuthorizeCallbackObserved": true,
+    "googlePkceToken200Observed": true,
+    "userEndpoint200Observed": true,
+    "refreshToken200Observed": true,
+    "note": "Supabase production auth logs show successful Google PKCE and session refresh. The remaining blocker is frontend/deployment consistency, not a dead auth project."
+  },
+  "validation": {
+    "capacityClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "linkedinProviderClaimed": false,
+    "emailCredentialLoginClaimed": false,
+    "productionDeploymentClaimed": false
+  }
+}
