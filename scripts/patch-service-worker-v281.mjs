@@ -101,3 +101,7 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated native controls cache to ${CACHE}`);
+
+// v283 is the final production generator. v281 remains as a compatibility gate
+// so historical regression checks stay valid before v283 rotates the live cache.
+await import("./patch-service-worker-v283.mjs");
