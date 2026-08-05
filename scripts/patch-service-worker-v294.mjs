@@ -88,3 +88,6 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+
+// v295 is the screenshot-driven production recovery layered after the v294 classifier.
+await import("./patch-service-worker-v295.mjs");
