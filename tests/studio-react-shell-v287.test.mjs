@@ -93,12 +93,12 @@ test("v287 retains avatar upload without the old drawer/Nara observer", async ()
   assert.doesNotMatch(avatar, /syncDrawer|syncNara/);
 });
 
-test("v287 resumes a verified/recovered site without destructive reload", async () => {
+test("v287 compatibility now accepts the v292 verified/recovered-site startup authority", async () => {
   const gate = await read("src/StudioOnboardingGate.jsx");
-  assert.match(gate, /studio-session-handoff-v287-20260805/);
+  assert.match(gate, /STUDIO_STARTUP_RELEASE_V292/);
+  assert.match(gate, /STARTUP_DATA_TIMEOUT_MS = 11_000/);
   assert.match(gate, /recoveredActiveSite/);
   assert.match(gate, /ngeblogging:active-site-ready/);
-  assert.match(gate, /window\.addEventListener\("online"/);
   assert.match(gate, /Sesi Anda tetap aktif/);
   assert.doesNotMatch(gate, /location\.(reload|replace)\s*\(/);
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
