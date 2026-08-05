@@ -35,6 +35,16 @@ test("v290 keeps the n responsive without adding observer churn or destructive s
   assert.doesNotMatch(runtime, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
 
+test("v290 retires the body-wide StudioSecure observers that caused repeated DOM churn", async () => {
+  const secure = await read("src/StudioSecure.jsx");
+  assert.match(secure, /studio-secure-event-sync-v290-20260805/);
+  assert.match(secure, /installSettledSync/);
+  assert.match(secure, /ngeblogging:studio-device-mode-change/);
+  assert.match(secure, /ngeblogging:auth-session-ready/);
+  assert.doesNotMatch(secure, /new MutationObserver/);
+  assert.doesNotMatch(secure, /setInterval\s*\(/);
+});
+
 test("v290 mobile drawer is transparent and click-through while Nara stays fixed and non-modal", async () => {
   const css = await read("src/studio-native-controls-v290.css");
   assert.match(css, /body\.sn-mobile-sidebar-open \.sn-side-backdrop/);
