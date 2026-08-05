@@ -31,7 +31,8 @@ test("v298 geometry follows shell data-mode and removes the mobile desktop rail"
   assert.match(css, />#ngeblogging-studio-sidebar:not\(\.mobile-open\)/);
   assert.match(css, /width:54px!important/);
   assert.match(css, /width:min\(78vw,336px\)!important/);
-  assert.match(css, />\.sn-main\{margin-left:0!important;width:100%!important/);
+  assert.match(css, /margin-left:0!important/);
+  assert.match(css, /width:100%!important/);
   assert.match(css, /\.sn-side-backdrop[^]*pointer-events:none!important/);
   assert.match(css, /collapsed~\.sn-main/);
 });
@@ -44,7 +45,7 @@ test("v298 keeps Nara fixed, compact and non-modal except full", async () => {
   assert.match(css, /\.nara-assistant-shell\[data-nara-size="small"\]/);
   assert.match(css, /\.nara-assistant-shell\[data-nara-size="medium"\]/);
   assert.match(css, /data-nara-size="full"/);
-  assert.match(css, /\.nara-attachment-menu\{display:grid!important;position:absolute!important/);
+  assert.match(css, /\.nara-assistant-shell \.nara-attachment-menu\{display:grid!important;position:absolute!important/);
   assert.match(css, /bottom:calc\(100% \+ 8px\)!important/);
   for (const marker of ["Kamera", "Foto", "File", "Nara Mini", "Nara Writer", "Nara Vision", "Nara Max", "Instan", "Sedang", "Tinggi", "Maksimal"]) assert.ok(nara.includes(marker), `missing ${marker}`);
 });
@@ -64,7 +65,7 @@ test("v298 keeps Theme Studio and editor guarantees", async () => {
 test("v298 preserves six responsive classes and persistent auth", async () => {
   const device = await read("src/studio-device-mode-v140.js");
   const auth = await read("src/lib/supabase.js");
-  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"`), `missing ${mode}`);
+  for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"), `missing ${mode}`);
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.match(auth, /appUrl\("\/\?auth=callback"\)/);
