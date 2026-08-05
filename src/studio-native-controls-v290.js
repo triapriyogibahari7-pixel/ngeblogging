@@ -8,6 +8,7 @@ export const STUDIO_SITE_SWITCHER_COMPAT_V304 = "studio-real-site-switcher-v304-
 export const STUDIO_SITE_SWITCHER_COMPAT_V305 = "studio-real-site-switcher-v305-20260805";
 export const STUDIO_FIRST_SITE_GUARD_COMPAT_V305 = "studio-first-site-required-v305-20260805";
 export const STUDIO_MEMBERS_COMPAT_V304 = "studio-members-real-invite-v304-20260805";
+export const STUDIO_SITE_SWITCHER_ACTIONS_COMPAT_V305 = "studio-site-switcher-actions-v305-20260805";
 
 /*
  * v298 retires the old document-capture n owner from v290. The old handler
@@ -28,6 +29,7 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioSiteSwitcherV305 = STUDIO_SITE_SWITCHER_COMPAT_V305;
   document.documentElement.dataset.studioFirstSiteGuardV305 = STUDIO_FIRST_SITE_GUARD_COMPAT_V305;
   document.documentElement.dataset.studioMembersV304 = STUDIO_MEMBERS_COMPAT_V304;
+  document.documentElement.dataset.studioSiteSwitcherActionsV305 = STUDIO_SITE_SWITCHER_ACTIONS_COMPAT_V305;
 }
 
 /*
@@ -38,6 +40,7 @@ if (typeof document !== "undefined") {
  * - v303: dedicated free *.ngeblogging.com site creation flow
  * - v305: explicit all-site chooser + first-site guard
  * - v304 members: owner/admin member invitation manager
+ * - v305 actions: make the active-site management control perform a real Studio navigation
  *
  * v295/v297 JavaScript global click normalizers are deliberately not executed;
  * their CSS is imported by v298 so completed visual work is preserved without
@@ -50,5 +53,6 @@ if (typeof window !== "undefined") {
     .then(() => import("./studio-add-site-v303.js"))
     .then(() => import("./studio-site-switcher-v305.js"))
     .then(() => import("./studio-members-v304.js"))
+    .then(() => import("./studio-site-switcher-v305-actions.js"))
     .catch((error) => console.error("Studio authority chain failed to load", error));
 }
