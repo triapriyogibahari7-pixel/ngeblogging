@@ -146,3 +146,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { schedule(); schedule(400); }, { once: true });
   else { schedule(); schedule(400); }
 }
+
+/* v292 is the last visual/containment authority. It does not own the n click; v290 remains the single interaction owner. */
+import("./studio-final-authority-v292.js").catch((error) => console.error("Studio v292 final authority failed to load", error));
