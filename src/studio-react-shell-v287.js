@@ -86,7 +86,11 @@ function accountView(mode) {
 
 function runProfileAction(action) {
   if (action === "profile") accountView("profile");
-  else if (action === "add-site") {
+  else if (action === "avatar") {
+    closeProfileMenu();
+    if (typeof window.__ngebloggingOpenAvatarPicker === "function") window.__ngebloggingOpenAvatarPicker();
+    else accountView("profile");
+  } else if (action === "add-site") {
     closeProfileMenu();
     document.querySelector(".sn-workspace")?.click();
   } else if (action === "settings") accountView("settings");
@@ -107,7 +111,8 @@ function openProfileMenu(button) {
   panel.setAttribute("role", "menu");
   panel.setAttribute("aria-label", "Menu profil Ngeblogging");
   panel.innerHTML = `
-    <button type="button" role="menuitem" data-action="profile"><b>Profil</b><small>Avatar, nama, biografi, dan situs</small></button>
+    <button type="button" role="menuitem" data-action="profile"><b>Profil</b><small>Nama tampilan, biografi, dan website</small></button>
+    <button type="button" role="menuitem" data-action="avatar"><b>Ganti avatar</b><small>Unggah foto profil persegi</small></button>
     <button type="button" role="menuitem" data-action="add-site"><b>Tambahkan situs</b><small>Buat atau pilih workspace</small></button>
     <button type="button" role="menuitem" data-action="settings"><b>Pengaturan</b><small>Bahasa, zona waktu, dan preferensi</small></button>
     <button type="button" role="menuitem" data-action="nara"><b>Nara AI</b><small>Buka asisten tanpa menutup Studio</small></button>
