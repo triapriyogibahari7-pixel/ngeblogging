@@ -57,7 +57,20 @@ test("v290 mobile drawer is transparent and click-through while Nara stays fixed
   assert.match(css, /data-nara-interaction="nonmodal"/);
   assert.match(css, /\.nara-assistant-shell\[data-nara-size="small"\]/);
   assert.match(css, /\.nara-attachment-menu\{/);
+  assert.match(css, /bottom:calc\(100% \+ 8px\)!important/);
   assert.match(css, /\.domain-actions/);
+});
+
+test("v290 locks desktop rail, mobile n and dashboard rows against screenshot regressions", async () => {
+  const css = await read("src/studio-native-controls-v290.css");
+  assert.match(css, /data-studio-device-mode="large"[^]*#ngeblogging-studio-sidebar/);
+  assert.match(css, /width:248px!important/);
+  assert.match(css, /collapsed~\.sn-main/);
+  assert.match(css, /data-studio-device-mode="small"[^]*#ngeblogging-studio-sidebar:not\(\.mobile-open\)/);
+  assert.match(css, /\.sn-home-grid>section>header\{/);
+  assert.match(css, /position:relative!important/);
+  assert.match(css, /\.sn-home-grid>section>button\{/);
+  assert.match(css, /\.sn-main>\.sn-top \.sn-avatar\{/);
 });
 
 test("v290 keeps real Supabase persistence and all six responsive classifications", async () => {
