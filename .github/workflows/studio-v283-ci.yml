@@ -2,15 +2,9 @@ name: Studio v284 CI
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: studio-v284-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   validate:
@@ -29,7 +23,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v284 focused regression
+      - name: Run focused Studio regressions
         run: node --test tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs
 
       - name: Run production build regression
