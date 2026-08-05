@@ -55,3 +55,8 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+
+// v289 is a non-destructive finalizer layered on top of v288. Keeping this
+// handoff inside the existing v288 build hook avoids replaying historical UI
+// patchers while still guaranteeing a fresh service-worker cache.
+await import("./patch-service-worker-v289.mjs");
