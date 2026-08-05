@@ -36,10 +36,10 @@ test("v287 keeps one internal n, complete navigation, and five-function profile 
   assert.match(runtime, /letter\.textContent = "n"/);
   assert.match(css, /\.sn-main>\.sn-top>\.sn-sidebar-toggle/);
   for (const label of ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"]) {
-    assert.match(studio, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.ok(studio.includes(label), `Navigation label missing: ${label}`);
   }
   for (const action of ["profile", "add-site", "view-site", "settings", "logout"]) {
-    assert.match(runtime, new RegExp(`data-v287-profile-action=\\"${action}\\"`));
+    assert.ok(runtime.includes(`data-v287-profile-action="${action}"`), `Profile action missing: ${action}`);
   }
   assert.match(runtime, /event\.stopPropagation\(\)/);
 });
@@ -62,15 +62,15 @@ test("Nara controls are real and v287 keeps small/medium non-modal", async () =>
 
 test("Theme Studio retains 100 themes, eight preview profiles, 26-slot map and code editor", async () => {
   const themeStudio = await read("src/ThemeStudio.jsx");
-  const themeSystem = await read("src/theme-system.js");
   const layout = await read("src/studio-theme-layout-v264.js");
   const controls = await read("src/studio-native-polish-v284.js");
+  const catalog = await import(new URL("../src/theme-catalog.js", import.meta.url));
 
   for (const label of ["Aplikasi", "Handphone", "Mobile", "Perangkat kecil", "Tablet", "Laptop", "Situs desktop", "Komputer"]) {
     assert.ok(themeStudio.includes(label), `Preview profile missing: ${label}`);
   }
   assert.match(themeStudio, /THEME_COUNT/);
-  assert.match(themeSystem, /THEME_COUNT\s*=\s*100/);
+  assert.equal(catalog.THEME_COUNT, 100);
   for (const area of ["sidebar-left-1", "sidebar-left-2", "sidebar-left-3", "sidebar-left-4", "sidebar-right-1", "sidebar-right-2", "sidebar-right-3", "sidebar-right-4", "before-content", "after-content"]) {
     assert.ok(layout.includes(area), `Layout area missing: ${area}`);
   }
