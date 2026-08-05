@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v281
+name: Deploy Ngeblogging Production v282
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v281
+  group: ngeblogging-production-v282
   cancel-in-progress: true
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Validate rollout contract
-        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs
+        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs
 
       - name: Run complete production regression and build
         run: npm run build
@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 273 274 275 276 277 278 279 280 281; do test -f "public/release-v${release}.json"; done
+          for release in 273 274 275 276 277 278 279 280 281 282; do test -f "public/release-v${release}.json"; done
           grep -q 'studio-production-rollout-v273-20260804' public/release-v273.json
           grep -q 'studio-shell-content-v274-20260804' public/release-v274.json
           grep -q 'studio-final-stability-v275-20260804' public/release-v275.json
@@ -58,8 +58,7 @@ jobs:
           grep -q 'studio-live-shell-v279-20260804' public/release-v279.json
           grep -q 'studio-native-shell-v280-20260804' public/release-v280.json
           grep -q 'studio-native-controls-v281-20260805' public/release-v281.json
-          grep -q 'studio-shell-precision-v278.js' src/Studio.jsx
-          grep -q 'studio-native-shell-v280.js' src/Studio.jsx
+          grep -q 'public-edge-request-dedup-v282-20260805' public/release-v282.json
           grep -q 'studio-native-controls-v281.js' src/Studio.jsx
           grep -q 'studio-native-controls-v281.css' src/Studio.jsx
           grep -q 'studio-theme-layout-v264.js' src/Studio.jsx
@@ -83,6 +82,12 @@ jobs:
           grep -q 'MAX_CODE_LINES = 10000' src/studio-native-controls-v281.js
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
+          grep -q 'public-edge-request-dedup-v282-20260805' cloudflare/worker-v70.mjs
+          grep -q 'url.pathname.startsWith("/assets/")' cloudflare/worker-v70.mjs
+          grep -q 'x-ngeblogging-static-fast-path' cloudflare/worker-v70.mjs
+          grep -q 'x-ngeblogging-static-fallback-blocked' cloudflare/worker-v70.mjs
+          grep -q '"main": "./cloudflare/worker-v70.mjs"' wrangler.production.jsonc
+          grep -q '"PUBLIC_EDGE_RELEASE": "public-edge-request-dedup-v282-20260805"' wrangler.production.jsonc
           if grep -Eq 'if \(/refreshStaleWindow\|' scripts/patch-service-worker-v277.mjs scripts/patch-service-worker-v278.mjs; then
             echo 'Build gate masih menolak helper compatibility refreshStaleWindow.' >&2
             exit 1
@@ -95,42 +100,45 @@ jobs:
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
 
-      - name: Verify live v281 release manifest
+      - name: Verify live v282 edge release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 18); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v281.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-native-controls-v281-20260805'; then
-              echo "Live v281 release manifest confirmed."
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v282.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'public-edge-request-dedup-v282-20260805'; then
+              echo "Live v282 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v281.json after deployment." >&2
+          echo "Live production did not expose release-v282.json after deployment." >&2
           exit 1
 
-      - name: Verify live service worker contains v281 cache chain
+      - name: Verify live service worker and v282 static fast path
         shell: bash
         run: |
           set -euo pipefail
-          sw="$(curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}")"
-          printf '%s' "$sw" | grep -q 'STUDIO_NATIVE_SHELL_RELEASE_V280'
-          printf '%s' "$sw" | grep -q 'studio-native-shell-cache-v280'
-          printf '%s' "$sw" | grep -q 'STUDIO_NATIVE_CONTROLS_RELEASE_V281'
-          printf '%s' "$sw" | grep -q 'studio-native-controls-cache-v281'
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -D /tmp/sw-headers.txt -o /tmp/sw-v282.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -qi 'x-ngeblogging-public-edge: public-edge-request-dedup-v282-20260805' /tmp/sw-headers.txt
+          grep -qi 'x-ngeblogging-static-fast-path: true' /tmp/sw-headers.txt
+          grep -q 'STUDIO_NATIVE_SHELL_RELEASE_V280' /tmp/sw-v282.js
+          grep -q 'studio-native-shell-cache-v280' /tmp/sw-v282.js
+          grep -q 'STUDIO_NATIVE_CONTROLS_RELEASE_V281' /tmp/sw-v282.js
+          grep -q 'studio-native-controls-cache-v281' /tmp/sw-v282.js
 
       - name: Verify production health endpoint
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health.json
+          curl -fsS --retry 6 --retry-delay 5 --connect-timeout 10 --max-time 30 -D /tmp/health-headers.txt -H 'Cache-Control: no-cache' https://ngeblogging.com/api/health > /tmp/ngeblogging-health.json
           test -s /tmp/ngeblogging-health.json
+          grep -qi 'x-ngeblogging-public-edge: public-edge-request-dedup-v282-20260805' /tmp/health-headers.txt
 
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v281-${{ github.sha }}
+          name: ngeblogging-production-v282-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
