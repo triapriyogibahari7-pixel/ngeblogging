@@ -92,6 +92,17 @@ test("v287 retains avatar upload without the old drawer/Nara observer", async ()
   assert.doesNotMatch(avatar, /syncDrawer|syncNara/);
 });
 
+test("v287 resumes a verified/recovered site without destructive reload", async () => {
+  const gate = await read("src/StudioOnboardingGate.jsx");
+  assert.match(gate, /studio-session-handoff-v287-20260805/);
+  assert.match(gate, /recoveredActiveSite/);
+  assert.match(gate, /ngeblogging:active-site-ready/);
+  assert.match(gate, /window\.addEventListener\("online"/);
+  assert.match(gate, /Sesi Anda tetap aktif/);
+  assert.doesNotMatch(gate, /location\.(reload|replace)\s*\(/);
+  assert.doesNotMatch(gate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
+});
+
 test("v287 default build does not replay historical UI patchers", async () => {
   const pkg = JSON.parse(await read("package.json"));
   assert.match(pkg.scripts.build, /patch-service-worker-v287\.mjs/);
@@ -102,8 +113,9 @@ test("v287 default build does not replay historical UI patchers", async () => {
 test("v287 preserves auth persistence and does not add destructive logout", async () => {
   const runtime = await read("src/studio-react-shell-v287.js");
   const recovery = await read("src/studio-production-v206.js");
+  const gate = await read("src/StudioOnboardingGate.jsx");
   const auth = await read("src/lib/supabase.js");
   assert.match(auth, /persistSession:\s*true/);
   assert.match(auth, /autoRefreshToken:\s*true/);
-  for (const source of [runtime, recovery]) assert.doesNotMatch(source, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.reload\s*\(|location\.replace\s*\(/);
+  for (const source of [runtime, recovery, gate]) assert.doesNotMatch(source, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.reload\s*\(|location\.replace\s*\(/);
 });
