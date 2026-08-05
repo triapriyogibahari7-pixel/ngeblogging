@@ -73,3 +73,19 @@ test("v288 keeps 100 themes and persistent auth source contracts", async () => {
   assert.match(auth, /autoRefreshToken:\s*true/);
   assert.match(auth, /production-public-fallback/);
 });
+
+test("v289 final pass is part of the v288 production chain", async () => {
+  const v288 = await read("src/studio-screenshot-polish-v288.js");
+  const runtime = await read("src/studio-final-pass-v289.js");
+  const css = await read("src/studio-final-pass-v289.css");
+  const sw = await read("scripts/patch-service-worker-v288.mjs");
+  assert.match(v288, /import\("\.\/studio-final-pass-v289\.js"\)/);
+  assert.match(runtime, /studio-final-pass-v289-20260805/);
+  assert.match(runtime, /syncSidebarPersistence/);
+  assert.match(runtime, /loadAnalytics\(view, 30, false\)/);
+  assert.match(css, /--v289-side-open:248px/);
+  assert.match(css, /body\.sn-mobile-sidebar-open \.sn-side-backdrop/);
+  assert.match(css, /\.nara-floating-button\{position:fixed!important/);
+  assert.match(css, /\.tn-layout-map-v264\{display:block!important;width:100%!important/);
+  assert.match(sw, /import\("\.\/patch-service-worker-v289\.mjs"\)/);
+});
