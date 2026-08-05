@@ -1,5 +1,12 @@
-const VERSION = "ngeblogging-app-v275-final-stability-20260804";
-const CACHE_RELEASE = "studio-final-stability-cache-v275";
+const VERSION = "ngeblogging-app-v302-cache-cutover-20260805";
+const CACHE_RELEASE = "studio-build-nara-cache-v302";
+const STUDIO_BUILD_NARA_RELEASE_V302 = "studio-build-nara-authority-v302-20260805";
+const STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301 = "studio-sidebar-hard-lock-v301-20260805";
+const STUDIO_SHELL_AUTHORITY_RELEASE_V298 = "studio-shell-authority-v298-20260805";
+const STUDIO_MODE_STARTUP_RELEASE_V297 = "studio-mode-startup-authority-v297-20260805";
+const STUDIO_THEME_CATALOG_RELEASE_V296 = "studio-theme-catalog-100-v296-20260805";
+const STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292 = "studio-startup-direct-data-v292-20260805";
+const AUTH_SESSION_HANDOFF_RELEASE_V292 = "auth-session-handoff-v292-20260805";
 const STUDIO_FINAL_STABILITY_RELEASE_V275 = "studio-final-stability-v275-20260804";
 const UI_PATCH_RELEASE_V274 = "studio-shell-content-v274-20260804";
 const UI_PATCH_CACHE_V274 = "studio-shell-content-cache-v274";
@@ -45,10 +52,12 @@ const ACTIVE_VERSION_V260 = "ngeblogging-app-v262-responsive-shell-r1-20260804";
 const ACTIVE_CACHE_RELEASE_V260 = "studio-responsive-shell-cache-v262-r1";
 const ACTIVE_VERSION_V274 = "ngeblogging-app-v274-shell-content-20260804";
 const ACTIVE_CACHE_RELEASE_V274 = UI_PATCH_CACHE_V274;
-const ACTIVE_VERSION_V275 = VERSION;
-const ACTIVE_CACHE_RELEASE_V275 = CACHE_RELEASE;
-const SHELL_CACHE = `${ACTIVE_VERSION_V275}-${ACTIVE_CACHE_RELEASE_V275}-${AUTH_HANDOFF_RELEASE}-shell`;
-const ASSET_CACHE = `${ACTIVE_VERSION_V275}-${ACTIVE_CACHE_RELEASE_V275}-${AUTH_HANDOFF_RELEASE}-assets`;
+const ACTIVE_VERSION_V275 = "ngeblogging-app-v275-final-stability-20260804";
+const ACTIVE_CACHE_RELEASE_V275 = "studio-final-stability-cache-v275";
+const ACTIVE_VERSION_V302 = VERSION;
+const ACTIVE_CACHE_RELEASE_V302 = CACHE_RELEASE;
+const SHELL_CACHE = `${ACTIVE_VERSION_V302}-${ACTIVE_CACHE_RELEASE_V302}-${STUDIO_BUILD_NARA_RELEASE_V302}-${STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;
+const ASSET_CACHE = `${ACTIVE_VERSION_V302}-${ACTIVE_CACHE_RELEASE_V302}-${STUDIO_BUILD_NARA_RELEASE_V302}-${STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -92,6 +101,13 @@ function versionPayload(type) {
   return {
     type,
     version: VERSION,
+    studioBuildNaraReleaseV302: STUDIO_BUILD_NARA_RELEASE_V302,
+    studioSidebarHardLockReleaseV301: STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301,
+    studioShellAuthorityReleaseV298: STUDIO_SHELL_AUTHORITY_RELEASE_V298,
+    studioModeStartupReleaseV297: STUDIO_MODE_STARTUP_RELEASE_V297,
+    studioThemeCatalogReleaseV296: STUDIO_THEME_CATALOG_RELEASE_V296,
+    studioStartupDirectDataReleaseV292: STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292,
+    authSessionHandoffReleaseV292: AUTH_SESSION_HANDOFF_RELEASE_V292,
     studioFinalStabilityReleaseV275: STUDIO_FINAL_STABILITY_RELEASE_V275,
     uiPatchReleaseV274: UI_PATCH_RELEASE_V274,
     uiPatchCacheV274: UI_PATCH_CACHE_V274,
@@ -99,6 +115,8 @@ function versionPayload(type) {
     uiPatchCacheV272: UI_PATCH_CACHE_V272,
     studioStabilityReleaseV260: STUDIO_STABILITY_RELEASE_V260,
     studioSixModeReleaseV259: STUDIO_SIX_MODE_RELEASE_V259,
+    activeVersionV302: ACTIVE_VERSION_V302,
+    activeCacheReleaseV302: ACTIVE_CACHE_RELEASE_V302,
     activeVersionV275: ACTIVE_VERSION_V275,
     activeCacheReleaseV275: ACTIVE_CACHE_RELEASE_V275,
     activeVersionV274: ACTIVE_VERSION_V274,
@@ -144,11 +162,11 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V275"),
-        reason: "service-worker-activated-final-stability-v275",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V302"),
+        reason: "service-worker-activated-build-nara-v302",
         reloadRequired: false,
       });
-      // No client.navigate(): preserves login/session and avoids the historical double-loading pass.
+      // Deliberately no client.navigate()/reload: preserve login/session and unsaved work.
     } catch {
       // One problematic tab must not block the rest.
     }
