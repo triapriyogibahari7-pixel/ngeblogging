@@ -26,8 +26,9 @@ const [runtime, css, tests, release] = await Promise.all([
   readFile(releaseFile, "utf8"),
 ]);
 
-for (const marker of [RELEASE, "clickOwner(event)", "reactToggle()", "sn-profile-menu-v287", "currentFamily()"])
+for (const marker of [RELEASE, "clickOwner(event)", "sn-profile-menu-v287", "currentFamily()", "Sidebar n ownership was retired in v291"])
   if (!runtime.includes(marker)) throw new Error(`V287_RUNTIME_MISSING:${marker}`);
+if (runtime.includes("const reactToggle")) throw new Error("V287_LEGACY_N_OWNER_REACTIVATED");
 for (const marker of ["--v287-side-open:248px", 'data-device-mode="large"', 'data-device-mode="small"', ".nara-floating-button{position:fixed!important", 'grid-template-areas:"preview" "code"'])
   if (!css.includes(marker)) throw new Error(`V287_CSS_MISSING:${marker}`);
 if (!tests.includes("v287 is loaded after v286")) throw new Error("V287_TEST_MISSING");
@@ -54,4 +55,4 @@ if (!source.includes(RELEASE) || !source.includes(CACHE)) throw new Error("V287_
 if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.reload\s*\(/.test(source)) throw new Error("V287_DESTRUCTIVE_SW_BEHAVIOR");
 
 await writeFile(swFile, source);
-console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+console.log(`Validated ${RELEASE} compatibility and rotated Studio cache to ${CACHE}`);
