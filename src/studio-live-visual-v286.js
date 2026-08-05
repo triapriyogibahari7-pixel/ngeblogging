@@ -137,5 +137,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   else boot();
 }
 
-/* v287 is intentionally loaded after v286 so its selectors are the last shell authority. */
-import("./studio-react-shell-v287.js").catch((error) => console.error("Studio v287 authority failed to load", error));
+/* v287 owns profile/logo interaction; v288 is loaded after it as the final geometry authority. */
+import("./studio-react-shell-v287.js")
+  .then(() => import("./studio-final-authority-v288.js"))
+  .catch((error) => console.error("Studio v288 authority failed to load", error));
