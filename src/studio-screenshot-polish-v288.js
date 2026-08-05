@@ -142,3 +142,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { sync(); schedule(120); schedule(420); }, { once: true });
   else { sync(); schedule(120); schedule(420); }
 }
+
+/* v289 is the final geometry/containment pass and intentionally does not replace v287/v288 interactions. */
+import("./studio-final-pass-v289.js").catch((error) => console.error("Studio v289 final pass failed to load", error));
