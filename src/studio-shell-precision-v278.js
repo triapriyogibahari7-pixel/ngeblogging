@@ -1,4 +1,5 @@
 export const RELEASE = "studio-shell-precision-v278-20260804";
+export const POINTERDOWN_CAPTURE_RETIRED_BY = "studio-native-controls-v281-20260805";
 
 const BOOT_PULSES = 12;
 let frame = 0;
@@ -191,13 +192,12 @@ function toggleFromLogo() {
   schedule(40);
 }
 
-// Window-capture berada lebih awal pada event path daripada document-capture.
-// Dengan begitu handler lama apa pun tidak dapat menggelapkan/menutup layar atau
-// melakukan toggle kedua setelah ikon n ditekan.
+// Pointerdown capture sengaja dipensiunkan pada v281. Menahan pointerdown pada
+// window membuat tap perangkat sentuh dapat kehilangan click setelah scroll.
+// Window-capture click di bawah sudah cukup untuk mencegah handler document lama.
 function stopLegacyPointer(event) {
-  if (!logoMark(event.target)) return;
-  event.stopImmediatePropagation();
-  event.stopPropagation();
+  void event;
+  return POINTERDOWN_CAPTURE_RETIRED_BY;
 }
 
 function activateLogo(event) {
@@ -236,7 +236,6 @@ function start() {
 }
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  window.addEventListener("pointerdown", stopLegacyPointer, true);
   window.addEventListener("click", activateLogo, true);
   window.addEventListener("keydown", activateLogoKeyboard, true);
   window.addEventListener("resize", schedule, { passive: true });
@@ -249,3 +248,5 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
 }
+
+export { stopLegacyPointer };
