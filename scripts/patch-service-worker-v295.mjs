@@ -4,6 +4,7 @@ const swFile = new URL("../public/sw.js", import.meta.url);
 const runtimeFile = new URL("../src/studio-polish-v295.js", import.meta.url);
 const cssFile = new URL("../src/studio-polish-v295.css", import.meta.url);
 const nativeFile = new URL("../src/studio-native-controls-v290.js", import.meta.url);
+const v298File = new URL("../src/studio-shell-authority-v298.js", import.meta.url);
 const deviceFile = new URL("../src/studio-device-mode-v140.js", import.meta.url);
 const authFile = new URL("../src/lib/supabase.js", import.meta.url);
 const releaseFile = new URL("../public/release-v295.json", import.meta.url);
@@ -24,10 +25,11 @@ function upsert(source, name, value) {
   return source.replace(anchor, `$1${line}\n`);
 }
 
-const [runtime, css, native, device, auth, release] = await Promise.all([
+const [runtime, css, native, v298, device, auth, release] = await Promise.all([
   readFile(runtimeFile, "utf8"),
   readFile(cssFile, "utf8"),
   readFile(nativeFile, "utf8"),
+  readFile(v298File, "utf8"),
   readFile(deviceFile, "utf8"),
   readFile(authFile, "utf8"),
   readFile(releaseFile, "utf8"),
@@ -41,7 +43,7 @@ for (const marker of [
   "buildProfileMenu",
   "nara-attachment-menu-wrap>button",
   "data-profile-action",
-]) if (!runtime.includes(marker)) throw new Error(`V295_RUNTIME_MISSING:${marker}`);
+]) if (!runtime.includes(marker)) throw new Error(`V295_SOURCE_MISSING:${marker}`);
 
 for (const marker of [
   ".sn-profile-menu-v295",
@@ -52,11 +54,13 @@ for (const marker of [
   'grid-template-areas:"code preview"',
 ]) if (!css.includes(marker)) throw new Error(`V295_CSS_MISSING:${marker}`);
 
-if (!native.includes('import("./studio-polish-v295.js")')) throw new Error("V295_ENTRY_MISSING");
+if (!native.includes('import("./studio-shell-authority-v298.js")')) throw new Error("V295_V298_ENTRY_MISSING");
+if (native.includes('import("./studio-polish-v295.js")')) throw new Error("V295_GLOBAL_NORMALIZER_REACTIVATED");
+if (!v298.includes('import "./studio-polish-v295.css"')) throw new Error("V295_VISUAL_CSS_NOT_PRESERVED_BY_V298");
 if (!device.includes(V294_RELEASE)) throw new Error("V295_V294_DEVICE_NOT_PRESERVED");
 if (!auth.includes("persistSession: true") || !auth.includes("autoRefreshToken: true")) throw new Error("V295_AUTH_PERSISTENCE_NOT_PRESERVED");
 if (!release.includes(RELEASE) || !release.includes(CACHE)) throw new Error("V295_RELEASE_INVALID");
-if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(runtime)) throw new Error("V295_RUNTIME_CHURN_REGRESSION");
+if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(runtime)) throw new Error("V295_SOURCE_CHURN_REGRESSION");
 if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(runtime)) throw new Error("V295_DESTRUCTIVE_RUNTIME");
 
 let source = await readFile(swFile, "utf8");
@@ -82,6 +86,6 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
   throw new Error("V295_DESTRUCTIVE_SW_BEHAVIOR");
 
 await writeFile(swFile, source);
-console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+console.log(`Validated ${RELEASE} visual compatibility and rotated Studio cache to ${CACHE}`);
 
 await import("./patch-service-worker-v296.mjs");
