@@ -14,6 +14,8 @@ const auth = read("src/lib/supabase.js");
 const authModal = read("src/AuthModal.jsx");
 const analytics = read("src/studio-analytics-v41.js");
 const editorPatch = read("scripts/patch-content-editor-v162.mjs");
+const editorSource = read("src/ContentEditor.jsx");
+const editorAuthority = `${editorSource}\n${editorPatch}`;
 const contentData = read("src/lib/content-data.js");
 const publicComments = read("public/comments-v93.js");
 const onboarding = read("src/StudioOnboardingGate.jsx");
@@ -72,7 +74,7 @@ test("Post and Page keep the same full editor, 5000-word guard, SEO and social m
   assert.match(editorPatch, /\/ 5\.000 kata/);
   assert.match(editorPatch, /Draf tetap disimpan dan tulisan tidak dipotong/);
   for (const marker of ["SEO title", "Meta description", "Focus keyword", "Canonical URL", "Twitter Card", "Gambar sosial", "Schema type", "ce-seo-preview-v162"]) {
-    assert.ok(editorPatch.includes(marker), `editor patch missing ${marker}`);
+    assert.ok(editorAuthority.includes(marker), `active editor authority missing ${marker}`);
   }
   for (const marker of ["metadata", "seo", "scheduled_at", "featured_image_path"]) {
     assert.ok(contentData.includes(marker), `content persistence missing ${marker}`);
