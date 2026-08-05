@@ -7,7 +7,8 @@
     "predev": "node scripts/patch-service-worker-v288.mjs",
     "dev": "vite",
     "prebuild": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "build": "npm run test:production && node scripts/patch-service-worker-v288.mjs && vite build && node --check cloudflare/worker-v70.mjs && npm run cloudflare:dry-run && node scripts/write-netlify-redirects.mjs",
+    "build": "npm run test:production && node scripts/patch-service-worker-v288.mjs && vite build && node --check cloudflare/worker-v70.mjs && node scripts/write-netlify-redirects.mjs",
+    "build:cloudflare": "npm run build && npm run cloudflare:dry-run",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
@@ -54,11 +55,13 @@
     "verify:v236": "node --test tests/studio-real-device-v236.test.mjs",
     "verify:v287": "node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs && node scripts/patch-service-worker-v287.mjs",
     "verify:v288": "node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs tests/studio-screenshot-polish-v288.test.mjs && node scripts/patch-service-worker-v288.mjs",
+    "verify:v289": "node --test tests/studio-final-pass-v289.test.mjs && node scripts/patch-service-worker-v288.mjs",
+    "verify:v290": "node --test tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs && node scripts/patch-service-worker-v288.mjs",
     "check": "npm run test:production && node scripts/patch-service-worker-v288.mjs && vite build",
     "pretest": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "test": "node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs tests/studio-screenshot-polish-v288.test.mjs",
+    "test": "node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs tests/studio-screenshot-polish-v288.test.mjs tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs",
     "pretest:production": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "test:production": "node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs tests/studio-screenshot-polish-v288.test.mjs"
+    "test:production": "node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs tests/studio-screenshot-polish-v288.test.mjs tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs"
   },
   "engines": {"node": ">=22.12.0"},
   "dependencies": {
@@ -67,5 +70,8 @@
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
-  "devDependencies": {"vite": "8.1.5", "wrangler": "4.113.0"}
+  "devDependencies": {
+    "vite": "8.1.5",
+    "wrangler": "4.113.0"
+  }
 }
