@@ -1,0 +1,45 @@
+{
+  "release": "studio-native-recovery-v283-20260805",
+  "date": "2026-08-05",
+  "scope": "single shell interaction owner, responsive sidebar/profile/Nara recovery, production analytics restore, Theme Studio geometry and code gutter",
+  "cache": "studio-native-recovery-cache-v283",
+  "sourceBranch": "main",
+  "preserved": {
+    "sixResponsiveModes": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "requiredSidebarItems": 13,
+    "themeCount": 100,
+    "widgetCount": 26,
+    "postPageWordLimit": 5000,
+    "codeLineLimit": 10000,
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "publicEdgeV282": true
+  },
+  "repairs": {
+    "legacyShellControllersRetiredFromEntry": true,
+    "singleInternalNClickOwner": true,
+    "desktopSitePhoneUsesLargeFamily": true,
+    "desktopSidebarExpandedAndRailVisible": true,
+    "mobileClosedSidebarOnlyN": true,
+    "mobileDrawerNoBlur": true,
+    "profileVisibleTopRight": true,
+    "profileFiveActionBridgePreserved": true,
+    "naraLauncherExplicitRightBottom": true,
+    "naraSmallMediumNonModal": true,
+    "naraCameraPhotoFilePreserved": true,
+    "analyticsProductionRpcRestored": true,
+    "layoutMapCenteredInteractive": true,
+    "codePreviewLargeSplitSmallPreviewFirst": true,
+    "realCodeLineNumbersUpTo10000": true,
+    "domainMobileActionsFullWidth": true,
+    "noShellScrollMutationListenerV283": true,
+    "noShellMutationObserverV283": true
+  },
+  "validation": {
+    "fakeAnalytics": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceRequiredBeforeHundredPercentClaim": true
+  }
+}

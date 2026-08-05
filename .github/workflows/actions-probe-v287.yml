@@ -1,0 +1,19 @@
+name: Actions Startup Probe v287
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Confirm runner starts
+        run: |
+          echo "actions-started-v287"
+          echo "${GITHUB_SHA}"

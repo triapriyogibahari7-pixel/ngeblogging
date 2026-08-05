@@ -1,0 +1,28 @@
+{
+  "release": "studio-final-pass-v289-20260805",
+  "date": "2026-08-05",
+  "scope": "final screenshot-driven containment for sidebar, mobile drawer, profile, Nara, Theme layout/code editor, Domain and mobile editor without replacing production pages",
+  "cache": "studio-final-pass-cache-v289",
+  "inherits": [
+    "studio-react-shell-v287-20260805",
+    "studio-screenshot-polish-v288-20260805"
+  ],
+  "preserves": [
+    "all existing Studio menu pages and production data paths",
+    "100-theme catalog and 26-area Theme layout implementation",
+    "Nara model, intelligence, attachment, microphone and speaker implementation",
+    "Supabase persistent-session and automatic refresh-token behavior",
+    "profile/avatar and add-site actions introduced before this release"
+  ],
+  "verification": {
+    "sourceRegressionRequired": true,
+    "productionBuildRequired": true,
+    "serviceWorkerRotationRequired": true,
+    "liveManifestRequired": true,
+    "liveBundleRequired": true,
+    "liveHealthRequired": true,
+    "realProviderLoginVerifiedByManifest": false,
+    "realDeviceMatrixVerifiedByManifest": false,
+    "capacityClaimedByManifest": false
+  }
+}

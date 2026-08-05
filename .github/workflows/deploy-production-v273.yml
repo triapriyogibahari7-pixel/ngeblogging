@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v280
+name: Deploy Ngeblogging Production v289
 
 on:
   push:
@@ -9,17 +9,20 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v280
+  group: ngeblogging-production-v289
   cancel-in-progress: true
 
 jobs:
   validate-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID || vars.CLOUDFLARE_ZONE_ID }}
+      CLOUDFLARE_ZONE_NAME: ngeblogging.com
+      CLOUDFLARE_WORKER_SERVICE: ngeblogging
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
@@ -37,81 +40,99 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Validate rollout contract
-        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs
+      - name: Run v289 regression, service-worker rotation and production build
+        run: |
+          node --test tests/studio-final-pass-v289.test.mjs
+          npm run build
 
-      - name: Run complete production regression and build
-        run: npm run build
-
-      - name: Verify production source markers before deploy
+      - name: Verify production source and built markers before deploy
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 273 274 275 276 277 278 279 280; do test -f "public/release-v${release}.json"; done
-          grep -q 'studio-production-rollout-v273-20260804' public/release-v273.json
-          grep -q 'studio-shell-content-v274-20260804' public/release-v274.json
-          grep -q 'studio-final-stability-v275-20260804' public/release-v275.json
-          grep -q 'studio-sidebar-recovery-v276-20260804' public/release-v276.json
-          grep -q 'studio-interaction-authority-v277-20260804' public/release-v277.json
-          grep -q 'studio-shell-precision-v278-20260804' public/release-v278.json
-          grep -q 'studio-live-shell-v279-20260804' public/release-v279.json
-          grep -q 'studio-native-shell-v280-20260804' public/release-v280.json
-          grep -q 'studio-shell-precision-v278.js' src/Studio.jsx
-          grep -q 'studio-live-shell-v279.js' src/Studio.jsx
-          grep -q 'studio-native-shell-v280.js' src/Studio.jsx
-          grep -q 'studio-native-shell-v280.css' src/Studio.jsx
-          grep -q 'studio-theme-layout-v264.js' src/Studio.jsx
-          grep -q 'studio-sidebar-single-toggle-v267.js' src/Studio.jsx
-          grep -q 'window.addEventListener("pointerdown", stopLegacyPointer, true)' src/studio-shell-precision-v278.js
-          grep -q 'window.addEventListener("click", activateLogo, true)' src/studio-shell-precision-v278.js
-          grep -q 'RETIRED_LIVE_OBSERVERS_BY' src/studio-live-shell-v279.js
-          if grep -q 'addEventListener("scroll"' src/studio-live-shell-v279.js src/studio-native-shell-v280.js; then
-            echo 'Scroll-time shell DOM mutation aktif kembali.' >&2
-            exit 1
-          fi
-          grep -q 'data-device-mode="large"' src/studio-native-shell-v280.css
-          grep -q 'data-device-mode="small"' src/studio-native-shell-v280.css
-          grep -q '.nara-attachment-menu' src/studio-native-shell-v280.css
-          grep -q '.sv124-free-domain' src/studio-native-shell-v280.css
+          for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289; do test -f "public/release-v${release}.json"; done
+          grep -q 'studio-final-pass-v289-20260805' public/release-v289.json
+          grep -q 'studio-final-pass-v289.js' src/studio-screenshot-polish-v288.js
+          grep -q 'studio-final-pass-v289.css' src/studio-final-pass-v289.js
+          grep -q 'syncSidebarPersistence' src/studio-final-pass-v289.js
+          grep -q 'loadAnalytics(view, 30, false)' src/studio-final-pass-v289.js
+          grep -q 'body.sn-mobile-sidebar-open .sn-side-backdrop' src/studio-final-pass-v289.css
+          grep -q '.nara-floating-button{position:fixed!important' src/studio-final-pass-v289.css
+          grep -q '.tn-layout-map-v264{display:block!important;width:100%!important' src/studio-final-pass-v289.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-final-pass-v289.css
+          grep -q 'grid-template-areas:"code preview"' src/studio-final-pass-v289.css
+          grep -q 'sn-profile-menu-v287' src/studio-react-shell-v287.js
+          grep -q 'Ganti avatar' src/studio-react-shell-v287.js
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
-          if grep -Eq 'if \(/refreshStaleWindow\|' scripts/patch-service-worker-v277.mjs scripts/patch-service-worker-v278.mjs; then
-            echo 'Build gate masih menolak helper compatibility refreshStaleWindow.' >&2
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-final-pass-v289-20260805"' wrangler.production.jsonc
+          grep -q 'STUDIO_FINAL_PASS_RELEASE_V289' public/sw.js
+          grep -q 'studio-final-pass-cache-v289' public/sw.js
+          grep -q 'ngeblogging-app-v289-final-pass-20260805' public/sw.js
+          grep -R -q 'studio-final-pass-v289-20260805' dist/assets
+          if grep -q '^import "./studio-production-v208.js";' src/Studio.jsx; then
+            echo 'v208 legacy hard-reload runtime must not be active in production.' >&2
             exit 1
           fi
-          grep -q 'STUDIO_LIVE_SHELL_RELEASE_V279' public/sw.js
-          grep -q 'studio-live-shell-cache-v279' public/sw.js
-          grep -q 'STUDIO_NATIVE_SHELL_RELEASE_V280' public/sw.js
-          grep -q 'studio-native-shell-cache-v280' public/sw.js
+          if grep -q '^import "./nara-size-authority-v144.js";' src/Studio.jsx; then
+            echo 'legacy Nara observer must not be active in production.' >&2
+            exit 1
+          fi
+          if grep -q '^import "./studio-interface-v148.js";' src/Studio.jsx; then
+            echo 'legacy interface observer must not be active in production.' >&2
+            exit 1
+          fi
+          if grep -q 'new MutationObserver' src/nara-controls-v135.js; then
+            echo 'legacy Nara fullscreen observer must remain retired.' >&2
+            exit 1
+          fi
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
 
-      - name: Verify live v280 release manifest
+      - name: Reassert authoritative apex www and tenant routes when zone credentials exist
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 18); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v280.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-native-shell-v280-20260804'; then
-              echo "Live v280 release manifest confirmed."
+          if [[ "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            node scripts/finalize-cloudflare-route-cutover-v182.mjs
+          else
+            echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler custom-domain deployment tetap dijalankan dan live gate berikutnya wajib membuktikan apex.'
+          fi
+
+      - name: Verify live v289 release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v289.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-final-pass-v289-20260805'; then
+              echo "Live v289 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v280.json after deployment." >&2
+          echo "Live production did not expose release-v289.json after deployment." >&2
           exit 1
 
-      - name: Verify live service worker contains v280 cache chain
+      - name: Verify live Studio v289 chunk
         shell: bash
         run: |
           set -euo pipefail
-          sw="$(curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}")"
-          printf '%s' "$sw" | grep -q 'STUDIO_LIVE_SHELL_RELEASE_V279'
-          printf '%s' "$sw" | grep -q 'studio-live-shell-cache-v279'
-          printf '%s' "$sw" | grep -q 'STUDIO_NATIVE_SHELL_RELEASE_V280'
-          printf '%s' "$sw" | grep -q 'studio-native-shell-cache-v280'
+          chunk_path="$(grep -Rl 'studio-final-pass-v289-20260805' dist/assets | head -n 1)"
+          test -n "$chunk_path"
+          live_path="/${chunk_path#dist/}"
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${live_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v289.js
+          grep -q 'studio-final-pass-v289-20260805' /tmp/studio-v289.js
+
+      - name: Verify live service worker and v289 cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v289.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_FINAL_PASS_RELEASE_V289' /tmp/sw-v289.js
+          grep -q 'studio-final-pass-cache-v289' /tmp/sw-v289.js
+          grep -q 'ngeblogging-app-v289-final-pass-20260805' /tmp/sw-v289.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -123,7 +144,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v280-${{ github.sha }}
+          name: ngeblogging-production-v289-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30

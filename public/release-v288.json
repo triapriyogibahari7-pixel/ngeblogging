@@ -1,0 +1,58 @@
+{
+  "release": "studio-screenshot-polish-v288-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-screenshot-polish-cache-v288",
+  "base": "studio-react-shell-v287-20260805",
+  "scope": "incremental screenshot polish without reactivating retired shell observers",
+  "fixes": {
+    "sidebar": {
+      "singleInternalN": true,
+      "mobileNFixedDuringScroll": true,
+      "outsideClickClosesDrawerWithoutDarkBackdrop": true,
+      "desktopRailPreserved": true
+    },
+    "summary": {
+      "addSiteButton": true,
+      "workspaceManagerReused": true
+    },
+    "nara": {
+      "launcherFixed": true,
+      "launcherIconOnly": true,
+      "smallMediumNonModal": true,
+      "attachmentMenuViewportSafe": true,
+      "cameraPhotoFilePreserved": true,
+      "mobileHeaderControlsReflowed": true,
+      "modelAndIntelligencePreserved": true
+    },
+    "themeStudio": {
+      "themes": 100,
+      "previewProfiles": 8,
+      "layoutSlots": 26,
+      "leftPostSlots": 4,
+      "rightPostSlots": 4,
+      "mobileMapFitsViewport": true,
+      "desktopCodePreview": "50:50",
+      "mobileCodePreview": "preview-top-code-bottom",
+      "maxCodeLines": 10000
+    },
+    "containment": {
+      "horizontalPageOverflowBlocked": true,
+      "domainActionsFullWidthOnSmall": true,
+      "settingsSingleColumnOnSmall": true
+    }
+  },
+  "auth": {
+    "persistSession": true,
+    "autoRefreshToken": true,
+    "productionPublicFallback": true,
+    "noRuntimeForcedLogout": true,
+    "endToEndSuccessRequiresRealCredentialOrProviderCallback": true
+  },
+  "verification": {
+    "regressionTest": "tests/studio-screenshot-polish-v288.test.mjs",
+    "productionBuildRequired": true,
+    "liveManifestRequired": true,
+    "liveBundleMarkerRequired": true,
+    "liveServiceWorkerMarkerRequired": true
+  }
+}

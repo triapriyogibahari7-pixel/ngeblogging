@@ -2,27 +2,11 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 import "./studio-mobile-stability-v176.css";
 
-const RELEASE = "studio-mobile-stability-v176-20260731";
+const RELEASE = "studio-profile-avatar-compat-v287-20260805";
 const PROFILE_BUCKET = "site-public-media";
-const NARA_SIZE_KEY = "ngeblogging-nara-size-v148";
-const VALID_NARA_SIZES = new Set(["small", "medium", "full"]);
-
-let frame = 0;
-let forceSmallNara = false;
 let identity = null;
 let identityPromise = null;
 let avatarBusy = false;
-
-function schedule() {
-  if (frame) return;
-  frame = requestAnimationFrame(scan);
-}
-
-function isSmallMode() {
-  const htmlMode = document.documentElement.dataset.studioDeviceMode;
-  const shellMode = document.querySelector(".sn-shell")?.dataset.deviceMode;
-  return htmlMode === "small" || shellMode === "small";
-}
 
 function activeSiteId() {
   try {
@@ -36,17 +20,11 @@ function activeSiteId() {
 }
 
 function userInitials(name) {
-  return String(name || "Ngeblogging")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase() || "NB";
+  return String(name || "Ngeblogging").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "NB";
 }
 
-async function loadIdentity() {
+async function loadIdentity(force = false) {
+  if (force) identity = null;
   if (identity) return identity;
   if (identityPromise) return identityPromise;
   identityPromise = (async () => {
@@ -54,23 +32,11 @@ async function loadIdentity() {
     const { data, error } = await supabase.auth.getSession();
     if (error || !data?.session?.user) return null;
     const user = data.session.user;
-    const profileResult = await supabase
-      .from("profiles")
-      .select("display_name,avatar_url")
-      .eq("id", user.id)
-      .maybeSingle();
+    const profileResult = await supabase.from("profiles").select("display_name,avatar_url").eq("id", user.id).maybeSingle();
     const metadataName = String(user.user_metadata?.full_name || user.user_metadata?.name || "").trim();
     const profileName = String(profileResult.data?.display_name || "").trim();
-    const displayName = profileName.length >= 2
-      ? profileName
-      : metadataName || String(user.email || "").split("@")[0] || "Akun Ngeblogging";
-    const avatarUrl = profileResult.data?.avatar_url
-      || user.user_metadata?.avatar_url
-      || user.user_metadata?.picture
-      || "";
-    if (profileName.length < 2 && metadataName.length >= 2) {
-      await supabase.from("profiles").update({ display_name: metadataName }).eq("id", user.id).catch(() => null);
-    }
+    const displayName = profileName.length >= 2 ? profileName : metadataName || String(user.email || "").split("@")[0] || "Akun Ngeblogging";
+    const avatarUrl = profileResult.data?.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || "";
     identity = { user, displayName, avatarUrl };
     return identity;
   })().finally(() => { identityPromise = null; });
@@ -92,107 +58,15 @@ function avatarVisual(target, currentIdentity) {
   }
 }
 
-function createProfileHead(menu, currentIdentity) {
-  let head = menu.querySelector(".sm176-profile-head");
-  if (!head) {
-    head = document.createElement("div");
-    head.className = "sm176-profile-head";
-    const avatar = document.createElement("span");
-    avatar.className = "sm176-profile-avatar";
-    const text = document.createElement("div");
-    const name = document.createElement("strong");
-    name.className = "sm176-profile-name";
-    const account = document.createElement("span");
-    account.textContent = "Akun Ngeblogging";
-    const status = document.createElement("small");
-    status.className = "sm176-profile-status";
-    status.textContent = "Profil tersinkron";
-    text.append(name, account, status);
-    head.append(avatar, text);
-    menu.prepend(head);
-  }
-  head.querySelector(".sm176-profile-name").textContent = currentIdentity.displayName;
-  avatarVisual(head.querySelector(".sm176-profile-avatar"), currentIdentity);
-
-  if (!menu.querySelector('[data-action="avatar"]')) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.setAttribute("role", "menuitem");
-    button.dataset.action = "avatar";
-    button.className = "sm176-avatar-action";
-    button.innerHTML = '<span>Ganti avatar</span><small>Unggah foto profil persegi</small>';
-    head.after(button);
-  }
-}
-
-async function syncIdentity() {
-  const avatar = document.querySelector(".sn-avatar");
-  const menu = document.querySelector(".sn-profile-menu-v150");
-  if (!avatar && !menu) return;
-  const currentIdentity = await loadIdentity();
-  if (!currentIdentity) return;
-  if (avatar) {
-    avatarVisual(avatar, currentIdentity);
-    avatar.dataset.profileIdentityV176 = RELEASE;
-    avatar.setAttribute("aria-label", `Buka menu profil ${currentIdentity.displayName}`);
-    avatar.title = currentIdentity.displayName;
-  }
-  if (menu) {
-    createProfileHead(menu, currentIdentity);
-    menu.dataset.profileIdentityV176 = RELEASE;
-  }
-}
-
-function profileStatus(message, error = false) {
-  const status = document.querySelector(".sm176-profile-status");
-  if (!status) return;
-  status.textContent = message;
-  status.classList.toggle("error", error);
-}
-
-function avatarInput() {
-  let input = document.querySelector("#ngeblogging-avatar-input-v176");
-  if (input) return input;
-  input = document.createElement("input");
-  input.id = "ngeblogging-avatar-input-v176";
-  input.type = "file";
-  input.accept = "image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif";
-  input.hidden = true;
-  input.addEventListener("change", async () => {
-    const file = input.files?.[0];
-    input.value = "";
-    if (!file || avatarBusy) return;
-    avatarBusy = true;
-    profileStatus("Memproses avatar…");
-    try {
-      if (!file.type.startsWith("image/")) throw new Error("Pilih berkas gambar.");
-      if (file.size > 8 * 1024 * 1024) throw new Error("Avatar maksimal 8 MB.");
-      const currentIdentity = await loadIdentity();
-      const siteId = activeSiteId();
-      if (!currentIdentity?.user?.id || !siteId) throw new Error("Sesi atau situs aktif belum tersedia.");
-      const blob = await squareAvatarBlob(file);
-      const objectPath = `${siteId}/${currentIdentity.user.id}/avatars/${crypto.randomUUID()}.webp`;
-      const upload = await supabase.storage.from(PROFILE_BUCKET).upload(objectPath, blob, {
-        contentType: "image/webp",
-        cacheControl: "31536000",
-        upsert: false,
-      });
-      if (upload.error) throw upload.error;
-      const avatarUrl = supabase.storage.from(PROFILE_BUCKET).getPublicUrl(objectPath).data.publicUrl;
-      const update = await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", currentIdentity.user.id);
-      if (update.error) throw update.error;
-      identity = { ...currentIdentity, avatarUrl };
-      document.querySelectorAll(".sn-avatar,.sm176-profile-avatar").forEach((node) => avatarVisual(node, identity));
-      profileStatus("Avatar berhasil diperbarui");
-      window.dispatchEvent(new CustomEvent("ngeblogging:profile-updated", { detail: { avatarUrl, displayName: identity.displayName } }));
-    } catch (error) {
-      profileStatus(error.message || "Avatar belum dapat diperbarui.", true);
-    } finally {
-      avatarBusy = false;
-    }
-  });
-  document.body.append(input);
-  return input;
+async function syncIdentity(force = false) {
+  const target = document.querySelector(".sn-avatar");
+  if (!target) return;
+  const currentIdentity = await loadIdentity(force);
+  if (!currentIdentity || !target.isConnected) return;
+  avatarVisual(target, currentIdentity);
+  target.dataset.profileIdentityV287 = RELEASE;
+  target.setAttribute("aria-label", `Buka menu profil ${currentIdentity.displayName}`);
+  target.title = currentIdentity.displayName;
 }
 
 async function squareAvatarBlob(file) {
@@ -233,119 +107,67 @@ async function squareAvatarBlob(file) {
   }
 }
 
-function syncDrawer() {
-  const shell = document.querySelector(".sn-shell");
-  const sidebar = shell?.querySelector("#ngeblogging-studio-sidebar.sn-side");
-  const main = shell?.querySelector(".sn-main");
-  const toggle = shell?.querySelector(".sn-sidebar-toggle");
-  if (!shell || !sidebar || !main || !toggle) return;
-  const small = isSmallMode();
-  const open = small && sidebar.classList.contains("mobile-open");
-  main.removeAttribute("inert");
-  main.dataset.drawerBackgroundV176 = open ? "blocked-by-backdrop" : "interactive";
-  sidebar.setAttribute("aria-hidden", small && !open ? "true" : "false");
-  toggle.setAttribute("aria-expanded", String(open));
-  document.body.classList.toggle("sm176-drawer-open", open);
-  if (!open) document.body.classList.remove("sn-mobile-sidebar-open-v176");
-  else document.body.classList.add("sn-mobile-sidebar-open-v176");
+function profileStatus(message, error = false) {
+  window.dispatchEvent(new CustomEvent("ngeblogging:studio-toast", { detail: { message, error } }));
 }
 
-function closeMobileDrawer() {
-  if (!isSmallMode()) return;
-  const sidebar = document.querySelector("#ngeblogging-studio-sidebar.sn-side.mobile-open");
-  if (!sidebar) return;
-  const close = sidebar.querySelector(".sn-side-close");
-  if (close) close.click();
-  else document.querySelector(".sn-sidebar-toggle")?.click();
-  requestAnimationFrame(syncDrawer);
+function avatarInput() {
+  let input = document.querySelector("#ngeblogging-avatar-input-v287");
+  if (input) return input;
+  input = document.createElement("input");
+  input.id = "ngeblogging-avatar-input-v287";
+  input.type = "file";
+  input.accept = "image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif";
+  input.hidden = true;
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file || avatarBusy) return;
+    avatarBusy = true;
+    profileStatus("Memproses avatar…");
+    try {
+      if (!file.type.startsWith("image/")) throw new Error("Pilih berkas gambar.");
+      if (file.size > 8 * 1024 * 1024) throw new Error("Avatar maksimal 8 MB.");
+      const currentIdentity = await loadIdentity();
+      const siteId = activeSiteId();
+      if (!currentIdentity?.user?.id || !siteId) throw new Error("Sesi atau situs aktif belum tersedia.");
+      const blob = await squareAvatarBlob(file);
+      const objectPath = `${siteId}/${currentIdentity.user.id}/avatars/${crypto.randomUUID()}.webp`;
+      const upload = await supabase.storage.from(PROFILE_BUCKET).upload(objectPath, blob, { contentType: "image/webp", cacheControl: "31536000", upsert: false });
+      if (upload.error) throw upload.error;
+      const avatarUrl = supabase.storage.from(PROFILE_BUCKET).getPublicUrl(objectPath).data.publicUrl;
+      const update = await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", currentIdentity.user.id);
+      if (update.error) throw update.error;
+      identity = { ...currentIdentity, avatarUrl };
+      document.querySelectorAll(".sn-avatar").forEach((node) => avatarVisual(node, identity));
+      profileStatus("Avatar berhasil diperbarui");
+      window.dispatchEvent(new CustomEvent("ngeblogging:profile-updated", { detail: { avatarUrl, displayName: identity.displayName } }));
+    } catch (error) {
+      profileStatus(error.message || "Avatar belum dapat diperbarui.", true);
+    } finally {
+      avatarBusy = false;
+    }
+  });
+  document.body.append(input);
+  return input;
 }
 
-function syncNara() {
-  const launcher = document.querySelector(".nara-floating-button");
-  if (launcher) {
-    launcher.dataset.naraLauncherV176 = RELEASE;
-    launcher.setAttribute("aria-label", "Buka Nara AI");
-    launcher.title = "Nara AI";
-  }
-  const layer = document.querySelector(".nara-assistant-layer");
-  const shell = layer?.querySelector(".nara-assistant-shell");
-  if (!layer || !shell) {
-    document.body.classList.remove("nara-fullscreen-open-v176");
-    return;
-  }
-  if (forceSmallNara && !shell.dataset.initialSizeV176) {
-    shell.dataset.initialSizeV176 = RELEASE;
-    forceSmallNara = false;
-    const smallButton = shell.querySelector('[data-size="small"]');
-    if (shell.dataset.naraSize !== "small" && smallButton) smallButton.click();
-  }
-  let size = shell.dataset.naraSize;
-  if (!VALID_NARA_SIZES.has(size)) {
-    size = "small";
-    shell.dataset.naraSize = size;
-  }
-  const full = size === "full";
-  layer.dataset.naraInteractionV176 = full ? "modal" : "nonmodal";
-  layer.setAttribute("aria-modal", full ? "true" : "false");
-  shell.dataset.naraStableV176 = RELEASE;
-  document.body.classList.toggle("nara-fullscreen-open-v176", full);
-  if (!full) {
-    document.body.classList.remove("nara-fullscreen-open-v148");
-    document.body.style.removeProperty("overflow");
-  }
+function openAvatarPicker() {
+  avatarInput().click();
 }
 
-function scan() {
-  frame = 0;
-  document.documentElement.dataset.studioMobileStabilityV176 = RELEASE;
-  syncDrawer();
-  syncNara();
+function boot() {
+  document.documentElement.dataset.studioProfileAvatarV287 = RELEASE;
   syncIdentity().catch(() => null);
+  setTimeout(() => syncIdentity().catch(() => null), 180);
 }
 
-new MutationObserver(schedule).observe(document.documentElement, {
-  childList: true,
-  subtree: true,
-  attributes: true,
-  attributeFilter: ["class", "data-device-mode", "data-nara-size", "aria-expanded"],
-});
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+  window.__ngebloggingOpenAvatarPicker = openAvatarPicker;
+  window.addEventListener("pageshow", boot, { passive: true });
+  window.addEventListener("ngeblogging:profile-updated", () => syncIdentity(true).catch(() => null));
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
+}
 
-window.addEventListener("resize", schedule, { passive: true });
-window.addEventListener("orientationchange", schedule, { passive: true });
-window.addEventListener("pageshow", () => {
-  document.body.classList.remove("sm176-drawer-open", "sn-mobile-sidebar-open-v176");
-  document.querySelector(".sn-main")?.removeAttribute("inert");
-  schedule();
-}, { passive: true });
-
-document.addEventListener("click", (event) => {
-  const target = event.target;
-  if (target.closest(".nara-floating-button")) {
-    forceSmallNara = true;
-    try { localStorage.setItem(NARA_SIZE_KEY, "small"); } catch { /* storage optional */ }
-    schedule();
-    return;
-  }
-  if (target.closest('.sn-profile-menu-v150 [data-action="avatar"]')) {
-    event.preventDefault();
-    event.stopPropagation();
-    avatarInput().click();
-    return;
-  }
-  const sidebar = target.closest("#ngeblogging-studio-sidebar.sn-side.mobile-open");
-  if (sidebar && target.closest("nav button,.sn-account-footer button,.sn-new")) {
-    requestAnimationFrame(closeMobileDrawer);
-  }
-  schedule();
-}, true);
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    closeMobileDrawer();
-    schedule();
-  }
-});
-
-schedule();
-
-export { RELEASE, activeSiteId, loadIdentity, squareAvatarBlob };
+export { RELEASE, activeSiteId, avatarInput, loadIdentity, openAvatarPicker, squareAvatarBlob, syncIdentity };

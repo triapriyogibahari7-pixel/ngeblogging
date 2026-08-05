@@ -1,0 +1,79 @@
+{
+  "release": "studio-native-polish-v284-20260805",
+  "date": "2026-08-05",
+  "scope": "responsive Studio readability, direct single-n binding, non-blocking Nara, Theme Studio geometry, production route cutover and live verification",
+  "cache": "studio-native-polish-cache-v284",
+  "sourceBranch": "main",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "largeSidebarExpanded": 248,
+    "largeSidebarCollapsed": 72,
+    "smallClosedSidebarOnlyN": true,
+    "smallDrawerMaxWidth": 330,
+    "mainHorizontalOverflowAllowed": false,
+    "readableMinimumUiTypography": true
+  },
+  "sidebar": {
+    "requiredItems": 13,
+    "singleInternalN": true,
+    "legacyCapturePhaseNRuntimeRetired": true,
+    "externalNControlsHidden": true,
+    "desktopRailIconsRemainVisible": true,
+    "mobileDrawerNoBlur": true,
+    "profileTopRightPreserved": true
+  },
+  "content": {
+    "postsPagesPreserved": true,
+    "postPageWordLimit": 5000,
+    "mobileEditorPreserved": true,
+    "seoPreserved": true,
+    "mediaPreserved": true,
+    "analyticsProductionRpcPreserved": true,
+    "membersPreserved": true,
+    "commentsPreserved": true,
+    "domainPreserved": true,
+    "apiKeysPreserved": true
+  },
+  "themeStudio": {
+    "builtInThemes": 100,
+    "widgets": 26,
+    "fourLeftSlots": true,
+    "fourRightSlots": true,
+    "centralPost": true,
+    "layoutMapInteractive": true,
+    "codeTabs": ["HTML", "CSS", "JavaScript"],
+    "maxCodeLines": 10000,
+    "largeCodePreviewSplit": true,
+    "smallPreviewFirst": true
+  },
+  "nara": {
+    "launcherFixedLowerRight": true,
+    "smallNonModal": true,
+    "mediumNonModal": true,
+    "fullModal": true,
+    "cameraPhotoFile": true,
+    "microphone": true,
+    "speaker": true,
+    "models": ["Nara Mini", "Nara Writer", "Nara Vision", "Nara Max"],
+    "intelligence": ["Instan", "Sedang", "Tinggi", "Maksimal"]
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "automaticLogoutAdded": false
+  },
+  "deployment": {
+    "cloudflareWorkerDeploy": true,
+    "apexWwwTenantRouteCutoverWhenZoneCredentialsAvailable": true,
+    "liveReleaseManifestRequired": true,
+    "liveServiceWorkerRequired": true,
+    "liveHealthRequired": true
+  },
+  "validation": {
+    "fakeAnalytics": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "allOAuthProvidersEndToEndProven": false,
+    "realDeviceRequiredBeforeHundredPercentClaim": true
+  }
+}
