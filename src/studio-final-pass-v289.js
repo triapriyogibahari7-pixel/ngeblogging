@@ -1,12 +1,16 @@
 import "./studio-final-pass-v289.css";
+import { loadAnalytics } from "./studio-analytics-v41.js";
 
 export const RELEASE = "studio-final-pass-v289-20260805";
+const SIDEBAR_KEY = "ngeblogging-studio-sidebar-state-v289";
 let frame = 0;
 let settleTimer = 0;
+let analyticsView = null;
 
 const root = () => document.documentElement;
 const shell = () => document.querySelector(".sn-shell");
 const sidebar = () => document.getElementById("ngeblogging-studio-sidebar");
+const reactToggle = () => document.querySelector(".sn-main>.sn-top>.sn-sidebar-toggle,.sn-top>.sn-sidebar-toggle");
 
 function reveal(node) {
   if (!node) return;
@@ -14,6 +18,14 @@ function reveal(node) {
   node.removeAttribute("hidden");
   node.removeAttribute("aria-hidden");
   node.removeAttribute("inert");
+}
+
+function safeGet(key) {
+  try { return localStorage.getItem(key) || ""; } catch { return ""; }
+}
+
+function safeSet(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* storage cannot block Studio */ }
 }
 
 export function currentFamily() {
@@ -37,6 +49,18 @@ function syncDeviceContract() {
   root().dataset.studioFinalPassV289 = RELEASE;
 }
 
+function syncSidebarPersistence(side) {
+  if (!side || currentFamily() !== "large") return;
+  const toggle = reactToggle();
+  if (!side.dataset.v289PersistenceApplied && toggle) {
+    side.dataset.v289PersistenceApplied = "true";
+    const stored = safeGet(SIDEBAR_KEY);
+    if (stored === "collapsed" && !side.classList.contains("collapsed")) toggle.click();
+    if (stored === "expanded" && side.classList.contains("collapsed")) toggle.click();
+  }
+  safeSet(SIDEBAR_KEY, side.classList.contains("collapsed") ? "collapsed" : "expanded");
+}
+
 function syncSidebar() {
   const side = sidebar();
   if (!side) return;
@@ -49,6 +73,8 @@ function syncSidebar() {
   } else {
     document.body.classList.toggle("sn-mobile-sidebar-open", mobileOpen);
   }
+
+  syncSidebarPersistence(side);
 
   const mark = side.querySelector(".sn-logo-mark");
   reveal(mark);
@@ -115,7 +141,9 @@ function syncNara() {
   if (!full) {
     document.body.classList.remove("nara-fullscreen-open-v148", "nara-scroll-lock", "sm177-nara-full", "v179-nara-full");
     root().style.removeProperty("overflow");
+    root().style.removeProperty("touch-action");
     document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("touch-action");
   }
 }
 
@@ -131,11 +159,27 @@ function syncThemeStudio() {
   });
 }
 
+function syncAnalytics() {
+  const active = document.querySelector("#ngeblogging-studio-sidebar nav button.active span")?.textContent?.trim();
+  if (active !== "Analitik") {
+    analyticsView = null;
+    return;
+  }
+  const views = [...document.querySelectorAll(".sn-shell>.sn-main>.sn-view-pad")];
+  const view = views.find((candidate) => candidate.querySelector(".sn-page-title h1")?.textContent?.trim() === "Analitik") || null;
+  if (!view || view === analyticsView) return;
+  analyticsView = view;
+  view.dataset.analyticsRuntimeV289 = RELEASE;
+  root().dataset.studioAnalyticsV289 = "production-first";
+  loadAnalytics(view, 30, false).catch((error) => console.error("Analytics v289 failed", error));
+}
+
 function syncContainment() {
   document.querySelectorAll([
     ".sn-main", ".sn-main>*", ".sn-view-pad", ".sn-view-pad>*", ".sn-content-card", ".sn-content-card>*",
     ".sn-settings-grid", ".sn-settings-grid>*", ".ce-app", ".ce-app>*", ".tn-studio", ".tn-studio>*",
     ".tn-layout-studio", ".tn-code-workspace", ".tn-code-pane", ".tn-code-preview-pane", ".sv124-page", ".sv124-page>*",
+    ".op41-host", ".op41-panel", ".op41-card",
   ].join(",")).forEach((node) => {
     node.style.setProperty("min-width", "0", "important");
     node.style.setProperty("max-width", "100%", "important");
@@ -150,6 +194,7 @@ export function sync() {
   syncProfile();
   syncNara();
   syncThemeStudio();
+  syncAnalytics();
   syncContainment();
 }
 
