@@ -56,9 +56,10 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
 
-// v289-v299 are non-destructive finalizers layered on top of v288. Keeping
+// v289-v300 are non-destructive finalizers layered on top of v288. Keeping
 // the chain in one build hook avoids replaying historical UI patchers while
 // ensuring the service-worker cache always ends at the current production UI.
 await import("./patch-service-worker-v289.mjs");
 await import("./patch-service-worker-v290.mjs");
 await import("./patch-service-worker-v299.mjs");
+await import("./patch-service-worker-v300.mjs");

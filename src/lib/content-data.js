@@ -1,10 +1,19 @@
 import { supabase, supabaseConfigured } from "./supabase.js";
 
 export const CONTENT_PAGE_SIZE = 25;
+export const CONTENT_QUERY_TIMEOUT_MS = 12_000;
 
 function client() {
   if (!supabaseConfigured || !supabase) throw new Error("Penyimpanan cloud belum dikonfigurasi.");
   return supabase;
+}
+
+function withTimeout(promise, label = "Permintaan konten") {
+  let timer = 0;
+  const timeout = new Promise((_, reject) => {
+    timer = globalThis.setTimeout(() => reject(new Error(`${label} terlalu lama. Periksa koneksi lalu coba lagi.`)), CONTENT_QUERY_TIMEOUT_MS);
+  });
+  return Promise.race([Promise.resolve(promise), timeout]).finally(() => globalThis.clearTimeout(timer));
 }
 
 export function slugify(value, fallback = "konten") {
@@ -119,7 +128,7 @@ export async function listContentPage({ siteId, kind = null, search = "", cursor
   if (cursor?.updatedAt && cursor?.id) {
     request = request.or(`updated_at.lt.${cursor.updatedAt},and(updated_at.eq.${cursor.updatedAt},id.lt.${cursor.id})`);
   }
-  const { data, error } = await request;
+  const { data, error } = await withTimeout(request, "Memuat daftar konten");
   if (error) throw error;
   const hasMore = data.length > safeLimit;
   const rows = data.slice(0, safeLimit);
@@ -132,11 +141,12 @@ export async function listContentPage({ siteId, kind = null, search = "", cursor
 }
 
 export async function getContentDocument(contentId) {
-  const { data, error } = await client()
+  const request = client()
     .from("contents")
     .select("id,kind,title,slug,body_html,excerpt,featured_image_path,status,visibility,metadata,seo,scheduled_at,published_at,created_at,updated_at")
     .eq("id", contentId)
     .single();
+  const { data, error } = await withTimeout(request, "Membuka konten");
   if (error) throw error;
   return recordToDocument(data, true);
 }
@@ -152,7 +162,7 @@ export async function createContentDocument({ siteId, userId, type = "article" }
     showShare: !isPage,
   }, type);
   const seo = normalizeSeo({}, metadata);
-  const { data, error } = await client().from("contents").insert({
+  const request = client().from("contents").insert({
     site_id: siteId,
     author_id: userId,
     kind: type,
@@ -168,6 +178,7 @@ export async function createContentDocument({ siteId, userId, type = "article" }
     metadata,
     seo,
   }).select("id,kind,title,slug,body_html,excerpt,featured_image_path,status,visibility,metadata,seo,scheduled_at,published_at,created_at,updated_at").single();
+  const { data, error } = await withTimeout(request, "Membuat konten");
   if (error) throw error;
   return recordToDocument(data, true);
 }
@@ -193,12 +204,14 @@ export async function updateContentDocument(contentId, values) {
   if (values.metadata !== undefined) payload.metadata = normalizeMetadata(values.metadata, values.type || "article");
   if (values.seo !== undefined) payload.seo = normalizeSeo(values.seo, values.metadata || {});
   if (!Object.keys(payload).length) return null;
-  const { data, error } = await client().from("contents").update(payload).eq("id", contentId).select("updated_at,published_at,scheduled_at,metadata,seo").single();
+  const request = client().from("contents").update(payload).eq("id", contentId).select("updated_at,published_at,scheduled_at,metadata,seo").single();
+  const { data, error } = await withTimeout(request, "Menyimpan konten");
   if (error) throw error;
   return data;
 }
 
 export async function deleteContentDocument(contentId) {
-  const { error } = await client().from("contents").delete().eq("id", contentId);
+  const request = client().from("contents").delete().eq("id", contentId);
+  const { error } = await withTimeout(request, "Menghapus konten");
   if (error) throw error;
 }

@@ -1,0 +1,52 @@
+{
+  "release": "studio-sidebar-direct-v300-20260805",
+  "cache": "studio-sidebar-direct-cache-v300",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-direct-shell-boot-v299-20260805",
+    "studio-shell-authority-v298-20260805",
+    "studio-mode-startup-authority-v297-20260805",
+    "studio-theme-catalog-100-v296-20260805",
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805"
+  ],
+  "fixes": {
+    "finalSidebarCssLoadsAfterLegacyStyles": true,
+    "visibleNDirectTargetListener": true,
+    "visibleNNoLongerDependsOnDocumentBubble": true,
+    "smallClosedOnlyN": true,
+    "smallOpenDrawerComplete": true,
+    "smallOpenDrawerShowsLabelsEvenWhenDesktopStateWasCollapsed": true,
+    "smallNoReservedDesktopRail": true,
+    "smallMainMarginLeftZero": true,
+    "smallNFixedThroughScroll": true,
+    "smallNoBlurNoBlockingBackdrop": true,
+    "largeSidebarOpenPx": 220,
+    "largeSidebarRailPx": 70,
+    "largeCollapsedIconsCentered": true,
+    "profileAlwaysVisibleTopRight": true,
+    "naraFixedBottomRight": true,
+    "naraSmallMediumNonModal": true,
+    "themeCatalogCount": 100,
+    "themeLayout26AreaPreserved": true,
+    "themeMobileCodeOrder": "code-top-preview-bottom",
+    "themeLargeCodeOrder": "code-left-preview-right",
+    "contentRequestTimeoutMs": 12000,
+    "contentLoadingCannotSpinIndefinitely": true,
+    "postPageWordLimit": 5000,
+    "codeLineLimit": 10000,
+    "authPersistSessionPreserved": true,
+    "authAutoRefreshPreserved": true,
+    "authLegacyRedirectRetired": true
+  },
+  "reason": "Physical mobile screenshots showed that the n could be visible while the full sidebar still did not appear, and the page could retain a left rail after scrolling. v300 loads one final stylesheet after all historical CSS and binds the visible n directly at the target element, while still delegating state to the React sidebar toggle. It also bounds content queries so loading indicators return to an error/empty state instead of spinning forever.",
+  "validation": {
+    "sourceMergedClaimed": false,
+    "productionDeploymentClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "linkedinCredentialLoginClaimed": false,
+    "emailCredentialLoginClaimed": false,
+    "capacityClaimed": false
+  }
+}
