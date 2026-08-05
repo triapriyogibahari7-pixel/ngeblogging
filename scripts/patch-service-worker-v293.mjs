@@ -62,3 +62,6 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+
+// v294 only tightens mobile/desktop classification and preserves v293 UI/auth.
+await import("./patch-service-worker-v294.mjs");
