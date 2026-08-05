@@ -19,9 +19,13 @@ import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
 const RELEASE = "first-site-onboarding-v76-20260727";
-const STARTUP_RELEASE = "first-site-onboarding-v169-20260730";
+const STARTUP_RELEASE = "studio-session-handoff-v287-20260805";
 const CHECK_TIMEOUT_MS = 12_000;
 const STARTUP_RETRY_DELAYS = [450, 900, 1_800];
+const RECOVERY_SNAPSHOT_KEYS = [
+  "ngeblogging-active-site-snapshot-v195",
+  "ngeblogging-active-site-snapshot-v192",
+];
 const SITE_TYPES = [
   { value: "blog", label: "Blog", description: "Tulisan, cerita, opini, dan publikasi pribadi.", icon: PenLine },
   { value: "website", label: "Website", description: "Situs profesional untuk organisasi, usaha, atau layanan.", icon: Building2 },
@@ -116,6 +120,22 @@ function preferredSite(sites) {
   return sites.find((site) => site.id === preferredId) || sites[0] || null;
 }
 
+function recoveredActiveSite(userId) {
+  const live = window.__ngebloggingActiveSite;
+  if (live?.id && live?.slug) return live;
+  for (const key of RECOVERY_SNAPSHOT_KEYS) {
+    try {
+      const snapshot = JSON.parse(localStorage.getItem(key) || "null");
+      if (!snapshot?.id || !snapshot?.slug) continue;
+      if (snapshot.__userId && userId && snapshot.__userId !== userId) continue;
+      return snapshot;
+    } catch {
+      // A corrupt local snapshot must never log a user out.
+    }
+  }
+  return null;
+}
+
 function publishActiveSite(site) {
   if (!site?.id || !site?.slug) return;
   setActiveSiteId(site.id);
@@ -140,7 +160,7 @@ function requestReauthentication(error) {
 function StartupState({ error, onRetry, onExit }) {
   return <main className="so75-startup" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
     <header><a href="/" aria-label="Ngeblogging">ngeblogging<span>.</span></a><button onClick={onExit}><LogOut/>Keluar</button></header>
-    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO BELUM DAPAT DISIAPKAN</small><h1>Koneksi data belum selesai.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
+    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO MENUNGGU DATA</small><h1>Sesi Anda tetap aktif.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
   </main>;
 }
 
@@ -211,7 +231,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
       }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
       const settings = {
         ...(site.settings || {}),
-        onboarding: "complete-v169",
+        onboarding: "complete-v287",
         onboarding_completed_at: new Date().toISOString(),
         initial_theme: draft.themeKey,
         locale: draft.locale,
@@ -263,25 +283,63 @@ export default function StudioOnboardingGate(props) {
   const [run, setRun] = useState(0);
 
   useEffect(() => {
+    const acceptRecoveredSite = (event) => {
+      const site = event?.detail || recoveredActiveSite(props.user?.id);
+      if (!site?.id || !site?.slug) return;
+      setError("");
+      setPhase("ready");
+    };
+    const retryOnline = () => setRun((value) => value + 1);
+    window.addEventListener("ngeblogging:active-site-ready", acceptRecoveredSite);
+    window.addEventListener("online", retryOnline, { passive: true });
+    const cached = recoveredActiveSite(props.user?.id);
+    if (cached?.id && cached?.slug) {
+      publishActiveSite(cached);
+      setPhase("ready");
+    }
+    return () => {
+      window.removeEventListener("ngeblogging:active-site-ready", acceptRecoveredSite);
+      window.removeEventListener("online", retryOnline);
+    };
+  }, [props.user?.id]);
+
+  useEffect(() => {
     let cancelled = false;
     const check = async () => {
-      setPhase("checking"); setError("");
+      const cached = recoveredActiveSite(props.user?.id);
+      if (cached?.id && cached?.slug) {
+        if (!cancelled) {
+          publishActiveSite(cached);
+          setError("");
+          setPhase("ready");
+        }
+        return;
+      }
+
+      setPhase("checking");
+      setError("");
       if (!props.user?.id) { setError("Sesi pengguna tidak ditemukan. Silakan masuk kembali."); setPhase("error"); return; }
-      if (!supabaseConfigured || !supabase) { setError("Penyimpanan cloud belum dikonfigurasi."); setPhase("error"); return; }
+      if (!supabaseConfigured || !supabase) { setError("Penyimpanan cloud belum dikonfigurasi. Sesi lokal tidak dihapus."); setPhase("error"); return; }
       try {
         const { sites } = await loadStudioMembership(props.user.id);
         if (cancelled) return;
         const site = preferredSite(sites);
         if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding");
       } catch (nextError) {
-        if (isSessionReauthError(nextError)) requestReauthentication(nextError);
-        if (!cancelled) {
-          const nextMessage = isTransientStudioError(nextError)
-            ? "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan. Tekan Coba lagi setelah jaringan tersambung."
-            : nextError.message || "Daftar situs belum dapat dimuat.";
-          setError(nextMessage);
-          setPhase("error");
+        if (cancelled) return;
+        const recovered = recoveredActiveSite(props.user?.id);
+        if (isTransientStudioError(nextError) && recovered?.id && recovered?.slug) {
+          publishActiveSite(recovered);
+          setError("");
+          setPhase("ready");
+          return;
         }
+        if (isSessionReauthError(nextError)) requestReauthentication(nextError);
+        const nextMessage = isTransientStudioError(nextError)
+          ? "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan; Studio akan mencoba lagi saat jaringan kembali."
+          : nextError.message || "Daftar situs belum dapat dimuat.";
+        setError(nextMessage);
+        setPhase("error");
       }
     };
     check();
@@ -292,3 +350,5 @@ export default function StudioOnboardingGate(props) {
   if (phase === "onboarding") return <FirstSiteOnboarding user={props.user} onExit={props.onExit} onCreated={() => setPhase("ready")}/>;
   return <StartupState error={phase === "error" ? error : ""} onRetry={() => setRun((value) => value + 1)} onExit={props.onExit}/>;
 }
+
+export { STARTUP_RELEASE, loadStudioMembership, recoveredActiveSite };
