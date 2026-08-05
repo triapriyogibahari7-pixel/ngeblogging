@@ -1,12 +1,18 @@
 import "./studio-mode-authority-v297.css";
 import "./studio-polish-v295.css";
 import "./studio-shell-authority-v298.css";
+import { loadAnalytics } from "./studio-analytics-v41.js";
 
 export const STUDIO_SHELL_AUTHORITY_RELEASE_V298 = "studio-shell-authority-v298-20260805";
 export const STUDIO_SINGLE_N_OWNER_V298 = "studio-single-n-owner-v298-20260805";
 export const STUDIO_PROFILE_MENU_RELEASE_V298 = "studio-profile-menu-v298-20260805";
+export const STUDIO_ANALYTICS_OWNER_V298 = "studio-analytics-production-owner-v298-20260805";
 
+const SIDEBAR_KEY = "ngeblogging-studio-sidebar-state-v298";
 let profileMenu = null;
+let sidebarPreferenceApplied = false;
+let analyticsView = null;
+let syncFrame = 0;
 
 const root = () => document.documentElement;
 const shell = () => document.querySelector(".sn-shell");
@@ -16,6 +22,13 @@ const reactToggle = () => document.querySelector(".sn-main>.sn-top>.sn-sidebar-t
 function family() {
   const value = shell()?.dataset?.deviceMode || root().dataset.studioDeviceMode;
   return value === "large" ? "large" : "small";
+}
+
+function safeGet(key) {
+  try { return localStorage.getItem(key) || ""; } catch { return ""; }
+}
+function safeSet(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* storage must never block Studio */ }
 }
 
 function syncMark() {
@@ -31,7 +44,32 @@ function syncMark() {
   mark.setAttribute("aria-label", expanded ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
   mark.setAttribute("title", expanded ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
   const letter = mark.querySelector("strong");
-  if (letter) letter.textContent = "n";
+  if (letter) textOnlyN(letter);
+}
+
+function textOnlyN(letter) {
+  letter.textContent = "n";
+  letter.style.removeProperty("opacity");
+  letter.style.removeProperty("filter");
+  letter.style.removeProperty("transform");
+  letter.style.removeProperty("color");
+}
+
+function persistLargeSidebar() {
+  const side = sidebar();
+  if (!side || family() !== "large") return;
+  safeSet(SIDEBAR_KEY, side.classList.contains("collapsed") ? "collapsed" : "expanded");
+}
+
+function applyLargeSidebarPreference() {
+  const side = sidebar();
+  if (!side || family() !== "large" || sidebarPreferenceApplied) return;
+  sidebarPreferenceApplied = true;
+  const saved = safeGet(SIDEBAR_KEY);
+  if (!saved) return persistLargeSidebar();
+  const current = side.classList.contains("collapsed") ? "collapsed" : "expanded";
+  if (saved !== current && ["collapsed","expanded"].includes(saved)) reactToggle()?.click();
+  requestAnimationFrame(persistLargeSidebar);
 }
 
 function toggleN(event) {
@@ -41,16 +79,42 @@ function toggleN(event) {
   if (!toggle || toggle.disabled) return true;
   event.preventDefault();
   toggle.click();
-  requestAnimationFrame(syncMark);
+  requestAnimationFrame(() => {
+    syncMark();
+    persistLargeSidebar();
+  });
   return true;
+}
+
+function autoCollapseLargeAfterMenu(event) {
+  if (family() !== "large") return;
+  const button = event.target.closest?.("#ngeblogging-studio-sidebar>.sn-new,#ngeblogging-studio-sidebar>nav>button,#ngeblogging-studio-sidebar .sn-account-settings-v135");
+  const side = sidebar();
+  if (!button || !side || side.classList.contains("collapsed")) return;
+  window.setTimeout(() => {
+    if (family() === "large" && !sidebar()?.classList.contains("collapsed")) reactToggle()?.click();
+    requestAnimationFrame(() => { syncMark(); persistLargeSidebar(); });
+  }, 0);
+}
+
+function ensureHomeAddSite() {
+  const welcome = document.querySelector(".sn-welcome");
+  const actions = welcome?.querySelector(":scope>div:last-child");
+  if (!actions || actions.querySelector(".sn-add-site-v298")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sn-add-site-v298";
+  button.textContent = "+ Tambah situs";
+  button.setAttribute("aria-label", "Tambah situs");
+  button.addEventListener("click", () => document.querySelector(".sn-workspace")?.click());
+  actions.prepend(button);
 }
 
 function closeProfileMenu() {
   if (!profileMenu) return;
   profileMenu.remove();
   profileMenu = null;
-  const avatar = document.querySelector(".sn-avatar");
-  avatar?.setAttribute("aria-expanded", "false");
+  document.querySelector(".sn-avatar")?.setAttribute("aria-expanded", "false");
 }
 
 function menuButton(label) {
@@ -69,21 +133,23 @@ function openSettingsSection(index) {
 
 function runProfileAction(action) {
   closeProfileMenu();
-  if (action === "profile") return openSettingsSection(1);
+  if (action === "profile") {
+    if (typeof window.__ngebloggingOpenAvatarPicker === "function") window.__ngebloggingOpenAvatarPicker();
+    return openSettingsSection(1);
+  }
   if (action === "settings") return openSettingsSection(2);
   if (action === "add-site" || action === "switch-site") {
     document.querySelector(".sn-workspace")?.click();
     window.setTimeout(() => {
-      const target = action === "add-site" ? document.querySelector(".sn-create-site input") : document.querySelector(".sn-sites-list button,.sn-sites-list a");
+      const target = action === "add-site"
+        ? document.querySelector(".sn-create-site input")
+        : document.querySelector(".sn-sites-list button,.sn-sites-list a");
       target?.focus?.({ preventScroll:true });
       target?.scrollIntoView?.({ block:"nearest" });
     }, 70);
     return;
   }
-  if (action === "help") {
-    document.querySelector(".sn-nara-button,.nara-floating-button")?.click();
-    return;
-  }
+  if (action === "help") return document.querySelector(".sn-nara-button,.nara-floating-button")?.click();
   if (action === "logout") menuButton("keluar")?.click();
 }
 
@@ -128,6 +194,13 @@ function openProfileMenu(anchor) {
 }
 
 function normalizeNaraState() {
+  const launcher = document.querySelector(".nara-floating-button");
+  if (launcher) {
+    launcher.hidden = false;
+    launcher.disabled = false;
+    launcher.removeAttribute("inert");
+    launcher.dataset.v298Floating = "fixed-bottom-right";
+  }
   const panel = document.querySelector(".nara-assistant-shell[data-nara-size]");
   const layer = panel?.closest(".nara-assistant-layer");
   if (!panel || !layer) return;
@@ -135,6 +208,11 @@ function normalizeNaraState() {
   layer.dataset.naraInteraction = full ? "modal" : "nonmodal";
   layer.setAttribute("aria-modal", String(full));
   panel.setAttribute("aria-modal", String(full));
+  panel.querySelectorAll(".nara-size-controls-v147,.nara-auto-voice-v148,.nara-select.model,.nara-select.intelligence,.nara-attachment-menu-wrap,.nara-composer-tools>button").forEach((node) => {
+    node.hidden = false;
+    node.removeAttribute("inert");
+    node.removeAttribute("aria-hidden");
+  });
   if (!full) {
     document.documentElement.style.removeProperty("overflow");
     document.body.style.removeProperty("overflow");
@@ -142,11 +220,43 @@ function normalizeNaraState() {
   }
 }
 
+function syncAnalytics() {
+  const active = document.querySelector("#ngeblogging-studio-sidebar nav button.active span")?.textContent?.trim();
+  if (active !== "Analitik") {
+    analyticsView = null;
+    return;
+  }
+  const views = [...document.querySelectorAll(".sn-shell>.sn-main>.sn-view-pad")];
+  const view = views.find((candidate) => candidate.querySelector(".sn-page-title h1")?.textContent?.trim() === "Analitik") || null;
+  if (!view || view === analyticsView) return;
+  analyticsView = view;
+  view.dataset.analyticsRuntimeV298 = STUDIO_ANALYTICS_OWNER_V298;
+  root().dataset.studioAnalyticsV298 = "production-first";
+  loadAnalytics(view, 30, false).catch((error) => console.error("Analytics v298 failed", error));
+}
+
 function syncAuthority() {
-  if (!shell()) return;
+  syncFrame = 0;
+  if (!shell()) return false;
   root().dataset.studioShellAuthorityV298 = STUDIO_SHELL_AUTHORITY_RELEASE_V298;
+  root().dataset.studioSingleNOwnerV298 = STUDIO_SINGLE_N_OWNER_V298;
+  applyLargeSidebarPreference();
   syncMark();
+  ensureHomeAddSite();
   normalizeNaraState();
+  syncAnalytics();
+  return true;
+}
+
+function scheduleSync() {
+  if (syncFrame) return;
+  syncFrame = requestAnimationFrame(syncAuthority);
+}
+
+function boot(attempt = 0) {
+  if (syncAuthority()) return;
+  if (attempt >= 4) return;
+  window.setTimeout(() => boot(attempt + 1), [40,90,180,360,520][attempt] || 360);
 }
 
 function onCapturedClick(event) {
@@ -170,18 +280,13 @@ function onCapturedClick(event) {
 
 function onClick(event) {
   if (toggleN(event)) return;
-  requestAnimationFrame(() => {
-    syncMark();
-    normalizeNaraState();
-  });
+  autoCollapseLargeAfterMenu(event);
+  scheduleSync();
 }
 
 function onKeydown(event) {
   const mark = event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark");
-  if (mark && (event.key === "Enter" || event.key === " ")) {
-    toggleN(event);
-    return;
-  }
+  if (mark && (event.key === "Enter" || event.key === " ")) return void toggleN(event);
   if (event.key === "Escape" && profileMenu) {
     const avatar = document.querySelector(".sn-avatar");
     closeProfileMenu();
@@ -189,14 +294,17 @@ function onKeydown(event) {
   }
 }
 
+if (typeof globalThis !== "undefined") globalThis.__NGE_STUDIO_V298_SINGLE_OWNER = true;
+
 if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.addEventListener("click", onCapturedClick, true);
   document.addEventListener("click", onClick, false);
   document.addEventListener("keydown", onKeydown, true);
-  window.addEventListener("resize", () => { closeProfileMenu(); requestAnimationFrame(syncAuthority); }, { passive:true });
-  window.addEventListener("orientationchange", () => { closeProfileMenu(); requestAnimationFrame(syncAuthority); }, { passive:true });
-  window.addEventListener("pageshow", () => requestAnimationFrame(syncAuthority), { passive:true });
-  window.addEventListener("ngeblogging:studio-device-mode-change", () => requestAnimationFrame(syncAuthority));
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => requestAnimationFrame(syncAuthority), { once:true });
-  else requestAnimationFrame(syncAuthority);
+  window.addEventListener("resize", () => { closeProfileMenu(); sidebarPreferenceApplied = false; scheduleSync(); }, { passive:true });
+  window.addEventListener("orientationchange", () => { closeProfileMenu(); sidebarPreferenceApplied = false; scheduleSync(); }, { passive:true });
+  window.addEventListener("pageshow", () => boot(), { passive:true });
+  window.addEventListener("ngeblogging:studio-device-mode-change", () => { sidebarPreferenceApplied = false; scheduleSync(); });
+  window.addEventListener("ngeblogging:auth-session-ready", scheduleSync);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => boot(), { once:true });
+  else boot();
 }
