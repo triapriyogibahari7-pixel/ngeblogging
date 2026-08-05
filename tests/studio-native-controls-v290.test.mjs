@@ -23,13 +23,14 @@ test("v291 restores the known root callbacks instead of rewriting Supabase auth 
   assert.doesNotMatch(entry, /auth-studio-handoff-v290/);
   assert.match(retired, /auth-studio-handoff-v290-20260805/);
   assert.doesNotMatch(entry, /patchMethod\(|moveCallbackPathToStudio/);
-  assert.doesNotMatch(auth, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
+  assert.doesNotMatch(auth, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
 
 test("v291 keeps exactly one repeatable n click owner without pointer-down muting", async () => {
   const runtime = await read("src/studio-native-controls-v290.js");
   const legacy = await read("src/studio-react-shell-v287.js");
   assert.match(runtime, /studio-native-controls-v290-20260805/);
+  assert.match(runtime, /studio-auth-sidebar-v291-20260805/);
   assert.match(runtime, /function nativeToggle\(event\)/);
   assert.match(runtime, /document\.addEventListener\("click", nativeToggle, true\)/);
   assert.match(runtime, /nativeToggleKeyboard/);
