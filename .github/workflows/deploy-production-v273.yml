@@ -40,11 +40,20 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Validate rollout contract
+      - name: Validate authoritative v273-v287 rollout contract
         run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs
 
-      - name: Run complete production regression and build
-        run: npm run build
+      - name: Rotate service worker to v287 without replaying legacy UI patchers
+        run: node scripts/patch-service-worker-v287.mjs
+
+      - name: Build production bundle from current source only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx vite build
+          node --check cloudflare/worker-v70.mjs
+          npx wrangler deploy --config wrangler.production.jsonc --dry-run --outdir .wrangler-build
+          node scripts/write-netlify-redirects.mjs
 
       - name: Verify production source markers before deploy
         shell: bash
@@ -66,6 +75,18 @@ jobs:
           grep -q 'STUDIO_REACT_SHELL_RELEASE_V287' public/sw.js
           grep -q 'studio-react-shell-cache-v287' public/sw.js
           grep -q 'ngeblogging-app-v287-react-shell-20260805' public/sw.js
+          if grep -q '^import "./studio-production-v208.js";' src/Studio.jsx; then
+            echo 'v208 legacy hard-reload runtime must not be active in production.' >&2
+            exit 1
+          fi
+          if grep -q '^import "./nara-size-authority-v144.js";' src/Studio.jsx; then
+            echo 'legacy Nara observer must not be active in production.' >&2
+            exit 1
+          fi
+          if grep -q '^import "./studio-interface-v148.js";' src/Studio.jsx; then
+            echo 'legacy interface observer must not be active in production.' >&2
+            exit 1
+          fi
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
