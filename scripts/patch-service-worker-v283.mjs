@@ -33,7 +33,7 @@ for (const marker of [
   'import "./studio-native-recovery-v283.css";',
 ]) if (!entry.includes(marker)) throw new Error(`V283_ENTRY_MISSING:${marker}`);
 
-if (entry.indexOf('import "./studio-native-recovery-v283.css";') <= entry.indexOf('import "./studio-native-controls-v281.css";')) {
+if (entry.indexOf('import "./studio-native-recovery-v283.css";') <= entry.indexOf('import "./studio-native-recovery-v283.js";')) {
   throw new Error("V283_IMPORT_ORDER_INVALID");
 }
 
@@ -89,3 +89,4 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated Studio cache to ${CACHE}`);
+await import("./patch-service-worker-v284.mjs");

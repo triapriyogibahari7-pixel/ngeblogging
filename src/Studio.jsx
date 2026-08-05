@@ -137,11 +137,14 @@ import "./studio-live-shell-v279.css";
 // backup: import "./studio-native-shell-v280.js";
 import "./studio-native-shell-v280.css";
 
-// v281 hanya lightweight normalizer/5000-word guard; v283 menjadi owner interaksi
-// dan geometri terakhir sehingga tidak ada lagi banyak capture owner bersamaan.
+// v281 hanya lightweight normalizer/5000-word guard. v283 tetap disimpan sebagai
+// regression source, tetapi capture-phase click owner-nya tidak lagi dijalankan
+// karena dapat memblokir tap mobile. v284 menjadi satu-satunya owner shell aktif.
 import "./studio-native-controls-v281.js";
 import "./studio-native-controls-v281.css";
-import "./studio-native-recovery-v283.js";
+// backup v284: import "./studio-native-recovery-v283.js";
 import "./studio-native-recovery-v283.css";
+import "./studio-native-polish-v284.js";
+import "./studio-native-polish-v284.css";
 
 export default StudioFastGate;
