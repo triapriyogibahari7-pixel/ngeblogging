@@ -1,5 +1,7 @@
 export const RELEASE = "studio-native-controls-v281-20260805";
 export const MAX_CODE_LINES = 10000;
+export const MAX_CONTENT_WORDS = 5000;
+export const CONTENT_WARNING_WORDS = 4500;
 
 let frame = 0;
 let bootPass = 0;
@@ -133,10 +135,7 @@ function normalizeNara() {
   layer.setAttribute("aria-modal", String(full));
   panel.setAttribute("aria-modal", String(full));
 
-  panel.querySelectorAll(".nara-select,.nara-composer-tools>button,.nara-attachment-menu-wrap>button").forEach((control) => {
-    reveal(control);
-    control.disabled = Boolean(control.disabled && control.getAttribute("aria-busy") === "true");
-  });
+  panel.querySelectorAll(".nara-select,.nara-composer-tools>button,.nara-attachment-menu-wrap>button").forEach((control) => reveal(control));
 
   const backdrop = layer.querySelector(":scope>.nara-assistant-backdrop");
   if (backdrop) {
@@ -175,6 +174,65 @@ function normalizeCodeEditor() {
   });
 }
 
+function editorWordCount() {
+  const editor = document.querySelector(".ce-paper[contenteditable]");
+  if (!editor) return 0;
+  return String(editor.textContent || "").trim().split(/\s+/).filter(Boolean).length;
+}
+
+function normalizeWordLimit() {
+  const status = document.querySelector(".ce-word-status");
+  if (!status) return;
+  const words = editorWordCount();
+  status.dataset.wordLimitV281 = String(MAX_CONTENT_WORDS);
+  status.classList.toggle("v281-warning", words >= CONTENT_WARNING_WORDS && words <= MAX_CONTENT_WORDS);
+  status.classList.toggle("v281-over", words > MAX_CONTENT_WORDS);
+  const first = status.querySelector(":scope>span:first-child");
+  if (first) first.textContent = `${words.toLocaleString("id-ID")} / ${MAX_CONTENT_WORDS.toLocaleString("id-ID")} kata`;
+
+  let message = status.querySelector(":scope>.v281-word-limit");
+  if (words >= CONTENT_WARNING_WORDS) {
+    if (!message) {
+      message = document.createElement("span");
+      message.className = "v281-word-limit";
+      status.append(message);
+    }
+    if (words > MAX_CONTENT_WORDS) {
+      message.className = "v281-word-limit over";
+      message.textContent = `Kurangi ${(words - MAX_CONTENT_WORDS).toLocaleString("id-ID")} kata sebelum publikasi. Draf tetap disimpan.`;
+    } else {
+      message.className = "v281-word-limit warning";
+      message.textContent = `${(MAX_CONTENT_WORDS - words).toLocaleString("id-ID")} kata tersisa sebelum batas publikasi.`;
+    }
+  } else {
+    message?.remove();
+  }
+}
+
+function showWordLimitAlert(words) {
+  const titlebar = document.querySelector(".ce-titlebar");
+  if (!titlebar) return;
+  titlebar.querySelector(".v281-editor-alert")?.remove();
+  const alert = document.createElement("div");
+  alert.className = "v281-editor-alert";
+  alert.setAttribute("role", "alert");
+  alert.textContent = `Publikasi ditahan: ${words.toLocaleString("id-ID")} kata. Kurangi ${(words - MAX_CONTENT_WORDS).toLocaleString("id-ID")} kata. Draf dan isi tidak dihapus.`;
+  titlebar.insertAdjacentElement("afterend", alert);
+  setTimeout(() => alert.remove(), 7000);
+}
+
+function guardContentPublish(event) {
+  const publishButton = event.target?.closest?.(".ce-titlebar .ce-primary");
+  if (!publishButton || /Jadikan draf/i.test(publishButton.textContent || "")) return;
+  const words = editorWordCount();
+  if (words <= MAX_CONTENT_WORDS) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  event.stopPropagation();
+  showWordLimitAlert(words);
+  normalizeWordLimit();
+}
+
 function normalizeThemeAndAnalytics() {
   document.querySelectorAll(".tn-studio,.tn-theme-grid,.tn-layout-studio,.tn-layout-map-v264,.tn-code-workspace,.op41-host,.op41-panel").forEach(reveal);
   document.querySelectorAll(".tn-layout-slot-v264").forEach((slot) => {
@@ -202,6 +260,7 @@ function sync() {
   normalizeProfile();
   normalizeNara();
   normalizeCodeEditor();
+  normalizeWordLimit();
   normalizeThemeAndAnalytics();
   normalizeContainment();
 }
@@ -233,7 +292,9 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   window.addEventListener("ngeblogging:studio-device-mode-change", schedule);
   window.addEventListener("online", schedule, { passive: true });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
+  document.addEventListener("click", guardContentPublish, true);
   document.addEventListener("click", () => { schedule(0); schedule(40); }, false);
+  document.addEventListener("input", (event) => { if (event.target?.closest?.(".ce-paper")) schedule(0); }, false);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
 }
