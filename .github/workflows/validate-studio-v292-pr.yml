@@ -1,0 +1,50 @@
+name: Validate Studio v292
+
+on:
+  pull_request:
+    branches: [main, production]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-studio-v292-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run current Studio regression
+        run: node --test tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs tests/studio-auth-sidebar-v291.test.mjs tests/studio-startup-v292.test.mjs
+
+      - name: Build application with service-worker chain
+        run: npm run check
+
+      - name: Verify v292 build markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' public/sw.js
+          grep -q 'studio-startup-direct-data-cache-v292' public/sw.js
+          grep -q 'ngeblogging-app-v292-startup-direct-data-20260805' public/sw.js
+          grep -R -q 'studio-startup-direct-data-v292-20260805' dist/assets
+          test -f public/release-v292.json
