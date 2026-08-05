@@ -1,9 +1,8 @@
 [build]
-  # Netlify deploy preview only needs the browser bundle. Production regression,
-  # Wrangler dry-run and Cloudflare route validation remain owned by the
-  # production workflow; coupling them here made every UI preview fail before
-  # we could distinguish a frontend regression from an infrastructure gate.
-  command = "node scripts/patch-service-worker-v288.mjs && npx vite build && node scripts/write-netlify-redirects.mjs"
+  # Diagnostic: compile only the browser application. If this fails, the v288
+  # source/import graph itself is broken. Service-worker and infrastructure
+  # validation are deliberately excluded from this preview probe.
+  command = "npx vite build"
   publish = "dist"
 
 [build.environment]
