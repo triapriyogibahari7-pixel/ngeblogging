@@ -1,0 +1,227 @@
+/* Ngeblogging Studio v290 — final device shell authority.
+   This layer does not replace product pages; it only owns navigation chrome,
+   profile placement, Nara viewport geometry, and attachment popover placement. */
+:root{
+  --v290-side-open:248px;
+  --v290-side-rail:72px;
+  --v290-drawer:min(80vw,330px);
+  --v290-safe-top:max(8px,env(safe-area-inset-top,0px));
+  --v290-safe-right:max(10px,env(safe-area-inset-right,0px));
+  --v290-safe-left:max(10px,env(safe-area-inset-left,0px));
+  --v290-safe-bottom:max(14px,calc(env(safe-area-inset-bottom,0px) + 10px));
+}
+
+html[data-studio-v290-family] body,
+html[data-studio-v290-family] #root,
+html[data-studio-v290-family] .sn-shell,
+html[data-studio-v290-family] .sn-main{
+  min-width:0!important;
+  max-width:100%!important;
+  transform:none!important;
+  filter:none!important;
+}
+html[data-studio-v290-family] .sn-shell *,
+html[data-studio-v290-family] .tn-studio *,
+html[data-studio-v290-family] .ce-app *{box-sizing:border-box!important}
+html[data-studio-v290-family] :is(.sn-main>*,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.tn-studio,.tn-studio>*,.ce-app,.ce-app>*,.sv124-page,.sv124-page>*){min-width:0!important;max-width:100%!important}
+html[data-studio-v290-family] :is(img,video,canvas,iframe){max-width:100%!important}
+
+/* There is exactly one navigation toggle: the n inside the sidebar. */
+html[data-studio-v290-family] :is(.sn-main>.sn-top>.sn-sidebar-toggle,.sn-top>.sn-sidebar-toggle,.sn-side-close,.sn-sidebar-edge-toggle-v147,.v227-sidebar-fab,.studio-external-sidebar-toggle,[data-v173-collapse-toggle],[data-v187-sidebar-toggle],[data-v208-sidebar-toggle],[data-v223-sidebar-toggle],[data-v229-sidebar-toggle],#ngeblogging-studio-chrome-v244){
+  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar{
+  display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  flex-direction:column!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  animation:none!important;transform:none!important;contain:none!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>.sn-logo{
+  display:flex!important;align-items:center!important;gap:12px!important;flex:0 0 64px!important;min-height:64px!important;
+  padding:9px 11px!important;overflow:hidden!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar .sn-logo-mark{
+  position:relative!important;display:grid!important;place-items:center!important;flex:0 0 46px!important;
+  width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;margin:0!important;padding:0!important;
+  border-radius:14px!important;overflow:hidden!important;pointer-events:auto!important;touch-action:manipulation!important;
+  animation:none!important;transform:none!important;filter:none!important;cursor:pointer!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar .sn-logo-mark strong{
+  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;width:100%!important;height:100%!important;
+  margin:0!important;padding:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;filter:none!important;
+  transform:none!important;font:850 26px/1 Arial,Helvetica,sans-serif!important;text-align:center!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>.sn-logo>b{
+  display:block!important;margin:0!important;font-size:18px!important;line-height:1.05!important;white-space:nowrap!important;
+  overflow:hidden!important;text-overflow:ellipsis!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>.sn-new{
+  display:flex!important;align-items:center!important;gap:10px!important;flex:0 0 44px!important;min-height:44px!important;
+  margin:2px 10px 3px!important;padding:0 12px!important;white-space:nowrap!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>nav{
+  display:flex!important;flex:1 1 auto!important;min-height:0!important;flex-direction:column!important;justify-content:flex-start!important;
+  gap:1px!important;margin:0!important;padding:2px 10px 6px!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>nav>button,
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>.sn-account-footer>button{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;flex:0 0 41px!important;
+  width:100%!important;min-width:0!important;min-height:41px!important;max-height:41px!important;margin:0!important;padding:0 11px!important;
+  white-space:nowrap!important;overflow:hidden!important;pointer-events:auto!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar :is(.sn-new,nav>button,.sn-account-footer>button)>svg{
+  flex:0 0 19px!important;width:19px!important;height:19px!important;min-width:19px!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar :is(.sn-new,nav>button,.sn-account-footer>button)>span{
+  display:block!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+html[data-studio-v290-family] #ngeblogging-studio-sidebar>.sn-account-footer{
+  display:flex!important;flex:0 0 auto!important;flex-direction:column!important;gap:1px!important;margin-top:auto!important;
+  padding:7px 10px max(9px,env(safe-area-inset-bottom,0px))!important
+}
+
+/* Desktop family: desktop site, laptop, computer and large tablet share one shell. */
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar{
+  position:fixed!important;z-index:4200!important;inset:0 auto 0 0!important;width:var(--v290-side-open)!important;
+  min-width:var(--v290-side-open)!important;max-width:var(--v290-side-open)!important;height:100dvh!important;overflow:hidden!important;
+  background:#fff!important;box-shadow:1px 0 0 rgba(79,105,139,.12)!important;transition:width .12s ease!important
+}
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed{
+  width:var(--v290-side-rail)!important;min-width:var(--v290-side-rail)!important;max-width:var(--v290-side-rail)!important
+}
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed>.sn-logo{justify-content:center!important;gap:0!important;padding-inline:13px!important}
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed :is(>.sn-logo>b,>.sn-new>span,>nav>button>span,>.sn-account-footer>button>span){display:none!important}
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed :is(>.sn-new,>nav>button,>.sn-account-footer>button){
+  width:48px!important;min-width:48px!important;max-width:48px!important;margin-left:auto!important;margin-right:auto!important;padding-inline:0!important;justify-content:center!important;overflow:visible!important
+}
+html[data-studio-v290-family="large"] .sn-shell>.sn-main{
+  margin-left:var(--v290-side-open)!important;width:calc(100% - var(--v290-side-open))!important;max-width:calc(100% - var(--v290-side-open))!important;
+  padding-left:0!important;transition:margin-left .12s ease,width .12s ease!important
+}
+html[data-studio-v290-family="large"] #ngeblogging-studio-sidebar.collapsed~.sn-main{
+  margin-left:var(--v290-side-rail)!important;width:calc(100% - var(--v290-side-rail))!important;max-width:calc(100% - var(--v290-side-rail))!important
+}
+html[data-studio-v290-family="large"] .sn-side-backdrop{display:none!important;pointer-events:none!important}
+
+/* Small family: one fixed n while closed, full-height drawer while open. */
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar{
+  position:fixed!important;z-index:4300!important;left:var(--v290-safe-left)!important;top:var(--v290-safe-top)!important;right:auto!important;bottom:auto!important;
+  width:54px!important;min-width:54px!important;max-width:54px!important;height:54px!important;min-height:54px!important;max-height:54px!important;
+  padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important
+}
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo{
+  width:54px!important;height:54px!important;min-height:54px!important;padding:4px!important;justify-content:center!important;gap:0!important;background:transparent!important;overflow:visible!important
+}
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar:not(.mobile-open) :is(>.sn-logo>b,>.sn-new,>nav,>.sn-account-footer){
+  display:none!important;visibility:hidden!important;pointer-events:none!important
+}
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar.mobile-open{
+  left:0!important;top:0!important;bottom:0!important;width:var(--v290-drawer)!important;min-width:var(--v290-drawer)!important;max-width:var(--v290-drawer)!important;
+  height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;padding:var(--v290-safe-top) 0 0!important;
+  background:#fff!important;border-right:1px solid rgba(80,108,145,.16)!important;box-shadow:16px 0 36px rgba(31,54,86,.16)!important;overflow:hidden!important
+}
+html[data-studio-v290-family="small"] #ngeblogging-studio-sidebar.mobile-open :is(>.sn-logo>b,>.sn-new,>nav,>.sn-account-footer){
+  display:flex!important;visibility:visible!important;pointer-events:auto!important
+}
+html[data-studio-v290-family="small"] .sn-shell>.sn-main{margin-left:0!important;width:100%!important;max-width:100%!important;padding-left:0!important}
+html[data-studio-v290-family="small"] .sn-shell>.sn-main>.sn-top{padding-left:74px!important;padding-right:64px!important}
+body.sn-mobile-sidebar-open .sn-side-backdrop{
+  display:block!important;position:fixed!important;z-index:4250!important;inset:0!important;pointer-events:auto!important;
+  background:transparent!important;opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+body.sn-mobile-sidebar-open :is(#root,.sn-main){filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* Profile is independent of device badges and remains visible after scrolling. */
+html[data-studio-v290-family] .sn-main>.sn-top{position:sticky!important;top:0!important;z-index:4100!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+html[data-studio-v290-family] .sn-main>.sn-top .sn-top-actions{display:flex!important;align-items:center!important;gap:6px!important;margin-left:auto!important;min-width:0!important;overflow:visible!important}
+html[data-studio-v290-family] .sn-main>.sn-top .sn-avatar{
+  position:fixed!important;z-index:4400!important;right:var(--v290-safe-right)!important;top:var(--v290-safe-top)!important;
+  display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important;min-height:46px!important;max-height:46px!important;
+  margin:0!important;padding:0!important;border-radius:999px!important;overflow:hidden!important
+}
+html[data-studio-v290-family] .sn-main>.sn-top .sn-avatar img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:inherit!important}
+html[data-studio-v290-family] :is([data-studio-mode-badge],[data-device-mode-badge],.studio-device-mode-badge,.v225-mode-badge){display:none!important}
+html[data-studio-v290-family] .sn-profile-menu-v287{position:fixed!important;z-index:4500!important;right:var(--v290-safe-right)!important;top:calc(var(--v290-safe-top) + 54px)!important;width:min(320px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 82px)!important;overflow:auto!important}
+
+/* Nara launcher always stays at the physical viewport corner. */
+html[data-studio-v290-family] .nara-floating-button{
+  position:fixed!important;z-index:4600!important;right:var(--v290-safe-right)!important;bottom:var(--v290-safe-bottom)!important;left:auto!important;top:auto!important;
+  width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;max-width:58px!important;max-height:58px!important;
+  margin:0!important;padding:0!important;display:grid!important;place-items:center!important;overflow:hidden!important;transform:none!important;
+  animation:none!important;transition:none!important;filter:none!important;contain:none!important;will-change:auto!important;pointer-events:auto!important
+}
+html[data-studio-v290-family] .nara-floating-button>span{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;margin:auto!important}
+html[data-studio-v290-family] .nara-floating-button>b,
+html[data-studio-v290-family] .nara-floating-button>small{display:none!important}
+html[data-studio-v290-family] .nara-assistant-layer[data-nara-interaction="nonmodal"]{
+  position:fixed!important;inset:0!important;z-index:4550!important;pointer-events:none!important;background:transparent!important;
+  filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+html[data-studio-v290-family] .nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-backdrop{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html[data-studio-v290-family] .nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-shell{
+  position:fixed!important;right:var(--v290-safe-right)!important;bottom:calc(var(--v290-safe-bottom) + 70px)!important;left:auto!important;top:auto!important;
+  max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 90px)!important;overflow:hidden!important;pointer-events:auto!important;
+  transform:none!important;animation:none!important;transition:none!important
+}
+html[data-studio-v290-family="large"] .nara-assistant-shell[data-nara-size="small"]{width:min(460px,46vw)!important;height:min(610px,68dvh)!important}
+html[data-studio-v290-family="large"] .nara-assistant-shell[data-nara-size="medium"]{width:min(760px,72vw)!important;height:min(760px,82dvh)!important}
+html[data-studio-v290-family="small"] .nara-assistant-shell[data-nara-size="small"]{width:min(430px,calc(100vw - 20px))!important;height:min(590px,72dvh)!important}
+html[data-studio-v290-family="small"] .nara-assistant-shell[data-nara-size="medium"]{width:calc(100vw - 16px)!important;height:min(760px,84dvh)!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important}
+html[data-studio-v290-family] .nara-assistant-shell[data-nara-size="full"]{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;border-radius:0!important}
+
+/* Nara header: one row of size/voice/new/close controls. */
+html[data-studio-v290-family] .nara-assistant-header{
+  display:grid!important;grid-template-columns:36px minmax(72px,1fr) auto 34px 34px 34px!important;grid-template-rows:42px!important;
+  grid-template-areas:"brand title sizes voice reset close"!important;align-items:center!important;gap:5px!important;min-width:0!important;overflow:visible!important
+}
+html[data-studio-v290-family] .nara-assistant-header>.nara-brand-orb{grid-area:brand!important}
+html[data-studio-v290-family] .nara-assistant-header>div:nth-child(2){grid-area:title!important;min-width:0!important;overflow:hidden!important}
+html[data-studio-v290-family] .nara-size-controls-v147{grid-area:sizes!important;display:grid!important;grid-template-columns:repeat(3,30px)!important;gap:3px!important;width:auto!important;min-width:0!important}
+html[data-studio-v290-family] .nara-size-controls-v147>button{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;padding:0!important}
+html[data-studio-v290-family] .nara-auto-voice-v148{grid-area:voice!important;width:34px!important;height:34px!important;padding:0!important}
+html[data-studio-v290-family] .nara-assistant-header>button[title="Percakapan baru"]{grid-area:reset!important;width:34px!important;height:34px!important;padding:0!important}
+html[data-studio-v290-family] .nara-assistant-header>button[aria-label="Tutup Nara"],
+html[data-studio-v290-family] .nara-assistant-header>button[title="Tutup"]{grid-area:close!important;width:34px!important;height:34px!important;padding:0!important;display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important}
+html[data-studio-v290-family="small"] .nara-assistant-header>div:nth-child(2) small{display:none!important}
+html[data-studio-v290-family="small"] .nara-assistant-header>div:nth-child(2)>span{font-size:14px!important;white-space:nowrap!important}
+@media(max-width:350px){
+  html[data-studio-v290-family="small"] .nara-assistant-header{grid-template-columns:32px minmax(48px,1fr) 82px 30px 30px 30px!important;gap:3px!important}
+  html[data-studio-v290-family="small"] .nara-size-controls-v147{grid-template-columns:repeat(3,25px)!important;gap:2px!important}
+  html[data-studio-v290-family="small"] .nara-size-controls-v147>button{width:25px!important;height:28px!important;min-width:25px!important}
+}
+
+/* Composer: +, mic, intelligence, model and send remain one row. */
+html[data-studio-v290-family] .nara-composer{overflow:visible!important;min-width:0!important;max-width:100%!important}
+html[data-studio-v290-family] .nara-composer-tools{
+  position:relative!important;display:grid!important;grid-template-columns:38px 38px minmax(74px,.82fr) minmax(96px,1.18fr) 42px!important;
+  align-items:center!important;gap:5px!important;width:100%!important;min-width:0!important;max-width:100%!important;overflow:visible!important
+}
+html[data-studio-v290-family] .nara-composer-tools>*{min-width:0!important;max-width:100%!important}
+html[data-studio-v290-family] .nara-composer-tools>button,
+html[data-studio-v290-family] .nara-attachment-menu-wrap>button{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:0!important}
+html[data-studio-v290-family] .nara-composer-tools>button:last-child{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+html[data-studio-v290-family] .nara-select{height:38px!important;min-height:38px!important;width:100%!important;min-width:0!important;padding:0 8px!important;overflow:hidden!important}
+html[data-studio-v290-family] .nara-select>span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+html[data-studio-v290-family] .nara-attachment-menu-wrap{position:relative!important;display:block!important;overflow:visible!important;z-index:8!important}
+html[data-studio-v290-family] .nara-attachment-menu{
+  position:absolute!important;left:0!important;right:auto!important;top:auto!important;bottom:calc(100% + 8px)!important;z-index:4700!important;
+  display:grid!important;grid-template-columns:1fr!important;width:min(280px,calc(100vw - 32px))!important;max-width:min(280px,calc(100vw - 32px))!important;
+  padding:7px!important;gap:4px!important;overflow:visible!important;transform:none!important
+}
+html[data-studio-v290-family] .nara-attachment-menu>button{display:flex!important;width:100%!important;min-height:46px!important;align-items:center!important;gap:9px!important;text-align:left!important}
+@media(max-width:360px){
+  html[data-studio-v290-family="small"] .nara-composer-tools{grid-template-columns:34px 34px minmax(62px,.8fr) minmax(78px,1.2fr) 38px!important;gap:3px!important}
+  html[data-studio-v290-family="small"] .nara-composer-tools>button,
+  html[data-studio-v290-family="small"] .nara-attachment-menu-wrap>button{width:34px!important;height:36px!important;min-width:34px!important;min-height:36px!important}
+  html[data-studio-v290-family="small"] .nara-composer-tools>button:last-child{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
+  html[data-studio-v290-family="small"] .nara-select{padding-inline:5px!important;font-size:11px!important}
+}
+
+/* Keep the current Theme Studio/editor work visible without changing its data model. */
+html[data-studio-v290-family] :is(.tn-studio,.tn-theme-grid,.tn-layout-studio,.tn-layout-map-v264,.tn-widget-studio,.tn-code-workspace,.tn-code-pane,.tn-code-preview-pane){visibility:visible!important;opacity:1!important;min-width:0!important;max-width:100%!important}
+html[data-studio-v290-family="large"] .tn-code-workspace{grid-template-areas:"code preview"!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch!important}
+html[data-studio-v290-family="small"] .tn-code-workspace{grid-template-areas:"preview" "code"!important;grid-template-columns:minmax(0,1fr)!important;align-items:stretch!important}
+html[data-studio-v290-family] .tn-code-pane{grid-area:code!important;min-height:520px!important;overflow:auto!important}
+html[data-studio-v290-family] .tn-code-preview-pane{grid-area:preview!important;min-height:360px!important;overflow:auto!important;margin-inline:auto!important;width:100%!important}
+html[data-studio-v290-family="small"] .tn-code-pane{min-height:520px!important}
+html[data-studio-v290-family="small"] .tn-code-preview-pane{min-height:320px!important}
