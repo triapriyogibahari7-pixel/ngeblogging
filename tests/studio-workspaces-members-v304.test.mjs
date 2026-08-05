@@ -14,7 +14,7 @@ test("v305 authority chain loads after add-site without removing earlier Studio 
   assert.doesNotMatch(source, /import\("\.\/studio-site-switcher-v304\.js"\)/);
 });
 
-test("Ganti situs v305 shows every real site and an explicit manage action", async () => {
+test("Ganti situs v305 shows every real site and explicit manage/delete actions", async () => {
   const source = await read("src/studio-site-switcher-v305.js");
   for (const marker of [
     "listUserSitesStartupV292",
@@ -28,9 +28,13 @@ test("Ganti situs v305 shows every real site and an explicit manage action", asy
     "Tambah situs",
     "Buat situs pertama",
     "ngeblogging:first-site-required-v305",
+    "studio-site-manager-actions-v306-20260805",
+    "Hapus situs",
+    "siteDeleteV306",
   ]) assert.ok(source.includes(marker), `missing switch-site marker: ${marker}`);
   assert.match(source, /\.sn-workspace/);
   assert.match(source, /data-profile-action='switch-site'/);
+  assert.match(source, /supabase\.from\("sites"\)\.delete\(\)/);
   assert.doesNotMatch(source, /fallback\s*=\s*["']konten["']|placeholder=["']konten["']/i);
 });
 
@@ -84,7 +88,7 @@ test("v305 first-site recovery clears only active-site pointers and never auth/s
   assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
-test("v304 member manager still uses production RPCs for list invite role and removal", async () => {
+test("member manager exposes real add and remove-member controls through production RPCs", async () => {
   const source = await read("src/studio-members-v304.js");
   for (const marker of [
     "get_site_members_v176",
@@ -92,8 +96,12 @@ test("v304 member manager still uses production RPCs for list invite role and re
     "invite_site_member_v176",
     "update_site_member_role_v176",
     "remove_site_member_v176",
+    "studio-members-actions-v306-20260805",
     "+ Tambah anggota",
+    "Tambah anggota",
     "Tambah & kelola anggota",
+    "Hapus anggota",
+    "memberRemoveV306",
     "Admin",
     "Editor",
     "Author",
@@ -103,16 +111,19 @@ test("v304 member manager still uses production RPCs for list invite role and re
   assert.doesNotMatch(source, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
 });
 
-test("v305 switcher and v304 member manager stay contained on mobile", async () => {
+test("v305 switcher and member manager stay contained on mobile with readable actions", async () => {
   const switcherCss = await read("src/studio-site-switcher-v305.css");
   const membersCss = await read("src/studio-members-v304.css");
   assert.match(switcherCss, /width:min\(800px,calc\(100vw - 28px\)\)/);
   assert.match(switcherCss, /@media\(max-width:680px\)/);
   assert.match(switcherCss, /safe-area-inset-bottom/);
+  assert.match(switcherCss, /grid-template-columns:minmax\(0,1fr\) 44px/);
+  assert.match(switcherCss, /\.site-actions \.danger/);
   assert.doesNotMatch(switcherCss, /backdrop-filter:blur/);
   assert.match(membersCss, /width:min\(820px,calc\(100vw - 28px\)\)/);
   assert.match(membersCss, /@media\(max-width:760px\)/);
-  assert.match(membersCss, /grid-template-columns:1fr/);
+  assert.match(membersCss, /@media\(max-width:900px\)/);
+  assert.match(membersCss, /minmax\(230px,auto\)/);
   assert.match(membersCss, /safe-area-inset-bottom/);
 });
 
@@ -160,6 +171,7 @@ test("v306 adds owner-only site deletion without clearing auth/session storage",
     ".from(\"sites\")",
     ".delete()",
     ".eq(\"owner_id\", userId)",
+    ".select(\"id\")",
     "Hanya pemilik situs yang dapat menghapus situs ini.",
     "Hapus situs",
     "window.confirm",
