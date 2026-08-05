@@ -26,21 +26,24 @@ test("v291 restores the known root callbacks instead of rewriting Supabase auth 
   assert.doesNotMatch(auth, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
 
-test("v291 keeps exactly one repeatable n click owner without pointer-down muting", async () => {
+test("v298 retires the old v290 capture owner and loads one lightweight shell authority", async () => {
   const runtime = await read("src/studio-native-controls-v290.js");
+  const v298 = await read("src/studio-shell-authority-v298.js");
   const legacy = await read("src/studio-react-shell-v287.js");
   assert.match(runtime, /studio-native-controls-v290-20260805/);
   assert.match(runtime, /studio-auth-sidebar-v291-20260805/);
-  assert.match(runtime, /function nativeToggle\(event\)/);
-  assert.match(runtime, /document\.addEventListener\("click", nativeToggle, true\)/);
-  assert.match(runtime, /nativeToggleKeyboard/);
-  assert.match(runtime, /reactToggle\(\)/);
-  assert.match(runtime, /v291SingleOwnerToggle/);
-  assert.doesNotMatch(runtime, /pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/);
+  assert.match(runtime, /studio-native-capture-retired-v298-20260805/);
+  assert.match(runtime, /import\("\.\/studio-shell-authority-v298\.js"\)/);
+  assert.doesNotMatch(runtime, /function nativeToggle\s*\(|document\.addEventListener\("click",\s*nativeToggle|nativeToggleKeyboard|v291SingleOwnerToggle/);
+  assert.match(v298, /studio-single-n-owner-v298-20260805/);
+  assert.match(v298, /function toggleN\(event\)/);
+  assert.match(v298, /reactToggle\(\)/);
+  assert.doesNotMatch(v298, /new MutationObserver|setInterval\s*\(|stopImmediatePropagation/);
   assert.match(legacy, /Sidebar n ownership was retired in v291/);
   assert.doesNotMatch(legacy, /const reactToggle/);
-  assert.doesNotMatch(runtime, /new MutationObserver|setInterval\s*\(|stopImmediatePropagation/);
-  assert.doesNotMatch(runtime, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
+  for (const source of [runtime, v298]) {
+    assert.doesNotMatch(source, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
+  }
 });
 
 test("v290 retires the body-wide StudioSecure observers that caused repeated DOM churn", async () => {
@@ -103,7 +106,5 @@ test("v294 mobile browsers cannot inherit the desktop rail from transient viewpo
   assert.match(device, /studioMobileClassifierV294/);
   assert.match(release, /studio-mobile-classifier-cache-v294/);
   assert.match(patch, /STUDIO_MOBILE_CLASSIFIER_RELEASE_V294/);
-
-  // The fix must not solve a layout bug by destroying auth/session state.
   assert.doesNotMatch(device, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
