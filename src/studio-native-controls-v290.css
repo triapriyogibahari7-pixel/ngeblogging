@@ -1,0 +1,169 @@
+/* Ngeblogging Studio v290 — native input + non-blocking mobile containment. */
+:root{
+  --v290-safe-r:max(10px,env(safe-area-inset-right,0px));
+  --v290-safe-b:max(14px,calc(env(safe-area-inset-bottom,0px) + 10px));
+}
+
+/* The mobile drawer must never darken, blur, or swallow the page. Outside-click
+   closing is handled by the existing document handler, so the visual backdrop
+   itself stays click-through. */
+body.sn-mobile-sidebar-open .sn-side-backdrop,
+.sn-shell[data-device-mode="small"] .sn-side-backdrop,
+html[data-studio-device-mode="small"] .sn-shell .sn-side-backdrop{
+  background:transparent!important;
+  opacity:0!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:none!important;
+}
+body.sn-mobile-sidebar-open,
+body.sn-mobile-sidebar-open #root,
+body.sn-mobile-sidebar-open .sn-main{
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* One visible n, always centered and tappable. */
+#ngeblogging-studio-sidebar .sn-logo-mark{
+  display:grid!important;
+  place-items:center!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+  user-select:none!important;
+}
+#ngeblogging-studio-sidebar .sn-logo-mark strong{
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+  filter:none!important;
+  line-height:1!important;
+}
+
+/* Keep menu items packed directly under + Buat Post while allowing short
+   screens to scroll. */
+#ngeblogging-studio-sidebar>nav{
+  justify-content:flex-start!important;
+  align-content:flex-start!important;
+  gap:1px!important;
+  overscroll-behavior:contain!important;
+}
+#ngeblogging-studio-sidebar>nav>button,
+#ngeblogging-studio-sidebar>.sn-account-footer>button{
+  min-height:40px!important;
+}
+
+/* Nara is always a viewport overlay, never part of document flow. */
+.nara-floating-button{
+  position:fixed!important;
+  z-index:4100!important;
+  right:var(--v290-safe-r)!important;
+  bottom:var(--v290-safe-b)!important;
+  left:auto!important;
+  top:auto!important;
+  width:56px!important;
+  height:56px!important;
+  min-width:56px!important;
+  min-height:56px!important;
+  max-width:56px!important;
+  max-height:56px!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  animation:none!important;
+  transform:none!important;
+  filter:none!important;
+}
+.nara-floating-button>span{
+  width:32px!important;
+  height:32px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:auto!important;
+}
+.nara-floating-button>b,.nara-floating-button>small{display:none!important}
+
+.nara-assistant-layer[data-nara-interaction="nonmodal"]{
+  position:fixed!important;
+  inset:0!important;
+  z-index:4000!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.nara-assistant-layer[data-nara-interaction="nonmodal"]>.nara-assistant-backdrop{
+  display:none!important;
+  pointer-events:none!important;
+}
+.nara-assistant-layer[data-nara-interaction="nonmodal"] .nara-assistant-shell{
+  position:fixed!important;
+  right:var(--v290-safe-r)!important;
+  bottom:calc(var(--v290-safe-b) + 68px)!important;
+  left:auto!important;
+  top:auto!important;
+  pointer-events:auto!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:calc(100dvh - 88px)!important;
+  overflow:hidden!important;
+  transform:none!important;
+  animation:none!important;
+}
+.nara-assistant-shell[data-nara-size="small"]{
+  width:min(420px,calc(100vw - 20px))!important;
+  height:min(570px,calc(100dvh - 102px))!important;
+}
+.nara-assistant-shell[data-nara-size="medium"]{
+  width:min(700px,calc(100vw - 20px))!important;
+  height:min(760px,calc(100dvh - 44px))!important;
+}
+.nara-attachment-menu{
+  z-index:4300!important;
+  max-width:min(330px,calc(100vw - 28px))!important;
+  max-height:min(340px,calc(100dvh - 160px))!important;
+  overflow:auto!important;
+}
+
+/* Global containment. */
+.sn-main,.sn-main>*,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-content-card>*,
+.sn-settings-grid,.sn-settings-grid>*,.ce-app,.ce-app>*,.tn-studio,.tn-studio>*,
+.sv124-page,.sv124-page>*{min-width:0!important;max-width:100%!important}
+.sn-shell :is(img,video,canvas,iframe){max-width:100%!important;height:auto!important}
+.sn-shell :is(.table-wrap,.sn-table-wrap,.tn-table-wrap,.ce-table-wrap,.op41-table-wrap){max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+
+@media (max-width:760px){
+  .sn-view-pad{width:100%!important;max-width:100%!important;padding:12px!important}
+  .sn-page-title,.sn-content-tools{min-width:0!important;max-width:100%!important}
+  .sn-page-title h1,.sn-welcome h1{overflow-wrap:anywhere!important}
+  .sn-settings-grid{grid-template-columns:minmax(0,1fr)!important}
+  .sv124-page :is(.sv124-actions,.domain-actions,.domain-card-actions,.domain-primary-actions){
+    width:100%!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:8px!important;
+  }
+  .sv124-page :is(.sv124-actions,.domain-actions,.domain-card-actions,.domain-primary-actions)>:is(button,a){
+    width:100%!important;
+    min-height:44px!important;
+    white-space:normal!important;
+  }
+  .nara-assistant-shell[data-nara-size="small"]{
+    width:min(88vw,370px)!important;
+    height:min(62dvh,560px)!important;
+  }
+  .nara-assistant-shell[data-nara-size="medium"]{
+    width:calc(100vw - 20px)!important;
+    height:min(82dvh,720px)!important;
+  }
+  .nara-assistant-header{min-width:0!important;max-width:100%!important}
+  .nara-size-controls-v147{display:flex!important;flex-wrap:nowrap!important}
+  .nara-composer-tools{min-width:0!important;max-width:100%!important}
+}
