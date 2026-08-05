@@ -1,0 +1,42 @@
+{
+  "release": "studio-theme-catalog-100-v296-20260805",
+  "cache": "studio-theme-catalog-cache-v296",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-polish-v295-20260805",
+    "studio-mobile-classifier-v294-20260805",
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805"
+  ],
+  "themeCatalog": {
+    "target": 100,
+    "baseCatalogBeforeV296": 95,
+    "extraRealThemes": 5,
+    "result": 100,
+    "extraIds": [
+      "custom-creator-v296",
+      "custom-signal-v296",
+      "custom-venture-v296",
+      "custom-folio-v296",
+      "custom-manual-v296"
+    ],
+    "eachExtraHas": ["HTML", "CSS", "JavaScript", "responsive preview", "widget defaults", "distinct id", "distinct palette", "distinct code fingerprint"]
+  },
+  "preserved": {
+    "sixResponsiveModes": true,
+    "profileDropdownV295": true,
+    "naraNonModalV295": true,
+    "layoutMap26Areas": true,
+    "fourLeftAndFourRightSlots": true,
+    "codeLineLimit": 10000,
+    "postPageWordLimit": 5000,
+    "authPersistSession": true,
+    "authAutoRefresh": true,
+    "productionAnalytics": true
+  },
+  "validation": {
+    "capacityClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "providerCredentialLoginClaimed": false
+  }
+}
