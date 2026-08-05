@@ -13,7 +13,7 @@ test("v289 loads after v288 without adding a second interaction owner", async ()
   assert.doesNotMatch(runtime, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
 
-test("v289 makes the six-mode sidebar deterministic and keeps every required item", async () => {
+test("v289 makes the six-mode sidebar deterministic, persistent and complete", async () => {
   const css = await read("src/studio-final-pass-v289.css");
   const runtime = await read("src/studio-final-pass-v289.js");
   const studio = await read("src/StudioNext.jsx");
@@ -27,6 +27,9 @@ test("v289 makes the six-mode sidebar deterministic and keeps every required ite
   assert.match(css, /body\.sn-mobile-sidebar-open \.sn-side-backdrop/);
   assert.match(css, /pointer-events:auto!important/);
   assert.match(runtime, /dataset\.studioDeviceMode/);
+  assert.match(runtime, /ngeblogging-studio-sidebar-state-v289/);
+  assert.match(runtime, /safeSet\(SIDEBAR_KEY/);
+  assert.match(runtime, /reactToggle\(\)/);
   for (const label of ["Buat Post", "Ringkasan", "Posts", "Pages", "Tema", "Media", "Analitik", "Anggota", "Komentar", "Domain", "API Keys", "Pengaturan", "Keluar"]) {
     assert.ok(studio.includes(label), `missing sidebar item ${label}`);
   }
@@ -65,6 +68,23 @@ test("v289 preserves the 26-area Theme map but makes mobile labels readable", as
   assert.match(layout, /Semua 26 widget/);
   assert.match(polish, /MAX_CODE_LINES = 10000/);
   assert.match(polish, /lineNumberText\(count\)/);
+});
+
+test("v289 restores the existing real analytics dashboard instead of the placeholder", async () => {
+  const runtime = await read("src/studio-final-pass-v289.js");
+  const analytics = await read("src/studio-analytics-v41.js");
+  assert.match(runtime, /import \{ loadAnalytics \} from "\.\/studio-analytics-v41\.js"/);
+  assert.match(runtime, /loadAnalytics\(view, 30, false\)/);
+  assert.match(runtime, /studioAnalyticsV289 = "production-first"/);
+  assert.match(analytics, /get_site_analytics_dashboard/);
+  assert.match(analytics, /7 hari/);
+  assert.match(analytics, /30 hari/);
+  assert.match(analytics, /90 hari/);
+  assert.match(analytics, /Manusia dan bot/);
+  assert.match(analytics, /Distribusi perangkat/);
+  assert.match(analytics, /Referrer teratas/);
+  assert.match(analytics, /Lokasi agregat/);
+  assert.match(analytics, /Performa konten/);
 });
 
 test("v289 keeps Domain and mobile editor inside the viewport", async () => {
