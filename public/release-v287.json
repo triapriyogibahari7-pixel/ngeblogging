@@ -1,0 +1,41 @@
+{
+  "release": "studio-react-shell-v287-20260805",
+  "date": "2026-08-05",
+  "scope": "single sidebar/profile interaction owner, stable six-mode shell geometry, fixed non-modal Nara and compact Theme/Domain containment",
+  "cache": "studio-react-shell-cache-v287",
+  "sourceBranch": "main",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "smallClosedSidebarOnlyN": true,
+    "largeCollapsedRailKeepsIcons": true,
+    "contentTracksSidebar": true
+  },
+  "profile": {
+    "menuItems": ["Profil", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"],
+    "legacyCaptureMenuRetired": true
+  },
+  "nara": {
+    "launcherViewportFixed": true,
+    "smallNonModal": true,
+    "mediumNonModal": true,
+    "fullModal": true,
+    "attachments": ["Kamera", "Foto", "File"],
+    "modelAndIntelligenceControlsPreserved": true
+  },
+  "themeStudio": {
+    "layoutMapPreserved": true,
+    "desktopCodePreviewSplit": true,
+    "compactPreviewAboveCode": true,
+    "maxCodeLines": 10000
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "automaticLogoutAdded": false
+  },
+  "validation": {
+    "realDeviceRequiredForHundredPercentClaim": true,
+    "massiveLoginCapacityClaimed": false
+  }
+}
