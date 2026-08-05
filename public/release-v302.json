@@ -1,6 +1,13 @@
 {
   "release": "studio-build-nara-authority-v302-20260805",
   "date": "2026-08-05",
+  "serviceWorker": {
+    "version": "ngeblogging-app-v302-cache-cutover-20260805",
+    "cache": "studio-build-nara-cache-v302",
+    "oldCachesPurgedOnActivate": true,
+    "authSurfacesNeverForcedToReload": true,
+    "openTabsReceiveUpdateNoticeWithoutNavigate": true
+  },
   "inherits": [
     "studio-sidebar-hard-lock-v301-20260805",
     "studio-sidebar-direct-v300-20260805",
@@ -24,7 +31,8 @@
     "themeCatalog100Preserved": true,
     "themeLayout26AreaPreserved": true,
     "postPage5000WordContractPreserved": true,
-    "analyticsProductionPreserved": true
+    "analyticsProductionPreserved": true,
+    "staleV275ServiceWorkerCacheReplaced": true
   },
   "nara": {
     "sizes": ["small", "medium", "full"],
@@ -37,7 +45,9 @@
   },
   "validation": {
     "netlifyFullAppBuildAfterNaraFix": true,
-    "cloudflareProductionDeploymentClaimed": false,
+    "cloudflareProductionDeploymentClaimed": true,
+    "cloudflareProductionCommit": "4c64b2feb5298b3af1ccabc9f5c60acfd7ffb7a6",
+    "cloudflareBuildId": "39df63de-a8b8-4b19-a080-c6894281ed3b",
     "realDeviceMatrixClaimed": false,
     "capacityClaimed": false,
     "linkedinCredentialLoginClaimed": false,
