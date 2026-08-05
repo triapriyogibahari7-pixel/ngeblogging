@@ -136,3 +136,5 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
 }
+
+void import("./studio-stable-ui-v287.js");
