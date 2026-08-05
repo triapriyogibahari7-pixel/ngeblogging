@@ -28,10 +28,60 @@ function closeProfileMenu() {
   avatar()?.setAttribute("aria-expanded", "false");
 }
 
+function setButtonLabel(button, label) {
+  if (!button) return;
+  const text = [...button.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
+  if (text) text.textContent = ` ${label}`;
+}
+
+function applyAccountSurface(requestedMode = "settings") {
+  const mode = requestedMode === "profile" ? "profile" : "settings";
+  const grid = document.querySelector(".sn-settings-grid");
+  const page = grid?.closest(".sn-view-pad");
+  if (!grid || !page) return false;
+  const sections = [...grid.querySelectorAll(":scope>section")];
+  const profileSection = sections[0] || null;
+  const settingsSection = sections[1] || null;
+  const title = page.querySelector(".sn-page-title h1");
+  const description = page.querySelector(".sn-page-title p");
+  const save = page.querySelector(".sn-save-settings");
+
+  page.dataset.accountSurfaceV287 = mode;
+  if (mode === "profile") {
+    if (title) title.textContent = "Profil";
+    if (description) description.textContent = "Kelola avatar, nama tampilan, biografi, dan website akun Anda.";
+    setButtonLabel(save, "Simpan profil");
+    reveal(profileSection);
+    if (settingsSection) {
+      settingsSection.hidden = true;
+      settingsSection.setAttribute("aria-hidden", "true");
+    }
+  } else {
+    if (title) title.textContent = "Pengaturan";
+    if (description) description.textContent = "Kelola nama situs, deskripsi, bahasa, zona waktu, dan preferensi situs aktif.";
+    setButtonLabel(save, "Simpan pengaturan");
+    reveal(settingsSection);
+    if (profileSection) {
+      profileSection.hidden = true;
+      profileSection.setAttribute("aria-hidden", "true");
+    }
+  }
+  return true;
+}
+
+function settleAccountSurface(mode) {
+  applyAccountSurface(mode);
+  setTimeout(() => applyAccountSurface(mode), 60);
+  setTimeout(() => applyAccountSurface(mode), 220);
+}
+
 function accountView(mode) {
-  document.documentElement.dataset.studioAccountViewV189 = mode;
+  const normalized = mode === "profile" ? "profile" : "settings";
+  document.documentElement.dataset.studioAccountViewV189 = normalized;
+  document.documentElement.dataset.studioAccountViewV287 = normalized;
   document.querySelector(".sn-account-settings-v135")?.click();
   closeProfileMenu();
+  settleAccountSurface(normalized);
 }
 
 function runProfileAction(action) {
@@ -82,8 +132,10 @@ function normalize() {
     mark.setAttribute("role", "button");
     mark.setAttribute("tabindex", "0");
     mark.setAttribute("aria-controls", "ngeblogging-studio-sidebar");
-    mark.setAttribute("aria-expanded", String(currentFamily() === "large" ? !side.classList.contains("collapsed") : side.classList.contains("mobile-open")));
-    mark.setAttribute("title", currentFamily() === "large" && !side.classList.contains("collapsed") ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
+    const expanded = currentFamily() === "large" ? !side.classList.contains("collapsed") : side.classList.contains("mobile-open");
+    mark.setAttribute("aria-expanded", String(expanded));
+    mark.setAttribute("aria-label", expanded ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
+    mark.setAttribute("title", expanded ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
     const letter = mark.querySelector("strong");
     if (letter) letter.textContent = "n";
   }
@@ -103,6 +155,9 @@ function normalize() {
   if (launcher) {
     reveal(launcher);
     launcher.disabled = false;
+  }
+  if (document.querySelector(".sn-settings-grid")) {
+    applyAccountSurface(document.documentElement.dataset.studioAccountViewV287 || document.documentElement.dataset.studioAccountViewV189 || "settings");
   }
 }
 
@@ -139,12 +194,21 @@ function clickOwner(event) {
     return;
   }
 
+  const settings = event.target.closest?.(".sn-account-settings-v135");
+  if (settings) {
+    document.documentElement.dataset.studioAccountViewV189 = "settings";
+    document.documentElement.dataset.studioAccountViewV287 = "settings";
+    settleAccountSurface("settings");
+  }
+
   if (menu() && !event.target.closest?.(`.${MENU_CLASS}`)) closeProfileMenu();
 }
 
 function keyOwner(event) {
   if (event.key === "Escape") {
     if (menu()) {
+      event.preventDefault();
+      event.stopPropagation();
       closeProfileMenu();
       avatar()?.focus({ preventScroll: true });
     }
@@ -152,6 +216,7 @@ function keyOwner(event) {
   }
   if ((event.key === "Enter" || event.key === " ") && event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark")) {
     event.preventDefault();
+    event.stopPropagation();
     reactToggle()?.click();
     requestAnimationFrame(schedule);
   }
@@ -164,6 +229,9 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   window.addEventListener("orientationchange", schedule, { passive: true });
   window.addEventListener("pageshow", schedule, { passive: true });
   window.addEventListener("ngeblogging:studio-device-mode-change", schedule);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", normalize, { once: true });
   else normalize();
 }
+
+export { applyAccountSurface, currentFamily };
