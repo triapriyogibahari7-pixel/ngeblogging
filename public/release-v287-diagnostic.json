@@ -1,4 +1,5 @@
 {
-  "release": "studio-react-shell-v287-diagnostic-20260805",
-  "purpose": "trigger pull-request workflows after the minimal Actions probe exists on main"
+  "release": "studio-react-shell-v287-diagnostic-20260805-r2",
+  "purpose": "retrigger pull-request workflows after the minimal Actions probe exists on main",
+  "probeExpected": "actions-started-v287"
 }
