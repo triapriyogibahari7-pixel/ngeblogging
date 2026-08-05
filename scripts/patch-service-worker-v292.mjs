@@ -40,13 +40,14 @@ for (const marker of ["listUserSitesStartupV292", "STARTUP_DATA_TIMEOUT_MS = 11_
 if (/getVerifiedSession\(\{\s*force:\s*true\s*\}\)/.test(gate)) throw new Error("V292_FORCED_SESSION_VERIFICATION_REGRESSION");
 if (!fastGate.includes("studio-fast-entry-v292-20260805") || !fastGate.includes("ngeblogging-active-site-snapshot-v292")) throw new Error("V292_FAST_GATE_MISSING");
 if (!provider.includes('import "./studio-startup-v292.js"')) throw new Error("V292_AUTH_HANDOFF_IMPORT_MISSING");
-for (const marker of ["studio-auth-sidebar-v291-20260805", "function nativeToggle(event)", 'document.addEventListener("click", nativeToggle, true)', "nativeToggleKeyboard"])
+for (const marker of ["studio-auth-sidebar-v291-20260805", "studio-native-capture-retired-v298-20260805", 'import("./studio-shell-authority-v298.js")'])
   if (!native.includes(marker)) throw new Error(`V292_SIDEBAR_COMPAT_MISSING:${marker}`);
-if (/pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/.test(native)) throw new Error("V292_DOUBLE_TOGGLE_REGRESSION");
+if (/function nativeToggle\s*\(|document\.addEventListener\("click",\s*nativeToggle|pointerdown|immediateNativeToggle|toggle\.disabled\s*=\s*true|muteTimer/.test(native))
+  throw new Error("V292_OLD_SIDEBAR_OWNER_REACTIVATED");
 if (!tests.includes("v292 startup gate does not force remote auth verification")) throw new Error("V292_TEST_MISSING");
 if (!release.includes(RELEASE) || !release.includes(CACHE)) throw new Error("V292_RELEASE_INVALID");
-for (const source of [startup, gate, provider, native]) {
-  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source)) throw new Error("V292_DESTRUCTIVE_RUNTIME");
+for (const sourceText of [startup, gate, provider, native]) {
+  if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(sourceText)) throw new Error("V292_DESTRUCTIVE_RUNTIME");
 }
 
 let source = await readFile(swFile, "utf8");
