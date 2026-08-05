@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v297
+name: Deploy Ngeblogging Production v298
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v297
+  group: ngeblogging-production-v298
   cancel-in-progress: true
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run v289-v297 regression and production build
+      - name: Run v289-v298 regression and production build
         run: |
           node --test \
             tests/studio-final-pass-v289.test.mjs \
@@ -49,79 +49,65 @@ jobs:
             tests/studio-startup-v292.test.mjs \
             tests/studio-production-recovery-v295.test.mjs \
             tests/studio-theme-catalog-v296.test.mjs \
-            tests/studio-mode-startup-v297.test.mjs
+            tests/studio-mode-startup-v297.test.mjs \
+            tests/studio-shell-authority-v298.test.mjs
           npm run build
 
-      - name: Verify auth, responsive, sidebar, Theme Studio and Nara markers before deploy
+      - name: Verify v298 production markers before deploy
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 291 292 293 294 295 296 297; do test -f "public/release-v${release}.json"; done
+          for release in 291 292 293 294 295 296 297 298; do test -f "public/release-v${release}.json"; done
 
           grep -q 'studio-startup-direct-data-v292-20260805' public/release-v292.json
           grep -q 'auth-session-handoff-v292-20260805' public/release-v292.json
-          grep -q 'studio-final-authority-v293-20260805' public/release-v293.json
-          grep -q 'studio-mobile-classifier-v294-20260805' public/release-v294.json
-          grep -q 'studio-polish-v295-20260805' public/release-v295.json
           grep -q 'studio-theme-catalog-100-v296-20260805' public/release-v296.json
           grep -q 'studio-mode-startup-authority-v297-20260805' public/release-v297.json
-          grep -q '"themeCatalogCount": 100' public/release-v297.json
+          grep -q 'studio-shell-authority-v298-20260805' public/release-v298.json
+          grep -q '"themeCatalogCount": 100' public/release-v298.json
 
-          grep -q 'startup-membership-direct-first-v292-20260805' src/studio-startup-v292.js
-          grep -q 'window.__ngebloggingVerifiedSession = verified' src/studio-startup-v292.js
-          grep -q '/rest/v1/site_members' src/studio-startup-v292.js
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
           grep -Fq 'appUrl("/?auth=callback")' src/lib/supabase.js
-
-          grep -q 'function nativeToggle(event)' src/studio-native-controls-v290.js
-          grep -Fq 'document.addEventListener("click", nativeToggle, true)' src/studio-native-controls-v290.js
-          grep -q 'studio-final-authority-v293.js' src/studio-native-controls-v290.js
-          grep -q 'studio-polish-v295.js' src/studio-native-controls-v290.js
-          grep -q 'studio-theme-catalog-v296.js' src/studio-native-controls-v290.js
-          grep -q 'studio-mode-authority-v297.js' src/studio-native-controls-v290.js
-          if grep -Eq 'pointerdown|immediateNativeToggle|toggle\.disabled[[:space:]]*=[[:space:]]*true|muteTimer' src/studio-native-controls-v290.js; then
-            echo 'Old n-toggle freeze regression detected.' >&2
+          grep -q 'studio-native-capture-retired-v298-20260805' src/studio-native-controls-v290.js
+          grep -q 'studio-shell-authority-v298.js' src/studio-native-controls-v290.js
+          if grep -Eq 'function nativeToggle[[:space:]]*\(|document\.addEventListener\("click",[[:space:]]*nativeToggle|pointerdown|immediateNativeToggle|toggle\.disabled[[:space:]]*=[[:space:]]*true|muteTimer' src/studio-native-controls-v290.js; then
+            echo 'Old n-toggle capture regression detected.' >&2
             exit 1
           fi
 
+          grep -q 'studio-shell-authority-v298-20260805' src/studio-shell-authority-v298.js
+          grep -q 'studio-single-n-owner-v298-20260805' src/studio-shell-authority-v298.js
+          grep -q 'function toggleN(event)' src/studio-shell-authority-v298.js
+          grep -q 'sn-profile-menu-v298' src/studio-shell-authority-v298.js
+          grep -q -- '--v298-side-open:220px' src/studio-shell-authority-v298.css
+          grep -q -- '--v298-side-rail:70px' src/studio-shell-authority-v298.css
+          grep -Fq '.sn-shell[data-device-mode="small"]' src/studio-shell-authority-v298.css
+          grep -Fq 'width:min(78vw,336px)!important' src/studio-shell-authority-v298.css
+          grep -Fq 'grid-template-areas:"code" "preview"' src/studio-shell-authority-v298.css
+          grep -Fq 'grid-template-areas:"code preview"' src/studio-shell-authority-v298.css
           grep -q 'CONTENT_WORD_LIMIT = 5_000' src/studio-final-authority-v293.js
           grep -q 'CODE_LINE_LIMIT = 10_000' src/studio-final-authority-v293.js
-          grep -q 'studio-theme-layout-v264.js' src/studio-final-authority-v293.js
-          grep -q 'studio-mobile-classifier-v294-20260805' src/studio-device-mode-v140.js
           grep -q 'STUDIO_THEME_TARGET_V296 = 100' src/studio-theme-catalog-v296.js
 
-          grep -q 'studio-mode-startup-authority-v297-20260805' src/studio-mode-authority-v297.js
-          grep -q 'nara-react-single-owner-v297-20260805' src/studio-mode-authority-v297.js
-          grep -q 'history.replaceState' src/studio-mode-authority-v297.js
-          grep -Fq 'html[data-studio-device-mode="small"] .sn-shell>.sn-main' src/studio-mode-authority-v297.css
-          grep -q -- '--v297-side-open:220px' src/studio-mode-authority-v297.css
-          grep -q -- '--v297-side-rail:70px' src/studio-mode-authority-v297.css
-          grep -Fq 'grid-template-areas:"code" "preview"' src/studio-mode-authority-v297.css
-          grep -Fq 'grid-template-areas:"code preview"' src/studio-mode-authority-v297.css
-          grep -q 'auth-studio-bootstrap-retired-v297-20260805' src/auth-studio-bootstrap-v106.js
-          grep -q 'nara-size-authority-retired-v297-20260805' src/nara-size-authority-v144.js
-          grep -q 'nara-nonmodal-retired-v297-20260805' src/nara-nonmodal-v151.js
-          if grep -Eq 'new MutationObserver|setInterval[[:space:]]*\(' src/nara-size-authority-v144.js src/nara-nonmodal-v151.js; then
-            echo 'Legacy Nara observer regression detected.' >&2
+          if grep -Eq 'new MutationObserver|setInterval[[:space:]]*\(|stopImmediatePropagation' src/studio-shell-authority-v298.js src/studio-native-controls-v290.js; then
+            echo 'v298 DOM churn/blocking regression detected.' >&2
             exit 1
           fi
-          if grep -Eq 'location\.(replace|reload)[[:space:]]*\(' src/auth-studio-bootstrap-v106.js; then
-            echo 'Legacy auth redirect/reload regression detected.' >&2
+          if grep -Eq 'localStorage\.clear[[:space:]]*\(|sessionStorage\.clear[[:space:]]*\(|location\.(reload|replace)[[:space:]]*\(' src/studio-shell-authority-v298.js src/studio-native-controls-v290.js; then
+            echo 'v298 destructive session/navigation regression detected.' >&2
             exit 1
           fi
 
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-mode-startup-authority-v297-20260805"' wrangler.production.jsonc
-          grep -q '"STUDIO_THEME_CATALOG_RELEASE": "studio-theme-catalog-100-v296-20260805"' wrangler.production.jsonc
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-shell-authority-v298-20260805"' wrangler.production.jsonc
           grep -q '"AUTH_STUDIO_HANDOFF_RELEASE": "auth-session-handoff-v292-20260805"' wrangler.production.jsonc
-
-          grep -q 'STUDIO_MODE_STARTUP_AUTHORITY_RELEASE_V297' public/sw.js
-          grep -q 'studio-mode-startup-cache-v297' public/sw.js
-          grep -q 'ngeblogging-app-v297-mode-startup-authority-20260805' public/sw.js
+          grep -q 'STUDIO_SHELL_AUTHORITY_RELEASE_V298' public/sw.js
+          grep -q 'studio-shell-cache-v298' public/sw.js
+          grep -q 'ngeblogging-app-v298-shell-authority-20260805' public/sw.js
           grep -R -q 'studio-startup-direct-data-v292-20260805' dist/assets
           grep -R -q 'studio-theme-catalog-100-v296-20260805' dist/assets
-          grep -R -q 'studio-mode-startup-authority-v297-20260805' dist/assets
+          grep -R -q 'studio-shell-authority-v298-20260805' dist/assets
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
@@ -133,46 +119,46 @@ jobs:
           if [[ "${CLOUDFLARE_ZONE_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
             node scripts/finalize-cloudflare-route-cutover-v182.mjs
           else
-            echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler custom-domain deployment tetap dijalankan dan live gate berikutnya wajib membuktikan apex.'
+            echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler deployment tetap dijalankan dan live gate wajib membuktikan apex.'
           fi
 
-      - name: Verify live v297 release manifest
+      - name: Verify live v298 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v297.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-mode-startup-authority-v297-20260805'; then echo "Live v297 release manifest confirmed."; exit 0; fi
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v298.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-shell-authority-v298-20260805'; then echo "Live v298 release manifest confirmed."; exit 0; fi
             sleep 10
           done
-          echo "Live production did not expose release-v297.json after deployment." >&2
+          echo "Live production did not expose release-v298.json after deployment." >&2
           exit 1
 
-      - name: Verify live Studio startup and v297 UI bundle
+      - name: Verify live Studio startup and v298 UI bundle
         shell: bash
         run: |
           set -euo pipefail
           startup_chunk="$(grep -Rl 'studio-startup-direct-data-v292-20260805' dist/assets | head -n 1)"
-          ui_chunk="$(grep -Rl 'studio-mode-startup-authority-v297-20260805' dist/assets | head -n 1)"
+          ui_chunk="$(grep -Rl 'studio-shell-authority-v298-20260805' dist/assets | head -n 1)"
           test -n "$startup_chunk"
           test -n "$ui_chunk"
           curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${startup_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-startup-v292.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${ui_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-ui-v297.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${ui_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-ui-v298.js
           grep -q 'studio-startup-direct-data-v292-20260805' /tmp/studio-startup-v292.js
-          grep -q 'studio-mode-startup-authority-v297-20260805' /tmp/studio-ui-v297.js
+          grep -q 'studio-shell-authority-v298-20260805' /tmp/studio-ui-v298.js
 
-      - name: Verify live auth callback shell and service worker v297
+      - name: Verify live auth callback shell and service worker v298
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v297.html
-          grep -q 'id="root"' /tmp/auth-callback-v297.html
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v297.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' /tmp/sw-v297.js
-          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' /tmp/sw-v297.js
-          grep -q 'STUDIO_MODE_STARTUP_AUTHORITY_RELEASE_V297' /tmp/sw-v297.js
-          grep -q 'studio-mode-startup-cache-v297' /tmp/sw-v297.js
-          grep -q 'ngeblogging-app-v297-mode-startup-authority-20260805' /tmp/sw-v297.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v298.html
+          grep -q 'id="root"' /tmp/auth-callback-v298.html
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v298.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' /tmp/sw-v298.js
+          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' /tmp/sw-v298.js
+          grep -q 'STUDIO_SHELL_AUTHORITY_RELEASE_V298' /tmp/sw-v298.js
+          grep -q 'studio-shell-cache-v298' /tmp/sw-v298.js
+          grep -q 'ngeblogging-app-v298-shell-authority-20260805' /tmp/sw-v298.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -184,7 +170,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v297-${{ github.sha }}
+          name: ngeblogging-production-v298-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
