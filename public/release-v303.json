@@ -1,0 +1,52 @@
+{
+  "release": "studio-add-site-free-subdomain-v303-20260805",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-build-nara-authority-v302-20260805",
+    "studio-sidebar-hard-lock-v301-20260805",
+    "studio-shell-authority-v298-20260805",
+    "studio-theme-catalog-100-v296-20260805",
+    "studio-startup-direct-data-v292-20260805"
+  ],
+  "fixes": {
+    "addSiteNoLongerProxiesWorkspaceClick": true,
+    "dedicatedAddSiteDialog": true,
+    "freeNgebloggingSubdomainExplicit": true,
+    "realSlugAvailabilityRpc": true,
+    "sitePolicyQuotaEnforced": true,
+    "quotaNumberHiddenFromAddSiteUi": true,
+    "newSiteBecomesActive": true,
+    "activeSiteSnapshotPreserved": true,
+    "siteTypeSelectionPreserved": true,
+    "initialThemeLanguageTimezoneAdded": true,
+    "contentFallbackRemovedFromAddSiteFlow": true,
+    "mobileDialogContained": true,
+    "desktopDialogCentered": true,
+    "sessionNotCleared": true
+  },
+  "siteTypes": [
+    "blog",
+    "website",
+    "news",
+    "portfolio",
+    "forum",
+    "community",
+    "landing",
+    "profile",
+    "knowledge"
+  ],
+  "serviceWorker": {
+    "version": "ngeblogging-app-v303-add-site-20260805",
+    "cache": "studio-add-site-cache-v303",
+    "oldCachesRemovedOnActivate": true,
+    "authSurfaceReloadForced": false,
+    "sessionStorageCleared": false
+  },
+  "validation": {
+    "productionRegressionIncludesV303": true,
+    "cloudflareProductionDeploymentClaimed": false,
+    "realCredentialSiteCreationClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "capacityClaimed": false
+  }
+}
