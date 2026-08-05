@@ -69,13 +69,14 @@ test("Nara remains viewport fixed, non-modal in small/medium and exposes native 
 
 test("Theme Studio keeps real layout map and code/preview geometry", async () => {
   const finalCss = await read("src/studio-final-authority-v288.css");
+  const finalRuntime = await read("src/studio-final-authority-v288.js");
   const layoutCss = await read("src/studio-theme-layout-v264.css");
   const polish = await read("src/studio-native-polish-v284.js");
   assert.match(finalCss, /tn-layout-map-v264/);
   assert.match(finalCss, /tn-layout-popover-v264/);
   assert.match(finalCss, /grid-template-areas:"code preview"/);
   assert.match(finalCss, /grid-template-areas:"preview" "code"/);
-  assert.match(finalCss, /data-max-lines/);
+  assert.match(finalRuntime, /setAttribute\("data-max-lines", "10000"\)/);
   assert.match(layoutCss, /tn-layout-content-v264/);
   assert.match(layoutCss, /grid-template-rows:repeat\(4/);
   assert.match(layoutCss, /tn-layout-quick-v264/);
