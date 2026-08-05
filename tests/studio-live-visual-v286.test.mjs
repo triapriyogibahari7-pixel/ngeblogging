@@ -27,9 +27,11 @@ test("v286 preserves required Studio controls and non-modal Nara", async () => {
 
 test("v286 keeps theme code editor and layout map responsive", async () => {
   const theme = await read("src/ThemeStudio.jsx");
+  const themeSystem = await read("src/theme-system.js");
   const layout = await read("src/studio-theme-layout-v264.js");
   const css = await read("src/studio-live-visual-v286.css");
-  assert.match(theme, /THEME_FAMILIES/);
+  assert.match(theme, /THEME_COUNT/);
+  assert.match(themeSystem, /THEME_COUNT/);
   assert.match(layout, /AREAS/);
   assert.match(css, /tn-layout-map-v264/);
   assert.match(css, /grid-template-areas:"code preview"/);
