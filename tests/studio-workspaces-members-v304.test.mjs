@@ -136,3 +136,46 @@ test("Cloudflare build gate accepts checked-in v303 source and generated v305 wo
     assert.match(worker, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
   }
 });
+
+test("v306 loads after v305 actions and protects the switch-site interaction layout", async () => {
+  const native = await read("src/studio-native-controls-v290.js");
+  const runtime = await read("src/studio-site-switcher-v306-fix.js");
+  const css = await read("src/studio-site-switcher-v306-fix.css");
+
+  assert.match(native, /studio-site-switcher-layout-delete-v306-20260805/);
+  assert.match(native, /import\("\.\/studio-site-switcher-v305-actions\.js"\)[\s\S]*import\("\.\/studio-site-switcher-v306-fix\.js"\)/);
+  assert.match(runtime, /STUDIO_SITE_SWITCHER_FIX_RELEASE_V306/);
+  assert.match(css, /data-site-switcher-close/);
+  assert.match(css, /position:absolute!important/);
+  assert.match(css, /right:18px!important/);
+  assert.match(css, /grid-template-columns:50px minmax\(0,1fr\) minmax\(250px,auto\)/);
+  assert.match(css, /\.sn-modal-layer \.sn-site-manager/);
+  assert.match(css, /white-space:normal!important/);
+  assert.match(css, /overflow-wrap:anywhere!important/);
+});
+
+test("v306 adds owner-only site deletion without clearing auth/session storage", async () => {
+  const runtime = await read("src/studio-site-switcher-v306-fix.js");
+  for (const marker of [
+    ".from(\"sites\")",
+    ".delete()",
+    ".eq(\"owner_id\", userId)",
+    "Hanya pemilik situs yang dapat menghapus situs ini.",
+    "Hapus situs",
+    "window.confirm",
+    "ngeblogging:site-deleted-v306",
+    "ngeblogging:first-site-required-v305",
+    "site-delete-v306",
+  ]) assert.ok(runtime.includes(marker), `missing v306 deletion marker: ${marker}`);
+  assert.doesNotMatch(runtime, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
+  assert.doesNotMatch(runtime, /MutationObserver|setInterval\s*\(|stopImmediatePropagation/);
+});
+
+test("v306 keeps actions usable on small screens without horizontal action spill", async () => {
+  const css = await read("src/studio-site-switcher-v306-fix.css");
+  assert.match(css, /@media\(max-width:680px\)/);
+  assert.match(css, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)!important/);
+  assert.match(css, /\.site-delete-v306\{\s*grid-column:1\/-1!important/);
+  assert.match(css, /max-height:calc\(100dvh - 16px\)!important/);
+  assert.match(css, /pointer-events:auto!important/);
+});
