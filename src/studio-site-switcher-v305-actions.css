@@ -1,0 +1,15 @@
+/* v305 action hotfix: every visible site-management button remains clearly actionable. */
+.sn-site-switcher-v305-row .site-actions .current{
+  border-color:#2f73df!important;
+  background:#eaf2ff!important;
+  color:#245fbf!important;
+  cursor:pointer!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+.sn-site-switcher-v305-row .site-actions .current:hover,
+.sn-site-switcher-v305-row .site-actions .current:focus-visible{
+  background:#dfeaff!important;
+  box-shadow:0 0 0 3px rgba(47,115,223,.14)!important;
+  outline:none!important;
+}
