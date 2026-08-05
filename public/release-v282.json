@@ -1,0 +1,34 @@
+{
+  "release": "public-edge-request-dedup-v282-20260805",
+  "date": "2026-08-05",
+  "sourceBranch": "main",
+  "studioUiRelease": "studio-native-controls-v281-20260805",
+  "worker": "cloudflare/worker-v70.mjs",
+  "scope": [
+    "static-assets-bypass-tenant-database-resolution",
+    "block-spa-html-fallback-for-js-css-images",
+    "network-fresh-service-worker-and-release-manifests",
+    "immutable-hashed-assets",
+    "preserve-dynamic-tenant-seo-routes",
+    "preserve-public-comments-and-analytics-on-html",
+    "preserve-v281-studio-controls"
+  ],
+  "verification": {
+    "staticFastPath": true,
+    "assetsPrefixFastPath": true,
+    "serviceWorkerNoStore": true,
+    "releaseManifestNoStore": true,
+    "hashedAssetsImmutable": true,
+    "dynamicSeoPathsPreserved": [
+      "/robots.txt",
+      "/sitemap.xml",
+      "/sitemap-posts.xml",
+      "/feed.xml",
+      "/rss.xml",
+      "/atom.xml",
+      "/llms.txt",
+      "/manifest.webmanifest"
+    ],
+    "frontendUiChanged": false
+  }
+}
