@@ -9,6 +9,8 @@ const release = await readFile(new URL("../public/release-v301.json", import.met
 const addSiteV303 = await readFile(new URL("../src/studio-add-site-v303.js", import.meta.url), "utf8");
 const addSiteCssV303 = await readFile(new URL("../src/studio-add-site-v303.css", import.meta.url), "utf8");
 const nativeV290 = await readFile(new URL("../src/studio-native-controls-v290.js", import.meta.url), "utf8");
+const swV303 = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+const releaseV303 = JSON.parse(await readFile(new URL("../public/release-v303.json", import.meta.url), "utf8"));
 
 const requiredMenus = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
@@ -87,4 +89,18 @@ test("v303 Add site dialog stays contained across desktop and mobile", () => {
   assert.match(addSiteCssV303, /@media\(max-width:760px\)/);
   assert.match(addSiteCssV303, /grid-template-columns:1fr/);
   assert.match(addSiteCssV303, /safe-area-inset-bottom/);
+});
+
+test("v303 rotates the PWA cache without clearing sessions or forcing auth reloads", () => {
+  assert.match(swV303, /ngeblogging-app-v303-add-site-20260805/);
+  assert.match(swV303, /studio-add-site-cache-v303/);
+  assert.match(swV303, /studio-add-site-free-subdomain-v303-20260805/);
+  assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
+  assert.match(swV303, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)/);
+  assert.doesNotMatch(swV303, /localStorage\.clear|sessionStorage\.clear|location\.(?:reload|replace)/);
+  assert.equal(releaseV303.release, "studio-add-site-free-subdomain-v303-20260805");
+  assert.equal(releaseV303.fixes.addSiteNoLongerProxiesWorkspaceClick, true);
+  assert.equal(releaseV303.fixes.freeNgebloggingSubdomainExplicit, true);
+  assert.equal(releaseV303.validation.cloudflareProductionDeploymentClaimed, false);
+  assert.equal(releaseV303.validation.realCredentialSiteCreationClaimed, false);
 });
