@@ -54,7 +54,11 @@ jobs:
           grep -q 'studio-native-controls-v290-20260805' public/release-v290.json
           grep -q 'auth-studio-handoff-v290-20260805' public/release-v290.json
           grep -q 'import "./auth-studio-handoff-v290.js"' src/auth-provider-gateway-v250.js
-          grep -q 'import "./studio-native-controls-v290.js"' src/auth-provider-gateway-v250.js
+          grep -Fq 'import("./studio-native-controls-v290.js")' src/studio-final-pass-v289.js
+          if grep -q 'import "./studio-native-controls-v290.js"' src/auth-provider-gateway-v250.js; then
+            echo 'v290 UI must load after the Studio v289 CSS authority, not from the early auth entry.' >&2
+            exit 1
+          fi
           grep -q '/studio?auth=callback' src/auth-studio-handoff-v290.js
           grep -q 'moveCallbackPathToStudio' src/auth-studio-handoff-v290.js
           grep -q 'immediateNativeToggle' src/studio-native-controls-v290.js
