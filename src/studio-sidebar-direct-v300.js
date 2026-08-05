@@ -145,4 +145,8 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => { if (!document.hidden) schedule(); });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => boot(), { once:true });
   else boot();
+
+  // v301 deliberately loads after the v300 direct target has installed its one
+  // click owner. v301 only owns final geometry and therefore cannot double-toggle.
+  import("./studio-sidebar-hard-lock-v301.js").catch((error) => console.error("Studio v301 hard-lock failed to load", error));
 }
