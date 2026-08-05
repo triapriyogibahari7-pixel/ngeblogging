@@ -48,8 +48,9 @@ test("v298-v301 remain the single responsive interaction authority for Nara", as
   assert.match(runtime, /document\.body\.classList\.remove\("nara-fullscreen-open-v148"/);
   assert.match(css, /\.nara-assistant-layer\[data-nara-interaction="nonmodal"\]/);
   assert.match(css, /\.nara-attachment-menu\{display:grid!important;position:absolute!important/);
-  assert.match(hardLock, /function lockNara\(\)/);
-  assert.match(hardLock, /position: "fixed"/);
+  assert.match(hardLock, /function pinSupportingSurfaces\(\)/);
+  assert.match(hardLock, /important\(nara, "position", "fixed"\)/);
+  assert.match(hardLock, /important\(nara, "animation", "none"\)/);
 });
 
 test("v302 keeps Nara size choices and explicit close control", async () => {
