@@ -1,0 +1,31 @@
+{
+  "release": "studio-final-authority-v288-20260805",
+  "date": "2026-08-05",
+  "scope": "final six-mode sidebar geometry, persistent profile surface, viewport-fixed non-modal Nara, Theme Studio containment, mobile editor/domain containment, and deployment regression gates",
+  "cache": "studio-final-authority-cache-v288",
+  "preserves": [
+    "existing Studio page implementations and production data sources",
+    "v287 profile and single-n interaction owner",
+    "Supabase persistent session and refresh-token behavior",
+    "100-theme Theme Studio implementation and 26-area layout system",
+    "production analytics loader and existing Domain/Media/Comments/API Keys surfaces",
+    "Nara model, intelligence, attachment, microphone and speaker implementation"
+  ],
+  "responsive": {
+    "modes": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "largeVariants": ["tablet", "laptop", "desktop", "computer"],
+    "smallClosedNavigation": "single-n-launcher",
+    "largeCollapsedNavigation": "icon-rail"
+  },
+  "verification": {
+    "sourceRegressionRequired": true,
+    "productionBuildRequired": true,
+    "serviceWorkerRotationRequired": true,
+    "liveManifestRequired": true,
+    "liveStudioBundleRequired": true,
+    "liveHealthEndpointRequired": true,
+    "realProviderLoginVerifiedByThisManifest": false,
+    "realDeviceMatrixVerifiedByThisManifest": false,
+    "massiveCapacityClaimed": false
+  }
+}
