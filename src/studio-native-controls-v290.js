@@ -147,5 +147,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   else { schedule(); schedule(400); }
 }
 
-/* v293 is visual/containment only; v290 remains the single n interaction owner. */
-import("./studio-final-authority-v293.js").catch((error) => console.error("Studio v293 final authority failed to load", error));
+/* v293 owns final geometry/theme/editor; v295 adds the screenshot-driven production polish. */
+import("./studio-final-authority-v293.js")
+  .then(() => import("./studio-polish-v295.js"))
+  .catch((error) => console.error("Studio final authority failed to load", error));
