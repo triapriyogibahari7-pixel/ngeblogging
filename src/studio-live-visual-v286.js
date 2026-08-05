@@ -136,3 +136,6 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
 }
+
+/* v287 is intentionally loaded after v286 so its selectors are the last shell authority. */
+import("./studio-react-shell-v287.js").catch((error) => console.error("Studio v287 authority failed to load", error));
