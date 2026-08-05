@@ -1,7 +1,7 @@
 {
   "release": "studio-react-shell-v287-20260805",
   "date": "2026-08-05",
-  "scope": "single sidebar/profile interaction owner, stable six-mode shell geometry, fixed non-modal Nara and compact Theme/Domain containment",
+  "scope": "single sidebar/profile interaction owner, stable six-mode shell geometry, fixed non-modal Nara, compact Theme/Domain containment and legacy runtime pruning",
   "cache": "studio-react-shell-cache-v287",
   "sourceBranch": "main",
   "responsive": {
@@ -12,7 +12,8 @@
     "contentTracksSidebar": true
   },
   "profile": {
-    "menuItems": ["Profil", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"],
+    "menuItems": ["Profil", "Ganti avatar", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"],
+    "avatarUpload": "Supabase Storage + profiles.avatar_url",
     "legacyCaptureMenuRetired": true
   },
   "nara": {
@@ -21,7 +22,8 @@
     "mediumNonModal": true,
     "fullModal": true,
     "attachments": ["Kamera", "Foto", "File"],
-    "modelAndIntelligenceControlsPreserved": true
+    "modelAndIntelligenceControlsPreserved": true,
+    "legacyFullscreenInjectorRetired": true
   },
   "themeStudio": {
     "layoutMapPreserved": true,
@@ -32,7 +34,13 @@
   "authentication": {
     "persistSessionPreserved": true,
     "autoRefreshTokenPreserved": true,
+    "membershipRecoveryDoesNotReload": true,
     "automaticLogoutAdded": false
+  },
+  "stability": {
+    "legacyV208HardReloadRetired": true,
+    "historicalShellObserversRetired": true,
+    "productionBuildReplaysLegacyUIPatches": false
   },
   "validation": {
     "realDeviceRequiredForHundredPercentClaim": true,
