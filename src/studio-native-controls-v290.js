@@ -147,8 +147,9 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   else { schedule(); schedule(400); }
 }
 
-/* v293 owns geometry/editor, v295 polishes production, v296 makes the catalog truly reach 100 themes before Theme Studio opens. */
+/* v293 geometry/editor -> v295 production polish -> v296 exactly-100 catalog -> v297 data-mode/startup authority. */
 import("./studio-final-authority-v293.js")
   .then(() => import("./studio-polish-v295.js"))
   .then(() => import("./studio-theme-catalog-v296.js"))
+  .then(() => import("./studio-mode-authority-v297.js"))
   .catch((error) => console.error("Studio final authority failed to load", error));
