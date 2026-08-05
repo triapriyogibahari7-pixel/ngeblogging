@@ -36,7 +36,7 @@ const [native, switcher, switcherCss, members, membersCss, tests, release] = awa
 
 for (const marker of [
   SWITCHER_RELEASE,
-  'import("./studio-site-switcher-v304.js")',
+  'import("./studio-site-switcher-v305.js")',
   'import("./studio-members-v304.js")',
 ]) if (!native.includes(marker)) throw new Error(`V304_NATIVE_CHAIN_MISSING:${marker}`);
 
@@ -64,7 +64,7 @@ if (!switcherCss.includes("width:min(780px,calc(100vw - 28px))") || !switcherCss
   throw new Error("V304_SWITCHER_RESPONSIVE_CSS_MISSING");
 if (!membersCss.includes("width:min(820px,calc(100vw - 28px))") || !membersCss.includes("@media(max-width:760px)"))
   throw new Error("V304_MEMBERS_RESPONSIVE_CSS_MISSING");
-if (!tests.includes("Ganti situs v304 reloads real memberships") || !tests.includes("member manager uses production RPCs"))
+if (!tests.includes("Ganti situs v305 shows every real site") || !tests.includes("v304 member manager still uses production RPCs"))
   throw new Error("V304_TEST_MARKERS_MISSING");
 if (!release.includes(RELEASE) || !release.includes(CACHE) || !release.includes('"existingSitesVisible": true') || !release.includes('"addMemberButton": true'))
   throw new Error("V304_RELEASE_INVALID");
@@ -96,3 +96,4 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
+await import("./patch-service-worker-v305.mjs");

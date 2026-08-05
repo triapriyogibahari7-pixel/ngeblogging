@@ -24,6 +24,7 @@ import "./domain-authority-v75.js";
 
 const RELEASE = "first-site-onboarding-v76-20260727";
 const STARTUP_RELEASE = STUDIO_STARTUP_RELEASE_V292;
+const FIRST_SITE_GUARD_RELEASE_V305 = "first-site-required-guard-v305-20260805";
 const CHECK_TIMEOUT_MS = 7_000;
 const STARTUP_DATA_TIMEOUT_MS = 11_000;
 const RECOVERY_SNAPSHOT_KEYS = [
@@ -140,12 +141,12 @@ function preferredSite(sites) {
 
 function recoveredActiveSite(userId) {
   const live = window.__ngebloggingActiveSite;
-  if (live?.id && live?.slug) return live;
+  if (live?.id && live?.slug && (!userId || live.__userId === userId)) return live;
   for (const key of RECOVERY_SNAPSHOT_KEYS) {
     try {
       const snapshot = JSON.parse(localStorage.getItem(key) || "null");
       if (!snapshot?.id || !snapshot?.slug) continue;
-      if (snapshot.__userId && userId && snapshot.__userId !== userId) continue;
+      if (userId && snapshot.__userId !== userId) continue;
       return snapshot;
     } catch {
       // A corrupt local snapshot must never log a user out.
@@ -154,18 +155,28 @@ function recoveredActiveSite(userId) {
   return null;
 }
 
+function clearActiveSiteRecoveryV305() {
+  setActiveSiteId("");
+  try { RECOVERY_SNAPSHOT_KEYS.forEach((key) => localStorage.removeItem(key)); } catch { /* private storage is optional */ }
+  window.__ngebloggingActiveSite = null;
+  delete document.documentElement.dataset.activeSiteId;
+  delete document.documentElement.dataset.activeSiteSlug;
+  document.documentElement.dataset.firstSiteGuardV305 = FIRST_SITE_GUARD_RELEASE_V305;
+}
+
 function publishActiveSite(site) {
   if (!site?.id || !site?.slug) return;
   const userId = window.__ngebloggingVerifiedSession?.user?.id || "";
   const snapshot = { ...site, __userId: userId, __savedAt: Date.now(), __release: STARTUP_RELEASE };
   setActiveSiteId(site.id);
   try { localStorage.setItem("ngeblogging-active-site-snapshot-v292", JSON.stringify(snapshot)); } catch { /* private storage is optional */ }
-  window.__ngebloggingActiveSite = site;
+  window.__ngebloggingActiveSite = snapshot;
   document.documentElement.dataset.activeSiteId = site.id;
   document.documentElement.dataset.activeSiteSlug = site.slug;
   document.documentElement.dataset.studioStartupReleaseV292 = STARTUP_RELEASE;
-  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-ready", { detail: site }));
-  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: site }));
+  document.documentElement.dataset.firstSiteGuardV305 = FIRST_SITE_GUARD_RELEASE_V305;
+  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-ready", { detail: snapshot }));
+  window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: snapshot }));
 }
 
 function requestReauthentication(error) {
@@ -239,7 +250,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
     setMessage("");
     const name = draft.name.trim();
     const slug = normalizeSlug(draft.slug || draft.name);
-    if (!quota.canCreate) return setMessage(`Akun ini sudah mencapai batas ${MAX_SITES_PER_ACCOUNT} situs.`);
+    if (!quota.canCreate) return setMessage("Batas jumlah situs untuk akun ini sudah tercapai.");
     if (name.length < 2) return setMessage("Nama situs minimal 2 karakter.");
     if (slug.length < 3) return setMessage("Subdomain minimal 3 karakter.");
     if (availability.state !== "available") return setMessage("Pastikan subdomain tersedia sebelum melanjutkan.");
@@ -253,7 +264,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
       }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
       const settings = {
         ...(site.settings || {}),
-        onboarding: "complete-v292",
+        onboarding: "complete-v305",
         onboarding_completed_at: new Date().toISOString(),
         initial_theme: draft.themeKey,
         locale: draft.locale,
@@ -276,9 +287,9 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
   };
 
   return <main className="so75-shell so169-shell" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
-    <header className="so75-topbar"><a className="so75-brand" href="/">ngeblogging<span>.</span></a><div><span>LANGKAH PERTAMA · {quota.used}/{quota.limit} SITUS</span><button onClick={onExit}><LogOut/>Keluar</button></div></header>
+    <header className="so75-topbar"><a className="so75-brand" href="/">ngeblogging<span>.</span></a><div><span>LANGKAH PERTAMA · BUAT SITUS PERTAMA</span><button onClick={onExit}><LogOut/>Keluar</button></div></header>
     <section className="so75-hero">
-      <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Buat situs pertama<br/><em>sebelum masuk Studio.</em></h1><p>Setelah login Google, LinkedIn, atau email, akun baru menyelesaikan identitas situs terlebih dahulu. Studio baru dibuka setelah situs nyata berhasil dibuat dan dipilih sebagai situs aktif.</p><div className="so75-promise"><Check/><span>Subdomain gratis *.ngeblogging.com</span><Check/><span>Maksimal {MAX_SITES_PER_ACCOUNT} situs per akun</span><Check/><span>Situs tidak dipublikasikan tanpa persetujuan</span></div></div>
+      <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Buat situs pertama<br/><em>sebelum masuk Studio.</em></h1><p>Setelah login Google, LinkedIn, atau email, akun baru menyelesaikan identitas situs terlebih dahulu. Studio baru dibuka setelah situs nyata berhasil dibuat dan dipilih sebagai situs aktif.</p><div className="so75-promise"><Check/><span>Subdomain gratis *.ngeblogging.com</span><Check/><span>Kelola beberapa situs dalam satu akun</span><Check/><span>Situs tidak dipublikasikan tanpa persetujuan</span></div></div>
       <form className="so75-form" onSubmit={submit}>
         <div className="so75-progress"><span className="active">1</span><i/><span className="active">2</span><i/><span className="active">3</span><b>Jenis · Identitas · Preferensi awal</b></div>
         <fieldset><legend>Pilih jenis situs</legend><div className="so75-types">{SITE_TYPES.map(({ value, label, description, icon: Icon }) => <button key={value} type="button" className={draft.blueprint === value ? "active" : ""} onClick={() => setDraft((current) => ({ ...current, blueprint: value }))}><Icon/><span><b>{label}</b><small>{description}</small></span>{draft.blueprint === value ? <Check/> : null}</button>)}</div></fieldset>
@@ -290,7 +301,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
           <label><span>Bahasa</span><select value={draft.locale} onChange={(event) => setDraft((current) => ({ ...current, locale: event.target.value }))}>{LANGUAGE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label className="wide"><span>Zona waktu</span><select value={draft.timezone} onChange={(event) => setDraft((current) => ({ ...current, timezone: event.target.value }))}>{TIMEZONE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         </div>
-        <div className="so75-preview"><Globe2/><div><small>ALAMAT GRATIS DAN SITUS AKTIF</small><b>{normalizedSlug || "nama-situs"}.ngeblogging.com</b></div><i>{quota.remaining} slot tersisa</i></div>
+        <div className="so75-preview"><Globe2/><div><small>ALAMAT GRATIS DAN SITUS AKTIF</small><b>{normalizedSlug || "nama-situs"}.ngeblogging.com</b></div><i>Situs pertama</i></div>
         {message ? <p className="so75-error" role="alert">{message}</p> : null}
         <button className="so75-primary so75-submit" disabled={creating || availability.state !== "available" || !quota.canCreate} type="submit">{creating ? <><LoaderCircle/>Membuat situs nyata…</> : <>Buat situs aktif dan buka Studio<ArrowRight/></>}</button>
         <p className="so75-footnote">Situs dipilih sebagai ruang kerja aktif, tetapi tetap berstatus draf dan privat sampai Anda menekan Terbitkan.</p>
@@ -311,8 +322,14 @@ export default function StudioOnboardingGate(props) {
       setError("");
       setPhase("ready");
     };
+    const requireFirstSite = () => {
+      clearActiveSiteRecoveryV305();
+      setError("");
+      setPhase("onboarding");
+    };
     const retryOnline = () => setRun((value) => value + 1);
     window.addEventListener("ngeblogging:active-site-ready", acceptRecoveredSite);
+    window.addEventListener("ngeblogging:first-site-required-v305", requireFirstSite);
     window.addEventListener("online", retryOnline, { passive: true });
     const cached = recoveredActiveSite(props.user?.id);
     if (cached?.id && cached?.slug) {
@@ -321,6 +338,7 @@ export default function StudioOnboardingGate(props) {
     }
     return () => {
       window.removeEventListener("ngeblogging:active-site-ready", acceptRecoveredSite);
+      window.removeEventListener("ngeblogging:first-site-required-v305", requireFirstSite);
       window.removeEventListener("online", retryOnline);
     };
   }, [props.user?.id]);
@@ -346,7 +364,13 @@ export default function StudioOnboardingGate(props) {
         const { sites } = await loadStudioMembership(props.user.id);
         if (cancelled) return;
         const site = preferredSite(sites);
-        if (site) { publishActiveSite(site); setPhase("ready"); } else setPhase("onboarding");
+        if (site) {
+          publishActiveSite(site);
+          setPhase("ready");
+        } else {
+          clearActiveSiteRecoveryV305();
+          setPhase("onboarding");
+        }
       } catch (nextError) {
         if (cancelled) return;
         const recovered = recoveredActiveSite(props.user?.id);
@@ -373,4 +397,4 @@ export default function StudioOnboardingGate(props) {
   return <StartupState error={phase === "error" ? error : ""} onRetry={() => setRun((value) => value + 1)} onExit={props.onExit}/>;
 }
 
-export { STARTUP_RELEASE, loadStudioMembership, recoveredActiveSite };
+export { FIRST_SITE_GUARD_RELEASE_V305, STARTUP_RELEASE, loadStudioMembership, recoveredActiveSite };

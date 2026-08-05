@@ -5,6 +5,8 @@ export const STUDIO_AUTH_SIDEBAR_COMPAT_V291 = "studio-auth-sidebar-v291-2026080
 export const STUDIO_NATIVE_CAPTURE_RETIRED_V298 = "studio-native-capture-retired-v298-20260805";
 export const STUDIO_ADD_SITE_COMPAT_V303 = "studio-add-site-free-subdomain-v303-20260805";
 export const STUDIO_SITE_SWITCHER_COMPAT_V304 = "studio-real-site-switcher-v304-20260805";
+export const STUDIO_SITE_SWITCHER_COMPAT_V305 = "studio-real-site-switcher-v305-20260805";
+export const STUDIO_FIRST_SITE_GUARD_COMPAT_V305 = "studio-first-site-required-v305-20260805";
 export const STUDIO_MEMBERS_COMPAT_V304 = "studio-members-real-invite-v304-20260805";
 
 /*
@@ -23,6 +25,8 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioNativeCaptureV298 = "retired";
   document.documentElement.dataset.studioAddSiteCompatV303 = STUDIO_ADD_SITE_COMPAT_V303;
   document.documentElement.dataset.studioSiteSwitcherV304 = STUDIO_SITE_SWITCHER_COMPAT_V304;
+  document.documentElement.dataset.studioSiteSwitcherV305 = STUDIO_SITE_SWITCHER_COMPAT_V305;
+  document.documentElement.dataset.studioFirstSiteGuardV305 = STUDIO_FIRST_SITE_GUARD_COMPAT_V305;
   document.documentElement.dataset.studioMembersV304 = STUDIO_MEMBERS_COMPAT_V304;
 }
 
@@ -32,7 +36,8 @@ if (typeof document !== "undefined") {
  * - v296: exactly 100 real theme catalog entries
  * - v298: six-mode shell, one n bridge, profile dropdown and Nara geometry
  * - v303: dedicated free *.ngeblogging.com site creation flow
- * - v304: fresh real-site switcher + owner/admin member invitation manager
+ * - v305: explicit all-site chooser + first-site guard
+ * - v304 members: owner/admin member invitation manager
  *
  * v295/v297 JavaScript global click normalizers are deliberately not executed;
  * their CSS is imported by v298 so completed visual work is preserved without
@@ -43,7 +48,7 @@ if (typeof window !== "undefined") {
     .then(() => import("./studio-theme-catalog-v296.js"))
     .then(() => import("./studio-shell-authority-v298.js"))
     .then(() => import("./studio-add-site-v303.js"))
-    .then(() => import("./studio-site-switcher-v304.js"))
+    .then(() => import("./studio-site-switcher-v305.js"))
     .then(() => import("./studio-members-v304.js"))
     .catch((error) => console.error("Studio authority chain failed to load", error));
 }
