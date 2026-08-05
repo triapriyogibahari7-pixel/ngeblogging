@@ -1,0 +1,18 @@
+/* v307: explicit member actions on the Anggota page and readable destructive actions. */
+.sn-page-title[data-members-controls-v307]{display:flex!important;align-items:flex-start!important;gap:10px!important;flex-wrap:wrap!important;min-width:0!important}
+.sn-page-title[data-members-controls-v307]>.sn-member-invite-v304{display:none!important}
+.sn-members-controls-v307{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto;max-width:100%;min-width:0}
+.sn-members-controls-v307>button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;max-width:100%;margin:0;padding:0 14px;border-radius:11px;font:750 12px/1 system-ui,sans-serif;white-space:nowrap;cursor:pointer}
+.sn-members-add-v307{border:1px solid #2f73df;background:#2f73df;color:#fff}
+.sn-members-remove-v307{border:1px solid #efc7cf;background:#fff7f8;color:#aa3f50}
+.sn-members-add-v307:focus-visible,.sn-members-remove-v307:focus-visible{outline:3px solid rgba(47,115,223,.15);outline-offset:2px}
+.sn-members-v304[data-members-controls-v307] .sn-members-v304-row .member-actions button.danger{min-width:118px;white-space:nowrap!important}
+@media(max-width:760px){
+  .sn-page-title[data-members-controls-v307]{align-items:stretch!important}
+  .sn-members-controls-v307{width:100%;margin-left:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .sn-members-controls-v307>button{width:100%;min-height:44px;white-space:normal;text-align:center}
+  .sn-members-v304[data-members-controls-v307] .sn-members-v304-row .member-actions button.danger{width:100%;min-height:42px;white-space:normal!important}
+}
+@media(max-width:390px){
+  .sn-members-controls-v307{grid-template-columns:minmax(0,1fr)}
+}

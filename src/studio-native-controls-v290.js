@@ -10,6 +10,7 @@ export const STUDIO_FIRST_SITE_GUARD_COMPAT_V305 = "studio-first-site-required-v
 export const STUDIO_MEMBERS_COMPAT_V304 = "studio-members-real-invite-v304-20260805";
 export const STUDIO_SITE_SWITCHER_ACTIONS_COMPAT_V305 = "studio-site-switcher-actions-v305-20260805";
 export const STUDIO_SITE_SWITCHER_FIX_COMPAT_V306 = "studio-site-switcher-layout-delete-v306-20260805";
+export const STUDIO_MEMBERS_CONTROLS_COMPAT_V307 = "studio-members-visible-controls-v307-20260805";
 
 /*
  * v298 retires the old document-capture n owner from v290. The old handler
@@ -32,6 +33,7 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioMembersV304 = STUDIO_MEMBERS_COMPAT_V304;
   document.documentElement.dataset.studioSiteSwitcherActionsV305 = STUDIO_SITE_SWITCHER_ACTIONS_COMPAT_V305;
   document.documentElement.dataset.studioSiteSwitcherFixV306 = STUDIO_SITE_SWITCHER_FIX_COMPAT_V306;
+  document.documentElement.dataset.studioMembersControlsV307 = STUDIO_MEMBERS_CONTROLS_COMPAT_V307;
 }
 
 /*
@@ -44,6 +46,7 @@ if (typeof document !== "undefined") {
  * - v304 members: owner/admin member invitation manager
  * - v305 actions: make the active-site management control perform a real Studio navigation
  * - v306 switcher fix: isolate the close control, stop overlap, and add owner-only site deletion
+ * - v307 member controls: keep Tambah anggota and Hapus anggota visible on the Anggota page
  *
  * v295/v297 JavaScript global click normalizers are deliberately not executed;
  * their CSS is imported by v298 so completed visual work is preserved without
@@ -58,5 +61,6 @@ if (typeof window !== "undefined") {
     .then(() => import("./studio-members-v304.js"))
     .then(() => import("./studio-site-switcher-v305-actions.js"))
     .then(() => import("./studio-site-switcher-v306-fix.js"))
+    .then(() => import("./studio-members-controls-v307.js"))
     .catch((error) => console.error("Studio authority chain failed to load", error));
 }
