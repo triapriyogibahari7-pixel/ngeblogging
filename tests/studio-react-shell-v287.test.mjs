@@ -9,7 +9,7 @@ test("v287 is loaded after v286 and retires legacy capture owners", async () => 
   const v286 = await read("src/studio-live-visual-v286.js");
   const bridge = await read("src/studio-sidebar-single-toggle-v267.js");
   const runtime = await read("src/studio-react-shell-v287.js");
-  assert.match(v286, /import\("\.\/studio-react-shell-v287\.js"\)/);
+  assert.match(v286, /studio-react-shell-v287\.js/);
   assert.match(runtime, /studio-react-shell-v287-20260805/);
   assert.match(bridge, /backup: import "\.\/studio-profile-menu-v268\.js"/);
   assert.doesNotMatch(bridge.split("\n").filter((line) => !line.trim().startsWith("//")).join("\n"), /studio-profile-menu-v268\.js/);
@@ -103,9 +103,11 @@ test("v287 resumes a verified/recovered site without destructive reload", async 
   assert.doesNotMatch(gate, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(/);
 });
 
-test("v287 default build does not replay historical UI patchers", async () => {
+test("v288 build still executes the v287 service-worker prerequisite without replaying historical UI patchers", async () => {
   const pkg = JSON.parse(await read("package.json"));
-  assert.match(pkg.scripts.build, /patch-service-worker-v287\.mjs/);
+  const v288Patch = await read("scripts/patch-service-worker-v288.mjs");
+  assert.match(pkg.scripts.build, /patch-service-worker-v288\.mjs/);
+  assert.match(v288Patch, /import\("\.\/patch-service-worker-v287\.mjs"\)/);
   assert.doesNotMatch(pkg.scripts.build, /patch-studio-mobile-v176|patch-nara-native-v177|run-patch-screenshot-stability-v177/);
   assert.doesNotMatch(pkg.scripts["test:production"], /run-patch-screenshot-stability-v177|patch-studio-mobile-v176/);
 });
