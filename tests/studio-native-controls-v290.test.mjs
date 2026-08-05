@@ -86,3 +86,35 @@ test("v290 keeps real Supabase persistence and all six responsive classification
   for (const provider of ["google", "github", "linkedin_oidc"]) assert.ok(supabase.includes(`"${provider}"`));
   for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"`), `missing ${mode}`);
 });
+
+test("v292 is the final non-destructive six-mode authority", async () => {
+  const v290 = await read("src/studio-native-controls-v290.js");
+  const runtime = await read("src/studio-final-authority-v292.js");
+  const css = await read("src/studio-final-authority-v292.css");
+  const theme = await read("src/ThemeStudio.jsx");
+  const nara = await read("src/NaraAssistant.jsx");
+  const release = await read("public/release-v292.json");
+
+  assert.match(v290, /import\("\.\/studio-final-authority-v292\.js"\)/);
+  assert.match(runtime, /studio-final-authority-v292-20260805/);
+  assert.match(runtime, /studio-theme-layout-v264\.css/);
+  assert.match(runtime, /CONTENT_WORD_LIMIT = 5_000/);
+  assert.match(runtime, /CONTENT_WORD_WARNING = 4_500/);
+  assert.match(runtime, /CODE_LINE_LIMIT = 10_000/);
+  assert.match(runtime, /guardPublish/);
+  assert.doesNotMatch(runtime, /new MutationObserver|setInterval\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
+
+  assert.match(css, /--v292-side-open:220px/);
+  assert.match(css, /--v292-side-rail:70px/);
+  assert.match(css, /data-studio-device-mode="small"[^]*#ngeblogging-studio-sidebar:not\(\.mobile-open\)/);
+  assert.match(css, /grid-template-areas:"code preview"/);
+  assert.match(css, /grid-template-areas:"preview" "code"/);
+  assert.match(css, /\.tn-code-gutter-v292/);
+  assert.match(css, /\.nara-floating-button\{position:fixed!important/);
+  assert.match(css, /nara-assistant-layer\[data-nara-interaction="nonmodal"\]/);
+
+  assert.match(theme, /100 tema aktif/);
+  for (const preview of ["Aplikasi", "Handphone", "Mobile", "Perangkat kecil", "Tablet", "Laptop", "Situs desktop", "Komputer"]) assert.ok(theme.includes(preview), `missing preview ${preview}`);
+  for (const capability of ["Kamera", "Foto", "File teks", "nara-mini", "nara-writer", "nara-vision", "nara-max"]) assert.ok(nara.includes(capability), `missing Nara ${capability}`);
+  assert.match(release, /studio-final-authority-cache-v292/);
+});
