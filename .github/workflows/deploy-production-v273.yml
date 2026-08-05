@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v286
+name: Deploy Ngeblogging Production v287
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v286
+  group: ngeblogging-production-v287
   cancel-in-progress: true
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Validate rollout contract
-        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs
+        run: node --test tests/production-rollout-v273.test.mjs tests/studio-shell-content-v274.test.mjs tests/studio-final-stability-v275.test.mjs tests/studio-sidebar-recovery-v276.test.mjs tests/studio-interaction-authority-v277.test.mjs tests/studio-shell-precision-v278.test.mjs tests/studio-live-shell-v279.test.mjs tests/studio-native-shell-v280.test.mjs tests/studio-native-controls-v281.test.mjs tests/public-edge-v282.test.mjs tests/studio-native-recovery-v283.test.mjs tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-react-shell-v287.test.mjs
 
       - name: Run complete production regression and build
         run: npm run build
@@ -51,20 +51,21 @@ jobs:
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286; do test -f "public/release-v${release}.json"; done
-          grep -q 'studio-live-visual-v286-20260805' public/release-v286.json
-          grep -q 'studio-live-visual-v286.js' src/studio-responsive-lock-v285.js
-          grep -q 'studio-live-visual-v286.css' src/studio-live-visual-v286.js
-          grep -q 'data-v286-family="large"' src/studio-live-visual-v286.css
-          grep -q 'data-v286-family="small"' src/studio-live-visual-v286.css
-          grep -q '.nara-floating-button{position:fixed!important' src/studio-live-visual-v286.css
-          grep -q 'grid-template-areas:"preview" "code"' src/studio-live-visual-v286.css
+          for release in 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287; do test -f "public/release-v${release}.json"; done
+          grep -q 'studio-react-shell-v287-20260805' public/release-v287.json
+          grep -q 'studio-react-shell-v287.js' src/studio-live-visual-v286.js
+          grep -q 'studio-react-shell-v287.css' src/studio-react-shell-v287.js
+          grep -q 'data-device-mode="large"' src/studio-react-shell-v287.css
+          grep -q 'data-device-mode="small"' src/studio-react-shell-v287.css
+          grep -q 'sn-profile-menu-v287' src/studio-react-shell-v287.js
+          grep -q '.nara-floating-button{position:fixed!important' src/studio-react-shell-v287.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-react-shell-v287.css
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-live-visual-v286-20260805"' wrangler.production.jsonc
-          grep -q 'STUDIO_LIVE_VISUAL_RELEASE_V286' public/sw.js
-          grep -q 'studio-live-visual-cache-v286' public/sw.js
-          grep -q 'ngeblogging-app-v286-live-visual-20260805' public/sw.js
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-react-shell-v287-20260805"' wrangler.production.jsonc
+          grep -q 'STUDIO_REACT_SHELL_RELEASE_V287' public/sw.js
+          grep -q 'studio-react-shell-cache-v287' public/sw.js
+          grep -q 'ngeblogging-app-v287-react-shell-20260805' public/sw.js
 
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
@@ -79,40 +80,40 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler custom-domain deployment tetap dijalankan dan live gate berikutnya wajib membuktikan apex.'
           fi
 
-      - name: Verify live v286 release manifest
+      - name: Verify live v287 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v286.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-live-visual-v286-20260805'; then
-              echo "Live v286 release manifest confirmed."
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v287.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-react-shell-v287-20260805'; then
+              echo "Live v287 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v286.json after deployment." >&2
+          echo "Live production did not expose release-v287.json after deployment." >&2
           exit 1
 
-      - name: Verify live Studio bundle contains v286
+      - name: Verify live Studio bundle contains v287
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/studio?commit=${GITHUB_SHA}" -o /tmp/studio-v286.html
-          grep -q 'id="root"' /tmp/studio-v286.html
-          script_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<script[^>]+src="([^"]+\.js)"/);process.stdout.write(m?.[1]||"")' /tmp/studio-v286.html)"
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/studio?commit=${GITHUB_SHA}" -o /tmp/studio-v287.html
+          grep -q 'id="root"' /tmp/studio-v287.html
+          script_path="$(node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");const m=s.match(/<script[^>]+src="([^"]+\.js)"/);process.stdout.write(m?.[1]||"")' /tmp/studio-v287.html)"
           test -n "$script_path"
-          curl -fsS --retry 6 --retry-delay 4 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${script_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v286.js
-          grep -q 'studio-live-visual-v286-20260805' /tmp/studio-v286.js
+          curl -fsS --retry 6 --retry-delay 4 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com${script_path}?commit=${GITHUB_SHA}" -o /tmp/studio-v287.js
+          grep -q 'studio-react-shell-v287-20260805' /tmp/studio-v287.js
 
-      - name: Verify live service worker and v286 cache
+      - name: Verify live service worker and v287 cache
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v286.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_LIVE_VISUAL_RELEASE_V286' /tmp/sw-v286.js
-          grep -q 'studio-live-visual-cache-v286' /tmp/sw-v286.js
-          grep -q 'ngeblogging-app-v286-live-visual-20260805' /tmp/sw-v286.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v287.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_REACT_SHELL_RELEASE_V287' /tmp/sw-v287.js
+          grep -q 'studio-react-shell-cache-v287' /tmp/sw-v287.js
+          grep -q 'ngeblogging-app-v287-react-shell-20260805' /tmp/sw-v287.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -124,7 +125,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v286-${{ github.sha }}
+          name: ngeblogging-production-v287-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
