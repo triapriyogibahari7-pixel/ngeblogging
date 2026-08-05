@@ -17,13 +17,14 @@ const auth = read("src/lib/supabase.js");
 
 const menu = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
-test("v278 loads last and retires the competing v276 capture listener", () => {
+test("v278 keeps one click owner and retires pointerdown capture for touch stability", () => {
   assert.ok(entry.indexOf('import "./studio-shell-precision-v278.js";') > entry.indexOf('import "./studio-interaction-authority-v277.css";'));
   assert.ok(entry.indexOf('import "./studio-shell-precision-v278.css";') > entry.indexOf('import "./studio-shell-precision-v278.js";'));
   assert.match(runtime, /studio-shell-precision-v278-20260804/);
+  assert.match(runtime, /POINTERDOWN_CAPTURE_RETIRED_BY/);
   assert.doesNotMatch(retired, /document\.addEventListener\("click",\s*activateLogo/);
   assert.doesNotMatch(retired, /new MutationObserver/);
-  assert.match(runtime, /window\.addEventListener\("pointerdown",\s*stopLegacyPointer,\s*true\)/);
+  assert.doesNotMatch(runtime, /window\.addEventListener\("pointerdown",\s*stopLegacyPointer,\s*true\)/);
   assert.match(runtime, /window\.addEventListener\("click",\s*activateLogo,\s*true\)/);
 });
 
