@@ -1,4 +1,5 @@
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
+import "./studio-startup-v292.js";
 
 export const AUTH_PROVIDER_GATEWAY_RELEASE = "auth-provider-navigation-v291-20260805";
 export const AUTH_PROVIDER_GATEWAY_LEGACY_RELEASE = "auth-provider-gateway-v250-20260804";
