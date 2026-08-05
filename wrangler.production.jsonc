@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ngeblogging",
-  "main": "./cloudflare/worker-v69.mjs",
+  "main": "./cloudflare/worker-v70.mjs",
   "compatibility_date": "2026-07-30",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
@@ -22,7 +22,8 @@
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
-    "APP_RELEASE": "2026.08.05-studio-native-controls-v281",
+    "APP_RELEASE": "2026.08.05-public-edge-v282",
+    "PUBLIC_EDGE_RELEASE": "public-edge-request-dedup-v282-20260805",
     "PRODUCTION_UI_RELEASE": "2026.08.05-studio-native-controls-v281",
     "CURRENT_STUDIO_UI_RELEASE": "studio-native-controls-v281-20260805",
     "STUDIO_STABILITY_RELEASE": "studio-native-controls-v281-20260805",
