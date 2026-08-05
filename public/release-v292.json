@@ -1,0 +1,79 @@
+{
+  "release": "studio-final-authority-v292-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-final-authority-cache-v292",
+  "inherits": [
+    "studio-auth-sidebar-v291-20260805",
+    "studio-native-controls-v290-20260805",
+    "studio-final-pass-v289-20260805",
+    "studio-react-shell-v287-20260805"
+  ],
+  "scope": "non-destructive six-mode Studio recovery using the approved sidebar backup contract and current production features",
+  "fixes": {
+    "responsive": {
+      "sixLayoutClasses": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+      "desktopVariants": ["laptop", "desktop", "computer"],
+      "desktopSidebarOpenPx": 220,
+      "desktopSidebarRailPx": 70,
+      "mobileClosedOnlyN": true,
+      "mobileDrawerViewportSafe": true,
+      "mainContentTracksSidebar": true,
+      "globalOverflowContainment": true
+    },
+    "navigation": {
+      "singleNInteractionOwnerPreserved": true,
+      "externalToggleHidden": true,
+      "legacyDrawerCloseHidden": true,
+      "allSidebarMenusPreserved": true,
+      "profileDropdownPreserved": true
+    },
+    "themeStudio": {
+      "themeCatalog100Preserved": true,
+      "devicePreviewProfiles": 8,
+      "layoutMap26AreasLoaded": true,
+      "leftWidgetSlots": 4,
+      "rightWidgetSlots": 4,
+      "areaPopoverPreserved": true,
+      "htmlCssJavascriptEditorPreserved": true,
+      "desktopCodePreview50_50": true,
+      "smallPreviewAboveCode": true,
+      "codeLineNumbers": true,
+      "codeLineLimit": 10000
+    },
+    "content": {
+      "postsPagesSameEditorPreserved": true,
+      "wordLimit": 5000,
+      "warningStartsAt": 4500,
+      "draftNotTruncated": true,
+      "publishBlockedAboveLimit": true,
+      "mobileEditorContainment": true
+    },
+    "nara": {
+      "launcherViewportFixed": true,
+      "smallMediumNonModal": true,
+      "fullScreenModalOnly": true,
+      "cameraPhotoFilePreserved": true,
+      "microphoneSpeakerPreserved": true,
+      "modelAndIntelligencePreserved": true,
+      "attachmentMenuOpensUpward": true
+    },
+    "analytics": {
+      "productionRpcPreserved": true,
+      "simulationExplicitlyLabeled": true,
+      "largerTrendAndTrafficCharts": true
+    },
+    "authentication": {
+      "knownRootCallbackContractPreserved": true,
+      "persistSession": true,
+      "autoRefreshToken": true,
+      "networkFailureDoesNotLogout": true
+    }
+  },
+  "verification": {
+    "sourceRegression": "tests/studio-native-controls-v290.test.mjs",
+    "productionBuildRequired": true,
+    "serviceWorkerRotationRequired": true,
+    "liveLoginWithRealProviderStillRequiresProviderCredentials": true,
+    "capacityClaimsRequireRealLoadTesting": true
+  }
+}
