@@ -91,13 +91,25 @@ test("v303 Add site dialog stays contained across desktop and mobile", () => {
   assert.match(addSiteCssV303, /safe-area-inset-bottom/);
 });
 
-test("v303 rotates the PWA cache without clearing sessions or forcing auth reloads", () => {
-  assert.match(swV303, /ngeblogging-app-v303-add-site-20260805/);
-  assert.match(swV303, /studio-add-site-cache-v303/);
+test("PWA worker preserves the v303 add-site contract while allowing the current v305 cache rotation", () => {
+  const generatedV305 = swV303.includes("STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305")
+    || swV303.includes("ngeblogging-app-v305-site-switch-first-site-20260805");
+
   assert.match(swV303, /studio-add-site-free-subdomain-v303-20260805/);
-  assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
   assert.match(swV303, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)/);
   assert.doesNotMatch(swV303, /localStorage\.clear|sessionStorage\.clear|location\.(?:reload|replace)/);
+
+  if (generatedV305) {
+    assert.match(swV303, /ngeblogging-app-v305-site-switch-first-site-20260805/);
+    assert.match(swV303, /studio-site-switch-first-site-cache-v305/);
+    assert.match(swV303, /studio-site-switch-first-site-v305-20260805/);
+    assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V305/);
+  } else {
+    assert.match(swV303, /ngeblogging-app-v303-add-site-20260805/);
+    assert.match(swV303, /studio-add-site-cache-v303/);
+    assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
+  }
+
   assert.equal(releaseV303.release, "studio-add-site-free-subdomain-v303-20260805");
   assert.equal(releaseV303.fixes.addSiteNoLongerProxiesWorkspaceClick, true);
   assert.equal(releaseV303.fixes.freeNgebloggingSubdomainExplicit, true);
