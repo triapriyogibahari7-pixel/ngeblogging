@@ -139,12 +139,15 @@ import "./studio-native-shell-v280.css";
 
 // v281 hanya lightweight normalizer/5000-word guard. v283 tetap disimpan sebagai
 // regression source, tetapi capture-phase click owner-nya tidak lagi dijalankan
-// karena dapat memblokir tap mobile. v284 menjadi satu-satunya owner shell aktif.
+// karena dapat memblokir tap mobile. v284 menjadi shell dasar, v285 menjadi
+// authority responsif terakhir yang mengunci family dari viewport nyata.
 import "./studio-native-controls-v281.js";
 import "./studio-native-controls-v281.css";
 // backup v284: import "./studio-native-recovery-v283.js";
 import "./studio-native-recovery-v283.css";
 import "./studio-native-polish-v284.js";
 import "./studio-native-polish-v284.css";
+import "./studio-responsive-lock-v285.js";
+import "./studio-responsive-lock-v285.css";
 
 export default StudioFastGate;
