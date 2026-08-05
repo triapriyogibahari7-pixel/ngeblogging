@@ -1,6 +1,7 @@
 import "./studio-native-controls-v290.css";
 
 export const STUDIO_NATIVE_CONTROLS_RELEASE_V290 = "studio-native-controls-v290-20260805";
+export const STUDIO_AUTH_SIDEBAR_COMPAT_V291 = "studio-auth-sidebar-v291-20260805";
 let frame = 0;
 
 const shell = () => document.querySelector(".sn-shell");
@@ -30,6 +31,7 @@ function syncSidebar() {
   reveal(mark);
   if (mark) {
     mark.dataset.v290NativeInput = STUDIO_NATIVE_CONTROLS_RELEASE_V290;
+    mark.dataset.v291AuthSidebar = STUDIO_AUTH_SIDEBAR_COMPAT_V291;
     mark.style.removeProperty("pointer-events");
     const expanded = currentFamily() === "large" ? !side.classList.contains("collapsed") : side.classList.contains("mobile-open");
     mark.setAttribute("role", "button");
@@ -87,6 +89,7 @@ export function syncStudioV290() {
   frame = 0;
   if (!shell()) return;
   document.documentElement.dataset.studioNativeControlsV290 = STUDIO_NATIVE_CONTROLS_RELEASE_V290;
+  document.documentElement.dataset.studioAuthSidebarV291 = STUDIO_AUTH_SIDEBAR_COMPAT_V291;
   shell().dataset.v290Family = currentFamily();
   syncSidebar();
   syncNara();
