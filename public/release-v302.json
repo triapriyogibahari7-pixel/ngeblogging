@@ -1,0 +1,46 @@
+{
+  "release": "studio-build-nara-authority-v302-20260805",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-sidebar-hard-lock-v301-20260805",
+    "studio-sidebar-direct-v300-20260805",
+    "studio-direct-shell-boot-v299-20260805",
+    "studio-shell-authority-v298-20260805",
+    "studio-mode-startup-authority-v297-20260805",
+    "studio-theme-catalog-100-v296-20260805",
+    "studio-startup-direct-data-v292-20260805"
+  ],
+  "fixes": {
+    "obsoleteV259V260ViteFinalizerRetired": true,
+    "naraV271InComponentGlobalAuthorityRetired": true,
+    "naraMutationObserverRetired": true,
+    "naraBuildBreakerRemoved": true,
+    "naraResponsiveAuthorityOwnedByV298ToV301": true,
+    "sidebarV301Preserved": true,
+    "smallModeNoDesktopRailPreserved": true,
+    "desktop220Rail70Preserved": true,
+    "singleSidebarNPreserved": true,
+    "authV292Preserved": true,
+    "themeCatalog100Preserved": true,
+    "themeLayout26AreaPreserved": true,
+    "postPage5000WordContractPreserved": true,
+    "analyticsProductionPreserved": true
+  },
+  "nara": {
+    "sizes": ["small", "medium", "full"],
+    "attachments": ["camera", "photo", "text-file"],
+    "voiceInput": true,
+    "voiceOutput": true,
+    "models": ["nara-mini", "nara-writer", "nara-vision", "nara-max"],
+    "intelligence": ["Instan", "Sedang", "Tinggi", "Maksimal"],
+    "backendReceivesModelAndIntelligence": true
+  },
+  "validation": {
+    "netlifyFullAppBuildAfterNaraFix": true,
+    "cloudflareProductionDeploymentClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "capacityClaimed": false,
+    "linkedinCredentialLoginClaimed": false,
+    "emailCredentialLoginClaimed": false
+  }
+}
