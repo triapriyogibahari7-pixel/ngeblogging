@@ -1,0 +1,43 @@
+name: Studio v287 Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-v287-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Validate current Studio recovery chain
+        run: node --test tests/studio-native-polish-v284.test.mjs tests/studio-live-visual-v286.test.mjs tests/studio-stable-ui-v287.test.mjs tests/auth-readiness-v177.test.mjs tests/studio-persisted-session-v198.test.mjs
+      - name: Validate service-worker patch chain
+        run: node scripts/patch-service-worker-v179.mjs
+      - name: Production build
+        run: npm run build
+      - name: Check v287 build markers
+        run: |
+          set -euo pipefail
+          grep -q 'studio-stable-ui-v287-20260805' src/studio-stable-ui-v287.js
+          grep -q 'STUDIO_STABLE_UI_RELEASE_V287' public/sw.js
+          grep -q 'studio-stable-ui-cache-v287' public/sw.js
+          grep -q 'persistSession: true' src/lib/supabase.js
+          test -f dist/index.html
