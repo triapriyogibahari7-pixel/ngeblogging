@@ -59,6 +59,138 @@ body.sn-mobile-sidebar-open .sn-main{
   min-height:40px!important;
 }
 
+/* Final sidebar geometry. This deliberately repeats the critical large/small
+   states after every historical stylesheet so old lazy CSS cannot hide the
+   desktop rail or turn the mobile launcher into a document-flow element. */
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:fixed!important;
+  inset:0 auto 0 0!important;
+  z-index:3200!important;
+  width:248px!important;
+  min-width:248px!important;
+  max-width:248px!important;
+  height:100dvh!important;
+  overflow:hidden!important;
+  transform:none!important;
+  filter:none!important;
+}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed{
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar>:is(.sn-new,nav,.sn-account-footer),
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed>:is(.sn-new,nav,.sn-account-footer){
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button){
+  justify-content:center!important;
+}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed :is(.sn-new,nav>button,.sn-account-footer>button)>span,
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed>.sn-logo>b{
+  display:none!important;
+}
+html[data-studio-device-mode="large"] .sn-shell>.sn-main{
+  margin-left:248px!important;
+  width:calc(100% - 248px)!important;
+  max-width:calc(100% - 248px)!important;
+}
+html[data-studio-device-mode="large"] #ngeblogging-studio-sidebar.collapsed~.sn-main{
+  margin-left:72px!important;
+  width:calc(100% - 72px)!important;
+  max-width:calc(100% - 72px)!important;
+}
+
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar:not(.mobile-open){
+  position:fixed!important;
+  z-index:4200!important;
+  left:max(8px,env(safe-area-inset-left,0px))!important;
+  top:max(8px,env(safe-area-inset-top,0px))!important;
+  width:54px!important;
+  min-width:54px!important;
+  max-width:54px!important;
+  height:54px!important;
+  min-height:54px!important;
+  max-height:54px!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>:is(.sn-new,nav,.sn-account-footer),
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>b{
+  display:none!important;
+}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open{
+  position:fixed!important;
+  z-index:4200!important;
+  inset:0 auto 0 0!important;
+  width:min(78vw,330px)!important;
+  min-width:min(78vw,330px)!important;
+  max-width:min(78vw,330px)!important;
+  height:100dvh!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open>:is(.sn-new,nav,.sn-account-footer),
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open>.sn-logo>b{
+  display:flex!important;
+  visibility:visible!important;
+}
+html[data-studio-device-mode="small"] #ngeblogging-studio-sidebar.mobile-open>nav{
+  min-height:0!important;
+  overflow-y:auto!important;
+}
+html[data-studio-device-mode="small"] .sn-shell>.sn-main{
+  margin-left:0!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+
+/* The dashboard list must stay in normal document flow. Several historical
+   screenshot patches positioned this area aggressively; these rules prevent
+   “Konten terbaru” from colliding with the first row. */
+.sn-home-grid>section{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.sn-home-grid>section>header{
+  position:relative!important;
+  inset:auto!important;
+  z-index:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:2px 4px 10px!important;
+  transform:none!important;
+}
+.sn-home-grid>section>button{
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:54px!important;
+  margin:0!important;
+  transform:none!important;
+}
+.sn-home-grid>section>button>div{min-width:0!important}
+
 /* Nara is always a viewport overlay, never part of document flow. */
 .nara-floating-button{
   position:fixed!important;
@@ -74,6 +206,7 @@ body.sn-mobile-sidebar-open .sn-main{
   max-width:56px!important;
   max-height:56px!important;
   margin:0!important;
+  padding:0!important;
   display:grid!important;
   place-items:center!important;
   animation:none!important;
@@ -124,12 +257,35 @@ body.sn-mobile-sidebar-open .sn-main{
   width:min(700px,calc(100vw - 20px))!important;
   height:min(760px,calc(100dvh - 44px))!important;
 }
+.nara-attachment-menu-wrap{position:relative!important}
 .nara-attachment-menu{
+  position:absolute!important;
+  left:0!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:calc(100% + 8px)!important;
   z-index:4300!important;
   max-width:min(330px,calc(100vw - 28px))!important;
   max-height:min(340px,calc(100dvh - 160px))!important;
   overflow:auto!important;
+  transform:none!important;
 }
+
+/* Profile must remain visible in every large/small shell and never be replaced
+   by a device-mode badge. */
+.sn-main>.sn-top .sn-avatar{
+  display:grid!important;
+  place-items:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  max-width:42px!important;
+  margin-left:auto!important;
+}
+[data-studio-mode-badge],[data-device-mode-badge],.studio-device-mode-badge,.v225-mode-badge{display:none!important}
 
 /* Global containment. */
 .sn-main,.sn-main>*,.sn-view-pad,.sn-view-pad>*,.sn-content-card,.sn-content-card>*,
@@ -142,6 +298,12 @@ body.sn-mobile-sidebar-open .sn-main{
   .sn-view-pad{width:100%!important;max-width:100%!important;padding:12px!important}
   .sn-page-title,.sn-content-tools{min-width:0!important;max-width:100%!important}
   .sn-page-title h1,.sn-welcome h1{overflow-wrap:anywhere!important}
+  .sn-welcome{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:14px!important}
+  .sn-welcome>div:last-child{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%!important;gap:8px!important}
+  .sn-welcome>div:last-child>:is(button,a){width:100%!important;justify-content:center!important;min-height:44px!important}
+  .sn-metrics,.sn-home-grid{grid-template-columns:minmax(0,1fr)!important}
+  .sn-home-grid>section>button{grid-template-columns:40px minmax(0,1fr) auto!important;gap:8px!important}
+  .sn-home-grid>section b{white-space:normal!important;overflow-wrap:anywhere!important}
   .sn-settings-grid{grid-template-columns:minmax(0,1fr)!important}
   .sv124-page :is(.sv124-actions,.domain-actions,.domain-card-actions,.domain-primary-actions){
     width:100%!important;
