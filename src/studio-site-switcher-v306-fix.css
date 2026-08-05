@@ -1,0 +1,330 @@
+/* v306: Ganti situs layout authority. Keep every label/action readable and the close control isolated. */
+.sn-site-switcher-v305-layer,
+.sn-site-switcher-v305-layer *,
+.sn-modal-layer .sn-site-manager,
+.sn-modal-layer .sn-site-manager *{box-sizing:border-box;min-width:0}
+
+/* Current v305 chooser */
+.sn-site-switcher-v305-layer .sn-site-switcher-v305{
+  width:min(820px,calc(100vw - 32px))!important;
+  max-width:100%!important;
+  max-height:min(88dvh,860px)!important;
+  overflow:hidden!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305>header{
+  position:relative!important;
+  inset:auto!important;
+  min-height:104px!important;
+  align-items:flex-start!important;
+  padding:20px 78px 16px 22px!important;
+  overflow:visible!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305>header>div{
+  display:block!important;
+  width:100%!important;
+  max-width:650px!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305>header h2,
+.sn-site-switcher-v305-layer .sn-site-switcher-v305>header p,
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-copy b,
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-copy small,
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-copy p{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305>header>[data-site-switcher-close]{
+  position:absolute!important;
+  top:18px!important;
+  right:18px!important;
+  left:auto!important;
+  bottom:auto!important;
+  z-index:20!important;
+  width:42px!important;
+  height:42px!important;
+  margin:0!important;
+  transform:none!important;
+  pointer-events:auto!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-list{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  min-height:180px!important;
+  overflow:auto!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:grid!important;
+  grid-template-columns:50px minmax(0,1fr) minmax(250px,auto)!important;
+  align-items:center!important;
+  gap:12px!important;
+  min-height:76px!important;
+  padding:13px!important;
+  overflow:visible!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-copy{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  width:auto!important;
+  max-width:100%!important;
+  z-index:2!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions>button,
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions>a{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  min-height:40px!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0 13px!important;
+  white-space:nowrap!important;
+  pointer-events:auto!important;
+  z-index:1!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions .site-delete-v306{
+  border:1px solid #efc9cf!important;
+  background:#fff7f8!important;
+  color:#ad3d4f!important;
+  box-shadow:none!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions .site-delete-v306:hover,
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions .site-delete-v306:focus-visible{
+  border-color:#de9daa!important;
+  background:#fff0f2!important;
+  outline:2px solid rgba(173,61,79,.13)!important;
+  outline-offset:2px!important;
+}
+.sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions .site-delete-v306:disabled{
+  opacity:.58!important;
+  cursor:wait!important;
+}
+
+/* Legacy React manager stays as a safe fallback when a stale client opens it. */
+.sn-modal-layer .sn-site-manager{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:min(880px,calc(100vw - 32px))!important;
+  max-width:100%!important;
+  height:auto!important;
+  max-height:min(90dvh,880px)!important;
+  overflow:hidden!important;
+  border-radius:22px!important;
+}
+.sn-modal-layer .sn-site-manager>header{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  min-height:98px!important;
+  height:auto!important;
+  padding:20px 78px 16px 20px!important;
+  overflow:visible!important;
+  z-index:4!important;
+  background:#fff!important;
+}
+.sn-modal-layer .sn-site-manager>header>div{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:block!important;
+  width:100%!important;
+  max-width:680px!important;
+}
+.sn-modal-layer .sn-site-manager>header h2,
+.sn-modal-layer .sn-site-manager>header small{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:block!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+.sn-modal-layer .sn-site-manager>header h2{
+  margin:6px 0 0!important;
+  line-height:1.16!important;
+}
+.sn-modal-layer .sn-site-manager>header>button{
+  position:absolute!important;
+  top:18px!important;
+  right:18px!important;
+  left:auto!important;
+  bottom:auto!important;
+  z-index:20!important;
+  width:42px!important;
+  height:42px!important;
+  margin:0!important;
+  transform:none!important;
+  pointer-events:auto!important;
+}
+.sn-modal-layer .sn-site-manager>.sn-sites-list{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  flex:1 1 auto!important;
+  min-height:120px!important;
+  margin:0!important;
+  padding:10px 20px 14px!important;
+  overflow:auto!important;
+  z-index:1!important;
+  background:#fff!important;
+}
+.sn-modal-layer .sn-site-manager .sn-sites-list article{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:grid!important;
+  grid-template-columns:48px minmax(0,1fr) auto auto auto!important;
+  align-items:center!important;
+  gap:9px!important;
+  min-height:74px!important;
+  margin:0!important;
+  padding:11px 0!important;
+  overflow:visible!important;
+}
+.sn-modal-layer .sn-site-manager .sn-sites-list article>div{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.sn-modal-layer .sn-site-manager .sn-sites-list b,
+.sn-modal-layer .sn-site-manager .sn-sites-list small{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+.sn-modal-layer .sn-site-manager .sn-sites-list article>button,
+.sn-modal-layer .sn-site-manager .sn-sites-list article>a{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  min-height:38px!important;
+  margin:0!important;
+  padding:0 11px!important;
+  white-space:nowrap!important;
+  pointer-events:auto!important;
+  z-index:2!important;
+}
+.sn-modal-layer .sn-site-manager .sn-sites-list .site-delete-v306{
+  border:1px solid #efc9cf!important;
+  background:#fff7f8!important;
+  color:#ad3d4f!important;
+}
+.sn-modal-layer .sn-site-manager .sn-sites-list .site-delete-v306:disabled{
+  opacity:.58!important;
+  cursor:wait!important;
+}
+.sn-modal-layer .sn-site-manager>.sn-create-site{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  flex:0 1 auto!important;
+  min-height:0!important;
+  max-height:46dvh!important;
+  overflow:auto!important;
+  margin:0!important;
+  z-index:1!important;
+}
+.sn-modal-layer .sn-site-manager>:not(header){max-width:100%!important;min-width:0!important}
+
+@media(max-width:680px){
+  .sn-site-switcher-v305-layer{place-items:end center!important;padding:0!important}
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305{
+    width:100%!important;
+    max-height:calc(94dvh - env(safe-area-inset-top,0px))!important;
+    border-radius:20px 20px 0 0!important;
+  }
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305>header{
+    min-height:112px!important;
+    padding:17px 66px 14px 15px!important;
+  }
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305>header>[data-site-switcher-close]{top:14px!important;right:14px!important}
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row{
+    grid-template-columns:42px minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions{
+    grid-column:1/-1!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    width:100%!important;
+    gap:8px!important;
+  }
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions>button,
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions>a{
+    width:100%!important;
+    min-height:43px!important;
+    white-space:normal!important;
+    text-align:center!important;
+  }
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions .site-delete-v306{
+    grid-column:1/-1!important;
+  }
+
+  .sn-modal-layer{padding:8px!important;place-items:center!important}
+  .sn-modal-layer .sn-site-manager{
+    width:100%!important;
+    height:auto!important;
+    max-height:calc(100dvh - 16px)!important;
+    border-radius:18px!important;
+  }
+  .sn-modal-layer .sn-site-manager>header{
+    min-height:94px!important;
+    padding:16px 64px 13px 15px!important;
+  }
+  .sn-modal-layer .sn-site-manager>header>button{top:14px!important;right:14px!important}
+  .sn-modal-layer .sn-site-manager>.sn-sites-list{padding:8px 13px 12px!important}
+  .sn-modal-layer .sn-site-manager .sn-sites-list article{
+    grid-template-columns:42px minmax(0,1fr)!important;
+    gap:9px!important;
+    padding:12px 0!important;
+  }
+  .sn-modal-layer .sn-site-manager .sn-sites-list article>button,
+  .sn-modal-layer .sn-site-manager .sn-sites-list article>a{
+    grid-column:1/-1!important;
+    width:100%!important;
+    min-height:42px!important;
+    justify-content:center!important;
+    white-space:normal!important;
+  }
+  .sn-modal-layer .sn-site-manager>.sn-create-site{max-height:44dvh!important;padding:15px!important}
+  .sn-modal-layer .sn-site-manager .sn-create-site>div{grid-template-columns:minmax(0,1fr)!important}
+}
+
+@media(max-width:390px){
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions{grid-template-columns:minmax(0,1fr)!important}
+  .sn-site-switcher-v305-layer .sn-site-switcher-v305-row .site-actions .site-delete-v306{grid-column:auto!important}
+}
