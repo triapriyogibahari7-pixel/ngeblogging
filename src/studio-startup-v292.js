@@ -5,8 +5,8 @@ export const STUDIO_STARTUP_RELEASE_V292 = "studio-startup-direct-data-v292-2026
 export const AUTH_SESSION_HANDOFF_RELEASE_V292 = "auth-session-handoff-v292-20260805";
 export const STARTUP_DATA_RELEASE_V292 = "startup-membership-direct-first-v292-20260805";
 
-const DIRECT_TIMEOUT_MS = 6_500;
-const FALLBACK_TIMEOUT_MS = 7_500;
+const DIRECT_TIMEOUT_MS = 4_500;
+const FALLBACK_TIMEOUT_MS = 5_500;
 const browserEnv = import.meta.env || {};
 const PRODUCTION_SUPABASE_URL = "https://polvmlrhqoiflumibfqs.supabase.co";
 const PRODUCTION_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-";
@@ -85,9 +85,7 @@ export function installAuthSessionHandoffV292() {
     if (["SIGNED_IN", "TOKEN_REFRESHED", "INITIAL_SESSION", "USER_UPDATED"].includes(event) && usableSession(session)) {
       publishVerifiedSessionV292(session, event.toLowerCase());
     }
-    if (event === "SIGNED_OUT") {
-      window.__ngebloggingVerifiedSession = null;
-    }
+    if (event === "SIGNED_OUT") window.__ngebloggingVerifiedSession = null;
   });
   authSubscription = data?.subscription || null;
   return () => {};
@@ -142,7 +140,7 @@ async function directMembership(userId) {
     if (!response.ok) {
       const error = new Error(`Pembacaan situs langsung gagal (${response.status}).`);
       error.status = response.status;
-      error.code = response.status === 401 || response.status === 403 ? "SESSION_REAUTH_REQUIRED" : "STARTUP_DATA_DIRECT_FAILED";
+      error.code = response.status === 401 ? "SESSION_REAUTH_REQUIRED" : response.status === 403 ? "STARTUP_DATA_FORBIDDEN" : "STARTUP_DATA_DIRECT_FAILED";
       throw error;
     }
     const rows = await response.json();
@@ -162,7 +160,7 @@ export async function listUserSitesStartupV292(userId) {
     return await directMembership(userId);
   } catch (directError) {
     const status = Number(directError?.status || 0);
-    if (status === 401 || status === 403 || directError?.code === "SESSION_REAUTH_REQUIRED") throw directError;
+    if (status === 401 || directError?.code === "SESSION_REAUTH_REQUIRED") throw directError;
     if (typeof document !== "undefined") document.documentElement.dataset.studioStartupDataV292 = "gateway-client-fallback";
     return deadline(
       listUserSites(userId),
