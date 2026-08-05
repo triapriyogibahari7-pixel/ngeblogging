@@ -1,0 +1,58 @@
+{
+  "release": "studio-auth-sidebar-v291-20260805",
+  "date": "2026-08-05",
+  "cache": "studio-auth-sidebar-cache-v291",
+  "inherits": [
+    "studio-react-shell-v287-20260805",
+    "studio-screenshot-polish-v288-20260805",
+    "studio-final-pass-v289-20260805",
+    "studio-native-controls-v290-20260805"
+  ],
+  "scope": "restore known-compatible authentication callbacks and make sidebar n interaction single-owner",
+  "fixes": {
+    "authentication": {
+      "oauthCallbackPath": "/?auth=callback",
+      "magicLinkCallbackPath": "/?auth=callback",
+      "signupCallbackPath": "/?auth=callback",
+      "recoveryPath": "/?auth=recovery",
+      "retiredStudioCallbackMonkeyPatch": true,
+      "persistentSessionPreserved": true,
+      "automaticRefreshPreserved": true,
+      "networkFailureDoesNotLogout": true
+    },
+    "sidebar": {
+      "singleVisibleN": true,
+      "singleClickOwner": true,
+      "repeatableClick": true,
+      "keyboardToggle": true,
+      "noPointerDownDoubleToggle": true,
+      "noTemporaryToggleDisable": true,
+      "desktopRailPreserved": true,
+      "mobileDrawerPreserved": true
+    },
+    "nara": {
+      "launcherViewportFixed": true,
+      "smallMediumNonModal": true,
+      "attachmentMenuViewportSafe": true,
+      "cameraPhotoFilePreserved": true,
+      "microphoneSpeakerModelIntelligencePreserved": true
+    },
+    "responsive": {
+      "sixModeClassifierPreserved": true,
+      "desktopFamilyPreserved": true,
+      "mobileContainmentPreserved": true
+    }
+  },
+  "verification": {
+    "sourceRegression": [
+      "tests/studio-react-shell-v287.test.mjs",
+      "tests/studio-native-controls-v290.test.mjs"
+    ],
+    "productionBuildRequired": true,
+    "serviceWorkerRotationRequired": true,
+    "liveManifestRequired": true,
+    "liveBundleRequired": true,
+    "liveHealthRequired": true,
+    "realCredentialLoginStillRequiresProviderOrUserCredential": true
+  }
+}

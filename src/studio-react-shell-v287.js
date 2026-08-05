@@ -6,7 +6,6 @@ let frame = 0;
 
 const shell = () => document.querySelector(".sn-shell[data-device-mode],.sn-shell");
 const sidebar = () => document.getElementById("ngeblogging-studio-sidebar");
-const reactToggle = () => document.querySelector(".sn-main>.sn-top>.sn-sidebar-toggle,.sn-top>.sn-sidebar-toggle");
 const avatar = () => document.querySelector(".sn-top .sn-avatar");
 const menu = () => document.querySelector(`.${MENU_CLASS}`);
 
@@ -172,16 +171,8 @@ function schedule() {
 }
 
 function clickOwner(event) {
-  const mark = event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark");
-  if (mark) {
-    event.preventDefault();
-    event.stopPropagation();
-    const toggle = reactToggle();
-    if (toggle && !toggle.disabled) toggle.click();
-    requestAnimationFrame(schedule);
-    return;
-  }
-
+  // Sidebar n ownership was retired in v291. Only the profile dropdown remains
+  // here; the n is handled by studio-native-controls-v290.js as the single owner.
   const profile = event.target.closest?.(".sn-top .sn-avatar");
   if (profile) {
     event.preventDefault();
@@ -210,21 +201,11 @@ function clickOwner(event) {
 }
 
 function keyOwner(event) {
-  if (event.key === "Escape") {
-    if (menu()) {
-      event.preventDefault();
-      event.stopPropagation();
-      closeProfileMenu();
-      avatar()?.focus({ preventScroll: true });
-    }
-    return;
-  }
-  if ((event.key === "Enter" || event.key === " ") && event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark")) {
-    event.preventDefault();
-    event.stopPropagation();
-    reactToggle()?.click();
-    requestAnimationFrame(schedule);
-  }
+  if (event.key !== "Escape" || !menu()) return;
+  event.preventDefault();
+  event.stopPropagation();
+  closeProfileMenu();
+  avatar()?.focus({ preventScroll: true });
 }
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
