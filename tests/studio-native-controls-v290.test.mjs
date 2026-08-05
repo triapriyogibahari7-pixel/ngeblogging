@@ -86,3 +86,24 @@ test("v290 keeps real Supabase persistence and all six responsive classification
   for (const provider of ["google", "github", "linkedin_oidc"]) assert.ok(supabase.includes(`"${provider}"`));
   for (const mode of ["application", "phone", "mobile", "compact", "tablet", "desktop"]) assert.ok(device.includes(`"${mode}"`), `missing ${mode}`);
 });
+
+test("v294 mobile browsers cannot inherit the desktop rail from transient viewport width", async () => {
+  const device = await read("src/studio-device-mode-v140.js");
+  const release = await read("public/release-v294.json");
+  const patch = await read("scripts/patch-service-worker-v294.mjs");
+
+  assert.match(device, /studio-mobile-classifier-v294-20260805/);
+  assert.match(device, /function explicitMobileBrowserSignal\(\)/);
+  assert.match(device, /const widenedLayout = !explicitMobileBrowser/);
+  assert.match(device, /const widenedVisual = !explicitMobileBrowser/);
+  assert.match(device, /const wideTouchDesktopSurface =[\s\S]*navigator\.userAgentData\?\.mobile === false/);
+  assert.match(device, /if \(desktopSiteLock && explicitMobileBrowserSignal\(\)\) desktopSiteLock = false/);
+  assert.match(device, /export function detectStudioResponsiveMode\(\) \{\s*ensureViewportMeta\(\);/);
+  assert.match(device, /function applyDeviceMode\(\) \{\s*frame = 0;\s*ensureViewportMeta\(\);/);
+  assert.match(device, /studioMobileClassifierV294/);
+  assert.match(release, /studio-mobile-classifier-cache-v294/);
+  assert.match(patch, /STUDIO_MOBILE_CLASSIFIER_RELEASE_V294/);
+
+  // The fix must not solve a layout bug by destroying auth/session state.
+  assert.doesNotMatch(device, /signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
+});

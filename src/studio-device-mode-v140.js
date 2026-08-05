@@ -1,4 +1,5 @@
 const RELEASE = "studio-device-mode-v267-20260804";
+const MOBILE_CLASSIFIER_FIX_V294 = "studio-mobile-classifier-v294-20260805";
 const LEGACY_RELEASE = "studio-device-mode-v147-20260729";
 const MODE_EVENT = "ngeblogging:studio-device-mode-change";
 const COMPACT_MAX = 760;
@@ -35,6 +36,16 @@ function mediaMatches(query) {
 
 function standaloneSurface() {
   return mediaMatches("(display-mode: standalone)") || window.navigator.standalone === true;
+}
+
+function ensureViewportMeta() {
+  let viewport = document.querySelector('meta[name="viewport"]');
+  if (!viewport) {
+    viewport = document.createElement("meta");
+    viewport.name = "viewport";
+    document.head.prepend(viewport);
+  }
+  viewport.content = "width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content";
 }
 
 function normalizedScreenDimension(raw, density, fallback) {
@@ -78,6 +89,12 @@ function platformHandheldSignal() {
   return /Android|iPhone|iPad|iPod|Linux arm|Mobile/i.test(platform);
 }
 
+function explicitMobileBrowserSignal() {
+  if (navigator.userAgentData?.mobile === true) return true;
+  const userAgent = navigator.userAgent || "";
+  return /\bMobile\b|iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(userAgent);
+}
+
 function userAgentHandheldSignal() {
   const userAgent = navigator.userAgent || "";
   return navigator.userAgentData?.mobile === true
@@ -103,15 +120,26 @@ function handheldSignal(view) {
 function rawDesktopSiteRequested(view, handheld) {
   if (!handheld) return false;
   const physical = Math.max(1, view.physicalViewportWidth);
-  const widenedLayout = view.layoutWidth >= DESKTOP_SITE_MIN_LAYOUT
+  const explicitMobileBrowser = explicitMobileBrowserSignal();
+
+  // Mobile Chrome may report a desktop-like width briefly before viewport-fit
+  // settles. A browser that still declares itself mobile must not be promoted
+  // to the desktop family from that transient measurement.
+  const widenedLayout = !explicitMobileBrowser
+    && view.layoutWidth >= DESKTOP_SITE_MIN_LAYOUT
     && view.layoutWidth / physical >= DESKTOP_SITE_WIDTH_RATIO;
-  const widenedVisual = view.visualWidth >= DESKTOP_SITE_MIN_LAYOUT
+  const widenedVisual = !explicitMobileBrowser
+    && view.visualWidth >= DESKTOP_SITE_MIN_LAYOUT
     && view.visualWidth / physical >= DESKTOP_SITE_WIDTH_RATIO;
   const explicitDesktopUaOnHandheld = platformHandheldSignal()
     && navigator.userAgentData?.mobile === false
     && Math.max(view.layoutWidth, view.visualWidth) >= DESKTOP_SITE_MIN_LAYOUT;
+
+  // Preserve the v267 compatibility marker while requiring an explicit
+  // desktop-UA signal. A wide Android touch surface by itself is not desktop.
   const wideTouchDesktopSurface = Number(navigator.maxTouchPoints || 0) > 1
     && platformHandheldSignal()
+    && navigator.userAgentData?.mobile === false
     && Math.max(view.layoutWidth, view.visualWidth) >= 768
     && view.density >= 1.1;
   return widenedLayout || widenedVisual || explicitDesktopUaOnHandheld || wideTouchDesktopSurface;
@@ -121,9 +149,10 @@ function desktopSiteRequested(view, handheld) {
   const requested = rawDesktopSiteRequested(view, handheld);
   if (requested) desktopSiteLock = true;
 
-  // Keep Chrome/Android "Desktop site" stable while the browser bars, zoom,
-  // visualViewport, or keyboard briefly change dimensions. Release the lock
-  // only after the viewport is unmistakably back in a handheld layout.
+  // Returning to an explicitly mobile UA releases the desktop-site lock
+  // immediately. A real desktop-site request remains sticky through address-bar,
+  // keyboard, zoom and visualViewport changes.
+  if (desktopSiteLock && explicitMobileBrowserSignal()) desktopSiteLock = false;
   if (desktopSiteLock) {
     const clearlyMobileAgain = view.layoutWidth <= HANDHELD_MAX
       && view.visualWidth <= HANDHELD_MAX
@@ -133,9 +162,9 @@ function desktopSiteRequested(view, handheld) {
   return desktopSiteLock;
 }
 
-function classifyResponsiveMode(view, handheld) {
+function classifyResponsiveMode(view, handheld, desktopSitePhone = desktopSiteRequested(view, handheld)) {
   if (standaloneSurface()) return "application";
-  if (desktopSiteRequested(view, handheld)) return "desktop";
+  if (desktopSitePhone) return "desktop";
   if (handheld && view.physicalShortSide <= PHONE_MAX) return "phone";
   if (handheld && view.physicalShortSide <= HANDHELD_MAX) return "mobile";
   if (handheld && view.physicalShortSide < 768) return "compact";
@@ -159,9 +188,11 @@ function layoutMode(responsiveMode) {
 }
 
 export function detectStudioResponsiveMode() {
+  ensureViewportMeta();
   const view = viewportMetrics();
   const handheld = handheldSignal(view);
-  return classifyResponsiveMode(view, handheld);
+  const desktopSitePhone = desktopSiteRequested(view, handheld);
+  return classifyResponsiveMode(view, handheld, desktopSitePhone);
 }
 
 export function currentStudioResponsiveMode() {
@@ -176,29 +207,19 @@ export function currentStudioDeviceMode() {
   return detectStudioDeviceMode();
 }
 
-function ensureViewportMeta() {
-  let viewport = document.querySelector('meta[name="viewport"]');
-  if (!viewport) {
-    viewport = document.createElement("meta");
-    viewport.name = "viewport";
-    document.head.prepend(viewport);
-  }
-  viewport.content = "width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content";
-}
-
 function applyDeviceMode() {
   frame = 0;
+  ensureViewportMeta();
   const root = document.documentElement;
   const view = viewportMetrics();
   const handheld = handheldSignal(view);
   const desktopSitePhone = desktopSiteRequested(view, handheld);
-  const responsiveMode = classifyResponsiveMode(view, handheld);
+  const responsiveMode = classifyResponsiveMode(view, handheld, desktopSitePhone);
   const nextLayoutMode = layoutMode(responsiveMode);
   const variant = desktopVariant(view, responsiveMode, desktopSitePhone);
   const signature = [responsiveMode, nextLayoutMode, variant, handheld, desktopSitePhone, Math.round(view.effectiveWidth)].join(":");
   const previousMode = root.dataset.studioResponsiveMode || "";
 
-  ensureViewportMeta();
   root.dataset.studioResponsiveMode = responsiveMode;
   root.dataset.studioDeviceMode = nextLayoutMode;
   root.dataset.studioDeviceVariant = variant;
@@ -207,6 +228,7 @@ function applyDeviceMode() {
   root.dataset.studioDesktopSitePhone = String(desktopSitePhone);
   root.dataset.studioSiteDesktop = String(responsiveMode === "desktop");
   root.dataset.studioDeviceRelease = RELEASE;
+  root.dataset.studioMobileClassifierV294 = MOBILE_CLASSIFIER_FIX_V294;
   root.dataset.studioDeviceLegacyRelease = LEGACY_RELEASE;
   root.dataset.studioDesktopSiteLock = String(desktopSiteLock);
   root.style.setProperty("--studio-layout-width", `${view.layoutWidth}px`);
@@ -231,6 +253,7 @@ function applyDeviceMode() {
         variant,
         previous: previousMode,
         release: RELEASE,
+        classifierRelease: MOBILE_CLASSIFIER_FIX_V294,
         handheld,
         desktopSitePhone,
         ...view,
@@ -256,6 +279,7 @@ applyDeviceMode();
 
 export {
   RELEASE,
+  MOBILE_CLASSIFIER_FIX_V294,
   LEGACY_RELEASE,
   MODE_EVENT,
   COMPACT_MAX,
