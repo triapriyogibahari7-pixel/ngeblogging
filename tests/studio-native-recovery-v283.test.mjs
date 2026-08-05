@@ -104,8 +104,9 @@ test("Theme Studio keeps 100 themes, 26 widgets, centered map and real code line
   assert.match(layout, /tn-layout-popover-v264/);
   assert.match(layout, /Edit HTML \/ CSS \/ JavaScript/);
   assert.match(runtime, /MAX_CODE_LINES = 10000/);
-  assert.match(runtime, /lineNumberText/);
-  assert.match(runtime, /Array\.from\(\{ length: 10000/); // must not pre-render fake 1..10000
+  assert.match(runtime, /function lineNumberText/);
+  assert.doesNotMatch(runtime, /Array\.from\(\{\s*length:\s*10000/);
+  assert.match(runtime, /String\(textarea\.value \|\| ""\)\.split\("\\n"\)\.length/);
 });
 
 test("code workspace is 50:50 on large and preview-first on small without overflow", () => {
