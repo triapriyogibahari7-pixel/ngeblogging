@@ -1,8 +1,8 @@
 import "./studio-native-controls-v290.css";
 
 export const STUDIO_NATIVE_CONTROLS_RELEASE_V290 = "studio-native-controls-v290-20260805";
+export const STUDIO_AUTH_SIDEBAR_COMPAT_V291 = "studio-auth-sidebar-v291-20260805";
 let frame = 0;
-let muteTimer = 0;
 
 const shell = () => document.querySelector(".sn-shell");
 const sidebar = () => document.getElementById("ngeblogging-studio-sidebar");
@@ -31,7 +31,15 @@ function syncSidebar() {
   reveal(mark);
   if (mark) {
     mark.dataset.v290NativeInput = STUDIO_NATIVE_CONTROLS_RELEASE_V290;
+    mark.dataset.v291AuthSidebar = STUDIO_AUTH_SIDEBAR_COMPAT_V291;
     mark.style.removeProperty("pointer-events");
+    const expanded = currentFamily() === "large" ? !side.classList.contains("collapsed") : side.classList.contains("mobile-open");
+    mark.setAttribute("role", "button");
+    mark.setAttribute("tabindex", "0");
+    mark.setAttribute("aria-controls", "ngeblogging-studio-sidebar");
+    mark.setAttribute("aria-expanded", String(expanded));
+    mark.setAttribute("aria-label", expanded ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
+    mark.setAttribute("title", expanded ? "Tutup menu Ngeblogging" : "Buka menu Ngeblogging");
     const letter = mark.querySelector("strong");
     if (letter) {
       letter.textContent = "n";
@@ -81,6 +89,7 @@ export function syncStudioV290() {
   frame = 0;
   if (!shell()) return;
   document.documentElement.dataset.studioNativeControlsV290 = STUDIO_NATIVE_CONTROLS_RELEASE_V290;
+  document.documentElement.dataset.studioAuthSidebarV291 = STUDIO_AUTH_SIDEBAR_COMPAT_V291;
   shell().dataset.v290Family = currentFamily();
   syncSidebar();
   syncNara();
@@ -96,24 +105,24 @@ function schedule(delay = 0) {
   frame = requestAnimationFrame(syncStudioV290);
 }
 
-function immediateNativeToggle(event) {
+function nativeToggle(event) {
   const mark = event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark");
   if (!mark) return;
   const toggle = reactToggle();
   if (!toggle || toggle.disabled) return;
 
-  // React remains the state owner. We trigger its real toggle on pointer-down so
-  // slow mobile click/capture chains cannot make the n feel frozen. The button is
-  // muted briefly so the historical v287 click bridge cannot toggle it a second time.
   event.preventDefault();
+  event.stopPropagation();
   toggle.click();
-  toggle.disabled = true;
-  mark.dataset.v290PointerToggle = String(Date.now());
-  if (muteTimer) clearTimeout(muteTimer);
-  muteTimer = window.setTimeout(() => {
-    toggle.disabled = false;
-    schedule();
-  }, 220);
+  mark.dataset.v291SingleOwnerToggle = String(Date.now());
+  requestAnimationFrame(() => schedule());
+}
+
+function nativeToggleKeyboard(event) {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const mark = event.target.closest?.("#ngeblogging-studio-sidebar .sn-logo-mark");
+  if (!mark) return;
+  nativeToggle(event);
 }
 
 function keepMobileDrawerNonBlocking() {
@@ -124,7 +133,8 @@ function keepMobileDrawerNonBlocking() {
 }
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  document.addEventListener("pointerdown", immediateNativeToggle, true);
+  document.addEventListener("click", nativeToggle, true);
+  document.addEventListener("keydown", nativeToggleKeyboard, true);
   document.addEventListener("click", () => { keepMobileDrawerNonBlocking(); schedule(); schedule(80); }, false);
   window.addEventListener("resize", () => schedule(60), { passive: true });
   window.addEventListener("orientationchange", () => schedule(80), { passive: true });
@@ -136,3 +146,8 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { schedule(); schedule(400); }, { once: true });
   else { schedule(); schedule(400); }
 }
+
+/* v293 owns final geometry/theme/editor; v295 adds the screenshot-driven production polish. */
+import("./studio-final-authority-v293.js")
+  .then(() => import("./studio-polish-v295.js"))
+  .catch((error) => console.error("Studio final authority failed to load", error));

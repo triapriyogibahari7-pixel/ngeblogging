@@ -1,0 +1,44 @@
+{
+  "release": "studio-polish-v295-20260805",
+  "cache": "studio-polish-cache-v295",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-mobile-classifier-v294-20260805",
+    "studio-final-authority-v293-20260805",
+    "studio-startup-direct-data-v292-20260805",
+    "auth-session-handoff-v292-20260805",
+    "studio-auth-sidebar-v291-20260805",
+    "studio-native-controls-v290-20260805"
+  ],
+  "fixes": {
+    "productionBranchRecovery": true,
+    "singleSidebarN": true,
+    "mobileDrawerNonBlocking": true,
+    "mobileDrawerNoBlur": true,
+    "sidebarMenusCloseTogether": true,
+    "profileVisibleEveryMode": true,
+    "profileDropdown": ["Profil & avatar", "Tambah situs", "Ganti situs", "Pengaturan", "Bantuan Nara", "Keluar"],
+    "explicitLogoutOnly": true,
+    "naraFixedLauncher": true,
+    "naraSmallMediumNonModal": true,
+    "naraSmallMediumResponsive": true,
+    "naraCloseVisible": true,
+    "naraAttachmentMenu": ["Kamera", "Foto", "File"],
+    "naraAttachmentMenuOpensUpward": true,
+    "themeCodeDesktop": "code-left-preview-right",
+    "themeCodeSmall": "preview-top-code-bottom",
+    "themeLayout26AreaPreserved": true,
+    "themeCatalog100Preserved": true,
+    "postPageWordLimit": 5000,
+    "postPageWarning": 4500,
+    "analyticsProductionPreserved": true,
+    "authPersistSessionPreserved": true,
+    "authAutoRefreshPreserved": true
+  },
+  "validation": {
+    "capacityClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "providerCredentialLoginClaimed": false,
+    "note": "Source/runtime gates can be validated in CI. Real provider login, real-device/browser matrix, and extreme capacity require successful production deployment plus live tests."
+  }
+}

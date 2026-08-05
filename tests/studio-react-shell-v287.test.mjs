@@ -50,13 +50,14 @@ test("v287 retires stacked shell/Nara observers and the v208 hard reload", async
   assert.doesNotMatch(recovery, /location\.(reload|replace)\s*\(/);
 });
 
-test("v287 owns one n interaction and a viewport-safe profile menu", async () => {
+test("v287 keeps profile dropdown but delegates the sidebar n to the final native owner", async () => {
   const runtime = await read("src/studio-react-shell-v287.js");
   const css = await read("src/studio-react-shell-v287.css");
   for (const label of ["Profil", "Ganti avatar", "Tambahkan situs", "Pengaturan", "Nara AI", "Keluar"]) assert.ok(runtime.includes(label), `missing ${label}`);
   assert.match(runtime, /__ngebloggingOpenAvatarPicker/);
-  assert.match(runtime, /#ngeblogging-studio-sidebar \.sn-logo-mark/);
-  assert.match(runtime, /reactToggle\(\)/);
+  assert.match(runtime, /Sidebar n ownership was retired in v291/);
+  assert.doesNotMatch(runtime, /const reactToggle/);
+  assert.doesNotMatch(runtime, /event\.target\.closest\?\.\("#ngeblogging-studio-sidebar \\.sn-logo-mark"\)/);
   assert.match(css, /data-device-mode="large"/);
   assert.match(css, /data-device-mode="small"/);
   assert.match(css, /sn-profile-menu-v287/);

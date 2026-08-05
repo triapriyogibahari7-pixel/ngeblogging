@@ -6,23 +6,32 @@ import {
 } from "lucide-react";
 import StudioSecure from "./StudioSecure.jsx";
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
-import { ACTIVE_SITE_STORAGE_KEY, listUserSites, setActiveSiteId } from "./lib/studio-data.js";
+import { ACTIVE_SITE_STORAGE_KEY, setActiveSiteId } from "./lib/studio-data.js";
 import { MAX_SITES_PER_ACCOUNT, createUserSiteWithPolicy, getSiteQuota } from "./lib/site-policy-v169.js";
 import {
   getVerifiedSession,
   isSessionReauthError,
   isTransientSessionError,
 } from "./lib/auth-session-v76.js";
+import {
+  STUDIO_STARTUP_RELEASE_V292,
+  listUserSitesStartupV292,
+} from "./studio-startup-v292.js";
 import "./site-onboarding-v75.css";
 import "./studio-first-site-v169.css";
 import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
 const RELEASE = "first-site-onboarding-v76-20260727";
-const STARTUP_RELEASE = "studio-session-handoff-v287-20260805";
-const CHECK_TIMEOUT_MS = 12_000;
-const STARTUP_RETRY_DELAYS = [450, 900, 1_800];
+const STARTUP_RELEASE = STUDIO_STARTUP_RELEASE_V292;
+const CHECK_TIMEOUT_MS = 7_000;
+const STARTUP_DATA_TIMEOUT_MS = 11_000;
 const RECOVERY_SNAPSHOT_KEYS = [
+  "ngeblogging-active-site-snapshot-v292",
+  "ngeblogging-active-site-snapshot-v209",
+  "ngeblogging-active-site-snapshot-v208",
+  "ngeblogging-active-site-snapshot-v205",
+  "ngeblogging-active-site-snapshot-v198",
   "ngeblogging-active-site-snapshot-v195",
   "ngeblogging-active-site-snapshot-v192",
 ];
@@ -77,10 +86,6 @@ function withDeadline(promise, milliseconds, message) {
   ]).finally(() => window.clearTimeout(timer));
 }
 
-function sleep(milliseconds) {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-}
-
 function isTransientStudioError(error) {
   const code = String(error?.code || "").toLowerCase();
   const name = String(error?.name || "").toLowerCase();
@@ -88,30 +93,43 @@ function isTransientStudioError(error) {
   return isTransientSessionError(error)
     || name === "datatransporterror"
     || name === "typeerror"
+    || name === "timeouterror"
     || code === "data_network_unavailable"
+    || code === "studio_startup_timeout"
     || code === "onboarding_timeout"
     || /failed to fetch|network|jaringan|timeout|time out|sementara|unreachable|belum dapat dijangkau/.test(message);
 }
 
+function handedSession(userId) {
+  const handed = typeof window === "undefined" ? null : window.__ngebloggingVerifiedSession;
+  if (!handed?.session?.access_token || !handed?.session?.refresh_token) return null;
+  if (!handed?.user?.id || handed.user.id !== userId) return null;
+  return handed;
+}
+
 async function loadStudioMembership(userId) {
-  let lastError = null;
-  for (let attempt = 0; attempt <= STARTUP_RETRY_DELAYS.length; attempt += 1) {
-    try {
-      const verified = await withDeadline(getVerifiedSession({ force: true }), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
-      if (!verified?.user?.id) {
-        throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
-      }
-      const sites = await withDeadline(listUserSites(verified.user.id || userId), CHECK_TIMEOUT_MS, "Pemeriksaan situs melewati batas waktu.");
-      return { verified, sites };
-    } catch (error) {
-      if (isSessionReauthError(error) || !isTransientStudioError(error)) throw error;
-      lastError = error;
-      if (attempt < STARTUP_RETRY_DELAYS.length) await sleep(STARTUP_RETRY_DELAYS[attempt]);
-    }
+  const handed = handedSession(userId);
+  const verified = handed || await withDeadline(
+    getVerifiedSession(),
+    CHECK_TIMEOUT_MS,
+    "Verifikasi sesi melewati batas waktu.",
+  );
+  if (!verified?.user?.id) {
+    throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
   }
-  throw Object.assign(new Error(
-    "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan dan sistem tidak mengeluarkan akun. Tekan Coba lagi setelah jaringan tersambung.",
-  ), { name: "DataTransportError", code: "DATA_NETWORK_UNAVAILABLE", cause: lastError });
+  try {
+    const sites = await withDeadline(
+      listUserSitesStartupV292(verified.user.id || userId),
+      STARTUP_DATA_TIMEOUT_MS,
+      "Pemeriksaan situs melewati batas waktu.",
+    );
+    return { verified, sites };
+  } catch (error) {
+    if (isSessionReauthError(error) || !isTransientStudioError(error)) throw error;
+    throw Object.assign(new Error(
+      "Data situs belum merespons dalam batas waktu. Sesi akun tetap aktif dan tidak dihapus. Tekan Coba lagi saat jaringan stabil.",
+    ), { name: "DataTransportError", code: "DATA_NETWORK_UNAVAILABLE", cause: error });
+  }
 }
 
 function preferredSite(sites) {
@@ -138,10 +156,14 @@ function recoveredActiveSite(userId) {
 
 function publishActiveSite(site) {
   if (!site?.id || !site?.slug) return;
+  const userId = window.__ngebloggingVerifiedSession?.user?.id || "";
+  const snapshot = { ...site, __userId: userId, __savedAt: Date.now(), __release: STARTUP_RELEASE };
   setActiveSiteId(site.id);
+  try { localStorage.setItem("ngeblogging-active-site-snapshot-v292", JSON.stringify(snapshot)); } catch { /* private storage is optional */ }
   window.__ngebloggingActiveSite = site;
   document.documentElement.dataset.activeSiteId = site.id;
   document.documentElement.dataset.activeSiteSlug = site.slug;
+  document.documentElement.dataset.studioStartupReleaseV292 = STARTUP_RELEASE;
   window.dispatchEvent(new CustomEvent("ngeblogging:active-site-ready", { detail: site }));
   window.dispatchEvent(new CustomEvent("ngeblogging:active-site-change", { detail: site }));
 }
@@ -160,7 +182,7 @@ function requestReauthentication(error) {
 function StartupState({ error, onRetry, onExit }) {
   return <main className="so75-startup" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
     <header><a href="/" aria-label="Ngeblogging">ngeblogging<span>.</span></a><button onClick={onExit}><LogOut/>Keluar</button></header>
-    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO MENUNGGU DATA</small><h1>Sesi Anda tetap aktif.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Menyambungkan Studio…</h1><p>Sesi akun tetap aktif. Sistem sedang mengambil situs Anda melalui jalur data aman Ngeblogging. Tidak ada situs yang dibuat otomatis dari alamat email.</p></>}</section>
+    <section>{error ? <><span className="so75-startup-icon error"><RefreshCw/></span><small>STUDIO MENUNGGU DATA</small><h1>Sesi Anda tetap aktif.</h1><p>{error}</p><button className="so75-primary" onClick={onRetry}><RefreshCw/>Coba lagi</button></> : <><span className="so75-startup-icon"><LoaderCircle/></span><small>MENYIAPKAN RUANG KERJA</small><h1>Membuka Studio…</h1><p>Login sudah diterima. Sistem mengambil situs aktif melalui jalur data langsung dan hanya memakai gateway cadangan bila diperlukan.</p></>}</section>
   </main>;
 }
 
@@ -223,7 +245,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
     if (availability.state !== "available") return setMessage("Pastikan subdomain tersedia sebelum melanjutkan.");
     setCreating(true);
     try {
-      const verified = await withDeadline(getVerifiedSession(), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
+      const verified = handedSession(user?.id) || await withDeadline(getVerifiedSession(), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
       const userId = verified?.user?.id || user?.id;
       if (!userId) throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
       const site = await withDeadline(createUserSiteWithPolicy({
@@ -231,7 +253,7 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
       }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
       const settings = {
         ...(site.settings || {}),
-        onboarding: "complete-v287",
+        onboarding: "complete-v292",
         onboarding_completed_at: new Date().toISOString(),
         initial_theme: draft.themeKey,
         locale: draft.locale,
@@ -336,7 +358,7 @@ export default function StudioOnboardingGate(props) {
         }
         if (isSessionReauthError(nextError)) requestReauthentication(nextError);
         const nextMessage = isTransientStudioError(nextError)
-          ? "Koneksi data Studio belum stabil. Sesi akun Anda tetap tersimpan; Studio akan mencoba lagi saat jaringan kembali."
+          ? "Data Studio belum merespons dalam batas waktu. Sesi akun Anda tetap aktif; tidak ada logout otomatis. Tekan Coba lagi untuk menyambungkan kembali."
           : nextError.message || "Daftar situs belum dapat dimuat.";
         setError(nextMessage);
         setPhase("error");
