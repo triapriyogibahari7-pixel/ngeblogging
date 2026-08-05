@@ -1,4 +1,4 @@
-name: Validate Studio v292
+name: Validate Studio v296
 
 on:
   pull_request:
@@ -9,13 +9,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-studio-v292-${{ github.ref }}
+  group: validate-studio-v296-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       VITE_SUPABASE_URL: https://polvmlrhqoiflumibfqs.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-
@@ -34,17 +34,30 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run current Studio regression
-        run: node --test tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs tests/studio-auth-sidebar-v291.test.mjs tests/studio-startup-v292.test.mjs
+        run: |
+          node --test \
+            tests/studio-final-pass-v289.test.mjs \
+            tests/studio-native-controls-v290.test.mjs \
+            tests/studio-auth-sidebar-v291.test.mjs \
+            tests/studio-startup-v292.test.mjs \
+            tests/studio-production-recovery-v295.test.mjs \
+            tests/studio-theme-catalog-v296.test.mjs
 
       - name: Build application with service-worker chain
         run: npm run check
 
-      - name: Verify v292 build markers
+      - name: Verify v292-v296 build markers
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' public/sw.js
-          grep -q 'studio-startup-direct-data-cache-v292' public/sw.js
-          grep -q 'ngeblogging-app-v292-startup-direct-data-20260805' public/sw.js
+          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' public/sw.js
+          grep -q 'STUDIO_THEME_CATALOG_RELEASE_V296' public/sw.js
+          grep -q 'studio-theme-catalog-cache-v296' public/sw.js
+          grep -q 'ngeblogging-app-v296-theme-catalog-100-20260805' public/sw.js
           grep -R -q 'studio-startup-direct-data-v292-20260805' dist/assets
+          grep -R -q 'studio-polish-v295-20260805' dist/assets
+          grep -R -q 'studio-theme-catalog-100-v296-20260805' dist/assets
           test -f public/release-v292.json
+          test -f public/release-v295.json
+          test -f public/release-v296.json
