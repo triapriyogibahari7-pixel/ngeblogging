@@ -1,4 +1,3 @@
-import "./patch-service-worker-v288.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 
 const swFile = new URL("../public/sw.js", import.meta.url);
@@ -27,7 +26,7 @@ const [runtime, css, tests, release] = await Promise.all([
   readFile(releaseFile, "utf8"),
 ]);
 
-for (const marker of [RELEASE, "syncDeviceContract", "syncSidebar", "syncNara", "syncThemeStudio"])
+for (const marker of [RELEASE, "syncDeviceContract", "syncSidebar", "syncSidebarPersistence", "syncNara", "syncThemeStudio", "syncAnalytics", "loadAnalytics(view, 30, false)"])
   if (!runtime.includes(marker)) throw new Error(`V289_RUNTIME_MISSING:${marker}`);
 for (const marker of ["--v289-side-open:248px", 'data-studio-device-mode="large"', 'data-studio-device-mode="small"', ".nara-floating-button{position:fixed!important", "body.sn-mobile-sidebar-open .sn-side-backdrop", 'grid-template-areas:"preview" "code"', 'grid-template-areas:"code preview"'])
   if (!css.includes(marker)) throw new Error(`V289_CSS_MISSING:${marker}`);
