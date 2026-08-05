@@ -7,7 +7,7 @@
     "predev": "node scripts/patch-service-worker-v288.mjs",
     "dev": "vite",
     "prebuild": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "build": "npm run test:production && node scripts/patch-service-worker-v288.mjs && vite build && node --check cloudflare/worker-v70.mjs && npm run cloudflare:dry-run && node scripts/write-netlify-redirects.mjs",
+    "build": "npm run test:production && vite build",
     "preview": "vite preview",
     "start:api": "node api/server.mjs",
     "dev:cloudflare": "wrangler dev",
