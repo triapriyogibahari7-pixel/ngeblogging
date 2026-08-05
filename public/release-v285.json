@@ -1,0 +1,46 @@
+{
+  "release": "studio-responsive-lock-v285-20260805",
+  "date": "2026-08-05",
+  "scope": "lock six-mode responsive family to actual viewport, restore stable one-n sidebar, non-blocking Nara and compact Theme Studio geometry",
+  "cache": "studio-responsive-lock-cache-v285",
+  "sourceBranch": "main",
+  "responsive": {
+    "families": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+    "desktopVariants": ["laptop", "desktop", "computer"],
+    "wideViewportBreakpoint": 761,
+    "desktopSiteCannotBounceToCompact": true,
+    "smallClosedSidebarOnlyN": true,
+    "desktopRailIconsRemainVisible": true
+  },
+  "sidebar": {
+    "requiredItems": 13,
+    "singleInternalN": true,
+    "externalControlsHidden": true,
+    "mobileDrawer": true,
+    "drawerDoesNotBlurPage": true,
+    "desktopContentResizesWithSidebar": true
+  },
+  "nara": {
+    "launcherFixedLowerRight": true,
+    "smallNonModal": true,
+    "mediumNonModal": true,
+    "fullModal": true,
+    "attachmentMenuPreserved": true
+  },
+  "themeStudio": {
+    "layoutMapPreserved": true,
+    "mobilePreviewAboveCode": true,
+    "desktopCodePreviewSplit": true,
+    "maxCodeLinesPreserved": 10000
+  },
+  "authentication": {
+    "persistSessionPreserved": true,
+    "autoRefreshTokenPreserved": true,
+    "automaticLogoutAdded": false
+  },
+  "validation": {
+    "fakeAnalytics": false,
+    "nineHundredMillionOrBillionLoginSimulationClaimed": false,
+    "realDeviceRequiredBeforeHundredPercentClaim": true
+  }
+}
