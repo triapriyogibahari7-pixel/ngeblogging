@@ -1,0 +1,69 @@
+{
+  "release": "studio-workspaces-members-v304-20260805",
+  "date": "2026-08-05",
+  "inherits": [
+    "studio-add-site-free-subdomain-v303-20260805",
+    "studio-build-nara-authority-v302-20260805",
+    "studio-sidebar-hard-lock-v301-20260805",
+    "studio-shell-authority-v298-20260805",
+    "studio-startup-direct-data-v292-20260805"
+  ],
+  "workspaces": {
+    "switchSiteReadsFreshMembershipsEveryOpen": true,
+    "existingSitesVisible": true,
+    "activeSiteMarked": true,
+    "manageExistingSite": true,
+    "reloadListButton": true,
+    "searchByNameOrSubdomain": true,
+    "addSiteRemainsSeparate": true,
+    "freeSubdomainFlowPreserved": true,
+    "emptyMembershipRoutesToFirstSiteOnboarding": true,
+    "staleActiveSitePointersClearedWithoutAuthLogout": true,
+    "activeSiteSnapshotUpdated": true
+  },
+  "firstSite": {
+    "requiredForAccountWithoutMembership": true,
+    "realMembershipCheck": true,
+    "typesPreserved": [
+      "blog",
+      "website",
+      "news",
+      "portfolio",
+      "forum",
+      "community",
+      "landing",
+      "profile",
+      "knowledge"
+    ],
+    "subdomainAvailabilityRpc": "is_site_slug_available",
+    "sessionCleared": false
+  },
+  "members": {
+    "addMemberButton": true,
+    "realMembersRpc": "get_site_members_v176",
+    "realQuotaRpc": "get_site_member_quota",
+    "realInviteRpc": "invite_site_member_v176",
+    "realRoleRpc": "update_site_member_role_v176",
+    "realRemoveRpc": "remove_site_member_v176",
+    "roles": ["admin", "editor", "author", "viewer"],
+    "pendingInvitationsShown": true,
+    "registeredUserCanBecomeActiveImmediately": true,
+    "ownerAdminPermissionsEnforcedByDatabase": true
+  },
+  "serviceWorker": {
+    "version": "ngeblogging-app-v304-workspaces-members-20260805",
+    "cache": "studio-workspaces-members-cache-v304",
+    "oldCachesRemovedOnActivate": true,
+    "authSurfaceReloadForced": false,
+    "sessionStorageCleared": false
+  },
+  "validation": {
+    "sourceRegressionAdded": true,
+    "databaseMembershipTriggerChecked": true,
+    "sitesMissingOwnerMembershipAtAudit": 0,
+    "cloudflareProductionDeploymentClaimed": false,
+    "realCredentialInviteClaimed": false,
+    "realDeviceMatrixClaimed": false,
+    "capacityClaimed": false
+  }
+}
