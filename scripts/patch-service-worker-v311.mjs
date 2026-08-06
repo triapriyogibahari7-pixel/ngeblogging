@@ -54,7 +54,8 @@ for (const marker of [
   "reconcileCreatedSite",
   "new AbortController()",
   "First-site v311 preference configuration deferred",
-  "firstSiteRequiredRef.current && site.__userId !== props.user?.id",
+  "eventSite?.__userId === props.user?.id",
+  "site.__userId !== props.user?.id",
   "data-stability-release={FIRST_SITE_STABILITY_RELEASE_V311}",
 ]) if (!onboarding.includes(marker)) throw new Error(`V311_ONBOARDING_MISSING:${marker}`);
 if (/withDeadline\(createUserSiteWithPolicy\(/.test(onboarding))
