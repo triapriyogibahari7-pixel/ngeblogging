@@ -1,4 +1,5 @@
 const CLOUDFLARE_API_BASE = "https://api.cloudflare.com/client/v4";
+export const WORKER_DOMAIN_ATTACH_RELEASE_V317 = "cloudflare-worker-domain-verified-v317-20260806";
 
 function providerConfig(env) {
   const apiToken = String(
@@ -246,6 +247,72 @@ export function publicZoneState(zone) {
   };
 }
 
+function workerDomainPermissionError(error) {
+  const status = Number(error?.status || error?.providerStatus || 0);
+  const message = String(error?.message || "");
+  if (status !== 401 && status !== 403 && !/workers?.*(permission|script)/i.test(message)) return error;
+  const next = new Error(
+    "Cloudflare Zone sudah dapat dibaca, tetapi token domain belum diizinkan memasang Worker Custom Domain. Tambahkan izin Workers Scripts Write pada CLOUDFLARE_DOMAIN_API_TOKEN atau CLOUDFLARE_API_TOKEN, lalu tekan Refresh status domain. Status aktif tidak akan dipalsukan sebelum routing Worker benar-benar terverifikasi.",
+  );
+  next.code = "CLOUDFLARE_WORKERS_DOMAIN_PERMISSION_REQUIRED";
+  next.status = 503;
+  next.requiredPermission = "Workers Scripts Write";
+  next.cause = error;
+  return next;
+}
+
+export async function listWorkerDomains(env, hostname = "") {
+  const { accountId } = providerConfig(env);
+  const query = new URLSearchParams();
+  const normalizedHostname = String(hostname || "").trim().toLowerCase().replace(/\.$/, "");
+  if (normalizedHostname) query.set("hostname", normalizedHostname);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  try {
+    const result = await cloudflareRequest(env, `/accounts/${accountId}/workers/domains${suffix}`);
+    return Array.isArray(result) ? result : [];
+  } catch (error) {
+    throw workerDomainPermissionError(error);
+  }
+}
+
+async function verifyWorkerDomainAttachment(env, { hostname, zoneId, zoneName, workerService }) {
+  const expectedHostname = String(hostname || "").trim().toLowerCase().replace(/\.$/, "");
+  const expectedZoneId = String(zoneId || "").trim().toLowerCase();
+  const expectedZoneName = String(zoneName || "").trim().toLowerCase().replace(/\.$/, "");
+  let lastSeen = null;
+
+  for (const delay of [0, 300, 800, 1600, 3200]) {
+    if (delay) await wait(delay);
+    const domains = await listWorkerDomains(env, expectedHostname);
+    const exact = domains.find((item) => String(item?.hostname || "").toLowerCase().replace(/\.$/, "") === expectedHostname) || null;
+    if (!exact) continue;
+    lastSeen = exact;
+    const serviceMatches = String(exact.service || "") === workerService;
+    const zoneMatches = !exact.zone_id || String(exact.zone_id || "").toLowerCase() === expectedZoneId;
+    const zoneNameMatches = !exact.zone_name || String(exact.zone_name || "").toLowerCase().replace(/\.$/, "") === expectedZoneName;
+    if (serviceMatches && zoneMatches && zoneNameMatches && exact.id) return exact;
+    if (!serviceMatches) {
+      const error = new Error(`Hostname ${expectedHostname} masih diarahkan ke Worker ${String(exact.service || "lain")}, bukan ${workerService}.`);
+      error.code = "WORKER_DOMAIN_SERVICE_MISMATCH";
+      error.status = 409;
+      error.expectedService = workerService;
+      error.actualService = String(exact.service || "");
+      throw error;
+    }
+  }
+
+  const error = new Error(
+    `Cloudflare belum mengonfirmasi routing ${expectedHostname} ke Worker ${workerService}. Ngeblogging mempertahankan status verifikasi agar domain tidak terlihat aktif sebelum benar-benar dapat dirutekan. Tekan Refresh status setelah beberapa detik.`,
+  );
+  error.code = "WORKER_DOMAIN_NOT_ATTACHED";
+  error.status = 503;
+  error.hostname = expectedHostname;
+  error.workerService = workerService;
+  error.lastSeen = lastSeen;
+  error.release = WORKER_DOMAIN_ATTACH_RELEASE_V317;
+  throw error;
+}
+
 export async function attachWorkerDomain(env, { hostname, zoneId, zoneName }) {
   const normalizedZone = normalizeZoneName(zoneName);
   const normalizedHostname = String(hostname || "").trim().toLowerCase().replace(/\.$/, "");
@@ -262,14 +329,25 @@ export async function attachWorkerDomain(env, { hostname, zoneId, zoneName }) {
     throw error;
   }
   const { accountId, workerService } = providerConfig(env);
-  return cloudflareRequest(env, `/accounts/${accountId}/workers/domains`, {
-    method: "PUT",
-    body: {
-      hostname: normalizedHostname,
-      service: workerService,
-      zone_id: String(zoneId),
-      zone_name: normalizedZone,
-    },
+  try {
+    await cloudflareRequest(env, `/accounts/${accountId}/workers/domains`, {
+      method: "PUT",
+      body: {
+        hostname: normalizedHostname,
+        service: workerService,
+        zone_id: String(zoneId),
+        zone_name: normalizedZone,
+      },
+    });
+  } catch (error) {
+    throw workerDomainPermissionError(error);
+  }
+
+  return verifyWorkerDomainAttachment(env, {
+    hostname: normalizedHostname,
+    zoneId: String(zoneId),
+    zoneName: normalizedZone,
+    workerService,
   });
 }
 
