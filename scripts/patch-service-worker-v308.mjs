@@ -86,4 +86,5 @@ await import("./patch-domain-fullzone-v314.mjs");
 await import("./patch-studio-content-editor-v316.mjs");
 await import("./patch-public-custom-domain-client-v317.mjs");
 await import("./patch-studio-final-v317.mjs");
+await import("./patch-domain-public-dns-v318.mjs");
 await import("./patch-studio-hotfix-v318.mjs");
