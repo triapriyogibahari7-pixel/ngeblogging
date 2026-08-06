@@ -1,0 +1,34 @@
+{
+  "release": "studio-content-editor-responsive-v309-20260806",
+  "date": "2026-08-06",
+  "scope": "Posts and Pages editor responsive polish only; Studio sidebar remains owned by the existing sidebar authority",
+  "inherits": [
+    "studio-content-editor-responsive-v308-20260806",
+    "studio-editor-navigation-v266-20260804",
+    "studio-site-switch-first-site-v305-20260805"
+  ],
+  "fixes": {
+    "postsPagesSharedEditorPreserved": true,
+    "desktopDeadSpaceReduced": true,
+    "desktopSite980KeepsInspectorBesidePaper": true,
+    "largeTabletDesktopCompositionPreserved": true,
+    "desktopEmptyPaperHeightReduced": true,
+    "mobileOneColumnEditor": true,
+    "mobileHeaderActionsVisible": true,
+    "mobileTabsScrollable": true,
+    "mobileToolbarScrollable": true,
+    "mobilePaperContained": true,
+    "mobileMetadataSeoHtmlPreserved": true,
+    "tablesAndMediaContained": true,
+    "sidebarStylesUntouched": true,
+    "authSessionUntouched": true,
+    "naraOwnershipUntouched": true
+  },
+  "validation": {
+    "buildGuardAdded": true,
+    "screenshotsUsedAsGeometryReference": true,
+    "realDeviceValidationClaimed": false,
+    "productionDeploymentClaimed": false,
+    "capacityClaimed": false
+  }
+}
