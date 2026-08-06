@@ -84,4 +84,5 @@ await import("./patch-studio-theme-members-domain-v312.mjs");
 await import("./patch-nara-v313.mjs");
 await import("./patch-domain-fullzone-v314.mjs");
 await import("./patch-studio-content-editor-v316.mjs");
+await import("./patch-public-custom-domain-client-v317.mjs");
 await import("./patch-studio-final-v317.mjs");
