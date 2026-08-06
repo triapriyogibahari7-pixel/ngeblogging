@@ -92,6 +92,21 @@ for (const file of parsePatch(payload.patch || "")) {
   await writeFile(url, next);
 }
 
+// v312 replaces the old standalone delete button with the compact three-dot
+// member menu, but keep the v306 data marker on the real delete action so the
+// long-standing member regression gate can prove that delete functionality was
+// preserved rather than removed.
+const memberCompatFile = new URL("../src/studio-members-v304.js", import.meta.url);
+let memberCompat = await readFile(memberCompatFile, "utf8");
+if (!memberCompat.includes("memberRemoveV306")) {
+  memberCompat = memberCompat.replace(
+    'remove.dataset.memberRemoveV312 = "true";',
+    'remove.dataset.memberRemoveV312 = "true";\n      remove.dataset.memberRemoveV306 = "true";',
+  );
+  if (!memberCompat.includes("memberRemoveV306")) throw new Error("V312_MEMBER_REMOVE_V306_COMPAT_MISSING");
+  await writeFile(memberCompatFile, memberCompat);
+}
+
 const release = await readFile(new URL("../public/release-v312.json", import.meta.url), "utf8");
 for (const marker of [RELEASE,'"themes": 100','"layoutAreas": 26','"codeLineNumbers": 10000','"memberRoleChoices": 5','"customDomainAutoReconcile": true','"sidebarUntouched": true']) {
   if (!release.includes(marker)) throw new Error(`V312_RELEASE_INVALID:${marker}`);
