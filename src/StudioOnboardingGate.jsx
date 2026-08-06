@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight, BookHeart, BookOpen, BriefcaseBusiness, Building2, Check, FileText,
   Globe2, LayoutTemplate, LoaderCircle, LogOut, MessageCircle, Newspaper, PenLine,
@@ -19,14 +19,20 @@ import {
 } from "./studio-startup-v292.js";
 import "./site-onboarding-v75.css";
 import "./studio-first-site-v169.css";
+import "./studio-first-site-stability-v311.css";
 import "./domain-authority-v75.css";
 import "./domain-authority-v75.js";
 
 const RELEASE = "first-site-onboarding-v76-20260727";
 const STARTUP_RELEASE = STUDIO_STARTUP_RELEASE_V292;
 const FIRST_SITE_GUARD_RELEASE_V305 = "first-site-required-guard-v305-20260805";
+const FIRST_SITE_STABILITY_RELEASE_V311 = "first-site-onboarding-stability-v311-20260806";
+const FIRST_SITE_DRAFT_PREFIX_V311 = "ngeblogging-first-site-draft-v311";
 const CHECK_TIMEOUT_MS = 7_000;
 const STARTUP_DATA_TIMEOUT_MS = 11_000;
+const CREATE_RECOVERY_DELAY_MS = 12_000;
+const CREATE_RECOVERY_WINDOW_MS = 100_000;
+const CREATE_RECOVERY_INTERVAL_MS = 4_000;
 const RECOVERY_SNAPSHOT_KEYS = [
   "ngeblogging-active-site-snapshot-v292",
   "ngeblogging-active-site-snapshot-v209",
@@ -77,6 +83,23 @@ function normalizeSlug(value) {
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 63);
 }
 
+function onboardingDraftKey(userId) {
+  return `${FIRST_SITE_DRAFT_PREFIX_V311}:${userId || "anonymous"}`;
+}
+
+function defaultOnboardingDraft(userId) {
+  const fallback = {
+    name: "", slug: "", description: "", blueprint: "blog",
+    themeKey: "editorial-clean", locale: "id-ID", timezone: "Asia/Jakarta",
+  };
+  try {
+    const stored = JSON.parse(localStorage.getItem(onboardingDraftKey(userId)) || "null");
+    return stored && typeof stored === "object" ? { ...fallback, ...stored } : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function withDeadline(promise, milliseconds, message) {
   let timer;
   return Promise.race([
@@ -85,6 +108,34 @@ function withDeadline(promise, milliseconds, message) {
       timer = window.setTimeout(() => reject(Object.assign(new Error(message), { code: "ONBOARDING_TIMEOUT" })), milliseconds);
     }),
   ]).finally(() => window.clearTimeout(timer));
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+async function findOwnedSiteBySlug(userId, slug) {
+  const sites = await listUserSitesStartupV292(userId);
+  return sites.find((site) => normalizeSlug(site?.slug) === slug && String(site?.role || "").toLowerCase() === "owner") || null;
+}
+
+async function reconcileCreatedSite(userId, slug, onWaiting, signal) {
+  await wait(CREATE_RECOVERY_DELAY_MS);
+  if (signal?.aborted) return null;
+  onWaiting?.();
+  const deadline = Date.now() + CREATE_RECOVERY_WINDOW_MS;
+  while (Date.now() < deadline && !signal?.aborted) {
+    try {
+      const existing = await findOwnedSiteBySlug(userId, slug);
+      if (existing) return existing;
+    } catch (error) {
+      if (isSessionReauthError(error)) throw error;
+      // A transient read failure must not tear down onboarding while the create
+      // request may still be committing on the server. The next poll retries.
+    }
+    if (!signal?.aborted) await wait(CREATE_RECOVERY_INTERVAL_MS);
+  }
+  return null;
 }
 
 function isTransientStudioError(error) {
@@ -198,12 +249,10 @@ function StartupState({ error, onRetry, onExit }) {
 }
 
 function FirstSiteOnboarding({ user, onCreated, onExit }) {
-  const [draft, setDraft] = useState({
-    name: "", slug: "", description: "", blueprint: "blog",
-    themeKey: "editorial-clean", locale: "id-ID", timezone: "Asia/Jakarta",
-  });
+  const [draft, setDraft] = useState(() => defaultOnboardingDraft(user?.id));
   const [creating, setCreating] = useState(false);
   const [message, setMessage] = useState("");
+  const [creationStatus, setCreationStatus] = useState("");
   const [quota, setQuota] = useState({ used: 0, limit: MAX_SITES_PER_ACCOUNT, remaining: MAX_SITES_PER_ACCOUNT, canCreate: true });
   const [availability, setAvailability] = useState({ state: "idle", message: "Pilih subdomain unik Anda." });
   const normalizedSlug = useMemo(() => normalizeSlug(draft.slug || draft.name), [draft.slug, draft.name]);
@@ -213,6 +262,11 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
     getSiteQuota(user?.id).then((nextQuota) => { if (!cancelled) setQuota(nextQuota); }).catch(() => {});
     return () => { cancelled = true; };
   }, [user?.id]);
+
+  useEffect(() => {
+    try { localStorage.setItem(onboardingDraftKey(user?.id), JSON.stringify(draft)); }
+    catch { /* private storage can be unavailable; keep the in-memory draft */ }
+  }, [draft, user?.id]);
 
   useEffect(() => {
     if (normalizedSlug.length < 3 || !supabaseConfigured || !supabase) {
@@ -255,38 +309,79 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
     if (slug.length < 3) return setMessage("Subdomain minimal 3 karakter.");
     if (availability.state !== "available") return setMessage("Pastikan subdomain tersedia sebelum melanjutkan.");
     setCreating(true);
+    setCreationStatus("Membuat situs dan subdomain. Tetap di halaman ini sampai ada konfirmasi berhasil atau pesan kesalahan.");
     try {
       const verified = handedSession(user?.id) || await withDeadline(getVerifiedSession(), CHECK_TIMEOUT_MS, "Verifikasi sesi melewati batas waktu.");
       const userId = verified?.user?.id || user?.id;
       if (!userId) throw Object.assign(new Error("Sesi sudah berakhir. Silakan masuk kembali."), { code: "SESSION_REAUTH_REQUIRED", status: 401 });
-      const site = await withDeadline(createUserSiteWithPolicy({
-        userId, name, slug, description: draft.description, blueprint: draft.blueprint,
-      }), 15_000, "Pembuatan situs melewati batas waktu. Silakan periksa koneksi lalu coba lagi.");
+
+      // v311 uses a soft recovery window instead of the old 15-second failure.
+      // If the write succeeds but the browser loses the response, the polling
+      // branch finds the owned site by slug and completes onboarding without a
+      // duplicate create. The form stays mounted and the submit action stays
+      // locked while one creation attempt is in flight.
+      let site = null;
+      try { site = await findOwnedSiteBySlug(userId, slug); }
+      catch (existingError) { if (isSessionReauthError(existingError)) throw existingError; }
+      if (!site) {
+        const createAttempt = createUserSiteWithPolicy({
+          userId, name, slug, description: draft.description, blueprint: draft.blueprint,
+        });
+        const recoveryController = new AbortController();
+        try {
+          const recoveryAttempt = reconcileCreatedSite(userId, slug, () => {
+            setCreationStatus("Server masih memproses. Ngeblogging sedang mengecek hasil pembuatan tanpa menutup form atau membuat situs kedua.");
+          }, recoveryController.signal);
+          const outcome = await Promise.race([
+            createAttempt.then((created) => ({ site: created })),
+            recoveryAttempt.then((recovered) => ({ site: recovered })),
+          ]);
+          site = outcome.site;
+        } finally {
+          recoveryController.abort();
+        }
+        if (!site) {
+          throw Object.assign(new Error("Server belum mengonfirmasi pembuatan situs setelah pemeriksaan lanjutan. Form dan sesi tetap tersimpan; tekan Coba lagi tanpa membuat nama situs baru."), { code: "FIRST_SITE_CREATE_UNCONFIRMED_V311" });
+        }
+      }
+      let selected = { ...site, role: "owner" };
       const settings = {
         ...(site.settings || {}),
-        onboarding: "complete-v305",
+        onboarding: "complete-v311",
         onboarding_completed_at: new Date().toISOString(),
         initial_theme: draft.themeKey,
         locale: draft.locale,
         timezone: draft.timezone,
         site_limit: MAX_SITES_PER_ACCOUNT,
       };
-      const { data: configuredSite, error: configureError } = await supabase.from("sites")
-        .update({ theme_key: draft.themeKey, locale: draft.locale, settings })
-        .eq("id", site.id)
-        .select("id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at")
-        .single();
-      if (configureError) throw configureError;
-      const selected = { ...configuredSite, role: "owner" };
+      try {
+        const { data: configuredSite, error: configureError } = await supabase.from("sites")
+          .update({ theme_key: draft.themeKey, locale: draft.locale, settings })
+          .eq("id", site.id)
+          .select("id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at")
+          .single();
+        if (configureError) throw configureError;
+        if (configuredSite) selected = { ...configuredSite, role: "owner" };
+      } catch (configureError) {
+        // The site itself already exists. Do not turn a successful create into a
+        // failed onboarding or invite a duplicate retry just because preferences
+        // could not be written in the same round-trip.
+        console.error("First-site v311 preference configuration deferred", configureError);
+      }
       publishActiveSite(selected);
+      try { localStorage.removeItem(onboardingDraftKey(userId)); } catch { /* optional */ }
+      setCreationStatus("Situs berhasil dibuat. Membuka Studio…");
       onCreated(selected);
     } catch (error) {
       if (isSessionReauthError(error)) requestReauthentication(error);
+      setCreationStatus("");
       setMessage(error.message || "Situs belum dapat dibuat.");
-    } finally { setCreating(false); }
+    } finally {
+      setCreating(false);
+    }
   };
 
-  return <main className="so75-shell so169-shell" data-release={STARTUP_RELEASE} data-compatibility={RELEASE}>
+  return <main className="so75-shell so169-shell" data-release={STARTUP_RELEASE} data-compatibility={RELEASE} data-stability-release={FIRST_SITE_STABILITY_RELEASE_V311}>
     <header className="so75-topbar"><a className="so75-brand" href="/">ngeblogging<span>.</span></a><div><span>LANGKAH PERTAMA · BUAT SITUS PERTAMA</span><button onClick={onExit}><LogOut/>Keluar</button></div></header>
     <section className="so75-hero">
       <div className="so75-copy"><span className="so75-kicker"><Sparkles/>BANGUN RUANG DIGITAL ANDA</span><h1>Buat situs pertama<br/><em>sebelum masuk Studio.</em></h1><p>Setelah login Google, LinkedIn, atau email, akun baru menyelesaikan identitas situs terlebih dahulu. Studio baru dibuka setelah situs nyata berhasil dibuat dan dipilih sebagai situs aktif.</p><div className="so75-promise"><Check/><span>Subdomain gratis *.ngeblogging.com</span><Check/><span>Kelola beberapa situs dalam satu akun</span><Check/><span>Situs tidak dipublikasikan tanpa persetujuan</span></div></div>
@@ -302,8 +397,9 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
           <label className="wide"><span>Zona waktu</span><select value={draft.timezone} onChange={(event) => setDraft((current) => ({ ...current, timezone: event.target.value }))}>{TIMEZONE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         </div>
         <div className="so75-preview"><Globe2/><div><small>ALAMAT GRATIS DAN SITUS AKTIF</small><b>{normalizedSlug || "nama-situs"}.ngeblogging.com</b></div><i>Situs pertama</i></div>
+        {creationStatus ? <p className="so75-creating-status" role="status" aria-live="polite">{creationStatus}</p> : null}
         {message ? <p className="so75-error" role="alert">{message}</p> : null}
-        <button className="so75-primary so75-submit" disabled={creating || availability.state !== "available" || !quota.canCreate} type="submit">{creating ? <><LoaderCircle/>Membuat situs nyata…</> : <>Buat situs aktif dan buka Studio<ArrowRight/></>}</button>
+        <button className="so75-primary so75-submit" disabled={creating || availability.state !== "available" || !quota.canCreate} type="submit" aria-busy={creating}>{creating ? <><LoaderCircle/>Membuat situs nyata…</> : <>Buat situs aktif dan buka Studio<ArrowRight/></>}</button>
         <p className="so75-footnote">Situs dipilih sebagai ruang kerja aktif, tetapi tetap berstatus draf dan privat sampai Anda menekan Terbitkan.</p>
       </form>
     </section>
@@ -314,20 +410,31 @@ export default function StudioOnboardingGate(props) {
   const [phase, setPhase] = useState("checking");
   const [error, setError] = useState("");
   const [run, setRun] = useState(0);
+  const firstSiteRequiredRef = useRef(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.firstSiteStabilityV311 = FIRST_SITE_STABILITY_RELEASE_V311;
+    return () => { delete document.documentElement.dataset.firstSiteStabilityV311; };
+  }, []);
 
   useEffect(() => {
     const acceptRecoveredSite = (event) => {
       const site = event?.detail || recoveredActiveSite(props.user?.id);
       if (!site?.id || !site?.slug) return;
+      if (firstSiteRequiredRef.current && site.__userId !== props.user?.id) return;
+      firstSiteRequiredRef.current = false;
       setError("");
       setPhase("ready");
     };
     const requireFirstSite = () => {
+      firstSiteRequiredRef.current = true;
       clearActiveSiteRecoveryV305();
       setError("");
       setPhase("onboarding");
     };
-    const retryOnline = () => setRun((value) => value + 1);
+    const retryOnline = () => {
+      if (!firstSiteRequiredRef.current) setRun((value) => value + 1);
+    };
     window.addEventListener("ngeblogging:active-site-ready", acceptRecoveredSite);
     window.addEventListener("ngeblogging:first-site-required-v305", requireFirstSite);
     window.addEventListener("online", retryOnline, { passive: true });
@@ -346,6 +453,10 @@ export default function StudioOnboardingGate(props) {
   useEffect(() => {
     let cancelled = false;
     const check = async () => {
+      if (firstSiteRequiredRef.current) {
+        if (!cancelled) { setError(""); setPhase("onboarding"); }
+        return;
+      }
       const cached = recoveredActiveSite(props.user?.id);
       if (cached?.id && cached?.slug) {
         if (!cancelled) {
@@ -368,6 +479,7 @@ export default function StudioOnboardingGate(props) {
           publishActiveSite(site);
           setPhase("ready");
         } else {
+          firstSiteRequiredRef.current = true;
           clearActiveSiteRecoveryV305();
           setPhase("onboarding");
         }
@@ -393,8 +505,8 @@ export default function StudioOnboardingGate(props) {
   }, [props.user?.id, run]);
 
   if (phase === "ready") return <StudioSecure {...props}/>;
-  if (phase === "onboarding") return <FirstSiteOnboarding user={props.user} onExit={props.onExit} onCreated={() => setPhase("ready")}/>;
+  if (phase === "onboarding") return <FirstSiteOnboarding user={props.user} onExit={props.onExit} onCreated={() => { firstSiteRequiredRef.current = false; setPhase("ready"); }}/>;
   return <StartupState error={phase === "error" ? error : ""} onRetry={() => setRun((value) => value + 1)} onExit={props.onExit}/>;
 }
 
-export { FIRST_SITE_GUARD_RELEASE_V305, STARTUP_RELEASE, loadStudioMembership, recoveredActiveSite };
+export { FIRST_SITE_GUARD_RELEASE_V305, FIRST_SITE_STABILITY_RELEASE_V311, STARTUP_RELEASE, loadStudioMembership, recoveredActiveSite };
