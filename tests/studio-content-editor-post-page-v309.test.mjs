@@ -6,6 +6,7 @@ const css = await readFile(new URL("../src/studio-content-editor-post-page-polis
 const css310 = await readFile(new URL("../src/studio-content-editor-desktop-site-v310.css", import.meta.url), "utf8");
 const css316 = await readFile(new URL("../src/studio-content-editor-final-v316.css", import.meta.url), "utf8");
 const guard316 = await readFile(new URL("../src/studio-content-editor-final-v316.js", import.meta.url), "utf8");
+const patch316 = await readFile(new URL("../scripts/patch-studio-content-editor-v316.mjs", import.meta.url), "utf8");
 const runtime = await readFile(new URL("../src/studio-content-editor-responsive-v308.js", import.meta.url), "utf8");
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
@@ -69,4 +70,11 @@ test("v322 raises Posts and Pages to a real 30000-word publication limit without
   assert.doesNotMatch(guard316, /CONTENT_WORD_LIMIT_V316 = 5000|CONTENT_WORD_WARNING_V316 = 4500/);
   assert.doesNotMatch(guard316, /slice\([^\n]*30000|substring\([^\n]*30000|innerHTML\s*=\s*[^;]*slice/);
   assert.doesNotMatch(guard316, /new MutationObserver|setInterval\s*\(|stopImmediatePropagation|localStorage\.clear|sessionStorage\.clear|signOut\s*\(|location\.(?:reload|replace)\s*\(/);
+});
+
+test("v316 historical prebuild accepts the promoted v322 test authority", () => {
+  assert.match(patch316, /const guardHasV322Authority/);
+  assert.match(patch316, /const wordLimitTestMarker = guardHasV322Authority/);
+  assert.match(patch316, /v322 raises Posts and Pages to a real 30000-word publication limit without trimming drafts/);
+  assert.match(patch316, /v316 enforces the real 5000-word publication limit without trimming drafts/);
 });
