@@ -1,0 +1,41 @@
+{
+  "release": "studio-screenshot-hotfix-v318-20260806",
+  "date": "2026-08-06",
+  "scope": "Screenshot-driven Theme modal/code/layout containment, compact sidebar spacing, API Keys crypto repair, domain/API mobile containment, and cache rotation on top of v317.",
+  "inherits": [
+    "studio-final-responsive-v317-20260806",
+    "studio-content-editor-final-v316-20260806",
+    "auth-callback-session-recovery-v315-20260806",
+    "studio-domain-fullzone-v314-20260806",
+    "studio-nara-nonmodal-v313-20260806",
+    "studio-theme-members-domain-v312-20260806"
+  ],
+  "responsiveFamilies": ["application", "phone", "mobile", "compact", "tablet", "desktop"],
+  "previewProfiles": ["application", "phone", "mobile", "compact", "tablet", "laptop", "desktop", "computer"],
+  "themeModalViewportSafe": true,
+  "themeCodeDesktopSplit": "50:50",
+  "themeCodeCompactOrder": ["preview", "code"],
+  "themeCodeLineGuidePreserved": 10000,
+  "themeMapModelsPreserved": 2,
+  "themeLayoutAreasPreserved": 26,
+  "themeCountPreserved": 100,
+  "sidebarMenuCompact": true,
+  "apiKeyCryptoSearchPathFixed": true,
+  "apiKeyCreateListRevokeRotateValidated": true,
+  "domainWorkerVerificationPreserved": true,
+  "fakeDomainActiveStatusAllowed": false,
+  "naraSmallMediumNonModalPreserved": true,
+  "wordLimit": 5000,
+  "serviceWorkerCacheRotated": true,
+  "serviceWorkerVersion": "ngeblogging-app-v318-screenshot-hotfix-20260806",
+  "serviceWorkerCache": "studio-screenshot-hotfix-cache-v318",
+  "realDeviceMatrixClaimed": false,
+  "massiveCapacityClaimed": false,
+  "notes": [
+    "Theme code dialogs are constrained to the safe viewport and no longer begin behind the Studio chrome.",
+    "Compact/tablet code editing keeps preview above code; large desktop families keep the existing 50:50 contract.",
+    "The two Theme layout models stay in separate rows and the actual map receives a full row.",
+    "API key create and rotate now resolve Supabase pgcrypto functions through the extensions schema.",
+    "Custom-domain active status still requires verified Cloudflare Worker Domain routing; DNS propagation is not fabricated by the UI."
+  ]
+}
