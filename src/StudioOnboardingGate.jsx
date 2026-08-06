@@ -333,10 +333,22 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
             setCreationStatus("Server masih memproses. Ngeblogging sedang mengecek hasil pembuatan tanpa menutup form atau membuat situs kedua.");
           }, recoveryController.signal);
           const outcome = await Promise.race([
-            createAttempt.then((created) => ({ site: created })),
-            recoveryAttempt.then((recovered) => ({ site: recovered })),
+            createAttempt.then((created) => ({ site: created, error: null })).catch((error) => ({ site: null, error })),
+            recoveryAttempt.then((recovered) => ({ site: recovered, error: null })),
           ]);
-          site = outcome.site;
+          if (outcome.error) {
+            if (isSessionReauthError(outcome.error)) throw outcome.error;
+            const createMessage = String(outcome.error?.message || "").toLowerCase();
+            const recoverable = isTransientStudioError(outcome.error)
+              || String(outcome.error?.code || "") === "23505"
+              || /subdomain sudah digunakan|duplicate|unique/.test(createMessage);
+            if (!recoverable) throw outcome.error;
+            setCreationStatus("Respons pembuatan terputus. Ngeblogging tetap mengecek apakah situs sudah tersimpan agar tidak membuat duplikat.");
+            site = await recoveryAttempt;
+            if (!site) throw outcome.error;
+          } else {
+            site = outcome.site;
+          }
         } finally {
           recoveryController.abort();
         }
@@ -419,9 +431,9 @@ export default function StudioOnboardingGate(props) {
 
   useEffect(() => {
     const acceptRecoveredSite = (event) => {
-      const site = event?.detail || recoveredActiveSite(props.user?.id);
-      if (!site?.id || !site?.slug) return;
-      if (firstSiteRequiredRef.current && site.__userId !== props.user?.id) return;
+      const eventSite = event?.detail;
+      const site = eventSite?.__userId === props.user?.id ? eventSite : recoveredActiveSite(props.user?.id);
+      if (!site?.id || !site?.slug || site.__userId !== props.user?.id) return;
       firstSiteRequiredRef.current = false;
       setError("");
       setPhase("ready");
