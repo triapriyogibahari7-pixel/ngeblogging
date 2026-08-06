@@ -1,0 +1,33 @@
+{
+  "release": "studio-theme-domain-v321-20260806",
+  "date": "2026-08-06",
+  "scope": "Theme Studio map/editor geometry and truthful custom-domain DNS diagnostics",
+  "theme": {
+    "themesPreserved": 100,
+    "layoutAreasPreserved": 26,
+    "layoutModelsPreserved": 2,
+    "previewModesPreserved": 8,
+    "codeLineGuidePreserved": 10000,
+    "desktopCodeSplit": "50:50",
+    "compactCodeOrder": "preview-above-code",
+    "compactLayoutMapUsesInternalScroll": true,
+    "layoutPopoverNonFullscreen": true
+  },
+  "domain": {
+    "publicDnsVerificationRequired": true,
+    "publicDnsQueries": ["A", "AAAA"],
+    "nxdomainNeverReportedActive": true,
+    "nameserverDelegationStillRequiredAtRegistrar": true,
+    "registrarNameserverDelegationAutomated": false,
+    "workerRoutingVerificationPreserved": true,
+    "mobileActionsFullWidth": true
+  },
+  "safety": {
+    "sidebarUntouched": true,
+    "authSessionUntouched": true,
+    "naraBehaviorUntouched": true,
+    "existingFeaturesRemoved": false,
+    "fakeCapacityClaim": false
+  },
+  "validationNote": "A custom domain cannot be made reachable by application code while its public DNS is NXDOMAIN. Ngeblogging can create/reconcile the Cloudflare zone and Worker routing, but the registrar must delegate the domain to the assigned Cloudflare nameservers unless registrar automation is explicitly integrated."
+}
