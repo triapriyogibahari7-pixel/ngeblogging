@@ -1,0 +1,23 @@
+{
+  "release": "studio-screenshot-regression-v319-20260806",
+  "date": "2026-08-06",
+  "scope": "Theme map deduplication, viewport-safe code editor, onboarding visual stability, compact sidebar spacing, fixed Nara launcher, and regression gates",
+  "themeMapSingleVisibleAuthority": true,
+  "legacyV264FallbackPreserved": true,
+  "themeMapModelsPreserved": 2,
+  "themeLayoutAreasPreserved": 26,
+  "themeCountPreserved": 100,
+  "themeCodeLineGuidePreserved": 10000,
+  "themeCodeDesktopSplit": "50:50",
+  "themeCodeCompactOrder": "preview-above-code",
+  "eightThemePreviewModesPreserved": true,
+  "onboardingRecoveryWindowMsPreserved": 100000,
+  "membersFiveRoleAuthorityPreserved": true,
+  "naraSmallMediumNonModalPreserved": true,
+  "naraFixedCorner": true,
+  "domainPublicDnsTruthfulnessInheritedFromV318": true,
+  "registrarNameserverDelegationAutomated": false,
+  "fakeDomainActiveStatusAllowed": false,
+  "authSessionDestructiveChange": false,
+  "validationNote": "Source and production-build regression gates are included. This manifest does not claim that an external registrar has delegated DNS or that every physical device has been tested."
+}

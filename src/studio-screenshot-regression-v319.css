@@ -1,0 +1,87 @@
+/* Ngeblogging Studio v319 — screenshot-driven regression repair.
+ * This layer changes geometry only. It preserves v312 Theme data/actions,
+ * v313 Nara behavior, v315 auth persistence, v316 word guards and v318 DNS truthfulness.
+ */
+:root{--studio-v319-release:"studio-screenshot-regression-v319-20260806"}
+
+/* Exactly one detailed Theme map: v312 is authoritative after the production
+ * prebuild patch. v264 remains available only as a source/dev fallback. */
+.tn-layout-studio[data-theme-map-authority-v319="v312-native"]>.tn-layout-map-v264{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.tn-layout-studio{grid-template-columns:minmax(0,1fr)!important;align-items:start!important;gap:16px!important;overflow:visible!important}
+.tn-layout-studio>:is(div,aside,section,[class*="tn-layout-model"],[class*="tn-layout-map"]){grid-column:1/-1!important;width:100%!important;max-width:100%!important;min-width:0!important}
+.tn-layout-studio :is(.tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,[class*="tn-layout-models"][class*="v312"]){display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-auto-flow:row!important;gap:14px!important;align-items:stretch!important}
+.tn-layout-studio :is(.tn-layout-model-v312,[class*="tn-layout-model-"][class*="v312"]){display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;overflow:hidden!important}
+.tn-layout-studio :is([class*="tn-layout-map"][class*="v312"],[data-theme-layout-v312]){width:100%!important;max-width:100%!important;min-width:0!important;margin-inline:auto!important;overflow:auto!important;overscroll-behavior:contain!important}
+.tn-layout-studio :is(button,[role="button"]){min-width:0!important;max-width:100%!important;overflow-wrap:break-word!important;word-break:normal!important}
+
+/* Keep the actual post/page preview visually centered between the four left
+ * and four right widget slots without shrinking labels into unreadable strips. */
+.tn-layout-content-v264{grid-template-columns:minmax(92px,.72fr) minmax(220px,2fr) minmax(92px,.72fr)!important}
+.tn-layout-post-v264{justify-self:stretch!important;align-self:stretch!important;margin:0!important}
+
+/* Theme modal must be a real viewport-contained flex surface. This prevents
+ * the clipped top sliver/large blank area shown in the mobile screenshot. */
+.tn-modal-layer>.tn-modal.fullscreen,.tn-modal-layer>.tn-modal.preview{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;overflow:hidden!important}
+.tn-modal-layer>.tn-modal.fullscreen>.tn-modal-body,.tn-modal-layer>.tn-modal.preview>.tn-modal-body{display:block!important;flex:1 1 auto!important;min-height:0!important;width:100%!important;max-width:100%!important;overflow:auto!important;position:relative!important;inset:auto!important;transform:none!important}
+.tn-modal-layer>.tn-modal.fullscreen>header,.tn-modal-layer>.tn-modal.fullscreen>footer,.tn-modal-layer>.tn-modal.preview>header,.tn-modal-layer>.tn-modal.preview>footer{flex:0 0 auto!important;position:relative!important;inset:auto!important;transform:none!important}
+
+/* Code workspace: desktop 50:50; compact families preview above code. */
+.tn-modal.fullscreen .tn-code-workspace{display:grid!important;width:100%!important;max-width:100%!important;min-width:0!important;align-items:stretch!important;margin:0!important;transform:none!important}
+.tn-modal.fullscreen .tn-code-pane,.tn-modal.fullscreen .tn-code-preview-pane{min-width:0!important;max-width:100%!important;min-height:0!important;overflow:hidden!important;position:relative!important;inset:auto!important;transform:none!important}
+.tn-modal.fullscreen .tn-code-preview-pane>.tn-frame-shell{width:100%!important;max-width:100%!important;min-width:0!important;overflow:auto!important;place-items:start center!important}
+.tn-modal.fullscreen .tn-code-preview-pane iframe{display:block!important;margin-inline:auto!important;max-width:100%!important}
+
+/* Fallback 1–10,000 gutter for direct source/dev builds. Production v312 has
+ * its own equivalent gutter; the runtime deliberately does not duplicate it. */
+.tn-code-pane.tn-code-pane-v319{display:grid!important;grid-template-columns:64px minmax(0,1fr)!important;grid-template-rows:auto auto minmax(0,1fr)!important;align-items:stretch!important}
+.tn-code-pane.tn-code-pane-v319>nav,.tn-code-pane.tn-code-pane-v319>.tn-code-status{grid-column:1/-1!important}
+.tn-code-pane.tn-code-pane-v319>.tn-code-gutter-v319{grid-column:1!important;grid-row:3!important;width:64px!important;max-width:64px!important;min-width:64px!important;height:100%!important;min-height:0!important;margin:0!important;padding:12px 9px!important;border:0!important;border-right:1px solid #dfe6ef!important;background:#f7f9fc!important;color:#7b899b!important;overflow:hidden!important;white-space:pre!important;text-align:right!important;font:500 12px/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;user-select:none!important;pointer-events:none!important;box-sizing:border-box!important}
+.tn-code-pane.tn-code-pane-v319>textarea{grid-column:2!important;grid-row:3!important;width:100%!important;max-width:100%!important;height:100%!important;min-height:0!important;margin:0!important;border-radius:0!important;overflow:auto!important;white-space:pre!important;overflow-wrap:normal!important;word-break:normal!important;tab-size:2!important;font:500 13px/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important}
+
+/* Onboarding must stay opaque/stable while the 12–100 second recovery window
+ * is polling a slow site-creation request. Do not blur or fade the form. */
+:is(.so75-startup,.so75-onboarding,.so75-first-site,[data-first-site-guard-v305]){opacity:1!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important}
+:is(.so75-startup,.so75-onboarding,.so75-first-site,[data-first-site-guard-v305])::before,:is(.so75-startup,.so75-onboarding,.so75-first-site,[data-first-site-guard-v305])::after{filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* Preserve the compact Studio navigation directly below + Buat Post. */
+#ngeblogging-studio-sidebar>.sn-new{margin-bottom:2px!important}
+#ngeblogging-studio-sidebar>nav{justify-content:flex-start!important;align-content:flex-start!important;gap:1px!important;margin-top:0!important}
+#ngeblogging-studio-sidebar>nav>button{margin-block:0!important}
+
+/* Nara launcher is always a fixed corner control. Small/medium remain nonmodal
+ * under v313/v317; this only prevents stretching or being pushed into document flow. */
+.nara-floating-button[data-fixed-corner-v319="true"]{position:fixed!important;left:auto!important;top:auto!important;right:max(10px,env(safe-area-inset-right,0px))!important;bottom:max(10px,calc(env(safe-area-inset-bottom,0px) + 6px))!important;width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;max-width:54px!important;max-height:54px!important;margin:0!important;transform:none!important;animation:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;z-index:2147482400!important}
+
+@media(min-width:1081px){
+  .tn-modal.fullscreen .tn-code-workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"code preview"!important;height:calc(100dvh - 150px)!important;min-height:620px!important;overflow:hidden!important}
+  .tn-modal.fullscreen .tn-code-pane{grid-area:code!important;height:100%!important;border-right:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen .tn-code-preview-pane{grid-area:preview!important;height:100%!important}
+}
+
+@media(max-width:1080px){
+  .tn-modal.fullscreen .tn-code-workspace{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"preview" "code"!important;height:auto!important;min-height:0!important;overflow:visible!important}
+  .tn-modal.fullscreen .tn-code-preview-pane{grid-area:preview!important;height:clamp(330px,44dvh,520px)!important;min-height:330px!important;border-bottom:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen .tn-code-pane{grid-area:code!important;height:clamp(560px,68dvh,780px)!important;min-height:560px!important;border-right:0!important}
+  .tn-modal.fullscreen .tn-code-preview-pane>.tn-frame-shell{min-height:260px!important}
+  .tn-modal.fullscreen .tn-code-pane textarea{min-height:470px!important}
+}
+
+@media(max-width:760px){
+  .tn-layout-studio{gap:11px!important}
+  .tn-layout-studio :is(.tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,[class*="tn-layout-models"][class*="v312"]){gap:10px!important}
+  .tn-layout-content-v264{grid-template-columns:minmax(70px,.68fr) minmax(136px,1.65fr) minmax(70px,.68fr)!important;gap:6px!important}
+  .tn-layout-slot-v264{min-height:54px!important;padding:7px!important}
+  .tn-layout-slot-v264>span{font-size:9px!important;line-height:1.2!important}
+  .tn-layout-post-v264{min-height:228px!important}
+  .tn-modal-layer>.tn-modal.fullscreen,.tn-modal-layer>.tn-modal.preview{height:calc(100dvh - 12px)!important;max-height:calc(100dvh - 12px)!important}
+  .tn-modal.fullscreen .tn-code-preview-pane{height:clamp(300px,40dvh,390px)!important;min-height:300px!important}
+  .tn-modal.fullscreen .tn-code-pane{height:clamp(540px,66dvh,700px)!important;min-height:540px!important}
+  .tn-code-pane.tn-code-pane-v319{grid-template-columns:52px minmax(0,1fr)!important}
+  .tn-code-pane.tn-code-pane-v319>.tn-code-gutter-v319{width:52px!important;max-width:52px!important;min-width:52px!important;padding-inline:6px!important;font-size:10px!important}
+  .tn-code-pane.tn-code-pane-v319>textarea{font-size:12px!important}
+  .nara-floating-button[data-fixed-corner-v319="true"]{right:max(8px,env(safe-area-inset-right,0px))!important;bottom:max(8px,calc(env(safe-area-inset-bottom,0px) + 6px))!important;width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important;max-width:52px!important;max-height:52px!important}
+}
+
+@media(max-width:390px){
+  .tn-layout-content-v264{grid-template-columns:minmax(64px,.65fr) minmax(118px,1.55fr) minmax(64px,.65fr)!important}
+}
