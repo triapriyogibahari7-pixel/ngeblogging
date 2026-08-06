@@ -27,7 +27,7 @@ if (!nara.includes('import "./nara-v313.css";')) {
 }
 
 const oldLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">';
-const newLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal={size === "full" ? "true" : "false"} aria-label="Nara AI Assistant" data-nara-layer-size={size} data-nara-release-v313={RELEASE}>';
+const newLayer = '<div className="nara-assistant-layer" role="dialog" aria-modal={size === "full" ? "true" : "false"} aria-label="Nara AI Assistant" data-nara-layer-size={size} data-nara-release-v313="studio-nara-nonmodal-v313-20260806">';
 if (nara.includes(oldLayer)) nara = nara.replace(oldLayer, newLayer);
 else if (!nara.includes('data-nara-layer-size={size}')) throw new Error("V313_NARA_LAYER_ANCHOR_MISSING");
 
@@ -40,6 +40,7 @@ for (const marker of [
   'import "./nara-v313.css";',
   'aria-modal={size === "full" ? "true" : "false"}',
   'data-nara-layer-size={size}',
+  'data-nara-release-v313="studio-nara-nonmodal-v313-20260806"',
   '{size === "full" && <button className="nara-assistant-backdrop"',
   '<Camera />', '<ImageIcon />', '<File />', '<Mic />', 'SpeakerIcon',
   'Nara Mini', 'Nara Writer', 'Nara Vision', 'Nara Max',
