@@ -1,0 +1,270 @@
+/* Ngeblogging Studio v321 — Theme Studio + custom-domain visual authority.
+ * Scope is intentionally narrow: Theme map/editor geometry and Domain responsive
+ * diagnostics. Existing auth/sidebar/Nara/data behavior is preserved.
+ */
+:root{--studio-theme-domain-v321:"studio-theme-domain-v321-20260806"}
+
+/* Theme map: the two real v312 models stay in separate rows. */
+.tn-layout-studio[data-theme-layout-v321="ready"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  gap:16px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.tn-layout-studio[data-theme-layout-v321="ready"]>*{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio [data-theme-model-rows-v321="true"],
+.tn-layout-studio :is(.tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,[class*="tn-layout-models"][class*="v312"]){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-items:stretch!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio [data-theme-model-v321="true"],
+.tn-layout-studio :is(.tn-layout-model-v312,[class*="tn-layout-model-"][class*="v312"]){
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+.tn-layout-studio [data-theme-map-scroll-shell-v321="true"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  overscroll-behavior-inline:contain!important;
+  scrollbar-gutter:stable both-edges;
+  -webkit-overflow-scrolling:touch;
+}
+.tn-layout-studio [data-theme-map-v321="detail"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+}
+.tn-layout-studio :is(button,[role="button"]){
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+}
+
+/* Keep post/page preview centered between four left and four right slots. */
+.tn-layout-content-v264,
+[data-theme-layout-v312] [class*="layout-content"],
+[class*="tn-layout-map"][class*="v312"] [class*="layout-content"]{
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+.tn-layout-post-v264,
+[data-theme-layout-v312] .content-main,
+[class*="tn-layout-map"][class*="v312"] .content-main{
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  margin:0!important;
+  min-width:0!important;
+}
+
+/* Layout area chooser remains a compact anchored popover, never a page-covering modal. */
+.tn-layout-popover-v312,
+.tn-layout-popover-v264{
+  width:min(340px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 28px)!important;
+  max-height:min(430px,72dvh)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  z-index:2147481200!important;
+  border-radius:14px!important;
+}
+
+/* Theme full-screen editor: keep the shell inside the viewport and make the
+ * actual code surface visible. Large screens split 50:50; compact screens put
+ * preview above code. */
+.tn-modal-layer>.tn-modal.fullscreen[data-code-geometry-v321="ready"]{
+  display:flex!important;
+  flex-direction:column!important;
+  position:fixed!important;
+  inset:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))!important;
+  width:auto!important;
+  max-width:none!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"]>.tn-modal-body{
+  display:block!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow:auto!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-workspace{
+  display:grid!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  transform:none!important;
+  align-items:stretch!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane,
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-preview-pane{
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane{
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr)!important;
+  background:#fff!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane textarea{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:430px!important;
+  margin:0!important;
+  overflow:auto!important;
+  resize:none!important;
+  white-space:pre!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  tab-size:2!important;
+  color:#172033!important;
+  background:#fff!important;
+  font:500 13px/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] :is(.tn-code-gutter-v312,.tn-code-gutter-v319,.tn-code-gutter-v265,[data-theme-code-v312="line-numbers-10000"]){
+  opacity:1!important;
+  visibility:visible!important;
+  transform:none!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-preview-pane>.tn-frame-shell{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:auto!important;
+  place-items:start center!important;
+}
+.tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-preview-pane iframe{
+  display:block!important;
+  max-width:100%!important;
+  margin-inline:auto!important;
+}
+
+/* Domain cards/buttons never collapse to vertical letters on compact devices. */
+.sv124-domain-page :is(.sv124-card,.sv124-domain-item,.sv124-free-domain,.sv124-domain-register){
+  min-width:0!important;
+  max-width:100%!important;
+}
+.sv124-domain-item footer,
+.sv124-free-domain aside{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  min-width:0!important;
+}
+.sv124-domain-item footer>* ,
+.sv124-free-domain aside>*{
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+}
+.sv124-domain-dns-v321{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:6px!important;
+  margin:12px 0!important;
+  padding:12px 14px!important;
+  border:1px solid #dce5f0!important;
+  border-radius:14px!important;
+  background:#f8fbff!important;
+  min-width:0!important;
+}
+.sv124-domain-dns-v321 b,.sv124-domain-dns-v321 p,.sv124-domain-dns-v321 code{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+}
+.sv124-domain-dns-v321[data-ready="true"]{background:#f4fbf7!important}
+
+@media(min-width:1081px){
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-workspace{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:"code preview"!important;
+    height:100%!important;
+    min-height:620px!important;
+    overflow:hidden!important;
+  }
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane{grid-area:code!important;height:100%!important;border-right:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-preview-pane{grid-area:preview!important;height:100%!important}
+}
+
+@media(max-width:1080px){
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-workspace{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"preview" "code"!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-preview-pane{grid-area:preview!important;height:clamp(300px,42dvh,480px)!important;min-height:300px!important;border-bottom:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane{grid-area:code!important;height:clamp(620px,72dvh,820px)!important;min-height:620px!important;border-right:0!important}
+}
+
+@media(max-width:760px){
+  /* Do not squeeze a 26-area map into unreadable letter-columns. The map keeps
+   * a legible canvas and scrolls inside its own card; the page itself does not. */
+  .tn-layout-studio [data-theme-map-scroll-shell-v321="true"]{overflow-x:auto!important;padding-bottom:4px!important}
+  .tn-layout-studio [data-theme-map-v321="detail"]{width:720px!important;max-width:none!important;min-width:720px!important;margin:0!important}
+  .tn-layout-studio [data-theme-model-rows-v321="true"]{gap:12px!important}
+  .tn-layout-popover-v312,.tn-layout-popover-v264{width:min(320px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;max-height:64dvh!important}
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"]{inset:max(6px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))!important;border-radius:16px!important}
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-preview-pane{height:clamp(280px,38dvh,360px)!important;min-height:280px!important}
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane{height:clamp(620px,74dvh,760px)!important;min-height:620px!important}
+  .tn-modal.fullscreen[data-code-geometry-v321="ready"] .tn-code-pane textarea{min-height:520px!important;font-size:12px!important}
+  .sv124-domain-item footer>* ,
+  .sv124-free-domain aside>*{
+    flex:1 1 100%!important;
+    width:100%!important;
+    justify-content:center!important;
+    text-align:center!important;
+  }
+}
