@@ -66,8 +66,8 @@ test("v322 raises Posts and Pages to a real 30000-word publication limit without
   assert.match(guard316, /Draf tetap aman dan tidak dipotong/);
   assert.match(guard316, /\.ce-actions \.ce-primary/);
   assert.match(guard316, /option\[value="published"\]/);
-  assert.match(guard316, /publishButton.disabled = over/);
-  assert.match(guard316, /publishedOption.disabled = over/);
+  assert.match(guard316, /publishButton\.disabled = over/);
+  assert.match(guard316, /publishedOption\.disabled = over/);
   assert.match(contentData, /body_html = String\(values\.content\)\.slice\(0, 5_000_000\)/);
   assert.doesNotMatch(guard316, /CONTENT_WORD_LIMIT_V316 = 5000|CONTENT_WORD_WARNING_V316 = 4500/);
   assert.doesNotMatch(guard316, /slice\([^\n]*30000|substring\([^\n]*30000|innerHTML\s*=\s*[^;]*slice/);
