@@ -1,0 +1,2 @@
+studio-theme-members-domain-v312-20260806-r2
+Build-only probe after v311 marker and v312 member-delete compatibility fixes.
