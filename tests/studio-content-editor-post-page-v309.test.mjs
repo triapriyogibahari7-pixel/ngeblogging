@@ -9,6 +9,7 @@ const guard316 = await readFile(new URL("../src/studio-content-editor-final-v316
 const runtime = await readFile(new URL("../src/studio-content-editor-responsive-v308.js", import.meta.url), "utf8");
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
+const contentData = await readFile(new URL("../src/lib/content-data.js", import.meta.url), "utf8");
 
 test("v309/v310 load after v308 and remain editor-only — v316 preserved", () => {
   assert.match(runtime, /studio-content-editor-responsive-v308\.css/);
@@ -53,15 +54,19 @@ test("Posts and Pages still share the same ContentEditor implementation", () => 
   assert.match(studio, /active\.type === "page" \? "pages" : "posts"/);
 });
 
-test("v316 enforces the real 5000-word publication limit without trimming drafts", () => {
-  assert.match(guard316, /CONTENT_WORD_LIMIT_V316 = 5000/);
-  assert.match(guard316, /CONTENT_WORD_WARNING_V316 = 4500/);
+test("v322 raises Posts and Pages to a real 30000-word publication limit without trimming drafts", () => {
+  assert.match(guard316, /CONTENT_WORD_LIMIT_RELEASE_V322 = "posts-pages-30000-v322-20260806"/);
+  assert.match(guard316, /CONTENT_WORD_LIMIT_V316 = 30000/);
+  assert.match(guard316, /CONTENT_WORD_WARNING_V316 = 27000/);
+  assert.match(guard316, /30\.000 kata/);
   assert.match(guard316, /Kurangi \$\{Math\.abs\(remaining\)/);
   assert.match(guard316, /Draf tetap aman dan tidak dipotong/);
   assert.match(guard316, /\.ce-actions \.ce-primary/);
   assert.match(guard316, /option\[value="published"\]/);
   assert.match(guard316, /publishButton\.disabled = over/);
   assert.match(guard316, /publishedOption\.disabled = over/);
-  assert.doesNotMatch(guard316, /slice\([^\n]*5000|substring\([^\n]*5000|innerHTML\s*=\s*[^;]*slice/);
+  assert.match(contentData, /body_html = String\(values\.content\)\.slice\(0, 5_000_000\)/);
+  assert.doesNotMatch(guard316, /CONTENT_WORD_LIMIT_V316 = 5000|CONTENT_WORD_WARNING_V316 = 4500/);
+  assert.doesNotMatch(guard316, /slice\([^\n]*30000|substring\([^\n]*30000|innerHTML\s*=\s*[^;]*slice/);
   assert.doesNotMatch(guard316, /new MutationObserver|setInterval\s*\(|stopImmediatePropagation|localStorage\.clear|sessionStorage\.clear|signOut\s*\(|location\.(?:reload|replace)\s*\(/);
 });

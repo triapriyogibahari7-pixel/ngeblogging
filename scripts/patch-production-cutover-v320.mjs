@@ -67,3 +67,4 @@ await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
 await import("../tests/studio-production-cutover-v320.test.mjs");
 await import("./patch-theme-domain-v321.mjs");
+await import("./patch-posts-pages-30k-v322.mjs");

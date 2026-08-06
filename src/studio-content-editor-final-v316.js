@@ -1,8 +1,9 @@
 import "./studio-content-editor-final-v316.css";
 
 export const STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316 = "studio-content-editor-final-v316-20260806";
-export const CONTENT_WORD_LIMIT_V316 = 5000;
-export const CONTENT_WORD_WARNING_V316 = 4500;
+export const CONTENT_WORD_LIMIT_RELEASE_V322 = "posts-pages-30000-v322-20260806";
+export const CONTENT_WORD_LIMIT_V316 = 30000;
+export const CONTENT_WORD_WARNING_V316 = 27000;
 let frame = 0;
 
 function countWords(editor) {
@@ -32,13 +33,15 @@ export function syncContentWordLimitV316(root = document) {
   const warning = words >= CONTENT_WORD_WARNING_V316;
   const over = words > CONTENT_WORD_LIMIT_V316;
   app.dataset.contentWordsV316 = String(words);
+  app.dataset.contentWordLimitV322 = String(CONTENT_WORD_LIMIT_V316);
   app.dataset.contentWordStateV316 = over ? "blocked" : warning ? "warning" : "ok";
   const notice = ensureNotice(app);
   if (notice) {
     notice.dataset.state = over ? "blocked" : warning ? "warning" : "ok";
-    if (over) notice.innerHTML = `<strong>${words.toLocaleString("id-ID")} / 5.000 kata.</strong> Kurangi ${Math.abs(remaining).toLocaleString("id-ID")} kata sebelum diterbitkan. Draf tetap aman dan tidak dipotong.`;
-    else if (warning) notice.innerHTML = `<strong>${words.toLocaleString("id-ID")} / 5.000 kata.</strong> Tersisa ${remaining.toLocaleString("id-ID")} kata sebelum batas publikasi.`;
-    else notice.innerHTML = `<strong>${words.toLocaleString("id-ID")} / 5.000 kata.</strong> Draf tersimpan penuh; batas hanya menahan publikasi.`;
+    notice.dataset.wordLimitV322 = String(CONTENT_WORD_LIMIT_V316);
+    if (over) notice.innerHTML = `<strong>${words.toLocaleString("id-ID")} / 30.000 kata.</strong> Kurangi ${Math.abs(remaining).toLocaleString("id-ID")} kata sebelum diterbitkan. Draf tetap aman dan tidak dipotong.`;
+    else if (warning) notice.innerHTML = `<strong>${words.toLocaleString("id-ID")} / 30.000 kata.</strong> Tersisa ${remaining.toLocaleString("id-ID")} kata sebelum batas publikasi.`;
+    else notice.innerHTML = `<strong>${words.toLocaleString("id-ID")} / 30.000 kata.</strong> Posts dan Pages dapat ditulis sampai 30.000 kata; draf tersimpan penuh dan batas hanya menahan publikasi.`;
   }
   const publishButton = app.querySelector(".ce-actions .ce-primary");
   if (publishButton && !String(publishButton.textContent || "").toLowerCase().includes("jadikan draf")) {
@@ -49,7 +52,7 @@ export function syncContentWordLimitV316(root = document) {
   const statusSelect = [...app.querySelectorAll("select")].find((select) => select.querySelector('option[value="published"]'));
   const publishedOption = statusSelect?.querySelector('option[value="published"]');
   if (publishedOption) publishedOption.disabled = over && statusSelect.value !== "published";
-  return { words, over, warning };
+  return { words, over, warning, limit: CONTENT_WORD_LIMIT_V316 };
 }
 
 function schedule(root = document) {
@@ -71,6 +74,8 @@ function guardPublishClick(event) {
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.documentElement.dataset.studioContentEditorFinalV316 = STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316;
+  document.documentElement.dataset.contentWordLimitReleaseV322 = CONTENT_WORD_LIMIT_RELEASE_V322;
+  document.documentElement.dataset.contentWordLimitV322 = String(CONTENT_WORD_LIMIT_V316);
   document.addEventListener("click", guardPublishClick, true);
   document.addEventListener("input", (event) => { if (event.target?.closest?.(".ce-app")) schedule(event.target); });
   document.addEventListener("change", (event) => { if (event.target?.closest?.(".ce-app")) schedule(event.target); });
