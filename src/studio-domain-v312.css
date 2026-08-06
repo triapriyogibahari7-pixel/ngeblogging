@@ -1,0 +1,6 @@
+/* Domain v312: non-blocking routing reconciliation status. */
+.sv124-domain-page .sv124-domain-auto-v312{display:flex;align-items:center;gap:9px;width:100%;max-width:100%;margin:0 0 12px;padding:11px 13px;border:1px solid #cfe0f8;border-radius:12px;background:#f5f9ff;color:#315f8f;font:700 12px/1.45 system-ui,sans-serif;overflow-wrap:anywhere}
+.sv124-domain-page .sv124-domain-auto-v312 svg{flex:0 0 17px;width:17px;height:17px;animation:sv124-v312-spin 1.4s linear infinite}
+@keyframes sv124-v312-spin{to{transform:rotate(360deg)}}
+@media(max-width:760px){.sv124-domain-page .sv124-domain-auto-v312{align-items:flex-start;padding:10px 11px}.sv124-domain-page .sv124-free-domain>aside,.sv124-domain-page .sv124-domain-register form{width:100%!important;max-width:100%!important}.sv124-domain-page .sv124-free-domain>aside :is(button,a),.sv124-domain-page .sv124-domain-register form>button{width:100%!important;max-width:100%!important;min-height:46px!important;justify-content:center!important;white-space:normal!important}}
+@media(prefers-reduced-motion:reduce){.sv124-domain-page .sv124-domain-auto-v312 svg{animation:none}}
