@@ -12,6 +12,7 @@ export const STUDIO_SITE_SWITCHER_ACTIONS_COMPAT_V305 = "studio-site-switcher-ac
 export const STUDIO_SITE_SWITCHER_FIX_COMPAT_V306 = "studio-site-switcher-layout-delete-v306-20260805";
 export const STUDIO_MEMBERS_CONTROLS_COMPAT_V307 = "studio-members-visible-controls-v307-20260805";
 export const STUDIO_CONTENT_EDITOR_COMPAT_V308 = "studio-content-editor-responsive-v308-20260806";
+export const STUDIO_CONTENT_EDITOR_COMPAT_V309 = "studio-content-editor-responsive-v309-20260806";
 
 /*
  * v298 retires the old document-capture n owner from v290. The old handler
@@ -36,6 +37,7 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioSiteSwitcherFixV306 = STUDIO_SITE_SWITCHER_FIX_COMPAT_V306;
   document.documentElement.dataset.studioMembersControlsV307 = STUDIO_MEMBERS_CONTROLS_COMPAT_V307;
   document.documentElement.dataset.studioContentEditorV308 = STUDIO_CONTENT_EDITOR_COMPAT_V308;
+  document.documentElement.dataset.studioContentEditorV309 = STUDIO_CONTENT_EDITOR_COMPAT_V309;
 }
 
 /*
@@ -50,6 +52,7 @@ if (typeof document !== "undefined") {
  * - v306 switcher fix: isolate the close control, stop overlap, and add owner-only site deletion
  * - v307 member controls: keep Tambah anggota and Hapus anggota visible on the Anggota page
  * - v308 content editor: centre Posts/Pages, bind content width to nav state, and contain mobile editor geometry
+ * - v309 content editor: remove remaining desktop dead space and polish the small-family one-column editor
  *
  * v295/v297 JavaScript global click normalizers are deliberately not executed;
  * their CSS is imported by v298 so completed visual work is preserved without
@@ -66,5 +69,6 @@ if (typeof window !== "undefined") {
     .then(() => import("./studio-site-switcher-v306-fix.js"))
     .then(() => import("./studio-members-controls-v307.js"))
     .then(() => import("./studio-content-editor-responsive-v308.js"))
+    .then(() => import("./studio-content-editor-responsive-v309.js"))
     .catch((error) => console.error("Studio authority chain failed to load", error));
 }
