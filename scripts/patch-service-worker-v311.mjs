@@ -17,6 +17,7 @@ const RELEASE = "studio-reliability-v311-20260806";
 const VERSION = "ngeblogging-app-v311-studio-reliability-20260806";
 const CACHE = "studio-reliability-cache-v311";
 const V310_CACHE_COMPAT = "studio-content-editor-cache-v310";
+const V310_VERSION_COMPAT = "ngeblogging-app-v310-content-editor-20260806";
 
 function upsert(source, name, value) {
   const line = `const ${name} = ${value};`;
@@ -75,13 +76,14 @@ source = source
   .replaceAll("service-worker-activated-content-editor-v310", "service-worker-activated-studio-reliability-v311");
 source = upsert(source, "STUDIO_RELIABILITY_RELEASE_V311", `"${RELEASE}"`);
 source = upsert(source, "STUDIO_CONTENT_EDITOR_CACHE_COMPAT_V310", `"${V310_CACHE_COMPAT}"`);
+source = upsert(source, "STUDIO_CONTENT_EDITOR_VERSION_COMPAT_V310", `"${V310_VERSION_COMPAT}"`);
 source = upsert(source, "ACTIVE_VERSION_V311", "VERSION");
 source = upsert(source, "ACTIVE_CACHE_RELEASE_V311", "CACHE_RELEASE");
 source = source
   .replace(/^const SHELL_CACHE = .*;$/m, 'const SHELL_CACHE = `${ACTIVE_VERSION_V311}-${ACTIVE_CACHE_RELEASE_V311}-${STUDIO_RELIABILITY_RELEASE_V311}-${STUDIO_CONTENT_EDITOR_DESKTOP_SITE_RELEASE_V310}-${STUDIO_CONTENT_EDITOR_RELEASE_V308}-${STUDIO_MEMBERS_CONTROLS_RELEASE_V307}-${STUDIO_SITE_SWITCH_FIX_RELEASE_V306}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;')
   .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V311}-${ACTIVE_CACHE_RELEASE_V311}-${STUDIO_RELIABILITY_RELEASE_V311}-${STUDIO_CONTENT_EDITOR_DESKTOP_SITE_RELEASE_V310}-${STUDIO_CONTENT_EDITOR_RELEASE_V308}-${STUDIO_MEMBERS_CONTROLS_RELEASE_V307}-${STUDIO_SITE_SWITCH_FIX_RELEASE_V306}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;');
 
-if (!source.includes(RELEASE) || !source.includes(VERSION) || !source.includes(CACHE) || !source.includes(V310_CACHE_COMPAT))
+if (!source.includes(RELEASE) || !source.includes(VERSION) || !source.includes(CACHE) || !source.includes(V310_CACHE_COMPAT) || !source.includes(V310_VERSION_COMPAT))
   throw new Error("V311_SW_MARKERS_MISSING");
 if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source))
   throw new Error("V311_DESTRUCTIVE_SW_BEHAVIOR");
