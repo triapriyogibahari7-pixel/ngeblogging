@@ -1,0 +1,35 @@
+{
+  "release": "studio-content-editor-responsive-v308-20260806",
+  "date": "2026-08-06",
+  "scope": "Posts and Pages editor geometry only; sidebar behavior is preserved",
+  "inherits": [
+    "studio-final-authority-v293-20260805",
+    "studio-editor-navigation-v266-20260804",
+    "studio-site-switch-first-site-v305-20260805",
+    "studio-members-visible-controls-v307-20260805"
+  ],
+  "fixes": {
+    "postsPagesSharedEditorPreserved": true,
+    "desktopCollapsedEditorOffsetTracks72pxRail": true,
+    "desktopExpandedEditorOffsetTracks232pxSidebar": true,
+    "desktopPaperCentered": true,
+    "desktopInspectorBesidePaper": true,
+    "desktopEmptyPaperHeightCapped": true,
+    "tabletNarrowLargeFamilyStacksWithoutOverflow": true,
+    "mobileOneColumnEditor": true,
+    "mobileHeaderActionsAlwaysVisible": true,
+    "mobileTabsHorizontallyScrollable": true,
+    "mobileToolbarHorizontallyScrollable": true,
+    "mobilePaperWidthContained": true,
+    "mobileMetadataSeoHtmlPreserved": true,
+    "tablesAndMediaContained": true,
+    "sidebarStylesUntouched": true,
+    "authSessionUntouched": true
+  },
+  "validation": {
+    "buildGuardAdded": true,
+    "realDeviceValidationClaimed": false,
+    "productionDeploymentClaimed": false,
+    "capacityClaimed": false
+  }
+}
