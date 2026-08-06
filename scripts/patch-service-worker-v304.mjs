@@ -1,5 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
 
+// v327 must run before any historical patch can import a node:test module.
+// It strips only direct ../tests imports from patch-* scripts in the build
+// workspace; semantic patch validators and the real `node --test` production
+// suite remain authoritative.
+await import("./patch-prebuild-test-runner-isolation-v327.mjs");
+
 const swFile = new URL("../public/sw.js", import.meta.url);
 const nativeFile = new URL("../src/studio-native-controls-v290.js", import.meta.url);
 const switcherFile = new URL("../src/studio-site-switcher-v304.js", import.meta.url);
