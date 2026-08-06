@@ -1,6 +1,7 @@
 import { currentStudioDeviceMode } from "./studio-device-mode-v140.js";
 
 export const RELEASE = "studio-editor-navigation-v266-20260804";
+export const STUDIO_EDITOR_NAVIGATION_CLEAN_CLONE_V317 = "studio-editor-navigation-clean-clone-v317-20260806";
 
 const STORAGE_KEY = "ngeblogging-editor-sidebar-expanded-v266";
 const VIEW_LABELS = new Map([
@@ -38,10 +39,30 @@ function normalize(value) {
   return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+function stripRuntimeGeometry(node) {
+  if (!node) return;
+  const all = [node, ...node.querySelectorAll("*")];
+  for (const child of all) {
+    child.removeAttribute("style");
+    child.removeAttribute("hidden");
+    child.removeAttribute("inert");
+    child.removeAttribute("aria-hidden");
+    delete child.dataset?.v301GeometryOwner;
+  }
+  node.classList.remove("collapsed", "mobile-open");
+}
+
 function cacheStudioSidebar() {
   const side = document.querySelector(".sn-shell #ngeblogging-studio-sidebar");
   if (!side) return;
   const clone = side.cloneNode(true);
+
+  // v301 owns the live Studio geometry with inline !important declarations.
+  // Copying those inline styles into the editor duplicate made the cloned nav
+  // inherit the live shell's flex sizing, which is why + Buat Post could sit at
+  // the top while Ringkasan…API Keys were pushed far down. The editor keeps the
+  // exact icons/labels/actions, but its geometry is owned only by v266/v317 CSS.
+  stripRuntimeGeometry(clone);
   clone.querySelectorAll(".sn-side-close").forEach((node) => node.remove());
   clone.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
   cachedSidebar = clone.innerHTML;
@@ -141,6 +162,7 @@ function buildEditorNavigation() {
   const host = document.createElement("div");
   host.id = "ngeblogging-editor-nav-v266";
   host.dataset.release = RELEASE;
+  host.dataset.cleanCloneRelease = STUDIO_EDITOR_NAVIGATION_CLEAN_CLONE_V317;
   host.innerHTML = `
     <button type="button" class="ce-editor-sidebar-toggle-v266" aria-label="Buka menu Studio"><strong>n</strong></button>
     <button type="button" class="ce-editor-sidebar-backdrop-v266" aria-label="Tutup menu Studio"></button>
@@ -148,6 +170,7 @@ function buildEditorNavigation() {
   document.body.append(host);
 
   const side = host.querySelector(".ce-editor-side-v266");
+  stripRuntimeGeometry(side);
   side?.querySelectorAll("button").forEach((button) => {
     button.removeAttribute("disabled");
     button.removeAttribute("hidden");
@@ -219,6 +242,7 @@ function syncEditorNavigation() {
 function sync() {
   frame = 0;
   document.documentElement.dataset.studioEditorNavigationV266 = RELEASE;
+  document.documentElement.dataset.studioEditorNavigationCleanCloneV317 = STUDIO_EDITOR_NAVIGATION_CLEAN_CLONE_V317;
   syncEditorNavigation();
 }
 
