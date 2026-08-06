@@ -1,0 +1,133 @@
+/* Ngeblogging Studio v309 — Posts/Pages screenshot polish only.
+ * This layer deliberately does not style the Studio navigation/sidebar, profile,
+ * Nara launcher, or non-editor pages. It only refines the shared ContentEditor.
+ */
+
+/* Large family: desktop site, laptop, computer, large tablet and large screens.
+ * Reduce the artificial blank writing-page height while keeping a comfortable
+ * editing surface. The existing v308 rail/sidebar geometry remains authoritative.
+ */
+html.editor-v266-large .ce-paper-shell{
+  min-height:0!important;
+  padding-block:clamp(14px,2vw,26px)!important;
+}
+html.editor-v266-large .ce-paper{
+  width:min(860px,100%)!important;
+  min-height:clamp(420px,46dvh,600px)!important;
+  height:auto!important;
+  padding:clamp(34px,4.5vw,62px) clamp(28px,5.5vw,70px)!important;
+}
+html.editor-v266-large .ce-word-status{
+  width:min(860px,100%)!important;
+  margin-inline:auto!important;
+}
+
+/* Chrome/Android can request “Situs desktop” while the effective viewport is
+ * still narrow. Do not force the paper + inspector into two crushed columns.
+ */
+@media (max-width:760px){
+  html.editor-v266-large .ce-workspace{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;
+    overflow-x:hidden!important;
+  }
+  html.editor-v266-large .ce-paper-shell{
+    padding:10px!important;
+    align-items:stretch!important;
+  }
+  html.editor-v266-large .ce-paper{
+    width:100%!important;
+    min-height:clamp(360px,44dvh,500px)!important;
+    padding:30px clamp(20px,6vw,34px)!important;
+    border-radius:12px!important;
+  }
+  html.editor-v266-large .ce-sidebar{
+    position:static!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;
+    width:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding:0 10px 18px!important;
+    border-left:0!important;
+    background:transparent!important;
+  }
+  html.editor-v266-large .ce-sidebar>section{
+    width:100%!important;
+    margin:0!important;
+    padding:15px!important;
+    border:1px solid #dfe6ef!important;
+    border-radius:13px!important;
+    background:#fff!important;
+  }
+  html.editor-v266-large .ce-field-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+
+/* Small family: application, handphone, mobile, Android/iPhone, compact and
+ * small tablet. Keep the editor single-column, readable and compact instead of
+ * showing a long blank sheet before metadata/SEO controls.
+ */
+html.editor-v266-small .ce-paper-shell{
+  min-height:0!important;
+  padding:10px 8px 0!important;
+}
+html.editor-v266-small .ce-paper{
+  width:100%!important;
+  min-height:clamp(320px,42dvh,480px)!important;
+  height:auto!important;
+  padding:clamp(22px,6vw,34px) clamp(17px,5vw,26px)!important;
+  border-radius:14px!important;
+}
+html.editor-v266-small .ce-paper :is(img,video,audio,iframe,canvas,figure,table,pre){
+  max-width:100%!important;
+}
+html.editor-v266-small .ce-paper table,
+html.editor-v266-small .ce-paper pre{
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+html.editor-v266-small .ce-word-status{
+  width:100%!important;
+  margin-top:8px!important;
+  padding:8px 9px!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  justify-content:flex-start!important;
+}
+html.editor-v266-small .ce-sidebar{
+  gap:10px!important;
+  padding:0 8px max(18px,env(safe-area-inset-bottom,0px))!important;
+}
+html.editor-v266-small .ce-sidebar>section{
+  padding:15px!important;
+  border-radius:14px!important;
+}
+html.editor-v266-small .ce-field :is(input,select,textarea){
+  width:100%!important;
+  max-width:100%!important;
+  min-height:44px!important;
+}
+
+@media (max-width:430px){
+  html.editor-v266-small .ce-paper{
+    min-height:clamp(300px,40dvh,440px)!important;
+    padding:22px 17px!important;
+  }
+  html.editor-v266-small .ce-actions>button{
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+}
+
+@media (max-width:360px){
+  html.editor-v266-small .ce-paper{
+    min-height:300px!important;
+    padding:20px 15px!important;
+  }
+}
