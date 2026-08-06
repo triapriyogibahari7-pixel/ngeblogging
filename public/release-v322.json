@@ -1,0 +1,28 @@
+{
+  "release": "posts-pages-30000-v322-20260806",
+  "date": "2026-08-06",
+  "scope": "Posts and Pages long-form publication capacity",
+  "postsAndPages": {
+    "sharedEditorPreserved": true,
+    "publicationWordLimit": 30000,
+    "warningStartsAtWords": 27000,
+    "draftsAreNeverTrimmedByWordGuard": true,
+    "overLimitDraftSaveAllowed": true,
+    "overLimitPublicationBlocked": true,
+    "htmlStorageCharacterCeiling": 5000000,
+    "autosavePreserved": true,
+    "previewPreserved": true,
+    "seoPreserved": true,
+    "mobileEditorPreserved": true,
+    "desktopEditorPreserved": true
+  },
+  "safety": {
+    "sidebarUntouched": true,
+    "authSessionUntouched": true,
+    "themeStudioUntouched": true,
+    "domainV321Untouched": true,
+    "naraUntouched": true,
+    "contentIsNotSilentlyTruncated": true
+  },
+  "validationNote": "The 30,000-word rule applies equally to Posts and Pages because both use ContentEditor. Draft content is not cut when over the limit; only publication is held until the document is at or below 30,000 words."
+}
