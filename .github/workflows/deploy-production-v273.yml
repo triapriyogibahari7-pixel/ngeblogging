@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v318
+name: Deploy Ngeblogging Production v319
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v318
+  group: ngeblogging-production-v319
   cancel-in-progress: true
 
 jobs:
@@ -43,68 +43,60 @@ jobs:
       - name: Run production regression and build
         run: npm run build
 
-      - name: Verify v318 and inherited production authorities
+      - name: Verify v319 and inherited production authorities
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 310 311 312 313 314 315 316 317 318; do test -f "public/release-v${release}.json"; done
-          test -f src/studio-hotfix-v318.css
-          test -f scripts/patch-studio-hotfix-v318.mjs
-          test -f supabase/migrations/20260806053000_api_keys_pgcrypto_search_path_v318.sql
+          for release in 310 311 312 313 314 315 316 317 318 319; do test -f "public/release-v${release}.json"; done
+          test -f src/studio-screenshot-regression-v319.js
+          test -f src/studio-screenshot-regression-v319.css
+          test -f scripts/patch-studio-regression-v319.mjs
+          test -f tests/studio-screenshot-regression-v319.test.mjs
 
-          grep -q 'studio-screenshot-hotfix-v318-20260806' public/release-v318.json
-          grep -q '"themeModalViewportSafe": true' public/release-v318.json
-          grep -q '"themeMapModelsPreserved": 2' public/release-v318.json
-          grep -q '"themeLayoutAreasPreserved": 26' public/release-v318.json
-          grep -q '"themeCountPreserved": 100' public/release-v318.json
-          grep -q '"apiKeyCryptoSearchPathFixed": true' public/release-v318.json
-          grep -q '"apiKeyCreateListRevokeRotateValidated": true' public/release-v318.json
-          grep -q 'studio-hotfix-v318.css' src/studio-content-editor-responsive-v308.js
-          grep -q 'studio-screenshot-hotfix-v318-20260806' src/studio-content-editor-responsive-v308.js
-          grep -q '.tn-modal-layer{position:fixed!important;inset:0!important' src/studio-hotfix-v318.css
-          grep -q 'grid-template-areas:"preview" "code"' src/studio-hotfix-v318.css
-          grep -q 'data-theme-code-v312="line-numbers-10000"' src/studio-hotfix-v318.css
-          grep -q 'tn-layout-models-v312' src/studio-hotfix-v318.css
-          grep -q '.sn-api-modal-layer{position:fixed!important;inset:0!important' src/studio-hotfix-v318.css
-          grep -q 'search_path = public, extensions, pg_temp' supabase/migrations/20260806053000_api_keys_pgcrypto_search_path_v318.sql
+          grep -q 'studio-screenshot-regression-v319-20260806' public/release-v319.json
+          grep -q '"themeMapSingleVisibleAuthority": true' public/release-v319.json
+          grep -q '"themeMapModelsPreserved": 2' public/release-v319.json
+          grep -q '"themeLayoutAreasPreserved": 26' public/release-v319.json
+          grep -q '"themeCountPreserved": 100' public/release-v319.json
+          grep -q '"themeCodeLineGuidePreserved": 10000' public/release-v319.json
+          grep -q '"naraSmallMediumNonModalPreserved": true' public/release-v319.json
+          grep -q '"domainPublicDnsTruthfulnessInheritedFromV318": true' public/release-v319.json
+          grep -q 'studio-screenshot-regression-v319.js' src/studio-content-editor-responsive-v308.js
+          grep -q 'data-theme-map-authority-v319="v312-native"' src/studio-screenshot-regression-v319.css
+          grep -q 'grid-template-areas:"code preview"' src/studio-screenshot-regression-v319.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-screenshot-regression-v319.css
+          grep -q 'tn-code-gutter-v319' src/studio-screenshot-regression-v319.css
+          grep -q 'THEME_CODE_LINE_GUIDE_V319 = 10000' src/studio-screenshot-regression-v319.js
 
-          # Preserve every earlier authority required by the Studio.
-          grep -q 'studio-final-responsive-v317-20260806' public/release-v317.json
-          grep -q '"workerDomainAttachVerification": true' public/release-v317.json
-          grep -q 'studio-content-editor-final-v316-20260806' public/release-v316.json
+          # Preserve earlier production contracts: auth persistence, shared Post/Page editor,
+          # 5000-word draft safety, 100 themes, Nara non-modal, Full Zone and public DNS truthfulness.
+          grep -q '"persistSessionPreserved": true' public/release-v315.json
           grep -q '"wordLimit": 5000' public/release-v316.json
           grep -q '"draftNeverTrimmed": true' public/release-v316.json
-          grep -q 'auth-callback-session-recovery-v315-20260806' public/release-v315.json
-          grep -q '"persistSessionPreserved": true' public/release-v315.json
-          grep -q 'studio-domain-fullzone-v314-20260806' public/release-v314.json
-          grep -q '"fakeActiveStatusAllowed": false' public/release-v314.json
-          grep -q 'studio-nara-nonmodal-v313-20260806' public/release-v313.json
-          grep -q '"smallNonModal": true' public/release-v313.json
-          grep -q '"mediumNonModal": true' public/release-v313.json
-          grep -q 'studio-theme-members-domain-v312-20260806' public/release-v312.json
           grep -q '"themes": 100' public/release-v312.json
           grep -q '"layoutAreas": 26' public/release-v312.json
           grep -q '"layoutModels": 2' public/release-v312.json
-          grep -q '"codeLineNumbers": 10000' public/release-v312.json
-          grep -q 'first-site-onboarding-stability-v311-20260806' public/release-v311.json
-          grep -q 'cloudflare-worker-domain-verified-v317-20260806' server/cloudflare-full-zone-provider.mjs
-          grep -q 'verifyWorkerDomainAttachment' server/cloudflare-full-zone-provider.mjs
-          grep -q 'Workers Scripts Write' server/cloudflare-full-zone-provider.mjs
+          grep -q '"smallNonModal": true' public/release-v313.json
+          grep -q '"mediumNonModal": true' public/release-v313.json
+          grep -q '"fakeActiveStatusAllowed": false' public/release-v314.json
+          grep -q 'PUBLIC_DNS_VERIFY_RELEASE_V318' server/cloudflare-full-zone-provider.mjs
+          grep -q 'publicDnsResolvesV318' server/cloudflare-full-zone-provider.mjs
 
-          # v318 must be the final cache authority while inherited markers remain.
+          # v319 must be the final cache authority after prebuild; stale v303-v318 cache
+          # cannot remain the active shell on production devices.
+          grep -q 'STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319' public/sw.js
+          grep -q 'studio-screenshot-regression-cache-v319' public/sw.js
+          grep -q 'ngeblogging-app-v319-screenshot-regression-20260806' public/sw.js
           grep -q 'STUDIO_SCREENSHOT_HOTFIX_RELEASE_V318' public/sw.js
-          grep -q 'studio-screenshot-hotfix-cache-v318' public/sw.js
-          grep -q 'ngeblogging-app-v318-screenshot-hotfix-20260806' public/sw.js
           grep -q 'STUDIO_FINAL_RESPONSIVE_RELEASE_V317' public/sw.js
           grep -q 'STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316' public/sw.js
-          grep -q 'STUDIO_DOMAIN_FULLZONE_RELEASE_V314' public/sw.js
           grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' public/sw.js
           grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' public/sw.js
 
+          grep -R -q 'studio-screenshot-regression-v319-20260806' dist/assets
           grep -R -q 'studio-screenshot-hotfix-v318-20260806' dist/assets
           grep -R -q 'studio-final-responsive-v317-20260806' dist/assets
-          grep -R -q 'studio-content-editor-final-v316-20260806' dist/assets
 
       - name: Verify Cloudflare production credentials
         shell: bash
@@ -132,35 +124,34 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; melewati route reassertion.'
           fi
 
-      - name: Verify live v318 and inherited manifests
+      - name: Verify live v319 and inherited manifests
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v318.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            previous="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v317.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$latest" | grep -q 'studio-screenshot-hotfix-v318-20260806' && printf '%s' "$previous" | grep -q 'studio-final-responsive-v317-20260806'; then
-              echo 'Live v318 plus v317 inheritance confirmed.'
+            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v319.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            previous="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v318.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$latest" | grep -q 'studio-screenshot-regression-v319-20260806' && printf '%s' "$previous" | grep -q 'studio-screenshot-hotfix-v318-20260806'; then
+              echo 'Live v319 plus v318 inheritance confirmed.'
               exit 0
             fi
             sleep 10
           done
-          echo 'Live production did not expose v318.' >&2
+          echo 'Live production did not expose v319.' >&2
           exit 1
 
-      - name: Verify live v318 bundle and service worker
+      - name: Verify live v319 bundle and service worker
         shell: bash
         run: |
           set -euo pipefail
-          latest_chunk="$(grep -Rl 'studio-screenshot-hotfix-v318-20260806' dist/assets | head -n 1)"
+          latest_chunk="$(grep -Rl 'studio-screenshot-regression-v319-20260806' dist/assets | head -n 1)"
           test -n "$latest_chunk"
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v318.js
-          grep -q 'studio-screenshot-hotfix-v318-20260806' /tmp/studio-v318.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v318.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_SCREENSHOT_HOTFIX_RELEASE_V318' /tmp/sw-v318.js
-          grep -q 'studio-screenshot-hotfix-cache-v318' /tmp/sw-v318.js
-          grep -q 'ngeblogging-app-v318-screenshot-hotfix-20260806' /tmp/sw-v318.js
-          grep -q 'STUDIO_FINAL_RESPONSIVE_RELEASE_V317' /tmp/sw-v318.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v319.js
+          grep -q 'studio-screenshot-regression-v319-20260806' /tmp/studio-v319.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v319.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319' /tmp/sw-v319.js
+          grep -q 'studio-screenshot-regression-cache-v319' /tmp/sw-v319.js
+          grep -q 'ngeblogging-app-v319-screenshot-regression-20260806' /tmp/sw-v319.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -172,7 +163,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v318-${{ github.sha }}
+          name: ngeblogging-production-v319-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
