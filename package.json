@@ -57,11 +57,12 @@
     "verify:v304": "node scripts/patch-service-worker-v304.mjs && node --test tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs",
     "verify:current": "node --test tests/studio-shell-content-v274.test.mjs tests/studio-react-shell-v287.test.mjs tests/studio-final-pass-v289.test.mjs tests/studio-native-controls-v290.test.mjs tests/studio-auth-sidebar-v291.test.mjs tests/studio-startup-v292.test.mjs tests/studio-production-recovery-v295.test.mjs tests/studio-theme-catalog-v296.test.mjs tests/studio-mode-startup-v297.test.mjs tests/studio-shell-authority-v298.test.mjs tests/studio-direct-shell-v299.test.mjs tests/studio-sidebar-direct-v300.test.mjs tests/studio-sidebar-hard-lock-v301.test.mjs tests/nara-build-authority-v302.test.mjs tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs tests/public-edge-v282.test.mjs",
     "verify:production-current": "node --test tests/production-critical-v302.test.mjs tests/nara-build-authority-v302.test.mjs tests/studio-sidebar-hard-lock-v301.test.mjs tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs",
+    "verify:v309": "node --test tests/studio-content-editor-post-page-v309.test.mjs",
     "check": "npm run test:production && vite build",
     "pretest": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
     "test": "npm run verify:current",
     "pretest:production": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "test:production": "node --test tests/studio-sidebar-hard-lock-v301.test.mjs tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs"
+    "test:production": "node --test tests/studio-content-editor-post-page-v309.test.mjs tests/studio-sidebar-hard-lock-v301.test.mjs tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs"
   },
   "engines": {"node": ">=22.12.0"},
   "dependencies": {

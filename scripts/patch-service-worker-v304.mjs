@@ -64,7 +64,7 @@ if (!switcherCss.includes("width:min(780px,calc(100vw - 28px))") || !switcherCss
   throw new Error("V304_SWITCHER_RESPONSIVE_CSS_MISSING");
 if (!membersCss.includes("width:min(820px,calc(100vw - 28px))") || !membersCss.includes("@media(max-width:760px)"))
   throw new Error("V304_MEMBERS_RESPONSIVE_CSS_MISSING");
-if (!tests.includes("Ganti situs v305 shows every real site") || !tests.includes("v304 member manager still uses production RPCs"))
+if (!tests.includes("Ganti situs v305 shows every real site") || !tests.includes("member manager exposes real add and remove-member controls through production RPCs"))
   throw new Error("V304_TEST_MARKERS_MISSING");
 if (!release.includes(RELEASE) || !release.includes(CACHE) || !release.includes('"existingSitesVisible": true') || !release.includes('"addMemberButton": true'))
   throw new Error("V304_RELEASE_INVALID");
