@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v313
+name: Deploy Ngeblogging Production v314
 
 on:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Keep one production lane across v310-v313 so a stale deployment can never
-  # race a newer Studio/Nara cutover.
+  # Keep one production lane across v310-v314 so a stale deployment can never
+  # race a newer Studio/Nara/domain cutover.
   group: ngeblogging-production-v310
   cancel-in-progress: true
 
@@ -45,7 +45,7 @@ jobs:
       - name: Run production regression and build
         run: npm run build
 
-      - name: Verify v313 Nara plus preserved v312-v310 authorities
+      - name: Verify v314 domain plus preserved v313-v310 authorities
         shell: bash
         run: |
           set -euo pipefail
@@ -54,13 +54,36 @@ jobs:
           test -f public/release-v311.json
           test -f public/release-v312.json
           test -f public/release-v313.json
+          test -f public/release-v314.json
           test -f src/nara-v313.css
           test -f tests/studio-nara-nonmodal-v313.test.mjs
+          test -f tests/studio-domain-fullzone-v314.test.mjs
+          test -f scripts/patch-domain-fullzone-v314.mjs
           test -f src/theme-studio-v312.css
           test -f src/studio-domain-v312.css
           test -f tests/studio-theme-members-domain-v312.test.mjs
           test -f supabase/migrations/20260806030000_members_owner_transfer_v312.sql
           test -f supabase/migrations/20260806032000_members_rpc_anon_hardening_v312.sql
+
+          grep -q 'studio-domain-fullzone-v314-20260806' public/release-v314.json
+          grep -q '"provider": "cloudflare-full-zone"' public/release-v314.json
+          grep -q '"legacyDomainMigration": true' public/release-v314.json
+          grep -q '"legacyRefreshMigrates": true' public/release-v314.json
+          grep -q '"fakeActiveStatusAllowed": false' public/release-v314.json
+          grep -q '"freeSubdomainPreserved": true' public/release-v314.json
+          grep -q '"sidebarUntouched": true' public/release-v314.json
+          grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
+          grep -q 'cloudflare-full-zone-authority-v314' wrangler.production.jsonc
+          grep -q 'domain-legacy-to-full-zone-v314-20260806' wrangler.production.jsonc
+          grep -q 'DOMAIN_FULL_ZONE_MIGRATION_RELEASE_V314' server/domain-handler.mjs
+          grep -q 'migratingLegacyDomain' server/domain-handler.mjs
+          grep -q 'migratedFromProvider' server/domain-handler.mjs
+          grep -q 'customDomainProvider(env) === "cloudflare-full-zone"' server/domain-handler.mjs
+          grep -q 'return registerFullZoneDomain(' server/domain-handler.mjs
+          if grep -q 'code: "DOMAIN_PROVIDER_MISMATCH"' server/domain-handler.mjs; then
+            echo 'v314 still contains the legacy provider-mismatch dead end.' >&2
+            exit 1
+          fi
 
           grep -q 'studio-nara-nonmodal-v313-20260806' public/release-v313.json
           grep -q '"smallNonModal": true' public/release-v313.json
@@ -114,10 +137,13 @@ jobs:
           grep -q 'studio-content-editor-desktop-site-v310-20260806' src/studio-content-editor-responsive-v308.js
           grep -q '@media (min-width:820px) and (max-width:1080px)' src/studio-content-editor-desktop-site-v310.css
           if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark' src/studio-content-editor-desktop-site-v310.css; then
-            echo 'v310-v313 editor attempted to restyle the Studio sidebar.' >&2
+            echo 'v310-v314 editor attempted to restyle the Studio sidebar.' >&2
             exit 1
           fi
 
+          grep -q 'STUDIO_DOMAIN_FULLZONE_RELEASE_V314' public/sw.js
+          grep -q 'studio-domain-fullzone-cache-v314' public/sw.js
+          grep -q 'ngeblogging-app-v314-domain-fullzone-20260806' public/sw.js
           grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' public/sw.js
           grep -q 'studio-nara-nonmodal-cache-v313' public/sw.js
           grep -q 'ngeblogging-app-v313-nara-nonmodal-20260806' public/sw.js
@@ -134,6 +160,19 @@ jobs:
           grep -R -q 'first-site-onboarding-stability-v311-20260806' dist/assets
           grep -R -q 'studio-content-editor-desktop-site-v310-20260806' dist/assets
 
+      - name: Verify Full Zone deployment credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "${CLOUDFLARE_ACCOUNT_ID:-}" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            echo 'CLOUDFLARE_ACCOUNT_ID wajib tersedia untuk Full Zone custom domain.' >&2
+            exit 1
+          fi
+          if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
+            echo 'CLOUDFLARE_API_TOKEN wajib tersedia untuk Full Zone custom domain.' >&2
+            exit 1
+          fi
+
       - name: Deploy Worker and static assets to Cloudflare production
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
 
@@ -147,19 +186,19 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler deployment tetap dijalankan dan live gate wajib membuktikan apex.'
           fi
 
-      - name: Verify live v313 release manifest
+      - name: Verify live v314 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v313.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-nara-nonmodal-v313-20260806'; then
-              echo "Live v313 release manifest confirmed."
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v314.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-domain-fullzone-v314-20260806'; then
+              echo "Live v314 release manifest confirmed."
               exit 0
             fi
             sleep 10
           done
-          echo "Live production did not expose release-v313.json after deployment." >&2
+          echo "Live production did not expose release-v314.json after deployment." >&2
           exit 1
 
       - name: Verify live v313 Nara plus v312-v310 bundles
@@ -188,21 +227,22 @@ jobs:
           grep -q 'first-site-onboarding-stability-v311-20260806' /tmp/studio-onboarding-v311.js
           grep -q 'studio-content-editor-desktop-site-v310-20260806' /tmp/studio-editor-v310.js
 
-      - name: Verify live auth shell and service worker v313
+      - name: Verify live auth shell and service worker v314
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v313.html
-          grep -q 'id="root"' /tmp/auth-callback-v313.html
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v313.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' /tmp/sw-v313.js
-          grep -q 'studio-nara-nonmodal-cache-v313' /tmp/sw-v313.js
-          grep -q 'ngeblogging-app-v313-nara-nonmodal-20260806' /tmp/sw-v313.js
-          grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' /tmp/sw-v313.js
-          grep -q 'STUDIO_FIRST_SITE_STABILITY_RELEASE_V311' /tmp/sw-v313.js
-          grep -q 'STUDIO_CONTENT_EDITOR_DESKTOP_SITE_RELEASE_V310' /tmp/sw-v313.js
-          grep -q 'STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305' /tmp/sw-v313.js
-          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' /tmp/sw-v313.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v314.html
+          grep -q 'id="root"' /tmp/auth-callback-v314.html
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v314.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_DOMAIN_FULLZONE_RELEASE_V314' /tmp/sw-v314.js
+          grep -q 'studio-domain-fullzone-cache-v314' /tmp/sw-v314.js
+          grep -q 'ngeblogging-app-v314-domain-fullzone-20260806' /tmp/sw-v314.js
+          grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' /tmp/sw-v314.js
+          grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' /tmp/sw-v314.js
+          grep -q 'STUDIO_FIRST_SITE_STABILITY_RELEASE_V311' /tmp/sw-v314.js
+          grep -q 'STUDIO_CONTENT_EDITOR_DESKTOP_SITE_RELEASE_V310' /tmp/sw-v314.js
+          grep -q 'STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305' /tmp/sw-v314.js
+          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' /tmp/sw-v314.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -214,7 +254,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v313-${{ github.sha }}
+          name: ngeblogging-production-v314-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
