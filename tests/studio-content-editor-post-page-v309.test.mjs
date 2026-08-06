@@ -4,18 +4,22 @@ import test from "node:test";
 
 const css = await readFile(new URL("../src/studio-content-editor-post-page-polish-v309.css", import.meta.url), "utf8");
 const css310 = await readFile(new URL("../src/studio-content-editor-desktop-site-v310.css", import.meta.url), "utf8");
+const css313 = await readFile(new URL("../src/studio-content-editor-final-v313.css", import.meta.url), "utf8");
+const guard313 = await readFile(new URL("../src/studio-content-editor-final-v313.js", import.meta.url), "utf8");
 const runtime = await readFile(new URL("../src/studio-content-editor-responsive-v308.js", import.meta.url), "utf8");
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 
-test("v309/v310 load after v308 and remain editor-only", () => {
+test("v309/v310/v313 load after v308 and remain editor-only", () => {
   assert.match(runtime, /studio-content-editor-responsive-v308\.css/);
   assert.match(runtime, /studio-content-editor-post-page-polish-v309\.css/);
   assert.match(runtime, /studio-content-editor-desktop-site-v310\.css/);
+  assert.match(runtime, /studio-content-editor-final-v313\.js/);
   assert.match(runtime, /studio-content-editor-post-page-polish-v309-20260806/);
   assert.match(runtime, /studio-content-editor-desktop-site-v310-20260806/);
-  for (const source of [css, css310]) {
-    assert.doesNotMatch(source, /#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.ce-editor-side-v266|\.ce-editor-sidebar-toggle-v266/);
+  assert.match(runtime, /studio-content-editor-final-v313-20260806/);
+  for (const source of [css, css310, css313]) {
+    assert.doesNotMatch(source, /#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.ce-editor-side-v266|\.ce-editor-sidebar-toggle-v266|\.nara-assistant/);
   }
 });
 
@@ -25,29 +29,44 @@ test("large family removes excessive blank paper", () => {
   assert.match(css, /@media \(max-width:760px\)/);
   assert.match(css, /html\.editor-v266-large \.ce-workspace/);
   assert.match(css, /grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(css313, /min-height:clamp\(280px,34dvh,430px\)!important/);
+  assert.match(css313, /@media \(min-width:820px\)/);
+  assert.match(css313, /grid-template-columns:minmax\(0,1fr\) clamp\(270px,27vw,340px\)!important/);
 });
 
-test("v310 restores desktop composition for Android desktop-site and large tablets", () => {
+test("v310/v313 preserve desktop-site composition for Android desktop-site and large tablets", () => {
   assert.match(css310, /@media \(min-width:820px\) and \(max-width:1080px\)/);
   assert.match(css310, /grid-template-columns:minmax\(0,1fr\) clamp\(260px,29vw,300px\)!important/);
-  assert.match(css310, /min-height:clamp\(400px,44dvh,560px\)!important/);
   assert.match(css310, /position:sticky!important/);
-  assert.match(css310, /max-width:300px!important/);
+  assert.match(css313, /@media \(min-width:820px\) and \(max-width:1080px\)/);
+  assert.match(css313, /min-height:clamp\(280px,32dvh,400px\)!important/);
+  assert.match(css313, /max-width:292px!important/);
 });
 
-test("small family stays one-column, touch-safe and compact", () => {
-  assert.match(css, /html\.editor-v266-small \.ce-paper/);
-  assert.match(css, /min-height:clamp\(320px,42dvh,480px\)/);
-  assert.match(css, /min-height:44px!important/);
-  assert.match(css, /overflow-x:auto!important/);
+test("small family stays one-column, touch-safe, compact and complete", () => {
   assert.match(css310, /html\.editor-v266-small \.ce-actions>button/);
-  assert.match(css310, /min-height:44px!important/);
-  assert.match(css310, /width:34px!important;height:34px!important/);
-  assert.match(css310, /overflow-x:auto!important/);
+  assert.match(css313, /@media \(max-width:760px\)/);
+  assert.match(css313, /grid-template-areas:"back file" "actions actions"/);
+  assert.match(css313, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
+  assert.match(css313, /min-height:44px!important/);
+  assert.match(css313, /overflow-x:auto!important/);
+  assert.match(css313, /grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(css313, /ce-source-layer footer\{flex-wrap:wrap!important/);
 });
 
 test("Posts and Pages still share the same ContentEditor implementation", () => {
   assert.match(editor, /const isPage = doc\.type === "page"/);
   assert.match(studio, /<ContentEditor doc=\{active\}/);
   assert.match(studio, /active\.type === "page" \? "pages" : "posts"/);
+});
+
+test("v313 enforces the real 5000-word publication limit without trimming drafts", () => {
+  assert.match(guard313, /CONTENT_WORD_LIMIT_V313 = 5000/);
+  assert.match(guard313, /CONTENT_WORD_WARNING_V313 = 4500/);
+  assert.match(guard313, /Kurangi \$\{Math\.abs\(remaining\)/);
+  assert.match(guard313, /Draf tetap aman dan tidak dipotong/);
+  assert.match(guard313, /\.ce-actions \.ce-primary/);
+  assert.match(guard313, /option\[value="published"\]/);
+  assert.doesNotMatch(guard313, /slice\([^\n]*5000|substring\([^\n]*5000|innerHTML\s*=\s*[^;]*slice/);
+  assert.doesNotMatch(guard313, /new MutationObserver|setInterval\s*\(|stopImmediatePropagation|localStorage\.clear|sessionStorage\.clear|signOut\s*\(|location\.(?:reload|replace)\s*\(/);
 });
