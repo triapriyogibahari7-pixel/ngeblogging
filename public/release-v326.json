@@ -1,0 +1,24 @@
+{
+  "release": "cloudflare-prebuild-v322-test-compat-v326-20260806",
+  "date": "2026-08-06",
+  "scope": "Build-only compatibility repair so the historical v316 prebuild validator accepts the promoted v322 30,000-word Posts/Pages test authority instead of aborting Cloudflare Building after the v315 tests pass.",
+  "rootCause": {
+    "historicalValidator": "scripts/patch-studio-content-editor-v316.mjs",
+    "staleExpectedTestName": "v316 enforces the real 5000-word publication limit without trimming drafts",
+    "currentAuthorityTestName": "v322 raises Posts and Pages to a real 30000-word publication limit without trimming drafts",
+    "symptom": "Cloudflare build reported asynchronous activity after the v315 node:test suite because the following v316 validator threw outside the completed test context"
+  },
+  "fix": {
+    "v316StillAcceptsOriginal5000ContractOnOldTrees": true,
+    "v316AcceptsV32230000AuthorityOnCurrentTrees": true,
+    "draftsRemainUntrimmed": true,
+    "publicationWordLimit": 30000,
+    "warningStartsAtWords": 27000,
+    "runtimeBehaviorChanged": false,
+    "authChanged": false,
+    "sidebarChanged": false,
+    "naraChanged": false,
+    "themeChanged": false,
+    "domainChanged": false
+  }
+}
