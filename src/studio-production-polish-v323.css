@@ -1,0 +1,328 @@
+/* Ngeblogging Studio v323 — production geometry authority.
+ * Scope: Theme Studio map/code geometry, Posts/Pages responsive editor geometry,
+ * and Domain compact-layout readability. Auth, sidebar and Nara are intentionally untouched.
+ */
+:root{--studio-production-polish-v323:"studio-production-polish-v323-20260806"}
+
+/* Shared overflow safety for the three surfaces changed by this release. */
+.tn-studio,.ce-app,.sv124-domain-page{width:100%;max-width:100%;min-width:0;overflow-x:clip}
+.tn-studio :is(section,article,aside,header,footer,main,nav,div),
+.ce-app :is(section,article,aside,header,footer,main,nav,div),
+.sv124-domain-page :is(section,article,aside,header,footer,main,nav,div){min-width:0;max-width:100%}
+.tn-studio :is(img,video,iframe,canvas),.ce-app :is(img,video,iframe,canvas),.sv124-domain-page :is(img,video,iframe,canvas){max-width:100%}
+
+/* THEME — always one vertical stack of the two real layout models. */
+.tn-layout-studio[data-production-polish-v323="ready"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  gap:16px!important;
+  align-items:start!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.tn-layout-studio[data-production-polish-v323="ready"]>*{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio [data-production-model-rows-v323="ready"],
+.tn-layout-studio :is(.tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,[class*="tn-layout-models"][class*="v312"]){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  gap:14px!important;
+  align-items:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio [data-production-model-v323="ready"],
+.tn-layout-studio :is(.tn-layout-model-v312,[class*="tn-layout-model-"][class*="v312"]){
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border-radius:16px!important;
+}
+.tn-layout-studio [data-production-map-shell-v323="ready"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  overscroll-behavior-inline:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  scrollbar-gutter:stable both-edges;
+}
+.tn-layout-studio [data-production-map-v323="ready"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+}
+.tn-layout-studio [data-production-map-v323="ready"] :is(button,[role="button"]){
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+  line-height:1.2!important;
+}
+/* Keep the post/page canvas centered between left and right widget columns. */
+.tn-layout-content-v264,
+[data-theme-layout-v312] [class*="layout-content"],
+[class*="tn-layout-map"][class*="v312"] [class*="layout-content"]{
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+.tn-layout-post-v264,
+[data-theme-layout-v312] .content-main,
+[class*="tn-layout-map"][class*="v312"] .content-main{
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  min-width:0!important;
+  margin:0!important;
+}
+/* Area chooser remains a compact popover, never a page-sized overlay. */
+.tn-layout-popover-v312,.tn-layout-popover-v264{
+  width:min(360px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:min(440px,70dvh)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  border-radius:14px!important;
+  z-index:2147481200!important;
+}
+
+/* THEME CODE — viewport-contained editor. Desktop is 50:50; compact devices
+ * show preview first and the long source editor below it. */
+.tn-modal-layer>.tn-modal.fullscreen[data-production-code-v323="ready"]{
+  position:fixed!important;
+  inset:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))!important;
+  width:auto!important;
+  max-width:none!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  transform:none!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"]>.tn-modal-body{
+  flex:1 1 auto!important;
+  display:block!important;
+  width:100%!important;
+  min-height:0!important;
+  overflow:auto!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"]>header,
+.tn-modal.fullscreen[data-production-code-v323="ready"]>footer{
+  flex:0 0 auto!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  z-index:2!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"]>footer{flex-wrap:wrap!important;gap:8px!important}
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-workspace{
+  display:grid!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  align-items:stretch!important;
+  transform:none!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane,
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-preview-pane{
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane{
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr)!important;
+  background:#fff!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane textarea{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:500px!important;
+  margin:0!important;
+  resize:none!important;
+  overflow:auto!important;
+  white-space:pre!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  tab-size:2!important;
+  color:#172033!important;
+  background:#fff!important;
+  font:500 13px/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"] :is(.tn-code-gutter-v312,.tn-code-gutter-v319,.tn-code-gutter-v265,[data-theme-code-v312="line-numbers-10000"]){
+  opacity:1!important;
+  visibility:visible!important;
+  transform:none!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-preview-pane>.tn-frame-shell{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:auto!important;
+  place-items:start center!important;
+}
+.tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-preview-pane iframe{display:block!important;max-width:100%!important;margin-inline:auto!important}
+
+/* POSTS/PAGES — do not depend on a device-class being present. This keeps the
+ * shared editor usable even when browser desktop/mobile emulation changes while open. */
+.ce-app[data-production-editor-v323="ready"] .ce-paper{height:auto!important;min-height:clamp(300px,42dvh,520px)!important}
+.ce-app[data-production-editor-v323="ready"] .ce-paper-shell{min-height:0!important}
+.ce-app[data-production-editor-v323="ready"] .ce-word-status,
+.ce-app[data-production-editor-v323="ready"] .ce-word-limit-v316{flex-wrap:wrap!important;row-gap:5px!important}
+
+/* DOMAIN — prevent narrow columns from turning action labels into vertical letters. */
+.sv124-domain-page[data-production-domain-v323="ready"] :is(.sv124-card,.sv124-domain-item,.sv124-free-domain,.sv124-domain-register,.sv124-domain-list){
+  min-width:0!important;
+  max-width:100%!important;
+}
+.sv124-domain-page[data-production-domain-v323="ready"] :is(button,a,input,select,textarea,code){
+  min-width:0!important;
+  max-width:100%!important;
+}
+.sv124-domain-page[data-production-domain-v323="ready"] :is(button,a){white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important}
+.sv124-domain-page[data-production-domain-v323="ready"] .sv124-domain-item footer,
+.sv124-domain-page[data-production-domain-v323="ready"] .sv124-free-domain aside{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+.sv124-domain-page[data-production-domain-v323="ready"] .sv124-domain-dns-v321{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+.sv124-domain-page[data-production-domain-v323="ready"] .sv124-domain-dns-v321 :is(b,p,code){overflow-wrap:anywhere!important}
+
+@media(min-width:1081px){
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-workspace{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:"code preview"!important;
+    height:100%!important;
+    min-height:620px!important;
+    overflow:hidden!important;
+  }
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane{grid-area:code!important;height:100%!important;border-right:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-preview-pane{grid-area:preview!important;height:100%!important}
+
+  .ce-app[data-production-editor-v323="ready"] .ce-workspace{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) clamp(300px,26vw,360px)!important;
+    align-items:start!important;
+    width:100%!important;
+    max-width:100%!important;
+    gap:0!important;
+  }
+  .ce-app[data-production-editor-v323="ready"] .ce-paper-shell{width:100%!important;padding:clamp(18px,2.4vw,32px)!important;align-items:center!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper{width:min(860px,100%)!important;margin-inline:auto!important;padding:clamp(36px,4.8vw,70px) clamp(30px,5vw,76px)!important;border-radius:12px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-word-status,
+  .ce-app[data-production-editor-v323="ready"] .ce-word-limit-v316{width:min(860px,100%)!important;margin-inline:auto!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-sidebar{position:sticky!important;top:168px!important;width:100%!important;max-width:360px!important;max-height:calc(100dvh - 168px)!important;overflow:auto!important;border-left:1px solid #dbe2eb!important;background:#fff!important}
+}
+
+@media(min-width:761px) and (max-width:1080px){
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-workspace{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"preview" "code"!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-preview-pane{grid-area:preview!important;height:clamp(330px,44dvh,500px)!important;min-height:330px!important;border-bottom:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane{grid-area:code!important;height:clamp(600px,70dvh,820px)!important;min-height:600px!important;border-right:0!important}
+
+  .ce-app[data-production-editor-v323="ready"] .ce-workspace{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper-shell{padding:14px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper{width:min(780px,100%)!important;margin-inline:auto!important;padding:34px clamp(24px,5vw,52px)!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-sidebar{position:static!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;border-left:0!important;border-top:1px solid #dbe2eb!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-field-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+
+@media(max-width:760px){
+  /* Keep the detailed map legible. It scrolls inside its card instead of
+   * shrinking 26 areas into unreadable single-letter columns. */
+  .tn-layout-studio[data-production-polish-v323="ready"]{gap:12px!important}
+  .tn-layout-studio [data-production-map-shell-v323="ready"]{padding-bottom:4px!important;overflow-x:auto!important}
+  .tn-layout-studio [data-production-map-v323="ready"]{width:680px!important;max-width:none!important;min-width:680px!important;margin:0!important}
+  .tn-layout-studio [data-production-model-rows-v323="ready"]{gap:12px!important}
+  .tn-layout-popover-v312,.tn-layout-popover-v264{width:min(330px,calc(100vw - 18px))!important;max-width:calc(100vw - 18px)!important;max-height:64dvh!important}
+
+  .tn-modal-layer>.tn-modal.fullscreen[data-production-code-v323="ready"]{inset:max(6px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))!important;border-radius:16px!important}
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-workspace{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"preview" "code"!important;height:auto!important;min-height:0!important;overflow:visible!important}
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-preview-pane{grid-area:preview!important;height:clamp(280px,38dvh,360px)!important;min-height:280px!important;border-bottom:1px solid #dfe6ef!important}
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane{grid-area:code!important;height:clamp(580px,72dvh,760px)!important;min-height:580px!important;border-right:0!important}
+  .tn-modal.fullscreen[data-production-code-v323="ready"] .tn-code-pane textarea{min-height:500px!important;font-size:12px!important}
+
+  .ce-app[data-production-editor-v323="ready"]{min-height:100dvh!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-titlebar{position:relative!important;top:auto!important;height:auto!important;min-height:64px!important;display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;grid-template-areas:"back file" "actions actions"!important;align-items:center!important;gap:7px 9px!important;padding:9px 10px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-back{grid-area:back!important;width:40px!important;height:40px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-file{grid-area:file!important;width:100%!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-file input{width:100%!important;max-width:100%!important;font-size:12px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-actions{grid-area:actions!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;gap:7px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-actions>button{width:100%!important;min-height:44px!important;padding:0 9px!important;font-size:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;justify-content:center!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-tabs{position:sticky!important;top:0!important;z-index:52!important;height:44px!important;width:100%!important;gap:4px!important;padding:0 8px!important;overflow-x:auto!important;overflow-y:hidden!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-tabs>button{flex:0 0 auto!important;min-width:max-content!important;height:44px!important;padding-inline:10px!important;font-size:9px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-ribbon{position:sticky!important;top:44px!important;z-index:51!important;width:100%!important;max-width:100%!important;min-height:58px!important;padding:6px!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-inline:contain!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-ribbon nav button,
+  .ce-app[data-production-editor-v323="ready"] .ce-color-tool{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-ribbon select{height:36px!important;min-height:36px!important;max-width:112px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-nara{min-height:40px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-workspace{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper-shell{display:block!important;width:100%!important;padding:10px 8px 12px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper{width:100%!important;max-width:100%!important;min-height:clamp(300px,42dvh,430px)!important;margin:0!important;padding:24px clamp(15px,5vw,28px)!important;border-radius:12px!important;font-size:15px!important;line-height:1.72!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper h1{font-size:clamp(30px,9vw,38px)!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper h2{font-size:clamp(24px,7vw,30px)!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper :is(pre,table){display:block!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-word-status,
+  .ce-app[data-production-editor-v323="ready"] .ce-word-limit-v316{width:100%!important;justify-content:flex-start!important;margin-inline:0!important;text-align:left!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-sidebar{position:static!important;display:block!important;width:100%!important;max-width:100%!important;max-height:none!important;overflow:visible!important;border-left:0!important;border-top:1px solid #dbe2eb!important;background:#fff!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-sidebar>section{width:100%!important;padding:15px 12px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-field-grid{grid-template-columns:minmax(0,1fr)!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-field :is(input,select,textarea){width:100%!important;max-width:100%!important;min-height:44px!important;font-size:16px!important}
+
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-free-domain{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;align-items:start!important;gap:12px!important}
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-free-domain>aside{grid-column:1/-1!important;width:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-domain-item footer{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%!important;gap:8px!important}
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-domain-item footer>* ,
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-free-domain aside>* ,
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-domain-register form>button{
+    width:100%!important;
+    min-height:44px!important;
+    justify-content:center!important;
+    text-align:center!important;
+  }
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-nameservers>div{grid-template-columns:minmax(0,1fr) auto!important}
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-nameservers>div>span{grid-column:1/-1!important}
+  .sv124-domain-page[data-production-domain-v323="ready"] .sv124-nameservers code{overflow-wrap:anywhere!important;white-space:normal!important}
+}
+
+@media(max-width:390px){
+  .ce-app[data-production-editor-v323="ready"] .ce-titlebar{padding-inline:8px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-actions>button{font-size:9px!important;padding-inline:6px!important}
+  .ce-app[data-production-editor-v323="ready"] .ce-paper{padding-inline:15px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .tn-studio[data-production-polish-v323="ready"] *,
+  .ce-app[data-production-editor-v323="ready"] *,
+  .sv124-domain-page[data-production-domain-v323="ready"] *{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
