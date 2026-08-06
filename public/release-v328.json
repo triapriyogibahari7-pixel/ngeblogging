@@ -1,0 +1,37 @@
+{
+  "release": "prebuild-historical-chain-stop-v328-20260806",
+  "date": "2026-08-06",
+  "scope": "Deterministic Cloudflare production prebuild. The committed production tree already contains the promoted v305-v327 authorities, so npm prebuild must not replay the historical one-time migration chain.",
+  "evidence": {
+    "latestScreenshotStillShowsImportedV315NodeTest": true,
+    "v315SuitePasses": 20,
+    "v315SuiteFails": 0,
+    "cloudflareThenReportsAsyncAfterTest": true,
+    "v327PreviewDeploymentSucceeded": true
+  },
+  "fix": {
+    "sanitizeLegacyPatchTestImportsFirst": true,
+    "skipHistoricalMigrationReplayByDefault": true,
+    "manualReplayEnv": "NGEBLOGGING_REPLAY_HISTORICAL_PATCH_CHAIN=1",
+    "prebuildFirstNodeProcessExitsSuccess": true,
+    "authCapacityGenerationStillRuns": true,
+    "studioLayoutGenerationStillRuns": true,
+    "productionNodeTestRunnerStillRuns": true,
+    "viteBuildStillRuns": true
+  },
+  "preserved": {
+    "postsPagesWordLimit": 30000,
+    "postsPagesWarningWords": 27000,
+    "draftsUntrimmed": true,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "themeStudio": true,
+    "themes": 100,
+    "layoutAreas": 26,
+    "layoutModels": 2,
+    "previewModes": 8,
+    "customDomainTruthfulness": true,
+    "runtimeUiChanged": false
+  }
+}
