@@ -1,0 +1,26 @@
+{
+  "release": "prebuild-test-runner-isolation-v327-20260806",
+  "date": "2026-08-06",
+  "scope": "Cloudflare build-chain repair: historical patch scripts may validate test source text, but they must not execute node:test suites by importing ../tests during npm prebuild.",
+  "rootCause": {
+    "symptom": "Cloudflare Building reports 'A resource generated asynchronously after the test ended' after v315 shows all tests passing, then aborts before Deploying.",
+    "mechanism": "Several historical patch-* scripts dynamically import node:test files while running as a normal prebuild process. node:test returns control after registration while the patch chain continues asynchronously, contaminating the test lifecycle and hiding the real downstream result.",
+    "v326WasInsufficient": true
+  },
+  "fix": {
+    "sanitizer": "scripts/patch-prebuild-test-runner-isolation-v327.mjs",
+    "runsBeforeHistoricalPatchChain": true,
+    "removesOnlyDirectPatchToTestImports": true,
+    "semanticPatchValidatorsPreserved": true,
+    "productionNodeTestRunnerPreserved": true,
+    "postsPagesWordLimit": 30000,
+    "postsPagesWarningWords": 27000,
+    "draftsNeverTrimmed": true,
+    "runtimeUiChanged": false,
+    "authChanged": false,
+    "sidebarChanged": false,
+    "naraChanged": false,
+    "themeChanged": false,
+    "domainChanged": false
+  }
+}

@@ -7,6 +7,8 @@ const css310 = await readFile(new URL("../src/studio-content-editor-desktop-site
 const css316 = await readFile(new URL("../src/studio-content-editor-final-v316.css", import.meta.url), "utf8");
 const guard316 = await readFile(new URL("../src/studio-content-editor-final-v316.js", import.meta.url), "utf8");
 const patch316 = await readFile(new URL("../scripts/patch-studio-content-editor-v316.mjs", import.meta.url), "utf8");
+const patch304 = await readFile(new URL("../scripts/patch-service-worker-v304.mjs", import.meta.url), "utf8");
+const isolation327 = await readFile(new URL("../scripts/patch-prebuild-test-runner-isolation-v327.mjs", import.meta.url), "utf8");
 const runtime = await readFile(new URL("../src/studio-content-editor-responsive-v308.js", import.meta.url), "utf8");
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
@@ -77,4 +79,14 @@ test("v316 historical prebuild accepts the promoted v322 test authority", () => 
   assert.match(patch316, /const wordLimitTestMarker = guardHasV322Authority/);
   assert.match(patch316, /v322 raises Posts and Pages to a real 30000-word publication limit without trimming drafts/);
   assert.match(patch316, /v316 enforces the real 5000-word publication limit without trimming drafts/);
+});
+
+test("v327 isolates node:test suites before the historical prebuild chain starts", () => {
+  assert.match(patch304, /await import\("\.\/patch-prebuild-test-runner-isolation-v327\.mjs"\)/);
+  assert.match(isolation327, /prebuild-test-runner-isolation-v327-20260806/);
+  assert.match(isolation327, /entry\.name\.startsWith\("patch-"\)/);
+  assert.match(isolation327, /inlineTestImportPattern/);
+  assert.match(isolation327, /V327_PREBUILD_TEST_LEAK/);
+  assert.match(isolation327, /await writeFile\(file, next\)/);
+  assert.doesNotMatch(isolation327, /await\s+import\(\s*["']\.\.\/tests\//);
 });
