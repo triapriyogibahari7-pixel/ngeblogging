@@ -120,3 +120,4 @@ await writeFile(swFile, sw);
 
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
 await import("../tests/studio-domain-fullzone-v314.test.mjs");
+await import("./patch-auth-callback-v315.mjs");
