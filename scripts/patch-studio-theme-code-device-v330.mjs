@@ -103,3 +103,4 @@ for (const marker of [RELEASE, VERSION, CACHE, "STUDIO_THEME_DOMAIN_FINAL_RELEAS
 
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: Theme code editor now follows the selected preview device and production cache rotated to ${CACHE}.`);
+await import("./patch-content-capacity-v331.mjs");
