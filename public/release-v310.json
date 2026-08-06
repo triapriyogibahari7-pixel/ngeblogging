@@ -1,0 +1,35 @@
+{
+  "release": "studio-content-editor-desktop-site-v310-20260806",
+  "date": "2026-08-06",
+  "scope": "Posts and Pages editor only; fixes desktop-site 820-1080 composition and small-device controls without changing the Studio sidebar",
+  "inherits": [
+    "studio-content-editor-responsive-v308-20260806",
+    "studio-content-editor-post-page-polish-v309-20260806",
+    "studio-editor-navigation-v266-20260804",
+    "studio-site-switch-first-site-v305-20260805"
+  ],
+  "fixes": {
+    "postsPagesSharedEditorPreserved": true,
+    "desktopSite820To1080UsesDesktopComposition": true,
+    "desktopSite980InspectorBesidePaper": true,
+    "desktopBlankPaperReduced": true,
+    "largeTabletCompositionPreserved": true,
+    "narrowLargeFamilyContained": true,
+    "mobileActionsReadable": true,
+    "mobileToolbarTouchTargets": true,
+    "mobileTabsScrollable": true,
+    "mobilePaperContained": true,
+    "mobileMetadataSeoHtmlPreserved": true,
+    "sidebarStylesUntouched": true,
+    "authSessionUntouched": true,
+    "naraOwnershipUntouched": true
+  },
+  "validation": {
+    "productionTestExtended": true,
+    "buildGuardAdded": true,
+    "serviceWorkerCacheRotated": true,
+    "screenshotsUsedAsGeometryReference": true,
+    "realDeviceValidationClaimed": false,
+    "capacityClaimed": false
+  }
+}
