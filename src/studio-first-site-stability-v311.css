@@ -1,0 +1,25 @@
+/* Ngeblogging Studio v311 — first-site onboarding visual stability only.
+ * No Studio sidebar, profile or editor geometry is changed here.
+ */
+.so169-shell,.so169-shell *{min-width:0;box-sizing:border-box}
+.so169-shell{width:100%;max-width:100%;overflow-x:hidden;background:#f5f7fb}
+.so169-shell .so75-topbar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(255,255,255,.98)!important}
+.so169-shell .so75-hero,.so169-shell .so75-copy,.so169-shell .so75-form{filter:none!important;opacity:1!important;transform:none!important}
+.so169-shell .so75-form{contain:layout;overflow:visible}
+.so169-shell .so75-types>button{transform:none!important}
+.so169-shell .so75-types>button:hover{transform:none!important}
+.so169-shell .so75-creating-status{margin:14px 0 0;padding:11px 13px;border:1px solid #cfe0f8;border-radius:12px;background:#f5f9ff;color:#2b5fae;font-size:12px;line-height:1.5;font-weight:700}
+.so169-shell .so75-submit[aria-busy="true"]{opacity:.8;cursor:progress}
+.so169-shell .so75-submit[aria-busy="true"] svg{animation:so75-spin 1s linear infinite}
+@media(max-width:700px){
+  .so169-shell .so75-hero{display:block!important;padding-top:24px!important}
+  .so169-shell .so75-copy{position:static!important;margin-bottom:22px!important}
+  .so169-shell .so75-form{contain:layout;overflow:visible!important;isolation:isolate}
+}
+@media(prefers-reduced-motion:reduce){
+  .so169-shell *{scroll-behavior:auto!important;transition:none!important}
+  .so169-shell .so75-submit[aria-busy="true"] svg{animation:so75-spin 1s linear infinite!important}
+}
+
+.so169-shell .so75-hero,.so169-shell .so75-form{animation:none!important}
+.so169-shell .so75-form:focus-within{filter:none!important}

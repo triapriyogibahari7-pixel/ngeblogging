@@ -1,0 +1,30 @@
+{
+  "release": "first-site-onboarding-stability-v311-20260806",
+  "date": "2026-08-06",
+  "scope": "First-site onboarding stability and account-scoped fast entry while preserving the v310 shared Posts/Pages editor and existing Studio sidebar authority.",
+  "accountScopedFastEntry": true,
+  "firstSitePhaseSticky": true,
+  "draftPreservedDuringCreation": true,
+  "slowCreateRecovery": true,
+  "duplicateCreateRecoveryByOwnedSlug": true,
+  "preferenceFailureNonFatal": true,
+  "onboardingBlurRemoved": true,
+  "postsPagesV310Preserved": true,
+  "desktopSiteEditorV310Preserved": true,
+  "mobileEditorV310Preserved": true,
+  "sidebarUntouched": true,
+  "naraUntouched": true,
+  "authSessionNotCleared": true,
+  "serviceWorkerCacheRotated": true,
+  "serviceWorkerVersion": "ngeblogging-app-v311-first-site-stability-20260806",
+  "serviceWorkerCache": "studio-first-site-stability-cache-v311",
+  "realDeviceMatrixClaimed": false,
+  "massiveCapacityClaimed": false,
+  "notes": [
+    "A stale active-site id without a user-scoped snapshot can no longer skip first-site verification for another account.",
+    "The old 15-second create failure is replaced by a soft recovery path that can find the newly created owned site when the response is delayed or lost.",
+    "The onboarding form draft remains on the device until a real site is confirmed.",
+    "A theme/locale preference update failure no longer turns a successfully created site into a failed onboarding flow.",
+    "This release does not claim extreme concurrent-login capacity; that requires measured production load testing."
+  ]
+}
