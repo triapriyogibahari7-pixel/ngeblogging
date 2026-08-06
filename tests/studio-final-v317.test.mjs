@@ -75,6 +75,17 @@ test("v317 custom domain active path verifies the Cloudflare Worker Domain inste
   assert.match(release, /"fakeDomainActiveStatusAllowed": false/);
 });
 
+test("v317 external HTTPS custom domains can resolve public data even when Cloudflare Git build omits VITE env", async () => {
+  const supabase = await read("src/lib/supabase.js");
+  assert.match(supabase, /custom-domain-public-client-v317-20260806/);
+  assert.match(supabase, /window\.location\?\.protocol/);
+  assert.match(supabase, /hostname\.endsWith\("\.workers\.dev"\)/);
+  assert.match(supabase, /return hostname\.includes\("\."\)/);
+  assert.match(supabase, /PRODUCTION_SUPABASE_PUBLISHABLE_KEY_V245/);
+  assert.match(supabase, /persistSession: true/);
+  assert.match(supabase, /autoRefreshToken: true/);
+});
+
 test("v317 preserves v316 draft safety and v315 session persistence", async () => {
   const [guard, authRelease] = await Promise.all([
     read("src/studio-content-editor-final-v316.js"),
