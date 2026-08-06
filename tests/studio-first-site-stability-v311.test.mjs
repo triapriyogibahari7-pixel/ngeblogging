@@ -29,7 +29,9 @@ test("v311 first-site creation remains stable, recoverable and duplicate-safe on
   assert.match(gate, /localStorage\.setItem\(onboardingDraftKey\(user\?\.id\)/);
   assert.match(gate, /localStorage\.removeItem\(onboardingDraftKey\(userId\)\)/);
   assert.match(gate, /aria-busy=\{creating\}/);
-  assert.match(gate, /firstSiteRequiredRef\.current && site\.__userId !== props\.user\?\.id/);
+  assert.match(gate, /eventSite\?\.__userId === props\.user\?\.id/);
+  assert.match(gate, /site\.__userId !== props\.user\?\.id/);
+  assert.match(gate, /firstSiteRequiredRef\.current = false/);
 });
 
 test("v311 onboarding visual layer removes blur and movement without touching the Studio sidebar", async () => {
