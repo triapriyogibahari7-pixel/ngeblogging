@@ -1,0 +1,43 @@
+{
+  "release": "studio-theme-code-device-v330-20260806",
+  "date": "2026-08-06",
+  "scope": "Make Theme HTML/CSS/JavaScript editor composition follow the selected Theme preview device instead of the browser layout viewport, including Chrome Android desktop-site mode.",
+  "rootCause": {
+    "screenshotShowsMobilePreviewButDesktopSplit": true,
+    "selectedPreviewLabel": "Mobile · 430px",
+    "browserCanExposeDesktopLayoutViewportOnPhone": true,
+    "v325UsedViewportMediaQueriesForCodeComposition": true,
+    "result": "A physical phone using browser desktop-site mode could select Mobile/Handphone yet still receive the desktop 50:50 editor split, leaving the code pane narrow, visually blank and partially covered by the Studio rail."
+  },
+  "fix": {
+    "selectedPreviewDeviceOwnsEditorLayout": true,
+    "compactDevices": ["application", "phone", "mobile", "compact", "tablet"],
+    "largeDevices": ["laptop", "desktop", "computer"],
+    "compactPreviewAboveCode": true,
+    "largePreviewCode5050": true,
+    "desktopSiteOnPhoneNoLongerForcesDesktopSplit": true,
+    "lineGuide": 10000,
+    "lineGuideSynchronizedWithEditorScroll": true,
+    "htmlCssJavascriptTabsPreserved": true,
+    "previewDeviceSwitcherPreserved": true,
+    "modalRaisedAboveStudioRail": true,
+    "serviceWorkerCacheRotated": true
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "layoutModels": 2,
+    "previewModes": 8,
+    "postsPagesWordLimit": 30000,
+    "sidebarUntouched": true,
+    "naraUntouched": true,
+    "authSessionUntouched": true,
+    "domainAuthorityUntouched": true
+  },
+  "regressionPolicy": {
+    "viewportMediaQueriesForbiddenInV330Layer": true,
+    "mutationObserverForbidden": true,
+    "setIntervalForbidden": true,
+    "destructiveSessionOperationsForbidden": true
+  }
+}
