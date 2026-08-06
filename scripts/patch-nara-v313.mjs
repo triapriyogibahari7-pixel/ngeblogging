@@ -85,3 +85,4 @@ await writeFile(swFile, sw);
 
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
 await import("../tests/studio-nara-nonmodal-v313.test.mjs");
+await import("./patch-studio-content-editor-v314.mjs");
