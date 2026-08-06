@@ -1,0 +1,52 @@
+{
+  "release": "prebuild-materialization-v329-20260806",
+  "date": "2026-08-06",
+  "scope": "Restore sanitized build-time materialization after v328 proved that skipping the historical patch chain deployed older Theme Studio and custom-domain source even though Cloudflare itself built successfully.",
+  "rootCause": {
+    "cloudflareBuildFailureWasFixedByV327": true,
+    "v328StoppedHistoricalChain": true,
+    "v328DeploymentSucceeded": true,
+    "themeVisualStillOldAfterV328": true,
+    "customDomainProviderStillOldAfterV328": true,
+    "reason": "Several promoted production authorities are intentionally materialized by deterministic patch scripts during prebuild. Stopping the chain prevented Theme v312/v325 and custom-domain public-DNS v321 transformations from reaching the final Vite and Wrangler bundles."
+  },
+  "fix": {
+    "v327SanitizerPreserved": true,
+    "inlineNodeTestImportsRemovedBeforeChain": true,
+    "historicalMaterializationResumed": true,
+    "processExitHardStopRemoved": true,
+    "themeV312Materializes": true,
+    "themeV325GeometryMaterializes": true,
+    "customDomainV321PublicDnsMaterializes": true,
+    "productionNodeTestRunnerPreserved": true,
+    "viteBuildPreserved": true,
+    "wranglerBuildPreserved": true
+  },
+  "expectedThemeResult": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "layoutModels": 2,
+    "previewModes": 8,
+    "codeLineGuide": 10000,
+    "desktopCodeLayout": "50:50",
+    "compactCodeLayout": "preview-above-code",
+    "layoutModelsStacked": true,
+    "legacyDuplicateMapHidden": true
+  },
+  "expectedDomainResult": {
+    "provider": "cloudflare-full-zone",
+    "publicDnsAAndAaaaVerification": true,
+    "nxdomainNeverReportedActive": true,
+    "workerDomainAttachmentVerification": true,
+    "registrarNameserverDelegationStillRequired": true,
+    "freeSubdomainPreserved": true
+  },
+  "preserved": {
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "postsPagesWordLimit": 30000,
+    "postsPagesWarningWords": 27000,
+    "draftsUntrimmed": true
+  }
+}

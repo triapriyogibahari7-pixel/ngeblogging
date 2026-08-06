@@ -90,3 +90,12 @@ test("v327 isolates node:test suites before the historical prebuild chain starts
   assert.match(isolation327, /await writeFile\(file, next\)/);
   assert.doesNotMatch(isolation327, /await\s+import\(\s*["']\.\.\/tests\//);
 });
+
+test("v329 resumes sanitized Theme and Domain production materialization", () => {
+  assert.match(isolation327, /prebuild-materialization-v329-20260806/);
+  assert.match(isolation327, /sanitized historical materialization chain enabled/);
+  assert.doesNotMatch(isolation327, /process\.exit\s*\(\s*0\s*\)/);
+  assert.doesNotMatch(isolation327, /NGEBLOGGING_REPLAY_HISTORICAL_PATCH_CHAIN/);
+  assert.match(patch304, /await import\("\.\/patch-service-worker-v305\.mjs"\)/);
+  assert.match(patch304, /await import\("\.\/patch-production-cutover-v320\.mjs"\)/);
+});
