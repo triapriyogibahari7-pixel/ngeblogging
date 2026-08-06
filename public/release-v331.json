@@ -1,0 +1,62 @@
+{
+  "release": "content-capacity-v331-20260806",
+  "date": "2026-08-06",
+  "scope": "Deterministic capacity simulation and regression gate for 100,000 articles per site and a 25-site hard account ceiling, without inserting millions of fake rows into the production database.",
+  "capacityTargets": {
+    "articlesPerSite": 100000,
+    "hardSiteCeiling": 25,
+    "articlesAtHardSiteCeiling": 2500000,
+    "observedNormalSiteCreationQuota": 12,
+    "articlesAtObservedNormalQuota": 1200000
+  },
+  "simulation": {
+    "virtualRowsTraversedAtHardCeiling": 2500000,
+    "defaultPageSize": 25,
+    "pageTraversalsAtDefaultPageSize": 100000,
+    "supportedSimulationPageSizes": [25, 50, 100],
+    "constantMemoryModel": true,
+    "checksCursorOrdering": true,
+    "checksCrossSiteIsolation": true,
+    "checksEveryVirtualOrdinal": true,
+    "realProductionRowsInserted": false,
+    "measuredProductionDatabaseThroughputClaimed": false
+  },
+  "currentDataPath": {
+    "siteScopedListing": true,
+    "keysetCursorPagination": true,
+    "defaultListPageSize": 25,
+    "maximumListPageSize": 100,
+    "listQueryExcludesBodyHtml": true,
+    "singleDocumentHydrationLoadsBodyHtml": true,
+    "bodyHtmlStorageCharacterCeiling": 5000000
+  },
+  "databaseAudit": {
+    "contentsStudioCursorIndexObserved": "contents_studio_cursor_idx(site_id, kind, updated_at DESC, id DESC)",
+    "contentsStatusCursorIndexObserved": "contents_status_cursor_idx(site_id, kind, status, updated_at DESC, id DESC)",
+    "publicContentCursorIndexObserved": true,
+    "titleSearchGinIndexObserved": true,
+    "explainUsesStudioCursorIndex": true,
+    "productionRowsAtAuditTime": 92,
+    "largestObservedSiteAtAuditTime": 85,
+    "note": "Observed production row counts are an audit snapshot, not a scale test. The 2.5M test is intentionally virtual and deterministic."
+  },
+  "siteQuotaAudit": {
+    "hardInsertTriggerCeiling": 25,
+    "normalCreateSiteWorkspaceQuotaObserved": 12,
+    "getSiteCreationQuotaObserved": 12,
+    "quotaAlignmentRequiredBeforeClaiming25SitesAvailableInProduct": true
+  },
+  "acceptance": {
+    "virtualHardCeilingCountMustEqual": 2500000,
+    "cursorOrderingViolationsMustEqual": 0,
+    "crossSiteViolationsMustEqual": 0,
+    "checksumMustMatchClosedFormOrdinalSum": true,
+    "productionBuildRunsCapacityRegression": true
+  },
+  "truthfulness": {
+    "doesNotClaim2Point5MillionRowsWereInsertedIntoProduction": true,
+    "doesNotClaimMeasuredSupabaseLatencyAt2Point5MillionRows": true,
+    "doesNotChangeUserData": true,
+    "doesNotChangeSiteQuota": true
+  }
+}
