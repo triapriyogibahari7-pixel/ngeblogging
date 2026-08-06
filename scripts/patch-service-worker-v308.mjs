@@ -28,16 +28,10 @@ const [native, runtime, css, editor, release] = await Promise.all([
   readFile(releaseFile, "utf8"),
 ]);
 
-for (const marker of [
-  RELEASE,
-  'import("./studio-content-editor-responsive-v308.js")',
-]) if (!native.includes(marker)) throw new Error(`V308_NATIVE_CHAIN_MISSING:${marker}`);
-
-for (const marker of [
-  RELEASE,
-  "studio-content-editor-responsive-v308.css",
-]) if (!runtime.includes(marker)) throw new Error(`V308_RUNTIME_MISSING:${marker}`);
-
+for (const marker of [RELEASE, 'import("./studio-content-editor-responsive-v308.js")'])
+  if (!native.includes(marker)) throw new Error(`V308_NATIVE_CHAIN_MISSING:${marker}`);
+for (const marker of [RELEASE, "studio-content-editor-responsive-v308.css"])
+  if (!runtime.includes(marker)) throw new Error(`V308_RUNTIME_MISSING:${marker}`);
 for (const marker of [
   "editor-v266-collapsed",
   "editor-v266-expanded",
@@ -50,7 +44,6 @@ for (const marker of [
   "html.editor-v266-small .ce-sidebar",
   "overflow-x:auto",
 ]) if (!css.includes(marker)) throw new Error(`V308_RESPONSIVE_CSS_MISSING:${marker}`);
-
 for (const marker of [
   "export default function ContentEditor",
   "const isPage = doc.type === \"page\"",
@@ -62,13 +55,10 @@ for (const marker of [
   "SEO",
   "HTML",
 ]) if (!editor.includes(marker)) throw new Error(`V308_SHARED_EDITOR_CONTRACT_MISSING:${marker}`);
-
 if (!release.includes(RELEASE) || !release.includes('"sidebarStylesUntouched": true') || !release.includes('"postsPagesSharedEditorPreserved": true'))
   throw new Error("V308_RELEASE_INVALID");
-if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(runtime))
-  throw new Error("V308_RUNTIME_CHURN_REGRESSION");
-if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(|location\.(?:reload|replace)\s*\(/.test(runtime))
-  throw new Error("V308_DESTRUCTIVE_RUNTIME");
+if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation/.test(runtime)) throw new Error("V308_RUNTIME_CHURN_REGRESSION");
+if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(|location\.(?:reload|replace)\s*\(/.test(runtime)) throw new Error("V308_DESTRUCTIVE_RUNTIME");
 
 let source = await readFile(swFile, "utf8");
 source = source
@@ -82,12 +72,9 @@ source = upsert(source, "ACTIVE_CACHE_RELEASE_V308", "CACHE_RELEASE");
 source = source
   .replace(/^const SHELL_CACHE = .*;$/m, 'const SHELL_CACHE = `${ACTIVE_VERSION_V308}-${ACTIVE_CACHE_RELEASE_V308}-${STUDIO_CONTENT_EDITOR_RELEASE_V308}-${STUDIO_MEMBERS_CONTROLS_RELEASE_V307}-${STUDIO_SITE_SWITCHER_FIX_RELEASE_V306}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_MEMBERS_RELEASE_V304}-${STUDIO_ADD_SITE_RELEASE_V303}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;')
   .replace(/^const ASSET_CACHE = .*;$/m, 'const ASSET_CACHE = `${ACTIVE_VERSION_V308}-${ACTIVE_CACHE_RELEASE_V308}-${STUDIO_CONTENT_EDITOR_RELEASE_V308}-${STUDIO_MEMBERS_CONTROLS_RELEASE_V307}-${STUDIO_SITE_SWITCHER_FIX_RELEASE_V306}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_MEMBERS_RELEASE_V304}-${STUDIO_ADD_SITE_RELEASE_V303}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;');
-
 if (!source.includes(RELEASE) || !source.includes(VERSION) || !source.includes(CACHE)) throw new Error("V308_SW_MARKERS_MISSING");
-if (!source.includes("ngeblogging-app-v305-site-switch-first-site-20260805") || !source.includes("studio-site-switch-first-site-cache-v305"))
-  throw new Error("V308_V305_DEPLOY_COMPAT_MARKERS_MISSING");
-if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source))
-  throw new Error("V308_DESTRUCTIVE_SW_BEHAVIOR");
+if (!source.includes("ngeblogging-app-v305-site-switch-first-site-20260805") || !source.includes("studio-site-switch-first-site-cache-v305")) throw new Error("V308_V305_DEPLOY_COMPAT_MARKERS_MISSING");
+if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source)) throw new Error("V308_DESTRUCTIVE_SW_BEHAVIOR");
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
@@ -96,3 +83,4 @@ await import("./patch-service-worker-v311.mjs");
 await import("./patch-studio-theme-members-domain-v312.mjs");
 await import("./patch-nara-v313.mjs");
 await import("./patch-domain-fullzone-v314.mjs");
+await import("./patch-studio-content-editor-v316.mjs");
