@@ -1,0 +1,21 @@
+/* Theme layout v311: two real visual models on top of the existing 26-slot functional map. */
+.tn-layout-map-v264{position:relative!important;max-width:100%!important;margin-inline:auto!important}
+.tn-layout-models-v311{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;min-width:0!important;max-width:100%!important;padding:0 0 3px!important;overflow-x:auto!important;grid-column:1/-1!important}
+.tn-layout-models-v311>button{flex:0 0 auto!important;min-height:34px!important;padding:7px 12px!important;border:1px solid #d5dfeb!important;border-radius:9px!important;background:#fff!important;color:#40516a!important;font:800 10px/1.2 system-ui!important;white-space:nowrap!important}
+.tn-layout-models-v311>button.active{border-color:#2f6fd8!important;background:#edf4ff!important;color:#1f5fc8!important;box-shadow:0 0 0 2px rgba(47,111,216,.08)!important}
+.tn-layout-map-v264[data-layout-model-v311="editorial"] .tn-layout-content-v264{grid-template-columns:minmax(92px,.72fr) minmax(230px,2fr) minmax(92px,.72fr)!important}
+.tn-layout-map-v264[data-layout-model-v311="portal"] .tn-layout-content-v264{grid-template-columns:minmax(88px,.62fr) minmax(260px,2.45fr) minmax(116px,.88fr)!important}
+.tn-layout-map-v264[data-layout-model-v311="portal"] .tn-layout-post-v264{min-height:278px!important;border-color:#a9c3e9!important}
+.tn-layout-map-v264[data-layout-model-v311] .tn-layout-post-v264{place-items:center!important;text-align:center!important;margin:0!important;justify-self:stretch!important;align-self:stretch!important}
+.tn-layout-map-v264[data-layout-model-v311] :is(.tn-layout-slot-v264,.tn-layout-post-v264){min-width:0!important;max-width:100%!important;overflow:hidden!important}
+@media(max-width:600px){
+  .tn-layout-models-v311{padding-bottom:1px!important}
+  .tn-layout-models-v311>button{min-height:32px!important;padding:6px 10px!important}
+  .tn-layout-map-v264[data-layout-model-v311="editorial"] .tn-layout-content-v264{grid-template-columns:minmax(64px,.7fr) minmax(124px,1.75fr) minmax(64px,.7fr)!important}
+  .tn-layout-map-v264[data-layout-model-v311="portal"] .tn-layout-content-v264{grid-template-columns:minmax(58px,.58fr) minmax(136px,1.95fr) minmax(72px,.78fr)!important}
+  .tn-layout-map-v264[data-layout-model-v311="portal"] .tn-layout-post-v264{min-height:224px!important}
+}
+@media(max-width:360px){
+  .tn-layout-map-v264[data-layout-model-v311="editorial"] .tn-layout-content-v264{grid-template-columns:minmax(54px,.62fr) minmax(110px,1.6fr) minmax(54px,.62fr)!important}
+  .tn-layout-map-v264[data-layout-model-v311="portal"] .tn-layout-content-v264{grid-template-columns:minmax(50px,.54fr) minmax(116px,1.82fr) minmax(60px,.7fr)!important}
+}
