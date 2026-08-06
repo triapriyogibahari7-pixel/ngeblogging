@@ -10,7 +10,7 @@ const runtime = await readFile(new URL("../src/studio-content-editor-responsive-
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 
-test("v309/v310/v316 load after v308 and remain editor-only", () => {
+test("v309/v310 load after v308 and remain editor-only — v316 preserved", () => {
   assert.match(runtime, /studio-content-editor-responsive-v308\.css/);
   assert.match(runtime, /studio-content-editor-post-page-polish-v309\.css/);
   assert.match(runtime, /studio-content-editor-desktop-site-v310\.css/);
@@ -29,7 +29,7 @@ test("large family removes excessive blank paper and keeps inspector beside docu
   assert.match(css316, /width:min\(790px,100%\)!important/);
 });
 
-test("desktop-site and large-tablet family stays contained", () => {
+test("v310 restores desktop composition for Android desktop-site and large tablets — v316 keeps it contained", () => {
   assert.match(css310, /@media \(min-width:820px\) and \(max-width:1080px\)/);
   assert.match(css316, /@media \(min-width:820px\) and \(max-width:1080px\)/);
   assert.match(css316, /min-height:clamp\(280px,32dvh,400px\)!important/);
