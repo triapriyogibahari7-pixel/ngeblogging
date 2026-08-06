@@ -1,2 +1,61 @@
 /* Ngeblogging Studio v318 — screenshot-driven containment hotfix. */
 :root{--studio-v318-release:"studio-screenshot-hotfix-v318-20260806"}
+
+/* Sidebar destinations stay compact directly below + Buat Post. */
+#ngeblogging-studio-sidebar>.sn-new{margin:4px 0 2px!important}
+#ngeblogging-studio-sidebar>nav{flex:0 1 auto!important;justify-content:flex-start!important;gap:1px!important;padding:1px 0 5px!important;margin:0!important}
+#ngeblogging-studio-sidebar>nav>button{flex:0 0 38px!important;min-height:38px!important;max-height:38px!important;margin:0!important}
+#ngeblogging-studio-sidebar :is(.sn-new,nav>button,.sn-account-footer>button)>svg{color:currentColor!important;stroke:currentColor!important}
+#ngeblogging-studio-sidebar>nav>button:last-child:not(.active){color:#53657b!important}
+
+/* Theme dialogs must fit the viewport instead of being clipped behind Studio chrome. */
+.tn-modal-layer{position:fixed!important;inset:0!important;z-index:13050!important;display:grid!important;place-items:center!important;padding:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))!important;overflow:hidden!important;isolation:isolate!important}
+.tn-modal-layer>.tn-modal-backdrop{position:absolute!important;inset:0!important;z-index:0!important;margin:0!important}
+.tn-modal-layer>.tn-modal{position:relative!important;z-index:1!important;width:min(1500px,calc(100vw - 20px))!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 20px)!important;margin:0!important;overflow:hidden!important;transform:none!important}
+.tn-modal-layer>.tn-modal.fullscreen,.tn-modal-layer>.tn-modal.preview{height:calc(100dvh - 20px)!important;max-height:calc(100dvh - 20px)!important}
+.tn-modal-layer>.tn-modal>header{position:relative!important;top:auto!important;flex:0 0 auto!important;z-index:3!important;min-height:64px!important;background:#fff!important}
+.tn-modal-layer>.tn-modal>.tn-modal-body{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;overscroll-behavior:contain!important}
+.tn-modal-layer>.tn-modal>footer{position:relative!important;bottom:auto!important;flex:0 0 auto!important;z-index:3!important;background:#fff!important}
+
+/* Theme code editor: complete code + preview remain centered and independently scrollable. */
+.tn-modal .tn-code-workspace{width:100%!important;max-width:100%!important;min-width:0!important;min-height:0!important;height:100%!important;overflow:hidden!important;align-items:stretch!important}
+.tn-modal .tn-code-pane,.tn-modal .tn-code-preview-pane{min-width:0!important;min-height:0!important;max-width:100%!important;height:100%!important;overflow:hidden!important}
+.tn-modal .tn-code-pane textarea{display:block!important;width:100%!important;height:100%!important;min-height:0!important;max-width:100%!important;overflow:auto!important;white-space:pre!important;overflow-wrap:normal!important;word-break:normal!important;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;line-height:1.65!important}
+.tn-modal .tn-code-preview-pane>.tn-frame-shell{width:100%!important;max-width:100%!important;min-width:0!important;min-height:0!important;overflow:auto!important;place-items:start center!important}
+.tn-modal .tn-code-preview-pane>.tn-frame-shell>iframe{display:block!important;margin-inline:auto!important;max-width:100%!important}
+[data-theme-code-v312="line-numbers-10000"]{height:100%!important;min-height:0!important;max-width:100%!important;overflow:hidden!important}
+[data-theme-code-v312="line-numbers-10000"] :is(.tn-code-gutter-v312,.tn-code-gutter-v265,[class*="gutter"]){height:100%!important;overflow:hidden auto!important;font-variant-numeric:tabular-nums!important;user-select:none!important}
+
+/* Two layout models are separate cards/rows; the actual map gets a full row below them. */
+.tn-studio :is(.tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,[class*="tn-layout-models"][class*="v312"],[class*="tn-layout-model-grid"][class*="v312"]){display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-auto-flow:row!important;gap:14px!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+.tn-studio :is(.tn-layout-model-v312,[class*="tn-layout-model-"][class*="v312"]){display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;overflow:visible!important}
+.tn-layout-studio{grid-template-columns:minmax(0,1fr)!important;align-items:start!important}
+.tn-layout-studio>div,.tn-layout-studio>.tn-layout-side{grid-column:1!important;width:100%!important;max-width:100%!important;min-width:0!important}
+.tn-layout-canvas{width:100%!important;max-width:100%!important;margin-inline:auto!important;overflow:auto!important}
+.tn-layout-canvas button{min-width:0!important;max-width:100%!important;overflow:hidden!important;overflow-wrap:break-word!important;word-break:normal!important}
+.tn-layout-popover-v312{z-index:13100!important;width:min(390px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:min(560px,74dvh)!important;overflow:auto!important}
+
+/* API Keys and Domain controls cannot escape their containers. */
+.sn-api-page,.sn-api-page *,.sv124-domain-page,.sv124-domain-page *{min-width:0!important;box-sizing:border-box!important}
+.sn-api-title,.sn-api-endpoint,.sn-api-list{width:100%!important;max-width:100%!important}
+.sn-api-endpoint h2,.sn-api-endpoint pre,.sn-api-endpoint code{max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+.sn-api-modal-layer{position:fixed!important;inset:0!important;z-index:13150!important;display:grid!important;place-items:center!important;padding:10px!important}
+.sn-api-modal-layer>.sn-api-modal{position:relative!important;z-index:1!important;max-width:calc(100vw - 20px)!important;max-height:calc(100dvh - 20px)!important;margin:0!important;overflow:auto!important}
+.sv124-domain-page :is(button,a,input,select,textarea){max-width:100%!important}
+.sv124-domain-page :is(h1,h2,h3,p,b,span,small,label){overflow-wrap:break-word!important;word-break:normal!important}
+
+@media(max-width:1080px){
+.tn-modal .tn-code-workspace{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"preview" "code"!important;height:auto!important;min-height:0!important;overflow:visible!important}
+.tn-modal .tn-code-preview-pane{grid-area:preview!important;min-height:360px!important;height:min(48dvh,520px)!important;border-bottom:1px solid #dfe6ef!important}
+.tn-modal .tn-code-pane{grid-area:code!important;min-height:560px!important;height:min(66dvh,760px)!important;border-right:0!important}
+.tn-modal .tn-code-pane textarea{min-height:480px!important}}
+
+@media(max-width:760px){
+.tn-modal-layer{place-items:stretch!important;padding:max(6px,env(safe-area-inset-top,0px)) 6px max(6px,env(safe-area-inset-bottom,0px))!important}
+.tn-modal-layer>.tn-modal,.tn-modal-layer>.tn-modal.fullscreen,.tn-modal-layer>.tn-modal.preview{width:100%!important;max-width:100%!important;height:calc(100dvh - 12px)!important;max-height:calc(100dvh - 12px)!important;border-radius:14px!important}
+.tn-modal-layer>.tn-modal>header{min-height:58px!important;padding:8px 12px!important}.tn-modal-layer>.tn-modal>header h2{font-size:18px!important;line-height:1.2!important;overflow-wrap:anywhere!important}
+.tn-modal-layer>.tn-modal>footer{display:flex!important;flex-wrap:wrap!important;gap:7px!important;padding:8px 10px!important}.tn-modal-layer>.tn-modal>footer>span{flex:1 0 100%!important;margin:0!important}.tn-modal-layer>.tn-modal>footer>button{flex:1 1 120px!important;min-height:44px!important}
+.tn-modal .tn-code-preview-pane{min-height:330px!important;height:42dvh!important}.tn-modal .tn-code-pane{min-height:540px!important;height:64dvh!important}.tn-modal .tn-code-pane textarea{min-height:460px!important;font-size:12px!important}
+.tn-layout-popover-v312{position:fixed!important;left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:min(370px,calc(100vw - 18px))!important;max-height:76dvh!important}
+.sn-api-modal-layer{place-items:stretch!important;padding:6px!important}.sn-api-modal-layer>.sn-api-modal{width:100%!important;max-width:100%!important;max-height:calc(100dvh - 12px)!important;border-radius:14px!important}
+.sv124-domain-page .sv124-free-domain>aside :is(button,a),.sv124-domain-page .sv124-domain-register form>button,.sv124-domain-page [class*="domain-actions"]>button{width:100%!important;min-height:46px!important;justify-content:center!important;white-space:normal!important}}
