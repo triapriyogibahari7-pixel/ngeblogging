@@ -108,3 +108,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
 await import("../tests/studio-theme-members-domain-v312.test.mjs");
+await import("./patch-studio-content-editor-v313.mjs");
