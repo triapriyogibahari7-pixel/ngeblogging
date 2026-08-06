@@ -132,3 +132,4 @@ for (const marker of [RELEASE, VERSION, CACHE, "POSTS_PAGES_30000_RELEASE_V322",
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE} and rotated production cache to ${CACHE}.`);
 await import("../tests/studio-production-polish-v323.test.mjs");
+await import("./patch-studio-theme-domain-final-v325.mjs");
