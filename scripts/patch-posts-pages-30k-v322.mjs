@@ -93,3 +93,4 @@ for (const marker of [RELEASE, VERSION, CACHE, "STUDIO_THEME_DOMAIN_RELEASE_V321
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: Posts and Pages now publish up to 30,000 words without trimming drafts.`);
 await import("../tests/posts-pages-30000-v322.test.mjs");
+await import("./patch-studio-production-polish-v323.mjs");

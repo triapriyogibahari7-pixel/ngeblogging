@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v320
+name: Deploy Ngeblogging Production v323
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v320
+  group: ngeblogging-production-v323
   cancel-in-progress: true
 
 jobs:
@@ -43,71 +43,90 @@ jobs:
       - name: Run production regression and build
         run: npm run build
 
-      - name: Verify v320 and inherited production authorities
+      - name: Verify v323 and inherited production authorities
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 310 311 312 313 314 315 316 317 318 319 320; do test -f "public/release-v${release}.json"; done
-          test -f scripts/patch-production-cutover-v320.mjs
-          test -f tests/studio-production-cutover-v320.test.mjs
-          test -f supabase/migrations/20260806070000_media_bucket_constraint_alignment_v320.sql
-          test -f supabase/migrations/20260806071000_site_members_profile_relationship_v320.sql
+          for release in 310 311 312 313 314 315 316 317 318 319 320 321 322 323; do
+            test -f "public/release-v${release}.json"
+          done
+          test -f src/studio-production-polish-v323.css
+          test -f src/studio-production-polish-v323.js
+          test -f scripts/patch-studio-production-polish-v323.mjs
+          test -f tests/studio-production-polish-v323.test.mjs
 
-          node --test tests/studio-production-cutover-v320.test.mjs
+          node --test tests/studio-production-polish-v323.test.mjs
 
-          grep -q 'studio-production-cutover-v320-20260806' public/release-v320.json
-          grep -q '"mainProductionBranchesSynchronized": true' public/release-v320.json
-          grep -q '"membersProfileRelationshipUnambiguous": true' public/release-v320.json
-          grep -q '"membersInviterReferencesAuthUsers": true' public/release-v320.json
-          grep -q '"mediaBucketMetadataAligned": true' public/release-v320.json
-          grep -q '"mediaLegacyBucketPreserved": true' public/release-v320.json
-          grep -q '"fakeProductionClaimsAllowed": false' public/release-v320.json
-          grep -q "bucket_id in ('site-media', 'site-public-media')" supabase/migrations/20260806070000_media_bucket_constraint_alignment_v320.sql
-          grep -q "references auth.users(id) on delete set null" supabase/migrations/20260806071000_site_members_profile_relationship_v320.sql
+          # v323 is the final geometry/deployment authority and must preserve the
+          # real v312 Theme data rather than replacing it with a placeholder.
+          grep -q 'studio-production-polish-v323-20260806' public/release-v323.json
+          grep -q '"themesPreserved": 100' public/release-v323.json
+          grep -q '"layoutAreasPreserved": 26' public/release-v323.json
+          grep -q '"layoutModelsPreserved": 2' public/release-v323.json
+          grep -q '"previewModesPreserved": 8' public/release-v323.json
+          grep -q '"codeLineGuidePreserved": 10000' public/release-v323.json
+          grep -q 'grid-template-areas:"code preview"' src/studio-production-polish-v323.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-production-polish-v323.css
+          grep -q 'data-production-editor-v323="ready"' src/studio-production-polish-v323.css
+          grep -q 'data-production-domain-v323="ready"' src/studio-production-polish-v323.css
+          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.nara-floating-button' src/studio-production-polish-v323.css; then
+            echo 'v323 attempted to restyle the protected sidebar or Nara authority.' >&2
+            exit 1
+          fi
 
-          # v319 screenshot authority stays intact: one real Theme map, 100 themes,
-          # 26 areas, two map models, 10k-line code guide, responsive code/preview.
-          grep -q 'studio-screenshot-regression-v319-20260806' public/release-v319.json
-          grep -q '"themeMapSingleVisibleAuthority": true' public/release-v319.json
-          grep -q '"themeMapModelsPreserved": 2' public/release-v319.json
-          grep -q '"themeLayoutAreasPreserved": 26' public/release-v319.json
-          grep -q '"themeCountPreserved": 100' public/release-v319.json
-          grep -q '"themeCodeLineGuidePreserved": 10000' public/release-v319.json
-          grep -q '"naraSmallMediumNonModalPreserved": true' public/release-v319.json
-          grep -q 'data-theme-map-authority-v319="v312-native"' src/studio-screenshot-regression-v319.css
-          grep -q 'grid-template-areas:"code preview"' src/studio-screenshot-regression-v319.css
-          grep -q 'grid-template-areas:"preview" "code"' src/studio-screenshot-regression-v319.css
+          # v322 long-form Posts/Pages stays shared and non-destructive.
+          grep -q 'posts-pages-30000-v322-20260806' public/release-v322.json
+          grep -q '"publicationWordLimit": 30000' public/release-v322.json
+          grep -q '"warningStartsAtWords": 27000' public/release-v322.json
+          grep -q '"draftsAreNeverTrimmedByWordGuard": true' public/release-v322.json
+          grep -q 'CONTENT_WORD_LIMIT_V316 = 30000' src/studio-content-editor-final-v316.js
+          grep -q 'CONTENT_WORD_WARNING_V316 = 27000' src/studio-content-editor-final-v316.js
+          grep -q 'publishButton.disabled = over' src/studio-content-editor-final-v316.js
+          grep -q 'publishedOption.disabled = over' src/studio-content-editor-final-v316.js
 
-          # Preserve production behavior requested by the Studio authority.
+          # v321 custom-domain truthfulness: browser NXDOMAIN is never shown as active.
+          grep -q 'studio-theme-domain-v321-20260806' public/release-v321.json
+          grep -q '"publicDnsVerificationRequired": true' public/release-v321.json
+          grep -q '"nxdomainNeverReportedActive": true' public/release-v321.json
+          grep -q 'PUBLIC_DNS_VERIFY_RELEASE_V321' server/cloudflare-full-zone-provider.mjs
+          grep -q 'publicDnsResolvesV321' server/cloudflare-full-zone-provider.mjs
+          grep -q 'PUBLIC_DNS_NOT_READY' server/cloudflare-full-zone-provider.mjs
+
+          # Long-standing auth/sidebar/Nara/Theme authorities remain present.
           grep -q '"persistSessionPreserved": true' public/release-v315.json
-          grep -q '"wordLimit": 5000' public/release-v316.json
-          grep -q '"draftNeverTrimmed": true' public/release-v316.json
+          grep -q 'persistSession: true' src/lib/supabase.js
+          grep -q 'autoRefreshToken: true' src/lib/supabase.js
           grep -q '"themes": 100' public/release-v312.json
           grep -q '"layoutAreas": 26' public/release-v312.json
           grep -q '"layoutModels": 2' public/release-v312.json
+          grep -q 'theme-map-code-editor-v312-20260806' src/ThemeStudio.jsx
+          grep -q 'Array.from({ length: 10000 }' src/ThemeStudio.jsx
           grep -q '"smallNonModal": true' public/release-v313.json
           grep -q '"mediumNonModal": true' public/release-v313.json
-          grep -q '"fakeActiveStatusAllowed": false' public/release-v314.json
-          grep -q 'PUBLIC_DNS_VERIFY_RELEASE_V318' server/cloudflare-full-zone-provider.mjs
-          grep -q 'publicDnsResolvesV318' server/cloudflare-full-zone-provider.mjs
 
-          # v320 is the final cache authority; inherited releases must remain present.
+          # v323 service-worker cache must be final while retaining inherited releases.
+          grep -q 'STUDIO_PRODUCTION_POLISH_RELEASE_V323' public/sw.js
+          grep -q 'studio-production-polish-cache-v323' public/sw.js
+          grep -q 'ngeblogging-app-v323-production-polish-20260806' public/sw.js
+          grep -q 'POSTS_PAGES_30000_RELEASE_V322' public/sw.js
+          grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' public/sw.js
           grep -q 'STUDIO_PRODUCTION_CUTOVER_RELEASE_V320' public/sw.js
-          grep -q 'studio-production-cutover-cache-v320' public/sw.js
-          grep -q 'ngeblogging-app-v320-production-cutover-20260806' public/sw.js
           grep -q 'STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319' public/sw.js
-          grep -q 'STUDIO_SCREENSHOT_HOTFIX_RELEASE_V318' public/sw.js
-          grep -q 'STUDIO_FINAL_RESPONSIVE_RELEASE_V317' public/sw.js
-          grep -q 'STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316' public/sw.js
           grep -q 'AUTH_CALLBACK_RECOVERY_RELEASE_V315' public/sw.js
           grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' public/sw.js
           grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' public/sw.js
 
-          # v320 itself is a schema/cache cutover; v319 remains the visual runtime asset.
+          # Validate generated assets, not only source markers.
+          grep -R -q 'studio-production-polish-v323-20260806' dist/assets
+          grep -R -q 'studio-theme-domain-v321-20260806' dist/assets
           grep -R -q 'studio-screenshot-regression-v319-20260806' dist/assets
-          grep -R -q 'studio-screenshot-hotfix-v318-20260806' dist/assets
-          grep -R -q 'studio-final-responsive-v317-20260806' dist/assets
+
+          # Wrangler production pointers must describe what is actually being deployed.
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-production-polish-v323-20260806"' wrangler.production.jsonc
+          grep -q '"POSTS_PAGES_30000_RELEASE": "posts-pages-30000-v322-20260806"' wrangler.production.jsonc
+          grep -q '"STUDIO_THEME_DOMAIN_RELEASE": "studio-theme-domain-v321-20260806"' wrangler.production.jsonc
+          grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
 
       - name: Verify Cloudflare production credentials
         shell: bash
@@ -135,35 +154,37 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; melewati route reassertion.'
           fi
 
-      - name: Verify live v320 and inherited manifests
+      - name: Verify live v323 v322 and v321 manifests
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v320.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            previous="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v319.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$latest" | grep -q 'studio-production-cutover-v320-20260806' && printf '%s' "$previous" | grep -q 'studio-screenshot-regression-v319-20260806'; then
-              echo 'Live v320 plus v319 inheritance confirmed.'
+            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v323.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            editor="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v322.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            domain="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v321.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$latest" | grep -q 'studio-production-polish-v323-20260806' && printf '%s' "$editor" | grep -q 'posts-pages-30000-v322-20260806' && printf '%s' "$domain" | grep -q 'studio-theme-domain-v321-20260806'; then
+              echo 'Live v323 with v322 editor and v321 domain inheritance confirmed.'
               exit 0
             fi
             sleep 10
           done
-          echo 'Live production did not expose v320.' >&2
+          echo 'Live production did not expose v323/v322/v321 within the verification window.' >&2
           exit 1
 
-      - name: Verify live v320 service worker and v319 visual bundle
+      - name: Verify live v323 service worker and visual bundle
         shell: bash
         run: |
           set -euo pipefail
-          latest_chunk="$(grep -Rl 'studio-screenshot-regression-v319-20260806' dist/assets | head -n 1)"
+          latest_chunk="$(grep -Rl 'studio-production-polish-v323-20260806' dist/assets | head -n 1)"
           test -n "$latest_chunk"
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v319.js
-          grep -q 'studio-screenshot-regression-v319-20260806' /tmp/studio-v319.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v320.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_PRODUCTION_CUTOVER_RELEASE_V320' /tmp/sw-v320.js
-          grep -q 'studio-production-cutover-cache-v320' /tmp/sw-v320.js
-          grep -q 'ngeblogging-app-v320-production-cutover-20260806' /tmp/sw-v320.js
-          grep -q 'STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319' /tmp/sw-v320.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v323.js
+          grep -q 'studio-production-polish-v323-20260806' /tmp/studio-v323.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v323.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_PRODUCTION_POLISH_RELEASE_V323' /tmp/sw-v323.js
+          grep -q 'studio-production-polish-cache-v323' /tmp/sw-v323.js
+          grep -q 'ngeblogging-app-v323-production-polish-20260806' /tmp/sw-v323.js
+          grep -q 'POSTS_PAGES_30000_RELEASE_V322' /tmp/sw-v323.js
+          grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' /tmp/sw-v323.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -175,7 +196,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v320-${{ github.sha }}
+          name: ngeblogging-production-v323-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
