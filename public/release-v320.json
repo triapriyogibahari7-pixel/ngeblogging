@@ -1,0 +1,17 @@
+{
+  "release": "studio-production-cutover-v320-20260806",
+  "date": "2026-08-06",
+  "scope": "Production cutover for inherited v319 UI/auth/domain authorities plus verified Members relationship and Media metadata schema repairs",
+  "mainProductionBranchesSynchronized": true,
+  "membersProfileRelationshipUnambiguous": true,
+  "membersInviterReferencesAuthUsers": true,
+  "mediaBucketMetadataAligned": true,
+  "mediaLegacyBucketPreserved": true,
+  "authSessionRecoveryInheritedFromV315": true,
+  "themeScreenshotRepairInheritedFromV319": true,
+  "domainPublicDnsTruthfulnessInheritedFromV318": true,
+  "naraSmallMediumNonModalInheritedFromV313": true,
+  "wordLimitInheritedFromV316": 5000,
+  "fakeProductionClaimsAllowed": false,
+  "validationNote": "The database migrations were applied to the connected production Supabase project and are also committed as repository backup. This release does not claim registrar-side DNS delegation or unperformed physical-device tests."
+}
