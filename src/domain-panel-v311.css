@@ -1,0 +1,34 @@
+/* v311 — keep Domain readable on every compact/mobile profile. */
+.sv124-domain-page,.sv124-domain-page *{box-sizing:border-box;min-width:0}
+.sv124-domain-page{width:100%;max-width:100%;overflow-x:hidden}
+.sv124-domain-page :is(h1,h2,h3,h4,p,b,strong,small,span,code){overflow-wrap:anywhere;word-break:normal}
+.sv124-domain-page :is(.sv124-card,.sv124-domain-item,.sv124-nameservers,.sv124-addresses){max-width:100%;min-width:0}
+.sv124-domain-page code{white-space:normal;word-break:break-all}
+.sv124-domain-page a,.sv124-domain-page button{min-height:42px}
+@media(max-width:760px){
+  .sv124-domain-page .sv124-page-title,
+  .sv124-domain-page .sv124-site-strip,
+  .sv124-domain-page .sv124-free-domain,
+  .sv124-domain-page .sv124-domain-register>header,
+  .sv124-domain-page .sv124-domain-list>header,
+  .sv124-domain-page .sv124-domain-audit>header,
+  .sv124-domain-page .sv124-domain-item>header{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;align-items:start!important}
+  .sv124-domain-page .sv124-page-title>button,
+  .sv124-domain-page .sv124-free-domain aside,
+  .sv124-domain-page .sv124-domain-register form,
+  .sv124-domain-page .sv124-domain-register form button,
+  .sv124-domain-page .sv124-domain-audit header>button{width:100%!important;max-width:100%!important}
+  .sv124-domain-page .sv124-free-domain aside{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .sv124-domain-page .sv124-free-domain aside :is(a,button){display:flex!important;width:100%!important;justify-content:center!important;white-space:normal!important}
+  .sv124-domain-page .sv124-domain-register form{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  .sv124-domain-page .sv124-domain-register form :is(input,button){width:100%!important;max-width:100%!important}
+  .sv124-domain-page .sv124-domain-item footer{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .sv124-domain-page .sv124-domain-item footer :is(a,button){display:flex!important;width:100%!important;max-width:100%!important;justify-content:center!important;white-space:normal!important}
+  .sv124-domain-page .sv124-nameservers>div{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+  .sv124-domain-page .sv124-nameservers>div>span{grid-column:1/-1}
+  .sv124-domain-page .sv124-metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:390px){
+  .sv124-domain-page .sv124-metrics-grid{grid-template-columns:minmax(0,1fr)!important}
+  .sv124-domain-page :is(.sv124-card,.sv124-domain-item){padding-inline:14px!important}
+}
