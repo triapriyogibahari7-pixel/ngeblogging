@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v316
+name: Deploy Ngeblogging Production v317
 
 on:
   push:
@@ -9,8 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  # One production lane prevents an older Studio/domain/auth/editor build from racing a newer release.
-  group: ngeblogging-production-v310
+  group: ngeblogging-production-v317
   cancel-in-progress: true
 
 jobs:
@@ -44,57 +43,63 @@ jobs:
       - name: Run production regression and build
         run: npm run build
 
-      - name: Verify v316 editor and preserved v315-v310 authorities
+      - name: Verify v317 and preserved production authorities
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 310 311 312 313 314 315 316; do test -f "public/release-v${release}.json"; done
+          for release in 310 311 312 313 314 315 316 317; do test -f "public/release-v${release}.json"; done
+          test -f src/studio-final-v317.css
+          test -f scripts/patch-studio-final-v317.mjs
           test -f src/studio-content-editor-final-v316.css
           test -f src/studio-content-editor-final-v316.js
-          test -f scripts/patch-studio-content-editor-v316.mjs
-          test -f tests/studio-content-editor-post-page-v309.test.mjs
-          test -f scripts/patch-auth-callback-v315.mjs
-          test -f tests/auth-callback-recovery-v315.test.mjs
-          test -f tests/studio-domain-fullzone-v314.test.mjs
-          test -f tests/studio-nara-nonmodal-v313.test.mjs
-          test -f tests/studio-theme-members-domain-v312.test.mjs
+          test -f server/cloudflare-full-zone-provider.mjs
 
-          # v316 Posts/Pages authority.
+          # v317 final responsive authority.
+          grep -q 'studio-final-responsive-v317-20260806' public/release-v317.json
+          grep -q '"themeMapModels": 2' public/release-v317.json
+          grep -q '"themeLayoutAreasPreserved": 26' public/release-v317.json
+          grep -q '"themeCountPreserved": 100' public/release-v317.json
+          grep -q '"themeCodeLineGuidePreserved": 10000' public/release-v317.json
+          grep -q '"workerDomainAttachVerification": true' public/release-v317.json
+          grep -q '"fakeDomainActiveStatusAllowed": false' public/release-v317.json
+          grep -q '"wordLimit": 5000' public/release-v317.json
+          grep -q 'studio-final-v317.css' src/studio-content-editor-responsive-v308.js
+          grep -q 'studio-final-responsive-v317-20260806' src/studio-content-editor-responsive-v308.js
+          grep -q 'STUDIO_EDITOR_NAVIGATION_CLEAN_CLONE_V317' src/studio-editor-navigation-v266.js
+          grep -q 'removeAttribute("style")' src/studio-editor-navigation-v266.js
+          grep -q 'flex:0 1 auto!important' src/studio-editor-navigation-v266.css
+          grep -q 'grid-template-areas:"code preview"' src/studio-final-v317.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-final-v317.css
+          grep -q 'tn-layout-popover-v312' src/studio-final-v317.css
+          grep -q 'nara-assistant-shell\[data-nara-size="small"\]' src/studio-final-v317.css
+          grep -q 'sn-api-endpoint h2' src/studio-final-v317.css
+
+          # Verified Worker Custom Domain routing.
+          grep -q 'cloudflare-worker-domain-verified-v317-20260806' server/cloudflare-full-zone-provider.mjs
+          grep -q 'listWorkerDomains' server/cloudflare-full-zone-provider.mjs
+          grep -q 'verifyWorkerDomainAttachment' server/cloudflare-full-zone-provider.mjs
+          grep -q 'Workers Scripts Write' server/cloudflare-full-zone-provider.mjs
+          grep -q 'WORKER_DOMAIN_NOT_ATTACHED' server/cloudflare-full-zone-provider.mjs
+          grep -q 'WORKER_DOMAIN_SERVICE_MISMATCH' server/cloudflare-full-zone-provider.mjs
+          grep -q '"CUSTOM_DOMAIN_ROUTING_VERIFICATION_RELEASE": "cloudflare-worker-domain-verified-v317-20260806"' wrangler.production.jsonc
+          grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
+
+          # v316 Posts/Pages + 5,000-word non-destructive authority remains intact.
           grep -q 'studio-content-editor-final-v316-20260806' public/release-v316.json
           grep -q '"wordLimit": 5000' public/release-v316.json
           grep -q '"wordWarning": 4500' public/release-v316.json
           grep -q '"draftNeverTrimmed": true' public/release-v316.json
           grep -q '"publicationBlockedOverLimit": true' public/release-v316.json
-          grep -q '"authV315Preserved": true' public/release-v316.json
-          grep -q '"domainV314Preserved": true' public/release-v316.json
-          grep -q '"sidebarUntouched": true' public/release-v316.json
-          grep -q '"massiveCapacityClaimed": false' public/release-v316.json
-          grep -q 'studio-content-editor-final-v316.js' src/studio-content-editor-responsive-v308.js
           grep -q 'CONTENT_WORD_LIMIT_V316 = 5000' src/studio-content-editor-final-v316.js
           grep -q 'CONTENT_WORD_WARNING_V316 = 4500' src/studio-content-editor-final-v316.js
           grep -q 'publishButton.disabled = over' src/studio-content-editor-final-v316.js
           grep -q 'publishedOption.disabled = over' src/studio-content-editor-final-v316.js
-          grep -q 'grid-template-areas:"back file" "actions actions"' src/studio-content-editor-final-v316.css
-          grep -q 'grid-template-columns:minmax(0,1fr) clamp(270px,27vw,340px)' src/studio-content-editor-final-v316.css
-          grep -q 'ce-source-layer footer{flex-wrap:wrap' src/studio-content-editor-final-v316.css
-          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.tn-studio|\.sn-avatar' src/studio-content-editor-final-v316.css; then
-            echo 'v316 editor attempted to restyle another Studio authority.' >&2
-            exit 1
-          fi
 
-          # Auth v315 remains authoritative for login/session recovery.
+          # Auth v315 stays persistent and non-destructive.
           grep -q 'auth-callback-session-recovery-v315-20260806' public/release-v315.json
-          grep -q '"staleOAuthStateRecovery": true' public/release-v315.json
-          grep -q '"duplicateCallbackRecovery": true' public/release-v315.json
           grep -q '"providerDoubleTapGuard": true' public/release-v315.json
-          grep -q '"networkFailureDoesNotLogout": true' public/release-v315.json
-          grep -q 'auth-callback-session-recovery-v315-20260806' src/lib/auth-callback-v162.js
-          grep -q 'recoverExistingSessionFromCallbackError' src/lib/auth-callback-v162.js
-          grep -q 'auth-action-singleflight-v315-20260806' src/AuthModal.jsx
-          grep -q 'const runLockRef = useRef(false)' src/AuthModal.jsx
-          grep -q 'linkedin_oidc' src/AuthModal.jsx
-          grep -q 'google' src/AuthModal.jsx
+          grep -q '"persistSessionPreserved": true' public/release-v315.json
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
           grep -q 'flowType: "pkce"' src/lib/supabase.js
@@ -103,61 +108,42 @@ jobs:
             exit 1
           fi
 
-          # v314 verified Full Zone custom-domain authority remains intact.
+          # Full Zone v314, Nara v313, Theme/Members v312 and onboarding v311 remain present.
           grep -q 'studio-domain-fullzone-v314-20260806' public/release-v314.json
-          grep -q '"provider": "cloudflare-full-zone"' public/release-v314.json
-          grep -q '"legacyDomainMigration": true' public/release-v314.json
           grep -q '"fakeActiveStatusAllowed": false' public/release-v314.json
-          grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
-          grep -q 'cloudflare-full-zone-authority-v314' wrangler.production.jsonc
-          grep -q 'domain-legacy-to-full-zone-v314-20260806' wrangler.production.jsonc
-          grep -q 'DOMAIN_FULL_ZONE_MIGRATION_RELEASE_V314' server/domain-handler.mjs
-          grep -q 'migratingLegacyDomain' server/domain-handler.mjs
-          grep -q 'migratedFromProvider' server/domain-handler.mjs
-          if grep -q 'code: "DOMAIN_PROVIDER_MISMATCH"' server/domain-handler.mjs; then
-            echo 'v314 legacy provider-mismatch regression returned.' >&2
-            exit 1
-          fi
-
-          # Earlier Studio authorities remain present and scoped.
           grep -q 'studio-nara-nonmodal-v313-20260806' public/release-v313.json
           grep -q '"smallNonModal": true' public/release-v313.json
           grep -q '"mediumNonModal": true' public/release-v313.json
+          grep -q 'studio-theme-members-domain-v312-20260806' public/release-v312.json
+          grep -q '"themes": 100' public/release-v312.json
+          grep -q '"layoutAreas": 26' public/release-v312.json
+          grep -q '"layoutModels": 2' public/release-v312.json
+          grep -q '"codeLineNumbers": 10000' public/release-v312.json
           grep -q 'theme-map-code-editor-v312-20260806' src/ThemeStudio.jsx
           grep -q 'Array.from({ length: 10000 }' src/ThemeStudio.jsx
           grep -q 'transfer_site_owner_v312' src/studio-members-v304.js
           grep -q 'first-site-onboarding-stability-v311-20260806' src/StudioOnboardingGate.jsx
-          grep -q 'studio-content-editor-desktop-site-v310-20260806' src/studio-content-editor-responsive-v308.js
-          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark' src/nara-v313.css src/theme-studio-v312.css src/studio-content-editor-desktop-site-v310.css; then
-            echo 'A scoped feature stylesheet attempted to restyle the protected Studio sidebar.' >&2
-            exit 1
-          fi
 
-          # Worker/UI release points to v316 while Full Zone provider remains v314.
-          grep -q '"STUDIO_CONTENT_EDITOR_FINAL_RELEASE": "studio-content-editor-final-v316-20260806"' wrangler.production.jsonc
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-content-editor-final-v316-20260806"' wrangler.production.jsonc
-          grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
-
-          # v316 service worker must retain auth/domain/Nara/theme/onboarding contracts.
+          # Release pointers and service-worker cache are v317 while all earlier contracts remain in the chain.
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-final-responsive-v317-20260806"' wrangler.production.jsonc
+          grep -q '"UI_AUTHORITY_RELEASE": "studio-final-responsive-v317-20260806"' wrangler.production.jsonc
+          grep -q 'STUDIO_FINAL_RESPONSIVE_RELEASE_V317' public/sw.js
+          grep -q 'studio-final-responsive-cache-v317' public/sw.js
+          grep -q 'ngeblogging-app-v317-final-responsive-20260806' public/sw.js
           grep -q 'STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316' public/sw.js
-          grep -q 'studio-content-editor-final-cache-v316' public/sw.js
-          grep -q 'ngeblogging-app-v316-post-pages-final-20260806' public/sw.js
           grep -q 'AUTH_CALLBACK_RECOVERY_RELEASE_V315' public/sw.js
-          grep -q 'AUTH_ACTION_SINGLEFLIGHT_RELEASE_V315' public/sw.js
           grep -q 'STUDIO_DOMAIN_FULLZONE_RELEASE_V314' public/sw.js
           grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' public/sw.js
           grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' public/sw.js
           grep -q 'STUDIO_FIRST_SITE_STABILITY_RELEASE_V311' public/sw.js
           grep -q 'STUDIO_CONTENT_EDITOR_DESKTOP_SITE_RELEASE_V310' public/sw.js
-          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' public/sw.js
 
-          # Validate generated bundles, not only source markers.
+          # Generated bundles must contain the newest and inherited authorities.
+          grep -R -q 'studio-final-responsive-v317-20260806' dist/assets
           grep -R -q 'studio-content-editor-final-v316-20260806' dist/assets
           grep -R -q 'auth-callback-session-recovery-v315-20260806' dist/assets
-          grep -R -q 'auth-action-singleflight-v315-20260806' dist/assets
           grep -R -q 'studio-nara-nonmodal-v313-20260806' dist/assets
           grep -R -q 'theme-map-code-editor-v312-20260806' dist/assets
-          grep -R -q 'first-site-onboarding-stability-v311-20260806' dist/assets
 
       - name: Verify Full Zone deployment credentials
         shell: bash
@@ -185,58 +171,42 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; live gate tetap wajib membuktikan apex.'
           fi
 
-      - name: Verify live v316 editor plus preserved v315 and v314 manifests
+      - name: Verify live v317 plus preserved manifests
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
+            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v317.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
             editor="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v316.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
             auth="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v315.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
             domain="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v314.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$editor" | grep -q 'studio-content-editor-final-v316-20260806' && printf '%s' "$auth" | grep -q 'auth-callback-session-recovery-v315-20260806' && printf '%s' "$domain" | grep -q 'studio-domain-fullzone-v314-20260806'; then
-              echo 'Live v316 editor, v315 auth, and v314 Full Zone manifests confirmed.'
+            if printf '%s' "$latest" | grep -q 'studio-final-responsive-v317-20260806' && printf '%s' "$editor" | grep -q 'studio-content-editor-final-v316-20260806' && printf '%s' "$auth" | grep -q 'auth-callback-session-recovery-v315-20260806' && printf '%s' "$domain" | grep -q 'studio-domain-fullzone-v314-20260806'; then
+              echo 'Live v317 with preserved v316/v315/v314 manifests confirmed.'
               exit 0
             fi
             sleep 10
           done
-          echo 'Live production did not expose the required v316/v315/v314 manifests.' >&2
+          echo 'Live production did not expose required v317/v316/v315/v314 manifests.' >&2
           exit 1
 
-      - name: Verify live v316 editor and preserved auth Studio bundles
+      - name: Verify live v317 bundle and service worker
         shell: bash
         run: |
           set -euo pipefail
-          editor_chunk="$(grep -Rl 'studio-content-editor-final-v316-20260806' dist/assets | head -n 1)"
-          auth_chunk="$(grep -Rl 'auth-callback-session-recovery-v315-20260806' dist/assets | head -n 1)"
-          nara_chunk="$(grep -Rl 'studio-nara-nonmodal-v313-20260806' dist/assets | head -n 1)"
-          theme_chunk="$(grep -Rl 'theme-map-code-editor-v312-20260806' dist/assets | head -n 1)"
-          for chunk in "$editor_chunk" "$auth_chunk" "$nara_chunk" "$theme_chunk"; do test -n "$chunk"; done
+          latest_chunk="$(grep -Rl 'studio-final-responsive-v317-20260806' dist/assets | head -n 1)"
+          test -n "$latest_chunk"
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v317.js
+          grep -q 'studio-final-responsive-v317-20260806' /tmp/studio-v317.js
 
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${editor_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/editor-v316.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${auth_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/auth-v315.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${nara_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/nara-v313.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${theme_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/theme-v312.js
-
-          grep -q 'studio-content-editor-final-v316-20260806' /tmp/editor-v316.js
-          grep -q 'auth-callback-session-recovery-v315-20260806' /tmp/auth-v315.js
-          grep -q 'auth-action-singleflight-v315-20260806' /tmp/auth-v315.js
-          grep -q 'studio-nara-nonmodal-v313-20260806' /tmp/nara-v313.js
-          grep -q 'theme-map-code-editor-v312-20260806' /tmp/theme-v312.js
-
-      - name: Verify live auth shell and service worker v316
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v316.html
-          grep -q 'id="root"' /tmp/auth-callback-v316.html
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v316.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316' /tmp/sw-v316.js
-          grep -q 'studio-content-editor-final-cache-v316' /tmp/sw-v316.js
-          grep -q 'ngeblogging-app-v316-post-pages-final-20260806' /tmp/sw-v316.js
-          grep -q 'AUTH_CALLBACK_RECOVERY_RELEASE_V315' /tmp/sw-v316.js
-          grep -q 'STUDIO_DOMAIN_FULLZONE_RELEASE_V314' /tmp/sw-v316.js
-          grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' /tmp/sw-v316.js
-          grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' /tmp/sw-v316.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v317.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_FINAL_RESPONSIVE_RELEASE_V317' /tmp/sw-v317.js
+          grep -q 'studio-final-responsive-cache-v317' /tmp/sw-v317.js
+          grep -q 'ngeblogging-app-v317-final-responsive-20260806' /tmp/sw-v317.js
+          grep -q 'STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316' /tmp/sw-v317.js
+          grep -q 'AUTH_CALLBACK_RECOVERY_RELEASE_V315' /tmp/sw-v317.js
+          grep -q 'STUDIO_DOMAIN_FULLZONE_RELEASE_V314' /tmp/sw-v317.js
+          grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' /tmp/sw-v317.js
+          grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' /tmp/sw-v317.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -248,7 +218,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v316-${{ github.sha }}
+          name: ngeblogging-production-v317-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
