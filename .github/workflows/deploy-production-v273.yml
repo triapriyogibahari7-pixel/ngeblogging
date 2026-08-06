@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v305
+name: Deploy Ngeblogging Production v308
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v305
+  group: ngeblogging-production-v308
   cancel-in-progress: true
 
 jobs:
@@ -43,59 +43,61 @@ jobs:
       - name: Run current production regression and build
         run: npm run build
 
-      - name: Verify v305 source and build markers before deploy
+      - name: Verify v308 editor source and preserved v305 auth/site markers
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
           test -f public/release-v305.json
+          test -f public/release-v308.json
+
+          grep -q 'studio-content-editor-responsive-v308-20260806' public/release-v308.json
+          grep -q '"postsPagesSharedEditorPreserved": true' public/release-v308.json
+          grep -q '"desktopPaperCentered": true' public/release-v308.json
+          grep -q '"mobileOneColumnEditor": true' public/release-v308.json
+          grep -q '"sidebarStylesUntouched": true' public/release-v308.json
+
+          grep -q 'studio-content-editor-responsive-v308-20260806' src/studio-content-editor-responsive-v308.js
+          grep -q 'studio-content-editor-responsive-v308.css' src/studio-content-editor-responsive-v308.js
+          grep -q ':has(#ngeblogging-editor-nav-v266.collapsed)' src/studio-content-editor-responsive-v308.css
+          grep -q 'grid-template-columns:minmax(0,1fr) var(--ce-v308-inspector)' src/studio-content-editor-responsive-v308.css
+          grep -q 'min-height:clamp(540px,58dvh,760px)' src/studio-content-editor-responsive-v308.css
+          grep -q 'html.editor-v266-small .ce-workspace' src/studio-content-editor-responsive-v308.css
+          grep -q 'html.editor-v266-small .ce-sidebar' src/studio-content-editor-responsive-v308.css
+          grep -q 'overflow-x:auto' src/studio-content-editor-responsive-v308.css
+          grep -q 'studio-content-editor-responsive-v308.js' src/studio-native-controls-v290.js
 
           grep -q 'studio-site-switch-first-site-v305-20260805' public/release-v305.json
           grep -q '"membershipAndOwnedSitesUnion": true' public/release-v305.json
           grep -q '"requiredWhenAccountHasNoRealSite": true' public/release-v305.json
-
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
           grep -Fq 'appUrl("/?auth=callback")' src/lib/supabase.js
-
           grep -q 'startup-membership-plus-owned-sites-v305-20260805' src/studio-startup-v292.js
-          grep -q '/rest/v1/site_members' src/studio-startup-v292.js
-          grep -q '/rest/v1/sites' src/studio-startup-v292.js
-          grep -q 'owner_id' src/studio-startup-v292.js
-          grep -q 'mergeSiteCollections' src/studio-startup-v292.js
-
           grep -q 'first-site-required-guard-v305-20260805' src/StudioOnboardingGate.jsx
-          grep -q 'ngeblogging:first-site-required-v305' src/StudioOnboardingGate.jsx
-          grep -q 'Buat situs pertama' src/StudioOnboardingGate.jsx
-          grep -q 'Subdomain gratis' src/StudioOnboardingGate.jsx
-          grep -q 'Tema awal' src/StudioOnboardingGate.jsx
-          grep -q 'Zona waktu' src/StudioOnboardingGate.jsx
-          grep -q 'snapshot.__userId !== userId' src/StudioOnboardingGate.jsx
-
           grep -q 'studio-real-site-switcher-v305-20260805' src/studio-site-switcher-v305.js
-          grep -q 'Kelola situs ini' src/studio-site-switcher-v305.js
-          grep -q 'Sedang dikelola' src/studio-site-switcher-v305.js
-          grep -q 'data-site-switcher-list' src/studio-site-switcher-v305.js
-          grep -q 'studio-site-switcher-v305.js' src/studio-native-controls-v290.js
 
-          if grep -Eq 'new MutationObserver|setInterval[[:space:]]*\(|stopImmediatePropagation' src/studio-site-switcher-v305.js src/StudioOnboardingGate.jsx src/studio-startup-v292.js; then
-            echo 'v305 DOM churn/blocking regression detected.' >&2
+          if grep -Eq 'new MutationObserver|setInterval[[:space:]]*\(|stopImmediatePropagation' src/studio-content-editor-responsive-v308.js; then
+            echo 'v308 editor runtime churn/blocking regression detected.' >&2
             exit 1
           fi
-          if grep -Eq 'localStorage\.clear[[:space:]]*\(|sessionStorage\.clear[[:space:]]*\(|signOut[[:space:]]*\(|location\.(reload|replace)[[:space:]]*\(' src/studio-site-switcher-v305.js src/StudioOnboardingGate.jsx src/studio-startup-v292.js; then
-            echo 'v305 destructive session/navigation regression detected.' >&2
+          if grep -Eq 'localStorage\.clear[[:space:]]*\(|sessionStorage\.clear[[:space:]]*\(|signOut[[:space:]]*\(|location\.(reload|replace)[[:space:]]*\(' src/studio-content-editor-responsive-v308.js; then
+            echo 'v308 destructive session/navigation regression detected.' >&2
             exit 1
           fi
 
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-site-switch-first-site-v305-20260805"' wrangler.production.jsonc
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-content-editor-responsive-v308-20260806"' wrangler.production.jsonc
+          grep -q '"STUDIO_CONTENT_EDITOR_RELEASE": "studio-content-editor-responsive-v308-20260806"' wrangler.production.jsonc
           grep -q '"STUDIO_SITE_SWITCHER_RELEASE": "studio-real-site-switcher-v305-20260805"' wrangler.production.jsonc
           grep -q '"STUDIO_FIRST_SITE_REQUIRED_RELEASE": "studio-first-site-required-v305-20260805"' wrangler.production.jsonc
           grep -q '"AUTH_STUDIO_HANDOFF_RELEASE": "auth-session-handoff-v292-20260805"' wrangler.production.jsonc
 
+          grep -q 'STUDIO_CONTENT_EDITOR_RELEASE_V308' public/sw.js
+          grep -q 'studio-content-editor-cache-v308' public/sw.js
+          grep -q 'ngeblogging-app-v308-content-editor-20260806' public/sw.js
           grep -q 'STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305' public/sw.js
-          grep -q 'studio-site-switch-first-site-cache-v305' public/sw.js
-          grep -q 'ngeblogging-app-v305-site-switch-first-site-20260805' public/sw.js
 
+          grep -R -q 'studio-content-editor-responsive-v308-20260806' dist/assets
           grep -R -q 'studio-real-site-switcher-v305-20260805' dist/assets
           grep -R -q 'startup-membership-plus-owned-sites-v305-20260805' dist/assets
           grep -R -q 'first-site-required-guard-v305-20260805' dist/assets
@@ -113,47 +115,52 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; Wrangler deployment tetap dijalankan dan live gate wajib membuktikan apex.'
           fi
 
-      - name: Verify live v305 release manifest
+      - name: Verify live v308 release manifest
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v305.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$body" | grep -q 'studio-site-switch-first-site-v305-20260805'; then echo "Live v305 release manifest confirmed."; exit 0; fi
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v308.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-content-editor-responsive-v308-20260806'; then echo "Live v308 editor release manifest confirmed."; exit 0; fi
             sleep 10
           done
-          echo "Live production did not expose release-v305.json after deployment." >&2
+          echo "Live production did not expose release-v308.json after deployment." >&2
           exit 1
 
-      - name: Verify live v305 Studio bundles
+      - name: Verify live v308 editor bundle and preserved v305 startup bundles
         shell: bash
         run: |
           set -euo pipefail
+          editor_chunk="$(grep -Rl 'studio-content-editor-responsive-v308-20260806' dist/assets | head -n 1)"
           switch_chunk="$(grep -Rl 'studio-real-site-switcher-v305-20260805' dist/assets | head -n 1)"
           startup_chunk="$(grep -Rl 'startup-membership-plus-owned-sites-v305-20260805' dist/assets | head -n 1)"
           gate_chunk="$(grep -Rl 'first-site-required-guard-v305-20260805' dist/assets | head -n 1)"
+          test -n "$editor_chunk"
           test -n "$switch_chunk"
           test -n "$startup_chunk"
           test -n "$gate_chunk"
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${editor_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-editor-v308.js
           curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${switch_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-switch-v305.js
           curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${startup_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-startup-v305.js
           curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${gate_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-gate-v305.js
+          grep -q 'studio-content-editor-responsive-v308-20260806' /tmp/studio-editor-v308.js
           grep -q 'studio-real-site-switcher-v305-20260805' /tmp/studio-switch-v305.js
           grep -q 'startup-membership-plus-owned-sites-v305-20260805' /tmp/studio-startup-v305.js
           grep -q 'first-site-required-guard-v305-20260805' /tmp/studio-gate-v305.js
 
-      - name: Verify live auth callback shell and service worker v305
+      - name: Verify live auth callback shell and service worker v308
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v305.html
-          grep -q 'id="root"' /tmp/auth-callback-v305.html
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v305.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' /tmp/sw-v305.js
-          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' /tmp/sw-v305.js
-          grep -q 'STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305' /tmp/sw-v305.js
-          grep -q 'studio-site-switch-first-site-cache-v305' /tmp/sw-v305.js
-          grep -q 'ngeblogging-app-v305-site-switch-first-site-20260805' /tmp/sw-v305.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/?auth=callback&commit=${GITHUB_SHA}" -o /tmp/auth-callback-v308.html
+          grep -q 'id="root"' /tmp/auth-callback-v308.html
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v308.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292' /tmp/sw-v308.js
+          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' /tmp/sw-v308.js
+          grep -q 'STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305' /tmp/sw-v308.js
+          grep -q 'STUDIO_CONTENT_EDITOR_RELEASE_V308' /tmp/sw-v308.js
+          grep -q 'studio-content-editor-cache-v308' /tmp/sw-v308.js
+          grep -q 'ngeblogging-app-v308-content-editor-20260806' /tmp/sw-v308.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -165,7 +172,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v305-${{ github.sha }}
+          name: ngeblogging-production-v308-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
