@@ -1,7 +1,7 @@
 {
   "release": "studio-screenshot-hotfix-v318-20260806",
   "date": "2026-08-06",
-  "scope": "Screenshot-driven Theme modal/code/layout containment, compact sidebar spacing, API Keys crypto repair, domain/API mobile containment, and cache rotation on top of v317.",
+  "scope": "Screenshot-driven Theme modal/code/layout containment, compact sidebar spacing, API Keys crypto repair, public-DNS verified custom domains, domain/API mobile containment, and cache rotation on top of v317.",
   "inherits": [
     "studio-final-responsive-v317-20260806",
     "studio-content-editor-final-v316-20260806",
@@ -23,6 +23,8 @@
   "apiKeyCryptoSearchPathFixed": true,
   "apiKeyCreateListRevokeRotateValidated": true,
   "domainWorkerVerificationPreserved": true,
+  "domainPublicDnsVerification": true,
+  "domainPublicDnsRelease": "cloudflare-worker-public-dns-v318-20260806",
   "fakeDomainActiveStatusAllowed": false,
   "naraSmallMediumNonModalPreserved": true,
   "wordLimit": 5000,
@@ -36,6 +38,7 @@
     "Compact/tablet code editing keeps preview above code; large desktop families keep the existing 50:50 contract.",
     "The two Theme layout models stay in separate rows and the actual map receives a full row.",
     "API key create and rotate now resolve Supabase pgcrypto functions through the extensions schema.",
-    "Custom-domain active status still requires verified Cloudflare Worker Domain routing; DNS propagation is not fabricated by the UI."
+    "A Full Zone custom domain is not presented as active until Worker Domain routing and a public DNS A response are both verified.",
+    "DNS propagation is never fabricated by the Studio; unresolved DNS remains a verification state and is retried on refresh."
   ]
 }
