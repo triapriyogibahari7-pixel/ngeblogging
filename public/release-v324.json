@@ -1,0 +1,23 @@
+{
+  "release": "prebuild-v322-compat-v324-20260806",
+  "date": "2026-08-06",
+  "scope": "Prebuild compatibility between historical v316 validation and promoted v322 30,000-word Posts/Pages authority",
+  "build": {
+    "rootCause": "v316 validator required the historical 5,000-word source marker even after v322 promoted the same guard to 30,000 words",
+    "v316HistoricalContractPreserved": true,
+    "v322WordAuthorityInherited": true,
+    "v322PublicationWordLimit": 30000,
+    "v322WarningStartsAtWords": 27000,
+    "draftsRemainUntrimmed": true,
+    "prebuildDoesNotDowngradeWordLimit": true
+  },
+  "safety": {
+    "sidebarUntouched": true,
+    "authSessionUntouched": true,
+    "themeStudioUntouched": true,
+    "domainUntouched": true,
+    "naraUntouched": true,
+    "runtimeFeatureRemoved": false
+  },
+  "validationNote": "The historical v316 release manifest and tests still describe the original 5,000-word release. When current source already carries the explicit v322 release marker, the v316 prebuild validator now accepts the promoted 30,000/27,000 values instead of aborting the build."
+}
