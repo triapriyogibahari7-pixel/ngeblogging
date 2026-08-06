@@ -1,0 +1,44 @@
+{
+  "release": "studio-theme-domain-final-v325-20260806",
+  "date": "2026-08-06",
+  "scope": "Screenshot-driven final repair for Theme layout maps, Theme HTML/CSS/JavaScript editor geometry, shared Posts/Pages responsiveness, and custom-domain readability while preserving existing authentication, sidebar, Nara, Theme data, and production DNS truthfulness.",
+  "theme": {
+    "themesPreserved": 100,
+    "layoutAreasPreserved": 26,
+    "layoutModelsPreserved": 2,
+    "previewModesPreserved": 8,
+    "codeLineGuidePreserved": 10000,
+    "desktopCodeSplit": "50:50",
+    "compactCodeOrder": "preview-above-code",
+    "layoutModelsStackVertically": true,
+    "legacyDuplicateMapHiddenOnlyWhenV312Exists": true,
+    "layoutPopoverNonFullscreen": true
+  },
+  "content": {
+    "sharedPostsPagesEditorPreserved": true,
+    "publicationWordLimit": 30000,
+    "warningStartsAtWords": 27000,
+    "draftsRemainUntrimmed": true,
+    "compactEditorSingleColumn": true,
+    "desktopEditorCentered": true
+  },
+  "domain": {
+    "provider": "cloudflare-full-zone",
+    "publicDnsVerificationRequired": true,
+    "nxdomainNeverReportedActive": true,
+    "registrarNameserverDelegationRequired": true,
+    "registrarNameserverDelegationAutomated": false,
+    "mobileActionsFullWidth": true,
+    "longDnsValuesWrapInsideTheirOwnContainer": true
+  },
+  "safety": {
+    "authSessionUntouched": true,
+    "sidebarUntouched": true,
+    "naraBehaviorUntouched": true,
+    "existingFeaturesRemoved": false,
+    "forcedLogoutAdded": false,
+    "fakeProductionDomainStatusAllowed": false,
+    "fakeCapacityClaim": false
+  },
+  "validationNote": "A browser NXDOMAIN result means the custom domain is not delegated in public DNS yet. This release makes the Studio status and layout reliable, but intentionally does not claim that application code can override registrar DNS. The assigned Cloudflare nameservers must resolve publicly before the domain can be marked active."
+}

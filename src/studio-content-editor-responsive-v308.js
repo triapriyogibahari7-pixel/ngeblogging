@@ -7,6 +7,7 @@ import "./studio-hotfix-v318.css";
 import "./studio-screenshot-regression-v319.js";
 import "./studio-theme-domain-v321.js";
 import "./studio-production-polish-v323.js";
+import "./studio-theme-domain-final-v325.js";
 
 export const STUDIO_CONTENT_EDITOR_RELEASE_V308 = "studio-content-editor-responsive-v308-20260806";
 export const STUDIO_CONTENT_EDITOR_POLISH_RELEASE_V309 = "studio-content-editor-post-page-polish-v309-20260806";
@@ -17,6 +18,7 @@ export const STUDIO_SCREENSHOT_HOTFIX_RELEASE_V318 = "studio-screenshot-hotfix-v
 export const STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319 = "studio-screenshot-regression-v319-20260806";
 export const STUDIO_THEME_DOMAIN_RELEASE_V321 = "studio-theme-domain-v321-20260806";
 export const STUDIO_PRODUCTION_POLISH_RELEASE_V323 = "studio-production-polish-v323-20260806";
+export const STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325 = "studio-theme-domain-final-v325-20260806";
 
 if (typeof document !== "undefined") {
   document.documentElement.dataset.studioContentEditorV308 = STUDIO_CONTENT_EDITOR_RELEASE_V308;
@@ -28,4 +30,5 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioScreenshotRegressionV319 = STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319;
   document.documentElement.dataset.studioThemeDomainV321 = STUDIO_THEME_DOMAIN_RELEASE_V321;
   document.documentElement.dataset.studioProductionPolishV323 = STUDIO_PRODUCTION_POLISH_RELEASE_V323;
+  document.documentElement.dataset.studioThemeDomainFinalV325 = STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325;
 }
