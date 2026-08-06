@@ -100,3 +100,5 @@ if (/await\s+refreshStaleWindow\s*\(|signOut\s*\(|localStorage\.clear\s*\(|sessi
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
+await import("./apply-studio-v311.mjs");
+await import("./patch-service-worker-v311.mjs");
