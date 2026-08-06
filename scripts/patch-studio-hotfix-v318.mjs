@@ -73,3 +73,4 @@ for (const marker of [RELEASE, VERSION, CACHE, "STUDIO_FINAL_RESPONSIVE_RELEASE_
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
 await import("../tests/studio-screenshot-hotfix-v318.test.mjs");
+await import("./patch-studio-regression-v319.mjs");
