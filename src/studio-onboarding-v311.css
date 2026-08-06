@@ -1,0 +1,30 @@
+/* Ngeblogging v311 — first-site onboarding stability.
+ * Keep the creation form mounted and readable while the real request is pending.
+ */
+.so311-shell,
+.so311-shell *{box-sizing:border-box;min-width:0}
+.so311-shell{max-width:100%;overflow-x:hidden;filter:none!important;opacity:1!important}
+.so311-shell .so75-hero,
+.so311-shell .so75-copy,
+.so311-shell .so75-form{max-width:100%;filter:none!important;opacity:1!important}
+.so311-shell[data-creating="true"] .so75-form,
+.so311-shell[data-creating="true"] .so75-hero{filter:none!important;opacity:1!important;transform:none!important}
+.so311-shell[data-creating="true"] .so75-submit{min-height:48px;white-space:normal;text-align:center}
+.so311-shell[data-creating="true"] .so75-submit svg{animation:so311-spin .9s linear infinite}
+.so311-shell[data-creating="true"] :is(input,textarea,select,fieldset button){pointer-events:none}
+.so311-shell .so75-domain-input{max-width:100%;min-width:0}
+.so311-shell .so75-domain-input input{min-width:0}
+.so311-shell :is(.so75-types,.so75-fields,.so75-promise){min-width:0;max-width:100%}
+.so311-shell :is(h1,h2,h3,p,b,strong,small,span,label,button){overflow-wrap:anywhere}
+@keyframes so311-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.so311-shell[data-creating="true"] .so75-submit svg{animation:none}}
+@media (max-width:760px){
+  .so311-shell .so75-topbar{padding-inline:max(14px,env(safe-area-inset-left)) max(14px,env(safe-area-inset-right))}
+  .so311-shell .so75-hero{grid-template-columns:minmax(0,1fr)!important;padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right))!important}
+  .so311-shell .so75-form{width:100%!important;margin-inline:0!important;padding:clamp(16px,4vw,22px)!important}
+  .so311-shell .so75-fields{grid-template-columns:minmax(0,1fr)!important}
+  .so311-shell .so75-fields .wide{grid-column:auto!important}
+  .so311-shell .so75-domain-input{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:stretch}
+  .so311-shell .so75-domain-input strong{display:flex;align-items:center;white-space:nowrap;font-size:clamp(10px,2.8vw,13px)}
+  .so311-shell .so75-submit{width:100%!important;max-width:100%!important}
+}
