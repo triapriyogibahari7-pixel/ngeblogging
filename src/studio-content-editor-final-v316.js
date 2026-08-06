@@ -57,8 +57,21 @@ function schedule(root = document) {
   frame = requestAnimationFrame(() => { frame = 0; syncContentWordLimitV316(root); });
 }
 
+function guardPublishClick(event) {
+  const button = event.target?.closest?.(".ce-app .ce-actions .ce-primary");
+  if (!button) return;
+  const label = String(button.textContent || "").trim().toLowerCase();
+  if (label.includes("jadikan draf")) return;
+  const state = syncContentWordLimitV316(button.closest(".ce-app"));
+  if (!state.over) return;
+  event.preventDefault();
+  event.stopPropagation();
+  button.closest(".ce-app")?.querySelector(".ce-word-limit-v316")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
 if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.documentElement.dataset.studioContentEditorFinalV316 = STUDIO_CONTENT_EDITOR_FINAL_RELEASE_V316;
+  document.addEventListener("click", guardPublishClick, true);
   document.addEventListener("input", (event) => { if (event.target?.closest?.(".ce-app")) schedule(event.target); });
   document.addEventListener("change", (event) => { if (event.target?.closest?.(".ce-app")) schedule(event.target); });
   window.addEventListener("pageshow", () => schedule(document), { passive: true });
