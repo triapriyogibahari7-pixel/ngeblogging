@@ -140,3 +140,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 
 await writeFile(swFile, source);
 console.log(`Validated ${RELEASE}; verified sidebar/theme/editor/Nara/domain routing contracts and rotated cache to ${CACHE}`);
+await import("../tests/studio-final-v317.test.mjs");
