@@ -72,8 +72,16 @@ for (const marker of wordGuardMarkers)
 
 if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(|location\.(?:reload|replace)\s*\(/.test(guard))
   throw new Error("V316_RUNTIME_CHURN_OR_DESTRUCTIVE_BEHAVIOR");
+
+// The test file is also a historical compatibility surface. v322 deliberately
+// renamed the old 5,000-word test when the production authority moved to 30,000
+// words. Accept the marker that matches the active guard authority so Cloudflare
+// prebuild does not fail after all v315 tests have already passed.
+const wordLimitTestMarker = guardHasV322Authority
+  ? "v322 raises Posts and Pages to a real 30000-word publication limit without trimming drafts"
+  : "v316 enforces the real 5000-word publication limit without trimming drafts";
 for (const marker of [
-  "v316 enforces the real 5000-word publication limit without trimming drafts",
+  wordLimitTestMarker,
   "Posts and Pages still share the same ContentEditor implementation",
   "small family stays one-column, touch-safe, compact and complete",
 ]) if (!tests.includes(marker)) throw new Error(`V316_TEST_MISSING:${marker}`);
