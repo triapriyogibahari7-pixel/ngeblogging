@@ -14,6 +14,7 @@ const release312File = new URL("../public/release-v312.json", import.meta.url);
 const RELEASE = "studio-content-editor-final-v316-20260806";
 const VERSION = "ngeblogging-app-v316-post-pages-final-20260806";
 const CACHE = "studio-content-editor-final-cache-v316";
+const V322_WORD_RELEASE = "posts-pages-30000-v322-20260806";
 
 function upsert(source, name, value) {
   const line = `const ${name} = ${value};`;
@@ -39,10 +40,36 @@ for (const marker of [
 ]) if (!css.includes(marker)) throw new Error(`V316_CSS_MISSING:${marker}`);
 if (/#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.tn-studio|\.sn-avatar/.test(css))
   throw new Error("V316_EDITOR_SCOPE_REGRESSION");
-for (const marker of [
-  "CONTENT_WORD_LIMIT_V316 = 5000", "CONTENT_WORD_WARNING_V316 = 4500", "Draf tetap aman dan tidak dipotong",
-  ".ce-actions .ce-primary", 'option[value="published"]', "publishButton.disabled = over", "publishedOption.disabled = over",
-]) if (!guard.includes(marker)) throw new Error(`V316_WORD_GUARD_MISSING:${marker}`);
+
+// v316 is a historical compatibility gate. On a pre-v322 tree it still proves
+// the original 5,000-word contract. Once v322 is already present in source,
+// rerunning the prebuild chain must inherit the promoted 30,000-word guard
+// instead of treating the newer authority as a regression and aborting build.
+const guardHasV322Authority = guard.includes(`CONTENT_WORD_LIMIT_RELEASE_V322 = "${V322_WORD_RELEASE}"`);
+const wordGuardMarkers = guardHasV322Authority
+  ? [
+      `CONTENT_WORD_LIMIT_RELEASE_V322 = "${V322_WORD_RELEASE}"`,
+      "CONTENT_WORD_LIMIT_V316 = 30000",
+      "CONTENT_WORD_WARNING_V316 = 27000",
+      "30.000 kata",
+      "Draf tetap aman dan tidak dipotong",
+      ".ce-actions .ce-primary",
+      'option[value="published"]',
+      "publishButton.disabled = over",
+      "publishedOption.disabled = over",
+    ]
+  : [
+      "CONTENT_WORD_LIMIT_V316 = 5000",
+      "CONTENT_WORD_WARNING_V316 = 4500",
+      "Draf tetap aman dan tidak dipotong",
+      ".ce-actions .ce-primary",
+      'option[value="published"]',
+      "publishButton.disabled = over",
+      "publishedOption.disabled = over",
+    ];
+for (const marker of wordGuardMarkers)
+  if (!guard.includes(marker)) throw new Error(`V316_WORD_GUARD_MISSING:${marker}`);
+
 if (/new MutationObserver|setInterval\s*\(|stopImmediatePropagation|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(|location\.(?:reload|replace)\s*\(/.test(guard))
   throw new Error("V316_RUNTIME_CHURN_OR_DESTRUCTIVE_BEHAVIOR");
 for (const marker of [
@@ -83,4 +110,4 @@ for (const marker of [
 if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/.test(source))
   throw new Error("V316_DESTRUCTIVE_SW_BEHAVIOR");
 await writeFile(swFile, source);
-console.log(`Validated ${RELEASE} and rotated cache to ${CACHE}`);
+console.log(`Validated ${RELEASE}${guardHasV322Authority ? ` with inherited ${V322_WORD_RELEASE}` : ""} and rotated cache to ${CACHE}`);
