@@ -59,11 +59,25 @@ for (const marker of [
   "HTML",
 ]) if (!editor.includes(marker)) throw new Error(`V310_SHARED_EDITOR_CONTRACT_MISSING:${marker}`);
 
-for (const marker of [
-  "v310 restores desktop composition for Android desktop-site and large tablets",
-  "v309/v310 load after v308 and remain editor-only",
-  "Posts and Pages still share the same ContentEditor implementation",
-]) if (!tests.includes(marker)) throw new Error(`V310_TEST_MISSING:${marker}`);
+// Keep the historical v310 gate useful without coupling the production build to
+// one exact human-readable test title. Later editor releases may extend the same
+// regression test while preserving the v310 behavior.
+const testMarkerGroups = [
+  [
+    "v310 restores desktop composition for Android desktop-site and large tablets",
+    "desktop-site and large-tablet family stays contained",
+  ],
+  [
+    "v309/v310 load after v308 and remain editor-only",
+    "v309/v310/v316 load after v308 and remain editor-only",
+  ],
+  ["Posts and Pages still share the same ContentEditor implementation"],
+];
+for (const markers of testMarkerGroups) {
+  if (!markers.some((marker) => tests.includes(marker))) {
+    throw new Error(`V310_TEST_MISSING:${markers[0]}`);
+  }
+}
 
 for (const marker of [
   RELEASE,
