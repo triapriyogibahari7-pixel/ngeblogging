@@ -1,0 +1,32 @@
+{
+  "release": "studio-domain-fullzone-v314-20260806",
+  "date": "2026-08-06",
+  "scope": "Custom-domain production cutover and legacy-domain migration; preserves v313 Nara, v312 Theme Studio/members, v311 onboarding, v310 Posts/Pages and the existing Studio sidebar authority.",
+  "provider": "cloudflare-full-zone",
+  "dnsMode": "nameserver",
+  "legacyDomainMigration": true,
+  "legacyRefreshMigrates": true,
+  "legacyPrimaryClearedUntilVerified": true,
+  "activeRequiresZoneAndWorkerCertificate": true,
+  "fakeActiveStatusAllowed": false,
+  "freeSubdomainPreserved": true,
+  "customDomainAutoReconcilePreserved": true,
+  "naraV313Preserved": true,
+  "themeStudioV312Preserved": true,
+  "memberManagementV312Preserved": true,
+  "firstSiteV311Preserved": true,
+  "postsPagesV310Preserved": true,
+  "sidebarUntouched": true,
+  "serviceWorkerCacheRotated": true,
+  "serviceWorkerVersion": "ngeblogging-app-v314-domain-fullzone-20260806",
+  "serviceWorkerCache": "studio-domain-fullzone-cache-v314",
+  "realDeviceMatrixClaimed": false,
+  "massiveCapacityClaimed": false,
+  "notes": [
+    "Production domain configuration now selects the Full Zone code path already implemented by the Worker.",
+    "Refreshing an older legacy domain migrates it into a real Full Zone instead of trying a removed legacy custom-hostname identifier.",
+    "A legacy custom_domain value is cleared during migration and is written back only after Cloudflare reports the zone active and the Worker domain has a certificate.",
+    "Existing free *.ngeblogging.com addresses are not removed by this migration.",
+    "No custom domain is labeled active merely because a database row says active; Full Zone verification remains authoritative."
+  ]
+}
