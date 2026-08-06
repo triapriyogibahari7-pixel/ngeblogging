@@ -48,6 +48,7 @@
     "PRODUCTION_CUSTOM_DOMAIN_RELEASE": "2026.08.06-production-custom-domain-v314",
     "CUSTOM_DOMAIN_MIGRATION_RELEASE": "domain-legacy-to-full-zone-v314-20260806",
     "CUSTOM_DOMAIN_DNS_V67": "false",
+    "CLOUDFLARE_ACCOUNT_ID": "095e57b46e7ba7f6b188480d9e4e5fe7",
     "CLOUDFLARE_SAAS_ENABLED": "false",
     "CLOUDFLARE_CUSTOM_HOSTNAMES_READY": "false",
     "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",
