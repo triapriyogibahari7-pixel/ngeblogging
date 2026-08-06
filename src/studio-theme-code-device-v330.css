@@ -1,0 +1,254 @@
+/* Ngeblogging Studio v330 — Theme code editor device authority.
+ * The selected Theme preview device owns editor composition. This deliberately
+ * does not use viewport media queries, so Chrome Android "Situs desktop" cannot
+ * force a Mobile/Handphone preview back into a desktop 50:50 split.
+ */
+:root{--studio-theme-code-device-v330:"studio-theme-code-device-v330-20260806"}
+
+.tn-modal-layer[data-v330-code-layer="ready"]{
+  z-index:14000!important;
+}
+.tn-modal[data-v330-code-modal="ready"]{
+  z-index:1!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+.tn-modal[data-v330-code-modal="ready"]>header{
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tn-modal[data-v330-code-modal="ready"]>header>div{
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tn-modal[data-v330-code-modal="ready"]>header :is(h1,h2,h3,small,b,span){
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-body="ready"]{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-workspace="ready"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"],
+.tn-modal[data-v330-code-modal="ready"] [data-v330-preview-pane="ready"]{
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  margin:0!important;
+  transform:none!important;
+}
+
+/* Compact preview authority: application, phone, mobile, compact and tablet.
+ * Preview is always above the editor, even when the physical phone asks Chrome
+ * for a desktop-site layout viewport.
+ */
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-areas:"preview" "code"!important;
+  grid-auto-rows:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] [data-v330-preview-pane="ready"]{
+  grid-area:preview!important;
+  display:flex!important;
+  flex-direction:column!important;
+  height:clamp(300px,40dvh,420px)!important;
+  min-height:300px!important;
+  max-height:420px!important;
+  overflow:hidden!important;
+  border-right:0!important;
+  border-bottom:1px solid #dfe6ef!important;
+  background:#eef3f8!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] [data-v330-preview-pane="ready"]>header{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  padding:8px 10px!important;
+  overflow:hidden!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] .tn-device-switch{
+  display:flex!important;
+  flex:1 1 100%!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  overscroll-behavior-inline:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  scrollbar-width:thin!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] .tn-device-switch>button{
+  flex:0 0 auto!important;
+  min-width:max-content!important;
+  max-width:none!important;
+  min-height:40px!important;
+  white-space:nowrap!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] [data-v330-preview-pane="ready"]>.tn-frame-shell{
+  flex:1 1 auto!important;
+  display:grid!important;
+  place-items:start center!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0 auto!important;
+  overflow:auto!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] [data-v330-preview-pane="ready"] iframe{
+  display:block!important;
+  max-width:100%!important;
+  margin-inline:auto!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="compact"] [data-v330-code-pane="ready"]{
+  grid-area:code!important;
+  display:grid!important;
+  grid-template-columns:52px minmax(0,1fr)!important;
+  grid-template-rows:auto auto minmax(680px,1fr)!important;
+  width:100%!important;
+  height:clamp(780px,74dvh,980px)!important;
+  min-height:780px!important;
+  max-height:980px!important;
+  overflow:hidden!important;
+  border-right:0!important;
+  background:#fff!important;
+}
+
+/* Large preview authority: laptop, desktop and computer remain real 50:50. */
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="large"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-areas:"code preview"!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:640px!important;
+  overflow:hidden!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="large"] [data-v330-code-pane="ready"]{
+  grid-area:code!important;
+  height:100%!important;
+  min-height:640px!important;
+  border-right:1px solid #dfe6ef!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-family="large"] [data-v330-preview-pane="ready"]{
+  grid-area:preview!important;
+  height:100%!important;
+  min-height:640px!important;
+  border-bottom:0!important;
+}
+
+/* Shared code surface: visible tabs, real line guide and readable long source. */
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"]{
+  position:relative!important;
+  min-width:0!important;
+  max-width:100%!important;
+  background:#fff!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"]>nav{
+  grid-column:1/-1!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"]>nav>button{
+  flex:0 0 auto!important;
+  min-width:max-content!important;
+  min-height:40px!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"]>.tn-code-status{
+  grid-column:1/-1!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"] :is([data-theme-code-v312="line-numbers-10000"],.tn-code-gutter-v312,.tn-code-gutter-v319,.tn-code-gutter-v265,.tn-code-gutter-v325,.tn-code-gutter-v330){
+  grid-column:1!important;
+  grid-row:3!important;
+  display:block!important;
+  width:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:12px 6px!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-right:1px solid #dfe6ef!important;
+  background:#f7f9fc!important;
+  color:#728197!important;
+  white-space:pre!important;
+  text-align:right!important;
+  font:500 10px/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+  user-select:none!important;
+  pointer-events:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.tn-modal[data-v330-code-modal="ready"] [data-v330-code-pane="ready"]>textarea{
+  grid-column:2!important;
+  grid-row:3!important;
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:680px!important;
+  margin:0!important;
+  padding:12px 14px!important;
+  border-radius:0!important;
+  resize:none!important;
+  overflow:auto!important;
+  white-space:pre!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  tab-size:2!important;
+  color:#152033!important;
+  background:#fff!important;
+  caret-color:#152033!important;
+  font:500 13px/1.65 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+  opacity:1!important;
+  visibility:visible!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tn-modal[data-v330-code-modal="ready"]>footer{
+  z-index:4!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tn-modal[data-v330-code-modal="ready"]>footer :is(button,a){
+  min-height:40px!important;
+  max-width:100%!important;
+  white-space:normal!important;
+}
