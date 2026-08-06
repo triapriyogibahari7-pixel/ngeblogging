@@ -1,0 +1,48 @@
+{
+  "release": "studio-production-polish-v323-20260806",
+  "date": "2026-08-06",
+  "scope": "Screenshot-driven Theme Studio, Posts/Pages, Domain, and Cloudflare production delivery polish",
+  "themeStudio": {
+    "themesPreserved": 100,
+    "layoutAreasPreserved": 26,
+    "layoutModelsPreserved": 2,
+    "previewModesPreserved": 8,
+    "codeLineGuidePreserved": 10000,
+    "desktopCodeSplit": "50:50",
+    "compactCodeOrder": "preview-above-code",
+    "compactLayoutMapUsesInternalScroll": true,
+    "layoutPopoverNonFullscreen": true
+  },
+  "postsAndPages": {
+    "sharedEditorPreserved": true,
+    "publicationWordLimit": 30000,
+    "warningStartsAtWords": 27000,
+    "draftsNeverTrimmedByWordGuard": true,
+    "desktopEditorUsesAvailableWidth": true,
+    "compactEditorSingleColumn": true,
+    "mobileActionsRemainVisible": true
+  },
+  "domain": {
+    "fullZoneProviderPreserved": true,
+    "publicDnsVerificationPreserved": true,
+    "nxdomainNeverReportedActive": true,
+    "registrarNameserverDelegationRequired": true,
+    "registrarNameserverDelegationAutomated": false,
+    "mobileActionsFullWidth": true
+  },
+  "deployment": {
+    "cloudflareWorkflowUpgraded": true,
+    "wranglerProductionDeployPreserved": true,
+    "liveReleaseVerificationRequired": true,
+    "serviceWorkerCacheRotated": true
+  },
+  "safety": {
+    "sidebarUntouched": true,
+    "authSessionUntouched": true,
+    "naraBehaviorUntouched": true,
+    "existingFeaturesRemoved": false,
+    "fakeUniversalDeviceClaim": false,
+    "fakeCapacityClaim": false
+  },
+  "validationNote": "This release does not claim universal device perfection or unmeasured login capacity. A custom domain whose public DNS is NXDOMAIN cannot be made reachable by application CSS or JavaScript; the registrar must delegate the domain to the Cloudflare nameservers assigned by Ngeblogging before public DNS and Worker routing can become active."
+}
