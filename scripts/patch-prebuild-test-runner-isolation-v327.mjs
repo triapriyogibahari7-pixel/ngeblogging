@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 
 export const PREBUILD_TEST_RUNNER_ISOLATION_RELEASE_V327 = "prebuild-test-runner-isolation-v327-20260806";
-export const PREBUILD_HISTORICAL_CHAIN_STOP_RELEASE_V328 = "prebuild-historical-chain-stop-v328-20260806";
+export const PREBUILD_MATERIALIZATION_RELEASE_V329 = "prebuild-materialization-v329-20260806";
 
 const scriptsDir = new URL("./", import.meta.url);
 const inlineTestImportPattern = /^\s*await\s+import\(\s*["']\.\.\/tests\/[^"']+["']\s*\)\s*;?\s*$/gm;
@@ -37,8 +37,9 @@ export async function sanitizePrebuildPatchScripts(directory = scriptsDir) {
     removedImports += matches.length;
   }
 
-  // Post-condition: the entire patch-* prebuild family is free from direct
-  // node:test module execution. Tests belong to `node --test`, never to patching.
+  // Post-condition: every historical migration may validate source/test markers,
+  // but no patch is allowed to execute node:test inside npm prebuild. The real
+  // production test runner remains `node --test` after prebuild completes.
   for (const name of patchFiles) {
     const source = await readFile(new URL(name, directory), "utf8");
     if (new RegExp(inlineTestImportPattern.source, "m").test(source)) {
@@ -54,20 +55,13 @@ console.log(
   `Validated ${PREBUILD_TEST_RUNNER_ISOLATION_RELEASE_V327}: removed ${result.removedImports} inline node:test import(s) from ${result.changedFiles} prebuild patch file(s); ${result.patchFiles} patch files checked.`,
 );
 
-// v328: production source already contains the promoted v305-v327 authorities.
-// Replaying the historical migration chain on every npm prebuild is both
-// unnecessary and unsafe because those old patch modules were written as
-// one-time migrations and several of them register node:test suites. End only
-// this first prebuild Node process with success. The shell then continues with
-// auth-capacity-model, studio-layout-model, npm run test:production and Vite.
-// Manual forensic replay remains possible by explicitly opting in.
-if (process.env.NGEBLOGGING_REPLAY_HISTORICAL_PATCH_CHAIN !== "1") {
-  console.log(
-    `Validated ${PREBUILD_HISTORICAL_CHAIN_STOP_RELEASE_V328}: current production tree retained; historical v305+ migration replay skipped.`,
-  );
-  process.exit(0);
-}
-
-console.warn(
-  `[${PREBUILD_HISTORICAL_CHAIN_STOP_RELEASE_V328}] NGEBLOGGING_REPLAY_HISTORICAL_PATCH_CHAIN=1 set; historical patch replay explicitly enabled.`,
+// v329 deliberately resumes the sanitized migration/materialization chain.
+// The current repository keeps several promoted authorities as deterministic
+// build-time patches (notably Theme v312/v325 and custom-domain DNS v321).
+// v328 proved that stopping this chain made Cloudflare green while silently
+// deploying the older unmaterialized Theme/Domain source. Do not exit here.
+// `patch-service-worker-v304.mjs` now continues into v305+ with every direct
+// patch-to-node:test import already removed by the sanitizer above.
+console.log(
+  `Validated ${PREBUILD_MATERIALIZATION_RELEASE_V329}: sanitized historical materialization chain enabled; Theme and Domain production authorities will be applied before tests and Vite/Wrangler build.`,
 );
