@@ -6,59 +6,68 @@
   width:46px;height:46px;min-width:46px;min-height:46px;border-radius:13px;background:linear-gradient(145deg,#3476e7,#4b55dc);color:#fff;
   box-shadow:0 7px 18px rgba(34,75,170,.18);cursor:pointer
 }
-.ce-editor-sidebar-toggle-v266 strong{display:block;color:#fff;font:850 25px/1 Arial,Helvetica,sans-serif;text-align:center}
-.ce-editor-sidebar-backdrop-v266{display:none;position:fixed;z-index:2147482200;inset:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+.ce-editor-sidebar-toggle-v266 strong{display:grid;place-items:center;width:100%;height:100%;color:#fff;-webkit-text-fill-color:#fff;font:850 25px/1 Arial,Helvetica,sans-serif;text-align:center}
+.ce-editor-sidebar-backdrop-v266{display:none;position:fixed;z-index:2147482200;inset:0;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important}
 .ce-editor-side-v266{
   position:fixed;z-index:2147482300;left:0;top:0;bottom:0;display:flex;flex-direction:column;width:232px;height:100dvh;
   overflow:hidden;border-right:1px solid #dfe6ef;background:#fff;color:#243650;box-shadow:none;animation:none;transition:none;filter:none
 }
-.ce-editor-side-v266 .sn-logo{display:flex;align-items:center;gap:10px;flex:0 0 66px;height:66px;min-height:66px;padding:0 12px;overflow:hidden}
+.ce-editor-side-v266 *{box-sizing:border-box;min-width:0}
+.ce-editor-side-v266 .sn-logo{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;flex:0 0 66px!important;height:66px!important;min-height:66px!important;margin:0!important;padding:0 12px!important;overflow:hidden!important}
 .ce-editor-side-v266 .sn-logo-mark{
-  display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;min-width:46px;min-height:46px;margin:0;padding:0;border-radius:13px;
-  background:linear-gradient(145deg,#3476e7,#4b55dc);color:#fff;cursor:pointer;overflow:hidden
+  display:grid!important;place-items:center!important;flex:0 0 46px!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;margin:0!important;padding:0!important;border-radius:13px!important;
+  background:linear-gradient(145deg,#3476e7,#4b55dc)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;cursor:pointer;overflow:hidden!important
 }
-.ce-editor-side-v266 .sn-logo-mark strong{display:grid;place-items:center;width:100%;height:100%;color:#fff;font:850 25px/1 Arial,Helvetica,sans-serif}
+.ce-editor-side-v266 .sn-logo-mark strong{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font:850 25px/1 Arial,Helvetica,sans-serif!important}
 .ce-editor-side-v266 .sn-logo-mark i,.ce-editor-side-v266 .sn-side-close{display:none!important}
-.ce-editor-side-v266 .sn-logo>b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1d3049;font:800 18px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.ce-editor-side-v266 .sn-new{display:flex;align-items:center;gap:9px;flex:0 0 46px;min-height:46px;margin:5px 9px 4px;padding:0 11px;border-radius:12px}
-.ce-editor-side-v266>nav{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:2px;margin:0;padding:2px 8px 8px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
+.ce-editor-side-v266 .sn-logo>b{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#1d3049!important;font:800 18px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+.ce-editor-side-v266 .sn-new{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:9px!important;flex:0 0 46px!important;width:auto!important;min-height:46px!important;max-height:46px!important;margin:5px 9px 4px!important;padding:0 11px!important;border-radius:12px!important}
+/* v317: menu destinations stay immediately below + Buat Post instead of inheriting the live sidebar's flexible/centred runtime geometry. */
+.ce-editor-side-v266>nav{display:flex!important;flex:0 1 auto!important;min-height:0!important;max-height:calc(100dvh - 66px - 55px - 116px)!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;align-content:flex-start!important;gap:2px!important;margin:0!important;padding:2px 8px 8px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable}
 .ce-editor-side-v266>nav>button,.ce-editor-side-v266>.sn-account-footer>button{
-  display:flex;align-items:center;gap:10px;flex:0 0 42px;width:100%;min-width:0;min-height:42px;max-height:42px;margin:0;padding:0 10px;
-  border-radius:10px;white-space:nowrap;overflow:hidden
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;flex:0 0 40px!important;width:100%!important;min-width:0!important;min-height:40px!important;max-height:40px!important;margin:0!important;padding:0 10px!important;
+  border-radius:10px!important;white-space:nowrap!important;overflow:hidden!important;color:#52647c!important
 }
-.ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>svg{display:block;flex:0 0 20px;width:20px;height:20px}
-.ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ce-editor-side-v266>.sn-account-footer{display:flex;flex:0 0 auto;flex-direction:column;gap:2px;margin-top:auto;padding:7px 8px max(12px,calc(env(safe-area-inset-bottom) + 10px));border-top:1px solid #e5eaf1;background:#fff}
+.ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>svg{display:block!important;flex:0 0 20px!important;width:20px!important;height:20px!important;margin:0!important;color:currentColor!important;stroke:currentColor!important}
+.ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:inline!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.ce-editor-side-v266>nav>button.active{background:#edf4ff!important;color:#2f6fdf!important}
+.ce-editor-side-v266>nav>button:last-child:not(.active){color:#52647c!important}
+.ce-editor-side-v266>.sn-account-footer{display:flex!important;flex:0 0 auto!important;flex-direction:column!important;gap:2px!important;margin-top:auto!important;padding:7px 8px max(12px,calc(env(safe-area-inset-bottom) + 10px))!important;border-top:1px solid #e5eaf1!important;background:#fff!important}
 
 html.editor-v266-large .ce-app{width:calc(100% - 232px)!important;max-width:calc(100% - 232px)!important;margin-left:232px!important;transition:none!important}
 html.editor-v266-large.editor-v266-collapsed .ce-app{width:calc(100% - 72px)!important;max-width:calc(100% - 72px)!important;margin-left:72px!important}
 html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266{width:72px!important}
-html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 .sn-logo{justify-content:center;padding-inline:0}
-html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 .sn-logo>b{display:none}
-html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 .sn-new{width:48px;margin-left:auto;margin-right:auto;padding:0;justify-content:center}
-html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 :is(nav>button,.sn-account-footer>button){justify-content:center;padding-inline:0}
-html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:none}
-html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>svg{margin:0}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 .sn-logo{justify-content:center!important;padding-inline:0!important}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 .sn-logo>b{display:none!important}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 .sn-new{width:48px!important;margin-left:auto!important;margin-right:auto!important;padding:0!important;justify-content:center!important}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266>nav{width:100%!important;padding-inline:8px!important;align-items:center!important}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 :is(nav>button,.sn-account-footer>button){width:48px!important;min-width:48px!important;max-width:48px!important;justify-content:center!important;padding-inline:0!important;margin-inline:auto!important}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:none!important}
+html.editor-v266-large #ngeblogging-editor-nav-v266.collapsed .ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>svg{margin:0!important}
 
-html.editor-v266-small .ce-editor-sidebar-toggle-v266{display:grid}
+html.editor-v266-small .ce-editor-sidebar-toggle-v266{display:grid!important;position:fixed!important;left:max(8px,env(safe-area-inset-left))!important;top:max(8px,env(safe-area-inset-top))!important;transform:none!important;animation:none!important;filter:none!important}
 html.editor-v266-small .ce-editor-side-v266{
-  width:min(82vw,320px);max-width:320px;visibility:hidden;pointer-events:none;transform:translate3d(-105%,0,0);box-shadow:none
+  width:min(78vw,336px)!important;max-width:min(78vw,336px)!important;visibility:hidden!important;pointer-events:none!important;transform:translate3d(-105%,0,0)!important;box-shadow:none!important
 }
 html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266{
-  visibility:visible;pointer-events:auto;transform:translate3d(0,0,0);box-shadow:16px 0 45px rgba(20,42,76,.16)
+  visibility:visible!important;pointer-events:auto!important;transform:translate3d(0,0,0)!important;box-shadow:16px 0 45px rgba(20,42,76,.16)!important
 }
-html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-sidebar-toggle-v266{display:none}
-html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-sidebar-backdrop-v266{display:block;left:min(82vw,320px);pointer-events:auto}
+html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-sidebar-toggle-v266{display:none!important}
+html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-sidebar-backdrop-v266{display:block!important;left:min(78vw,336px)!important;pointer-events:auto!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 html.editor-v266-small .ce-app{width:100%!important;max-width:100%!important;margin-left:0!important;overflow-x:clip!important}
 html.editor-v266-small .ce-titlebar{padding-left:66px!important}
-html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266 .sn-logo{justify-content:flex-start}
-html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266 .sn-logo>b{display:block}
-html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:inline}
+html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266 .sn-logo{justify-content:flex-start!important}
+html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266 .sn-logo>b{display:block!important}
+html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266 :is(.sn-new,nav>button,.sn-account-footer>button)>span{display:inline!important}
 
 @media (max-width:360px){
-  html.editor-v266-small .ce-editor-side-v266{width:min(88vw,300px);max-width:300px}
-  html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-sidebar-backdrop-v266{left:min(88vw,300px)}
+  html.editor-v266-small .ce-editor-side-v266{width:min(84vw,300px)!important;max-width:min(84vw,300px)!important}
+  html.editor-v266-small #ngeblogging-editor-nav-v266.mobile-open .ce-editor-sidebar-backdrop-v266{left:min(84vw,300px)!important}
   html.editor-v266-small .ce-titlebar{padding-left:64px!important}
+}
+@media (max-height:700px){
+  .ce-editor-side-v266>nav{max-height:calc(100dvh - 66px - 55px - 102px)!important}
+  .ce-editor-side-v266>nav>button,.ce-editor-side-v266>.sn-account-footer>button{flex-basis:36px!important;min-height:36px!important;max-height:36px!important}
 }
 
 /* The injected navigation never adds blur or locks the editor behind an overlay. */
