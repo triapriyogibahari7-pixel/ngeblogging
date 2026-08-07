@@ -68,6 +68,8 @@ console.log(JSON.stringify({
   note: "This is a deterministic scale-contract simulation. A separate disposable/staging database is required for a destructive 2.5M-row latency/load benchmark.",
 }, null, 2));
 
-// v333 runs last so the already-merged v332 single-map runtime also becomes
-// the service-worker shell/cache authority seen by returning production clients.
+// v333 first rotates the returning-client cache onto the v332 baseline.
 await import("./patch-studio-theme-layout-cache-v333.mjs");
+// v334 then runs last and makes the screenshot-specific single-map repair the
+// final production shell/cache authority.
+await import("./patch-studio-theme-layout-single-v334.mjs");
