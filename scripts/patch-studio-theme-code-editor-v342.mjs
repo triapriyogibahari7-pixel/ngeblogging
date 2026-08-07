@@ -111,3 +111,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: Theme code editor matches Studio mode, keeps 1-10000 real line numbers, and cache=${CACHE}.`);
+await import("./patch-studio-theme-code-editor-v343.mjs");
