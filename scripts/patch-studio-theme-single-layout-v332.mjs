@@ -34,38 +34,35 @@ for (const marker of [
 for (const marker of [
   RELEASE,
   "THEME_LAYOUT_AREA_COUNT_V332 = 26",
-  "SLOT_KEYS",
-  '"left-4"',
-  '"right-4"',
-  "buildMainRow",
-  "Kotak postingan / Page",
-  "source.click()",
-  'dataset.v332SourceMap = "hidden"',
+  'LEGACY_MAP_SELECTOR = ".tn-layout-map-v264"',
+  "V312_MAP_SELECTOR",
+  "single-v264-reference",
+  "single-v312-editorial-fallback",
+  'dataset.v332LayoutState = "hidden"',
+  'dataset.v332LayoutState = "primary"',
   'dataset.v332SingleLayout = "ready"',
 ]) if (!runtime.includes(marker)) throw new Error(`V332_RUNTIME_MISSING:${marker}`);
 
 for (const marker of [
   "--studio-theme-layout-single-v332",
   '.tn-layout-studio[data-v332-single-layout="ready"]',
-  '[data-v332-source-map="hidden"]',
-  ".tn-layout-single-v332",
-  ".tn-v332-main-row",
+  '[data-v332-layout-state="hidden"]',
+  '.tn-layout-map-v264[data-v332-layout-state="primary"]',
+  ".tn-layout-content-v264",
+  ".tn-layout-post-v264",
   "grid-template-columns:minmax(150px,.9fr) minmax(330px,2fr) minmax(150px,.9fr)",
-  ".tn-v332-side-stack",
-  ".tn-v332-slot-label",
-  "min-width:720px",
+  "min-width:620px",
 ]) if (!css.includes(marker)) throw new Error(`V332_CSS_MISSING:${marker}`);
 
 for (const marker of [
   RELEASE,
   '"visibleLayoutMaps": 1',
-  '"sourceAuthority": "v312-26-area-widget-actions"',
-  '"renderedAsSingleReferenceMap": true',
-  '"duplicateSourceMapsHidden": true',
+  '"preferredAuthority": "v264-reference-map"',
+  '"v312EditorialFallbackIfReferenceAbsent": true',
+  '"duplicateV312ModelSurfaceHidden": true',
+  '"postPageCentered": true',
   '"leftWidgetSlots": 4',
   '"rightWidgetSlots": 4',
-  '"areaCount": 26',
-  '"slotClickDelegatesToRealWidgetArea": true',
   '"layoutAreas": 26',
   '"themes": 100',
 ]) if (!release.includes(marker)) throw new Error(`V332_RELEASE_INVALID:${marker}`);
@@ -97,4 +94,4 @@ for (const marker of [RELEASE, VERSION, CACHE, "STUDIO_THEME_CODE_DEVICE_RELEASE
   if (!sw.includes(marker)) throw new Error(`V332_SW_MARKER_MISSING:${marker}`);
 
 await writeFile(swFile, sw);
-console.log(`Validated ${RELEASE}: one screenshot-matched 26-area Theme map is active and cache rotated to ${CACHE}.`);
+console.log(`Validated ${RELEASE}: one reference Theme layout map is active and cache rotated to ${CACHE}.`);
