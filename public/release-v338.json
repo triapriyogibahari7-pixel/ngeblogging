@@ -1,0 +1,38 @@
+{
+  "release": "studio-theme-layout-mobile-v338-20260807",
+  "date": "2026-08-07",
+  "scope": "Targeted compact-device Theme Studio repair from the supplied screenshots: keep the main 26-area map first, move/preserve the former right-hand Editorial/Majalah design below it, and render both as real mobile-width layouts instead of a squeezed 720px desktop canvas.",
+  "compactDevices": ["application", "phone", "mobile", "compact", "tablet"],
+  "largeDevicesPreserved": ["laptop", "desktop", "computer"],
+  "layout": {
+    "primaryMapFirst": true,
+    "secondaryEditorialMagazineBelow": true,
+    "secondaryFullWidth": true,
+    "fixed720CompactCanvasRemoved": true,
+    "primaryContentSingleColumnOnCompact": true,
+    "leftRightWidgetStacksReadable": true,
+    "horizontalLabels": true,
+    "pageHorizontalOverflowPrevented": true,
+    "widgetChooserNonFullscreen": true
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "themeCodeEditor": true,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "postsPages": true,
+    "members": true,
+    "analytics": true
+  },
+  "safety": {
+    "viewportOnlyClassificationAvoided": true,
+    "desktopSiteOnPhoneUsesStudioDeviceSignalWhenAvailable": true,
+    "destructiveSessionBehaviorAdded": false,
+    "unrelatedSurfaceCssAdded": false
+  }
+}
