@@ -1,0 +1,162 @@
+/* Ngeblogging Studio v344 — focused Theme code-editor size correction.
+ * Scope: Theme HTML/CSS/JavaScript modal only.
+ * v342 remains the functional owner of editing + synchronized real 1–10000 line
+ * numbers; v343 remains the stacked preview-above-code composition. v344 only
+ * makes the editor slightly shorter and makes the numbered gutter unmistakable.
+ */
+:root{--studio-theme-code-editor-v344:"studio-theme-code-editor-v344-20260807"}
+
+/* Keep the reference composition in every Studio mode. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor="ready"]{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"preview" "code"!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+
+/* Slightly shorter than v343: enough source height for comfortable editing,
+ * but no oversized dark block that pushes the footer far below the viewport. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
+  grid-area:preview!important;
+  height:clamp(225px,29dvh,310px)!important;
+  min-height:225px!important;
+  max-height:310px!important;
+  border-right:0!important;
+  border-bottom:1px solid #d7e0eb!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
+  grid-area:code!important;
+  height:clamp(400px,45dvh,500px)!important;
+  min-height:400px!important;
+  max-height:500px!important;
+  border-right:0!important;
+  background:#0c1525!important;
+  color:#e7eef9!important;
+}
+
+/* Compact chrome leaves more of the shortened block for actual source lines. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]{
+  grid-template-columns:60px minmax(0,1fr)!important;
+  grid-template-rows:50px 34px minmax(0,1fr)!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>nav{
+  height:50px!important;
+  min-height:50px!important;
+  padding-inline:7px!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>nav>button{
+  height:50px!important;
+  min-height:50px!important;
+  min-width:100px!important;
+  padding-inline:12px!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>.tn-code-status{
+  height:34px!important;
+  min-height:34px!important;
+  padding-inline:11px!important;
+}
+
+/* Real line guide created by v342. The gutter is wider, brighter and layered
+ * above the code surface so 1, 2, 3 … through 10000 remain visibly aligned. */
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{
+  grid-column:1!important;
+  grid-row:3!important;
+  position:relative!important;
+  z-index:2!important;
+  display:block!important;
+  width:60px!important;
+  min-width:60px!important;
+  max-width:60px!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:12px 9px 30px 3px!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-right:1px solid #2b3a51!important;
+  background:#08111f!important;
+  color:#aebcd0!important;
+  white-space:pre!important;
+  text-align:right!important;
+  font:600 11.5px/1.62 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+  opacity:1!important;
+  visibility:visible!important;
+  user-select:none!important;
+  pointer-events:none!important;
+  box-sizing:border-box!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>textarea[data-v342-code-source="ready"]{
+  grid-column:2!important;
+  grid-row:3!important;
+  min-height:0!important;
+  height:100%!important;
+  padding:12px 14px 30px!important;
+  overflow:auto!important;
+  resize:none!important;
+  background:#0c1525!important;
+  color:#e7eef9!important;
+  caret-color:#76a9ff!important;
+  white-space:pre!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  font:500 12.5px/1.62 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+}
+
+/* Preview remains centered, bounded, and independently scrollable. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-preview-pane="ready"]>.tn-frame-shell{
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+  padding:10px!important;
+  overflow:auto!important;
+  place-items:start center!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-preview-pane="ready"]>.tn-frame-shell iframe{
+  min-height:160px!important;
+  max-height:100%!important;
+  margin-inline:auto!important;
+}
+
+/* Physical handheld and compact Studio family: reduce one more step while
+ * retaining touch-safe tabs and a useful source viewport. */
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
+  height:clamp(190px,25dvh,250px)!important;
+  min-height:190px!important;
+  max-height:250px!important;
+}
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
+  height:clamp(340px,41dvh,420px)!important;
+  min-height:340px!important;
+  max-height:420px!important;
+}
+
+@media(max-width:760px){
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]{grid-template-columns:56px minmax(0,1fr)!important}
+  .tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{width:56px!important;min-width:56px!important;max-width:56px!important;padding-inline:2px 7px!important;font-size:11px!important}
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>nav>button{min-width:92px!important}
+}
+
+@media(max-height:720px){
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
+    height:175px!important;
+    min-height:175px!important;
+    max-height:175px!important;
+  }
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
+    height:320px!important;
+    min-height:320px!important;
+    max-height:320px!important;
+  }
+}
