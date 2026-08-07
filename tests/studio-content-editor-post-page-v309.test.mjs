@@ -13,6 +13,11 @@ const runtime = await readFile(new URL("../src/studio-content-editor-responsive-
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const contentData = await readFile(new URL("../src/lib/content-data.js", import.meta.url), "utf8");
+const layout336 = await readFile(new URL("../src/studio-theme-layout-one-v336.js", import.meta.url), "utf8");
+const layoutCss336 = await readFile(new URL("../src/studio-theme-layout-one-v336.css", import.meta.url), "utf8");
+const patch336 = await readFile(new URL("../scripts/patch-studio-theme-layout-one-v336.mjs", import.meta.url), "utf8");
+const chain331 = await readFile(new URL("../scripts/patch-content-capacity-v331.mjs", import.meta.url), "utf8");
+const release336 = await readFile(new URL("../public/release-v336.json", import.meta.url), "utf8");
 
 test("v309/v310 load after v308 and remain editor-only — v316 preserved", () => {
   assert.match(runtime, /studio-content-editor-responsive-v308\.css/);
@@ -98,4 +103,35 @@ test("v329 resumes sanitized Theme and Domain production materialization", () =>
   assert.doesNotMatch(isolation327, /NGEBLOGGING_REPLAY_HISTORICAL_PATCH_CHAIN/);
   assert.match(patch304, /await import\("\.\/patch-service-worker-v305\.mjs"\)/);
   assert.match(patch304, /await import\("\.\/patch-production-cutover-v320\.mjs"\)/);
+});
+
+test("v336 makes the full 26-area v264 map the sole final Theme layout authority", () => {
+  assert.match(runtime, /import "\.\/studio-theme-layout-one-v336\.js"/);
+  assert.match(runtime, /STUDIO_THEME_LAYOUT_ONE_RELEASE_V336 = "studio-theme-layout-one-v336-20260807"/);
+  assert.match(layout336, /STUDIO_THEME_LAYOUT_ONE_RELEASE_V336 = "studio-theme-layout-one-v336-20260807"/);
+  assert.match(layout336, /const LEGACY_MAP_SELECTOR = "\.tn-layout-map-v264"/);
+  assert.match(layout336, /enforceOneThemeLayoutV336/);
+  assert.match(layout336, /setDataset\(studio, "themeMapAuthorityV319", "v264-canonical"\)/);
+  assert.match(layout336, /setDataset\(studio, "themeLayoutV321", "v264-canonical"\)/);
+  assert.match(layout336, /setDataset\(studio, "v325ThemeLayout", "v264-canonical"\)/);
+  assert.match(layout336, /setImportant\(node, "display", "none"\)/);
+  assert.match(layout336, /querySelectorAll\("\.tn-layout-canvas"\)/);
+  assert.match(layout336, /MODEL_EDITORIAL_RE/);
+  assert.match(layout336, /MODEL_MAGAZINE_RE/);
+  assert.match(layout336, /MutationObserver/);
+  assert.match(layout336, /attributes: true/);
+  assert.match(layoutCss336, /data-v336-duplicate-layout="hidden"/);
+  assert.match(layoutCss336, /data-v336-canonical-layout="single-reference-v264"/);
+  assert.match(layoutCss336, /grid-template-columns:minmax\(150px,\.88fr\) minmax\(330px,2fr\) minmax\(150px,\.88fr\)!important/);
+  assert.match(layoutCss336, /data-v336-widget-summary="below-map"/);
+  assert.match(chain331, /patch-studio-theme-layout-single-v335\.mjs/);
+  assert.match(chain331, /patch-studio-theme-layout-one-v336\.mjs/);
+  assert.ok(chain331.indexOf("patch-studio-theme-layout-one-v336.mjs") > chain331.indexOf("patch-studio-theme-layout-single-v335.mjs"));
+  assert.match(patch336, /STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335/);
+  assert.match(patch336, /ACTIVE_VERSION_V336/);
+  assert.match(release336, /"visibleLayoutMaps": 1/);
+  assert.match(release336, /"v312EditorialMagazineSurfaceHidden": true/);
+  assert.match(release336, /"bootstrapFourAreaCanvasHiddenWhenCanonicalExists": true/);
+  assert.doesNotMatch(layout336, /localStorage\.clear|sessionStorage\.clear|signOut\s*\(|location\.(?:reload|replace)\s*\(/);
+  assert.doesNotMatch(layoutCss336, /#ngeblogging-studio-sidebar|\.nara-assistant|\.sv124-domain-page|\.ce-app/);
 });
