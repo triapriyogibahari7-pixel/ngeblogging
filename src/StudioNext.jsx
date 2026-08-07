@@ -22,7 +22,7 @@ import {
 } from "./lib/studio-data";
 import {
   CONTENT_PAGE_SIZE, createContentDocument, deleteContentDocument, getContentDocument,
-  listContentPage, normalizeMetadata, normalizeSeo, slugify, updateContentDocument,
+  listContentPage, normalizeMetadata, normalizeSeo, publishContentDocument, slugify, updateContentDocument,
 } from "./lib/content-data";
 import "./studio-next.css";
 import "./studio-recovery-v135.css";
@@ -238,11 +238,25 @@ export default function StudioNext({ onExit, user }) {
     catch (error) { setToast(error.message || "Konten belum dapat dihapus"); }
   };
 
-  const publish = () => {
+  const publish = async () => {
     if (!active) return;
     const status = active.status === "published" ? "draft" : "published";
-    patch({ status, publishedAt: status === "published" ? new Date().toISOString() : "" });
-    setToast(status === "published" ? `${active.type === "page" ? "Page" : "Post"} diterbitkan` : `${active.type === "page" ? "Page" : "Post"} menjadi draf`);
+    const publishedAt = status === "published" ? new Date().toISOString() : "";
+    const pending = pendingSave.current.id === active.id ? pendingSave.current.values : {};
+    clearTimeout(saveTimer.current);
+    pendingSave.current = { id: null, values: {} };
+    setSaved(false);
+    const nextValues = { ...pending, status, publishedAt };
+    setDocs((all) => all.map((document) => document.id === active.id ? { ...document, ...nextValues, updated: Date.now(), updatedAt: new Date().toISOString(), hydrated: true } : document));
+    try {
+      if (dataMode === "cloud") await publishContentDocument(active.id, nextValues);
+      setSaved(true);
+      setToast(status === "published" ? `${active.type === "page" ? "Page" : "Post"} diterbitkan` : `${active.type === "page" ? "Page" : "Post"} menjadi draf`);
+    } catch (error) {
+      console.error("Publish failed", error);
+      setSaved(false);
+      setToast(error.message || `${active.type === "page" ? "Page" : "Post"} belum dapat diterbitkan`);
+    }
   };
 
   const loadMore = async () => {
