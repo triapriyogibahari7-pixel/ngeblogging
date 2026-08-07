@@ -18,7 +18,11 @@
   overflow:visible!important;
   align-items:stretch!important;
 }
-.tn-modal[data-v342-code-modal="ready"] [data-v342-preview-pane="ready"]{
+
+/* Repeat the pane geometry through the family selectors so these rules beat
+ * the older v342 compact/large pane heights with equal specificity. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
   grid-area:preview!important;
   height:clamp(250px,33dvh,350px)!important;
   min-height:250px!important;
@@ -26,7 +30,8 @@
   border-right:0!important;
   border-bottom:1px solid #d7e0eb!important;
 }
-.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]{
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
   grid-area:code!important;
   height:clamp(460px,52dvh,590px)!important;
   min-height:460px!important;
@@ -112,15 +117,20 @@
 }
 
 /* Physical handhelds and the six compact modes get an even shorter workspace,
- * including Chrome Android when "Desktop site" is enabled. */
-html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-preview-pane="ready"],
-html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-preview-pane="ready"]{
+ * including Chrome Android when "Desktop site" is enabled. Family selectors
+ * are retained here as well so old v342 heights cannot win by specificity. */
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
   height:clamp(215px,29dvh,290px)!important;
   min-height:215px!important;
   max-height:290px!important;
 }
-html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"],
-html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]{
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+html[data-studio-handheld="true"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
   height:clamp(400px,48dvh,500px)!important;
   min-height:400px!important;
   max-height:500px!important;
@@ -136,12 +146,14 @@ html[data-studio-device-mode="small"] .tn-modal[data-v342-code-modal="ready"] [d
 }
 
 @media(max-height:720px){
-  .tn-modal[data-v342-code-modal="ready"] [data-v342-preview-pane="ready"]{
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-preview-pane="ready"],
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
     height:210px!important;
     min-height:210px!important;
     max-height:210px!important;
   }
-  .tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]{
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="large"] [data-v342-code-pane="ready"],
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
     height:380px!important;
     min-height:380px!important;
     max-height:380px!important;
