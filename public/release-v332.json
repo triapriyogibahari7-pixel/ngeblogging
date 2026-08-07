@@ -1,0 +1,42 @@
+{
+  "release": "studio-theme-layout-single-v332-20260807",
+  "date": "2026-08-07",
+  "scope": "Theme Studio layout-map correction based on the supplied screenshots: show one full-width functional site-layout map matching the good reference and suppress the squeezed duplicate Editorial/Majalah surface.",
+  "layout": {
+    "visibleLayoutMaps": 1,
+    "preferredAuthority": "v264-reference-map",
+    "v312EditorialFallbackIfReferenceAbsent": true,
+    "duplicateV312ModelSurfaceHidden": true,
+    "modelMajalahHidden": true,
+    "postPageCentered": true,
+    "leftWidgetSlots": 4,
+    "rightWidgetSlots": 4,
+    "areaCount": 26,
+    "labelsHorizontal": true,
+    "mobileInternalHorizontalScroll": true,
+    "layoutRemainsInteractive": true,
+    "widgetChooserRemainsCompact": true
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "codeLineGuide": 10000,
+    "postsPagesWordLimit": 30000,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "members": true,
+    "analytics": true
+  },
+  "safety": {
+    "noPlaceholderReplacement": true,
+    "noUserDataRemoved": true,
+    "noAuthChanges": true,
+    "noSidebarChanges": true,
+    "noNaraChanges": true,
+    "noDomainChanges": true
+  }
+}
