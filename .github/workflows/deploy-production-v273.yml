@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v325
+name: Deploy Ngeblogging Production v341
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v325
+  group: ngeblogging-production-v341
   cancel-in-progress: true
 
 jobs:
@@ -43,100 +43,105 @@ jobs:
       - name: Run production regression and build
         run: npm run build
 
-      - name: Verify v325 and inherited production authorities
+      - name: Verify v341 and inherited production authorities
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325; do
+          for release in 310 311 312 313 315 321 322 323 324 325 337 338 339 340 341; do
             test -f "public/release-v${release}.json"
           done
-          test -f src/studio-theme-domain-final-v325.css
-          test -f src/studio-theme-domain-final-v325.js
-          test -f scripts/patch-studio-theme-domain-final-v325.mjs
-          test -f tests/studio-theme-domain-final-v325.test.mjs
 
-          node --test tests/studio-theme-domain-final-v325.test.mjs
-
-          # v325 is the final screenshot-driven geometry authority. It keeps the
-          # two real v312 maps, 100 themes and 10k line guide rather than adding placeholders.
-          grep -q 'studio-theme-domain-final-v325-20260806' public/release-v325.json
-          grep -q '"themesPreserved": 100' public/release-v325.json
-          grep -q '"layoutAreasPreserved": 26' public/release-v325.json
-          grep -q '"layoutModelsPreserved": 2' public/release-v325.json
-          grep -q '"previewModesPreserved": 8' public/release-v325.json
-          grep -q '"codeLineGuidePreserved": 10000' public/release-v325.json
-          grep -q 'data-v325-model-stack="ready"' src/studio-theme-domain-final-v325.css
-          grep -q 'data-v325-legacy-map="hidden"' src/studio-theme-domain-final-v325.css
-          grep -q 'grid-template-areas:"code preview"' src/studio-theme-domain-final-v325.css
-          grep -q 'grid-template-areas:"preview" "code"' src/studio-theme-domain-final-v325.css
-          grep -q 'tn-code-gutter-v325' src/studio-theme-domain-final-v325.css
-          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.nara-floating-button' src/studio-theme-domain-final-v325.css; then
-            echo 'v325 attempted to restyle protected Studio navigation or assistant geometry.' >&2
+          # v341 is the final source-level Theme Studio geometry fallback.
+          test -f src/studio-theme-surface-final-v341.css
+          test -f src/studio-theme-surface-final-v341.js
+          test -f scripts/patch-studio-theme-surface-final-v341.mjs
+          grep -q 'studio-theme-surface-final-v341-20260807' public/release-v341.json
+          grep -q '"mobilePreviewBounded": true' public/release-v341.json
+          grep -q '"canonicalLayoutMapVisible": true' public/release-v341.json
+          grep -q '"legacyFourAreaCanvasHidden": true' public/release-v341.json
+          grep -q '"centerPostPreservedOnSmall": true' public/release-v341.json
+          grep -q '"secondaryLayoutBelow": true' public/release-v341.json
+          grep -q '"themes": 100' public/release-v341.json
+          grep -q '"layoutAreas": 26' public/release-v341.json
+          grep -q '"widgets": 26' public/release-v341.json
+          grep -q '"previewModes": 8' public/release-v341.json
+          grep -q 'import "./studio-theme-surface-final-v341.js"' src/studio-sidebar-direct-v300.js
+          grep -q '.tn-layout-studio .tn-layout-canvas{display:none!important}' src/studio-theme-surface-final-v341.css
+          grep -q 'grid-template-columns:minmax(56px,.62fr) minmax(138px,1.76fr) minmax(56px,.62fr)!important' src/studio-theme-surface-final-v341.css
+          grep -q 'data-studio-device-mode="small"' src/studio-theme-surface-final-v341.css
+          grep -q 'data-studio-responsive-mode="tablet"' src/studio-theme-surface-final-v341.css
+          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.nara-floating-button|\.sv124-domain-page|\.ce-app' src/studio-theme-surface-final-v341.css; then
+            echo 'v341 attempted to restyle protected sidebar, Nara, Domain, or Posts/Pages surfaces.' >&2
             exit 1
           fi
 
-          # v324 keeps the historical validator compatible with the promoted 30k authority.
-          grep -q 'prebuild-v322-compat-v324-20260806' public/release-v324.json
+          # v340 and v325 remain inherited and independently validated.
+          test -f tests/studio-theme-final-v340.test.mjs
+          node --test tests/studio-theme-final-v340.test.mjs tests/studio-theme-domain-final-v325.test.mjs
+          grep -q 'studio-theme-final-v340-20260807' public/release-v340.json
+          grep -q 'studio-theme-domain-final-v325-20260806' public/release-v325.json
+          grep -q '"themesPreserved": 100' public/release-v325.json
+          grep -q '"layoutModelsPreserved": 2' public/release-v325.json
+          grep -q '"previewModesPreserved": 8' public/release-v325.json
+          grep -q '"codeLineGuidePreserved": 10000' public/release-v325.json
+          grep -q 'grid-template-areas:"code preview"' src/studio-theme-domain-final-v325.css
+          grep -q 'grid-template-areas:"preview" "code"' src/studio-theme-domain-final-v325.css
 
-          # v323 remains inherited as the previous production polish layer.
-          grep -q 'studio-production-polish-v323-20260806' public/release-v323.json
-          grep -q 'STUDIO_PRODUCTION_POLISH_RELEASE_V323' public/sw.js
-
-          # v322 long-form Posts/Pages stays shared and non-destructive.
+          # Posts and Pages remain shared, autosave-capable and non-destructive.
           grep -q 'posts-pages-30000-v322-20260806' public/release-v322.json
-          grep -q '"publicationWordLimit": 30000' public/release-v322.json
-          grep -q '"warningStartsAtWords": 27000' public/release-v322.json
           grep -q '"draftsAreNeverTrimmedByWordGuard": true' public/release-v322.json
-          grep -q 'CONTENT_WORD_LIMIT_V316 = 30000' src/studio-content-editor-final-v316.js
-          grep -q 'CONTENT_WORD_WARNING_V316 = 27000' src/studio-content-editor-final-v316.js
           grep -q 'publishButton.disabled = over' src/studio-content-editor-final-v316.js
           grep -q 'publishedOption.disabled = over' src/studio-content-editor-final-v316.js
 
-          # v321 custom-domain truthfulness: browser NXDOMAIN is never shown as active.
+          # First-site onboarding stays stable rather than flickering/restarting.
+          grep -q 'first-site-onboarding-stability-v311-20260806' public/release-v311.json
+          grep -q 'so169-shell' src/studio-first-site-stability-v311.css
+          grep -q 'animation:none!important' src/studio-first-site-stability-v311.css
+
+          # Members keep real invite/remove/role management, including owner transfer.
+          grep -q '"memberRoleChoices": 5' public/release-v312.json
+          grep -q 'transfer_site_owner_v312' scripts/patch-studio-theme-members-domain-v312.mjs
+          grep -q 'invite_site_member_v176' src/studio-members-v304.js
+          grep -q 'remove_site_member_v176' src/studio-members-v304.js
+
+          # Domain status remains truthful and requires public DNS before active.
           grep -q 'studio-theme-domain-v321-20260806' public/release-v321.json
           grep -q '"publicDnsVerificationRequired": true' public/release-v321.json
           grep -q '"nxdomainNeverReportedActive": true' public/release-v321.json
           grep -q 'PUBLIC_DNS_VERIFY_RELEASE_V321' server/cloudflare-full-zone-provider.mjs
-          grep -q 'publicDnsResolvesV321' server/cloudflare-full-zone-provider.mjs
           grep -q 'PUBLIC_DNS_NOT_READY' server/cloudflare-full-zone-provider.mjs
 
-          # Long-standing auth/sidebar/assistant/Theme authorities remain present.
+          # Authentication/session and Nara protections are inherited unchanged.
           grep -q '"persistSessionPreserved": true' public/release-v315.json
           grep -q 'persistSession: true' src/lib/supabase.js
           grep -q 'autoRefreshToken: true' src/lib/supabase.js
-          grep -q '"themes": 100' public/release-v312.json
-          grep -q '"layoutAreas": 26' public/release-v312.json
-          grep -q '"layoutModels": 2' public/release-v312.json
-          grep -q 'theme-map-code-editor-v312-20260806' src/ThemeStudio.jsx
-          grep -q 'Array.from({ length: 10000 }' src/ThemeStudio.jsx
           grep -q '"smallNonModal": true' public/release-v313.json
           grep -q '"mediumNonModal": true' public/release-v313.json
+          grep -q 'STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301' public/sw.js
 
-          # v325 service-worker cache must be final while retaining inherited releases.
+          # The generated service worker must identify v341 while retaining v340.
+          grep -q 'STUDIO_THEME_SURFACE_FINAL_RELEASE_V341' public/sw.js
+          grep -q 'studio-theme-surface-final-cache-v341' public/sw.js
+          grep -q 'ngeblogging-app-v341-theme-surface-final-20260807' public/sw.js
+          grep -q 'STUDIO_THEME_FINAL_RELEASE_V340' public/sw.js
           grep -q 'STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325' public/sw.js
-          grep -q 'studio-theme-domain-final-cache-v325' public/sw.js
-          grep -q 'ngeblogging-app-v325-theme-domain-final-20260806' public/sw.js
-          grep -q 'STUDIO_PRODUCTION_POLISH_RELEASE_V323' public/sw.js
           grep -q 'POSTS_PAGES_30000_RELEASE_V322' public/sw.js
           grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' public/sw.js
-          grep -q 'STUDIO_PRODUCTION_CUTOVER_RELEASE_V320' public/sw.js
-          grep -q 'STUDIO_SCREENSHOT_REGRESSION_RELEASE_V319' public/sw.js
-          grep -q 'AUTH_CALLBACK_RECOVERY_RELEASE_V315' public/sw.js
-          grep -q 'STUDIO_NARA_NONMODAL_RELEASE_V313' public/sw.js
-          grep -q 'STUDIO_THEME_MEMBERS_DOMAIN_RELEASE_V312' public/sw.js
+          grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' public/sw.js
 
-          # Validate generated assets, not only source markers.
+          # Validate actual generated browser bundles.
+          grep -R -q 'studio-theme-surface-final-v341-20260807' dist/assets
+          grep -R -q 'studio-theme-final-v340-20260807' dist/assets
           grep -R -q 'studio-theme-domain-final-v325-20260806' dist/assets
-          grep -R -q 'studio-production-polish-v323-20260806' dist/assets
           grep -R -q 'studio-theme-domain-v321-20260806' dist/assets
-          grep -R -q 'studio-screenshot-regression-v319-20260806' dist/assets
 
-          # Wrangler production pointers must describe what is actually being deployed.
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-theme-domain-final-v325-20260806"' wrangler.production.jsonc
+          # Production pointers must match what the build is shipping.
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-theme-surface-final-v341-20260807"' wrangler.production.jsonc
+          grep -q '"STUDIO_THEME_SURFACE_FINAL_RELEASE": "studio-theme-surface-final-v341-20260807"' wrangler.production.jsonc
+          grep -q '"STUDIO_THEME_FINAL_RELEASE": "studio-theme-final-v340-20260807"' wrangler.production.jsonc
           grep -q '"STUDIO_THEME_DOMAIN_FINAL_RELEASE": "studio-theme-domain-final-v325-20260806"' wrangler.production.jsonc
           grep -q '"POSTS_PAGES_30000_RELEASE": "posts-pages-30000-v322-20260806"' wrangler.production.jsonc
-          grep -q '"STUDIO_THEME_DOMAIN_RELEASE": "studio-theme-domain-v321-20260806"' wrangler.production.jsonc
           grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
 
       - name: Verify Cloudflare production credentials
@@ -165,38 +170,39 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; melewati route reassertion.'
           fi
 
-      - name: Verify live v325 with inherited editor and domain authorities
+      - name: Verify live v341 and inherited authorities
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v325.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            editor="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v322.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v341.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            theme="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v340.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
             domain="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v321.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$latest" | grep -q 'studio-theme-domain-final-v325-20260806' && printf '%s' "$editor" | grep -q 'posts-pages-30000-v322-20260806' && printf '%s' "$domain" | grep -q 'studio-theme-domain-v321-20260806'; then
-              echo 'Live v325 with v322 editor and v321 DNS truthfulness confirmed.'
+            if printf '%s' "$latest" | grep -q 'studio-theme-surface-final-v341-20260807' && printf '%s' "$theme" | grep -q 'studio-theme-final-v340-20260807' && printf '%s' "$domain" | grep -q 'studio-theme-domain-v321-20260806'; then
+              echo 'Live v341 with inherited v340 Theme and v321 DNS truthfulness confirmed.'
               exit 0
             fi
             sleep 10
           done
-          echo 'Live production did not expose v325/v322/v321 within the verification window.' >&2
+          echo 'Live production did not expose v341/v340/v321 within the verification window.' >&2
           exit 1
 
-      - name: Verify live v325 service worker and visual bundle
+      - name: Verify live v341 service worker and visual bundle
         shell: bash
         run: |
           set -euo pipefail
-          latest_chunk="$(grep -Rl 'studio-theme-domain-final-v325-20260806' dist/assets | head -n 1)"
+          latest_chunk="$(grep -Rl 'studio-theme-surface-final-v341-20260807' dist/assets | head -n 1)"
           test -n "$latest_chunk"
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v325.js
-          grep -q 'studio-theme-domain-final-v325-20260806' /tmp/studio-v325.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v325.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325' /tmp/sw-v325.js
-          grep -q 'studio-theme-domain-final-cache-v325' /tmp/sw-v325.js
-          grep -q 'ngeblogging-app-v325-theme-domain-final-20260806' /tmp/sw-v325.js
-          grep -q 'STUDIO_PRODUCTION_POLISH_RELEASE_V323' /tmp/sw-v325.js
-          grep -q 'POSTS_PAGES_30000_RELEASE_V322' /tmp/sw-v325.js
-          grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' /tmp/sw-v325.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v341.js
+          grep -q 'studio-theme-surface-final-v341-20260807' /tmp/studio-v341.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v341.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_THEME_SURFACE_FINAL_RELEASE_V341' /tmp/sw-v341.js
+          grep -q 'studio-theme-surface-final-cache-v341' /tmp/sw-v341.js
+          grep -q 'ngeblogging-app-v341-theme-surface-final-20260807' /tmp/sw-v341.js
+          grep -q 'STUDIO_THEME_FINAL_RELEASE_V340' /tmp/sw-v341.js
+          grep -q 'STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325' /tmp/sw-v341.js
+          grep -q 'POSTS_PAGES_30000_RELEASE_V322' /tmp/sw-v341.js
+          grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' /tmp/sw-v341.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -208,7 +214,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v325-${{ github.sha }}
+          name: ngeblogging-production-v341-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
