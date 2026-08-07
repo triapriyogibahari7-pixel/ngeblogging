@@ -1,0 +1,388 @@
+/* Theme Studio v341 — source-level geometry fallback.
+ * This stylesheet is intentionally scoped to .tn-studio and is loaded after
+ * the historical Theme authorities. It does not own Sidebar/Auth/Nara/Domain.
+ */
+:root{--studio-theme-surface-final-v341:"studio-theme-surface-final-v341-20260807"}
+
+.tn-studio,
+.tn-studio *{box-sizing:border-box}
+.tn-studio{width:100%;max-width:100%;min-width:0;overflow-x:clip}
+.tn-studio :is(section,article,aside,div,header,footer,nav,label){min-width:0;max-width:100%}
+.tn-studio :is(img,video,canvas,iframe,svg){max-width:100%}
+.tn-studio :is(h1,h2,h3,h4,p,b,strong,small,span,label,button,a,em){
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+}
+
+/* One vertical Theme layout authority: canonical 26-area map first, any
+ * secondary Editorial/Majalah model next, widget summary last. Nothing is
+ * allowed to remain squeezed on the right. */
+.tn-studio .tn-layout-studio{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.tn-studio .tn-layout-studio>*{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+}
+.tn-studio .tn-layout-studio>.tn-layout-map-v264{order:1!important}
+.tn-studio .tn-layout-studio>[data-v340-layout-role="secondary-below"],
+.tn-studio .tn-layout-studio>[data-v338-layout-role="secondary-below"],
+.tn-studio .tn-layout-studio>[data-v337-secondary-layout="below"]{order:2!important}
+.tn-studio .tn-layout-studio>.tn-layout-side{order:3!important}
+.tn-studio .tn-layout-studio .tn-layout-canvas{display:none!important}
+
+/* Canonical 26-area map remains a readable map on phones instead of collapsing
+ * into unrelated tiny cards. The page never overflows; only the map may scroll
+ * internally as a last resort on very narrow 320px surfaces. */
+.tn-studio .tn-layout-map-v264{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0 auto!important;
+  padding:10px!important;
+  display:grid!important;
+  gap:8px!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  overscroll-behavior-inline:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  border-radius:16px!important;
+}
+.tn-studio .tn-layout-map-v264 .tn-layout-row-v264,
+.tn-studio .tn-layout-map-v264 .tn-layout-row-v264>div,
+.tn-studio .tn-layout-map-v264 .tn-layout-content-v264,
+.tn-studio .tn-layout-map-v264 .tn-layout-stack-v264{min-width:0!important;max-width:100%!important}
+.tn-studio .tn-layout-map-v264 .tn-layout-slot-v264{
+  min-width:0!important;
+  min-height:50px!important;
+  padding:7px 5px!important;
+  white-space:normal!important;
+  line-height:1.18!important;
+  text-align:center!important;
+}
+.tn-studio .tn-layout-map-v264 .tn-layout-slot-v264>span{
+  display:block!important;
+  width:100%!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+}
+.tn-studio .tn-layout-map-v264 .tn-layout-post-v264{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  display:grid!important;
+  place-content:center!important;
+  text-align:center!important;
+}
+
+/* Small/application family. */
+html[data-studio-responsive-mode="application"] .tn-studio,
+html[data-studio-responsive-mode="phone"] .tn-studio,
+html[data-studio-responsive-mode="mobile"] .tn-studio,
+html[data-studio-responsive-mode="compact"] .tn-studio{
+  padding:10px 8px calc(28px + env(safe-area-inset-bottom,0px))!important;
+  background:#f7f9fc!important;
+}
+html[data-studio-responsive-mode="application"] .tn-studio .tn-hero,
+html[data-studio-responsive-mode="phone"] .tn-studio .tn-hero,
+html[data-studio-responsive-mode="mobile"] .tn-studio .tn-hero,
+html[data-studio-responsive-mode="compact"] .tn-studio .tn-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  width:100%!important;
+}
+html[data-studio-responsive-mode="application"] .tn-studio .tn-hero-copy,
+html[data-studio-responsive-mode="phone"] .tn-studio .tn-hero-copy,
+html[data-studio-responsive-mode="mobile"] .tn-studio .tn-hero-copy,
+html[data-studio-responsive-mode="compact"] .tn-studio .tn-hero-copy{
+  width:100%!important;
+  padding:18px 15px!important;
+  border-radius:18px!important;
+}
+html[data-studio-responsive-mode="application"] .tn-studio .tn-hero-copy h1,
+html[data-studio-responsive-mode="phone"] .tn-studio .tn-hero-copy h1,
+html[data-studio-responsive-mode="mobile"] .tn-studio .tn-hero-copy h1,
+html[data-studio-responsive-mode="compact"] .tn-studio .tn-hero-copy h1{
+  max-width:100%!important;
+  margin:8px 0 11px!important;
+  font-size:clamp(28px,8.5vw,42px)!important;
+  line-height:1.03!important;
+}
+html[data-studio-responsive-mode="application"] .tn-studio .tn-hero-actions,
+html[data-studio-responsive-mode="phone"] .tn-studio .tn-hero-actions,
+html[data-studio-responsive-mode="mobile"] .tn-studio .tn-hero-actions,
+html[data-studio-responsive-mode="compact"] .tn-studio .tn-hero-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+}
+html[data-studio-responsive-mode="application"] .tn-studio .tn-hero-actions button,
+html[data-studio-responsive-mode="phone"] .tn-studio .tn-hero-actions button,
+html[data-studio-responsive-mode="mobile"] .tn-studio .tn-hero-actions button,
+html[data-studio-responsive-mode="compact"] .tn-studio .tn-hero-actions button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  padding:8px!important;
+  white-space:normal!important;
+}
+
+/* The dark/grey elongated preview block in the supplied screenshots is removed.
+ * Preview gets a bounded internal viewport and never paints outside its card. */
+html[data-studio-device-mode="small"] .tn-studio .tn-active-stage{
+  position:relative!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border-radius:17px!important;
+  background:#fff!important;
+  box-shadow:0 8px 24px rgba(25,48,82,.06)!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-studio-device-mode="small"] .tn-studio :is(.tn-active-stage,.tn-stage-toolbar,.tn-frame-shell)::before,
+html[data-studio-device-mode="small"] .tn-studio :is(.tn-active-stage,.tn-stage-toolbar,.tn-frame-shell)::after{
+  content:none!important;
+  display:none!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-stage-toolbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:9px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-stage-toolbar>b{
+  order:-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-device-switch{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  display:flex!important;
+  gap:6px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  padding:2px 1px 5px!important;
+  border:0!important;
+  background:transparent!important;
+  scrollbar-width:none!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-device-switch::-webkit-scrollbar{display:none!important}
+html[data-studio-device-mode="small"] .tn-studio .tn-device-switch button{
+  flex:0 0 auto!important;
+  min-width:max-content!important;
+  height:38px!important;
+  padding:0 9px!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:10px!important;
+  background:#fff!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-frame-shell{
+  display:grid!important;
+  place-items:start center!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:clamp(300px,48dvh,420px)!important;
+  min-height:300px!important;
+  max-height:420px!important;
+  padding:8px!important;
+  overflow:auto!important;
+  background:#f4f7fb!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-frame-shell iframe{
+  display:block!important;
+  width:min(var(--tn-preview-width,100%),100%)!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:100%!important;
+  margin:0 auto!important;
+  border:0!important;
+  border-radius:10px!important;
+  transform:none!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-apply-bar{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:calc(100% - 16px)!important;
+  max-width:calc(100% - 16px)!important;
+  margin:8px!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  border-radius:11px!important;
+  padding:8px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+
+/* Compact command/filter/catalog surfaces. */
+html[data-studio-device-mode="small"] .tn-studio .tn-command{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+  width:100%!important;
+  margin:12px 0!important;
+  padding:13px!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-command nav{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-command nav button{width:100%!important;min-width:0!important;min-height:42px!important;white-space:normal!important}
+html[data-studio-device-mode="small"] .tn-studio :is(.tn-blueprints,.tn-library){
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-top:12px!important;
+  padding:13px 11px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-library>header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-library>header label{width:100%!important;min-width:0!important;min-height:44px!important}
+html[data-studio-device-mode="small"] .tn-studio .tn-category-tabs{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:13px 0!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-category-tabs button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  padding:7px 8px!important;
+  border-radius:10px!important;
+  white-space:normal!important;
+  line-height:1.16!important;
+  text-align:center!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-blueprint-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+html[data-studio-device-mode="small"] .tn-studio .tn-theme-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+html[data-studio-device-mode="small"] .tn-studio .tn-theme-grid>article{width:100%!important;max-width:100%!important;min-width:0!important;transform:none!important}
+html[data-studio-device-mode="small"] .tn-studio .tn-theme-grid>article:hover{transform:none!important}
+
+/* Keep the actual page-map recognizable on small devices: left widgets,
+ * centered post/page and right widgets stay in the same row. */
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-row-v264.header,
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-row-v264.footer{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-row-v264.top,
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-row-v264.bottom{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:6px!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-row-v264.top>div,
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-row-v264.bottom>div{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:5px!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-content-v264{
+  display:grid!important;
+  grid-template-columns:minmax(56px,.62fr) minmax(138px,1.76fr) minmax(56px,.62fr)!important;
+  gap:6px!important;
+  align-items:stretch!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-stack-v264{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:5px!important;
+}
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-slot-v264{font-size:8px!important;min-height:46px!important}
+html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-post-v264{min-height:235px!important;padding:9px!important}
+
+/* Tablet gets a calm two-column catalog but the layout map itself remains full
+ * width and the widget summary remains below it. */
+html[data-studio-responsive-mode="tablet"] .tn-studio .tn-hero{grid-template-columns:minmax(0,1fr)!important}
+html[data-studio-responsive-mode="tablet"] .tn-studio .tn-active-stage{min-height:0!important;height:auto!important}
+html[data-studio-responsive-mode="tablet"] .tn-studio .tn-frame-shell{height:520px!important;min-height:420px!important}
+html[data-studio-responsive-mode="tablet"] .tn-studio .tn-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html[data-studio-responsive-mode="tablet"] .tn-studio .tn-category-tabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
+
+/* Desktop/laptop/computer keep space, but never recreate the squeezed right map. */
+html[data-studio-device-mode="large"] .tn-studio .tn-layout-studio{grid-template-columns:minmax(0,1fr)!important}
+html[data-studio-device-mode="large"] .tn-studio .tn-layout-map-v264,
+html[data-studio-device-mode="large"] .tn-studio .tn-layout-studio>[data-v340-layout-role="secondary-below"],
+html[data-studio-device-mode="large"] .tn-studio .tn-layout-side{
+  width:min(100%,1180px)!important;
+  max-width:100%!important;
+  margin-inline:auto!important;
+}
+
+/* Popovers stay small and attached to the clicked area instead of covering the
+ * page. The v264 runtime continues to own positioning and actions. */
+.tn-studio :is(.tn-layout-popover-v264,.tn-layout-popover-v312){
+  width:min(330px,calc(100vw - 20px))!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:min(66dvh,480px)!important;
+  overflow:auto!important;
+  z-index:18000!important;
+}
+
+@media(max-width:350px){
+  html[data-studio-device-mode="small"] .tn-studio .tn-hero-actions,
+  html[data-studio-device-mode="small"] .tn-studio .tn-command nav{grid-template-columns:minmax(0,1fr)!important}
+  html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264{padding:7px!important}
+  html[data-studio-device-mode="small"] .tn-studio .tn-layout-map-v264 .tn-layout-content-v264{
+    grid-template-columns:minmax(50px,.58fr) minmax(126px,1.84fr) minmax(50px,.58fr)!important;
+  }
+}
