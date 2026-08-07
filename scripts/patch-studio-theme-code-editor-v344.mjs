@@ -109,3 +109,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: shorter Theme code editor, stronger real 1-10000 gutter, cache=${CACHE}.`);
+await import("./patch-studio-site-switcher-surface-v345.mjs");
