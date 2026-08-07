@@ -1,4 +1,4 @@
-name: Deploy Ngeblogging Production v343
+name: Deploy Ngeblogging Production v344
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-production-v343
+  group: ngeblogging-production-v344
   cancel-in-progress: true
 
 jobs:
@@ -43,47 +43,53 @@ jobs:
       - name: Run production regression and build
         run: npm run build
 
-      - name: Verify v343 and inherited production authorities
+      - name: Verify v344 and inherited production authorities
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          for release in 310 311 312 313 315 321 322 323 324 325 337 338 339 340 341 342 343; do
+          for release in 310 311 312 313 315 321 322 323 324 325 337 338 339 340 341 342 343 344; do
             test -f "public/release-v${release}.json"
           done
 
-          # v343 follows the supplied reference: preview above a shorter dark code editor.
-          test -f src/studio-theme-code-editor-v343.css
-          test -f src/studio-theme-code-editor-v343.js
-          test -f scripts/patch-studio-theme-code-editor-v343.mjs
-          test -f tests/studio-theme-code-editor-v343.test.mjs
-          node --test tests/studio-theme-code-editor-v343.test.mjs tests/studio-theme-code-editor-v342.test.mjs tests/studio-theme-surface-final-v341.test.mjs tests/studio-theme-final-v340.test.mjs tests/studio-theme-domain-final-v325.test.mjs
-          grep -q 'studio-theme-code-editor-v343-20260807' public/release-v343.json
-          grep -q '"previewAboveCodeAllStudioModes": true' public/release-v343.json
-          grep -q '"desktopSiteOnHandheldUsesStackedEditor": true' public/release-v343.json
-          grep -q '"shorterCodeWorkspace": true' public/release-v343.json
-          grep -q '"darkReadableCodeSurface": true' public/release-v343.json
-          grep -q '"realLineNumbers": 10000' public/release-v343.json
-          grep -q '"themesPreserved": 100' public/release-v343.json
-          grep -q '"layoutAreasPreserved": 26' public/release-v343.json
-          grep -q '"widgetsPreserved": 26' public/release-v343.json
-          grep -q '"previewModesPreserved": 8' public/release-v343.json
-          grep -q 'import "./studio-theme-code-editor-v343.js"' src/studio-theme-surface-final-v341.js
-          grep -q 'data-v342-editor="ready"' src/studio-theme-code-editor-v343.css
-          grep -q 'grid-template-areas:"preview" "code"!important' src/studio-theme-code-editor-v343.css
-          grep -q 'height:clamp(460px,52dvh,590px)!important' src/studio-theme-code-editor-v343.css
-          grep -q 'data-studio-handheld="true"' src/studio-theme-code-editor-v343.css
-          grep -q 'data-studio-device-mode="small"' src/studio-theme-code-editor-v343.css
-          grep -q '.tn-code-gutter-v342' src/studio-theme-code-editor-v343.css
-          grep -q 'width:56px!important' src/studio-theme-code-editor-v343.css
-          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.nara-floating-button|\.sv124-domain-page|\.ce-app' src/studio-theme-code-editor-v343.css; then
-            echo 'v343 attempted to restyle protected sidebar, Nara, Domain, or Posts/Pages surfaces.' >&2
+          # v344 is intentionally narrow: shorter source panel + clearer real gutter.
+          test -f src/studio-theme-code-editor-v344.css
+          test -f src/studio-theme-code-editor-v344.js
+          test -f scripts/patch-studio-theme-code-editor-v344.mjs
+          test -f tests/studio-theme-code-editor-v344.test.mjs
+          node --test tests/studio-theme-code-editor-v344.test.mjs tests/studio-theme-code-editor-v343.test.mjs tests/studio-theme-code-editor-v342.test.mjs tests/studio-theme-surface-final-v341.test.mjs tests/studio-theme-final-v340.test.mjs tests/studio-theme-domain-final-v325.test.mjs
+          grep -q 'studio-theme-code-editor-v344-20260807' public/release-v344.json
+          grep -q '"inheritsV343StackedComposition": true' public/release-v344.json
+          grep -q '"shorterCodeWorkspace": true' public/release-v344.json
+          grep -q '"desktopCodeHeightMaxPx": 500' public/release-v344.json
+          grep -q '"handheldCodeHeightMaxPx": 420' public/release-v344.json
+          grep -q '"realLineNumbers": 10000' public/release-v344.json
+          grep -q '"lineNumberGutterStrengthened": true' public/release-v344.json
+          grep -q '"themesPreserved": 100' public/release-v344.json
+          grep -q '"layoutAreasPreserved": 26' public/release-v344.json
+          grep -q '"widgetsPreserved": 26' public/release-v344.json
+          grep -q '"previewModesPreserved": 8' public/release-v344.json
+          grep -q 'import "./studio-theme-code-editor-v344.js"' src/studio-theme-surface-final-v341.js
+          grep -q 'grid-template-areas:"preview" "code"!important' src/studio-theme-code-editor-v344.css
+          grep -q 'height:clamp(400px,45dvh,500px)!important' src/studio-theme-code-editor-v344.css
+          grep -q 'height:clamp(340px,41dvh,420px)!important' src/studio-theme-code-editor-v344.css
+          grep -q '.tn-code-gutter-v342' src/studio-theme-code-editor-v344.css
+          grep -q 'width:60px!important' src/studio-theme-code-editor-v344.css
+          grep -q 'color:#aebcd0!important' src/studio-theme-code-editor-v344.css
+          if grep -Eq '#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.nara-floating-button|\.sv124-domain-page|\.ce-app' src/studio-theme-code-editor-v344.css; then
+            echo 'v344 attempted to restyle protected sidebar, Nara, Domain, or Posts/Pages surfaces.' >&2
             exit 1
           fi
 
-          # v342 remains the functional editor authority that generates one synchronized 1-10000 gutter.
+          # v343 keeps the preview-above-code reference composition.
+          grep -q 'studio-theme-code-editor-v343-20260807' public/release-v343.json
+          grep -q '"previewAboveCodeAllStudioModes": true' public/release-v343.json
+          grep -q '"desktopSiteOnHandheldUsesStackedEditor": true' public/release-v343.json
+          grep -q '"darkReadableCodeSurface": true' public/release-v343.json
+          grep -q 'import "./studio-theme-code-editor-v343.js"' src/studio-theme-surface-final-v341.js
+
+          # v342 remains the functional editor authority that creates and syncs 1-10000.
           grep -q 'studio-theme-code-editor-v342-20260807' public/release-v342.json
-          grep -q '"darkReadableCodeSurface": true' public/release-v342.json
           grep -q '"realLineNumbers": 10000' public/release-v342.json
           grep -q 'THEME_CODE_EDITOR_LINE_GUIDE_V342 = 10000' src/studio-theme-code-editor-v342.js
           grep -q 'gutter.scrollTop = textarea.scrollTop' src/studio-theme-code-editor-v342.js
@@ -135,10 +141,11 @@ jobs:
           grep -q '"mediumNonModal": true' public/release-v313.json
           grep -q 'STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301' public/sw.js
 
-          # Generated service worker must identify v343 and retain inherited authorities.
+          # Generated service worker must identify v344 and retain inherited authorities.
+          grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V344' public/sw.js
+          grep -q 'studio-theme-code-editor-cache-v344' public/sw.js
+          grep -q 'ngeblogging-app-v344-theme-code-editor-20260807' public/sw.js
           grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V343' public/sw.js
-          grep -q 'studio-theme-code-editor-cache-v343' public/sw.js
-          grep -q 'ngeblogging-app-v343-theme-code-editor-20260807' public/sw.js
           grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V342' public/sw.js
           grep -q 'STUDIO_THEME_SURFACE_FINAL_RELEASE_V341' public/sw.js
           grep -q 'STUDIO_THEME_FINAL_RELEASE_V340' public/sw.js
@@ -147,14 +154,16 @@ jobs:
           grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' public/sw.js
           grep -q 'AUTH_SESSION_HANDOFF_RELEASE_V292' public/sw.js
 
-          # Validate actual generated browser bundles and production pointers.
+          # Validate generated browser bundle and production pointers.
+          grep -R -q 'studio-theme-code-editor-v344-20260807' dist/assets
           grep -R -q 'studio-theme-code-editor-v343-20260807' dist/assets
           grep -R -q 'studio-theme-code-editor-v342-20260807' dist/assets
           grep -R -q 'studio-theme-surface-final-v341-20260807' dist/assets
           grep -R -q 'studio-theme-final-v340-20260807' dist/assets
           grep -R -q 'studio-theme-domain-v321-20260806' dist/assets
-          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-theme-code-editor-v343-20260807"' wrangler.production.jsonc
-          grep -q '"STUDIO_THEME_CODE_EDITOR_RELEASE": "studio-theme-code-editor-v343-20260807"' wrangler.production.jsonc
+          grep -q '"CURRENT_STUDIO_UI_RELEASE": "studio-theme-code-editor-v344-20260807"' wrangler.production.jsonc
+          grep -q '"STUDIO_THEME_CODE_EDITOR_RELEASE": "studio-theme-code-editor-v344-20260807"' wrangler.production.jsonc
+          grep -q '"STUDIO_THEME_CODE_EDITOR_PREVIOUS_RELEASE": "studio-theme-code-editor-v343-20260807"' wrangler.production.jsonc
           grep -q '"STUDIO_THEME_CODE_EDITOR_BASE_RELEASE": "studio-theme-code-editor-v342-20260807"' wrangler.production.jsonc
           grep -q '"STUDIO_THEME_SURFACE_FINAL_RELEASE": "studio-theme-surface-final-v341-20260807"' wrangler.production.jsonc
           grep -q '"CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"' wrangler.production.jsonc
@@ -185,41 +194,42 @@ jobs:
             echo 'CLOUDFLARE_ZONE_ID tidak tersedia; melewati route reassertion.'
           fi
 
-      - name: Verify live v343 and inherited authorities
+      - name: Verify live v344 and inherited authorities
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 24); do
-            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v343.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            editor="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v342.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            latest="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v344.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            previous="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v343.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
             domain="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.com/release-v321.json?commit=${GITHUB_SHA}&attempt=${attempt}" || true)"
-            if printf '%s' "$latest" | grep -q 'studio-theme-code-editor-v343-20260807' && printf '%s' "$editor" | grep -q 'studio-theme-code-editor-v342-20260807' && printf '%s' "$domain" | grep -q 'studio-theme-domain-v321-20260806'; then
-              echo 'Live v343 stacked Theme code editor with inherited v342 source engine and v321 DNS truthfulness confirmed.'
+            if printf '%s' "$latest" | grep -q 'studio-theme-code-editor-v344-20260807' && printf '%s' "$previous" | grep -q 'studio-theme-code-editor-v343-20260807' && printf '%s' "$domain" | grep -q 'studio-theme-domain-v321-20260806'; then
+              echo 'Live v344 shorter Theme code editor with inherited v343/v342 engine and v321 DNS truthfulness confirmed.'
               exit 0
             fi
             sleep 10
           done
-          echo 'Live production did not expose v343/v342/v321 within the verification window.' >&2
+          echo 'Live production did not expose v344/v343/v321 within the verification window.' >&2
           exit 1
 
-      - name: Verify live v343 service worker and visual bundle
+      - name: Verify live v344 service worker and visual bundle
         shell: bash
         run: |
           set -euo pipefail
-          latest_chunk="$(grep -Rl 'studio-theme-code-editor-v343-20260807' dist/assets | head -n 1)"
+          latest_chunk="$(grep -Rl 'studio-theme-code-editor-v344-20260807' dist/assets | head -n 1)"
           test -n "$latest_chunk"
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v343.js
-          grep -q 'studio-theme-code-editor-v343-20260807' /tmp/studio-v343.js
-          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v343.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
-          grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V343' /tmp/sw-v343.js
-          grep -q 'studio-theme-code-editor-cache-v343' /tmp/sw-v343.js
-          grep -q 'ngeblogging-app-v343-theme-code-editor-20260807' /tmp/sw-v343.js
-          grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V342' /tmp/sw-v343.js
-          grep -q 'STUDIO_THEME_SURFACE_FINAL_RELEASE_V341' /tmp/sw-v343.js
-          grep -q 'STUDIO_THEME_FINAL_RELEASE_V340' /tmp/sw-v343.js
-          grep -q 'STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325' /tmp/sw-v343.js
-          grep -q 'POSTS_PAGES_30000_RELEASE_V322' /tmp/sw-v343.js
-          grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' /tmp/sw-v343.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -H 'Cache-Control: no-cache' "https://ngeblogging.com/${latest_chunk#dist/}?commit=${GITHUB_SHA}" -o /tmp/studio-v344.js
+          grep -q 'studio-theme-code-editor-v344-20260807' /tmp/studio-v344.js
+          curl -fsS --retry 8 --retry-delay 5 --connect-timeout 10 --max-time 30 -o /tmp/sw-v344.js -H 'Cache-Control: no-cache' "https://ngeblogging.com/sw.js?commit=${GITHUB_SHA}"
+          grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V344' /tmp/sw-v344.js
+          grep -q 'studio-theme-code-editor-cache-v344' /tmp/sw-v344.js
+          grep -q 'ngeblogging-app-v344-theme-code-editor-20260807' /tmp/sw-v344.js
+          grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V343' /tmp/sw-v344.js
+          grep -q 'STUDIO_THEME_CODE_EDITOR_RELEASE_V342' /tmp/sw-v344.js
+          grep -q 'STUDIO_THEME_SURFACE_FINAL_RELEASE_V341' /tmp/sw-v344.js
+          grep -q 'STUDIO_THEME_FINAL_RELEASE_V340' /tmp/sw-v344.js
+          grep -q 'STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325' /tmp/sw-v344.js
+          grep -q 'POSTS_PAGES_30000_RELEASE_V322' /tmp/sw-v344.js
+          grep -q 'STUDIO_THEME_DOMAIN_RELEASE_V321' /tmp/sw-v344.js
 
       - name: Verify production health endpoint
         shell: bash
@@ -231,7 +241,7 @@ jobs:
       - name: Archive validated dist
         uses: actions/upload-artifact@v4
         with:
-          name: ngeblogging-production-v343-${{ github.sha }}
+          name: ngeblogging-production-v344-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 30
