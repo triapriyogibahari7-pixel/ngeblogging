@@ -1,0 +1,21 @@
+{
+  "release": "studio-theme-surface-v339-20260807",
+  "scope": "Theme Studio responsive surface only",
+  "secondaryEditorialMagazineBelow": true,
+  "secondaryFullWidth": true,
+  "compactStageNoElongatedBackdrop": true,
+  "compactCategoriesNoVisibleHorizontalTrack": true,
+  "compactDeviceLabelsReachable": true,
+  "compactThemeCardsSingleColumn": true,
+  "largeThemeHeroStable": true,
+  "themes": 100,
+  "layoutAreas": 26,
+  "widgets": 26,
+  "previewModes": 8,
+  "sidebarUntouched": true,
+  "naraUntouched": true,
+  "authSessionUntouched": true,
+  "domainUntouched": true,
+  "postsPagesUntouched": true,
+  "realDeviceCertificationClaimed": false
+}
