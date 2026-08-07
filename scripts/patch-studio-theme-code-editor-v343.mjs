@@ -41,31 +41,42 @@ for (const marker of [
 
 for (const marker of [
   "--studio-theme-code-editor-v343",
-  'data-v342-editor-family="compact"',
-  "max-height:640px!important",
-  "max-height:540px!important",
-  "max-height:510px!important",
+  'data-v342-editor="ready"',
+  'grid-template-areas:"preview" "code"!important',
+  "height:clamp(460px,52dvh,590px)!important",
+  'data-studio-handheld="true"',
+  'data-studio-device-mode="small"',
   ".tn-code-gutter-v342",
+  "width:56px!important",
   'textarea[data-v342-code-source="ready"]',
+  "background:#0c1525!important",
 ]) if (!css.includes(marker)) throw new Error(`V343_CSS_MISSING:${marker}`);
 
-if (/data-v342-editor-family="large"/.test(css)) throw new Error("V343_LARGE_EDITOR_REGRESSION");
 if (/#ngeblogging-studio-sidebar|\.sn-side|\.sn-logo-mark|\.nara-assistant|\.nara-floating-button|\.sv124-domain-page|\.ce-app/.test(css))
   throw new Error("V343_UNRELATED_SURFACE_CSS");
+if (/localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(|location\.(?:reload|replace)\s*\(|setInterval\s*\(|stopImmediatePropagation/.test(runtime))
+  throw new Error("V343_DESTRUCTIVE_RUNTIME");
 
 for (const marker of [
   RELEASE,
   '"inheritsV342Editor": true',
-  '"compactCodeHeightReduced": true',
-  '"realLineNumbersPreserved": 10000',
-  '"desktopSplit5050Preserved": true',
+  '"previewAboveCodeAllStudioModes": true',
+  '"desktopSiteOnHandheldUsesStackedEditor": true',
+  '"shorterCodeWorkspace": true',
+  '"darkReadableCodeSurface": true',
+  '"realLineNumbers": 10000',
+  '"themesPreserved": 100',
+  '"layoutAreasPreserved": 26',
+  '"widgetsPreserved": 26',
+  '"previewModesPreserved": 8',
   '"sidebarUntouched": true',
   '"authSessionUntouched": true',
   '"naraUntouched": true',
+  '"serviceWorkerCacheRotated": true',
   '"realDeviceCertificationClaimed": false',
 ]) if (!release.includes(marker)) throw new Error(`V343_RELEASE_INVALID:${marker}`);
 
-if (!tests.includes("shortens only the compact vertical editor") || !tests.includes("loads after the v342 Theme code editor"))
+if (!tests.includes("preview-above-code reference in every Studio family") || !tests.includes("visible synchronized 1-10000 gutter"))
   throw new Error("V343_TEST_MARKERS_MISSING");
 
 let sw = await readFile(swFile, "utf8");
@@ -97,4 +108,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
   throw new Error("V343_DESTRUCTIVE_SW_BEHAVIOR");
 
 await writeFile(swFile, sw);
-console.log(`Validated ${RELEASE}: compact Theme code editor shortened, v342 1-10000 gutter preserved, cache=${CACHE}.`);
+console.log(`Validated ${RELEASE}: preview above shorter dark source editor, real v342 1-10000 gutter preserved, cache=${CACHE}.`);
