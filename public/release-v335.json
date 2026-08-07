@@ -1,0 +1,39 @@
+{
+  "release": "studio-theme-layout-single-v335-20260807",
+  "date": "2026-08-07",
+  "scope": "Focused Theme Studio repair: keep exactly one site layout map matching the supplied reference and remove the narrow Editorial/Majalah duplicate from layout flow.",
+  "layout": {
+    "visibleLayoutMaps": 1,
+    "canonicalReference": "tn-layout-map-v264 when available",
+    "editorialMagazineSideSurfaceRemoved": true,
+    "duplicateRemovedAfterReactRerender": true,
+    "canonicalMapUsesFullThemeWidth": true,
+    "postPageCentered": true,
+    "leftWidgetSlotsPreserved": 4,
+    "rightWidgetSlotsPreserved": 4,
+    "areaLabelsHorizontal": true,
+    "mobileUsesInternalMapScroll": true,
+    "widgetChooserRemainsCompact": true
+  },
+  "runtime": {
+    "mutationObserverScope": "child-list only for React remounts",
+    "animationFrameDebounce": true,
+    "sessionStorageCleared": false,
+    "localStorageCleared": false,
+    "forcedLogout": false
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "themeCodeEditor": true,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "postsPages": true,
+    "members": true,
+    "analytics": true
+  }
+}
