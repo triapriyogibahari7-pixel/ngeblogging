@@ -1,0 +1,42 @@
+{
+  "release": "studio-theme-layout-below-v337-20260807",
+  "date": "2026-08-07",
+  "scope": "Targeted Theme Studio layout correction from the supplied screenshots: preserve the narrow Editorial/Majalah design that was on the right, but move it into a full-width row below the main 26-area map.",
+  "layout": {
+    "primaryMap": "tn-layout-map-v264",
+    "primaryMapRemainsFirst": true,
+    "secondaryEditorialMagazineSurfacePreserved": true,
+    "secondarySurfacePosition": "below-primary-map",
+    "secondarySurfaceFullWidth": true,
+    "rightHandCompressedColumnRemoved": true,
+    "bootstrapFourAreaCanvasHiddenWhenDetailedMapExists": true,
+    "postPageCentered": true,
+    "leftWidgetSlotsPreserved": 4,
+    "rightWidgetSlotsPreserved": 4,
+    "labelsForcedHorizontal": true,
+    "compactDeviceInternalMapScroll": true,
+    "widgetChooserRemainsCompact": true,
+    "widgetSummaryPreservedBelowLayouts": true
+  },
+  "runtime": {
+    "v332V334V335V336RuntimeRetired": true,
+    "historicalFilesKeptInGit": true,
+    "attributeAndChildListRemountGuard": true,
+    "oldHiddenStateClearedBeforeShowingSecondary": true,
+    "destructiveSessionBehaviorAdded": false
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "themeCodeEditor": true,
+    "postsPagesWordLimit": 30000,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "members": true,
+    "analytics": true
+  }
+}
