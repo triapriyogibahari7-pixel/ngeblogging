@@ -9,7 +9,6 @@ const LARGE_DEVICES = new Set(["laptop", "desktop", "computer"]);
 const COMPACT_DEVICES = new Set(["application", "phone", "mobile", "compact", "tablet"]);
 let frame = 0;
 let observer = null;
-let settleTimers = [];
 
 function normalizeDevice(value) {
   const device = String(value || "").trim().toLowerCase();
@@ -119,8 +118,7 @@ export function syncThemeFinalV340(root = document) {
 function schedule(delay = 0) {
   if (typeof window === "undefined") return;
   if (delay > 0) {
-    const timer = window.setTimeout(() => schedule(), delay);
-    settleTimers.push(timer);
+    window.setTimeout(() => schedule(), delay);
     return;
   }
   if (frame) return;
