@@ -1,0 +1,50 @@
+{
+  "release": "studio-theme-layout-one-v336-20260807",
+  "date": "2026-08-07",
+  "scope": "Focused Theme Studio layout-map repair. Keep one real 26-area map matching the supplied reference and remove the narrow Editorial/Majalah duplicate that survived earlier runtime and stylesheet authorities.",
+  "rootCause": {
+    "v319StillPromotedV312AsNative": true,
+    "v321StillMarkedV312ModelsAndMapsVisible": true,
+    "v325StillMarkedIndependentV264MapHidden": true,
+    "olderStylesUseImportantVisibilityRules": true,
+    "v335ObservedOnlyChildList": true,
+    "attributeOnlyReassertionsCouldRestoreDuplicate": true
+  },
+  "fix": {
+    "canonicalMap": "tn-layout-map-v264",
+    "visibleLayoutMaps": 1,
+    "inlineImportantAuthority": true,
+    "conflictingOldDatasetAuthorityNeutralized": true,
+    "v312EditorialMagazineSurfaceHidden": true,
+    "bootstrapFourAreaCanvasHiddenWhenCanonicalExists": true,
+    "postPageCentered": true,
+    "leftWidgetSlotsPreserved": 4,
+    "rightWidgetSlotsPreserved": 4,
+    "areaLabelsHorizontal": true,
+    "widgetSummaryKeptBelowMap": true,
+    "widgetPopoverPreserved": true,
+    "attributeAndChildListRemountGuard": true,
+    "compactMapUsesInternalScroll": true
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "themeCodeEditor": true,
+    "postsPagesWordLimit": 30000,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "members": true,
+    "analytics": true
+  },
+  "safety": {
+    "forcedLogoutAdded": false,
+    "sessionStorageCleared": false,
+    "localStorageCleared": false,
+    "locationReloadAdded": false,
+    "unrelatedUiRestyled": false
+  }
+}
