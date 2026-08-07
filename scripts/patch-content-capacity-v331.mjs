@@ -72,6 +72,9 @@ console.log(JSON.stringify({
 await import("./patch-studio-theme-layout-cache-v333.mjs");
 // v334 keeps the screenshot-specific single-map repair.
 await import("./patch-studio-theme-layout-single-v334.mjs");
-// v335 runs last: it hard-locks the reference map and removes the right-hand
-// Editorial/Majalah duplicate even when React remounts the Theme Studio tree.
+// v335 hard-locks the reference map after React remounts.
 await import("./patch-studio-theme-layout-single-v335.mjs");
+// v336 is the final authority: it neutralizes the older v319/v321/v325
+// attribute/style authorities and guarantees that only the full v264 map can
+// consume layout space in the production bundle.
+await import("./patch-studio-theme-layout-one-v336.mjs");
