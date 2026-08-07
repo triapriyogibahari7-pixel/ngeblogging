@@ -72,3 +72,7 @@ console.log(JSON.stringify({
 // files remain in Git as history, but the current product requirement keeps the
 // former right-hand Editorial/Majalah design and moves it below the main map.
 await import("./patch-studio-theme-layout-below-v337.mjs");
+// v338 runs after v337 and only changes compact Theme Studio geometry: the
+// secondary layout remains below while fixed-width desktop-canvas rules are
+// replaced with a real mobile-width composition.
+await import("./patch-studio-theme-layout-mobile-v338.mjs");
