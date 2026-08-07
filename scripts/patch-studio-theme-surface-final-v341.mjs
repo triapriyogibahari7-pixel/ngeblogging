@@ -103,3 +103,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: Theme Studio geometry fallback is loaded last and cache=${CACHE}.`);
+await import("./patch-studio-theme-code-editor-v342.mjs");
