@@ -1,4 +1,5 @@
 import "./studio-theme-surface-final-v341.css";
+import "./studio-theme-code-editor-v342.js";
 
 export const STUDIO_THEME_SURFACE_FINAL_RELEASE_V341 = "studio-theme-surface-final-v341-20260807";
 
