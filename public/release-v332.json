@@ -1,20 +1,20 @@
 {
   "release": "studio-theme-layout-single-v332-20260807",
   "date": "2026-08-07",
-  "scope": "Theme Studio layout-map correction based on the supplied screenshots: render one full-width functional 26-area site map, keep Post/Page centered with four left and four right widget slots, and hide the duplicate Editorial/Majalah source surfaces.",
+  "scope": "Theme Studio layout-map correction based on the supplied screenshots: show one full-width functional site-layout map matching the good reference and suppress the squeezed duplicate Editorial/Majalah surface.",
   "layout": {
     "visibleLayoutMaps": 1,
-    "sourceAuthority": "v312-26-area-widget-actions",
-    "renderedAsSingleReferenceMap": true,
-    "duplicateSourceMapsHidden": true,
-    "modelEditorialAndMajalahControlsNotRenderedAsSecondMap": true,
+    "preferredAuthority": "v264-reference-map",
+    "v312EditorialFallbackIfReferenceAbsent": true,
+    "duplicateV312ModelSurfaceHidden": true,
+    "modelMajalahHidden": true,
     "postPageCentered": true,
     "leftWidgetSlots": 4,
     "rightWidgetSlots": 4,
     "areaCount": 26,
     "labelsHorizontal": true,
-    "mobileHorizontalMapScroll": true,
-    "slotClickDelegatesToRealWidgetArea": true,
+    "mobileInternalHorizontalScroll": true,
+    "layoutRemainsInteractive": true,
     "widgetChooserRemainsCompact": true
   },
   "preserved": {
