@@ -1,0 +1,40 @@
+{
+  "release": "studio-theme-single-layout-v332-20260806",
+  "date": "2026-08-06",
+  "scope": "Theme Studio layout-map correction based on the supplied reference screenshot: keep one full-width functional site-layout map and remove the duplicate dual-model surface from rendering and interaction.",
+  "layout": {
+    "visibleLayoutMaps": 1,
+    "preferredAuthority": "v264-reference-map",
+    "v312EditorialFallbackIfReferenceAbsent": true,
+    "duplicateV312ModelSurfaceHidden": true,
+    "modelMajalahHidden": true,
+    "postPageCentered": true,
+    "leftWidgetSlots": 4,
+    "rightWidgetSlots": 4,
+    "labelsHorizontal": true,
+    "mobileReadable": true,
+    "layoutRemainsInteractive": true
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "codeLineGuide": 10000,
+    "postsPagesWordLimit": 30000,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "members": true,
+    "analytics": true
+  },
+  "safety": {
+    "noPlaceholderReplacement": true,
+    "noUserDataRemoved": true,
+    "noAuthChanges": true,
+    "noSidebarChanges": true,
+    "noNaraChanges": true,
+    "noDomainChanges": true
+  }
+}
