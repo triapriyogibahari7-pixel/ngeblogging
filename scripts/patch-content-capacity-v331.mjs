@@ -70,6 +70,8 @@ console.log(JSON.stringify({
 
 // v333 first rotates the returning-client cache onto the v332 baseline.
 await import("./patch-studio-theme-layout-cache-v333.mjs");
-// v334 then runs last and makes the screenshot-specific single-map repair the
-// final production shell/cache authority.
+// v334 keeps the screenshot-specific single-map repair.
 await import("./patch-studio-theme-layout-single-v334.mjs");
+// v335 runs last: it hard-locks the reference map and removes the right-hand
+// Editorial/Majalah duplicate even when React remounts the Theme Studio tree.
+await import("./patch-studio-theme-layout-single-v335.mjs");
