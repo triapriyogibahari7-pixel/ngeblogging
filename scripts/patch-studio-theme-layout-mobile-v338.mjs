@@ -104,3 +104,4 @@ for (const marker of [RELEASE, VERSION, CACHE, "ACTIVE_VERSION_V338", "ACTIVE_CA
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: compact Theme maps are full-width, the secondary design remains below, and cache rotated to ${CACHE}.`);
 await import("./patch-studio-theme-surface-v339.mjs");
+await import("./patch-studio-theme-final-v340.mjs");
