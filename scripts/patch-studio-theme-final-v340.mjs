@@ -107,3 +107,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: Theme authority is direct, secondary layout is below, compact surfaces are contained, cache=${CACHE}.`);
+await import("./patch-studio-theme-surface-final-v341.mjs");
