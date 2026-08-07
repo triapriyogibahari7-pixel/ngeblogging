@@ -1,0 +1,138 @@
+/* Ngeblogging Studio v335 — hard lock to one Theme layout map.
+ * Focused only on the layout-map surface shown in the supplied screenshots.
+ */
+:root{--studio-theme-layout-single-v335:"studio-theme-layout-single-v335-20260807"}
+
+/* Immediate CSS guard: whenever the full v264 reference exists, the v312
+ * Editorial/Majalah duplicate must not take any layout space, even before the
+ * runtime reconciliation runs after a React render. */
+.tn-layout-studio:has(.tn-layout-map-v264) :is(
+  .tn-layout-models-v312,
+  .tn-layout-model-grid-v312,
+  .tn-layout-model-list-v312,
+  [class*="tn-layout-models"][class*="v312"],
+  [data-theme-layout-v312],
+  [class*="tn-layout-map"][class*="v312"]
+){
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+[data-v335-duplicate-layout="hidden"]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  position:absolute!important;
+  inset:auto!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+.tn-layout-studio[data-v335-single-layout="ready"]{
+  display:block!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-areas:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+
+[data-v335-canonical-host="ready"]{
+  display:block!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-areas:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+[data-v335-canonical-layout]{
+  display:block!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0 auto!important;
+  opacity:1!important;
+}
+
+/* Preserve the reference shape: Post/Page centered, four left slots and four
+ * right slots remain readable and never collapse into vertical letters. */
+[data-v335-canonical-layout] :is(button,[role="button"],span,b,strong,small,em,p,h2,h3,h4){
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+  min-width:0!important;
+  max-width:100%!important;
+  line-height:1.3!important;
+}
+
+.tn-layout-map-v264[data-v335-canonical-layout="single-reference-v264"] .tn-layout-content-v264{
+  display:grid!important;
+  grid-template-columns:minmax(150px,.9fr) minmax(330px,2fr) minmax(150px,.9fr)!important;
+  gap:10px!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+}
+
+.tn-layout-map-v264[data-v335-canonical-layout="single-reference-v264"] .tn-layout-post-v264{
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:360px!important;
+  margin:0!important;
+}
+
+.tn-layout-map-v264[data-v335-canonical-layout="single-reference-v264"] .tn-layout-slot-v264{
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:72px!important;
+}
+
+/* Area/widget chooser remains a small panel and never becomes a second map. */
+.tn-layout-popover-v312,.tn-layout-popover-v264{
+  width:min(380px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:min(500px,72dvh)!important;
+  overflow:auto!important;
+  border-radius:14px!important;
+  z-index:2147482400!important;
+}
+
+@media(max-width:760px){
+  [data-v335-canonical-host="ready"]{
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+    overscroll-behavior-inline:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  .tn-layout-map-v264[data-v335-canonical-layout="single-reference-v264"]{
+    min-width:720px!important;
+    max-width:none!important;
+  }
+  .tn-layout-map-v264[data-v335-canonical-layout="single-reference-v264"] .tn-layout-content-v264{
+    grid-template-columns:minmax(118px,.8fr) minmax(280px,2fr) minmax(118px,.8fr)!important;
+    gap:8px!important;
+  }
+}
