@@ -54,10 +54,10 @@ for (const marker of [
 for (const marker of [
   LAYOUT_RELEASE,
   '"visibleLayoutMaps": 1',
-  '"referenceMap": "v264-full-width"',
+  '"preferredAuthority": "v264-reference-map"',
   '"postPageCentered": true',
-  '"leftSidebarSlots": 4',
-  '"rightSidebarSlots": 4',
+  '"leftWidgetSlots": 4',
+  '"rightWidgetSlots": 4',
 ]) if (!release332.includes(marker)) throw new Error(`V333_RELEASE332_INVALID:${marker}`);
 
 for (const marker of [
