@@ -1,0 +1,39 @@
+{
+  "release": "studio-theme-layout-single-cache-v333-20260807",
+  "date": "2026-08-07",
+  "scope": "Production cache cutover for the already-merged v332 single Theme layout map.",
+  "rootCause": {
+    "reason": "v332 runtime was deployed while the service-worker cache authority was still v330",
+    "effect": "a returning browser could continue receiving the old cached Studio shell and therefore still see the duplicated/squeezed Theme layout maps even though v332 source was already on main"
+  },
+  "fix": {
+    "serviceWorkerCacheRotated": true,
+    "newVersion": "ngeblogging-app-v333-theme-layout-single-20260807",
+    "newCache": "studio-theme-layout-single-cache-v333",
+    "v332RuntimeIncludedInShellAuthority": true,
+    "layoutMapsVisible": 1,
+    "referenceMap": "v264-full-width",
+    "postPageCentered": true,
+    "leftSidebarSlots": 4,
+    "rightSidebarSlots": 4,
+    "duplicateEditorialMagazineSurfaceHidden": true,
+    "compactDeviceMapUsesInternalHorizontalScroll": true,
+    "labelsRemainHorizontal": true,
+    "widgetChooserRemainsCompact": true
+  },
+  "preserved": {
+    "runtimeUiScope": "Theme layout map only",
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "themeCodeEditor": true,
+    "postsPagesWordLimit": 30000,
+    "authSessionUntouched": true,
+    "sidebarUntouched": true,
+    "naraUntouched": true,
+    "domainUntouched": true,
+    "membersUntouched": true,
+    "analyticsUntouched": true
+  }
+}
