@@ -37,6 +37,8 @@
     "noAuthChanges": true,
     "noSidebarChanges": true,
     "noNaraChanges": true,
-    "noDomainChanges": true
+    "noDomainChanges": true,
+    "v331CapacityGateUnchanged": true,
+    "failedBuildTimeV332HookRemoved": true
   }
 }
