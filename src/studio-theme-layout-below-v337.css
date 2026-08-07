@@ -1,0 +1,187 @@
+/* Ngeblogging Studio v337 — keep the secondary Theme layout surface, but move it below.
+ * Scope is intentionally limited to the Theme Studio layout-map area shown in the
+ * supplied screenshots. Sidebar, Auth, Nara, Domain, Posts/Pages and code editor
+ * geometry are not targeted here.
+ */
+:root{--studio-theme-layout-below-v337:"studio-theme-layout-below-v337-20260807"}
+
+.tn-layout-studio[data-v337-secondary-below="ready"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  justify-items:stretch!important;
+  gap:16px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.tn-layout-studio[data-v337-secondary-below="ready"]>*{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+
+/* Main reference map stays first and full width. */
+.tn-layout-studio[data-v337-secondary-below="ready"] [data-v337-canonical-layout="primary-v264"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0 auto!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+
+/* The surface that was squeezed into the right-hand column is preserved and
+ * becomes the next full-width row below the main map instead of being hidden. */
+.tn-layout-studio[data-v337-secondary-below="ready"] [data-v337-secondary-layout="below"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+.tn-layout-studio[data-v337-secondary-below="ready"] [data-v337-secondary-layout="below"] :is(
+  .tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,
+  .tn-layout-model-v312,[class*="tn-layout-model-"][class*="v312"],
+  [data-theme-layout-v312],[class*="tn-layout-map"][class*="v312"]
+){
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+
+/* No vertical-letter labels when the second design is placed below. */
+.tn-layout-studio[data-v337-secondary-below="ready"] :is(
+  [data-v337-canonical-layout="primary-v264"],
+  [data-v337-secondary-layout="below"]
+) :is(button,[role="button"],span,b,strong,small,em,p,h2,h3,h4){
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+  min-width:0!important;
+  max-width:100%!important;
+  line-height:1.3!important;
+}
+
+/* Preserve the large reference-map composition: Post/Page in the middle with
+ * the four left and four right slots readable. */
+.tn-layout-studio[data-v337-secondary-below="ready"] .tn-layout-map-v264 .tn-layout-content-v264{
+  display:grid!important;
+  grid-template-columns:minmax(150px,.88fr) minmax(330px,2fr) minmax(150px,.88fr)!important;
+  gap:10px!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+}
+.tn-layout-studio[data-v337-secondary-below="ready"] .tn-layout-map-v264 .tn-layout-post-v264{
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:360px!important;
+  margin:0!important;
+}
+
+/* The old React four-area bootstrap drawing is not a third layout map. */
+.tn-layout-studio[data-v337-secondary-below="ready"] .tn-layout-canvas[data-v337-bootstrap-layout="hidden"]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* If the original Widget Terpilih summary is a separate direct child, keep it
+ * below both layout drawings. */
+.tn-layout-studio[data-v337-secondary-below="ready"]>.tn-layout-side[data-v337-widget-summary="below-layouts"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+/* Widget chooser remains compact rather than becoming a screen-covering modal. */
+.tn-layout-popover-v264,.tn-layout-popover-v312{
+  width:min(360px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:min(480px,70dvh)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  border-radius:14px!important;
+  z-index:2147482400!important;
+}
+
+@media(max-width:760px){
+  .tn-layout-studio[data-v337-secondary-below="ready"]{
+    gap:12px!important;
+    overflow-x:hidden!important;
+  }
+  /* Detailed desktop-like drawings stay legible through internal horizontal
+   * scroll; the Studio page itself does not become wider than the device. */
+  .tn-layout-studio[data-v337-secondary-below="ready"] [data-v337-canonical-layout="primary-v264"],
+  .tn-layout-studio[data-v337-secondary-below="ready"] [data-v337-secondary-layout="below"]{
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+    overscroll-behavior-inline:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  .tn-layout-studio[data-v337-secondary-below="ready"] .tn-layout-map-v264{
+    width:720px!important;
+    max-width:none!important;
+    min-width:720px!important;
+  }
+  .tn-layout-studio[data-v337-secondary-below="ready"] [data-v337-secondary-layout="below"] :is(
+    [data-theme-layout-v312],[class*="tn-layout-map"][class*="v312"]
+  ){
+    width:720px!important;
+    max-width:none!important;
+    min-width:720px!important;
+  }
+  .tn-layout-studio[data-v337-secondary-below="ready"] .tn-layout-map-v264 .tn-layout-content-v264{
+    grid-template-columns:minmax(118px,.8fr) minmax(280px,2fr) minmax(118px,.8fr)!important;
+    gap:8px!important;
+  }
+  .tn-layout-popover-v264,.tn-layout-popover-v312{
+    width:min(330px,calc(100vw - 20px))!important;
+    max-width:calc(100vw - 20px)!important;
+    max-height:66dvh!important;
+  }
+}
