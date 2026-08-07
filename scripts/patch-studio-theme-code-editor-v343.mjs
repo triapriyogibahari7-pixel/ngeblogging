@@ -109,3 +109,4 @@ if (/signOut\s*\(|localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.
 
 await writeFile(swFile, sw);
 console.log(`Validated ${RELEASE}: preview above shorter dark source editor, real v342 1-10000 gutter preserved, cache=${CACHE}.`);
+await import("./patch-studio-theme-code-editor-v344.mjs");
