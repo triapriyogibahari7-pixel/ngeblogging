@@ -1,4 +1,5 @@
 import "./studio-sidebar-direct-v300.css";
+import "./studio-theme-mobile-v312.css";
 
 export const STUDIO_SIDEBAR_DIRECT_RELEASE_V300 = "studio-sidebar-direct-v300-20260805";
 export const STUDIO_SIDEBAR_DIRECT_OWNER_V300 = "studio-sidebar-direct-target-owner-v300";

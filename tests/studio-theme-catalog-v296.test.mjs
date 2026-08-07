@@ -41,3 +41,20 @@ test("v296 extra themes have distinct runnable HTML CSS and JavaScript fingerpri
   assert.equal(new Set(extras.map((theme) => theme.code.css)).size, 5);
   assert.equal(new Set(extras.map((theme) => theme.code.javascript)).size, 5);
 });
+
+test("v312 Theme Studio moves the squeezed right panel below the map on handheld devices", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const [runtime, css] = await Promise.all([
+    readFile(new URL("../src/studio-sidebar-direct-v300.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/studio-theme-mobile-v312.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(runtime, /import \"\.\/studio-theme-mobile-v312\.css\";/, "final Studio shell must load the v312 theme authority");
+  assert.match(css, /data-studio-handheld=\"true\"\][^{]+\.tn-layout-studio/);
+  assert.match(css, /\.tn-layout-studio>\.tn-layout-side[\s\S]*?grid-row:2!important/);
+  assert.match(css, /grid-template-areas:\"header\" \"main\" \"sidebar\" \"footer\"!important/);
+  assert.match(css, /\.tn-active-stage>\.tn-frame-shell[\s\S]*?height:360px!important/);
+  assert.match(css, /\.tn-category-tabs[\s\S]*?overflow-x:auto!important/);
+  assert.match(css, /grid-template-areas:\"preview\" \"code\"!important/);
+  assert.doesNotMatch(css, /\.tn-layout-studio>\.tn-layout-side[^}]*position:\s*fixed/i, "handheld widget panel must remain in document flow");
+});
