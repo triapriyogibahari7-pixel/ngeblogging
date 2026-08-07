@@ -1,0 +1,410 @@
+/* Ngeblogging Studio v339 — Theme Studio surface polish from real-device screenshots.
+ * Scope is intentionally limited to .tn-studio. Sidebar, auth, Nara, Domain and
+ * Posts/Pages are not owned by this layer.
+ */
+:root{--studio-theme-surface-v339:"studio-theme-surface-v339-20260807"}
+
+.tn-studio[data-v339-theme-surface="ready"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:clip!important;
+  isolation:isolate!important;
+}
+.tn-studio[data-v339-theme-surface="ready"]>*{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+.tn-studio[data-v339-theme-surface="ready"] :is(img,video,canvas,iframe){max-width:100%!important}
+.tn-studio[data-v339-theme-surface="ready"] :is(h1,h2,h3,h4,p,b,small,span,button,label){
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+}
+
+/* The layout marked with a red X in the supplied screenshots must never return
+ * as a squeezed right-hand column. v337 owns DOM placement; v339 locks the visual
+ * composition to primary first, Editorial/Majalah second, both full width. */
+.tn-studio[data-v339-theme-surface="ready"] .tn-layout-studio[data-v337-secondary-below="ready"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-studio[data-v339-theme-surface="ready"] .tn-layout-studio[data-v337-secondary-below="ready"]>*{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-studio[data-v339-theme-surface="ready"] .tn-layout-studio :is(
+  [data-v338-layout-role="primary"],[data-v338-layout-role="secondary-below"],[data-v337-secondary-layout="below"]
+){
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+
+/* Compact family: application, handphone, mobile, compact devices and tablet.
+ * Remove the oversized blue/gray stage seen in the screenshots and keep every
+ * important Theme control inside the real device width. */
+.tn-studio[data-v339-theme-family="compact"]{
+  padding:14px 10px calc(34px + env(safe-area-inset-bottom,0px))!important;
+  background:#f7f9fc!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  width:100%!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-hero-copy{
+  width:100%!important;
+  min-width:0!important;
+  padding:20px 16px!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 28px rgba(25,48,82,.06)!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-hero-copy h1{
+  max-width:100%!important;
+  margin:10px 0 12px!important;
+  font-size:clamp(30px,9vw,42px)!important;
+  line-height:1.02!important;
+  overflow-wrap:break-word!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-hero-copy p{
+  max-width:100%!important;
+  margin-inline:0!important;
+  font-size:12px!important;
+  line-height:1.65!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-hero-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px!important;
+  width:100%!important;
+  margin-top:18px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-hero-actions button{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  padding:8px 9px!important;
+  white-space:normal!important;
+  line-height:1.2!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-trust{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-top:16px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-trust span{
+  min-width:0!important;
+  min-height:38px!important;
+  justify-content:flex-start!important;
+  border-radius:12px!important;
+  white-space:normal!important;
+}
+
+.tn-studio[data-v339-theme-family="compact"] .tn-active-stage{
+  position:relative!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  transform:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] :is(
+  .tn-active-stage,.tn-stage-toolbar,.tn-frame-shell
+)::before,
+.tn-studio[data-v339-theme-family="compact"] :is(
+  .tn-active-stage,.tn-stage-toolbar,.tn-frame-shell
+)::after{
+  content:none!important;
+  display:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-stage-toolbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:10px!important;
+  border-bottom:1px solid #e2e8f0!important;
+  background:#fff!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-stage-toolbar>b{
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  font-size:10px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-device-switch{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:1px!important;
+  background:transparent!important;
+  overscroll-behavior-inline:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-device-switch::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.tn-studio[data-v339-theme-family="compact"] .tn-device-switch button{
+  flex:0 0 auto!important;
+  min-width:max-content!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:0 9px!important;
+  border:1px solid #e0e6ef!important;
+  border-radius:10px!important;
+  background:#fff!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-device-switch button.active{
+  border-color:#8eb3f4!important;
+  background:#edf4ff!important;
+  box-shadow:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-device-switch span{
+  display:inline!important;
+  max-width:none!important;
+  white-space:nowrap!important;
+  font-size:8px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-frame-shell{
+  display:grid!important;
+  place-items:start center!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:360px!important;
+  height:auto!important;
+  padding:8px!important;
+  overflow:auto!important;
+  background:#f5f7fb!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-frame-shell iframe{
+  display:block!important;
+  width:min(var(--tn-preview-width,100%),100%)!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:clamp(360px,58dvh,560px)!important;
+  height:clamp(360px,58dvh,560px)!important;
+  margin:0 auto!important;
+  border-radius:10px!important;
+  box-shadow:0 5px 16px rgba(23,43,72,.08)!important;
+  transform:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-apply-bar{
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:space-between!important;
+  width:calc(100% - 16px)!important;
+  max-width:calc(100% - 16px)!important;
+  margin:8px!important;
+  gap:8px!important;
+  border-radius:12px!important;
+  padding:9px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+
+/* The action strip and library remain readable instead of collapsing to icon-only
+ * controls or producing the long gray horizontal track visible in the screenshot. */
+.tn-studio[data-v339-theme-family="compact"] .tn-command{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  width:100%!important;
+  margin:12px 0!important;
+  padding:14px!important;
+  border-radius:15px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-command nav{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-command nav button{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  padding:7px 8px!important;
+  font-size:8px!important;
+  white-space:normal!important;
+  line-height:1.2!important;
+}
+.tn-studio[data-v339-theme-family="compact"] :is(.tn-blueprints,.tn-library){
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-top:12px!important;
+  padding:16px 12px!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-library header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-library header label{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-category-tabs{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:14px 0!important;
+  padding:0!important;
+  overflow:visible!important;
+  scrollbar-width:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-category-tabs::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.tn-studio[data-v339-theme-family="compact"] .tn-category-tabs button{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  padding:7px 8px!important;
+  border-radius:10px!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  text-align:center!important;
+  line-height:1.15!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-blueprint-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-theme-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-theme-grid>article{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  border-radius:15px!important;
+  transform:none!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-theme-grid>article:hover{transform:none!important}
+.tn-studio[data-v339-theme-family="compact"] .tn-theme-preview{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-v339-theme-family="compact"] .tn-audit-strip{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+}
+
+/* Smallest application/handphone widths get a single-column control grid rather
+ * than compressed labels. */
+.tn-studio[data-v339-theme-device="application"] :is(.tn-category-tabs,.tn-blueprint-list,.tn-command nav),
+.tn-studio[data-v339-theme-device="phone"] :is(.tn-category-tabs,.tn-blueprint-list,.tn-command nav){
+  grid-template-columns:minmax(0,1fr)!important;
+}
+
+/* Large family: keep desktop/laptop/computer genuinely large while preventing the
+ * Theme surface from creating empty side gutters or allowing the secondary map to
+ * squeeze beside the primary map. */
+.tn-studio[data-v339-theme-family="large"]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  padding:24px clamp(18px,2.2vw,34px) 64px!important;
+}
+.tn-studio[data-v339-theme-family="large"] .tn-hero{
+  display:grid!important;
+  grid-template-columns:minmax(340px,.82fr) minmax(0,1.18fr)!important;
+  gap:22px!important;
+  width:100%!important;
+  align-items:stretch!important;
+}
+.tn-studio[data-v339-theme-family="large"] .tn-active-stage{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:clamp(560px,62dvh,720px)!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-v339-theme-family="large"] .tn-stage-toolbar{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-v339-theme-family="large"] .tn-device-switch{
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  scrollbar-width:none!important;
+}
+.tn-studio[data-v339-theme-family="large"] .tn-device-switch::-webkit-scrollbar{display:none!important}
+.tn-studio[data-v339-theme-family="large"] .tn-frame-shell{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:auto!important;
+}
+.tn-studio[data-v339-theme-family="large"] :is(.tn-library,.tn-blueprints,.tn-command,.tn-layout-studio){
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
