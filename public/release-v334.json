@@ -1,0 +1,39 @@
+{
+  "release": "studio-theme-layout-single-v334-20260807",
+  "date": "2026-08-07",
+  "scope": "Theme Studio layout map only. Remove the crossed-out compact Editorial/Majalah duplicate and keep one readable full-width site layout map.",
+  "screenshotTarget": {
+    "visibleLayoutMaps": 1,
+    "crossedOutEditorialMagazineSurfaceRemoved": true,
+    "canonicalMapUsesFullThemeWidth": true,
+    "postPageCentered": true,
+    "leftWidgetSlotsPreserved": 4,
+    "rightWidgetSlotsPreserved": 4,
+    "labelsRemainHorizontal": true,
+    "widgetChooserRemainsCompact": true,
+    "smallDeviceMapUsesInternalScroll": true
+  },
+  "runtime": {
+    "semanticDuplicateDetection": true,
+    "doesNotDependOnlyOnV312ClassNames": true,
+    "prefersV264ReferenceWhenAvailable": true,
+    "keepsLargestKnownMapAsFallback": true,
+    "limitedDelayedResyncs": true,
+    "mutationObserver": false,
+    "setInterval": false
+  },
+  "preserved": {
+    "themes": 100,
+    "layoutAreas": 26,
+    "widgets": 26,
+    "previewModes": 8,
+    "themeCodeEditor": true,
+    "postsPagesWordLimit": 30000,
+    "authSession": true,
+    "sidebar": true,
+    "nara": true,
+    "domain": true,
+    "members": true,
+    "analytics": true
+  }
+}
