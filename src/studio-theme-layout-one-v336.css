@@ -1,0 +1,153 @@
+/* Ngeblogging Studio v336 — one Theme layout map, final runtime authority.
+ * Scope is deliberately limited to the Theme Studio site-layout surface shown
+ * in the supplied screenshots. Sidebar, Auth, Nara, Domain and editors are not
+ * restyled by this file.
+ */
+:root{--studio-theme-layout-one-v336:"studio-theme-layout-one-v336-20260807"}
+
+.tn-layout-studio[data-v336-one-layout="ready"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  justify-items:stretch!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.tn-layout-studio[data-v336-one-layout="ready"]>*{
+  grid-column:1/-1!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+/* v336 also writes inline !important styles from JavaScript. These selectors
+ * are a second guard so a React remount cannot briefly reveal the crossed-out
+ * Editorial/Majalah surface while runtime reconciliation is scheduled. */
+.tn-layout-studio[data-v336-one-layout="ready"] [data-v336-duplicate-layout="hidden"]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  position:absolute!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+/* The 26-area v264 map is the only layout drawing allowed to consume space. */
+.tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264[data-v336-canonical-layout="single-reference-v264"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0 auto!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+
+/* Keep every area name readable horizontally. */
+.tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264 :is(button,[role="button"],span,b,strong,small,em,p){
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+  min-width:0!important;
+  max-width:100%!important;
+  line-height:1.3!important;
+}
+
+/* Preserve the requested map geometry: Post/Page centered, four left slots and
+ * four right slots, instead of compressing a desktop drawing into letter-wide
+ * columns. */
+.tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264 .tn-layout-content-v264{
+  display:grid!important;
+  grid-template-columns:minmax(150px,.88fr) minmax(330px,2fr) minmax(150px,.88fr)!important;
+  gap:10px!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+}
+.tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264 .tn-layout-post-v264{
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:360px!important;
+  margin:0!important;
+}
+.tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264 .tn-layout-slot-v264{
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:72px!important;
+}
+
+/* Widget Terpilih is useful and remains functional; it sits below the single
+ * map rather than becoming a competing right-hand layout column. */
+.tn-layout-studio[data-v336-one-layout="ready"]>.tn-layout-side[data-v336-widget-summary="below-map"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:14px 0 0!important;
+}
+
+/* Clicking a real map slot still opens a compact widget chooser. */
+.tn-layout-popover-v264,.tn-layout-popover-v312{
+  width:min(360px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:min(480px,70dvh)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  border-radius:14px!important;
+  z-index:2147482400!important;
+}
+
+@media(max-width:760px){
+  .tn-layout-studio[data-v336-one-layout="ready"]{
+    gap:10px!important;
+    overflow-x:hidden!important;
+  }
+  /* Keep the detailed map legible on compact screens. Only the map scrolls;
+   * the Studio page itself does not acquire horizontal overflow. */
+  .tn-layout-studio[data-v336-one-layout="ready"]>.tn-layout-map-v264[data-v336-canonical-layout="single-reference-v264"]{
+    width:720px!important;
+    max-width:none!important;
+    min-width:720px!important;
+  }
+  .tn-layout-studio[data-v336-one-layout="ready"]{
+    overflow-x:auto!important;
+    overscroll-behavior-inline:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  .tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264 .tn-layout-content-v264{
+    grid-template-columns:minmax(118px,.8fr) minmax(280px,2fr) minmax(118px,.8fr)!important;
+    gap:8px!important;
+  }
+  .tn-layout-studio[data-v336-one-layout="ready"] .tn-layout-map-v264 .tn-layout-slot-v264{
+    min-height:64px!important;
+  }
+  .tn-layout-popover-v264,.tn-layout-popover-v312{
+    width:min(330px,calc(100vw - 20px))!important;
+    max-width:calc(100vw - 20px)!important;
+    max-height:66dvh!important;
+  }
+}
