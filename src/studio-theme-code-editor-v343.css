@@ -1,0 +1,54 @@
+/* Ngeblogging Studio v343 — compact Theme code editor height polish.
+ * Scope: Theme HTML/CSS/JavaScript modal only. v342 remains the visual and
+ * interaction authority; v343 only shortens the compact vertical composition
+ * so preview, line numbers, source and footer are easier to reach.
+ */
+:root{--studio-theme-code-editor-v343:"studio-theme-code-editor-v343-20260807"}
+
+/* Application / Handphone / Mobile / Perangkat kecil / Tablet.
+ * Keep preview above source, but remove the oversized 720–940px source block. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
+  height:clamp(260px,35dvh,380px)!important;
+  min-height:260px!important;
+  max-height:380px!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
+  height:clamp(500px,58dvh,640px)!important;
+  min-height:500px!important;
+  max-height:640px!important;
+}
+
+/* Preserve a clearly visible 1–10000 gutter next to the editable source. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] .tn-code-gutter-v342{
+  color:#7f91aa!important;
+  background:#091321!important;
+  border-right-color:#24334a!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]>textarea[data-v342-code-source="ready"]{
+  background:#0c1525!important;
+  color:#e7eef9!important;
+  min-height:0!important;
+}
+
+/* Real narrow phone/PWA geometry gets a little shorter again so the editor
+ * does not feel like an endless sheet behind the mobile browser chrome. */
+@media(max-width:760px){
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-preview-pane="ready"]{
+    height:clamp(230px,31dvh,320px)!important;
+    min-height:230px!important;
+    max-height:320px!important;
+  }
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
+    height:clamp(430px,54dvh,540px)!important;
+    min-height:430px!important;
+    max-height:540px!important;
+  }
+}
+
+@media(max-width:390px){
+  .tn-modal[data-v342-code-modal="ready"] [data-v342-editor-family="compact"] [data-v342-code-pane="ready"]{
+    height:clamp(410px,52dvh,510px)!important;
+    min-height:410px!important;
+    max-height:510px!important;
+  }
+}
