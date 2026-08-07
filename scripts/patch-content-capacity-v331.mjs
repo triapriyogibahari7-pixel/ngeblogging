@@ -67,3 +67,7 @@ console.log(JSON.stringify({
   measuredProductionDatabaseThroughput: false,
   note: "This is a deterministic scale-contract simulation. A separate disposable/staging database is required for a destructive 2.5M-row latency/load benchmark.",
 }, null, 2));
+
+// v333 runs last so the already-merged v332 single-map runtime also becomes
+// the service-worker shell/cache authority seen by returning production clients.
+await import("./patch-studio-theme-layout-cache-v333.mjs");
