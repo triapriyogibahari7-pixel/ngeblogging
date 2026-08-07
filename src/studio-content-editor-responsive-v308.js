@@ -9,10 +9,16 @@ import "./studio-theme-domain-v321.js";
 import "./studio-production-polish-v323.js";
 import "./studio-theme-domain-final-v325.js";
 import "./studio-theme-code-device-v330.js";
-import "./studio-theme-layout-single-v332.js";
-import "./studio-theme-layout-single-v334.js";
-import "./studio-theme-layout-single-v335.js";
-import "./studio-theme-layout-one-v336.js";
+
+// v332-v336 remain in Git as layout-history backups, but their runtimes all
+// enforced a single-map/hide-secondary policy. v337 intentionally replaces that
+// policy: the full reference map stays first and the former right-hand
+// Editorial/Majalah surface is preserved as a full-width row below it.
+// backup v337: import "./studio-theme-layout-single-v332.js";
+// backup v337: import "./studio-theme-layout-single-v334.js";
+// backup v337: import "./studio-theme-layout-single-v335.js";
+// backup v337: import "./studio-theme-layout-one-v336.js";
+import "./studio-theme-layout-below-v337.js";
 
 export const STUDIO_CONTENT_EDITOR_RELEASE_V308 = "studio-content-editor-responsive-v308-20260806";
 export const STUDIO_CONTENT_EDITOR_POLISH_RELEASE_V309 = "studio-content-editor-post-page-polish-v309-20260806";
@@ -29,6 +35,7 @@ export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V332 = "studio-theme-layout-sing
 export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V334 = "studio-theme-layout-single-v334-20260807";
 export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335 = "studio-theme-layout-single-v335-20260807";
 export const STUDIO_THEME_LAYOUT_ONE_RELEASE_V336 = "studio-theme-layout-one-v336-20260807";
+export const STUDIO_THEME_LAYOUT_BELOW_RELEASE_V337 = "studio-theme-layout-below-v337-20260807";
 
 if (typeof document !== "undefined") {
   document.documentElement.dataset.studioContentEditorV308 = STUDIO_CONTENT_EDITOR_RELEASE_V308;
@@ -46,4 +53,5 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioThemeLayoutSingleV334 = STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V334;
   document.documentElement.dataset.studioThemeLayoutSingleV335 = STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335;
   document.documentElement.dataset.studioThemeLayoutOneV336 = STUDIO_THEME_LAYOUT_ONE_RELEASE_V336;
+  document.documentElement.dataset.studioThemeLayoutBelowV337 = STUDIO_THEME_LAYOUT_BELOW_RELEASE_V337;
 }

@@ -14,10 +14,11 @@ const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.ur
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const contentData = await readFile(new URL("../src/lib/content-data.js", import.meta.url), "utf8");
 const layout336 = await readFile(new URL("../src/studio-theme-layout-one-v336.js", import.meta.url), "utf8");
-const layoutCss336 = await readFile(new URL("../src/studio-theme-layout-one-v336.css", import.meta.url), "utf8");
-const patch336 = await readFile(new URL("../scripts/patch-studio-theme-layout-one-v336.mjs", import.meta.url), "utf8");
+const layout337 = await readFile(new URL("../src/studio-theme-layout-below-v337.js", import.meta.url), "utf8");
+const layoutCss337 = await readFile(new URL("../src/studio-theme-layout-below-v337.css", import.meta.url), "utf8");
+const patch337 = await readFile(new URL("../scripts/patch-studio-theme-layout-below-v337.mjs", import.meta.url), "utf8");
 const chain331 = await readFile(new URL("../scripts/patch-content-capacity-v331.mjs", import.meta.url), "utf8");
-const release336 = await readFile(new URL("../public/release-v336.json", import.meta.url), "utf8");
+const release337 = await readFile(new URL("../public/release-v337.json", import.meta.url), "utf8");
 
 test("v309/v310 load after v308 and remain editor-only — v316 preserved", () => {
   assert.match(runtime, /studio-content-editor-responsive-v308\.css/);
@@ -105,33 +106,47 @@ test("v329 resumes sanitized Theme and Domain production materialization", () =>
   assert.match(patch304, /await import\("\.\/patch-production-cutover-v320\.mjs"\)/);
 });
 
-test("v336 makes the full 26-area v264 map the sole final Theme layout authority", () => {
-  assert.match(runtime, /import "\.\/studio-theme-layout-one-v336\.js"/);
-  assert.match(runtime, /STUDIO_THEME_LAYOUT_ONE_RELEASE_V336 = "studio-theme-layout-one-v336-20260807"/);
+test("v337 keeps the crossed-out Editorial/Majalah design but moves it below the main Theme map", () => {
+  assert.match(runtime, /^import "\.\/studio-theme-layout-below-v337\.js";$/m);
+  assert.doesNotMatch(runtime, /^import "\.\/studio-theme-layout-single-v332\.js";$/m);
+  assert.doesNotMatch(runtime, /^import "\.\/studio-theme-layout-single-v334\.js";$/m);
+  assert.doesNotMatch(runtime, /^import "\.\/studio-theme-layout-single-v335\.js";$/m);
+  assert.doesNotMatch(runtime, /^import "\.\/studio-theme-layout-one-v336\.js";$/m);
+  assert.match(runtime, /STUDIO_THEME_LAYOUT_BELOW_RELEASE_V337 = "studio-theme-layout-below-v337-20260807"/);
+
+  assert.match(layout337, /STUDIO_THEME_LAYOUT_BELOW_RELEASE_V337 = "studio-theme-layout-below-v337-20260807"/);
+  assert.match(layout337, /const LEGACY_MAP_SELECTOR = "\.tn-layout-map-v264"/);
+  assert.match(layout337, /semanticSecondary/);
+  assert.match(layout337, /placeSecondaryBelow/);
+  assert.match(layout337, /showSecondaryBelow/);
+  assert.match(layout337, /v337SecondaryLayout/);
+  assert.match(layout337, /primary-then-secondary/);
+  assert.match(layout337, /data-v336-duplicate-layout/);
+  assert.match(layout337, /data-v335-duplicate-layout/);
+  assert.match(layout337, /MutationObserver/);
+  assert.doesNotMatch(layout337, /setImportant\([^\n]+"display",\s*"none"/);
+  assert.doesNotMatch(layout337, /localStorage\.clear|sessionStorage\.clear|signOut\s*\(|location\.(?:reload|replace)\s*\(/);
+
+  assert.match(layoutCss337, /data-v337-secondary-below="ready"/);
+  assert.match(layoutCss337, /data-v337-canonical-layout="primary-v264"/);
+  assert.match(layoutCss337, /data-v337-secondary-layout="below"/);
+  assert.match(layoutCss337, /grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(layoutCss337, /grid-template-columns:minmax\(150px,\.88fr\) minmax\(330px,2fr\) minmax\(150px,\.88fr\)!important/);
+  assert.match(layoutCss337, /writing-mode:horizontal-tb!important/);
+  assert.doesNotMatch(layoutCss337, /#ngeblogging-studio-sidebar|\.nara-assistant|\.sv124-domain-page|\.ce-app|\.sn-side/);
+
+  assert.match(chain331, /patch-studio-theme-layout-below-v337\.mjs/);
+  assert.doesNotMatch(chain331, /await import\("\.\/patch-studio-theme-layout-(?:cache-v333|single-v334|single-v335|one-v336)\.mjs"\)/);
+  assert.match(patch337, /STUDIO_THEME_CODE_DEVICE_RELEASE_V330/);
+  assert.match(patch337, /ACTIVE_VERSION_V337/);
+  assert.match(patch337, /studio-theme-layout-below-cache-v337/);
+
+  assert.match(release337, /"secondaryEditorialMagazineSurfacePreserved": true/);
+  assert.match(release337, /"secondarySurfacePosition": "below-primary-map"/);
+  assert.match(release337, /"secondarySurfaceFullWidth": true/);
+  assert.match(release337, /"rightHandCompressedColumnRemoved": true/);
+  assert.match(release337, /"historicalFilesKeptInGit": true/);
+
+  // v336 is retained as rollback/history source even though it is no longer active.
   assert.match(layout336, /STUDIO_THEME_LAYOUT_ONE_RELEASE_V336 = "studio-theme-layout-one-v336-20260807"/);
-  assert.match(layout336, /const LEGACY_MAP_SELECTOR = "\.tn-layout-map-v264"/);
-  assert.match(layout336, /enforceOneThemeLayoutV336/);
-  assert.match(layout336, /setDataset\(studio, "themeMapAuthorityV319", "v264-canonical"\)/);
-  assert.match(layout336, /setDataset\(studio, "themeLayoutV321", "v264-canonical"\)/);
-  assert.match(layout336, /setDataset\(studio, "v325ThemeLayout", "v264-canonical"\)/);
-  assert.match(layout336, /setImportant\(node, "display", "none"\)/);
-  assert.match(layout336, /querySelectorAll\("\.tn-layout-canvas"\)/);
-  assert.match(layout336, /MODEL_EDITORIAL_RE/);
-  assert.match(layout336, /MODEL_MAGAZINE_RE/);
-  assert.match(layout336, /MutationObserver/);
-  assert.match(layout336, /attributes: true/);
-  assert.match(layoutCss336, /data-v336-duplicate-layout="hidden"/);
-  assert.match(layoutCss336, /data-v336-canonical-layout="single-reference-v264"/);
-  assert.match(layoutCss336, /grid-template-columns:minmax\(150px,\.88fr\) minmax\(330px,2fr\) minmax\(150px,\.88fr\)!important/);
-  assert.match(layoutCss336, /data-v336-widget-summary="below-map"/);
-  assert.match(chain331, /patch-studio-theme-layout-single-v335\.mjs/);
-  assert.match(chain331, /patch-studio-theme-layout-one-v336\.mjs/);
-  assert.ok(chain331.indexOf("patch-studio-theme-layout-one-v336.mjs") > chain331.indexOf("patch-studio-theme-layout-single-v335.mjs"));
-  assert.match(patch336, /STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335/);
-  assert.match(patch336, /ACTIVE_VERSION_V336/);
-  assert.match(release336, /"visibleLayoutMaps": 1/);
-  assert.match(release336, /"v312EditorialMagazineSurfaceHidden": true/);
-  assert.match(release336, /"bootstrapFourAreaCanvasHiddenWhenCanonicalExists": true/);
-  assert.doesNotMatch(layout336, /localStorage\.clear|sessionStorage\.clear|signOut\s*\(|location\.(?:reload|replace)\s*\(/);
-  assert.doesNotMatch(layoutCss336, /#ngeblogging-studio-sidebar|\.nara-assistant|\.sv124-domain-page|\.ce-app/);
 });

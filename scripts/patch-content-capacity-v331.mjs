@@ -68,13 +68,7 @@ console.log(JSON.stringify({
   note: "This is a deterministic scale-contract simulation. A separate disposable/staging database is required for a destructive 2.5M-row latency/load benchmark.",
 }, null, 2));
 
-// v333 first rotates the returning-client cache onto the v332 baseline.
-await import("./patch-studio-theme-layout-cache-v333.mjs");
-// v334 keeps the screenshot-specific single-map repair.
-await import("./patch-studio-theme-layout-single-v334.mjs");
-// v335 hard-locks the reference map after React remounts.
-await import("./patch-studio-theme-layout-single-v335.mjs");
-// v336 is the final authority: it neutralizes the older v319/v321/v325
-// attribute/style authorities and guarantees that only the full v264 map can
-// consume layout space in the production bundle.
-await import("./patch-studio-theme-layout-one-v336.mjs");
+// v337 supersedes the v332-v336 single-map/hide-secondary chain. Those patch
+// files remain in Git as history, but the current product requirement keeps the
+// former right-hand Editorial/Majalah design and moves it below the main map.
+await import("./patch-studio-theme-layout-below-v337.mjs");
