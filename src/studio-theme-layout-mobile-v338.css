@@ -1,0 +1,209 @@
+/* Ngeblogging Studio v338 — compact Theme layout correction.
+ * Only Theme Studio layout-map geometry is targeted. The former right-hand
+ * Editorial/Majalah design remains preserved by v337, but compact devices render
+ * it as a full-width block below the primary map instead of a squeezed side column.
+ */
+:root{--studio-theme-layout-mobile-v338:"studio-theme-layout-mobile-v338-20260807"}
+
+.tn-layout-studio[data-v338-mobile-layout="ready"]{
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+/* Device-family authority, not a viewport-only media query. This keeps the
+ * compact composition stable even when a phone browser requests Desktop Site. */
+.tn-layout-studio[data-v338-layout-family="compact"][data-v337-secondary-below="ready"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  gap:12px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:hidden!important;
+  align-items:start!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"][data-v337-secondary-below="ready"]>*{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+
+/* Cancel v337's 720px internal desktop canvas in compact modes. The detailed map
+ * becomes a real mobile composition, so the page itself never needs horizontal scroll. */
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="primary"],
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="secondary-below"]{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0!important;
+  overflow:visible!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264,
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="secondary-below"] :is(
+  [data-theme-layout-v312],[class*="tn-layout-map"][class*="v312"]
+){
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+
+/* Primary 26-area map: headers stay readable, left/right widget stacks become
+ * two-column rows, and Post/Page receives the full width between them. */
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264{
+  display:grid!important;
+  gap:8px!important;
+  padding:10px!important;
+  border-radius:14px!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 :is(
+  .tn-layout-row-v264,.tn-layout-row-v264>div,.tn-layout-content-v264,.tn-layout-stack-v264
+){
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-content-v264{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-stack-v264{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-rows:none!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-post-v264{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:220px!important;
+  margin:0!important;
+  padding:14px!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-slot-v264{
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:52px!important;
+  padding:8px!important;
+  gap:6px!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-slot-v264>span{
+  font-size:10px!important;
+  line-height:1.25!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+}
+
+/* The design previously compressed on the right is now its own mobile block.
+ * Force v312 model/map wrappers to one column, while keeping their real controls clickable. */
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="secondary-below"] :is(
+  .tn-layout-models-v312,.tn-layout-model-grid-v312,.tn-layout-model-list-v312,
+  [class*="tn-layout-models"][class*="v312"]
+){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-flow:row!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="secondary-below"] :is(
+  .tn-layout-model-v312,[class*="tn-layout-model-"][class*="v312"]
+){
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="secondary-below"] :is(
+  [class*="tn-layout-content"][class*="v312"],
+  [class*="tn-layout-main"][class*="v312"]
+){
+  grid-template-columns:minmax(0,1fr)!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tn-layout-studio[data-v338-layout-family="compact"] [data-v338-layout-role="secondary-below"] :is(
+  [class*="tn-layout-stack"][class*="v312"],
+  [class*="tn-layout-sidebars"][class*="v312"]
+){
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  gap:7px!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+/* No vertical letters or clipped labels in either compact map. */
+.tn-layout-studio[data-v338-layout-family="compact"] :is(
+  [data-v338-layout-role="primary"],[data-v338-layout-role="secondary-below"]
+) :is(button,[role="button"],span,b,strong,small,em,p,h2,h3,h4){
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:break-word!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+/* Widget chooser stays a small sheet; it must not cover or disable the whole page. */
+.tn-layout-studio[data-v338-layout-family="compact"] :is(.tn-layout-popover-v264,.tn-layout-popover-v312){
+  width:min(330px,calc(100vw - 20px))!important;
+  max-width:calc(100vw - 20px)!important;
+  max-height:min(66dvh,480px)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+}
+
+/* Very narrow handphones keep all 26 areas readable without shrinking text into
+ * vertical fragments. */
+@media(max-width:430px){
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264{
+    padding:8px!important;
+    gap:7px!important;
+  }
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-row-v264.header,
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-row-v264.footer{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:6px!important;
+  }
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-row-v264.top,
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-row-v264.bottom{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:6px!important;
+  }
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-row-v264.top>div,
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-row-v264.bottom>div{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-stack-v264{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .tn-layout-studio[data-v338-layout-family="compact"] .tn-layout-map-v264 .tn-layout-slot-v264{
+    min-height:48px!important;
+  }
+}
