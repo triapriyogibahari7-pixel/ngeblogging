@@ -19,6 +19,10 @@ import "./studio-theme-code-device-v330.js";
 // backup v337: import "./studio-theme-layout-single-v335.js";
 // backup v337: import "./studio-theme-layout-one-v336.js";
 import "./studio-theme-layout-below-v337.js";
+// v338 is intentionally compact-only: application, handphone, mobile,
+// perangkat kecil and tablet use a real mobile-width map instead of the 720px
+// internal desktop canvas. Laptop/desktop/computer keep their large geometry.
+import "./studio-theme-layout-mobile-v338.js";
 
 export const STUDIO_CONTENT_EDITOR_RELEASE_V308 = "studio-content-editor-responsive-v308-20260806";
 export const STUDIO_CONTENT_EDITOR_POLISH_RELEASE_V309 = "studio-content-editor-post-page-polish-v309-20260806";
@@ -36,6 +40,7 @@ export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V334 = "studio-theme-layout-sing
 export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335 = "studio-theme-layout-single-v335-20260807";
 export const STUDIO_THEME_LAYOUT_ONE_RELEASE_V336 = "studio-theme-layout-one-v336-20260807";
 export const STUDIO_THEME_LAYOUT_BELOW_RELEASE_V337 = "studio-theme-layout-below-v337-20260807";
+export const STUDIO_THEME_LAYOUT_MOBILE_RELEASE_V338 = "studio-theme-layout-mobile-v338-20260807";
 
 if (typeof document !== "undefined") {
   document.documentElement.dataset.studioContentEditorV308 = STUDIO_CONTENT_EDITOR_RELEASE_V308;
@@ -54,4 +59,5 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioThemeLayoutSingleV335 = STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335;
   document.documentElement.dataset.studioThemeLayoutOneV336 = STUDIO_THEME_LAYOUT_ONE_RELEASE_V336;
   document.documentElement.dataset.studioThemeLayoutBelowV337 = STUDIO_THEME_LAYOUT_BELOW_RELEASE_V337;
+  document.documentElement.dataset.studioThemeLayoutMobileV338 = STUDIO_THEME_LAYOUT_MOBILE_RELEASE_V338;
 }
