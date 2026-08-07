@@ -1,0 +1,426 @@
+/* Theme Studio v312 — physical handheld/mobile authority.
+   Scope: Theme page only. Keeps desktop/laptop geometry unchanged while preventing
+   the right-side layout/widget panel, preview stage, category tabs, and code
+   workspace from becoming tiny, elongated, overlapped, or clipped on phones,
+   installed apps, compact devices, and handheld browser “desktop site” mode. */
+
+html[data-studio-handheld="true"] .sn-shell .tn-studio,
+html .sn-shell[data-device-mode="small"] .tn-studio{
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  overflow-x:clip!important;
+  padding:12px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-studio *,
+html .sn-shell[data-device-mode="small"] .tn-studio *{
+  min-width:0;
+  box-sizing:border-box;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-studio :is(h1,h2,h3,h4,p,b,strong,small,span,label,button,a),
+html .sn-shell[data-device-mode="small"] .tn-studio :is(h1,h2,h3,h4,p,b,strong,small,span,label,button,a){
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
+/* Hero + active preview: one clear vertical flow, no large grey/blue elongated surface. */
+html[data-studio-handheld="true"] .sn-shell .tn-hero,
+html .sn-shell[data-device-mode="small"] .tn-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-hero-copy,
+html .sn-shell[data-device-mode="small"] .tn-hero-copy{
+  padding:20px!important;
+  border-radius:18px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-hero-copy h1,
+html .sn-shell[data-device-mode="small"] .tn-hero-copy h1{
+  margin:10px 0 12px!important;
+  font-size:clamp(30px,9vw,46px)!important;
+  line-height:1.03!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-hero-actions,
+html .sn-shell[data-device-mode="small"] .tn-hero-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-hero-actions button,
+html .sn-shell[data-device-mode="small"] .tn-hero-actions button{
+  width:100%!important;
+  min-height:44px!important;
+  padding-inline:9px!important;
+  white-space:normal!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-trust,
+html .sn-shell[data-device-mode="small"] .tn-trust{
+  gap:7px!important;
+  margin-top:16px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-trust span,
+html .sn-shell[data-device-mode="small"] .tn-trust span{
+  min-height:31px!important;
+  padding:7px 10px!important;
+  border-radius:10px!important;
+  font-size:9px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-active-stage,
+html .sn-shell[data-device-mode="small"] .tn-active-stage{
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+  border-radius:18px!important;
+  background:#f3f6fa!important;
+  box-shadow:0 12px 34px rgba(28,53,91,.10)!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-stage-toolbar,
+html .sn-shell[data-device-mode="small"] .tn-stage-toolbar{
+  height:auto!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  padding:10px!important;
+  background:#fff!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-stage-toolbar>b,
+html .sn-shell[data-device-mode="small"] .tn-stage-toolbar>b{
+  order:-1!important;
+  width:100%!important;
+  max-width:none!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  font-size:11px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-device-switch,
+html .sn-shell[data-device-mode="small"] .tn-device-switch{
+  width:100%!important;
+  max-width:100%!important;
+  display:flex!important;
+  gap:6px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  padding:2px 2px 5px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  scroll-snap-type:x proximity!important;
+  overscroll-behavior-inline:contain!important;
+  scrollbar-width:none!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-device-switch::-webkit-scrollbar,
+html .sn-shell[data-device-mode="small"] .tn-device-switch::-webkit-scrollbar{display:none!important}
+html[data-studio-handheld="true"] .sn-shell .tn-device-switch button,
+html .sn-shell[data-device-mode="small"] .tn-device-switch button{
+  flex:0 0 auto!important;
+  min-width:88px!important;
+  height:38px!important;
+  justify-content:center!important;
+  gap:5px!important;
+  padding:0 10px!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:10px!important;
+  background:#f8fafc!important;
+  color:#66758a!important;
+  font-size:9px!important;
+  scroll-snap-align:start!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-device-switch button span,
+html .sn-shell[data-device-mode="small"] .tn-device-switch button span{display:inline!important}
+html[data-studio-handheld="true"] .sn-shell .tn-device-switch button.active,
+html .sn-shell[data-device-mode="small"] .tn-device-switch button.active{
+  border-color:#8ab1f2!important;
+  background:#edf4ff!important;
+  color:#245fc8!important;
+  box-shadow:none!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-active-stage>.tn-frame-shell,
+html .sn-shell[data-device-mode="small"] .tn-active-stage>.tn-frame-shell{
+  flex:0 0 auto!important;
+  width:100%!important;
+  height:360px!important;
+  min-height:360px!important;
+  max-height:360px!important;
+  padding:10px!important;
+  overflow:hidden!important;
+  background:#f2f5f9!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-active-stage>.tn-frame-shell iframe,
+html .sn-shell[data-device-mode="small"] .tn-active-stage>.tn-frame-shell iframe{
+  width:min(var(--tn-preview-width,100%),100%)!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  margin-inline:auto!important;
+  border-radius:12px!important;
+  box-shadow:0 8px 24px rgba(24,45,74,.10)!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-apply-bar,
+html .sn-shell[data-device-mode="small"] .tn-apply-bar{
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  width:calc(100% - 20px)!important;
+  margin:0 10px 10px!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  border-radius:12px!important;
+  padding:8px 9px!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* Commands and filters stay readable and touchable. */
+html[data-studio-handheld="true"] .sn-shell .tn-command,
+html .sn-shell[data-device-mode="small"] .tn-command{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+  margin:12px 0!important;
+  padding:15px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-command nav,
+html .sn-shell[data-device-mode="small"] .tn-command nav{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-command nav button,
+html .sn-shell[data-device-mode="small"] .tn-command nav button{
+  width:100%!important;
+  min-height:42px!important;
+  justify-content:center!important;
+  white-space:normal!important;
+}
+
+/* Layout map: the panel previously squeezed on the right is always moved below
+   the map on a physical handheld, including browser “desktop site” mode. */
+html[data-studio-handheld="true"] .sn-shell .tn-layout-studio,
+html .sn-shell[data-device-mode="small"] .tn-layout-studio{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  gap:12px!important;
+  width:100%!important;
+  margin:12px 0!important;
+  padding:13px!important;
+  border-radius:17px!important;
+  overflow:visible!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-studio>div,
+html .sn-shell[data-device-mode="small"] .tn-layout-studio>div{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-studio>.tn-layout-side,
+html .sn-shell[data-device-mode="small"] .tn-layout-studio>.tn-layout-side{
+  grid-column:1!important;
+  grid-row:2!important;
+  width:100%!important;
+  min-height:0!important;
+  padding:14px!important;
+  border-radius:14px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-studio-header,
+html .sn-shell[data-device-mode="small"] .tn-layout-studio-header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-studio-header>button,
+html .sn-shell[data-device-mode="small"] .tn-layout-studio-header>button{
+  width:100%!important;
+  min-height:44px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-canvas,
+html .sn-shell[data-device-mode="small"] .tn-layout-canvas{
+  min-height:500px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:70px minmax(230px,1fr) 105px 70px!important;
+  grid-template-areas:"header" "main" "sidebar" "footer"!important;
+  gap:8px!important;
+  padding:10px!important;
+  border-radius:14px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-area,
+html .sn-shell[data-device-mode="small"] .tn-layout-area{
+  width:100%!important;
+  min-height:58px!important;
+  padding:10px!important;
+  white-space:normal!important;
+  text-align:center!important;
+  font-size:11px!important;
+  line-height:1.3!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-widget-list,
+html .sn-shell[data-device-mode="small"] .tn-layout-widget-list{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:7px!important;
+  overflow:visible!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-widget-list>span,
+html .sn-shell[data-device-mode="small"] .tn-layout-widget-list>span{
+  min-height:42px!important;
+  white-space:normal!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-layout-widget-list b,
+html .sn-shell[data-device-mode="small"] .tn-layout-widget-list b{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* Theme catalog: clean search/category rail and real one-column cards on handheld. */
+html[data-studio-handheld="true"] .sn-shell :is(.tn-blueprints,.tn-library),
+html .sn-shell[data-device-mode="small"] :is(.tn-blueprints,.tn-library){
+  margin-top:12px!important;
+  padding:15px!important;
+  border-radius:17px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-blueprint-list,
+html .sn-shell[data-device-mode="small"] .tn-blueprint-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-blueprint-list button,
+html .sn-shell[data-device-mode="small"] .tn-blueprint-list button{
+  min-height:88px!important;
+  padding:11px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-library>header,
+html .sn-shell[data-device-mode="small"] .tn-library>header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  gap:12px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-library>header label,
+html .sn-shell[data-device-mode="small"] .tn-library>header label{
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-category-tabs,
+html .sn-shell[data-device-mode="small"] .tn-category-tabs{
+  width:100%!important;
+  max-width:100%!important;
+  display:flex!important;
+  gap:7px!important;
+  margin:14px 0!important;
+  padding:0 0 5px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  background:transparent!important;
+  overscroll-behavior-inline:contain!important;
+  scrollbar-width:none!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-category-tabs::-webkit-scrollbar,
+html .sn-shell[data-device-mode="small"] .tn-category-tabs::-webkit-scrollbar{display:none!important}
+html[data-studio-handheld="true"] .sn-shell .tn-category-tabs button,
+html .sn-shell[data-device-mode="small"] .tn-category-tabs button{
+  flex:0 0 auto!important;
+  min-height:36px!important;
+  padding:0 11px!important;
+  border-radius:10px!important;
+  white-space:nowrap!important;
+  font-size:9px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-theme-grid,
+html .sn-shell[data-device-mode="small"] .tn-theme-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-theme-grid>article,
+html .sn-shell[data-device-mode="small"] .tn-theme-grid>article{
+  width:100%!important;
+  max-width:100%!important;
+  border-radius:15px!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-theme-grid footer,
+html .sn-shell[data-device-mode="small"] .tn-theme-grid footer{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-theme-grid footer button,
+html .sn-shell[data-device-mode="small"] .tn-theme-grid footer button{
+  width:100%!important;
+  min-height:42px!important;
+}
+
+/* Code editor on handheld: preview above, editor below, both contained. */
+html[data-studio-handheld="true"] .sn-shell .tn-code-workspace,
+html .sn-shell[data-device-mode="small"] .tn-code-workspace{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(320px,auto) minmax(520px,1fr)!important;
+  grid-template-areas:"preview" "code"!important;
+  gap:0!important;
+  width:100%!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-code-preview-pane,
+html .sn-shell[data-device-mode="small"] .tn-code-preview-pane{
+  grid-area:preview!important;
+  min-height:320px!important;
+  max-width:100%!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-code-pane,
+html .sn-shell[data-device-mode="small"] .tn-code-pane{
+  grid-area:code!important;
+  min-height:520px!important;
+  max-width:100%!important;
+  border-right:0!important;
+  border-top:1px solid #dfe6ef!important;
+}
+html[data-studio-handheld="true"] .sn-shell .tn-code-pane textarea,
+html .sn-shell[data-device-mode="small"] .tn-code-pane textarea{
+  min-height:420px!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow:auto!important;
+  white-space:pre!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  font-size:12px!important;
+  line-height:1.65!important;
+}
+
+@media (max-width:420px){
+  html[data-studio-handheld="true"] .sn-shell .tn-hero-actions,
+  html .sn-shell[data-device-mode="small"] .tn-hero-actions,
+  html[data-studio-handheld="true"] .sn-shell .tn-command nav,
+  html .sn-shell[data-device-mode="small"] .tn-command nav,
+  html[data-studio-handheld="true"] .sn-shell .tn-blueprint-list,
+  html .sn-shell[data-device-mode="small"] .tn-blueprint-list{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html[data-studio-handheld="true"] .sn-shell .tn-active-stage>.tn-frame-shell,
+  html .sn-shell[data-device-mode="small"] .tn-active-stage>.tn-frame-shell{
+    height:330px!important;
+    min-height:330px!important;
+    max-height:330px!important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  html[data-studio-handheld="true"] .sn-shell .tn-studio *,
+  html .sn-shell[data-device-mode="small"] .tn-studio *{
+    animation:none!important;
+    transition:none!important;
+    scroll-behavior:auto!important;
+  }
+}
