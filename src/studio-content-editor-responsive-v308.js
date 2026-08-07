@@ -11,6 +11,7 @@ import "./studio-theme-domain-final-v325.js";
 import "./studio-theme-code-device-v330.js";
 import "./studio-theme-layout-single-v332.js";
 import "./studio-theme-layout-single-v334.js";
+import "./studio-theme-layout-single-v335.js";
 
 export const STUDIO_CONTENT_EDITOR_RELEASE_V308 = "studio-content-editor-responsive-v308-20260806";
 export const STUDIO_CONTENT_EDITOR_POLISH_RELEASE_V309 = "studio-content-editor-post-page-polish-v309-20260806";
@@ -25,6 +26,7 @@ export const STUDIO_THEME_DOMAIN_FINAL_RELEASE_V325 = "studio-theme-domain-final
 export const STUDIO_THEME_CODE_DEVICE_RELEASE_V330 = "studio-theme-code-device-v330-20260806";
 export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V332 = "studio-theme-layout-single-v332-20260807";
 export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V334 = "studio-theme-layout-single-v334-20260807";
+export const STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335 = "studio-theme-layout-single-v335-20260807";
 
 if (typeof document !== "undefined") {
   document.documentElement.dataset.studioContentEditorV308 = STUDIO_CONTENT_EDITOR_RELEASE_V308;
@@ -40,4 +42,5 @@ if (typeof document !== "undefined") {
   document.documentElement.dataset.studioThemeCodeDeviceV330 = STUDIO_THEME_CODE_DEVICE_RELEASE_V330;
   document.documentElement.dataset.studioThemeLayoutSingleV332 = STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V332;
   document.documentElement.dataset.studioThemeLayoutSingleV334 = STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V334;
+  document.documentElement.dataset.studioThemeLayoutSingleV335 = STUDIO_THEME_LAYOUT_SINGLE_RELEASE_V335;
 }
