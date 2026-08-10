@@ -32,6 +32,20 @@ function domainCandidates(hostname = "") {
   return [...new Set([normalized, `www.${normalized}`])];
 }
 
+function legacyCustomDomainCandidates(hostname = "") {
+  const normalized = normalizeHostname(hostname);
+  if (!normalized) return [];
+  const hostnames = domainCandidates(normalized);
+  return [...new Set(hostnames.flatMap((value) => [
+    value,
+    `${value}/`,
+    `https://${value}`,
+    `https://${value}/`,
+    `http://${value}`,
+    `http://${value}/`,
+  ]))];
+}
+
 function domainIsPubliclyRoutable(domain) {
   const status = String(domain?.status || "").trim().toLowerCase();
   if (["active", "verified"].includes(status)) return true;
@@ -45,23 +59,30 @@ function domainIsPubliclyRoutable(domain) {
   return providerStatus === "active" && ["active", "issued", "verified"].includes(sslStatus);
 }
 
-async function resolveLegacyCustomDomainSite(db, candidates) {
+async function resolveLegacyCustomDomainSite(db, hostname = "") {
+  const candidates = legacyCustomDomainCandidates(hostname);
   if (!candidates.length) return null;
   try {
     const { data, error } = await withTimeout(
       db.from("sites")
-        .select("id")
+        .select("id,custom_domain")
         .in("custom_domain", candidates)
         .eq("status", "active")
         .eq("is_public", true)
-        .limit(5),
+        .limit(20),
       "Memulihkan routing domain situs",
     );
     if (error) throw error;
-    return data?.[0]?.id || null;
+
+    // Exact normalized comparison keeps root/www preference deterministic even
+    // when older records stored a scheme or trailing slash.
+    const normalized = normalizeHostname(hostname);
+    const rows = data || [];
+    return rows.find((site) => normalizeHostname(site.custom_domain) === normalized)?.id || rows[0]?.id || null;
   } catch (error) {
-    // Keep the normal site_domains path authoritative when an older database has
-    // not yet exposed the legacy custom_domain column to the public client.
+    // Some deployments are still migrating the legacy column or its public RLS
+    // policy. Do not let that secondary recovery path blank an otherwise valid
+    // request; the caller will return the normal not-found result instead.
     console.warn("Legacy custom-domain fallback unavailable", error);
     return null;
   }
@@ -75,24 +96,35 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
 
   if (!isNgebloggingHost) {
     const candidates = domainCandidates(normalizedHostname);
-    const { data: domains, error: domainError } = await withTimeout(
-      db.from("site_domains")
-        .select("site_id,hostname,status,provider_status,ssl_status,is_primary,updated_at")
-        .in("hostname", candidates)
-        .order("updated_at", { ascending: false, nullsFirst: false })
-        .limit(10),
-      "Memeriksa domain situs",
-    );
-    if (domainError) throw domainError;
+    let domains = [];
+    try {
+      const result = await withTimeout(
+        db.from("site_domains")
+          .select("site_id,hostname,status,provider_status,ssl_status,is_primary,updated_at")
+          .in("hostname", candidates)
+          .order("updated_at", { ascending: false, nullsFirst: false })
+          .limit(10),
+        "Memeriksa domain situs",
+      );
+      if (result.error) throw result.error;
+      domains = result.data || [];
+    } catch (domainError) {
+      // site_domains is authoritative when available, but an older deployment,
+      // partially applied migration, or public RLS failure must not prevent the
+      // legacy sites.custom_domain recovery path from serving an already attached
+      // custom hostname.
+      console.warn("site_domains public lookup unavailable; trying legacy custom-domain recovery", domainError);
+    }
 
-    const matchingDomains = (domains || []).filter(domain => domainIsPubliclyRoutable(domain));
+    const matchingDomains = domains.filter(domain => domainIsPubliclyRoutable(domain));
     const exactDomain = matchingDomains.find((domain) => normalizeHostname(domain.hostname) === normalizedHostname);
     siteId = exactDomain?.site_id || matchingDomains[0]?.site_id || null;
 
     // Backward-compatible recovery for sites created before the site_domains
     // migration. A custom domain that is already attached in Cloudflare must not
-    // become a blank page simply because only sites.custom_domain is populated.
-    if (!siteId) siteId = await resolveLegacyCustomDomainSite(db, candidates);
+    // become a blank page solely because the migration has not rewritten status
+    // or the public site_domains query is temporarily unavailable.
+    if (!siteId) siteId = await resolveLegacyCustomDomainSite(db, normalizedHostname);
     if (!siteId) return null;
   }
 
