@@ -26,6 +26,12 @@ function normalizeHostname(value = "") {
     .replace(/^www\./, "");
 }
 
+function domainCandidates(hostname = "") {
+  const normalized = normalizeHostname(hostname);
+  if (!normalized) return [];
+  return [...new Set([normalized, `www.${normalized}`])];
+}
+
 export async function resolvePublishedSite({ slug = "", hostname = "" }) {
   const db = client();
   const normalizedHostname = normalizeHostname(hostname);
@@ -33,17 +39,19 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
   let siteId = null;
 
   if (!isNgebloggingHost) {
-    const { data: domain, error: domainError } = await withTimeout(
+    const candidates = domainCandidates(normalizedHostname);
+    const { data: domains, error: domainError } = await withTimeout(
       db.from("site_domains")
-        .select("site_id,hostname,status")
-        .in("hostname", [normalizedHostname, `www.${normalizedHostname}`])
+        .select("site_id,hostname,status,updated_at")
+        .in("hostname", candidates)
         .in("status", ["active", "verified"])
-        .limit(1)
-        .maybeSingle(),
+        .order("updated_at", { ascending: false, nullsFirst: false })
+        .limit(5),
       "Memeriksa domain situs",
     );
     if (domainError) throw domainError;
-    siteId = domain?.site_id || null;
+    const exactDomain = (domains || []).find((domain) => normalizeHostname(domain.hostname) === normalizedHostname);
+    siteId = exactDomain?.site_id || domains?.[0]?.site_id || null;
     if (!siteId) return null;
   }
 
