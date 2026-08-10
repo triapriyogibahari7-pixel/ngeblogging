@@ -32,6 +32,41 @@ function domainCandidates(hostname = "") {
   return [...new Set([normalized, `www.${normalized}`])];
 }
 
+function domainIsPubliclyRoutable(domain) {
+  const status = String(domain?.status || "").trim().toLowerCase();
+  if (["active", "verified"].includes(status)) return true;
+
+  // During the full-zone migration some already-attached legacy domains retain a
+  // stale row status while Cloudflare and TLS are already active. Treat that
+  // combination as routable instead of making a working custom hostname resolve
+  // to a blank public site solely because the migration has not rewritten status.
+  const providerStatus = String(domain?.provider_status || "").trim().toLowerCase();
+  const sslStatus = String(domain?.ssl_status || "").trim().toLowerCase();
+  return providerStatus === "active" && ["active", "issued", "verified"].includes(sslStatus);
+}
+
+async function resolveLegacyCustomDomainSite(db, candidates) {
+  if (!candidates.length) return null;
+  try {
+    const { data, error } = await withTimeout(
+      db.from("sites")
+        .select("id")
+        .in("custom_domain", candidates)
+        .eq("status", "active")
+        .eq("is_public", true)
+        .limit(5),
+      "Memulihkan routing domain situs",
+    );
+    if (error) throw error;
+    return data?.[0]?.id || null;
+  } catch (error) {
+    // Keep the normal site_domains path authoritative when an older database has
+    // not yet exposed the legacy custom_domain column to the public client.
+    console.warn("Legacy custom-domain fallback unavailable", error);
+    return null;
+  }
+}
+
 export async function resolvePublishedSite({ slug = "", hostname = "" }) {
   const db = client();
   const normalizedHostname = normalizeHostname(hostname);
@@ -42,16 +77,22 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
     const candidates = domainCandidates(normalizedHostname);
     const { data: domains, error: domainError } = await withTimeout(
       db.from("site_domains")
-        .select("site_id,hostname,status,updated_at")
+        .select("site_id,hostname,status,provider_status,ssl_status,is_primary,updated_at")
         .in("hostname", candidates)
-        .in("status", ["active", "verified"])
         .order("updated_at", { ascending: false, nullsFirst: false })
-        .limit(5),
+        .limit(10),
       "Memeriksa domain situs",
     );
     if (domainError) throw domainError;
-    const exactDomain = (domains || []).find((domain) => normalizeHostname(domain.hostname) === normalizedHostname);
-    siteId = exactDomain?.site_id || domains?.[0]?.site_id || null;
+
+    const matchingDomains = (domains || []).filter(domain => domainIsPubliclyRoutable(domain));
+    const exactDomain = matchingDomains.find((domain) => normalizeHostname(domain.hostname) === normalizedHostname);
+    siteId = exactDomain?.site_id || matchingDomains[0]?.site_id || null;
+
+    // Backward-compatible recovery for sites created before the site_domains
+    // migration. A custom domain that is already attached in Cloudflare must not
+    // become a blank page simply because only sites.custom_domain is populated.
+    if (!siteId) siteId = await resolveLegacyCustomDomainSite(db, candidates);
     if (!siteId) return null;
   }
 
