@@ -17,9 +17,17 @@ test("custom-domain public resolution keeps exact hostname preference and www fa
   assert.match(publicData, /const exactDomain = matchingDomains\.find/);
 });
 
-test("legacy custom_domain records can recover public routing after site_domains migration", () => {
-  assert.match(publicData, /async function resolveLegacyCustomDomainSite/);
+test("legacy custom_domain records recover root/www and stored URL variants", () => {
+  assert.match(publicData, /function legacyCustomDomainCandidates/);
+  assert.match(publicData, /`https:\/\/\$\{value\}`/);
+  assert.match(publicData, /`http:\/\/\$\{value\}`/);
   assert.match(publicData, /\.in\("custom_domain", candidates\)/);
-  assert.match(publicData, /if \(!siteId\) siteId = await resolveLegacyCustomDomainSite/);
-  assert.doesNotMatch(publicData, /from\("site_domains"\)[\s\S]{0,600}\.in\("status", \["active", "verified"\]\)/);
+  assert.match(publicData, /normalizeHostname\(site\.custom_domain\) === normalized/);
+  assert.match(publicData, /if \(!siteId\) siteId = await resolveLegacyCustomDomainSite\(db, normalizedHostname\)/);
+});
+
+test("site_domains lookup failure still reaches legacy custom-domain recovery", () => {
+  assert.match(publicData, /try \{\s*const result = await withTimeout\([\s\S]*?from\("site_domains"\)/);
+  assert.match(publicData, /site_domains public lookup unavailable; trying legacy custom-domain recovery/);
+  assert.doesNotMatch(publicData, /const \{ data: domains, error: domainError \}[\s\S]{0,500}if \(domainError\) throw domainError/);
 });
