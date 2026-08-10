@@ -57,8 +57,6 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
   if (siteError) throw siteError;
   if (!site) return null;
 
-  // Tema bukan syarat agar Post/Page yang sudah terbit dapat dibuka.
-  // Jika tabel/konfigurasi tema bermasalah, gunakan fallback tema aplikasi.
   let theme = null;
   try {
     const { data, error } = await withTimeout(
@@ -81,7 +79,7 @@ export async function listPublishedContent({ siteId, kind = null, cursor = null,
   const limit = Math.min(50, Math.max(1, Number(pageSize) || 18));
   let request = client().from("contents").select("id,kind,title,slug,excerpt,featured_image_path,metadata,seo,published_at,updated_at").eq("site_id", siteId).eq("status", "published").eq("visibility", "public").order("published_at", { ascending: false, nullsFirst: false }).order("id", { ascending: false }).limit(limit + 1);
   if (kind) request = request.eq("kind", kind);
-  if (cursor?.publishedAt && cursor?.id) request = request.or(`published_at.lt.${cursor.publishedAt},and(published_at.eq.${cursor.publishedAt},id.lt.${cursor.publishedAt},id.lt.${cursor.id})`);
+  if (cursor?.publishedAt && cursor?.id) request = request.or(`published_at.lt.${cursor.publishedAt},and(published_at.eq.${cursor.publishedAt},id.lt.${cursor.id})`);
   const { data, error } = await withTimeout(request, "Memuat daftar post");
   if (error) throw error;
   const rows = data || [];
