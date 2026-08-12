@@ -1,6 +1,8 @@
 name: Ngeblogging custom domain repair
 
 on:
+  push:
+    branches: [main]
   workflow_run:
     workflows: ["Cloudflare Workers production"]
     types: [completed]
@@ -13,18 +15,19 @@ concurrency:
   group: ngeblogging-custom-domain-repair
   cancel-in-progress: true
 
+env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
+  TARGET_DOMAIN: triapriyogi.com
+  WORKER_SERVICE: ngeblogging
+
 jobs:
   repair:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: cloudflare-production
-    env:
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
-      TARGET_DOMAIN: triapriyogi.com
-      WORKER_SERVICE: ngeblogging
 
     steps:
       - name: Reconcile Cloudflare zone, nameservers, Worker domains, and HTTPS
