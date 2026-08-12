@@ -34,6 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          echo "Ngeblogging custom-domain repair forced on main push; managed runner: ubuntu-latest"
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
