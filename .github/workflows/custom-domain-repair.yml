@@ -25,7 +25,7 @@ env:
 jobs:
   repair:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 12
     environment: cloudflare-production
 
@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "Ngeblogging custom-domain repair on standard GitHub-hosted runner"
+          echo "Ngeblogging custom-domain repair on stable GitHub-hosted runner"
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum diisi"; exit 1; }
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
