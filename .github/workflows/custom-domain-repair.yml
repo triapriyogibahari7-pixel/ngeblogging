@@ -50,7 +50,14 @@ jobs:
           const base = 'https://api.cloudflare.com/client/v4';
           const norm = (v) => String(v || '').toLowerCase().replace(/\.$/, '').trim();
           async function cf(path, token, options = {}) {
-            const r = await fetch(base + path, { ...options, headers: { authorization: `Bearer ${token}`, accept: 'application/json', ...(options.body ? { 'content-type': 'application/json' } : {}) } });
+            const headers = {
+              authorization: `Bearer ${token}`,
+              accept: 'application/json',
+              ...(options.body ? { 'content-type': 'application/json' } : {}),
+              ...(options.headers || {}),
+            };
+            const body = options.body && typeof options.body !== 'string' ? JSON.stringify(options.body) : options.body;
+            const r = await fetch(base + path, { ...options, headers, body });
             const p = await r.json().catch(() => ({}));
             if (!r.ok || p.success !== true) throw new Error(`Cloudflare ${options.method || 'GET'} ${path} gagal (${r.status}): ${(p.errors || []).map((e) => e?.message).filter(Boolean).join('; ') || 'respons tidak valid'}`);
             return p.result;
@@ -64,8 +71,8 @@ jobs:
             } catch (e) { return { host, status: 0, html: false, contentType: '', url: '', error: String(e?.message || e) }; }
           }
 
-          // Do not depend on a separate CLOUDFLARE_ACCOUNT_ID secret. The production
-          // custom-domain workflow already resolves the authoritative account from the zone.
+          // Do not depend on a separate CLOUDFLARE_ACCOUNT_ID secret. Resolve the
+          // authoritative account directly from the active production zone.
           const zones = await cf(`/zones?name=${encodeURIComponent(domain)}&status=active&per_page=50`, zoneToken);
           const matches = (zones || []).filter((z) => norm(z?.name) === domain && norm(z?.status) === 'active');
           if (matches.length !== 1) throw new Error(`Zone aktif ${domain} harus tepat satu; ditemukan ${matches.length}.`);
