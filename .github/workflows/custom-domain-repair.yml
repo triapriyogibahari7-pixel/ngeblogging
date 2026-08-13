@@ -16,7 +16,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
   TARGET_DOMAIN: triapriyogi.com
@@ -25,135 +24,78 @@ env:
 jobs:
   repair:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-    runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: cloudflare-production
-
     steps:
-      - name: Reconcile Cloudflare zone, nameservers, Worker domains, and HTTPS
+      - name: Preflight
         shell: bash
         run: |
           set -euo pipefail
-          echo "Ngeblogging custom-domain repair on current stable GitHub-hosted Ubuntu 24.04 runner"
-          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum diisi"; exit 1; }
-          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum diisi"; exit 1; }
-          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum diisi"; exit 1; }
+          node --version
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
+          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
 
+      - name: Repair authoritative Cloudflare Worker domain
+        shell: bash
+        run: |
+          set -euo pipefail
           node --input-type=module <<'NODE'
           import { resolveNs } from 'node:dns/promises';
-
           const domain = process.env.TARGET_DOMAIN.toLowerCase();
           const www = `www.${domain}`;
-          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID.trim();
-          const workerService = process.env.WORKER_SERVICE.trim();
-          const domainToken = process.env.CLOUDFLARE_DOMAIN_API_TOKEN.trim();
+          const service = process.env.WORKER_SERVICE.trim();
+          const zoneToken = process.env.CLOUDFLARE_DOMAIN_API_TOKEN.trim();
           const workerToken = process.env.CLOUDFLARE_API_TOKEN.trim();
           const base = 'https://api.cloudflare.com/client/v4';
-
+          const norm = (v) => String(v || '').toLowerCase().replace(/\.$/, '').trim();
           async function cf(path, token, options = {}) {
-            const response = await fetch(`${base}${path}`, {
-              ...options,
-              headers: {
-                authorization: `Bearer ${token}`,
-                accept: 'application/json',
-                ...(options.body ? { 'content-type': 'application/json' } : {}),
-                ...(options.headers || {}),
-              },
-            });
-            const payload = await response.json().catch(() => ({}));
-            if (!response.ok || payload.success !== true) {
-              const message = (payload.errors || []).map((item) => item?.message).filter(Boolean).join('; ');
-              throw new Error(`Cloudflare ${options.method || 'GET'} ${path} gagal (${response.status}): ${message || 'respons tidak valid'}`);
-            }
-            return payload.result;
+            const r = await fetch(base + path, { ...options, headers: { authorization: `Bearer ${token}`, accept: 'application/json', ...(options.body ? { 'content-type': 'application/json' } : {}) } });
+            const p = await r.json().catch(() => ({}));
+            if (!r.ok || p.success !== true) throw new Error(`Cloudflare ${options.method || 'GET'} ${path} gagal (${r.status}): ${(p.errors || []).map((e) => e?.message).filter(Boolean).join('; ') || 'respons tidak valid'}`);
+            return p.result;
           }
-
-          function normalize(value) {
-            return String(value || '').toLowerCase().replace(/\.$/, '').trim();
-          }
-
-          async function publicHttps(hostname) {
-            const url = `https://${hostname}/`;
+          async function smoke(host) {
             try {
-              const response = await fetch(`${url}?ngeblogging_domain_repair=1`, {
-                redirect: 'follow',
-                headers: { accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1', 'cache-control': 'no-cache' },
-                signal: AbortSignal.timeout(10000),
-              });
-              const contentType = String(response.headers.get('content-type') || '').toLowerCase();
-              const text = await response.text();
-              const html = /<!doctype\s+html|<html[\s>]/i.test(text.slice(0, 12000));
-              return { hostname, status: response.status, contentType, html, reachable: response.ok && contentType.includes('text/html') && html, finalUrl: response.url };
-            } catch (error) {
-              return { hostname, status: 0, contentType: '', html: false, reachable: false, finalUrl: '', error: String(error?.message || error) };
-            }
+              const r = await fetch(`https://${host}/?ngeblogging_domain_repair=1`, { redirect: 'follow', headers: { accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1', 'cache-control': 'no-cache' }, signal: AbortSignal.timeout(10000) });
+              const type = String(r.headers.get('content-type') || '').toLowerCase();
+              const text = await r.text();
+              return { host, status: r.status, html: /<!doctype\s+html|<html[\s>]/i.test(text.slice(0, 12000)), contentType: type, url: r.url };
+            } catch (e) { return { host, status: 0, html: false, contentType: '', url: '', error: String(e?.message || e) }; }
           }
 
-          const zones = await cf(`/zones?name=${encodeURIComponent(domain)}&account.id=${encodeURIComponent(accountId)}&per_page=50`, domainToken);
-          const matches = (zones || []).filter((zone) => normalize(zone?.name) === domain);
-          if (matches.length !== 1) throw new Error(`Cloudflare harus memiliki tepat satu zone ${domain}; ditemukan ${matches.length}.`);
+          // Do not depend on a separate CLOUDFLARE_ACCOUNT_ID secret. The production
+          // custom-domain workflow already resolves the authoritative account from the zone.
+          const zones = await cf(`/zones?name=${encodeURIComponent(domain)}&status=active&per_page=50`, zoneToken);
+          const matches = (zones || []).filter((z) => norm(z?.name) === domain && norm(z?.status) === 'active');
+          if (matches.length !== 1) throw new Error(`Zone aktif ${domain} harus tepat satu; ditemukan ${matches.length}.`);
           const zone = matches[0];
           const zoneId = String(zone.id || '');
-          const zoneStatus = normalize(zone.status);
-          const assignedNs = [...(zone.name_servers || [])].map(normalize).filter(Boolean).sort();
+          const accountId = String(zone.account?.id || '');
+          const assignedNs = [...(zone.name_servers || [])].map(norm).filter(Boolean).sort();
           if (!/^[0-9a-f]{32}$/i.test(zoneId)) throw new Error('Zone ID custom domain tidak valid.');
-          if (zoneStatus !== 'active') {
-            throw new Error(`Zone ${domain} belum active di Cloudflare (status=${zone.status}). Nameserver registrar harus menunjuk ke ${assignedNs.join(', ')} sebelum Worker dapat melayani domain.`);
+          if (!/^[0-9a-f]{32}$/i.test(accountId)) throw new Error('Account ID pemilik zone tidak valid.');
+
+          const publicNs = [...await resolveNs(domain)].map(norm).filter(Boolean).sort();
+          if (assignedNs.join('|') !== publicNs.join('|')) throw new Error(`Nameserver publik belum sama. Cloudflare=${assignedNs.join(', ')}; publik=${publicNs.join(', ')}.`);
+
+          for (const host of [domain, www]) {
+            await cf(`/accounts/${accountId}/workers/domains`, workerToken, { method: 'PUT', body: { hostname: host, service, environment: 'production', zone_id: zoneId, zone_name: domain } });
           }
 
-          let publicNs = [];
-          try {
-            publicNs = [...await resolveNs(domain)].map(normalize).filter(Boolean).sort();
-          } catch (error) {
-            throw new Error(`DNS publik ${domain} masih tidak dapat di-resolve dari GitHub runner: ${error?.message || error}`);
-          }
-          if (assignedNs.join('|') !== publicNs.join('|')) {
-            throw new Error(`Nameserver publik ${domain} belum sama dengan Cloudflare zone. Cloudflare=${assignedNs.join(', ')}; publik=${publicNs.join(', ')}.`);
-          }
-
-          for (const hostname of [domain, www]) {
-            await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains`, workerToken, {
-              method: 'PUT',
-              body: {
-                hostname,
-                service: workerService,
-                environment: 'production',
-                zone_id: zoneId,
-                zone_name: domain,
-              },
-            });
-          }
-
-          const workerDomains = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains?service=${encodeURIComponent(workerService)}`, workerToken);
-          const exact = (workerDomains || []).filter((item) => [domain, www].includes(normalize(item?.hostname)));
-          for (const hostname of [domain, www]) {
-            const item = exact.find((row) => normalize(row?.hostname) === hostname);
-            if (!item || normalize(item.service) !== workerService || normalize(item.zone_id) !== normalize(zoneId) || normalize(item.zone_name) !== domain) {
-              throw new Error(`Worker domain ${hostname} belum terikat ke ${workerService} pada zone ${domain}.`);
-            }
+          const rows = await cf(`/accounts/${accountId}/workers/domains?service=${encodeURIComponent(service)}`, workerToken);
+          for (const host of [domain, www]) {
+            const row = (rows || []).find((x) => norm(x?.hostname) === host);
+            if (!row || norm(row.service) !== service || norm(row.zone_id) !== norm(zoneId) || norm(row.zone_name) !== domain) throw new Error(`Worker domain ${host} belum terikat ke ${service}.`);
           }
 
           let live = [];
-          for (let attempt = 1; attempt <= 12; attempt += 1) {
-            live = await Promise.all([publicHttps(domain), publicHttps(www)]);
-            console.log(JSON.stringify({ attempt, zone: { id: zoneId, status: zone.status, assignedNs }, publicNs, workerDomains: exact, live }, null, 2));
-            if (live.every((item) => item.reachable)) break;
+          for (let i = 1; i <= 12; i++) {
+            live = await Promise.all([smoke(domain), smoke(www)]);
+            console.log(JSON.stringify({ attempt: i, domain, zoneId, assignedNs, publicNs, live }, null, 2));
+            if (live.every((x) => x.status >= 200 && x.status < 400 && x.html && x.contentType.includes('text/html'))) break;
             await new Promise((resolve) => setTimeout(resolve, 5000));
           }
-
-          if (!live.every((item) => item.reachable)) {
-            throw new Error(`Worker domain sudah terpasang tetapi HTTPS publik belum menyajikan HTML untuk ${live.filter((item) => !item.reachable).map((item) => item.hostname).join(', ')}.`);
-          }
-
-          console.log(JSON.stringify({
-            ok: true,
-            domain,
-            www,
-            zoneId,
-            zoneStatus: zone.status,
-            assignedNameServers: assignedNs,
-            publicNameServers: publicNs,
-            workerService,
-            live,
-          }, null, 2));
+          if (!live.every((x) => x.status >= 200 && x.status < 400 && x.html && x.contentType.includes('text/html'))) throw new Error(`HTTPS publik belum menyajikan HTML untuk: ${live.filter((x) => !(x.status >= 200 && x.status < 400 && x.html && x.contentType.includes('text/html'))).map((x) => x.host).join(', ')}`);
+          console.log(JSON.stringify({ ok: true, domain, www, zoneId, accountIdResolved: true, service, live }, null, 2));
           NODE
