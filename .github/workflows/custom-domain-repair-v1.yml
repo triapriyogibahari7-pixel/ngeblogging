@@ -10,13 +10,15 @@ permissions:
   statuses: write
 
 concurrency:
-  group: ngeblogging-custom-domain-repair
+  group: ngeblogging-custom-domain-repair-v2
   cancel-in-progress: false
 
 jobs:
   repair:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # Use the stable GitHub-hosted label instead of pinning to ubuntu-24.04.
+    # The previous attempt received runner_id=0 and executed zero steps.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -25,6 +27,16 @@ jobs:
       CLOUDFLARE_ZONE_NAME: ngeblogging.com
       PUBLIC_SITE_URL: ${{ vars.CLOUDFLARE_SMOKE_TEST_URL || 'https://ngeblogging.com' }}
     steps:
+      - name: Runner preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "runner=$(uname -a)"
+          echo "node=$(node --version || true)"
+          echo "npm=$(npm --version || true)"
+          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum tersedia pada environment cloudflare-production"; exit 1; }
+          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -68,4 +80,3 @@ jobs:
       - name: Public smoke test passed
         run: |
           echo 'Custom-domain repair completed and public HTTPS smoke tests passed.'
-          echo 'Runner repair retry marker: 2026-08-13T14:28+07:00'
