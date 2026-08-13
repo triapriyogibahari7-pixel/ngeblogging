@@ -68,3 +68,4 @@ jobs:
       - name: Public smoke test passed
         run: |
           echo 'Custom-domain repair completed and public HTTPS smoke tests passed.'
+          echo 'Runner repair retry marker: 2026-08-13T14:28+07:00'
