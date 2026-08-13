@@ -71,8 +71,8 @@ jobs:
             } catch (e) { return { host, status: 0, html: false, contentType: '', url: '', error: String(e?.message || e) }; }
           }
 
-          // Do not depend on a separate CLOUDFLARE_ACCOUNT_ID secret. Resolve the
-          // authoritative account directly from the active production zone.
+          // Resolve the authoritative Cloudflare account from the active zone;
+          // no separate account-id secret is required.
           const zones = await cf(`/zones?name=${encodeURIComponent(domain)}&status=active&per_page=50`, zoneToken);
           const matches = (zones || []).filter((z) => norm(z?.name) === domain && norm(z?.status) === 'active');
           if (matches.length !== 1) throw new Error(`Zone aktif ${domain} harus tepat satu; ditemukan ${matches.length}.`);
@@ -86,11 +86,22 @@ jobs:
           const publicNs = [...await resolveNs(domain)].map(norm).filter(Boolean).sort();
           if (assignedNs.join('|') !== publicNs.join('|')) throw new Error(`Nameserver publik belum sama. Cloudflare=${assignedNs.join(', ')}; publik=${publicNs.join(', ')}.`);
 
+          // Cloudflare's custom-domain collection uses POST to create a new
+          // binding and PUT on /domains/{id} to update an existing binding.
+          // Upsert instead of PUT-ing the collection, which was the previous
+          // runner failure point.
+          const existing = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains?service=${encodeURIComponent(service)}`, workerToken);
           for (const host of [domain, www]) {
-            await cf(`/accounts/${accountId}/workers/domains`, workerToken, { method: 'PUT', body: { hostname: host, service, environment: 'production', zone_id: zoneId, zone_name: domain } });
+            const payload = { hostname: host, service, environment: 'production', zone_id: zoneId, zone_name: domain };
+            const row = (existing || []).find((x) => norm(x?.hostname) === host);
+            if (row?.id) {
+              await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains/${encodeURIComponent(row.id)}`, workerToken, { method: 'PUT', body: payload });
+            } else {
+              await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains`, workerToken, { method: 'POST', body: payload });
+            }
           }
 
-          const rows = await cf(`/accounts/${accountId}/workers/domains?service=${encodeURIComponent(service)}`, workerToken);
+          const rows = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains?service=${encodeURIComponent(service)}`, workerToken);
           for (const host of [domain, www]) {
             const row = (rows || []).find((x) => norm(x?.hostname) === host);
             if (!row || norm(row.service) !== service || norm(row.zone_id) !== norm(zoneId) || norm(row.zone_name) !== domain) throw new Error(`Worker domain ${host} belum terikat ke ${service}.`);
