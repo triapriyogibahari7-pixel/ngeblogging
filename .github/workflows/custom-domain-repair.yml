@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
   TARGET_DOMAIN: triapriyogi.com
   WORKER_SERVICE: ngeblogging
 
@@ -34,8 +34,8 @@ jobs:
           set -euo pipefail
           echo "runner=$(uname -a)"
           echo "node=$(node --version)"
+          test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum tersedia pada environment cloudflare-production"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
-          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
 
       - name: Repair authoritative Cloudflare Worker domains
         shell: bash
@@ -44,15 +44,18 @@ jobs:
           node --input-type=module <<'NODE'
           import { resolveNs } from 'node:dns/promises';
 
+          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID.trim();
+          const token = process.env.CLOUDFLARE_API_TOKEN.trim();
           const domain = process.env.TARGET_DOMAIN.toLowerCase();
           const www = `www.${domain}`;
           const service = process.env.WORKER_SERVICE.trim();
-          const zoneToken = process.env.CLOUDFLARE_DOMAIN_API_TOKEN.trim();
-          const workerToken = process.env.CLOUDFLARE_API_TOKEN.trim();
           const base = 'https://api.cloudflare.com/client/v4';
           const norm = (v) => String(v || '').toLowerCase().replace(/\.$/, '').trim();
 
-          async function cf(path, token, options = {}) {
+          if (!/^[0-9a-f]{32}$/i.test(accountId)) throw new Error('CLOUDFLARE_ACCOUNT_ID tidak valid.');
+          if (!token) throw new Error('CLOUDFLARE_API_TOKEN kosong.');
+
+          async function cf(path, options = {}) {
             const headers = {
               authorization: `Bearer ${token}`,
               accept: 'application/json',
@@ -93,47 +96,32 @@ jobs:
             }
           }
 
-          // Resolve the authoritative Cloudflare account from the active zone.
-          const zones = await cf(`/zones?name=${encodeURIComponent(domain)}&status=active&per_page=50`, zoneToken);
-          const matches = (zones || []).filter((zone) => norm(zone?.name) === domain && norm(zone?.status) === 'active');
-          if (matches.length !== 1) throw new Error(`Zone aktif ${domain} harus tepat satu; ditemukan ${matches.length}.`);
-
-          const zone = matches[0];
-          const zoneId = String(zone.id || '');
-          const accountId = String(zone.account?.id || '');
-          const assignedNs = [...(zone.name_servers || [])].map(norm).filter(Boolean).sort();
-          if (!/^[0-9a-f]{32}$/i.test(zoneId)) throw new Error('Zone ID custom domain tidak valid.');
-          if (!/^[0-9a-f]{32}$/i.test(accountId)) throw new Error('Account ID pemilik zone tidak valid.');
-
           const publicNs = [...await resolveNs(domain)].map(norm).filter(Boolean).sort();
-          if (assignedNs.join('|') !== publicNs.join('|')) {
-            throw new Error(`Nameserver publik belum sama. Cloudflare=${assignedNs.join(', ')}; publik=${publicNs.join(', ')}.`);
-          }
+          console.log(JSON.stringify({ domain, publicNameservers: publicNs }, null, 2));
+          if (!publicNs.length) throw new Error(`Nameserver publik ${domain} tidak dapat di-resolve.`);
 
-          // Cloudflare Workers Domains uses PUT on the collection to attach or
-          // update a custom domain. Do not POST the collection or PUT /{id}.
-          // Those endpoints are not the current Workers Domains API contract.
+          // Current Cloudflare Workers Domains API contract: attach/update is
+          // PUT on /accounts/{account_id}/workers/domains. zone_name is enough;
+          // zone_id is optional. Do not POST the collection or PUT /{id}.
           for (const host of [domain, www]) {
-            const payload = {
-              hostname: host,
-              service,
-              zone_id: zoneId,
-              zone_name: domain,
-            };
-            const attached = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains`, workerToken, {
+            const attached = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains`, {
               method: 'PUT',
-              body: payload,
+              body: {
+                hostname: host,
+                service,
+                zone_name: domain,
+              },
             });
             if (norm(attached?.hostname) !== host || norm(attached?.service) !== norm(service)) {
               throw new Error(`Cloudflare mengembalikan binding tidak sesuai untuk ${host}.`);
             }
-            console.log(JSON.stringify({ attached: host, id: attached?.id, hostname: attached?.hostname, service: attached?.service, zone_id: attached?.zone_id, zone_name: attached?.zone_name }, null, 2));
+            console.log(JSON.stringify({ attached: host, id: attached?.id, hostname: attached?.hostname, service: attached?.service, zone_id: attached?.zone_id, zone_name: attached?.zone_name, cert_id: attached?.cert_id }, null, 2));
           }
 
-          const rows = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains?service=${encodeURIComponent(service)}`, workerToken);
+          const rows = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains?service=${encodeURIComponent(service)}`);
           for (const host of [domain, www]) {
             const row = (rows || []).find((item) => norm(item?.hostname) === host);
-            if (!row || norm(row.service) !== norm(service) || norm(row.zone_id) !== norm(zoneId) || norm(row.zone_name) !== norm(domain)) {
+            if (!row || norm(row.service) !== norm(service) || norm(row.zone_name) !== norm(domain)) {
               throw new Error(`Worker domain ${host} belum terikat ke ${service}.`);
             }
           }
@@ -141,7 +129,7 @@ jobs:
           let live = [];
           for (let attempt = 1; attempt <= 20; attempt += 1) {
             live = await Promise.all([smoke(domain), smoke(www)]);
-            console.log(JSON.stringify({ attempt, domain, zoneId, assignedNs, publicNs, live }, null, 2));
+            console.log(JSON.stringify({ attempt, domain, publicNs, live }, null, 2));
             if (live.every((item) => item.status >= 200 && item.status < 400 && item.html && item.contentType.includes('text/html'))) break;
             await new Promise((resolve) => setTimeout(resolve, 15000));
           }
@@ -150,7 +138,7 @@ jobs:
             throw new Error(`HTTPS publik belum menyajikan HTML untuk: ${live.filter((item) => !(item.status >= 200 && item.status < 400 && item.html && item.contentType.includes('text/html'))).map((item) => `${item.host} (${item.status || item.error || 'no-response'})`).join(', ')}`);
           }
 
-          console.log(JSON.stringify({ ok: true, domain, www, zoneId, accountIdResolved: true, service, live }, null, 2));
+          console.log(JSON.stringify({ ok: true, domain, www, service, publicNs, live }, null, 2));
           NODE
 
       - name: Public smoke test passed
