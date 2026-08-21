@@ -1,1 +1,4 @@
 Ngeblogging Studio audit snapshot.
+Custom-domain repair trigger: 2026-08-21T12:55:00+07:00
+Target: triapriyogi.com + www.triapriyogi.com
+Required: runner preflight, Worker domain attachment, HTTPS public smoke test.
