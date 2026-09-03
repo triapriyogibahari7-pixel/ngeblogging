@@ -1,8 +1,6 @@
 name: Ngeblogging custom domain repair
 
 on:
-  push:
-    branches: [main]
   workflow_run:
     workflows: ["Cloudflare Workers production"]
     types: [completed]
@@ -13,7 +11,7 @@ permissions:
 
 concurrency:
   group: ngeblogging-custom-domain-repair
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -23,9 +21,9 @@ env:
 
 jobs:
   repair:
-    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment: cloudflare-production
     steps:
       - name: Runner preflight
@@ -87,7 +85,7 @@ jobs:
               return {
                 host,
                 status: response.status,
-                html: /<!doctype\\s+html|<html[\\s>]/i.test(text.slice(0, 12000)),
+                html: /<!doctype\s+html|<html[\s>]/i.test(text.slice(0, 12000)),
                 contentType,
                 url: response.url,
               };
@@ -100,17 +98,10 @@ jobs:
           console.log(JSON.stringify({ domain, publicNameservers: publicNs }, null, 2));
           if (!publicNs.length) throw new Error(`Nameserver publik ${domain} tidak dapat di-resolve.`);
 
-          // Current Cloudflare Workers Domains API contract: attach/update is
-          // PUT on /accounts/{account_id}/workers/domains. zone_name is enough;
-          // zone_id is optional. Do not POST the collection or PUT /{id}.
           for (const host of [domain, www]) {
             const attached = await cf(`/accounts/${encodeURIComponent(accountId)}/workers/domains`, {
               method: 'PUT',
-              body: {
-                hostname: host,
-                service,
-                zone_name: domain,
-              },
+              body: { hostname: host, service, zone_name: domain },
             });
             if (norm(attached?.hostname) !== host || norm(attached?.service) !== norm(service)) {
               throw new Error(`Cloudflare mengembalikan binding tidak sesuai untuk ${host}.`);
@@ -127,7 +118,7 @@ jobs:
           }
 
           let live = [];
-          for (let attempt = 1; attempt <= 20; attempt += 1) {
+          for (let attempt = 1; attempt <= 40; attempt += 1) {
             live = await Promise.all([smoke(domain), smoke(www)]);
             console.log(JSON.stringify({ attempt, domain, publicNs, live }, null, 2));
             if (live.every((item) => item.status >= 200 && item.status < 400 && item.html && item.contentType.includes('text/html'))) break;
@@ -142,5 +133,4 @@ jobs:
           NODE
 
       - name: Public smoke test passed
-        run: |
-          echo 'Custom-domain repair completed with the current Cloudflare Workers Domains API and public HTTPS smoke tests passed.'
+        run: echo 'Custom-domain repair completed and public HTTPS smoke tests passed for apex and www.'
