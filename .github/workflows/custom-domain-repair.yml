@@ -15,7 +15,7 @@ concurrency:
 
 env:
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
   TARGET_DOMAIN: triapriyogi.com
   WORKER_SERVICE: ngeblogging
 
@@ -33,7 +33,7 @@ jobs:
           echo "runner=$(uname -a)"
           echo "node=$(node --version)"
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum tersedia pada environment cloudflare-production"; exit 1; }
-          test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
+          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
 
       - name: Repair authoritative Cloudflare Worker domains
         shell: bash
@@ -43,7 +43,7 @@ jobs:
           import { resolveNs } from 'node:dns/promises';
 
           const accountId = process.env.CLOUDFLARE_ACCOUNT_ID.trim();
-          const token = process.env.CLOUDFLARE_API_TOKEN.trim();
+          const token = process.env.CLOUDFLARE_DOMAIN_API_TOKEN.trim();
           const domain = process.env.TARGET_DOMAIN.toLowerCase();
           const www = `www.${domain}`;
           const service = process.env.WORKER_SERVICE.trim();
@@ -51,7 +51,7 @@ jobs:
           const norm = (v) => String(v || '').toLowerCase().replace(/\.$/, '').trim();
 
           if (!/^[0-9a-f]{32}$/i.test(accountId)) throw new Error('CLOUDFLARE_ACCOUNT_ID tidak valid.');
-          if (!token) throw new Error('CLOUDFLARE_API_TOKEN kosong.');
+          if (!token) throw new Error('CLOUDFLARE_DOMAIN_API_TOKEN kosong.');
 
           async function cf(path, options = {}) {
             const headers = {
