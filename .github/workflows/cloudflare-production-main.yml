@@ -1,0 +1,84 @@
+name: Cloudflare Workers production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ngeblogging-cloudflare-production-main
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+  VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: cloudflare-production
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate production source
+        run: npm run test:production
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Validate Cloudflare credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]]
+          test -n "${CLOUDFLARE_API_TOKEN}"
+
+      - name: Deploy Worker and assets
+        run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
+
+      - name: Verify workers.dev production release
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            body="$(curl -fsS --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' "https://ngeblogging.triapriyogibahari7.workers.dev/release-v344.json?main=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if printf '%s' "$body" | grep -q 'studio-theme-code-editor-v344'; then
+              echo "WORKERS_DEV_RELEASE_VERIFIED"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "WORKERS_DEV_RELEASE_VERIFY_FAILED" >&2
+          exit 1
+
+      - name: Verify ngeblogging.com public shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/ngeblogging.html -w '%{http_code}' -H 'Cache-Control: no-cache' "https://ngeblogging.com/?main=${GITHUB_SHA}&attempt=${attempt}" || true)"
+            if [[ "$code" == "200" ]] && grep -q 'id="root"' /tmp/ngeblogging.html; then
+              echo "NGELOGGING_PUBLIC_SHELL_VERIFIED"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "NGELOGGING_PUBLIC_SHELL_VERIFY_FAILED" >&2
+          exit 1
