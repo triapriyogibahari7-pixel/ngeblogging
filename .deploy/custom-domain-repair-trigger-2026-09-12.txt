@@ -1,0 +1,2 @@
+Custom-domain repair trigger marker.
+This file intentionally contains no runtime code. It exists to trigger the production deployment workflow so the authoritative custom-domain repair workflow runs after a successful production deployment.
