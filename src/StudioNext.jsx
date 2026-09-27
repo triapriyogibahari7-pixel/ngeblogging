@@ -327,7 +327,7 @@ export default function StudioNext({ onExit, user }) {
 }
 
 function Loading({ label }) { return <div className="sn-loading"><LoaderCircle className="spin"/>{label}</div>; }
-function PageTitle({ title, description, action }) { return <header className="sn-page-title"><div><small>NGEBLOGGING STUDIO</small><h1>{title}</h1><p>{description}</p></div>{action}</header>; }
+function PageTitle({ title, description, action }) { return <header className="sn-page-title"><div>{title === "Analitik" ? null : <small>NGEBLOGGING STUDIO</small>}<h1>{title}</h1><p>{description}</p></div>{action}</header>; }
 
 function HomeView({ docs, displayName, site, loading, createDoc, openDoc, openNara }) {
   const published = docs.filter((doc) => doc.status === "published").length;
