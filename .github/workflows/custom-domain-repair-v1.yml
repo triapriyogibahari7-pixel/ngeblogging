@@ -10,14 +10,12 @@ permissions:
   statuses: write
 
 concurrency:
-  group: ngeblogging-custom-domain-repair-v2
+  group: ngeblogging-custom-domain-repair-v3
   cancel-in-progress: false
 
 jobs:
   repair:
-    # Use the stable GitHub-hosted label instead of pinning to ubuntu-24.04.
-    # The previous attempt received runner_id=0 and executed zero steps.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     environment: cloudflare-production
     env:
