@@ -117,13 +117,24 @@ function Customizer({ value, onChange, theme }) {
 
 function CodeEditor({ value, onChange, config, widgets, theme, device, onDeviceChange }) {
   const [tab, setTab] = useState("html");
+  const gutterRef = useRef(null);
+  const editorRef = useRef(null);
   const tabs = [{ id:"html",label:"HTML",icon:FileCode2 },{ id:"css",label:"CSS",icon:Palette },{ id:"javascript",label:"JavaScript",icon:Code2 }];
   const selectedDevice = deviceInfo(device);
+  const code = String(value[tab] || "");
+  const lineCount = Math.max(10000, code.split("\n").length);
+  const lineNumbers = useMemo(() => Array.from({ length: lineCount }, (_, index) => index + 1), [lineCount]);
+  const syncScroll = (event) => {
+    if (gutterRef.current) gutterRef.current.scrollTop = event.currentTarget.scrollTop;
+  };
   return <div className="tn-code-workspace">
     <section className="tn-code-pane">
       <nav>{tabs.map(({id,label,icon:Icon}) => <button key={id} className={tab===id?"active":""} onClick={() => setTab(id)}><Icon/>{label}</button>)}</nav>
-      <div className="tn-code-status"><span><ShieldCheck/> Sandbox aktif</span><small>{String(value[tab] || "").length.toLocaleString("id-ID")} karakter</small></div>
-      <textarea aria-label={`Editor ${tab}`} value={value[tab] || ""} onChange={(event) => onChange({ ...value, [tab]: event.target.value })} spellCheck="false"/>
+      <div className="tn-code-status"><span><ShieldCheck/> Sandbox aktif · baris 1–10.000</span><small>{code.length.toLocaleString("id-ID")} karakter</small></div>
+      <div className="tn-code-editor">
+        <div className="tn-code-gutter" ref={gutterRef} aria-hidden="true">{lineNumbers.map((number) => <span key={number}>{number}</span>)}</div>
+        <textarea ref={editorRef} aria-label={`Editor ${tab}`} value={code} onChange={(event) => onChange({ ...value, [tab]: event.target.value })} onScroll={syncScroll} spellCheck="false" wrap="off"/>
+      </div>
     </section>
     <section className="tn-code-preview-pane">
       <header><div><small>PREVIEW LANGSUNG</small><b>{selectedDevice.label} · {selectedDevice.width}px</b></div><DeviceSwitch value={device} onChange={onDeviceChange}/></header>
