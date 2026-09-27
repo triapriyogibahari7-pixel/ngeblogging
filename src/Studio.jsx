@@ -206,5 +206,6 @@ import "./studio-responsive-lock-v285.css";
 // after every historical stylesheet, while preserving their page-level visuals.
 import "./studio-sidebar-direct-v300.js";
 import "./studio-sidebar-direct-v300.css";
+import "./studio-analytics-text-flow-v347.css";
 
 export default StudioFastGate;
