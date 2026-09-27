@@ -94,3 +94,32 @@
   .sn-shell .sn-main .op41-toolbar h2{ font-size:20px!important; }
   .sn-shell .sn-main .op41-toolbar p{ font-size:11px!important; }
 }
+
+
+/* v348: isolate only the Analytics page title from sticky top chrome.
+   No analytics cards/panels are repositioned by this repair. */
+.sn-shell .sn-main > .sn-analytics-view-v348 {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 0 !important;
+  padding-top: 28px !important;
+  transform: none !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 .sn-page-title {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 0 !important;
+  transform: none !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 .sn-page-title > div,
+.sn-shell .sn-main > .sn-analytics-view-v348 .sn-page-title small,
+.sn-shell .sn-main > .sn-analytics-view-v348 .sn-page-title h1,
+.sn-shell .sn-main > .sn-analytics-view-v348 .sn-page-title p {
+  position: relative !important;
+  transform: none !important;
+}
+@media (max-width:700px) {
+  .sn-shell .sn-main > .sn-analytics-view-v348 {
+    padding-top: 22px !important;
+  }
+}
