@@ -558,7 +558,7 @@ export default function NaraAssistant({
       </button>
 
       {open && (
-        <div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">
+        <div className="nara-assistant-layer" data-nara-interaction={size === "full" ? "full" : size} data-nara-layer-size={size} role="dialog" aria-modal={size === "full" ? "true" : "false"} aria-label="Nara AI Assistant">
           <button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />
           <aside className="nara-assistant-shell" aria-busy={busy} data-nara-size={size} data-nara-native-size="v149">
             <div className="nara-assistant-header">
