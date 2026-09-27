@@ -192,3 +192,59 @@
     margin-bottom: 20px !important;
   }
 }
+
+/* v350: fix only the Analytics production-data heading stack.
+   API Keys and all non-Analytics views are intentionally untouched. */
+.sn-shell .sn-main .op41-panel .op41-toolbar > div:first-child {
+  position: static !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+.sn-shell .sn-main .op41-panel .op41-toolbar > div:first-child .op41-kicker {
+  position: static !important;
+  display: block !important;
+  height: auto !important;
+  min-height: 13px !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  transform: none !important;
+  line-height: 1.3 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+.sn-shell .sn-main .op41-panel .op41-toolbar > div:first-child h2 {
+  position: static !important;
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+.sn-shell .sn-main .op41-panel .op41-toolbar > div:first-child p {
+  position: static !important;
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 6px 0 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  line-height: 1.5 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+@media (max-width:700px) {
+  .sn-shell .sn-main .op41-panel .op41-toolbar > div:first-child .op41-kicker {
+    margin-bottom: 6px !important;
+  }
+}
