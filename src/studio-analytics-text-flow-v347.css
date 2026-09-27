@@ -1,0 +1,96 @@
+/* Isolated Analytics text-flow repair.
+   Keeps the real analytics panel visible; only normalizes its text sizing/flow
+   so it cannot overlap the page title or each other. */
+.sn-shell .sn-main .op41-host{
+  position:static!important;
+  inset:auto!important;
+  transform:none!important;
+  float:none!important;
+  clear:both!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:16px 0 0!important;
+  padding:0!important;
+  overflow:visible!important;
+}
+.sn-shell .sn-main .op41-panel{
+  position:static!important;
+  display:grid!important;
+  gap:16px!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+.sn-shell .sn-main .op41-toolbar{
+  position:static!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  width:100%!important;
+  min-height:0!important;
+}
+.sn-shell .sn-main .op41-toolbar > div:first-child{
+  min-width:0!important;
+  flex:1 1 auto!important;
+}
+.sn-shell .sn-main .op41-toolbar h2{
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:4px 0 0!important;
+  padding:0!important;
+  font:600 22px/1.2 "Playfair Display",serif!important;
+  letter-spacing:normal!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+.sn-shell .sn-main .op41-toolbar p{
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:6px 0 0!important;
+  padding:0!important;
+  font:400 12px/1.5 "DM Sans",sans-serif!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+.sn-shell .sn-main .op41-toolbar .op41-kicker{
+  display:block!important;
+  width:auto!important;
+  margin:0!important;
+  font:900 10px/1.3 "DM Sans",sans-serif!important;
+  white-space:normal!important;
+}
+.sn-shell .sn-main .op41-toolbar-actions{
+  position:static!important;
+  display:flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+}
+.sn-shell .sn-main .op41-card header h2{
+  margin:4px 0 0!important;
+  font:600 20px/1.2 "Playfair Display",serif!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+@media(max-width:700px){
+  .sn-shell .sn-main .op41-host{ margin-top:12px!important; }
+  .sn-shell .sn-main .op41-toolbar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  .sn-shell .sn-main .op41-toolbar-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;
+  }
+  .sn-shell .sn-main .op41-toolbar-actions > *{ width:100%!important; }
+  .sn-shell .sn-main .op41-toolbar h2{ font-size:20px!important; }
+  .sn-shell .sn-main .op41-toolbar p{ font-size:11px!important; }
+}
