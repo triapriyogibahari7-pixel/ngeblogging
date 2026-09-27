@@ -252,3 +252,49 @@
 @media(prefers-reduced-motion:reduce){
   .tn-frame-shell iframe{transition:none!important}
 }
+
+/* Real code-editor gutter: numbered lines 1–10,000 with synchronized scrolling. */
+.tn-code-editor{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:58px minmax(0,1fr)!important;
+  overflow:hidden!important;
+  background:#101827!important;
+}
+.tn-code-gutter{
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:17px 8px 17px 0!important;
+  border-right:1px solid #26354b!important;
+  background:#0c1421!important;
+  color:#60738f!important;
+  font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  text-align:right!important;
+  user-select:none!important;
+}
+.tn-code-gutter span{
+  display:block!important;
+  height:19.8px!important;
+  line-height:19.8px!important;
+}
+.tn-code-editor textarea{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:17px!important;
+  border:0!important;
+  outline:0!important;
+  resize:none!important;
+  overflow:auto!important;
+  white-space:pre!important;
+  tab-size:2!important;
+  font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+}
+@media(max-width:760px){
+  .tn-code-editor{grid-template-columns:50px minmax(0,1fr)!important}
+  .tn-code-gutter{font-size:11px!important;padding-right:7px!important}
+  .tn-code-gutter span{height:18.15px!important;line-height:18.15px!important}
+  .tn-code-editor textarea{font-size:11px!important;line-height:1.65!important}
+}
