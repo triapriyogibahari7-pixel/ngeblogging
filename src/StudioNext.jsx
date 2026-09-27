@@ -72,6 +72,7 @@ function SiteManager({ sites, activeSite, user, onSelect, onClose, onCreated, se
   const create = async () => {
     setCreating(true);
     try {
+      if (sites.length >= 25) throw new Error("Batas pembuatan situs telah tercapai.");
       const site = await createUserSite({ userId: user.id, name: draft.name, slug: draft.slug || draft.name, description: draft.description, blueprint: draft.blueprint });
       onCreated(site);
       setToast("Situs dan subdomain baru dibuat");
@@ -116,6 +117,7 @@ export default function StudioNext({ onExit, user }) {
   const [sites, setSites] = useState([]);
   const [site, setSite] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [profileMenu, setProfileMenu] = useState(false);
   const [dataMode, setDataMode] = useState(user?.id && supabaseConfigured ? "connecting" : "local");
   const [contentLoading, setContentLoading] = useState(false);
   const [pageInfo, setPageInfo] = useState({ cursor: null, hasMore: false });
@@ -256,7 +258,7 @@ export default function StudioNext({ onExit, user }) {
     finally { setContentLoading(false); }
   };
 
-  const chooseView = (next) => { setView(next); setMobileSidebar(false); if (["posts", "pages"].includes(next)) setQuery(""); };
+  const chooseView = (next) => { setView(next); setMobileSidebar(false); setProfileMenu(false); if (["posts", "pages"].includes(next)) setQuery(""); };
   const selectSite = (next) => { setActiveSiteId(next.id); setSite(next); setSiteManager(false); setDocs([]); setView("home"); setToast(`Workspace ${next.name} aktif`); };
   const toggleSidebar = () => {
     if (currentStudioDeviceMode() === "small") setMobileSidebar((current) => !current);
@@ -272,7 +274,13 @@ export default function StudioNext({ onExit, user }) {
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
-      <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
+      <div className="sn-logo">
+        <button className="sn-logo-toggle" onClick={toggleSidebar} aria-label={sidebar ? "Ciutkan sidebar" : "Buka sidebar"} aria-expanded={sidebar}>
+          <span className="sn-logo-mark" aria-hidden="true"><strong>n</strong><i>.</i></span>
+        </button>
+        <b>Ngeblogging</b>
+        <button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button>
+      </div>
       <button className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
         <button className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
@@ -294,9 +302,8 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
+        <button className="sn-icon sn-sidebar-toggle sn-mobile-only-toggle" onClick={toggleSidebar} aria-label={mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio"} aria-expanded={mobileSidebar} aria-controls="ngeblogging-studio-sidebar">
           <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong><i>.</i></span>
-          <PanelLeftClose className="sn-desktop-sidebar-icon"/>
         </button>
         <button className="sn-workspace" onClick={() => setSiteManager(true)}><span>{site?.name?.slice(0, 2).toUpperCase() || "NB"}</span><div><small>WORKSPACE</small><b>{site?.name || "Ngeblogging"}</b></div><ChevronDown/></button>
         <div className={`sn-cloud ${dataMode}`}>{dataMode === "cloud" ? <Cloud/> : dataMode === "connecting" ? <LoaderCircle className="spin"/> : <CloudOff/>}<span>{dataMode === "cloud" ? "Cloud aktif" : dataMode === "connecting" ? "Menghubungkan" : "Mode perangkat"}</span></div>
@@ -304,7 +311,18 @@ export default function StudioNext({ onExit, user }) {
           {site?.slug && <a className="sn-view-site" href={`https://${site.slug}.ngeblogging.com`} target="_blank" rel="noreferrer" title="Lihat situs publik"><Eye/><span>Lihat situs</span></a>}
           <button aria-label="Cari"><Search/></button>
           <button className="sn-nara-button" onClick={() => setNaraOpen(true)}><Sparkles/> Tanya Nara</button>
-          <button className="sn-avatar" onClick={() => chooseView("settings")} aria-label="Buka pengaturan profil">{profile?.avatar_url ? <img src={profile.avatar_url} alt=""/> : initials}</button>
+          <div className="sn-profile-wrap">
+            <button className="sn-avatar" onClick={() => setProfileMenu((open) => !open)} aria-label="Buka menu profil" aria-expanded={profileMenu}>
+              {profile?.avatar_url ? <img src={profile.avatar_url} alt=""/> : initials}
+            </button>
+            {profileMenu && <div className="sn-profile-menu" role="menu">
+              <button onClick={() => { setProfileMenu(false); setToast("Profil aktif"); }} role="menuitem"><Users/> Profil</button>
+              <button onClick={() => chooseView("settings")} role="menuitem"><Settings/> Pengaturan</button>
+              <button onClick={() => { setProfileMenu(false); setSiteManager(true); }} role="menuitem"><Plus/> Tambahkan Situs</button>
+              <button onClick={() => { setProfileMenu(false); setToast("Bantuan Ngeblogging siap"); }} role="menuitem"><Sparkles/> Bantuan Nara</button>
+              <button onClick={onExit} role="menuitem"><LogOut/> Keluar</button>
+            </div>}
+          </div>
         </div>
       </header>
 
