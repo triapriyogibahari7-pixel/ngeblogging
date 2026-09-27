@@ -1,0 +1,1 @@
+Trigger production custom-domain repair after switching the workflow to ubuntu-22.04.
