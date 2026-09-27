@@ -206,3 +206,58 @@
   margin: 0 !important;
   padding: 0 !important;
 }
+
+
+/* Analytics-only page heading isolation: keep the page visible and remove legacy overlap layers. */
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title::before,
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title::after {
+  content: none !important;
+  display: none !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title > div {
+  display: block !important;
+  position: static !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title h1 {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 0 7px !important;
+  padding: 0 !important;
+  line-height: 1.15 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title p {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
