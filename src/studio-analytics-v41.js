@@ -122,7 +122,7 @@ function analyticsMarkup(data, simulated) {
 }
 
 function hostFor(view) {
-  let host = view.querySelector(":scope > .op41-host[data-surface='analytics'], :scope > .sp37-analytics-host, :scope > .sn-info-grid");
+  let host = view.querySelector(":scope > .sn-analytics-data-host, :scope > .op41-host[data-surface='analytics'], :scope > .sp37-analytics-host");
   if (!host) { host = document.createElement("div"); view.append(host); }
   host.className = "op41-host";
   host.dataset.surface = "analytics";
