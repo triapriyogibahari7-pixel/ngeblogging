@@ -197,3 +197,12 @@
     width: 100% !important;
   }
 }
+/* Final Analytics title cleanup: remove the legacy black/blue kicker that can overlap the Analitik heading. */
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-page-title > div > small {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
