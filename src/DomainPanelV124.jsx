@@ -75,7 +75,15 @@ function Metric({ icon: Icon, label, value }) {
 export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToast }) {
   const [token, setToken] = useState("");
   const [config, setConfig] = useState(null);
-  const [domains, setDomains] = useState([]);
+  const initialCustomDomain = String(site?.custom_domain || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+  const [domains, setDomains] = useState(() => initialCustomDomain ? [{
+    id: `site-custom-domain:${site?.id || "initial"}`, site_id: site?.id || null,
+    hostname: initialCustomDomain, status: "pending", provider: "cloudflare-full-zone",
+    provider_status: "pending", ssl_status: "pending", is_primary: true,
+    ownership_verification: {}, ssl_validation: [], error_message: null,
+    created_at: site?.updated_at || null, updated_at: site?.updated_at || null,
+  }] : []);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
