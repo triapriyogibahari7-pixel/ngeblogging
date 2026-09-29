@@ -261,3 +261,27 @@
   float: none !important;
   clear: both !important;
 }
+
+/* Keep only the dedicated Analytics title and its description visible in the heading block. */
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title > div > small,
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title > div > :not(h1):not(p) {
+  display: none !important;
+  visibility: hidden !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title h1,
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title p {
+  position: static !important;
+  display: block !important;
+  float: none !important;
+  clear: both !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title h1 {
+  margin: 0 0 8px !important;
+  line-height: 1.15 !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 > .sn-analytics-page-title p {
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
