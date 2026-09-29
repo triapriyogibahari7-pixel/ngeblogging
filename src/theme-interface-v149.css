@@ -804,3 +804,26 @@
   .tn-layout-studio>.tn-layout-selected-room{padding:15px!important}
   .tn-layout-selected-room .tn-layout-widget-list{grid-template-columns:1fr!important}
 }
+
+/* v154: final DOM-order authority. These rooms are siblings; never place them in the old side column. */
+.tn-layout-studio{
+  display:flex!important;
+  flex-direction:column!important;
+  flex-wrap:nowrap!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:16px!important;
+  position:relative!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+.tn-layout-studio>.tn-layout-map-room{order:1!important;position:relative!important;inset:auto!important;float:none!important;grid-area:auto!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;transform:none!important}
+.tn-layout-studio>.tn-layout-mode-room{order:2!important;position:relative!important;inset:auto!important;float:none!important;grid-area:auto!important;width:100%!important;height:auto!important;min-height:74px!important;margin:0!important;transform:none!important}
+.tn-layout-studio>.tn-layout-body{order:3!important;position:relative!important;inset:auto!important;float:none!important;grid-area:auto!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;transform:none!important;display:block!important}
+.tn-layout-studio>.tn-layout-body>.tn-layout-canvas{position:relative!important;inset:auto!important;float:none!important;grid-area:auto!important;width:100%!important;height:auto!important;min-height:520px!important;margin:0!important;transform:none!important}
+.tn-layout-studio>.tn-layout-selected-room{order:4!important;position:relative!important;inset:auto!important;float:none!important;grid-area:auto!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;transform:none!important;display:block!important}
+.tn-layout-studio>.tn-layout-all-widgets-room{order:5!important;position:relative!important;inset:auto!important;float:none!important;grid-area:auto!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;transform:none!important;display:block!important}
+.tn-layout-studio>.tn-layout-selected-room .tn-layout-widget-list{position:static!important;display:grid!important;width:100%!important;min-height:0!important;height:auto!important;margin:0!important}
+.tn-layout-studio>.tn-layout-all-widgets-room>button{position:static!important;inset:auto!important;float:none!important;transform:none!important;width:100%!important;height:auto!important;min-height:48px!important;margin:0!important}
