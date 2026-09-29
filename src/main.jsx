@@ -582,8 +582,8 @@ function detectPublishedSiteTarget() {
   if (hostname === "ngeblogging.com" || hostname === "www.ngeblogging.com") return null;
   if (hostname.endsWith(".workers.dev") || hostname.endsWith(".pages.dev") || hostname.endsWith(".netlify.app")) return null;
   if (hostname.endsWith(".ngeblogging.com")) {
-    const slug = hostname.slice(0, -".ngeblogging.com".length);
-    return slug && !slug.includes(".") ? { slug, hostname: "" } : null;
+    const tenantSlug = hostname.slice(0, -".ngeblogging.com".length);
+    return tenantSlug && !tenantSlug.includes(".") ? { slug: "", hostname } : null;
   }
   return { slug: "", hostname };
 }
