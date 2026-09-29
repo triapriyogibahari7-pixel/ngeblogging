@@ -125,11 +125,37 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
     // become a blank page solely because the migration has not rewritten status
     // or the public site_domains query is temporarily unavailable.
     if (!siteId) siteId = await resolveLegacyCustomDomainSite(db, normalizedHostname);
+
+    // Final recovery: the site's canonical custom_domain is authoritative for
+    // an already-published site even when the site_domains row is stale or the
+    // public domain index is temporarily unavailable.
+    if (!siteId) {
+      try {
+        const { data: sites, error: customDomainError } = await withTimeout(
+          db.from("sites")
+            .select("id,custom_domain,status,is_public,updated_at")
+            .eq("status", "active")
+            .eq("is_public", true)
+            .not("custom_domain", "is", null)
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .limit(50),
+          "Memulihkan domain custom situs",
+        );
+        if (customDomainError) throw customDomainError;
+        const match = (sites || []).find(
+          (site) => normalizeHostname(site.custom_domain) === normalizedHostname,
+        );
+        siteId = match?.id || null;
+      } catch (customDomainError) {
+        console.warn("Canonical custom-domain recovery unavailable", customDomainError);
+      }
+    }
+
     if (!siteId) return null;
   }
 
   let request = db.from("sites")
-    .select("id,name,slug,description,status,blueprint,theme_key,settings,locale,timezone,published_at,updated_at")
+    .select("id,name,slug,description,status,custom_domain,blueprint,theme_key,settings,locale,timezone,published_at,updated_at")
     .eq("status", "active")
     .eq("is_public", true);
   request = siteId ? request.eq("id", siteId) : request.eq("slug", slug);
