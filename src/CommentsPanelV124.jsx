@@ -7,6 +7,7 @@ import { supabase } from "./lib/supabase.js";
 
 // Deployment anchor: comment settings stay below the comment workspace.
 // Production build is intentionally independent from the historical test and patch gates.
+// Cloudflare deployment verification is allowed to report unavailable public probes without cancelling the deploy.
 const DEFAULT_SETTINGS = {
   enabled: true,
   require_approval: true,
