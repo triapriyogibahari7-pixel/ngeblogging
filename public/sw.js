@@ -1,5 +1,11 @@
-const VERSION = "ngeblogging-app-v304-ui-repair-20260927";
-const CACHE_RELEASE = "studio-ui-repair-cache-v304";
+const VERSION = "ngeblogging-app-v305-site-switch-first-site-20260805";
+const STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305 = "studio-site-switch-first-site-v305-20260805";
+const STUDIO_SITE_SWITCHER_RELEASE_V305 = "studio-real-site-switcher-v305-20260805";
+const STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305 = "studio-first-site-required-v305-20260805";
+const STUDIO_STARTUP_SITE_UNION_RELEASE_V305 = "startup-membership-plus-owned-sites-v305-20260805";
+const ACTIVE_VERSION_V305 = VERSION;
+const ACTIVE_CACHE_RELEASE_V305 = CACHE_RELEASE;
+const CACHE_RELEASE = "studio-site-switch-first-site-cache-v305";
 const STUDIO_ADD_SITE_RELEASE_V303 = "studio-add-site-free-subdomain-v303-20260805";
 const STUDIO_BUILD_NARA_RELEASE_V302 = "studio-build-nara-authority-v302-20260805";
 const STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301 = "studio-sidebar-hard-lock-v301-20260805";
@@ -59,8 +65,8 @@ const ACTIVE_VERSION_V302 = "ngeblogging-app-v302-cache-cutover-20260805";
 const ACTIVE_CACHE_RELEASE_V302 = "studio-build-nara-cache-v302";
 const ACTIVE_VERSION_V303 = VERSION;
 const ACTIVE_CACHE_RELEASE_V303 = CACHE_RELEASE;
-const SHELL_CACHE = `${ACTIVE_VERSION_V303}-${ACTIVE_CACHE_RELEASE_V303}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_BUILD_NARA_RELEASE_V302}-${STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;
-const ASSET_CACHE = `${ACTIVE_VERSION_V303}-${ACTIVE_CACHE_RELEASE_V303}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_BUILD_NARA_RELEASE_V302}-${STUDIO_SIDEBAR_HARD_LOCK_RELEASE_V301}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;
+const SHELL_CACHE = `${ACTIVE_VERSION_V305}-${ACTIVE_CACHE_RELEASE_V305}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_STARTUP_SITE_UNION_RELEASE_V305}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;
+const ASSET_CACHE = `${ACTIVE_VERSION_V305}-${ACTIVE_CACHE_RELEASE_V305}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_STARTUP_SITE_UNION_RELEASE_V305}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -168,8 +174,8 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V303"),
-        reason: "service-worker-activated-add-site-v303",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V305"),
+        reason: "service-worker-activated-site-switch-first-site-v305",
         reloadRequired: false,
       });
       // Deliberately no client.navigate()/reload: preserve login/session and unsaved work.
