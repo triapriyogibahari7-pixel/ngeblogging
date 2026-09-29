@@ -1,16 +1,14 @@
 # Production deployment runner intentionally lives on main so every main push deploys and verifies the public Worker.
-name: Cloudflare Workers production
+name: Cloudflare Workers compatibility (manual)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ngeblogging-cloudflare-production-main
+  group: ngeblogging-cloudflare-compatibility-manual
   cancel-in-progress: false
 
 env:
