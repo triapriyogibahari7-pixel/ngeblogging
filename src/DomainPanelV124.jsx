@@ -95,7 +95,26 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       const payload = await domainApi(`/api/domains/list?siteId=${encodeURIComponent(site.id)}`, nextToken);
       setConfig(payload);
       const list = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
-      setDomains(list);
+      const configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase() === configuredCustomDomain);
+      const displayList = configuredCustomDomain && !hasConfiguredCustomDomain && site?.status === "active" && site?.is_public
+        ? [{
+            id: `site-custom-domain:${site.id}`,
+            site_id: site.id,
+            hostname: configuredCustomDomain,
+            status: "active",
+            provider: "cloudflare-full-zone",
+            provider_status: "active",
+            ssl_status: "active",
+            is_primary: true,
+            ownership_verification: {},
+            ssl_validation: [],
+            error_message: null,
+            created_at: site.updated_at || null,
+            updated_at: site.updated_at || null,
+          }, ...list]
+        : list;
+      setDomains(displayList);
     } catch (nextError) {
       console.error("Domain load failed", nextError);
       setError(nextError.message || "Data Domain belum dapat dimuat.");
