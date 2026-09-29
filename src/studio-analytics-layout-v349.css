@@ -228,3 +228,59 @@
   content: none !important;
   display: none !important;
 }
+
+
+/* v352: remove the actual overlay layer on the live toolbar title. */
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > h2,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > p {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  translate: none !important;
+  rotate: none !important;
+  scale: none !important;
+  float: none !important;
+  clear: both !important;
+  grid-area: auto !important;
+  z-index: auto !important;
+  text-indent: 0 !important;
+  clip: auto !important;
+  clip-path: none !important;
+  visibility: visible !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > h2 {
+  color: #17283f !important;
+  font: 600 22px/1.25 "Playfair Display", serif !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  opacity: 1 !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > p {
+  color: #748398 !important;
+  font-size: 10px !important;
+  line-height: 1.5 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  opacity: 1 !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > h2::before,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > h2::after,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > p::before,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > p::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > h2 + p {
+  margin-top: 0 !important;
+}
