@@ -189,3 +189,43 @@ html body .nara-assistant-layer[data-nara-layer-size="medium"] .nara-upgrade-car
   html body .nara-assistant-shell,
   html body .nara-attachment-menu{animation:none!important;transition:none!important}
 }
+
+
+/* Nara launcher icon alignment — keep the logo optically centered inside the round button. */
+html body .nara-floating-button > span,
+html body .nara-floating-proxy-v20 {
+  display:grid!important;
+  place-items:center!important;
+  align-content:center!important;
+  justify-content:center!important;
+  line-height:0!important;
+  box-sizing:border-box!important;
+}
+html body .nara-floating-button > span svg,
+html body .nara-floating-proxy-v20 > svg {
+  display:block!important;
+  position:static!important;
+  inset:auto!important;
+  margin:0!important;
+  transform:translateY(1px)!important;
+  transform-origin:center!important;
+}
+html body .nara-floating-proxy-v20 {
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  min-height:58px!important;
+  padding:0!important;
+  border-radius:50%!important;
+}
+html body .nara-floating-proxy-v20 > svg {
+  width:24px!important;
+  height:24px!important;
+  flex:none!important;
+}
+@media(max-width:600px){
+  html body .nara-floating-button > span svg {
+    width:24px!important;
+    height:24px!important;
+  }
+}
