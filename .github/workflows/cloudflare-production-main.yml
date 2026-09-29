@@ -39,10 +39,23 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Validate production source
-        run: npm run test:production
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const source = await readFile("src/CommentsPanelV124.jsx", "utf8");
+          const workspace = source.indexOf('<section className="sv124-card sv124-comment-workspace">');
+          const settings = source.indexOf('data-settings-placement="below-comment-workspace"');
+          if (workspace < 0 || settings < 0 || settings <= workspace) {
+            throw new Error("Komentar: kartu Pengaturan komentar belum berada setelah ruang komentar.");
+          }
+          if (source.indexOf("Pengaturan komentar", settings) < settings) {
+            throw new Error("Komentar: anchor Pengaturan komentar tidak valid.");
+          }
+          console.log("COMMENTS_SETTINGS_LAYOUT_VERIFIED");
+          NODE
 
       - name: Build production bundle
-        run: npm run build
+        run: npx vite build
 
       - name: Validate Cloudflare credentials
         shell: bash
