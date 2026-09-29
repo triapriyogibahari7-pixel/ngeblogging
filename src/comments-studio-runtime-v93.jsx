@@ -10,7 +10,7 @@ import { supabase, supabaseConfigured } from "./lib/supabase.js";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
 import "./comments-studio-v93.css";
 
-const RELEASE = "comments-studio-v93-20260929-settings-below-workspace";
+const RELEASE = "comments-studio-v93-20260929-settings-below-workspace-r2";
 const ROOT_ID = "ngeblogging-comments-studio-v93-root";
 const FILTERS = [["all","Semua"],["unread","Belum dibaca"],["unreplied","Belum dibalas"],["pending","Menunggu"],["approved","Disetujui"],["hidden","Disembunyikan"],["spam","Spam"]];
 
