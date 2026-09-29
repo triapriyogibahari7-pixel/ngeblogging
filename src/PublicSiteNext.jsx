@@ -50,7 +50,7 @@ function homeCode(site,theme,posts,pages) {
   }).replace(/</g,"\\u003c");
   const injection=`
 (()=>{
-  const data=${payload};
+  const freePreview=${freePreview ? "true" : "false"};\n  const data=${payload};
   const escapeText=(value)=>String(value||'');
   const linkTo=(slug)=>'/'+encodeURIComponent(slug)+(freePreview?'?ngeblogging-free-preview=1':'');
   document.title=data.site.name;
