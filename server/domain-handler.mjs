@@ -1130,6 +1130,24 @@ async function registerFullZoneDomain(
     );
   }
 
+  // Jika zone sudah aktif, registrasi harus menyelesaikan binding Worker
+  // pada request yang sama. Jangan menyimpan domain sebagai "verifying"
+  // ketika routing apex/www sebenarnya sudah bisa dipasang.
+  let workerDomains = null;
+  if (zoneState.active) {
+    workerDomains = await attachConfiguredWorkerDomains(
+      env,
+      row,
+      zoneState,
+    );
+    row = await saveFullZoneRefreshState(
+      env,
+      row,
+      zoneState,
+      workerDomains,
+    );
+  }
+
   return response(
     existingDomain ? 200 : 201,
     {
@@ -1139,6 +1157,16 @@ async function registerFullZoneDomain(
       zone: zoneState,
       instructions:
         fullZoneInstructions(zoneState),
+      attached: workerDomainsReady(workerDomains),
+      workerDomains: workerDomains
+        ? {
+            apex: publicWorkerDomain(workerDomains.apex),
+            www: publicWorkerDomain(workerDomains.www),
+            additional: workerDomains.additional
+              .map(publicWorkerDomain)
+              .filter(Boolean),
+          }
+        : null,
       cnameTarget: null,
     },
     requestId,
