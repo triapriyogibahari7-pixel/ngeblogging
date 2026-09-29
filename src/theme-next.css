@@ -46,3 +46,45 @@
     min-width:0!important;
   }
 }
+
+/* Theme search is part of the Theme hero itself, directly below the
+   TEMA NGEBLOGGING label. It is no longer a separate library header. */
+.tn-hero-copy .tn-theme-search-under-title{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:min(100%,520px)!important;
+  height:44px!important;
+  margin:16px 0 0!important;
+  padding:0 12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #dce4ee!important;
+  border-radius:11px!important;
+  background:#f8fafc!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+}
+.tn-hero-copy .tn-theme-search-under-title svg{
+  width:16px!important;
+  flex:0 0 16px!important;
+  color:#8794a7!important;
+}
+.tn-hero-copy .tn-theme-search-under-title input{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  width:auto!important;
+  height:100%!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  font-size:10px!important;
+  color:var(--tn-ink)!important;
+}
+@media(max-width:700px){
+  .tn-hero-copy .tn-theme-search-under-title{
+    width:100%!important;
+    margin-top:14px!important;
+  }
+}
