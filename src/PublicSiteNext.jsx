@@ -90,7 +90,7 @@ function homeCode(site,theme,posts,pages) {
       if(heading)heading.textContent=post.title;
       if(copy)copy.textContent=post.excerpt;
       if(!card.dataset.bound){
-        const open=()=>{window.top.location.href=linkTo(post.slug)};
+        const open=()=>{window.open(linkTo(post.slug),'_top')};
         card.addEventListener('click',open);
         card.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open()}});
         card.dataset.bound='true';
