@@ -750,3 +750,11 @@ footer {
 .nara-message-image-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:7px}.nara-message-image-grid img{display:block;width:100%;max-height:150px;border:1px solid #dfe6f1;border-radius:10px;object-fit:cover;background:#edf2f8}.nara-message.user .nara-message-image-grid img{border-color:#b8ccf3}
 .nara-message-action{display:inline-flex;align-items:center;gap:4px;margin:6px 4px 0;border:0;border-radius:7px;padding:5px 7px;background:transparent;color:#748197;font-size:9px}.nara-message-action:hover{background:#eaf1fb;color:#2f64c5}.nara-message-action.retry{background:#fff0f1;color:#b13d4c}.nara-message-action svg{width:12px;height:12px}
 .nara-thinking{flex-wrap:wrap}.nara-thinking button{margin-left:7px;border:0;border-radius:6px;padding:4px 6px;background:#eef2f8;color:#65748b;font-size:9px}.nara-composer-tools button:disabled,.nara-select select:disabled{cursor:not-allowed;opacity:.45}
+
+
+/* Comments settings final placement: keep the whole settings block below the comment workspace. */
+.sv124-comments-page{display:flex!important;flex-direction:column!important;align-items:stretch!important;}
+.sv124-comments-page > .sv124-comment-workspace{order:20!important;position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;transform:none!important;}
+.sv124-comments-page > .sv124-settings-card{order:30!important;position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;inset:auto!important;transform:none!important;float:none!important;clear:both!important;width:100%!important;max-width:none!important;margin:24px 0 32px!important;z-index:1!important;}
+.sv124-comments-page > .sv124-settings-card > header{position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;}
+.sv124-comments-page > .sv124-settings-card > header > button{margin-left:auto!important;flex:0 0 auto!important;}
