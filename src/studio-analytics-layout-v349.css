@@ -316,3 +316,103 @@
     justify-content: stretch !important;
   }
 }
+
+
+/* v354: clean analytics header. Intentionally uses new class names so legacy toolbar rules cannot repaint or overlap it. */
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 96px !important;
+  margin: 0 !important;
+  padding: 20px 22px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading {
+  display: block !important;
+  position: static !important;
+  flex: 1 1 320px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading small,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading h2,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading p {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading small {
+  margin-bottom: 6px !important;
+  color: #2d6edf !important;
+  font: 700 10px/1.2 system-ui, sans-serif !important;
+  letter-spacing: .12em !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading h2 {
+  margin-bottom: 5px !important;
+  color: #17283f !important;
+  font: 600 22px/1.25 "Playfair Display", Georgia, serif !important;
+  letter-spacing: 0 !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading p {
+  color: #748398 !important;
+  font: 400 12px/1.5 system-ui, sans-serif !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex: 0 1 auto !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-actions > * {
+  position: static !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+@media (max-width: 700px) {
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+    padding: 18px !important;
+  }
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-actions > * {
+    width: 100% !important;
+  }
+}
