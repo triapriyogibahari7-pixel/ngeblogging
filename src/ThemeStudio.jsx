@@ -174,7 +174,13 @@ function LayoutMap({ widgets, onOpenWidgets, mode, onModeChange }) {
     </section>
     <div className="tn-layout-body">
       <div className={`tn-layout-canvas ${mode === "mobile" ? "mobile-mode" : "desktop-mode"}`} data-layout-mode={mode}>{areas.map((area) => <button key={area.id} className={`tn-layout-area ${area.id}`} onClick={onOpenWidgets}><span>{area.count}</span>{area.label}</button>)}</div>
-      <aside className="tn-layout-side"><small>WIDGET TERPILIH</small><h3>{enabled.length} widget aktif</h3><p>Centang menunjukkan widget yang akan ikut diterbitkan bersama tema.</p><div className="tn-layout-widget-list">{enabled.slice(0, 12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div><button onClick={onOpenWidgets}><Blocks/> Buka semua {WIDGET_COUNT} widget</button></aside>
+    </div>
+    <aside className="tn-layout-selected-room" aria-label="Widget terpilih">
+      <div className="tn-layout-selected-copy"><small>WIDGET TERPILIH</small><h3>{enabled.length} widget aktif</h3><p>Centang menunjukkan widget yang akan ikut diterbitkan bersama tema.</p></div>
+      <div className="tn-layout-widget-list">{enabled.slice(0, 12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div>
+    </aside>
+    <div className="tn-layout-all-widgets-room">
+      <button onClick={onOpenWidgets}><Blocks/> Buka semua {WIDGET_COUNT} widget</button>
     </div>
   </section>;
 }
