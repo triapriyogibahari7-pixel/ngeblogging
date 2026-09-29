@@ -1,4 +1,4 @@
-export const RELEASE = "studio-analytics-layout-v349-20260929";
+export const RELEASE = "studio-analytics-layout-v349-20260929-text-only-cleanup";
 
 function analyticsView() {
   const views = [...document.querySelectorAll(".sn-main > .sn-view-pad")];
@@ -12,37 +12,49 @@ function hideDuplicateToolbarText(view) {
   if (!view) return;
   const targets = [
     "RINGKASAN ANALITIK",
-    "Performa situs",
-    "Pantau kunjungan, pengunjung, dan sumber trafik dalam satu tampilan.",
+    "PERFORMA SITUS",
+    "PANTAU KUNJUNGAN, PENGUNJUNG, DAN SUMBER TRAFIK DALAM SATU TAMPILAN.",
   ];
-  const normalize = (value) => String(value || "").replace(/\\s+/g, " ").trim();
-  view.querySelectorAll(".op41-toolbar").forEach((toolbar) => {
-    const first = toolbar.firstElementChild;
-    if (first) {
-      const text = normalize(first.textContent);
-      if (targets.some((target) => text.includes(target))) first.remove();
-    }
-  });
-  view.querySelectorAll(".op41-clean-heading").forEach((node) => node.remove());
-  const walker = document.createTreeWalker(view, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  let node;
-  while ((node = walker.nextNode())) nodes.push(node);
-  nodes.forEach((textNode) => {
-    let value = String(textNode.nodeValue || "");
-    let next = value;
-    targets.forEach((target) => {
-      next = next.split(target).join("");
+  const normalize = (value) => String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+
+  const containsTarget = (value) => {
+    const text = normalize(value);
+    return targets.some((target) => text.includes(target));
+  };
+
+  const hasInteractive = (node) => !!node?.querySelector?.(
+    "button, select, input, textarea, a[href]"
+  );
+
+  // Only clean the duplicate text layer inside analytics toolbars.
+  // Never remove the real page title, metric cards, or toolbar controls.
+  view.querySelectorAll(".op41-toolbar, .op41-clean-toolbar").forEach((toolbar) => {
+    [...toolbar.children].forEach((child) => {
+      if (!containsTarget(child.textContent)) return;
+      if (hasInteractive(child)) return;
+      child.remove();
     });
-    if (next !== value) textNode.nodeValue = next;
   });
-  view.querySelectorAll("*").forEach((node) => {
-    const text = normalize(node.textContent);
-    if (!targets.includes(text) || node.children.length > 0) return;
-    node.remove();
+
+  // Legacy heading class from earlier analytics renderers.
+  view.querySelectorAll(".op41-clean-heading").forEach((node) => node.remove());
+
+  // If an old renderer split the duplicate heading into several text nodes,
+  // remove only those text-only descendants from the toolbar.
+  view.querySelectorAll(".op41-toolbar, .op41-clean-toolbar").forEach((toolbar) => {
+    const walker = document.createTreeWalker(toolbar, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach((textNode) => {
+      if (!containsTarget(textNode.nodeValue)) return;
+      textNode.nodeValue = "";
+    });
   });
 }
-
 function normalizeTitle(view) {
   if (!view) return false;
   view.classList.add("sn-analytics-view-v349");
