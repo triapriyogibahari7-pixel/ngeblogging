@@ -1,8 +1,6 @@
 name: Cloudflare Workers production
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -17,7 +15,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
