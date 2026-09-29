@@ -226,8 +226,6 @@ export default function CommentsPanelV124({ site, setToast }) {
       <Metric label="Menunggu" value={dashboard.counts.pending}/>
     </div>
 
-    </section>
-
     {error ? <div className="sv124-error" role="alert">{error}</div> : null}
 
     <section className="sv124-card sv124-comment-workspace">
@@ -253,17 +251,6 @@ export default function CommentsPanelV124({ site, setToast }) {
             <header><div className="sv124-comment-avatar large">{String(selected.authorName || "P").slice(0, 2).toUpperCase()}</div><div><small>{selected.content?.kind || "Konten"} · {selected.content?.title || selected.requestPath}</small><h2>{selected.authorName || "Pengunjung"}</h2><p>{selected.authorEmail || "Email tidak tersedia"}{selected.authorWebsite ? ` · ${selected.authorWebsite}` : ""}</p></div><i className={`status-${selected.status}`}>{statusLabel(selected.status)}</i></header>
             <section className="sv124-comment-message"><p>{selected.body}</p>{selected.moodEmoji ? <span>{selected.moodEmoji}</span> : null}<footer><time>{formatDate(selected.createdAt)}</time><small>{selected.deviceType || "Perangkat tidak diketahui"}{selected.countryCode ? ` · ${selected.countryCode}` : ""}</small></footer></section>
 
-<section className="sv124-card sv124-settings-card">
-      <header><div><ShieldCheck/><span><b>Pengaturan komentar</b><small>Toggle komentar pada editor tetap dapat mengatur setiap Post/Page.</small></span></div><button className="sv124-primary" onClick={saveSettings} disabled={busy === "settings"}><Save/>{busy === "settings" ? "Menyimpan…" : "Simpan"}</button></header>
-      <div className="sv124-toggle-grid">
-        <Toggle checked={settings.enabled} onChange={(value) => setSettings((current) => ({ ...current, enabled: value }))} label="Aktifkan komentar" description="Tampilkan diskusi publik."/>
-        <Toggle checked={settings.require_approval} onChange={(value) => setSettings((current) => ({ ...current, require_approval: value }))} label="Persetujuan" description="Komentar baru menunggu moderasi."/>
-        <Toggle checked={settings.allow_guests} onChange={(value) => setSettings((current) => ({ ...current, allow_guests: value }))} label="Izinkan pengunjung" description="Pengunjung dapat berkomentar."/>
-        <Toggle checked={settings.require_email} onChange={(value) => setSettings((current) => ({ ...current, require_email: value }))} label="Email wajib" description="Email privat untuk pengelola."/>
-        <Toggle checked={settings.emoji_enabled} onChange={(value) => setSettings((current) => ({ ...current, emoji_enabled: value }))} label="Emoji & reaksi" description="Wajah bundar dan reaksi."/>
-      </div>
-    
-
             <div className="sv124-moderation-actions">
               <button onClick={() => moderate(selected.id, "approve", "Komentar disetujui")} disabled={Boolean(busy)}><CheckCircle2/>Setujui</button>
               <button onClick={() => moderate(selected.id, "hidden", "Komentar disembunyikan")} disabled={Boolean(busy)}><EyeOff/>Sembunyikan</button>
@@ -277,6 +264,17 @@ export default function CommentsPanelV124({ site, setToast }) {
           </>}
         </article>
       </div>}
-    </section>
+    </sectio
+
+    <section className="sv124-card sv124-settings-card">
+      <header><div><ShieldCheck/><span><b>Pengaturan komentar</b><small>Toggle komentar pada editor tetap dapat mengatur setiap Post/Page.</small></span></div><button className="sv124-primary" onClick={saveSettings} disabled={busy === "settings"}><Save/>{busy === "settings" ? "Menyimpan…" : "Simpan"}</button></header>
+      <div className="sv124-toggle-grid">
+        <Toggle checked={settings.enabled} onChange={(value) => setSettings((current) => ({ ...current, enabled: value }))} label="Aktifkan komentar" description="Tampilkan diskusi publik."/>
+        <Toggle checked={settings.require_approval} onChange={(value) => setSettings((current) => ({ ...current, require_approval: value }))} label="Persetujuan" description="Komentar baru menunggu moderasi."/>
+        <Toggle checked={settings.allow_guests} onChange={(value) => setSettings((current) => ({ ...current, allow_guests: value }))} label="Izinkan pengunjung" description="Pengunjung dapat berkomentar."/>
+        <Toggle checked={settings.require_email} onChange={(value) => setSettings((current) => ({ ...current, require_email: value }))} label="Email wajib" description="Email privat untuk pengelola."/>
+        <Toggle checked={settings.emoji_enabled} onChange={(value) => setSettings((current) => ({ ...current, emoji_enabled: value }))} label="Emoji & reaksi" description="Wajah bundar dan reaksi."/>
+      </div>
+    </section>n>
   </div>;
 }
