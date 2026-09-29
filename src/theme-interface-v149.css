@@ -259,30 +259,52 @@
   .tn-layout-mode-switch button{flex:0 0 82px!important}
   .tn-layout-canvas{min-height:470px!important}
 }
-/* Dedicated control room for the layout-map title, two modes, and widget action. */
-.tn-layout-studio-header{
+/* Dedicated isolated room: title, two layout modes, and widget action never share the canvas. */
+.tn-layout-control-room{
+  position:relative!important;
+  z-index:5!important;
+  width:100%!important;
+  min-width:0!important;
   display:grid!important;
   grid-template-columns:minmax(0,1fr) minmax(250px,300px)!important;
   align-items:start!important;
   gap:20px!important;
-  margin-bottom:18px!important;
+  margin:0 0 18px!important;
+  padding:18px!important;
+  border:1px solid #d9e2ee!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  box-shadow:0 8px 24px rgba(29,52,83,.05)!important;
+  clear:both!important;
 }
-.tn-layout-copy{
+.tn-layout-control-room .tn-layout-copy{
   min-width:0!important;
-  padding:4px 0 0!important;
+  padding:4px 0!important;
 }
-.tn-layout-copy h2{
+.tn-layout-control-room .tn-layout-copy small{
+  display:block!important;
+  color:#2869df!important;
+  font-size:8px!important;
+  font-weight:900!important;
+  letter-spacing:.14em!important;
+}
+.tn-layout-control-room .tn-layout-copy h2{
   margin:6px 0 7px!important;
   max-width:720px!important;
+  font:600 clamp(22px,2.4vw,34px) "Playfair Display",serif!important;
   line-height:1.2!important;
   overflow-wrap:anywhere!important;
 }
-.tn-layout-copy p{
+.tn-layout-control-room .tn-layout-copy p{
   max-width:680px!important;
   margin:0!important;
+  color:#6d7d92!important;
+  font-size:10px!important;
   line-height:1.6!important;
 }
-.tn-layout-controls{
+.tn-layout-control-room .tn-layout-controls{
+  position:relative!important;
+  z-index:6!important;
   min-width:0!important;
   display:flex!important;
   flex-direction:column!important;
@@ -292,18 +314,39 @@
   border:1px solid #d9e2ee!important;
   border-radius:16px!important;
   background:#f7faff!important;
-  box-shadow:0 8px 24px rgba(29,52,83,.05)!important;
 }
-.tn-layout-controls .tn-layout-mode-switch{
+.tn-layout-control-room .tn-layout-mode-switch{
+  position:static!important;
   width:100%!important;
+  display:flex!important;
+  gap:4px!important;
   margin:0!important;
+  padding:3px!important;
   box-sizing:border-box!important;
-  justify-content:stretch!important;
+  border:1px solid #d9e2ee!important;
+  border-radius:10px!important;
+  background:#f3f6fa!important;
 }
-.tn-layout-controls .tn-layout-mode-switch button{
+.tn-layout-control-room .tn-layout-mode-switch button{
+  position:static!important;
   flex:1 1 0!important;
+  min-width:0!important;
+  min-height:32px!important;
+  padding:0 12px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:#708097!important;
+  font-size:9px!important;
+  font-weight:900!important;
 }
-.tn-layout-controls>button{
+.tn-layout-control-room .tn-layout-mode-switch button.active{
+  background:#2869df!important;
+  color:#fff!important;
+  box-shadow:0 3px 10px rgba(40,105,223,.2)!important;
+}
+.tn-layout-control-room .tn-layout-controls>button{
+  position:static!important;
   width:100%!important;
   min-height:40px!important;
   display:inline-flex!important;
@@ -319,18 +362,24 @@
   font-weight:900!important;
   box-shadow:0 5px 14px rgba(40,105,223,.16)!important;
 }
-.tn-layout-controls>button:hover{
+.tn-layout-control-room .tn-layout-controls>button:hover{
   background:#235fc8!important;
   border-color:#235fc8!important;
 }
+.tn-layout-canvas{
+  position:relative!important;
+  z-index:1!important;
+  clear:both!important;
+  isolation:isolate!important;
+}
 @media(max-width:760px){
-  .tn-layout-studio-header{
+  .tn-layout-control-room{
     grid-template-columns:1fr!important;
     gap:12px!important;
+    padding:14px!important;
   }
-  .tn-layout-controls{
+  .tn-layout-control-room .tn-layout-controls{
     width:100%!important;
-    box-sizing:border-box!important;
   }
 }
 .tn-code-workspace{
