@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "./lib/supabase.js";
 
+// Deployment anchor: comment settings stay below the comment workspace.
 const DEFAULT_SETTINGS = {
   enabled: true,
   require_approval: true,
