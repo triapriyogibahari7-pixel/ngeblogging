@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: ngeblogging-production
@@ -35,7 +36,28 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Test and validate production package
-        run: npm run test:production
+        id: production_test
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run test:production 2>&1 | tee /tmp/ngeblogging-production-test.log
+
+      - name: Publish production test failure
+        if: steps.production_test.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          summary="$(grep -E 'not ok|AssertionError|ERR!|Error:|failed|FAIL' /tmp/ngeblogging-production-test.log | tail -n 3 | tr '\n' ' ' | cut -c1-120)"
+          if [ -z "$summary" ]; then
+            summary="$(tail -n 3 /tmp/ngeblogging-production-test.log | tr '\n' ' ' | cut -c1-120)"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=failure \
+            -f context='diagnostic/production-test' \
+            -f description="$summary" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          exit 1
 
   build-api:
     needs: test
