@@ -132,7 +132,19 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       setDomains(displayList);
     } catch (nextError) {
       console.error("Domain load failed", nextError);
-      const configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      let configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      if (!configuredCustomDomain && supabase && site?.id) {
+        try {
+          const { data: currentSite } = await withDeadline(
+            supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
+            10000,
+          );
+          configuredCustomDomain = String(currentSite?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+          if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
+        } catch (siteLookupError) {
+          console.warn("Custom domain error fallback lookup failed", siteLookupError);
+        }
+      }
       if (configuredCustomDomain) {
         setDomains([{
           id: `site-custom-domain:${site.id}`,
