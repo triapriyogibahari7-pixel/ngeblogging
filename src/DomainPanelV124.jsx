@@ -218,7 +218,13 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   useEffect(() => {
     setToken("");
     setConfig(null);
-    setDomains([]);
+    setDomains(site?.custom_domain ? [{
+      id: `site-custom-domain:${site.id}`, site_id: site.id,
+      hostname: String(site.custom_domain).trim().toLowerCase().replace(/^https?:\\/\\//, "").replace(/^www\\./, "").replace(/[/?#].*$/, ""),
+      status: "pending", provider: "cloudflare-full-zone", provider_status: "pending", ssl_status: "pending",
+      is_primary: true, ownership_verification: {}, ssl_validation: [], error_message: null,
+      created_at: site.updated_at || null, updated_at: site.updated_at || null,
+    }] : []);
     setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
     setHostname("");
     load();
