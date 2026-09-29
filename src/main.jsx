@@ -221,10 +221,8 @@ function App() {
     [session, setSession] = useState(null),
     [authMessage, setAuthMessage] = useState("");
 
-  if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></div>}><PublicSite target={publicTarget()} /></Suspense>;
-
   useEffect(() => {
-    if (!supabaseConfigured || !supabase) return undefined;
+    if (publicTenant || !supabaseConfigured || !supabase) return undefined;
     let active = true;
     const params = new URLSearchParams(window.location.search);
     const isRecovery = params.get("auth") === "recovery";
@@ -295,7 +293,9 @@ function App() {
       active = false;
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [publicTenant]);
+
+  if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></div>}><PublicSite target={publicTarget()} /></Suspense>;
 
   const openAuth = () => {
     setAuthMode("signin");
