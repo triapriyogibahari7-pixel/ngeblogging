@@ -207,5 +207,7 @@ import "./studio-responsive-lock-v285.css";
 import "./studio-sidebar-direct-v300.js";
 import "./studio-sidebar-direct-v300.css";
 import "./studio-analytics-text-flow-v347.css";
+import "./studio-analytics-layout-v349.js";
+import "./studio-analytics-layout-v349.css";
 
 export default StudioFastGate;
