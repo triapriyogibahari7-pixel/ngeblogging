@@ -145,6 +145,15 @@
 .tn-layout-area.main{grid-area:main!important;background:linear-gradient(145deg,#fff,#f8fbff)!important}
 .tn-layout-area.sidebar{grid-area:sidebar!important;background:#f9fbfe!important}
 .tn-layout-area.footer{grid-area:footer!important}
+.tn-layout-canvas.mobile-mode{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:72px minmax(190px,1fr) 110px 72px!important;
+  grid-template-areas:"header" "main" "sidebar" "footer"!important;
+}
+.tn-layout-canvas.mobile-mode .tn-layout-area{
+  justify-content:flex-start!important;
+  padding:0 16px!important;
+}
 .tn-layout-area span{
   min-width:25px!important;
   height:25px!important;
