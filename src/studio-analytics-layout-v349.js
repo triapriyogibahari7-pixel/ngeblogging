@@ -15,9 +15,11 @@ function hideDuplicateToolbarText(view) {
     "Performa situs",
     "Pantau kunjungan, pengunjung, dan sumber trafik dalam satu tampilan.",
   ]);
-  view.querySelectorAll("small,h2,p").forEach((node) => {
-    const text = String(node.textContent || "").replace(/\\s+/g, " ").trim();
+  const nodes = [...view.querySelectorAll("*")];
+  nodes.forEach((node) => {
+    const text = String(node.textContent || "").replace(/\s+/g, " ").trim();
     if (!targets.has(text)) return;
+    if (node.children.length > 0) return;
     node.style.setProperty("visibility", "hidden", "important");
     node.style.setProperty("opacity", "0", "important");
     node.style.setProperty("pointer-events", "none", "important");
@@ -66,7 +68,9 @@ function normalizeTitle(view) {
 let frame = 0;
 function sync() {
   frame = 0;
-  const view = analyticsView();\n  normalizeTitle(view);\n  hideDuplicateToolbarText(view);
+  const view = analyticsView();
+  normalizeTitle(view);
+  hideDuplicateToolbarText(view);
 }
 
 function schedule() {
