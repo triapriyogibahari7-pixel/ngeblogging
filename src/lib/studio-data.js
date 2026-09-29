@@ -69,7 +69,7 @@ export async function listUserSites(userId) {
   const client = requireCloud();
   const { data, error } = await client
     .from("site_members")
-    .select("site_id,role,joined_at,sites(id,name,slug,description,status,is_public,blueprint,theme_key,settings,published_at,created_at,updated_at)")
+    .select("site_id,role,joined_at,sites(id,name,slug,description,status,is_public,custom_domain,blueprint,theme_key,settings,published_at,created_at,updated_at)")
     .eq("user_id", userId)
     .order("joined_at", { ascending: true })
     .limit(100);
@@ -327,7 +327,7 @@ export async function setSitePublication(siteId, published) {
     .from("sites")
     .update(payload)
     .eq("id", siteId)
-    .select("id, name, slug, description, status, blueprint, theme_key, settings, is_public, published_at")
+    .select("id, name, slug, description, status, custom_domain, blueprint, theme_key, settings, is_public, published_at")
     .single();
   if (error) throw error;
   return data;
