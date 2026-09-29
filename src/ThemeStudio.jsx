@@ -162,7 +162,16 @@ function LayoutMap({ widgets, onOpenWidgets, mode, onModeChange }) {
     { id: "footer", label: "Footer", count: areaCount("footer") },
   ];
   return <section className="tn-layout-studio" aria-label="Peta tata letak dan widget">
-    <section className="tn-layout-control-room" aria-label="Kontrol peta tata letak"><div className="tn-layout-copy"><small>PETA TATA LETAK</small><h2>Struktur situs terlihat jelas dari atas sampai bawah.</h2><p>Pilih salah satu dari dua mode tampilan, lalu klik area untuk membuka Widget Studio.</p></div><div className="tn-layout-controls"><div className="tn-layout-mode-switch" aria-label="Mode peta tata letak"><button type="button" className={mode === "desktop" ? "active" : ""} aria-pressed={mode === "desktop"} onClick={() => onModeChange("desktop")}>Desktop</button><button type="button" className={mode === "mobile" ? "active" : ""} aria-pressed={mode === "mobile"} onClick={() => onModeChange("mobile")}>Mobile</button></div><button type="button" onClick={onOpenWidgets}><Blocks/> Atur widget</button></div></section>
+    <section className="tn-layout-map-room" aria-label="Ruangan peta tata letak">
+      <div className="tn-layout-copy"><small>PETA TATA LETAK</small><h2>Struktur situs terlihat jelas dari atas sampai bawah.</h2><p>Pilih salah satu dari dua mode tampilan, lalu klik area untuk membuka Widget Studio.</p></div>
+    </section>
+    <section className="tn-layout-mode-room" aria-label="Mode tata letak">
+      <div className="tn-layout-mode-title"><small>MODE TATA LETAK</small><b>Pilih tampilan struktur situs</b></div>
+      <div className="tn-layout-controls">
+        <div className="tn-layout-mode-switch" aria-label="Mode peta tata letak"><button type="button" className={mode === "desktop" ? "active" : ""} aria-pressed={mode === "desktop"} onClick={() => onModeChange("desktop")}>Desktop</button><button type="button" className={mode === "mobile" ? "active" : ""} aria-pressed={mode === "mobile"} onClick={() => onModeChange("mobile")}>Mobile</button></div>
+        <button type="button" onClick={onOpenWidgets}><Blocks/> Atur widget</button>
+      </div>
+    </section>
     <div className="tn-layout-body">
       <div className={`tn-layout-canvas ${mode === "mobile" ? "mobile-mode" : "desktop-mode"}`} data-layout-mode={mode}>{areas.map((area) => <button key={area.id} className={`tn-layout-area ${area.id}`} onClick={onOpenWidgets}><span>{area.count}</span>{area.label}</button>)}</div>
       <aside className="tn-layout-side"><small>WIDGET TERPILIH</small><h3>{enabled.length} widget aktif</h3><p>Centang menunjukkan widget yang akan ikut diterbitkan bersama tema.</p><div className="tn-layout-widget-list">{enabled.slice(0, 12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div><button onClick={onOpenWidgets}><Blocks/> Buka semua {WIDGET_COUNT} widget</button></aside>
