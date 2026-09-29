@@ -169,9 +169,6 @@ function LayoutMap({ widgets, onOpenWidgets, mode, onModeChange }) {
         <button type="button" onClick={onOpenWidgets}><Blocks/> Atur widget</button>
       </div>
     </section>
-    <section className="tn-layout-map-room" aria-label="Ruangan peta tata letak">
-      <div className="tn-layout-copy"><small>PETA TATA LETAK</small><h2>Struktur situs terlihat jelas dari atas sampai bawah.</h2><p>Pilih salah satu dari dua mode tampilan, lalu klik area untuk membuka Widget Studio.</p></div>
-    </section>
     <div className="tn-layout-body">
       <div className={`tn-layout-canvas ${mode === "mobile" ? "mobile-mode" : "desktop-mode"}`} data-layout-mode={mode}>{areas.map((area) => <button key={area.id} className={`tn-layout-area ${area.id}`} onClick={onOpenWidgets}><span>{area.count}</span>{area.label}</button>)}</div>
     </div>
