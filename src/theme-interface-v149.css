@@ -88,6 +88,32 @@
   font-weight:900!important;
 }
 .tn-layout-studio-header svg,.tn-layout-side>button svg{width:16px!important}
+.tn-layout-mode-switch{
+  display:flex!important;
+  width:max-content!important;
+  gap:4px!important;
+  margin-top:12px!important;
+  padding:3px!important;
+  border:1px solid #d9e2ee!important;
+  border-radius:10px!important;
+  background:#f3f6fa!important;
+}
+.tn-layout-mode-switch button{
+  min-width:82px!important;
+  min-height:32px!important;
+  padding:0 12px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:#708097!important;
+  font-size:9px!important;
+  font-weight:900!important;
+}
+.tn-layout-mode-switch button.active{
+  background:#2869df!important;
+  color:#fff!important;
+  box-shadow:0 3px 10px rgba(40,105,223,.2)!important;
+}
 .tn-layout-canvas{
   min-height:420px!important;
   display:grid!important;
