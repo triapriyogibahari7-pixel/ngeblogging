@@ -161,8 +161,8 @@ import "./studio-shell-v263.css";
 import "./studio-shell-v263-hotfix.css";
 
 // Product functions that remain active.
-import "./studio-theme-layout-v264.js";
-import "./studio-theme-layout-v264.css";
+// v264 detailed 26-slot map disabled: restore the simpler two-mode layout map.
+// v264 detailed 26-slot map CSS disabled with the runtime.
 // backup: import "./studio-screenshot-authority-v265.js";
 import "./studio-screenshot-authority-v265.css";
 // backup: import "./studio-shell-v265.js";
