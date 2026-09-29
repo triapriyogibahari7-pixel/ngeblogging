@@ -416,3 +416,18 @@
     width: 100% !important;
   }
 }
+
+
+/* Final text-only cleanup: hide duplicate toolbar text without changing its layout footprint. */
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading {
+  display: block !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > *,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-clean-heading > * {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
