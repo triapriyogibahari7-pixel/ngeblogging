@@ -753,6 +753,7 @@ footer {
 
 
 /* Comments settings final placement: keep the whole settings block below the comment workspace. */
+/* Production placement lock v2 — settings text and Simpan stay in the lower card. */
 .sv124-comments-page{display:flex!important;flex-direction:column!important;align-items:stretch!important;}
 .sv124-comments-page > .sv124-comment-workspace{order:20!important;position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;transform:none!important;}
 .sv124-comments-page > .sv124-settings-card{order:30!important;position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;inset:auto!important;transform:none!important;float:none!important;clear:both!important;width:100%!important;max-width:none!important;margin:24px 0 32px!important;z-index:1!important;}
