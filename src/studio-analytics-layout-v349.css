@@ -1,0 +1,162 @@
+/* Final analytics layout authority v349. It deliberately owns only the Analitik view. */
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 22px 16px 90px !important;
+  overflow: visible !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-analytics-primary-title-v349,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-page-title,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-analytics-page-title {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 0 24px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-analytics-primary-title-v349[hidden],
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-page-title[hidden],
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-analytics-page-title[hidden] {
+  display: none !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .sn-analytics-primary-title-v349 > *,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .sn-analytics-primary-title-v349 > div > * {
+  position: static !important;
+  float: none !important;
+  clear: both !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .sn-analytics-primary-title-v349 h1 {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  line-height: 1.12 !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .sn-analytics-primary-title-v349 p {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5 !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .sn-analytics-primary-title-v349 small {
+  display: none !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 > .sn-analytics-data-host {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-panel,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-card,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-chart-grid,
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-metrics {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  overflow: visible !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child {
+  flex: 1 1 280px !important;
+  min-width: 0 !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar-actions {
+  display: flex !important;
+  flex: 0 1 auto !important;
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  gap: 8px !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar-actions > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 700px) {
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 {
+    padding: 18px 12px 80px !important;
+  }
+
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar-actions > * {
+    width: 100% !important;
+  }
+
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-chart-grid,
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-chart-grid.equal,
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-metrics {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-table-wrap {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+}
