@@ -8,6 +8,22 @@ function analyticsView() {
   }) || null;
 }
 
+function hideDuplicateToolbarText(view) {
+  if (!view) return;
+  const targets = new Set([
+    "RINGKASAN ANALITIK",
+    "Performa situs",
+    "Pantau kunjungan, pengunjung, dan sumber trafik dalam satu tampilan.",
+  ]);
+  view.querySelectorAll("small,h2,p").forEach((node) => {
+    const text = String(node.textContent || "").replace(/\\s+/g, " ").trim();
+    if (!targets.has(text)) return;
+    node.style.setProperty("visibility", "hidden", "important");
+    node.style.setProperty("opacity", "0", "important");
+    node.style.setProperty("pointer-events", "none", "important");
+  });
+}
+
 function normalizeTitle(view) {
   if (!view) return false;
   view.classList.add("sn-analytics-view-v349");
@@ -50,7 +66,7 @@ function normalizeTitle(view) {
 let frame = 0;
 function sync() {
   frame = 0;
-  normalizeTitle(analyticsView());
+  const view = analyticsView();\n  normalizeTitle(view);\n  hideDuplicateToolbarText(view);
 }
 
 function schedule() {
