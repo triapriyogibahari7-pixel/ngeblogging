@@ -82,10 +82,21 @@ function ensureProxy() {
   document.querySelectorAll(".nara-floating-proxy-v18,.nara-floating-proxy-v19")
     .forEach((node) => node.remove());
 
-  const hasNara = candidates().length > 0 || Boolean(document.querySelector('[data-nara-workspace-route="true"]'));
+  const nativeCandidates = candidates();
+  const hasNara = nativeCandidates.length > 0 || Boolean(document.querySelector('[data-nara-workspace-route="true"]'));
   if (!hasNara) {
     proxy?.remove();
     proxy = null;
+    return;
+  }
+
+  /* The native Nara launcher is the canonical visual on desktop/handheld.
+     The proxy is only needed when no native launcher exists, preventing two
+     different logos/buttons from competing for the same bottom-right slot. */
+  if (nativeCandidates.length > 0) {
+    proxy?.remove();
+    proxy = null;
+    document.documentElement.dataset.naraLauncherRelease = RELEASE;
     return;
   }
 
