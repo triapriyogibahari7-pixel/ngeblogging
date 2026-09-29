@@ -266,7 +266,7 @@ export default function CommentsPanelV124({ site, setToast }) {
       </div>}
     </section>
 
-    <section className="sv124-card sv124-settings-card">
+    <section className="sv124-card sv124-settings-card" data-settings-placement="below-comment-workspace">
       <header><div><ShieldCheck/><span><b>Pengaturan komentar</b><small>Toggle komentar pada editor tetap dapat mengatur setiap Post/Page.</small></span></div><button className="sv124-primary" onClick={saveSettings} disabled={busy === "settings"}><Save/>{busy === "settings" ? "Menyimpan…" : "Simpan"}</button></header>
       <div className="sv124-toggle-grid">
         <Toggle checked={settings.enabled} onChange={(value) => setSettings((current) => ({ ...current, enabled: value }))} label="Aktifkan komentar" description="Tampilkan diskusi publik."/>
