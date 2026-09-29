@@ -289,3 +289,43 @@ body.nara-modal-open { overflow: hidden !important; touch-action: none !importan
     max-width: none !important;
   }
 }
+
+
+/* Canonical Nara launcher logo anchor: centered independently from text/grid rules. */
+html .nara-floating-button {
+  position: fixed !important;
+  overflow: hidden !important;
+}
+html .nara-floating-button > .nara-launcher-logo {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  transform: translate(-50%,-50%) !important;
+  border-radius: 50% !important;
+  line-height: 0 !important;
+  box-sizing: border-box !important;
+}
+html .nara-floating-button > .nara-launcher-logo > svg {
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  transform: none !important;
+  flex: 0 0 24px !important;
+}
+@media(max-width:760px){
+  html .nara-floating-button > .nara-launcher-logo {
+    width: 42px !important;
+    height: 42px !important;
+  }
+  html .nara-floating-button > .nara-launcher-logo > svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+}
