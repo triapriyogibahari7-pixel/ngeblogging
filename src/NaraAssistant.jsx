@@ -553,8 +553,8 @@ export default function NaraAssistant({
     <>
       <button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant">
         <span className="nara-launcher-logo" aria-hidden="true"><Sparkles /></span>
-        <b>Nara AI</b>
-        <small>Assistant</small>
+        <b>Asisten Nara AI</b>
+        <small>Asisten resmi</small>
       </button>
 
       {open && (
