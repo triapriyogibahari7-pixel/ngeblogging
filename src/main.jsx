@@ -197,7 +197,22 @@ function EditorPreview() {
     </div>
   );
 }
+function isPublicTenantHost() {
+  if (typeof window === "undefined") return false;
+  const hostname = String(window.location.hostname || "").toLowerCase().split(":")[0];
+  if (!hostname || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") return false;
+  if (hostname === "ngeblogging.com" || hostname === "www.ngeblogging.com" || hostname === "studio.ngeblogging.com" || hostname === "api.ngeblogging.com") return false;
+  return hostname.endsWith(".ngeblogging.com") || hostname.includes(".");
+}
+
+function publicTarget() {
+  const hostname = String(window.location.hostname || "").toLowerCase();
+  const slug = decodeURIComponent(window.location.pathname.split("/").filter(Boolean)[0] || "");
+  return { slug, hostname };
+}
+
 function App() {
+  const publicTenant = isPublicTenantHost();
   const [menu, setMenu] = useState(false),
     [demo, setDemo] = useState(false),
     [authMode, setAuthMode] = useState("signin"),
@@ -205,6 +220,8 @@ function App() {
     [studio, setStudio] = useState(false),
     [session, setSession] = useState(null),
     [authMessage, setAuthMessage] = useState("");
+
+  if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></span></div>}><PublicSite target={publicTarget()} /></Suspense>;
 
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return undefined;
