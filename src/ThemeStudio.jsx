@@ -181,6 +181,9 @@ function LayoutMap({ widgets, onOpenWidgets, mode, onModeChange }) {
     <aside className="tn-layout-selected-room" aria-label="Widget terpilih">
       <div className="tn-layout-selected-copy"><small>WIDGET TERPILIH</small><h3>{enabled.length} widget aktif</h3><p>Centang menunjukkan widget yang akan ikut diterbitkan bersama tema.</p></div>
       <div className="tn-layout-widget-list">{enabled.slice(0, 12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div>
+      <div className="tn-layout-all-widgets-room">
+        <button type="button" onClick={onOpenWidgets}><Blocks/> Buka semua {WIDGET_COUNT} widget</button>
+      </div>
     </aside>
   </section>;
 }
