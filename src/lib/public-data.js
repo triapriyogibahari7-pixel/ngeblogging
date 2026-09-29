@@ -92,7 +92,31 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
   const db = client();
   const normalizedHostname = normalizeHostname(hostname);
   const isNgebloggingHost = !normalizedHostname || normalizedHostname === "ngeblogging.com" || normalizedHostname.endsWith(".ngeblogging.com");
+  const freeTenantSlug = normalizedHostname.endsWith(".ngeblogging.com")
+    ? normalizedHostname.slice(0, -".ngeblogging.com".length).replace(/^www\./, "")
+    : "";
   let siteId = null;
+
+  // A free Ngeblogging hostname identifies the tenant independently from the
+  // current path. On /post-slug, the path is the CONTENT slug, not the SITE slug.
+  // Resolve the tenant first, then resolve the requested post against that site.
+  if (freeTenantSlug) {
+    try {
+      const { data: tenant, error: tenantError } = await withTimeout(
+        db.from("sites")
+          .select("id")
+          .eq("slug", freeTenantSlug)
+          .eq("status", "active")
+          .eq("is_public", true)
+          .maybeSingle(),
+        "Memuat situs publik",
+      );
+      if (tenantError) throw tenantError;
+      siteId = tenant?.id || null;
+    } catch (tenantError) {
+      console.warn("Free-host tenant lookup failed", tenantError);
+    }
+  }
 
   if (!isNgebloggingHost) {
     const candidates = domainCandidates(normalizedHostname);
@@ -158,6 +182,8 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
     .select("id,name,slug,description,status,custom_domain,blueprint,theme_key,settings,locale,timezone,published_at,updated_at")
     .eq("status", "active")
     .eq("is_public", true);
+  // Custom/free tenant hosts already resolved siteId above. Only the bare
+  // ngeblogging.com host may use the path as a site slug.
   request = siteId ? request.eq("id", siteId) : request.eq("slug", slug);
 
   const { data: site, error: siteError } = await withTimeout(request.maybeSingle(), "Memuat situs");
