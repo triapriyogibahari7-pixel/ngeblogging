@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76.js";
 import { setSitePublication } from "./lib/studio-data.js";
+import { supabase } from "./lib/supabase.js";
 
 const REQUEST_TIMEOUT = 15000;
 
@@ -95,7 +96,21 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       const payload = await domainApi(`/api/domains/list?siteId=${encodeURIComponent(site.id)}`, nextToken);
       setConfig(payload);
       const list = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
-      const configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      let configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      if (!configuredCustomDomain && supabase) {
+        try {
+          const { data: currentSite } = await withDeadline(
+            supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
+            10000,
+          );
+          if (currentSite?.status === "active" && currentSite?.is_public) {
+            configuredCustomDomain = String(currentSite.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+            if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
+          }
+        } catch (siteLookupError) {
+          console.warn("Custom domain fallback lookup failed", siteLookupError);
+        }
+      }
       const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase() === configuredCustomDomain);
       const displayList = configuredCustomDomain && !hasConfiguredCustomDomain && site?.status === "active" && site?.is_public
         ? [{
