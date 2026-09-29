@@ -152,7 +152,7 @@ function WidgetStudio({ value, onChange }) {
   </div>;
 }
 
-function LayoutMap({ widgets, onOpenWidgets }) {
+function LayoutMap({ widgets, onOpenWidgets, mode, onModeChange }) {
   const enabled = normalizeWidgetState(widgets).filter((entry) => entry.enabled !== false);
   const areaCount = (area) => enabled.filter((entry) => entry.area === area).length;
   const areas = [
@@ -163,8 +163,8 @@ function LayoutMap({ widgets, onOpenWidgets }) {
   ];
   return <section className="tn-layout-studio" aria-label="Peta tata letak dan widget">
     <div>
-      <header className="tn-layout-studio-header"><div><small>PETA TATA LETAK</small><h2>Struktur situs terlihat jelas dari atas sampai bawah.</h2><p>Klik area untuk membuka Widget Studio. Semua kotak tetap terbaca pada komputer, laptop, tablet, aplikasi, handphone, mobile, dan perangkat kecil.</p></div><button onClick={onOpenWidgets}><Blocks/> Atur widget</button></header>
-      <div className="tn-layout-canvas">{areas.map((area) => <button key={area.id} className={`tn-layout-area ${area.id}`} onClick={onOpenWidgets}><span>{area.count}</span>{area.label}</button>)}</div>
+      <header className="tn-layout-studio-header"><div><small>PETA TATA LETAK</small><h2>Struktur situs terlihat jelas dari atas sampai bawah.</h2><p>Pilih salah satu dari dua mode tampilan, lalu klik area untuk membuka Widget Studio.</p><div className="tn-layout-mode-switch" aria-label="Mode peta tata letak"><button type="button" className={mode === "desktop" ? "active" : ""} aria-pressed={mode === "desktop"} onClick={() => onModeChange("desktop")}>Desktop</button><button type="button" className={mode === "mobile" ? "active" : ""} aria-pressed={mode === "mobile"} onClick={() => onModeChange("mobile")}>Mobile</button></div></div><button onClick={onOpenWidgets}><Blocks/> Atur widget</button></header>
+      <div className={`tn-layout-canvas ${mode === "mobile" ? "mobile-mode" : "desktop-mode"}`} data-layout-mode={mode}>{areas.map((area) => <button key={area.id} className={`tn-layout-area ${area.id}`} onClick={onOpenWidgets}><span>{area.count}</span>{area.label}</button>)}</div>
     </div>
     <aside className="tn-layout-side"><small>WIDGET TERPILIH</small><h3>{enabled.length} widget aktif</h3><p>Centang menunjukkan widget yang akan ikut diterbitkan bersama tema.</p><div className="tn-layout-widget-list">{enabled.slice(0, 12).map((entry) => <span key={entry.id}><Check/><b>{entry.title || getWidget(entry.id)?.name || entry.id}</b><em>{entry.area}</em></span>)}{!enabled.length && <span><Blocks/><b>Belum ada widget aktif</b></span>}</div><button onClick={onOpenWidgets}><Blocks/> Buka semua {WIDGET_COUNT} widget</button></aside>
   </section>;
@@ -173,6 +173,7 @@ function LayoutMap({ widgets, onOpenWidgets }) {
 export default function ThemeStudio({ setToast, site, user }) {
   const [themeState, setThemeState] = useState(loadThemeState);
   const [device, setDevice] = useState(initialPreviewDevice);
+  const [layoutMode, setLayoutMode] = useState("desktop");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Semua");
   const [blueprint, setBlueprint] = useState(site?.blueprint || "all");
@@ -251,7 +252,7 @@ export default function ThemeStudio({ setToast, site, user }) {
 
     <section className="tn-command"><div><small>TEMA AKTIF</small><b>{activeTheme.name}</b><span>{THEME_COUNT} tema · {WIDGET_COUNT} widget · diperbarui {formatDate(themeState.updatedAt)}</span></div><nav><button onClick={() => setModal("preview")}><Eye/> Preview</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => fileInput.current?.click()}><Upload/> Upload tema</button><button onClick={backup}><FileArchive/> Cadangan</button><button onClick={saveHtml}><Download/> Simpan ke komputer</button><button onClick={() => setModal("history")}><History/> Pulihkan</button></nav></section>
 
-    <LayoutMap widgets={themeState.widgets} onOpenWidgets={() => setModal("widgets")}/>
+    <LayoutMap widgets={themeState.widgets} mode={layoutMode} onModeChange={setLayoutMode} onOpenWidgets={() => setModal("widgets")}/>
 
     <section className="tn-blueprints"><div><small>JENIS SITUS</small><h2>Blog, portofolio, forum, berita, website, landing page, dan profil.</h2></div><div className="tn-blueprint-list"><button className={blueprint === "all" ? "active" : ""} onClick={() => chooseBlueprint("all")}><Globe2/> Semua</button>{SITE_BLUEPRINTS.map((item) => <button key={item.id} className={blueprint === item.id ? "active" : ""} onClick={() => chooseBlueprint(item.id)}><b>{item.label}</b><small>{item.description}</small></button>)}</div></section>
 
