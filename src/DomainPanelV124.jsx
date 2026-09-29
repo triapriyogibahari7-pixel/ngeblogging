@@ -95,36 +95,80 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       setToken(nextToken);
       const payload = await domainApi(`/api/domains/list?siteId=${encodeURIComponent(site.id)}`, nextToken);
       setConfig(payload);
-      const list = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
-      let configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
-      if (!configuredCustomDomain && supabase) {
+      const apiList = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
+
+      // PUBLIC_DOMAIN_SOURCE_OF_TRUTH_V1:
+      // The studio must still show a configured custom domain when the domain API
+      // is unavailable, stale, or temporarily omits the site_domains row.
+      // Read the canonical site + site_domains rows directly, then merge them
+      // with the API response. This changes no presentation; it only repairs data
+      // hydration for the existing Domain & publication screen.
+      let currentSite = null;
+      let dbDomains = [];
+      if (supabase) {
         try {
-          const { data: currentSite } = await withDeadline(
-            supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
-            10000,
-          );
-          configuredCustomDomain = String(currentSite?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
-          if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
+          const [siteResult, domainResult] = await Promise.all([
+            withDeadline(
+              supabase.from("sites")
+                .select("custom_domain,status,is_public,updated_at")
+                .eq("id", site.id)
+                .maybeSingle(),
+              10000,
+            ),
+            withDeadline(
+              supabase.from("site_domains")
+                .select("id,site_id,hostname,status,provider,provider_status,ssl_status,is_primary,ownership_verification,ssl_validation,error_message,created_at,updated_at")
+                .eq("site_id", site.id)
+                .order("is_primary", { ascending: false })
+                .order("updated_at", { ascending: false, nullsFirst: false })
+                .limit(20),
+              10000,
+            ),
+          ]);
+          if (!siteResult.error) currentSite = siteResult.data || null;
+          if (!domainResult.error) dbDomains = Array.isArray(domainResult.data) ? domainResult.data : [];
+          if (currentSite?.custom_domain) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
-          console.warn("Custom domain fallback lookup failed", siteLookupError);
+          console.warn("Canonical domain data hydration failed", siteLookupError);
         }
       }
-      const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase().replace(/^www\./, "") === configuredCustomDomain);
+
+      const normalizeDomain = (value = "") => String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .replace(/^www\./, "")
+        .replace(/[/?#].*$/, "");
+      const configuredCustomDomain = normalizeDomain(currentSite?.custom_domain || site?.custom_domain || "");
+      const merged = [...dbDomains, ...apiList];
+      const seen = new Set();
+      const list = merged.filter((item) => {
+        const key = normalizeDomain(item?.hostname);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const hasConfiguredCustomDomain = configuredCustomDomain && list.some(
+        (item) => normalizeDomain(item?.hostname) === configuredCustomDomain,
+      );
       const displayList = configuredCustomDomain && !hasConfiguredCustomDomain
         ? [{
             id: `site-custom-domain:${site.id}`,
             site_id: site.id,
             hostname: configuredCustomDomain,
-            status: "active",
+            // Configured is intentionally not presented as DNS-active. The
+            // existing status UI will show "Verifikasi nameserver" until the
+            // authoritative provider reports active/SSL-ready state.
+            status: "pending",
             provider: "cloudflare-full-zone",
-            provider_status: "active",
-            ssl_status: "active",
+            provider_status: "pending",
+            ssl_status: "pending",
             is_primary: true,
             ownership_verification: {},
             ssl_validation: [],
             error_message: null,
-            created_at: site.updated_at || null,
-            updated_at: site.updated_at || null,
+            created_at: currentSite?.updated_at || site.updated_at || null,
+            updated_at: currentSite?.updated_at || site.updated_at || null,
           }, ...list]
         : list;
       setDomains(displayList);
