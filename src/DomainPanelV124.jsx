@@ -111,8 +111,8 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
           console.warn("Custom domain fallback lookup failed", siteLookupError);
         }
       }
-      const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase() === configuredCustomDomain);
-      const displayList = configuredCustomDomain && !hasConfiguredCustomDomain && site?.status === "active" && site?.is_public
+      const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase().replace(/^www\\./, "") === configuredCustomDomain);
+      const displayList = configuredCustomDomain && !hasConfiguredCustomDomain
         ? [{
             id: `site-custom-domain:${site.id}`,
             site_id: site.id,
@@ -133,7 +133,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     } catch (nextError) {
       console.error("Domain load failed", nextError);
       const configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
-      if (configuredCustomDomain && site?.status === "active" && site?.is_public) {
+      if (configuredCustomDomain) {
         setDomains([{
           id: `site-custom-domain:${site.id}`,
           site_id: site.id,
