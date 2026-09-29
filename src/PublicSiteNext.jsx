@@ -28,6 +28,7 @@ function sanitizePublishedHtml(html) {
 }
 
 function homeCode(site,theme,posts,pages) {
+  const freePreview=typeof window!=="undefined"&&new URLSearchParams(window.location.search).get("ngeblogging-free-preview")==="1";
   const custom=site.theme?.code?.enabled;
   const base=custom?site.theme.code:(theme.code||createDefaultThemeState().code);
   const normalizedPosts=posts.slice(0,12).map((post)=>({
@@ -51,8 +52,7 @@ function homeCode(site,theme,posts,pages) {
 (()=>{
   const data=${payload};
   const escapeText=(value)=>String(value||'');
-  const keepFreePreview=()=>new URLSearchParams(window.location.search).get('ngeblogging-free-preview')==='1';
-  const linkTo=(slug)=>'/'+encodeURIComponent(slug)+(keepFreePreview()?'?ngeblogging-free-preview=1':'');
+  const linkTo=(slug)=>'/'+encodeURIComponent(slug)+(freePreview?'?ngeblogging-free-preview=1':'');
   document.title=data.site.name;
   const brand=document.querySelector('.ng-brand');
   if(brand){brand.textContent=data.site.name;const dot=document.createElement('i');dot.textContent='.';brand.append(dot)}
