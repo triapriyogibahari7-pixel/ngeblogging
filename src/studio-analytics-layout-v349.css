@@ -284,3 +284,35 @@
 .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child > h2 + p {
   margin-top: 0 !important;
 }
+
+/* v353: hard-lock the duplicate toolbar title layer
+   The page-level "Analitik" heading is the single visible title. The toolbar's
+   legacy title block is the layer that was painting black/blue text over itself.
+   Hide only that duplicate block; keep the range/simulation/refresh controls intact.
+ */
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar > div:first-child {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  max-width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: static !important;
+  transform: none !important;
+  float: none !important;
+  clear: both !important;
+}
+
+.sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar {
+  justify-content: flex-end !important;
+}
+
+@media (max-width: 700px) {
+  .sn-shell .sn-main > .sn-view-pad.sn-analytics-view-v349 .op41-toolbar {
+    justify-content: stretch !important;
+  }
+}
