@@ -290,14 +290,13 @@
 /* Final fix: remove ONLY the duplicate/overlapping analytics toolbar text. */
 .sn-shell .sn-main > .sn-analytics-view-v348 .op41-toolbar > div:first-child,
 .sn-shell .sn-main > .sn-analytics-view-v348 .op41-clean-heading {
-  display: none !important;
+  display: block !important;
   visibility: hidden !important;
-  width: 0 !important;
-  max-width: 0 !important;
-  min-width: 0 !important;
-  height: 0 !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.sn-shell .sn-main > .sn-analytics-view-v348 .op41-toolbar > div:first-child > *,
+.sn-shell .sn-main > .sn-analytics-view-v348 .op41-clean-heading > * {
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
