@@ -10,50 +10,82 @@ function analyticsView() {
 
 function hideDuplicateToolbarText(view) {
   if (!view) return;
+
   const targets = [
     "RINGKASAN ANALITIK",
     "PERFORMA SITUS",
     "PANTAU KUNJUNGAN, PENGUNJUNG, DAN SUMBER TRAFIK DALAM SATU TAMPILAN.",
   ];
   const normalize = (value) => String(value || "")
-    .replace(/\s+/g, " ")
+    .replace(/\\s+/g, " ")
     .trim()
     .toUpperCase();
-
   const containsTarget = (value) => {
     const text = normalize(value);
     return targets.some((target) => text.includes(target));
   };
-
   const hasInteractive = (node) => !!node?.querySelector?.(
     "button, select, input, textarea, a[href]"
   );
 
-  // Only clean the duplicate text layer inside analytics toolbars.
-  // Never remove the real page title, metric cards, or toolbar controls.
-  view.querySelectorAll(".op41-toolbar, .op41-clean-toolbar").forEach((toolbar) => {
-    [...toolbar.children].forEach((child) => {
-      if (!containsTarget(child.textContent)) return;
-      if (hasInteractive(child)) return;
-      child.remove();
-    });
-  });
+  const clean = () => {
+    // First remove the known legacy duplicate text blocks.
+    view.querySelectorAll(".op41-clean-heading").forEach((node) => node.remove());
+    view.querySelectorAll(".op41-toolbar, .op41-clean-toolbar").forEach((toolbar) => {
+      [...toolbar.children].forEach((child) => {
+        if (containsTarget(child.textContent) && !hasInteractive(child)) child.remove();
+      });
 
-  // Legacy heading class from earlier analytics renderers.
-  view.querySelectorAll(".op41-clean-heading").forEach((node) => node.remove());
-
-  // If an old renderer split the duplicate heading into several text nodes,
-  // remove only those text-only descendants from the toolbar.
-  view.querySelectorAll(".op41-toolbar, .op41-clean-toolbar").forEach((toolbar) => {
-    const walker = document.createTreeWalker(toolbar, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    let node;
-    while ((node = walker.nextNode())) nodes.push(node);
-    nodes.forEach((textNode) => {
-      if (!containsTarget(textNode.nodeValue)) return;
-      textNode.nodeValue = "";
+      const walker = document.createTreeWalker(toolbar, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      let node;
+      while ((node = walker.nextNode())) nodes.push(node);
+      nodes.forEach((textNode) => {
+        if (containsTarget(textNode.nodeValue)) textNode.nodeValue = "";
+      });
     });
-  });
+
+    // The broken legacy renderer can also emit the same text without the
+    // old class names. Remove ONLY text-only elements that physically overlap
+    // the real analytics controls. This leaves buttons and their wrappers intact.
+    const controls = [...view.querySelectorAll(
+      "button, select, input, textarea, a[href], [role='button']"
+    )].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 20 && r.height > 20;
+    });
+    if (!controls.length) return;
+
+    const intersects = (a, b) =>
+      a.left < b.right && a.right > b.left &&
+      a.top < b.bottom && a.bottom > b.top;
+
+    const candidates = [...view.querySelectorAll("*")].filter((el) => {
+      if (el === view || el.closest("button, select, input, textarea, a[href], [role='button']")) return false;
+      if (hasInteractive(el)) return false;
+      const text = normalize(el.textContent);
+      if (!text || text.length < 4) return false;
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) return false;
+      return controls.some((control) => intersects(r, control.getBoundingClientRect()));
+    });
+
+    // Remove the smallest matching text containers first so a parent does not
+    // swallow a legitimate control wrapper.
+    candidates
+      .sort((a, b) => {
+        const ar = a.getBoundingClientRect();
+        const br = b.getBoundingClientRect();
+        return (ar.width * ar.height) - (br.width * br.height);
+      })
+      .forEach((el) => {
+        if (el.isConnected && !hasInteractive(el) && !el.closest("button, select, input, textarea, a[href], [role='button']")) {
+          el.remove();
+        }
+      });
+  };
+
+  clean();
 }
 function normalizeTitle(view) {
   if (!view) return false;
