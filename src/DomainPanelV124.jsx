@@ -111,7 +111,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
           console.warn("Custom domain fallback lookup failed", siteLookupError);
         }
       }
-      const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase().replace(/^www\\./, "") === configuredCustomDomain);
+      const hasConfiguredCustomDomain = configuredCustomDomain && list.some((item) => String(item?.hostname || "").trim().toLowerCase().replace(/^www\./, "") === configuredCustomDomain);
       const displayList = configuredCustomDomain && !hasConfiguredCustomDomain
         ? [{
             id: `site-custom-domain:${site.id}`,
