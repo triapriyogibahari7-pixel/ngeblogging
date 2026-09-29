@@ -221,7 +221,7 @@ function App() {
     [session, setSession] = useState(null),
     [authMessage, setAuthMessage] = useState("");
 
-  if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></span></div>}><PublicSite target={publicTarget()} /></Suspense>;
+  if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></div>}><PublicSite target={publicTarget()} /></Suspense>;
 
   useEffect(() => {
     if (!supabaseConfigured || !supabase) return undefined;
