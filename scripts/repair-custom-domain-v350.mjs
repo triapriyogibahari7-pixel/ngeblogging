@@ -96,8 +96,12 @@ async function httpsSmoke(host) {
   }
 }
 
-const publicNs = [...await resolveNs(DOMAIN)].map(norm).filter(Boolean).sort();
-if (!publicNs.length) fail("Nameserver publik " + DOMAIN + " tidak dapat di-resolve.");
+let publicNs = [];
+try {
+  publicNs = [...await resolveNs(DOMAIN)].map(norm).filter(Boolean).sort();
+} catch (error) {
+  console.warn("Public NS lookup awal gagal; lanjutkan pemeriksaan zone Cloudflare karena Custom Domain dapat memperbaiki DNS setelah binding:", error?.message || error);
+}
 
 const zones = await cf("/zones?name=" + encodeURIComponent(DOMAIN) + "&per_page=50");
 const zone = (zones || []).find((item) => norm(item?.name) === DOMAIN && norm(item?.account?.id) === norm(ACCOUNT_ID));
