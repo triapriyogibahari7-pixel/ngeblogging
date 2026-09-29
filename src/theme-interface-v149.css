@@ -465,3 +465,46 @@
 @media(prefers-reduced-motion:reduce){
   .tn-frame-shell iframe{transition:none!important}
 }
+
+/* Layout control room is a full-width row above the actual layout box. */
+.tn-layout-studio{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:auto auto!important;
+  gap:18px!important;
+  align-items:start!important;
+}
+.tn-layout-control-room{
+  grid-row:1!important;
+  width:100%!important;
+  min-height:132px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+.tn-layout-body{
+  grid-row:2!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr)!important;
+  align-items:stretch!important;
+  gap:20px!important;
+  padding:0!important;
+}
+.tn-layout-body>.tn-layout-canvas{
+  min-height:520px!important;
+  height:100%!important;
+  margin:0!important;
+}
+.tn-layout-body>.tn-layout-side{
+  min-height:520px!important;
+}
+@media(max-width:1180px){
+  .tn-layout-body{grid-template-columns:1fr!important}
+  .tn-layout-body>.tn-layout-side{min-height:320px!important}
+}
+@media(max-width:760px){
+  .tn-layout-studio{gap:14px!important}
+  .tn-layout-control-room{min-height:0!important}
+  .tn-layout-body{grid-template-columns:1fr!important;gap:14px!important}
+  .tn-layout-body>.tn-layout-canvas{min-height:540px!important}
+}
