@@ -10,16 +10,26 @@ function analyticsView() {
 
 function hideDuplicateToolbarText(view) {
   if (!view) return;
-  const targets = new Set([
+  const targets = [
     "RINGKASAN ANALITIK",
     "Performa situs",
     "Pantau kunjungan, pengunjung, dan sumber trafik dalam satu tampilan.",
-  ]);
-  const nodes = [...view.querySelectorAll("*")];
-  nodes.forEach((node) => {
+  ];
+  const walker = document.createTreeWalker(view, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let node;
+  while ((node = walker.nextNode())) nodes.push(node);
+  nodes.forEach((textNode) => {
+    let value = String(textNode.nodeValue || "");
+    let next = value;
+    targets.forEach((target) => {
+      next = next.split(target).join("");
+    });
+    if (next !== value) textNode.nodeValue = next;
+  });
+  view.querySelectorAll("*").forEach((node) => {
     const text = String(node.textContent || "").replace(/\s+/g, " ").trim();
-    if (!targets.has(text)) return;
-    if (node.children.length > 0) return;
+    if (!targets.includes(text) || node.children.length > 0) return;
     node.style.setProperty("visibility", "hidden", "important");
     node.style.setProperty("opacity", "0", "important");
     node.style.setProperty("pointer-events", "none", "important");
