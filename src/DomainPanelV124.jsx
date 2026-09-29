@@ -103,10 +103,8 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
             supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
             10000,
           );
-          if (currentSite?.status === "active" && currentSite?.is_public) {
-            configuredCustomDomain = String(currentSite.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
-            if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
-          }
+          configuredCustomDomain = String(currentSite?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+          if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Custom domain fallback lookup failed", siteLookupError);
         }
