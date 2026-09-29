@@ -16,7 +16,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    environment: cloudflare-production
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -86,3 +85,23 @@ jobs:
             fi
           done
           echo "FREE_AND_CUSTOM_PUBLIC_ROOTS_VERIFIED"
+
+      - name: Verify a published post on free and custom domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          site_json="$(curl -sS --connect-timeout 10 --max-time 25 -H "apikey: ${VITE_SUPABASE_PUBLISHABLE_KEY}" -H "authorization: Bearer ${VITE_SUPABASE_PUBLISHABLE_KEY}" "https://polvmlrhqoiflumibfqs.supabase.co/rest/v1/sites?slug=eq.tri-apriyogi-bahari&status=eq.active&is_public=eq.true&select=id&limit=1")"
+          site_id="$(node -e 'const x=JSON.parse(process.argv[1]); process.stdout.write(x[0]?.id || "")' "$site_json")"
+          test -n "$site_id" || { echo "PUBLIC_SITE_NOT_FOUND"; exit 1; }
+          posts_json="$(curl -sS --connect-timeout 10 --max-time 25 -H "apikey: ${VITE_SUPABASE_PUBLISHABLE_KEY}" -H "authorization: Bearer ${VITE_SUPABASE_PUBLISHABLE_KEY}" "https://polvmlrhqoiflumibfqs.supabase.co/rest/v1/contents?site_id=eq.${site_id}&kind=eq.article&status=eq.published&visibility=eq.public&select=slug&order=published_at.desc&limit=1")"
+          post_slug="$(node -e 'const x=JSON.parse(process.argv[1]); process.stdout.write(x[0]?.slug || "")' "$posts_json")"
+          if [[ -z "$post_slug" ]]; then echo "NO_PUBLISHED_POST_TO_VERIFY"; exit 0; fi
+          encoded_slug="$(node -e 'console.log(encodeURIComponent(process.argv[1]))' "$post_slug")"
+          for host in "tri-apriyogi-bahari.ngeblogging.com" "triapriyogi.com"; do
+            code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "/tmp/post-${host}.html" -w '%{http_code}' -H 'cache-control: no-cache' "https://${host}/${encoded_slug}?public_post_verify=${GITHUB_SHA}" || true)"
+            if [[ "$code" != "200" ]] || ! grep -q 'id="root"' "/tmp/post-${host}.html"; then
+              echo "PUBLIC_POST_VERIFY_FAILED ${host} HTTP=${code} slug=${post_slug}"
+              exit 1
+            fi
+          done
+          echo "FREE_AND_CUSTOM_PUBLISHED_POST_VERIFIED ${post_slug}"
