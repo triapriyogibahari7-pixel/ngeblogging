@@ -264,7 +264,7 @@ export default function CommentsPanelV124({ site, setToast }) {
           </>}
         </article>
       </div>}
-    </sectio
+    </section>
 
     <section className="sv124-card sv124-settings-card">
       <header><div><ShieldCheck/><span><b>Pengaturan komentar</b><small>Toggle komentar pada editor tetap dapat mengatur setiap Post/Page.</small></span></div><button className="sv124-primary" onClick={saveSettings} disabled={busy === "settings"}><Save/>{busy === "settings" ? "Menyimpan…" : "Simpan"}</button></header>
@@ -275,6 +275,6 @@ export default function CommentsPanelV124({ site, setToast }) {
         <Toggle checked={settings.require_email} onChange={(value) => setSettings((current) => ({ ...current, require_email: value }))} label="Email wajib" description="Email privat untuk pengelola."/>
         <Toggle checked={settings.emoji_enabled} onChange={(value) => setSettings((current) => ({ ...current, emoji_enabled: value }))} label="Emoji & reaksi" description="Wajah bundar dan reaksi."/>
       </div>
-    </section>n>
+    </section>
   </div>;
 }
