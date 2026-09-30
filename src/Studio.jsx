@@ -210,5 +210,6 @@ import "./studio-analytics-text-flow-v347.css";
 import "./studio-analytics-layout-v349.js";
 import "./studio-analytics-layout-v349.css";
 import "./studio-theme-code-editor-v346.css";
+import "./studio-theme-code-editor-v348.js";
 
 export default StudioFastGate;
