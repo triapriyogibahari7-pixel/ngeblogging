@@ -4,7 +4,7 @@ export const STUDIO_THEME_CODE_EDITOR_RELEASE_V360="studio-theme-code-editor-v36
 
 const SIDEBAR="#ngeblogging-studio-sidebar";
 const WORKSPACE=".tn-code-workspace .tn-code-pane textarea";
-const LINE_GUIDE=Array.from({length:10000},(_,i)=>String(i+1)).join("\\n");
+const LINE_GUIDE=Array.from({length:10000},(_,i)=>String(i+1)).join("\n");
 let raf=0;
 
 function findLayer(){
