@@ -1,0 +1,59 @@
+/* v351 — Theme code editor geometry only.
+   Purpose: keep ONLY the HTML/CSS/JavaScript editor modal inside the usable
+   desktop area. Sidebar markup and styles are not changed. */
+@media (min-width:761px){
+  /* Open sidebar: reserve its existing width, then center the editor in the
+     remaining viewport. The sidebar itself is never selected for styling. */
+  body:has(#ngeblogging-studio-sidebar:not(.collapsed)) .tn-modal-layer[data-v342-code-layer="ready"]{
+    left:var(--v265-side-open,232px)!important;
+    right:0!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:12px!important;
+    box-sizing:border-box!important;
+    place-items:center!important;
+  }
+  body:has(#ngeblogging-studio-sidebar:not(.collapsed)) .tn-modal-layer[data-v342-code-layer="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+    width:min(1480px,100%)!important;
+    max-width:100%!important;
+    margin:0!important;
+  }
+
+  /* Collapsed sidebar: use only the narrow rail's existing width. */
+  body:has(#ngeblogging-studio-sidebar.collapsed) .tn-modal-layer[data-v342-code-layer="ready"]{
+    left:var(--v265-side-rail,72px)!important;
+    right:0!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:12px!important;
+    box-sizing:border-box!important;
+    place-items:center!important;
+  }
+  body:has(#ngeblogging-studio-sidebar.collapsed) .tn-modal-layer[data-v342-code-layer="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+    width:min(1480px,100%)!important;
+    max-width:100%!important;
+    margin:0!important;
+  }
+
+  /* Safety fallback if the sidebar state is not represented by a class:
+     reserve the compact rail instead of allowing the editor to be covered. */
+  .tn-modal-layer[data-v342-code-layer="ready"]{
+    box-sizing:border-box!important;
+  }
+}
+
+@media (max-width:760px){
+  /* Mobile has no permanent desktop sidebar obstruction. */
+  .tn-modal-layer[data-v342-code-layer="ready"]{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    padding:6px!important;
+  }
+  .tn-modal-layer[data-v342-code-layer="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+  }
+}
