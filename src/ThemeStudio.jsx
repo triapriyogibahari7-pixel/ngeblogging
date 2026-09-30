@@ -15,6 +15,7 @@ import { BUILT_IN_WIDGETS, createDefaultWidgetState, getWidget, normalizeWidgetS
 import { loadSiteThemeState, saveSiteBlueprint, saveSiteThemeState } from "./lib/theme-data";
 import "./theme-next.css";
 import "./theme-interface-v149.css";
+import "./studio-theme-code-editor-v349.js";
 
 const DEVICES = [
   { id: "application", label: "Aplikasi", icon: Smartphone, width: 360, frameClass: "mobile" },
