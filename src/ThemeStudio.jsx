@@ -17,6 +17,7 @@ import "./theme-next.css";
 import "./theme-interface-v149.css";
 import "./studio-theme-code-editor-v350.js";
 import "./studio-theme-code-editor-v351.js";
+import "./studio-theme-code-editor-v352.js";
 
 const DEVICES = [
   { id: "application", label: "Aplikasi", icon: Smartphone, width: 360, frameClass: "mobile" },
