@@ -6,7 +6,8 @@ const css=fs.readFileSync("src/studio-theme-code-editor-v360.css","utf8");
 const js=fs.readFileSync("src/studio-theme-code-editor-v360.js","utf8");
 
 assert.match(jsx,/studio-theme-code-editor-v360\.js/);
-assert.match(js,/data\.v360CodeEditor/);\nassert.match(js,/Array\.from\(\{length:10000\}/);
+assert.match(js,/data\.v360CodeEditor/);
+assert.match(js,/Array\.from\(\{length:10000\}/);
 assert.match(js,/getBoundingClientRect/);
 assert.doesNotMatch(js,/sidebar\.style|sidebar\.classList|sidebar\.remove|sidebar\.append|sidebar\.removeChild/);
 assert.match(css,/data-v360-code-editor="ready"/);
