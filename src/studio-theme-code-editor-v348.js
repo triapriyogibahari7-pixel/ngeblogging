@@ -92,7 +92,10 @@ function insertText(textarea, text){
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const value = textarea.value;
-  textarea.value = value.slice(0,start) + text + value.slice(end);
+  const nextValue = value.slice(0,start) + text + value.slice(end);
+  const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
+  if (setter) setter.call(textarea, nextValue);
+  else textarea.value = nextValue;
   const caret = start + text.length;
   textarea.selectionStart = caret;
   textarea.selectionEnd = caret;
