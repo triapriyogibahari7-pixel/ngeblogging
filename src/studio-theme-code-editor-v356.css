@@ -1,0 +1,94 @@
+/* v356 — final cascade fix for the Theme code editor only.
+   v342 uses !important geometry, so v356 deliberately overrides that geometry
+   on the editor layer/modal. The sidebar itself is never styled or changed. */
+
+@media (min-width:761px){
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]{
+    position:fixed!important;
+    inset:0 0 0 var(--tn-v356-editor-left,232px)!important;
+    width:auto!important;
+    max-width:none!important;
+    height:100dvh!important;
+    padding:12px!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:hidden!important;
+  }
+
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]
+  >.tn-modal[data-v342-code-modal="ready"]{
+    position:relative!important;
+    inset:auto!important;
+    width:min(1480px,calc(100% - 24px))!important;
+    max-width:calc(100% - 24px)!important;
+    height:min(920px,calc(100dvh - 24px))!important;
+    max-height:calc(100dvh - 24px)!important;
+    min-width:0!important;
+    margin:0!important;
+    transform:none!important;
+    box-sizing:border-box!important;
+  }
+
+  /* When the JS measurement says the available editor width is tight,
+     the editor simply gets narrower; it never crosses the sidebar edge. */
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]
+  >.tn-modal[data-v342-code-modal="ready"]{
+    overflow:hidden!important;
+  }
+}
+
+@media (max-width:760px){
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:100dvh!important;
+    padding:6px!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:stretch!important;
+  }
+
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]
+  >.tn-modal[data-v342-code-modal="ready"]{
+    width:100%!important;
+    max-width:100%!important;
+    height:calc(100dvh - 12px)!important;
+    max-height:calc(100dvh - 12px)!important;
+    margin:0!important;
+  }
+}
+
+/* Source readability: wrap long lines and keep the 1–10,000 gutter. */
+.tn-modal[data-v342-code-modal="ready"]
+[data-v342-code-pane="ready"]
+>textarea[data-v342-code-source="ready"],
+.tn-modal[data-v342-code-modal="ready"]
+[data-v342-code-pane="ready"]
+>textarea[data-v350-source="ready"]{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  box-sizing:border-box!important;
+}
+
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v350{
+  display:none!important;
+}
+
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{
+  display:block!important;
+  overflow:hidden!important;
+  white-space:pre!important;
+  user-select:none!important;
+  pointer-events:none!important;
+}
