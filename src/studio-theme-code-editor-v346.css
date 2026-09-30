@@ -1,0 +1,42 @@
+/* Ngeblogging Theme Code Editor v346 — sidebar-safe geometry only.
+ * Scope: Theme HTML/CSS/JavaScript editor modal.
+ * Does not modify sidebar styles, navigation, or any other Studio surface.
+ */
+
+/* The desktop Studio sidebar stays authoritative. The code modal simply uses
+   the remaining viewport so its left edge is never painted underneath the
+   collapsed/open sidebar. */
+@media (min-width: 761px){
+  #ngeblogging-studio-sidebar.collapsed ~ .sn-main .tn-modal-layer[data-v342-code-layer="ready"]{
+    inset:0 0 0 var(--v265-side-rail,72px)!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:12px!important;
+  }
+
+  #ngeblogging-studio-sidebar:not(.collapsed) ~ .sn-main .tn-modal-layer[data-v342-code-layer="ready"]{
+    inset:0 0 0 var(--v265-side-open,232px)!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:12px!important;
+  }
+
+  /* Keep the actual editor card centered inside the usable area. */
+  #ngeblogging-studio-sidebar.collapsed ~ .sn-main .tn-modal[data-v342-code-modal="ready"],
+  #ngeblogging-studio-sidebar:not(.collapsed) ~ .sn-main .tn-modal[data-v342-code-modal="ready"]{
+    margin-inline:auto!important;
+    width:min(1480px,100%)!important;
+    max-width:100%!important;
+  }
+}
+
+/* Never change the mobile drawer geometry. On compact devices the drawer is
+   closed while editing, so the editor keeps the full viewport width. */
+@media (max-width:760px){
+  .tn-modal-layer[data-v342-code-layer="ready"]{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+}
