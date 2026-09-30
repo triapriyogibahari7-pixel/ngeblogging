@@ -4,6 +4,7 @@ export const STUDIO_THEME_CODE_EDITOR_RELEASE_V360="studio-theme-code-editor-v36
 
 const SIDEBAR="#ngeblogging-studio-sidebar";
 const WORKSPACE=".tn-code-workspace .tn-code-pane textarea";
+const LINE_GUIDE=Array.from({length:10000},(_,i)=>String(i+1)).join("\\n");
 let raf=0;
 
 function findLayer(){
@@ -37,12 +38,22 @@ function sync(){
   layer.style.setProperty("--tn-v360-editor-left",Math.max(0,left)+"px");
 
   layer.querySelectorAll(".tn-code-pane textarea").forEach((textarea)=>{
+    const pane=textarea.parentElement;
+    let gutter=pane?.querySelector(":scope > .tn-code-gutter-v350");
+    if(pane&&!gutter){
+      gutter=document.createElement("pre");
+      gutter.className="tn-code-gutter-v350";
+      gutter.textContent=LINE_GUIDE;
+      gutter.setAttribute("aria-hidden","true");
+      textarea.insertAdjacentElement("beforebegin",gutter);
+    }
     textarea.wrap="soft";
     textarea.spellcheck=false;
     textarea.style.whiteSpace="pre-wrap";
     textarea.style.overflowWrap="anywhere";
     textarea.style.wordBreak="break-word";
     textarea.style.overflowX="hidden";
+    if(gutter) gutter.scrollTop=textarea.scrollTop;
   });
 }
 
