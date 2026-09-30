@@ -88,6 +88,21 @@ function syncAccountFooter(shell) {
   shell.dataset.accountLogoutReady = String(logoutReady);
 }
 
+function removeStraySettingsSeoHeading() {
+  const wanted = "IDENTITAS SITUS & SEO";
+  document.querySelectorAll("body *").forEach((node) => {
+    if (!(node instanceof HTMLElement)) return;
+    if (node.closest("#ngeblogging-backup-settings")) return;
+    const text = String(node.textContent || "").replace(/\s+/g, " ").trim().toUpperCase();
+    if (text !== wanted) return;
+    // This is a legacy decorative heading that can sit above the real
+    // "Profil & pengaturan" title. Hide only the exact duplicate text.
+    node.hidden = true;
+    node.setAttribute("aria-hidden", "true");
+    node.style.setProperty("display", "none", "important");
+  });
+}
+
 function syncReadinessChrome() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
@@ -99,6 +114,7 @@ function syncReadinessChrome() {
 
   hideDuplicateNaraNavigation(shell);
   syncAccountFooter(shell);
+  removeStraySettingsSeoHeading();
 
   shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
     button.hidden = true;
