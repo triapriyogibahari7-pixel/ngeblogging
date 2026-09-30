@@ -1,8 +1,6 @@
 name: Actions Startup Probe v287
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -12,7 +10,7 @@ permissions:
 
 jobs:
   probe:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Confirm runner starts
