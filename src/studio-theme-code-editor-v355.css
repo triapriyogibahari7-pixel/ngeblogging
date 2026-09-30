@@ -1,0 +1,47 @@
+/* v355 — robust editor-only geometry + readable source surface.
+   The sidebar is READ ONLY: no sidebar CSS, width, margin, z-index or DOM is changed. */
+.tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]{
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+  box-sizing:border-box!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  transform:none!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>textarea[data-v342-code-source="ready"],
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>textarea[data-v350-source="ready"]{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  tab-size:2!important;
+}
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{
+  flex:none!important;
+  white-space:pre!important;
+  overflow:hidden!important;
+}
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v350{display:none!important}
+
+@media(max-width:760px){
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]{
+    left:0!important;right:0!important;top:0!important;bottom:0!important;
+    width:100%!important;height:100dvh!important;padding:6px!important;
+  }
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v355-editor="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+    width:100%!important;max-width:100%!important;height:calc(100dvh - 12px)!important;
+  }
+}
