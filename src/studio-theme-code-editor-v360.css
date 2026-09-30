@@ -1,0 +1,220 @@
+/* Ngeblogging Theme Code Editor v360
+ * FINAL editor-only containment pass.
+ * This file deliberately does not style or mutate the Studio sidebar.
+ * It targets the editor by its own v360 marker, so it does not depend on
+ * legacy v342/v355 markers being present.
+ */
+:root{--studio-theme-code-editor-v360:"studio-theme-code-editor-v360-20260930"}
+
+.tn-modal-layer[data-v360-code-editor="ready"]{
+  position:fixed!important;
+  inset:0!important;
+  z-index:22000!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:hidden!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"]>.tn-modal.tn-modal{
+  position:relative!important;
+  inset:auto!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  margin:0!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"]>.tn-modal.tn-modal>.tn-modal-body{
+  min-width:0!important;
+  min-height:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-workspace.tn-code-workspace{
+  display:grid!important;
+  min-width:0!important;
+  min-height:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+
+/* Large screens: code and preview share the available editor width. */
+@media (min-width:761px){
+  .tn-modal-layer[data-v360-code-editor="ready"]{
+    left:var(--tn-v360-editor-left,232px)!important;
+    right:0!important;
+    top:0!important;
+    bottom:0!important;
+    width:auto!important;
+    height:100dvh!important;
+    padding:12px!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"]>.tn-modal.tn-modal{
+    width:min(1480px,100%)!important;
+    height:min(920px,100%)!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-workspace.tn-code-workspace{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+  }
+}
+
+/* Small screens: preview first, source editor below, both inside viewport. */
+@media (max-width:760px){
+  .tn-modal-layer[data-v360-code-editor="ready"]{
+    inset:0!important;
+    width:100%!important;
+    height:100dvh!important;
+    padding:max(6px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"]>.tn-modal.tn-modal{
+    width:100%!important;
+    max-width:100%!important;
+    height:100%!important;
+    max-height:100%!important;
+    border-radius:18px!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-workspace.tn-code-workspace{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:minmax(270px,40dvh) minmax(640px,1fr)!important;
+    height:100%!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-preview-pane{
+    grid-row:1!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:270px!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane{
+    grid-row:2!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:640px!important;
+    height:clamp(640px,78dvh,1000px)!important;
+  }
+}
+
+/* Beat the older editor rules without touching any other Studio surface. */
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane{
+  display:grid!important;
+  grid-template-columns:60px minmax(0,1fr)!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane>textarea{
+  grid-column:2!important;
+  grid-row:3!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  resize:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  tab-size:2!important;
+  line-height:1.7!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane>textarea[data-v350-source="ready"]{
+  white-space:pre-wrap!important;
+  overflow-x:hidden!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane>.tn-code-gutter-v350{
+  display:block!important;
+  visibility:visible!important;
+  grid-column:1!important;
+  grid-row:3!important;
+  width:60px!important;
+  min-width:60px!important;
+  max-width:60px!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  white-space:pre!important;
+  box-sizing:border-box!important;
+  user-select:none!important;
+  pointer-events:none!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane>.tn-code-gutter-v342{
+  display:none!important;
+  visibility:hidden!important;
+}
+
+/* Never let the toolbar/inspector become a second horizontal canvas. */
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-v350-toolbar,
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-v350-insight,
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-v350-search{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-code-preview-pane.tn-code-preview-pane{
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:0!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+
+.tn-modal-layer[data-v360-code-editor="ready"] .tn-frame-shell{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow:auto!important;
+}
+
+@media (max-width:600px){
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane{
+    grid-template-columns:50px minmax(0,1fr)!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane>.tn-code-gutter-v350{
+    width:50px!important;
+    min-width:50px!important;
+    max-width:50px!important;
+    font-size:11px!important;
+  }
+
+  .tn-modal-layer[data-v360-code-editor="ready"] .tn-code-pane.tn-code-pane>textarea{
+    font-size:12px!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
