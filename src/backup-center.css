@@ -12,3 +12,6 @@
   z-index:auto !important;
   box-sizing:border-box !important;
 }
+/* v364: the backup section header is redundant inside Settings and was colliding with the page title. Keep the backup actions/data, remove only the duplicate visual heading. */
+.bc-center>header{display:none !important;}
+.bc-center{margin-top:16px !important;}
