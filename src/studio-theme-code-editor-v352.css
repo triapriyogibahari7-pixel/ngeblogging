@@ -1,0 +1,84 @@
+/* v352 — editor-only geometry/readability correction.
+   No sidebar selectors, dimensions, colors, or markup are modified. */
+@media (min-width:761px){
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v352-editor-left]{
+    position:fixed!important;
+    top:0!important;
+    bottom:0!important;
+    right:0!important;
+    left:var(--tn-code-safe-left,0px)!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:12px!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:hidden!important;
+  }
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v352-editor-left]>.tn-modal[data-v342-code-modal="ready"]{
+    width:min(1480px,calc(100% - 0px))!important;
+    max-width:100%!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+  }
+}
+/* The authoritative v342 gutter already contains exactly 1–10,000.
+   Keep it as the visible gutter and suppress only the duplicate v350 copy. */
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v350{display:none!important}
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{
+  grid-column:1!important;
+  grid-row:4!important;
+  width:60px!important;
+  min-width:60px!important;
+  max-width:60px!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  white-space:pre!important;
+  box-sizing:border-box!important;
+  padding:17px 9px 80px 4px!important;
+  margin:0!important;
+  border:0!important;
+  border-right:1px solid #20314a!important;
+  background:#09121f!important;
+  color:#60738e!important;
+  text-align:right!important;
+  font:500 12px/1.7 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+  font-variant-numeric:tabular-nums!important;
+  user-select:none!important;
+  pointer-events:none!important;
+}
+.tn-modal[data-v342-code-modal="ready"] .tn-code-pane>textarea[data-v342-code-source="ready"]{
+  grid-column:2!important;
+  grid-row:4!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  overflow:auto!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  tab-size:2!important;
+  box-sizing:border-box!important;
+}
+@media (max-width:760px){
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v352-editor-left]{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    padding:6px!important;
+  }
+  .tn-modal-layer[data-v342-code-layer="ready"][data-v352-editor-left]>.tn-modal[data-v342-code-modal="ready"]{
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{
+    width:50px!important;
+    min-width:50px!important;
+    max-width:50px!important;
+    font-size:11px!important;
+    padding-left:2px!important;
+    padding-right:7px!important;
+  }
+}
