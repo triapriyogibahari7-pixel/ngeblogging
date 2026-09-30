@@ -1,6 +1,8 @@
 name: Ngeblogging custom domain repair
 
 on:
+  push:
+    branches: [main]
   workflow_run:
     workflows: ["Cloudflare Workers production"]
     types: [completed]
@@ -14,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: ngeblogging-custom-domain-repair
@@ -40,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "runner=$(uname -a)"
-          echo "node=$(node --version)"
+          echo "node=$(node --version)"\n          echo "event=$GITHUB_EVENT_NAME"\n          echo "sha=$GITHUB_SHA"\n          echo "target_domain=$TARGET_DOMAIN"\n          echo "cloudflare_account_id=$([ -n \"$CLOUDFLARE_ACCOUNT_ID\" ] && echo present || echo missing)"\n          echo "cloudflare_domain_api_token=$([ -n \"$CLOUDFLARE_DOMAIN_API_TOKEN\" ] && echo present || echo missing)"
           test -n "${CLOUDFLARE_ACCOUNT_ID}" || { echo "CLOUDFLARE_ACCOUNT_ID belum tersedia pada environment cloudflare-production"; exit 1; }
           test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN belum tersedia pada environment cloudflare-production"; exit 1; }
           test -n "${TARGET_DOMAIN}" || { echo "TARGET_DOMAIN kosong"; exit 1; }
