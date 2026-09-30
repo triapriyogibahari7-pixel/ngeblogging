@@ -1,0 +1,77 @@
+/* v354 — actual portal-level Theme Code Editor correction.
+   IMPORTANT: this file styles ONLY the code modal. It does not style the sidebar. */
+@media (min-width:761px){
+  html.studio-v265-large .tn-modal-layer[data-v342-code-layer="ready"]{
+    position:fixed!important;
+    top:0!important;
+    bottom:0!important;
+    left:var(--v265-side-open,232px)!important;
+    right:0!important;
+    width:auto!important;
+    max-width:none!important;
+    height:100dvh!important;
+    padding:12px!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:hidden!important;
+  }
+  html.studio-v265-large #ngeblogging-studio-sidebar.collapsed ~ .sn-main ~ .tn-modal-layer[data-v342-code-layer="ready"],
+  html.studio-v265-large .tn-modal-layer[data-v342-code-layer="ready"][data-v354-collapsed="true"]{
+    left:var(--v265-side-rail,72px)!important;
+  }
+  html.studio-v265-large .tn-modal-layer[data-v342-code-layer="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+    position:relative!important;
+    inset:auto!important;
+    width:min(1480px,calc(100% - 0px))!important;
+    max-width:100%!important;
+    height:min(920px,calc(100dvh - 24px))!important;
+    max-height:calc(100dvh - 24px)!important;
+    margin:0!important;
+    transform:none!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+}
+@media (max-width:760px){
+  .tn-modal-layer[data-v342-code-layer="ready"]{
+    position:fixed!important;
+    inset:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:100dvh!important;
+    padding:6px!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:stretch!important;
+  }
+  .tn-modal-layer[data-v342-code-layer="ready"]>.tn-modal[data-v342-code-modal="ready"]{
+    width:100%!important;
+    max-width:100%!important;
+    height:calc(100dvh - 12px)!important;
+    max-height:calc(100dvh - 12px)!important;
+    margin:0!important;
+  }
+}
+/* Readable source: never let one logical line run to the far edge. */
+.tn-modal[data-v342-code-modal="ready"] [data-v342-code-pane="ready"]>textarea[data-v342-code-source="ready"]{
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+/* Keep exactly one 1–10,000 gutter. */
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v350{display:none!important}
+.tn-modal[data-v342-code-modal="ready"] .tn-code-gutter-v342{
+  display:block!important;
+  overflow:hidden!important;
+  white-space:pre!important;
+  user-select:none!important;
+  pointer-events:none!important;
+}
