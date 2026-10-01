@@ -216,5 +216,7 @@ import "./studio-theme-code-editor-v348.js";
 import "./studio-title-overlap-guard-v371-advanced.js";
 // v370: mobile-only final layout authority; desktop/tablet remain unchanged.
 import "./studio-mobile-all-pages-v370.css";
+// v427: absolute last authority for the original mobile sidebar N and editor-matched Nara Sparkles.
+import "./studio-mobile-v427.css";
 
 export default StudioFastGate;
