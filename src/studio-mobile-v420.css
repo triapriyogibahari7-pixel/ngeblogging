@@ -45,13 +45,14 @@
     color:#fff!important;-webkit-text-fill-color:#fff!important;transform:none!important;
   }
   /* Exact same floating Nara geometry as the mobile Post/Pages editor: 42px box + 21px Sparkles. */
+  /* Match the mobile editor's real Nara geometry exactly: 54/42/21 above 390px, 50/40/21 at 390px and below. */
   :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button{
-    position:fixed!important;left:auto!important;right:max(10px,env(safe-area-inset-right,0px))!important;
-    top:auto!important;bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+    position:fixed!important;left:auto!important;right:max(12px,env(safe-area-inset-right,0px))!important;
+    top:auto!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
     box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
-    width:52px!important;min-width:52px!important;max-width:52px!important;
-    height:52px!important;min-height:52px!important;max-height:52px!important;
-    padding:5px!important;margin:0!important;overflow:hidden!important;transform:none!important;
+    width:54px!important;min-width:54px!important;max-width:54px!important;
+    height:54px!important;min-height:54px!important;max-height:54px!important;
+    padding:6px!important;margin:0!important;overflow:hidden!important;transform:none!important;
   }
   :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-icon-box{
     position:static!important;display:grid!important;place-items:center!important;
