@@ -4,6 +4,13 @@
    the hidden original launcher and therefore could not correct the visible icon. */
 
 @media screen and (max-width:760px){
+  /* Responsive mobile mode may use the legacy toggle even when data-device-mode is not "small". The original N is the single launcher. */
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-top .sn-sidebar-toggle,
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-main>.sn-top>.sn-sidebar-toggle{
+    display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;
+  }
+
+
   :is(
     html[data-studio-device-mode="small"],
     html[data-studio-responsive-mode="application"],
@@ -26,12 +33,12 @@
     html.editor-v266-small,
     html.studio-v265-small
   ) #ngeblogging-studio-sidebar:not(.mobile-open){
-    width:56px!important;
-    min-width:56px!important;
-    max-width:56px!important;
-    height:56px!important;
-    min-height:56px!important;
-    max-height:56px!important;
+    width:54px!important;
+    min-width:54px!important;
+    max-width:54px!important;
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
     padding:4px!important;
     display:flex!important;
     align-items:center!important;
@@ -40,7 +47,7 @@
     pointer-events:auto!important;
     inset:auto auto auto max(8px,env(safe-area-inset-left,0px))!important;
     top:max(8px,env(safe-area-inset-top,0px))!important;
-    left:max(8px,env(safe-area-inset-left,0px))!important;
+    left:max(12px,env(safe-area-inset-left,0px))!important;
     right:auto!important;
     bottom:auto!important;
   }
@@ -57,13 +64,13 @@
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
-    flex:0 0 48px!important;
-    width:48px!important;
-    min-width:48px!important;
-    max-width:48px!important;
-    height:48px!important;
-    min-height:48px!important;
-    max-height:48px!important;
+    flex:0 0 46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
     margin:0!important;
     padding:0!important;
     overflow:visible!important;
@@ -81,13 +88,13 @@
   ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark{
     display:grid!important;
     place-items:center!important;
-    flex:0 0 48px!important;
-    width:48px!important;
-    min-width:48px!important;
-    max-width:48px!important;
-    height:48px!important;
-    min-height:48px!important;
-    max-height:48px!important;
+    flex:0 0 46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
     margin:0!important;
     padding:0!important;
     border:0!important;
@@ -123,7 +130,7 @@
     overflow:visible!important;
     clip:unset!important;
     clip-path:none!important;
-    font:800 26px/1 Arial,Helvetica,sans-serif!important;
+    font:800 25px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
     line-height:1!important;
     letter-spacing:0!important;
     text-indent:0!important;
@@ -184,12 +191,12 @@
     position:fixed!important;
     right:max(8px,env(safe-area-inset-right,0px))!important;
     bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
-    width:52px!important;
-    min-width:52px!important;
-    max-width:52px!important;
-    height:52px!important;
-    min-height:52px!important;
-    max-height:52px!important;
+    width:54px!important;
+    min-width:54px!important;
+    max-width:54px!important;
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
     margin:0!important;
     padding:6px!important;
     box-sizing:border-box!important;
