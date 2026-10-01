@@ -36,7 +36,7 @@ test("v427 lets React own the original mobile sidebar N click", () => {
   assert.match(runtime, /family\(\) === "small"/);
   assert.match(runtime, /react-small/);
   assert.match(runtime, /mark\.addEventListener\("click", directToggle/);
-  assert.match(runtime, /family\(\) === "small"\) side\.classList\.toggle\("mobile-open"\)/);
+  assert.match(runtime, /family\(\) === "small"\)/);\n  assert.match(runtime, /side\.classList\.toggle\("mobile-open"\)/);
 });
 
 test("v427 keeps the Nara icon implementation identical to editor", () => {
