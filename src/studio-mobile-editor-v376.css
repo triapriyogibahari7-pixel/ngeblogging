@@ -1,0 +1,73 @@
+/*
+ * Ngeblogging Studio — v376 mobile editor geometry correction.
+ * This is intentionally small-device-only and loaded after v375.
+ * Root cause fixed: historical editor containers are flex, so v375's
+ * grid-template declarations were inert. v376 explicitly enables grid.
+ */
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-titlebar{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"back file" "actions actions"!important;
+  align-items:center!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-back{
+  display:grid!important;
+  grid-area:back!important;
+  flex:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-file{
+  display:grid!important;
+  grid-area:file!important;
+  grid-template-columns:20px minmax(0,1fr)!important;
+  align-items:center!important;
+  flex:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-file label{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:40px 16px!important;
+  min-width:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-actions{
+  display:grid!important;
+  grid-area:actions!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  align-items:stretch!important;
+  flex:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-actions>button{
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* Do not allow legacy flex rules to shrink the title column. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-file input{
+  flex:none!important;
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-file small{
+  min-width:0!important;
+  max-width:none!important;
+}
+
+/* The writing canvas remains a normal-flow block below toolbar. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-paper-shell{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-paper{
+  display:block!important;
+  flex:none!important;
+}
+
+/* No accidental horizontal compression from inherited flex/grid children. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app :is(.ce-titlebar,.ce-file,.ce-file label,.ce-actions,.ce-paper-shell,.ce-paper,.ce-sidebar){
+  min-width:0!important;
+  max-width:100%!important;
+}
