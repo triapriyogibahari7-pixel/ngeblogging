@@ -282,16 +282,37 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     const clean = hostname.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
     if (!clean) return setError("Masukkan nama domain tanpa https://, www, atau path.");
     await mutate("register", async (activeToken) => {
-      const result = await domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean });
+      let result = await domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean });
       const domainId = result?.domain?.id;
-      const nameServers = Array.isArray(result?.instructions?.nameServers) ? result.instructions.nameServers : [];
+      let nameServers = Array.isArray(result?.instructions?.nameServers) ? result.instructions.nameServers : [];
       if (domainId && nameServers.length < 2) {
         try {
-          await domainApi("/api/domains/refresh", activeToken, { domainId });
+          // Use the authoritative refresh response immediately. The previous
+          // flow refreshed the server state but discarded that response, so the
+          // result card could render without the two nameservers even though
+          // Cloudflare had already assigned them.
+          const refreshed = await domainApi("/api/domains/refresh", activeToken, { domainId });
+          if (refreshed?.domain) {
+            result = {
+              ...result,
+              ...refreshed,
+              instructions: refreshed.instructions || result.instructions,
+            };
+            nameServers = Array.isArray(result.instructions?.nameServers) ? result.instructions.nameServers : nameServers;
+          }
         } catch {
           // Cloudflare may still be propagating; the saved domain remains
           // available and the existing Refresh status action can retry.
         }
+      }
+      if (result?.domain && nameServers.length >= 2) {
+        result.domain = {
+          ...result.domain,
+          ownership_verification: {
+            ...(result.domain.ownership_verification || {}),
+            required_name_servers: nameServers,
+          },
+        };
       }
       return result;
     }, "Domain ditambahkan. Salin dua nameserver ke registrar.");
