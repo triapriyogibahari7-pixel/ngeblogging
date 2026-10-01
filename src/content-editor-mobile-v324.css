@@ -1,0 +1,569 @@
+/* Ngeblogging Content Editor Mobile v324
+ * Scope: phone / smartphone / mobile web / standalone app only.
+ * Desktop, laptop, computer and tablet layouts are intentionally untouched.
+ * No content semantics or SEO markup are changed here; this file is layout-only.
+ */
+
+@media screen and (max-width:760px){
+  .ce-app{
+    width:100%;
+    max-width:100vw;
+    min-width:0;
+    min-height:100dvh;
+    overflow-x:hidden;
+    overflow-x:clip;
+    -webkit-text-size-adjust:100%;
+    box-sizing:border-box;
+  }
+
+  .ce-app *,
+  .ce-app *::before,
+  .ce-app *::after{box-sizing:border-box}
+
+  .ce-app :is(button,input,select,textarea){
+    min-width:0;
+    max-width:100%;
+  }
+
+  .ce-app img,
+  .ce-app video,
+  .ce-app iframe,
+  .ce-app table{max-width:100%}
+
+  /* Header: one predictable vertical flow, no squeezed controls. */
+  .ce-app .ce-titlebar{
+    position:relative;
+    top:auto;
+    z-index:20;
+    width:100%;
+    min-height:0;
+    height:auto;
+    display:grid;
+    grid-template-columns:40px minmax(0,1fr);
+    grid-template-areas:
+      "back file"
+      "actions actions";
+    align-items:center;
+    gap:8px;
+    padding:9px;
+  }
+
+  .ce-app .ce-back{
+    grid-area:back;
+    width:40px;
+    height:40px;
+    min-width:40px;
+    flex:0 0 40px;
+  }
+
+  .ce-app .ce-file{
+    grid-area:file;
+    width:100%;
+    min-width:0;
+    display:grid;
+    grid-template-columns:20px minmax(0,1fr);
+    gap:8px;
+    align-items:center;
+  }
+
+  .ce-app .ce-file>svg{
+    display:block;
+    width:20px;
+    height:20px;
+  }
+
+  .ce-app .ce-file label{
+    width:100%;
+    min-width:0;
+  }
+
+  .ce-app .ce-file input{
+    display:block;
+    width:100%;
+    min-width:0;
+    height:40px;
+    padding:0 2px;
+    font-size:14px;
+    line-height:1.25;
+    text-overflow:ellipsis;
+  }
+
+  .ce-app .ce-file small{
+    max-width:100%;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px;
+  }
+
+  .ce-app .ce-actions{
+    grid-area:actions;
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:8px;
+  }
+
+  .ce-app .ce-actions button{
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    justify-content:center;
+    padding:0 10px;
+    font-size:11px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .ce-app .ce-actions svg{
+    flex:0 0 auto;
+    width:16px;
+    height:16px;
+  }
+
+  /* Tabs: horizontal scroll is intentional; text itself never wraps. */
+  .ce-app .ce-tabs{
+    position:sticky;
+    top:0;
+    z-index:19;
+    width:100%;
+    height:46px;
+    min-height:46px;
+    gap:0;
+    padding:0 6px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+  }
+
+  .ce-app .ce-tabs::-webkit-scrollbar{display:none}
+
+  .ce-app .ce-tabs button{
+    flex:0 0 auto;
+    width:auto;
+    min-width:max-content;
+    height:46px;
+    padding:0 12px;
+    white-space:nowrap;
+    font-size:10px;
+  }
+
+  /* Formatting ribbon: compact horizontal tool rail, never a wrapping wall. */
+  .ce-app .ce-ribbon{
+    position:sticky;
+    top:46px;
+    z-index:18;
+    width:100%;
+    min-width:0;
+    min-height:58px;
+    height:58px;
+    display:flex;
+    align-items:stretch;
+    gap:4px;
+    padding:6px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+  }
+
+  .ce-app .ce-ribbon::-webkit-scrollbar{display:none}
+
+  .ce-app .ce-ribbon>section{
+    flex:0 0 auto;
+    min-width:max-content;
+    padding:0 6px;
+  }
+
+  .ce-app .ce-ribbon>section>span{display:none}
+
+  .ce-app .ce-ribbon nav{
+    height:100%;
+    gap:3px;
+    align-items:center;
+  }
+
+  .ce-app .ce-ribbon nav button,
+  .ce-app .ce-color-tool{
+    width:38px;
+    min-width:38px;
+    height:38px;
+    min-height:38px;
+    flex:0 0 38px;
+  }
+
+  .ce-app .ce-ribbon select{
+    width:auto;
+    min-width:0;
+    max-width:130px;
+    height:38px;
+    min-height:38px;
+    padding:0 8px;
+    font-size:10px;
+  }
+
+  .ce-app .ce-ribbon .selects{display:none}
+
+  .ce-app .ce-nara{
+    position:sticky;
+    right:0;
+    align-self:center;
+    flex:0 0 40px;
+    width:40px;
+    min-width:40px;
+    height:40px;
+    min-height:40px;
+    padding:0;
+    justify-content:center;
+    font-size:0;
+  }
+
+  .ce-app .ce-nara svg{
+    width:18px;
+    height:18px;
+  }
+
+  /* Main editor: one column only. Sidebar follows the article instead of
+     becoming a desktop column squeezed beside it. */
+  .ce-app .ce-workspace{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow:visible;
+  }
+
+  .ce-app .ce-paper-shell{
+    display:flex;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    min-height:0;
+    padding:10px 8px 18px;
+    align-items:stretch;
+    overflow:visible;
+  }
+
+  .ce-app .ce-paper{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    min-height:clamp(360px,55dvh,620px);
+    height:auto;
+    margin:0;
+    padding:28px clamp(16px,5vw,26px);
+    border-radius:12px;
+    box-shadow:0 4px 18px #1a2c4818;
+    font-size:16px;
+    line-height:1.75;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    caret-color:#2d6edf;
+  }
+
+  .ce-app .ce-paper h1{
+    max-width:100%;
+    margin-block:0.67em;
+    font-size:clamp(28px,9vw,38px);
+    overflow-wrap:anywhere;
+  }
+
+  .ce-app .ce-paper h2{
+    max-width:100%;
+    font-size:clamp(23px,7vw,30px);
+    overflow-wrap:anywhere;
+  }
+
+  .ce-app .ce-paper h3{
+    max-width:100%;
+    font-size:clamp(20px,6vw,25px);
+    overflow-wrap:anywhere;
+  }
+
+  .ce-app .ce-paper :is(p,li,blockquote,figcaption,a){
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+
+  .ce-app .ce-paper blockquote{
+    margin-inline:0;
+    padding-inline:12px;
+  }
+
+  .ce-app .ce-paper :is(img,video,iframe){
+    display:block;
+    width:auto;
+    max-width:100%;
+    height:auto;
+  }
+
+  .ce-app .ce-paper figure{
+    max-width:100%;
+    margin-inline:0;
+  }
+
+  .ce-app .ce-paper pre{
+    max-width:100%;
+    overflow:auto;
+    white-space:pre;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .ce-app .ce-paper table{
+    display:block;
+    width:max-content;
+    min-width:100%;
+    max-width:none;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .ce-app .ce-word-status{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-start;
+    gap:5px 12px;
+    margin-top:7px;
+    padding-inline:2px;
+    font-size:9px;
+    line-height:1.4;
+    overflow-wrap:anywhere;
+  }
+
+  /* Metadata / SEO controls become a full-width stack. */
+  .ce-app .ce-sidebar{
+    position:static;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    max-height:none;
+    overflow:visible;
+    border-left:0;
+    border-top:1px solid #dbe2eb;
+  }
+
+  .ce-app .ce-sidebar section{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    padding:16px 12px;
+  }
+
+  .ce-app .ce-sidebar h3{
+    min-width:0;
+    overflow-wrap:anywhere;
+    font-size:11px;
+  }
+
+  .ce-app .ce-field{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    margin-bottom:12px;
+    font-size:9px;
+  }
+
+  .ce-app .ce-field input,
+  .ce-app .ce-field select,
+  .ce-app .ce-field textarea{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    min-height:44px;
+    padding:10px;
+    font-size:16px;
+    line-height:1.35;
+  }
+
+  .ce-app .ce-field textarea{
+    min-height:92px;
+    resize:vertical;
+  }
+
+  .ce-app .ce-field-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:0;
+  }
+
+  .ce-app .ce-toggle{
+    grid-template-columns:minmax(0,1fr) auto;
+    min-width:0;
+    gap:10px;
+    padding:8px 0;
+  }
+
+  .ce-app .ce-toggle span{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+
+  .ce-app .ce-score{
+    width:100%;
+    min-width:0;
+  }
+
+  /* Preview / media / HTML editor: true mobile sheets. */
+  .ce-app .ce-preview-layer,
+  .ce-app .ce-media-layer,
+  .ce-app .ce-source-layer{
+    position:fixed;
+    inset:0;
+    z-index:3000;
+    width:100%;
+    max-width:100vw;
+    padding:0;
+    overflow:hidden;
+  }
+
+  .ce-app .ce-preview-layer>section,
+  .ce-app .ce-media-layer>section,
+  .ce-app .ce-source-layer>section{
+    width:100%;
+    max-width:100%;
+    height:100dvh;
+    max-height:100dvh;
+    min-height:0;
+    border-radius:0;
+  }
+
+  .ce-app :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section>header{
+    min-height:60px;
+    padding:8px 10px;
+  }
+
+  .ce-app .ce-preview-canvas{
+    min-width:0;
+    padding:10px;
+    overflow:auto;
+  }
+
+  .ce-app .ce-preview-canvas>article{
+    width:100%;
+    max-width:390px;
+    min-height:0;
+  }
+
+  .ce-app .ce-preview-canvas article>nav{
+    height:auto;
+    min-height:56px;
+    padding:10px 14px;
+    gap:8px;
+    overflow:hidden;
+  }
+
+  .ce-app .ce-preview-canvas article>nav span{
+    display:none;
+  }
+
+  .ce-app .ce-preview-canvas article>main{
+    width:100%;
+    max-width:100%;
+    padding:32px 18px;
+  }
+
+  .ce-app .ce-preview-canvas h1{
+    max-width:100%;
+    font-size:clamp(30px,9vw,38px);
+    overflow-wrap:anywhere;
+  }
+
+  .ce-app .ce-preview-canvas .body{
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+
+  .ce-app .ce-preview-canvas .body :is(img,video,iframe,table){
+    max-width:100%;
+  }
+
+  .ce-app .ce-preview-canvas article>footer{
+    padding:22px 14px;
+  }
+
+  .ce-app .ce-preview-devices{
+    left:50%;
+    bottom:max(10px,env(safe-area-inset-bottom,0px));
+    max-width:calc(100vw - 20px);
+  }
+
+  .ce-app .ce-device-switch{
+    max-width:100%;
+  }
+
+  .ce-app .ce-source-layer textarea{
+    width:100%;
+    min-width:0;
+    min-height:0;
+    padding:14px;
+    font-size:12px;
+    line-height:1.65;
+    overflow:auto;
+    overflow-wrap:normal;
+    white-space:pre;
+  }
+
+  .ce-app .ce-source-layer footer{
+    min-height:64px;
+    flex-wrap:wrap;
+    padding:8px 10px;
+  }
+
+  .ce-app .ce-source-layer footer>button{
+    min-height:44px;
+    flex:1 1 0;
+    justify-content:center;
+  }
+
+  .ce-app .ce-media-layer .sn-media-library{
+    min-width:0;
+    padding:12px;
+    overflow:auto;
+  }
+
+  .ce-app .sn-media-grid{
+    grid-template-columns:minmax(0,1fr);
+  }
+
+  .ce-app .sn-media-tools{
+    min-width:0;
+  }
+}
+
+@media screen and (max-width:390px){
+  .ce-app .ce-titlebar{padding:8px}
+  .ce-app .ce-actions button{min-height:42px;padding-inline:7px;font-size:10px}
+  .ce-app .ce-tabs button{padding-inline:10px;font-size:9px}
+  .ce-app .ce-paper{padding-inline:14px}
+  .ce-app .ce-sidebar section{padding-inline:10px}
+}
+
+@media (display-mode:standalone) and (max-width:760px){
+  .ce-app{
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+
+  .ce-app .ce-titlebar{
+    padding-top:max(9px,env(safe-area-inset-top,0px));
+  }
+
+  .ce-app .ce-preview-devices{
+    bottom:max(10px,env(safe-area-inset-bottom,0px));
+  }
+}
+
+@media (prefers-reduced-motion:reduce) and (max-width:760px){
+  .ce-app *{
+    scroll-behavior:auto!important;
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
+}
