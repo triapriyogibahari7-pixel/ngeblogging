@@ -796,3 +796,218 @@
     }
   }
 }
+
+
+/* v444 — authoritative mobile fix for the Studio shell.
+   This file is imported by StudioNext and therefore owns the actual runtime cascade.
+   Scope: mobile N launcher + Nara launcher + Ringkasan/API Keys only.
+   Do not change Nara assistant internal controls. */
+@media screen and (max-width:760px){
+  /* SINGLE MOBILE N: the React launcher is the only visible N in phone mode. */
+  .sn-shell[data-device-mode="small"] > .sn-mobile-n-launcher{
+    position:fixed!important;
+    left:max(10px,env(safe-area-inset-left,0px))!important;
+    right:auto!important;
+    top:max(10px,env(safe-area-inset-top,0px))!important;
+    bottom:auto!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    z-index:2147483647!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    isolation:isolate!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-mobile-n-launcher .sn-mobile-menu-mark{
+    position:relative!important;
+    left:auto!important;
+    top:auto!important;
+    width:46px!important;
+    min-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    margin:0!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-mobile-n-launcher .sn-mobile-menu-mark>strong{
+    position:static!important;
+    display:block!important;
+    width:max-content!important;
+    min-width:0!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    font:900 27px/1 Arial,Helvetica,sans-serif!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    text-align:center!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    transform:none!important;
+    translate:none!important;
+  }
+
+  /* Hard-hide every legacy N source when the shell is in phone mode.
+     The JSX launcher above remains the sole clickable N. */
+  .sn-shell[data-device-mode="small"] > .sn-side .sn-logo-mark,
+  .sn-shell[data-device-mode="small"] > .sn-main .sn-sidebar-toggle,
+  .sn-shell[data-device-mode="small"] > .sn-main .sn-top .sn-sidebar-toggle{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  /* NARA: use the native launcher only, centered like the Post/Pages editor. */
+  .sn-shell[data-device-mode="small"] .nara-floating-button{
+    position:fixed!important;
+    left:auto!important;
+    right:max(10px,env(safe-area-inset-right,0px))!important;
+    top:auto!important;
+    bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+    width:37px!important;
+    min-width:37px!important;
+    max-width:37px!important;
+    height:37px!important;
+    min-height:37px!important;
+    max-height:37px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+    float:none!important;
+    z-index:2147483646!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    border-radius:9px!important;
+  }
+  .sn-shell[data-device-mode="small"] .nara-floating-button .nara-launcher-icon-box{
+    position:static!important;
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    flex:0 0 18px!important;
+    display:grid!important;
+    place-items:center!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  .sn-shell[data-device-mode="small"] .nara-floating-button .nara-launcher-icon-box>svg{
+    display:block!important;
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  .sn-shell[data-device-mode="small"] .nara-floating-button .nara-launcher-label{
+    display:none!important;
+  }
+  .sn-shell[data-device-mode="small"] .sn-mobile-nara-launcher{
+    display:none!important;
+  }
+
+  /* RINGKASAN + API KEYS: remove the legacy top gap at the actual StudioNext root.
+     Other menu pages are intentionally untouched. */
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:6px 10px 24px!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Ringkasan only */
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page){
+    padding-top:6px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome{
+    margin:0 0 8px!important;
+    padding:12px!important;
+    min-height:0!important;
+    height:auto!important;
+    gap:8px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics{
+    margin:0 0 8px!important;
+    gap:6px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid{
+    margin-top:0!important;
+    gap:8px!important;
+  }
+
+  /* API Keys only */
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page{
+    padding-top:4px!important;
+    padding-bottom:24px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-title{
+    position:relative!important;
+    inset:auto!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-items:start!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0 0 8px!important;
+    padding:0!important;
+    gap:8px!important;
+    transform:none!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-metrics{
+    margin:0 0 8px!important;
+    gap:6px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-card{
+    margin:0 0 8px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-endpoint,
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-list{
+    min-height:0!important;
+    height:auto!important;
+  }
+}
