@@ -31,6 +31,7 @@ import "./studio-mobile-final-v369.css";
 import "./studio-mobile-authority-v370.css";
 import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
+import "./studio-mobile-v408.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
@@ -278,7 +279,7 @@ export default function StudioNext({ onExit, user }) {
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
       <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
-      <button className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
+      <button className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button><button className="sn-new sn-new-page" onClick={() => createDoc("page")}><Plus/><span>Buat Page</span></button>
       <nav aria-label="Navigasi Studio">
         <button className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
         <button className={view === "posts" ? "active" : ""} onClick={() => chooseView("posts")}><FileText/><span>Posts</span></button>

@@ -1,0 +1,388 @@
+/* v408 — mobile Studio/Nara finishing layer.
+ * Strictly scoped to small-device runtime. Desktop/tablet layouts are untouched.
+ */
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-new-page{
+  display:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-new-page{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:44px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:9px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-new-page span{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+/* Keep the global Nara launcher present above editor surfaces. */
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-floating-button{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:fixed!important;
+    z-index:9999!important;
+    right:12px!important;
+    bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+    pointer-events:auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    padding:5px!important;
+    margin:0!important;
+    border-radius:16px!important;
+    transform:none!important;
+    float:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-floating-button .nara-launcher-icon-box{
+    display:grid!important;
+    place-items:center!important;
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-floating-button .nara-launcher-icon-box svg{
+    display:block!important;
+    width:21px!important;
+    min-width:21px!important;
+    height:21px!important;
+    min-height:21px!important;
+    margin:0!important;
+    transform:none!important;
+  }
+
+  /* Nara opened from inside editor: one stable mobile sheet, no overflow/touch collisions. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-layer{
+    position:fixed!important;
+    inset:0!important;
+    z-index:10000!important;
+    width:100vw!important;
+    max-width:100vw!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    display:block!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-backdrop{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-shell{
+    position:absolute!important;
+    left:50%!important;
+    top:max(6px,env(safe-area-inset-top,0px))!important;
+    bottom:max(6px,env(safe-area-inset-bottom,0px))!important;
+    width:min(calc(100vw - 12px),520px)!important;
+    min-width:0!important;
+    max-width:calc(100vw - 12px)!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 12px)!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translateX(-50%)!important;
+    display:grid!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+    overflow:hidden!important;
+    border-radius:16px!important;
+    box-sizing:border-box!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header{
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) auto auto!important;
+    grid-template-rows:48px!important;
+    align-items:center!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    height:48px!important;
+    margin:0!important;
+    padding:5px 7px!important;
+    overflow:hidden!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header .nara-brand-orb{
+    width:30px!important;
+    min-width:30px!important;
+    height:30px!important;
+    min-height:30px!important;
+    margin:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header>div:nth-child(2){
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header>div:nth-child(2)>span{
+    display:flex!important;
+    align-items:center!important;
+    gap:3px!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header>div:nth-child(2)>small{
+    display:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header .nara-size-controls-v147{
+    display:flex!important;
+    align-items:center!important;
+    gap:3px!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header .nara-size-controls-v147 button{
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 30px!important;
+    width:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    height:30px!important;
+    min-height:30px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-header>button{
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 32px!important;
+    width:32px!important;
+    min-width:32px!important;
+    max-width:32px!important;
+    height:32px!important;
+    min-height:32px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-context-bar{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:7px!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:38px!important;
+    height:38px!important;
+    margin:0!important;
+    padding:5px 8px!important;
+    overflow:hidden!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-context-bar>*{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-messages{
+    min-width:0!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:10px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-message{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-message>div{
+    min-width:0!important;
+    max-width:calc(100% - 34px)!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-rich-text,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-rich-text>*{
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-message-content pre,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-message-content code{
+    max-width:100%!important;
+    overflow-x:auto!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-quick-prompts{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    height:42px!important;
+    min-height:42px!important;
+    margin:0!important;
+    padding:4px 7px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scrollbar-width:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-quick-prompts button{
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:max-content!important;
+    max-width:none!important;
+    height:32px!important;
+    min-height:32px!important;
+    margin:0!important;
+    padding:0 9px!important;
+    white-space:nowrap!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:7px!important;
+    overflow:visible!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer textarea{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:58px!important;
+    max-height:130px!important;
+    margin:0 0 6px!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    font-size:16px!important;
+    line-height:1.4!important;
+    resize:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools{
+    display:grid!important;
+    grid-template-columns:38px 38px minmax(0,1fr) minmax(0,1fr) 44px!important;
+    align-items:center!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:40px!important;
+    min-height:40px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools>button,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools .nara-attachment-menu-wrap>button{
+    display:grid!important;
+    place-items:center!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools .nara-select{
+    min-width:0!important;
+    max-width:100%!important;
+    height:38px!important;
+    min-height:38px!important;
+    overflow:hidden!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools .nara-select span{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools .nara-send{
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:40px!important;
+    min-height:40px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-floating-button{
+    right:9px!important;
+    bottom:max(9px,env(safe-area-inset-bottom,0px))!important;
+    width:50px!important;
+    min-width:50px!important;
+    height:50px!important;
+    min-height:50px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-assistant-shell{
+    width:calc(100vw - 8px)!important;
+    max-width:calc(100vw - 8px)!important;
+    top:max(4px,env(safe-area-inset-top,0px))!important;
+    bottom:max(4px,env(safe-area-inset-bottom,0px))!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools{
+    grid-template-columns:34px 34px minmax(0,1fr) 40px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v407="true"]) .nara-composer-tools .nara-select.model{
+    display:none!important;
+  }
+}
