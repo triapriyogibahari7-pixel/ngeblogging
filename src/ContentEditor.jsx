@@ -14,6 +14,7 @@ import "./studio-mobile-app-pages-editor-v368.css";
 import "./studio-mobile-final-v369.css";
 import "./studio-mobile-authority-v370.css";
 import "./studio-mobile-authority-v372.css";
+import "./studio-small-device-v374.css";
 import "./studio-mobile-editor-v373.css";
 
 const DEVICES = [
