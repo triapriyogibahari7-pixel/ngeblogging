@@ -1,0 +1,168 @@
+/* v414 — preserve the desktop editor menu while isolating phone-only controls.
+   Large devices keep the normal editor ribbon and all non-mobile editor items.
+   Only the explicitly phone-only controls are removed on large devices. */
+
+/* Phone-only editor surfaces stay out of desktop/laptop/computer/tablet/large modes. */
+.ce-app .ce-mobile-toolbar,
+.ce-app .ce-mobile-actions{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* These exact ribbon controls belong to the phone toolbar, not large-device editor. */
+.ce-app .ce-ribbon button[title="Undo"],
+.ce-app .ce-ribbon button[title="Redo"],
+.ce-app .ce-ribbon button[title="Bold"],
+.ce-app .ce-ribbon button[title="Italic"],
+.ce-app .ce-ribbon button[title="Underline"],
+.ce-app .ce-ribbon button[title="Daftar poin"],
+.ce-app .ce-ribbon button[title="Daftar nomor"],
+.ce-app .ce-ribbon button[title="Tautan"],
+.ce-app .ce-ribbon button[title="Media"],
+.ce-app .ce-ribbon button[title="Tabel"],
+.ce-app .ce-nara{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* Preview is also a phone-only editor action. Publish remains available. */
+.ce-app .ce-actions .ce-preview-action{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* The floating Nara launcher belongs to the phone editor experience only.
+   Keep it available elsewhere in the Studio when no editor is open. */
+body:has(.ce-app[data-mobile-editor-v414="true"]) .nara-floating-button{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v414="true"] .ce-mobile-toolbar{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v414="true"] .ce-mobile-actions{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  /* Mobile uses the dedicated touch toolbar, not the desktop ribbon. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v414="true"] .ce-ribbon{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v414="true"] .ce-actions .ce-preview-action{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v414="true"]) .nara-floating-button{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  /* Closed/open mobile menu button: reserve a real box so the N glyph cannot be clipped. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle{
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark{
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    line-height:1!important;
+    font-size:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+    display:block!important;
+    box-sizing:content-box!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font:900 30px/1 Arial,sans-serif!important;
+    line-height:1!important;
+    transform:none!important;
+    text-indent:0!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>i{
+    display:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark>strong{
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark{
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+    font-size:28px!important;
+  }
+}
