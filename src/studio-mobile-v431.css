@@ -186,10 +186,10 @@
   }
 
   /* The visible launcher is the v18 proxy, not .nara-floating-button.
-     Match the editor reference: 40px control with an 18px Sparkles glyph. */
+     Match the editor reference: 54px launcher with a centered 21px Sparkles glyph. */
   html body .nara-floating-proxy-v18{
     position:fixed!important;
-    right:max(8px,env(safe-area-inset-right,0px))!important;
+    right:max(10px,env(safe-area-inset-right,0px))!important;
     bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
     width:54px!important;
     min-width:54px!important;
@@ -221,12 +221,12 @@
 
   html body .nara-floating-proxy-v18>svg{
     display:block!important;
-    width:18px!important;
-    min-width:18px!important;
-    max-width:18px!important;
-    height:18px!important;
-    min-height:18px!important;
-    max-height:18px!important;
+    width:21px!important;
+    min-width:21px!important;
+    max-width:21px!important;
+    height:21px!important;
+    min-height:21px!important;
+    max-height:21px!important;
     margin:0!important;
     padding:0!important;
     box-sizing:border-box!important;
