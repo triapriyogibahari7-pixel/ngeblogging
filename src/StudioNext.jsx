@@ -287,7 +287,6 @@ export default function StudioNext({ onExit, user }) {
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     {deviceMode === "small" && <>
       <button type="button" className="sn-mobile-n-launcher" onClick={() => setMobileSidebar((open) => !open)} aria-label={mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio"} aria-expanded={mobileSidebar} aria-controls="ngeblogging-studio-sidebar"><span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span></button>
-      <button type="button" className="sn-mobile-nara-launcher" onClick={() => setNaraOpen(true)} aria-label="Buka Nara AI"><Sparkles aria-hidden="true"/></button>
     </>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
       <div className="sn-logo">{deviceMode !== "small" && <button type="button" className="sn-logo-mark" aria-label="n." aria-controls="ngeblogging-studio-sidebar" aria-expanded={sidebar} onClick={toggleSidebar}><strong>n</strong><i>.</i></button>}<b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
