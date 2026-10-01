@@ -65,8 +65,8 @@ const ACTIVE_VERSION_V302 = "ngeblogging-app-v302-cache-cutover-20260805";
 const ACTIVE_CACHE_RELEASE_V302 = "studio-build-nara-cache-v302";
 const ACTIVE_VERSION_V303 = VERSION;
 const ACTIVE_CACHE_RELEASE_V303 = CACHE_RELEASE;
-const SHELL_CACHE = `${ACTIVE_VERSION_V305}-${ACTIVE_CACHE_RELEASE_V305}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_STARTUP_SITE_UNION_RELEASE_V305}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;
-const ASSET_CACHE = `${ACTIVE_VERSION_V305}-${ACTIVE_CACHE_RELEASE_V305}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_STARTUP_SITE_UNION_RELEASE_V305}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;
+const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
+const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -174,8 +174,8 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V305"),
-        reason: "service-worker-activated-site-switch-first-site-v305",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V367"),
+        reason: "service-worker-activated-domain-runtime-v367",
         reloadRequired: false,
       });
       // Deliberately no client.navigate()/reload: preserve login/session and unsaved work.
