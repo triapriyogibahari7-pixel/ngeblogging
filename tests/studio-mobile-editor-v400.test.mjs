@@ -81,3 +81,19 @@ test("v403 hard reset has real small-device specificity and removes the mobile o
   assert.doesNotMatch(css403, /data-studio-responsive-mode="desktop"/);
   assert.doesNotMatch(css403, /:where\(/);
 });
+
+test("v404 keeps Nara visible and replaces the mobile status strip with editor actions", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/studio-mobile-editor-v404.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-editor-v404\.css/);
+  assert.match(editor, /data-mobile-editor-v404="true"/);
+  assert.match(editor, /className="ce-nara-section"/);
+  assert.match(editor, /className="ce-mobile-actions"/);
+  assert.doesNotMatch(editor, /<div className="ce-word-status">/);
+  assert.match(css, /\.ce-nara-section/);
+  assert.match(css, /\.ce-nara-section \.ce-nara/);
+  assert.match(css, /\.ce-mobile-actions\{/);
+  assert.match(css, /grid-template-columns:repeat\(3,minmax\(0,1fr\)!important/);
+  assert.match(css, /\.ce-word-status\{/);
+  assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"/);
+});
