@@ -54,7 +54,7 @@ html[data-studio-v260-family="small"] .sn-mobile-menu-mark{
   border-radius:12px!important;
   overflow:visible!important;
 }
-html[data-studio-v260-family="small"] .sn-mobile-menu-mark strong{font-size:25px!important;line-height:1!important}
+html[data-studio-v260-family="small"] .sn-mobile-menu-mark strong{font-size:24px!important;line-height:1!important;width:max-content!important;max-width:none!important;overflow:visible!important;white-space:nowrap!important}
 html[data-studio-v260-family="large"] .sn-logo>b{
   display:flex!important;
   align-items:center!important;
