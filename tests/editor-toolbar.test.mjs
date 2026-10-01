@@ -34,6 +34,13 @@ test("editor exposes formatting layout media tables links and HTML source", () =
   assert.match(editor, /HTML konten disimpan/);
 });
 
+test("contenteditable keeps its DOM stable while React autosaves each keystroke", () => {
+  assert.match(editor, /useLayoutEffect/);
+  assert.match(editor, /element\.innerHTML !== nextContent/);
+  assert.doesNotMatch(editor, /className="ce-paper"[^>]*dangerouslySetInnerHTML/);
+  assert.match(editor, /className="ce-paper" contentEditable suppressContentEditableWarning onInput=/);
+});
+
 test("editor formatting immediately patches React autosave state", () => {
   assert.match(editor, /patch\(\{ content: editor\.current\?\.innerHTML/);
   assert.match(editor, /onInput=\{\(event\) => patch\(\{ content:/);
