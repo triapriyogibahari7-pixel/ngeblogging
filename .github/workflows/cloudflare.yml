@@ -308,7 +308,7 @@ jobs:
             'domain-authority-v75-20260727',
             'SESSION_REAUTH_REQUIRED',
           ]) if (!bundle.includes(marker)) errors.push(`bundle:${marker}`);
-          if (!sw.includes('ngeblogging-app-v445-theme-mobile-restore-20261001')) errors.push('service-worker-v445-theme-mobile-restore');
+          if (!sw.includes('ngeblogging-app-v367-settings-clean-20261001')) errors.push('service-worker-v367-domain-cache');
           if (/Situs belum tersedia|>404<|404\s*[-–—]/i.test(tenant)) errors.push('tenant-404');
           if (!tenant.includes('/assets/')) errors.push('tenant-app-shell');
           if (errors.length) {
