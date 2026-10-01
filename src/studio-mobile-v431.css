@@ -52,7 +52,8 @@
     pointer-events:auto!important;
     inset:auto!important;
     top:max(8px,env(safe-area-inset-top,0px))!important;
-    left:max(12px,env(safe-area-inset-left,0px))!important;
+    left:auto!important;
+    right:max(12px,env(safe-area-inset-right,0px))!important;
     right:auto!important;
     bottom:auto!important;
   }
@@ -429,13 +430,70 @@
     color:#fff!important;
     -webkit-text-fill-color:#fff!important;
   }
-  /* Remove both old in-drawer/header mobile N renderings: exactly one N remains. */
+  /* Mobile authority: the ONLY Studio N is the fixed launcher. The drawer/header do not render another N. */
   :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) #ngeblogging-studio-sidebar .sn-logo-mark,
   :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-top>.sn-sidebar-toggle{
     display:none!important;
     visibility:hidden!important;
     pointer-events:none!important;
   }
+  /* Nara AI: copy the exact Post/Pages editor launcher geometry. */
+  html body .nara-floating-button{
+    display:flex!important;
+    position:fixed!important;
+    left:auto!important;
+    right:max(12px,env(safe-area-inset-right,0px))!important;
+    top:auto!important;
+    bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:5px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:visible!important;
+    transform:none!important;
+    float:none!important;
+    z-index:2147483001!important;
+    pointer-events:auto!important;
+    border-radius:16px!important;
+  }
+  html body .nara-floating-button .nara-launcher-icon-box{
+    display:grid!important;
+    place-items:center!important;
+    position:static!important;
+    flex:0 0 42px!important;
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    transform:none!important;
+  }
+  html body .nara-floating-button .nara-launcher-icon-box>svg{
+    display:block!important;
+    flex:0 0 21px!important;
+    width:21px!important;
+    min-width:21px!important;
+    max-width:21px!important;
+    height:21px!important;
+    min-height:21px!important;
+    max-height:21px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+  }
+  html body .nara-floating-button .nara-launcher-label{display:none!important;}
   html body .nara-floating-proxy-v20{
     width:52px!important;
     min-width:52px!important;
