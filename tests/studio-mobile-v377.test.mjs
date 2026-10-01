@@ -51,3 +51,30 @@ test("small editor keeps the real Nara button visible while large-device behavio
   assert.match(secure, /if \(isSmallEditor\)/);
   assert.match(secure, /button\.hidden = false/);
 });
+
+test("v405 covers all ten Studio pages with small-device-only layout authority", async () => {
+  const secure = await readFile(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/studio-mobile-pages-v405.css", import.meta.url), "utf8");
+  assert.match(secure, /studio-mobile-pages-v405\.css/);
+  assert.match(css, /\.sn-shell/);
+  assert.match(css, /\.sn-main/);
+  assert.match(css, /\.sn-top/);
+  assert.match(css, /\.sn-side/);
+  assert.match(css, /\.sn-view-pad/);
+  assert.match(css, /\.sn-page-title/);
+  assert.match(css, /\.sn-content-card/);
+  assert.match(css, /\.sn-doc-row/);
+  assert.match(css, /\.tn-studio/);
+  assert.match(css, /\.sn-media-library/);
+  assert.match(css, /\.sn-analytics-data-host/);
+  assert.match(css, /\.sn-members/);
+  assert.match(css, /\.sv124-comment-workspace/);
+  assert.match(css, /\.sv124-domain-page/);
+  assert.match(css, /\.sn-api-page/);
+  assert.match(css, /\.sn-settings-grid/);
+  assert.match(css, /html\.editor-v266-small/);
+  assert.match(css, /data-studio-device-mode="small"/);
+  assert.doesNotMatch(css, /editor-v266-large/);
+  assert.doesNotMatch(css, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css, /data-studio-responsive-mode="desktop"/);
+});
