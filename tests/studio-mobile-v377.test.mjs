@@ -99,3 +99,15 @@ test("v408 adds mobile Pages shortcut and stabilizes Nara inside the mobile edit
   assert.doesNotMatch(css, /data-studio-device-mode="large"/);
   assert.equal((css.match(/{/g)||[]).length, (css.match(/}/g)||[]).length);
 });
+
+
+test("v411 isolates mobile sidebar logo and separates Post/Page create buttons", async () => {
+  const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/studio-mobile-v411.css", import.meta.url), "utf8");
+  assert.match(studio, /studio-mobile-v411\.css/);
+  assert.match(css, /#ngeblogging-studio-sidebar\.sn-side>\.sn-new\+\.sn-new/);
+  assert.match(css, /\.sn-logo-mark\{[\\s\\S]*clip:auto!important/);
+  assert.match(css, /\.sn-logo-mark strong\{[\\s\\S]*overflow:visible!important/);
+  assert.match(css, /max-width:760px/);
+  assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"|data-studio-device-mode="large"/);
+});
