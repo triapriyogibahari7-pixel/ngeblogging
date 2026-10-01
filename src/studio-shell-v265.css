@@ -128,16 +128,23 @@ html.studio-v265-small .sn-top{
   filter:none!important;backdrop-filter:none!important
 }
 html.studio-v265-small .sn-sidebar-toggle{
-  display:grid!important;place-items:center!important;position:relative!important;inset:auto!important;flex:0 0 48px!important;width:48px!important;height:48px!important;
+  display:grid!important;place-items:center!important;position:fixed!important;left:max(10px,env(safe-area-inset-left,0px))!important;right:auto!important;top:8px!important;
+  box-sizing:border-box!important;z-index:6500!important;width:48px!important;height:48px!important;
   min-width:48px!important;min-height:48px!important;margin:0!important;padding:0!important;border-radius:14px!important;
   background:linear-gradient(145deg,#3476e7,#4b55dc)!important;border:0!important;color:#fff!important;
-  visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important;filter:none!important
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important;filter:none!important;overflow:visible!important
 }
 html.studio-v265-small .sn-sidebar-toggle .sn-desktop-sidebar-icon{display:none!important}
-html.studio-v265-small .sn-sidebar-toggle .sn-mobile-menu-mark,
+html.studio-v265-small .sn-sidebar-toggle .sn-mobile-menu-mark{
+  display:grid!important;place-items:center!important;box-sizing:border-box!important;width:48px!important;height:48px!important;
+  min-width:48px!important;min-height:48px!important;margin:0!important;padding:0 5px!important;
+  overflow:visible!important;clip-path:none!important;transform:none!important
+}
 html.studio-v265-small .sn-sidebar-toggle .sn-mobile-menu-mark strong{
-  display:grid!important;place-items:center!important;width:100%!important;height:100%!important;color:#fff!important;
-  font:850 27px/1 Arial,Helvetica,sans-serif!important;visibility:visible!important;opacity:1!important
+  display:block!important;box-sizing:border-box!important;width:max-content!important;max-width:none!important;min-width:max-content!important;
+  height:auto!important;margin:0!important;padding:0!important;color:#fff!important;overflow:visible!important;white-space:nowrap!important;
+  font:850 24px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;visibility:visible!important;opacity:1!important;
+  transform:none!important;text-indent:0!important
 }
 html.studio-v265-small .sn-sidebar-toggle .sn-mobile-menu-mark i{display:none!important}
 html.studio-v265-small .sn-workspace,
