@@ -77,7 +77,7 @@ test("sidebar, equal Posts-Pages workflow, themes and Nara remain intact", () =>
   assert.match(studio, /type="article"/);
   assert.match(studio, /type="page"/);
   assert.ok(studio.includes("function ContentList"), "legacy ContentList fallback must remain available");
-  assert.match(theme, /100 tema aktif/);
+  assert.match(theme, /<h1>100 Tema Aktif<\/h1>/);
   assert.match(recovery, /Edit Tata Letak/);
   for (const marker of ["cameraInput", "imageInput", "fileInput", "startVoice", "SpeakerIcon", "nara-native-size-controls-v149"]) assert.ok(nara.includes(marker), `missing ${marker}`);
 });
