@@ -1,5 +1,7 @@
-const VERSION = "ngeblogging-app-v367-settings-clean-20261001";
-const CACHE_RELEASE = "studio-settings-clean-cache-v367";
+const LEGACY_VERSION_V369 = "ngeblogging-app-v369-mobile-final-20261001";
+const LEGACY_CACHE_RELEASE_V369 = "studio-mobile-final-cache-v369";
+const VERSION = "ngeblogging-app-v445-theme-mobile-restore-20261001";
+const CACHE_RELEASE = "v445-theme-mobile-restore-20261001";
 const STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305 = "studio-site-switch-first-site-v305-20260805";
 const STUDIO_SITE_SWITCHER_RELEASE_V305 = "studio-real-site-switcher-v305-20260805";
 const STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305 = "studio-first-site-required-v305-20260805";
@@ -50,7 +52,7 @@ const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "settings-clean-v367";
+const FORCE_REFRESH_VALUE = "v445-theme-mobile-refresh-20261001";
 const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
 const ACTIVE_CACHE_RELEASE_V258 = "studio-theme-right4-cache-v258";
 const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";
@@ -63,10 +65,11 @@ const ACTIVE_VERSION_V275 = "ngeblogging-app-v275-final-stability-20260804";
 const ACTIVE_CACHE_RELEASE_V275 = "studio-final-stability-cache-v275";
 const ACTIVE_VERSION_V302 = "ngeblogging-app-v302-cache-cutover-20260805";
 const ACTIVE_CACHE_RELEASE_V302 = "studio-build-nara-cache-v302";
+const MOBILE_AUTHORITY_RELEASE_V371 = "mobile-editor-v406";
 const ACTIVE_VERSION_V303 = VERSION;
 const ACTIVE_CACHE_RELEASE_V303 = CACHE_RELEASE;
-const SHELL_CACHE = `${ACTIVE_VERSION_V305}-${ACTIVE_CACHE_RELEASE_V305}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_STARTUP_SITE_UNION_RELEASE_V305}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-shell`;
-const ASSET_CACHE = `${ACTIVE_VERSION_V305}-${ACTIVE_CACHE_RELEASE_V305}-${STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305}-${STUDIO_SITE_SWITCHER_RELEASE_V305}-${STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305}-${STUDIO_STARTUP_SITE_UNION_RELEASE_V305}-${STUDIO_ADD_SITE_RELEASE_V303}-${STUDIO_STARTUP_DIRECT_DATA_RELEASE_V292}-${AUTH_SESSION_HANDOFF_RELEASE_V292}-assets`;
+const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
+const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;
 const APP_SHELL = ["/", "/studio", "/site.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -143,6 +146,9 @@ function versionPayload(type) {
     legacyVersion: LEGACY_VERSION,
     studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
     release: CACHE_RELEASE,
+    mobileAuthorityReleaseV371: MOBILE_AUTHORITY_RELEASE_V371,
+    legacyVersionV369: LEGACY_VERSION_V369,
+    legacyCacheReleaseV369: LEGACY_CACHE_RELEASE_V369,
     routeRecoveryCompatRelease: ROUTE_RECOVERY_COMPAT_RELEASE,
     authEditorCompatRelease: AUTH_EDITOR_COMPAT_RELEASE,
     authEditorCompatStaleReason: AUTH_EDITOR_COMPAT_STALE_REASON,
@@ -174,8 +180,8 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V305"),
-        reason: "service-worker-activated-site-switch-first-site-v305",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V445"),
+        reason: "service-worker-activated-theme-mobile-restore-v445",
         reloadRequired: false,
       });
       // Deliberately no client.navigate()/reload: preserve login/session and unsaved work.
