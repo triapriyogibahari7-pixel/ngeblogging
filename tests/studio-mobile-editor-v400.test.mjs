@@ -47,3 +47,18 @@ test("v401 clean rebuild is wired and owns mobile editor geometry", () => {
   assert.doesNotMatch(css401, /data-studio-responsive-mode="tablet"/);
   assert.doesNotMatch(css401, /data-studio-responsive-mode="desktop"/);
 });
+
+
+test("v402 removes duplicate mobile Nara launcher and mobile status box", () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css402 = await readFile(new URL("../src/studio-mobile-editor-v402.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-editor-v402\.css/);
+  assert.match(editor, /data-mobile-editor-v402="true"/);
+  assert.match(css402, /body:has\(\.ce-app\[data-mobile-editor-v402="true"\]\) \.nara-floating-button/);
+  assert.match(css402, /\.ce-word-status\{[\s\S]*display:none!important/);
+  assert.match(css402, /\.ce-ribbon \.ce-nara\{[\s\S]*display:grid!important/);
+  assert.match(css402, /\.ce-ribbon \.ce-nara svg\{[\s\S]*place-items:center/);
+  assert.doesNotMatch(css402, /editor-v266-large/);
+  assert.doesNotMatch(css402, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css402, /data-studio-responsive-mode="desktop"/);
+});
