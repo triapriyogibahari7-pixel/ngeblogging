@@ -164,30 +164,11 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
             box-shadow:none!important;
             filter:none!important;
           }
-          /* v439 mobile Theme preview: remove the feature/decorative rail that
-             paints the large dark surface on narrow screens. Keep the actual Theme
-             header, title, navigation and content; desktop/tablet previews are not
-             modified because this block exists only in the mobile preview iframe. */
-          html,body{
-            position:relative!important;
-            min-width:0!important;
-            max-width:100%!important;
-            overflow-x:hidden!important;
-          }
-          .ng-theme{
-            position:relative!important;
-            min-width:0!important;
-            max-width:100%!important;
-            overflow-x:hidden!important;
-          }
-          .ng-hero aside,
-          .ng-hero .ng-hero-panels,
-          .ng-hero .ng-hero-index,
-          .ng-hero .ng-poster-number,
-          .ng-hero [class*="feature-rail"],
-          .ng-hero [class*="featureRail"],
-          .ng-hero [class*="hero-rail-panel"],
-          .ng-hero [class*="heroRailPanel"]{
+          /* Mobile Theme preview: the feature rail (Guest cards / Subscribe links /
+             Episode player) is the decorative panel that becomes a large dark overlay
+             on narrow screens. Hide only that panel in the mobile preview; the main
+             theme, posts, navigation and widgets remain intact. */
+          .ng-hero aside{
             display:none!important;
             visibility:hidden!important;
             opacity:0!important;
@@ -200,45 +181,14 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
             padding:0!important;
             overflow:hidden!important;
             pointer-events:none!important;
-            box-shadow:none!important;
-            filter:none!important;
           }
-          .ng-hero{
-            overflow:hidden!important;
-            isolation:isolate!important;
+          .ng-hero .ng-hero-index{
+            display:none!important;
           }
-          .ng-hero > *{
-            position:relative!important;
-            z-index:1!important;
-          }
-          .ng-hero::before,
-          .ng-hero::after,
-          .ng-hero > *::before,
-          .ng-hero > *::after{
-            pointer-events:none!important;
-          }
-          .ng-hero > [class*="glow"],
-          .ng-hero > [class*="halo"],
-          .ng-hero > [class*="ambient"],
-          .ng-hero > [class*="blur-orb"],
-          .ng-hero > [class*="orb"],
-          .ng-hero [class*="glow"],
-          .ng-hero [class*="halo"],
-          .ng-hero [class*="ambient"],
-          .ng-hero [class*="blur-orb"],
-          .ng-hero [class*="orb"]{
+          .ng-hero .ng-poster-number{
             display:none!important;
             visibility:hidden!important;
             opacity:0!important;
-            width:0!important;
-            height:0!important;
-            max-width:0!important;
-            max-height:0!important;
-            overflow:hidden!important;
-            pointer-events:none!important;
-            background:none!important;
-            box-shadow:none!important;
-            filter:none!important;
           }
         }`
       }
