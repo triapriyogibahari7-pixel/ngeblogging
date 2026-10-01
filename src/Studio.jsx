@@ -234,5 +234,7 @@ import "./studio-theme-mobile-v433.css";
 import "./studio-theme-mobile-v434.css";
 // v435: hard isolation so the mobile/theme preview can never overlap the Theme header.
 import "./studio-theme-mobile-v435.css";
+// v436: final single-column flow; Theme header is always physically before preview.
+import "./studio-theme-mobile-v436.css";
 
 export default StudioFastGate;
