@@ -102,7 +102,36 @@ function Modal({ title, eyebrow, onClose, size = "medium", children, footer, lay
 
 function ThemeFrame({ theme, code, config, widgets, device, title }) {
   const mode = deviceInfo(device);
-  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(code || theme.code, config, widgets)}/></div>;
+  const source = code || theme.code;
+  const previewCode = mode.frameClass === "mobile"
+    ? {
+        ...source,
+        css: `${source?.css || ""}
+        /* Theme Studio mobile preview containment: decorative shapes must never spill into the header. */
+        @media (max-width:720px){
+          .ng-header{
+            position:sticky!important;
+            overflow:clip!important;
+            isolation:isolate!important;
+            z-index:20!important;
+          }
+          .ng-hero{
+            position:relative!important;
+            overflow:hidden!important;
+            isolation:isolate!important;
+          }
+          .ng-hero-copy,.ng-hero aside,.ng-hero-panels,.ng-hero-index,.ng-poster-number{
+            z-index:1!important;
+          }
+          .ng-poster-number{
+            pointer-events:none!important;
+            max-width:100%!important;
+            overflow:hidden!important;
+          }
+        }`
+      }
+    : source;
+  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(previewCode, config, widgets)}/></div>;
 }
 
 function ThemeCardPreview({ theme }) {
