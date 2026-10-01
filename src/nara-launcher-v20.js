@@ -108,7 +108,7 @@ function ensureProxy() {
     proxy.dataset.release = RELEASE;
     proxy.setAttribute("aria-label", "Buka Nara AI");
     proxy.setAttribute("title", "Buka Nara AI");
-    proxy.innerHTML = ICON;
+    proxy.innerHTML = `<span class="nara-launcher-icon-box" aria-hidden="true">${ICON}</span>`;
     proxy.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
