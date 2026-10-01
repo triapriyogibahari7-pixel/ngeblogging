@@ -245,3 +245,121 @@
     translate:none!important;
   }
 }
+
+
+/* v432 root fix: the mobile N launcher must not live inside the transformed/clipped drawer.
+   Use the same original React N mark in the top-level header as the single mobile trigger.
+   The drawer itself stays responsible only for the opened panel. */
+@media screen and (max-width:760px){
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) #ngeblogging-studio-sidebar:not(.mobile-open){
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) #ngeblogging-studio-sidebar .sn-logo-mark{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-top>.sn-sidebar-toggle{
+    position:fixed!important;
+    z-index:2147483647!important;
+    left:max(12px,env(safe-area-inset-left,0px))!important;
+    right:auto!important;
+    top:max(8px,env(safe-area-inset-top,0px))!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    border-radius:14px!important;
+    background:linear-gradient(145deg,#2f6ee8,#4745d7)!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark{
+    position:static!important;
+    inset:auto!important;
+    width:48px!important;
+    min-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    line-height:0!important;
+    text-align:center!important;
+  }
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+    display:block!important;
+    position:static!important;
+    width:max-content!important;
+    min-width:max-content!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font:800 24px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    text-align:center!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    transform:none!important;
+  }
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small) .sn-top>.sn-sidebar-toggle .sn-desktop-sidebar-icon{
+    display:none!important;
+  }
+
+  /* Same 21px Sparkles size as the mobile Post/Pages editor; only the proxy is adjusted. */
+  html body .nara-floating-proxy-v18{
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  html body .nara-floating-proxy-v18>svg{
+    width:21px!important;
+    min-width:21px!important;
+    max-width:21px!important;
+    height:21px!important;
+    min-height:21px!important;
+    max-height:21px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translateX(1px)!important;
+    translate:none!important;
+  }
+}
