@@ -11,6 +11,7 @@ import "./studio-flow-integrity-v111.css";
 import "./studio-flow-integrity-v111.js";
 import "./studio-domain-single-authority-v112.css";
 import "./studio-mobile-authority-v372.css";
+import "./studio-mobile-editor-v373.css";
 import "./nara-controls-v135.js";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
