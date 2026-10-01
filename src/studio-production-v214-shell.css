@@ -42,6 +42,13 @@ html[data-studio-production-v214] :is(.sn-logo-mark strong,.sn-mobile-menu-mark 
   writing-mode:horizontal-tb !important;
   text-orientation:mixed !important;
   color:#17345b !important;
+  width:max-content !important;
+  max-width:none !important;
+  min-width:max-content !important;
+  overflow:visible !important;
+  white-space:nowrap !important;
+  text-overflow:clip !important;
+  transform:none !important;
 }
 html[data-studio-production-v214] .sn-side-backdrop[data-v214-backdrop] {
   background:transparent !important;
