@@ -102,105 +102,14 @@ function Modal({ title, eyebrow, onClose, size = "medium", children, footer, lay
 
 function ThemeFrame({ theme, code, config, widgets, device, title }) {
   const mode = deviceInfo(device);
-  const source = code || theme.code;
-  const previewCode = mode.frameClass === "mobile"
-    ? {
-        ...source,
-        css: `${source?.css || ""}
-        /* Theme Studio mobile preview containment: decorative shapes must never spill into the header. */
-        @media (max-width:720px){
-          .ng-header{
-            position:sticky!important;
-            top:0!important;
-            overflow:clip!important;
-            isolation:isolate!important;
-            z-index:1000!important;
-            background:var(--surface)!important;
-            backdrop-filter:none!important;
-          }
-          .ng-hero{
-            position:relative!important;
-            overflow:hidden!important;
-            isolation:isolate!important;
-          }
-          .ng-hero-copy,.ng-hero aside,.ng-hero-panels,.ng-hero-index,.ng-poster-number{
-            z-index:1!important;
-          }
-          .ng-poster-number{
-            display:none!important;
-            visibility:hidden!important;
-            opacity:0!important;
-            width:0!important;
-            height:0!important;
-            pointer-events:none!important;
-          }
-          .ng-hero-poster .ng-poster-number,
-          .ng-hero [class*="poster-number"],
-          .ng-hero [class*="posterNumber"]{
-            display:none!important;
-          }
-          .ng-header,.ng-header-rail,.ng-header-poster{
-            transform:none!important;
-            contain:paint!important;
-          }
-          .ng-hero,.ng-hero-split,.ng-hero-stack,.ng-hero-rail,.ng-hero-cards,.ng-hero-poster{
-            overflow:hidden!important;
-            clip-path:inset(0)!important;
-          }
-          /* Mobile preview only: decorative orb/halo artwork must never become a
-             giant dark overlay. Real cards, links, navigation and widgets stay. */
-          .ng-hero::before,.ng-hero::after,
-          .ng-hero > [class*="glow"],.ng-hero > [class*="halo"],
-          .ng-hero > [class*="ambient"],.ng-hero > [class*="blur-orb"],
-          .ng-hero > [class*="orb"],.ng-hero-poster [class*="glow"],
-          .ng-hero-poster [class*="halo"],.ng-hero-poster [class*="ambient"],
-          .ng-hero-poster [class*="blur-orb"],.ng-hero-poster [class*="orb"]{
-            display:none!important;
-            visibility:hidden!important;
-            opacity:0!important;
-            content:none!important;
-            pointer-events:none!important;
-            background:none!important;
-            box-shadow:none!important;
-            filter:none!important;
-          }
-          /* Mobile Theme preview: the feature rail (Guest cards / Subscribe links /
-             Episode player) is the decorative panel that becomes a large dark overlay
-             on narrow screens. Hide only that panel in the mobile preview; the main
-             theme, posts, navigation and widgets remain intact. */
-          .ng-hero aside{
-            display:none!important;
-            visibility:hidden!important;
-            opacity:0!important;
-            width:0!important;
-            max-width:0!important;
-            min-width:0!important;
-            height:0!important;
-            min-height:0!important;
-            margin:0!important;
-            padding:0!important;
-            overflow:hidden!important;
-            pointer-events:none!important;
-          }
-          .ng-hero .ng-hero-index{
-            display:none!important;
-          }
-          .ng-hero .ng-poster-number{
-            display:none!important;
-            visibility:hidden!important;
-            opacity:0!important;
-          }
-        }`
-      }
-    : source;
-  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(previewCode, config, widgets)}/></div>;
+  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(code || theme.code, config, widgets)}/></div>;
 }
 
 function ThemeCardPreview({ theme }) {
   return <div className={`tn-card-mock layout-${theme.layout}`} style={{ "--p": theme.colors.primary, "--a": theme.colors.accent, "--s": theme.colors.surface, "--i": theme.colors.ink }}>
     <header><b>{theme.name.slice(0, 1)}</b><span/><span/><span/></header>
     <main><small>{theme.category}</small><h4>{theme.name}</h4><p/><p className="short"/><div><i/><i/><i/></div></main>
-  </div></div>;
+  </div>;
 }
 
 function Customizer({ value, onChange, theme }) {
@@ -363,194 +272,10 @@ export default function ThemeStudio({ setToast, site, user }) {
     } catch (error) { setToast(error.message || "File tema gagal dibaca"); }
   };
 
-  const mobileThemeStudioStyle = `
-    .tn-studio > .tn-hero.tn-hero-mobile-preview{
-      display:grid!important;
-      grid-template-columns:minmax(0,1fr)!important;
-      grid-template-rows:auto auto!important;
-      grid-template-areas:"copy" "stage"!important;
-      align-items:start!important;
-      justify-items:stretch!important;
-      gap:0!important;
-      position:relative!important;
-      inset:auto!important;
-      width:100%!important;
-      min-width:0!important;
-      max-width:100%!important;
-      height:auto!important;
-      min-height:0!important;
-      margin:0!important;
-      padding:0!important;
-      overflow:visible!important;
-      transform:none!important;
-      translate:none!important;
-      scale:none!important;
-      filter:none!important;
-      clip-path:none!important;
-      float:none!important;
-      clear:both!important;
-      background:transparent!important;
-      box-shadow:none!important;
-      border-radius:0!important;
-      isolation:isolate!important;
-      z-index:0!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy{
-      grid-area:copy!important;
-      display:block!important;
-      position:relative!important;
-      inset:auto!important;
-      width:100%!important;
-      min-width:0!important;
-      max-width:100%!important;
-      height:auto!important;
-      min-height:0!important;
-      margin:0!important;
-      padding:20px 14px!important;
-      box-sizing:border-box!important;
-      overflow:visible!important;
-      transform:none!important;
-      translate:none!important;
-      scale:none!important;
-      float:none!important;
-      clear:both!important;
-      background:#fff!important;
-      box-shadow:none!important;
-      border-radius:0!important;
-      z-index:2147483000!important;
-      isolation:isolate!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy::before,
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy::after,
-    .tn-studio > .tn-hero.tn-hero-mobile-preview::before,
-    .tn-studio > .tn-hero.tn-hero-mobile-preview::after{
-      content:none!important;
-      display:none!important;
-      visibility:hidden!important;
-      opacity:0!important;
-      pointer-events:none!important;
-      position:static!important;
-      inset:auto!important;
-      width:0!important;
-      height:0!important;
-      transform:none!important;
-      filter:none!important;
-      box-shadow:none!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy > h1{
-      display:block!important;
-      position:relative!important;
-      inset:auto!important;
-      visibility:visible!important;
-      opacity:1!important;
-      width:100%!important;
-      max-width:100%!important;
-      height:auto!important;
-      min-height:0!important;
-      margin:0 0 12px!important;
-      padding:0!important;
-      z-index:2147483001!important;
-      transform:none!important;
-      float:none!important;
-      clear:both!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage{
-      grid-area:stage!important;
-      display:block!important;
-      position:relative!important;
-      inset:auto!important;
-      width:100%!important;
-      min-width:0!important;
-      max-width:100%!important;
-      height:auto!important;
-      min-height:0!important;
-      margin:18px 0 0!important;
-      padding:0!important;
-      overflow:hidden!important;
-      transform:none!important;
-      translate:none!important;
-      scale:none!important;
-      filter:none!important;
-      clip-path:none!important;
-      float:none!important;
-      clear:both!important;
-      background:#fff!important;
-      box-shadow:none!important;
-      border-radius:0!important;
-      z-index:0!important;
-      isolation:isolate!important;
-      contain:layout paint!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-stage-toolbar{
-      position:relative!important;
-      inset:auto!important;
-      display:block!important;
-      width:100%!important;
-      min-width:0!important;
-      max-width:100%!important;
-      height:auto!important;
-      min-height:0!important;
-      margin:0!important;
-      padding:0!important;
-      z-index:1!important;
-      transform:none!important;
-      float:none!important;
-      clear:both!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-frame-shell{
-      position:relative!important;
-      inset:auto!important;
-      display:grid!important;
-      place-items:start center!important;
-      width:100%!important;
-      min-width:0!important;
-      max-width:100%!important;
-      height:420px!important;
-      min-height:300px!important;
-      max-height:420px!important;
-      margin:0!important;
-      padding:8px!important;
-      box-sizing:border-box!important;
-      overflow:auto!important;
-      z-index:0!important;
-      transform:none!important;
-      translate:none!important;
-      scale:none!important;
-      filter:none!important;
-      clip-path:none!important;
-      float:none!important;
-      clear:both!important;
-      background:#f4f7fb!important;
-      box-shadow:none!important;
-      border-radius:0!important;
-      isolation:isolate!important;
-    }
-    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-frame-shell.mobile > iframe{
-      display:block!important;
-      position:relative!important;
-      inset:auto!important;
-      width:min(var(--tn-preview-width,390px),100%)!important;
-      max-width:100%!important;
-      min-width:0!important;
-      height:720px!important;
-      min-height:720px!important;
-      max-height:none!important;
-      margin:0 auto!important;
-      padding:0!important;
-      border:0!important;
-      transform:none!important;
-      translate:none!important;
-      scale:none!important;
-      float:none!important;
-      clear:both!important;
-      z-index:0!important;
-      box-shadow:none!important;
-    }
-  `;
-  return <><style data-theme-studio-mobile-final="v439">{mobileThemeStudioStyle}</style><div className="tn-studio" data-theme-interface="v149">
+  return <div className="tn-studio" data-theme-interface="v149">
     <input ref={fileInput} type="file" accept=".ngeblog-theme,.json,.html,.htm,.css,.js" hidden onChange={importFile}/>
-    <section className={`tn-hero ${deviceInfo(device).frameClass === "mobile" ? "tn-hero-mobile-preview" : ""}`}>;
-      <div className="tn-hero-copy"><h1>100 Tema Aktif</h1><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
+    <section className="tn-hero">
+      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><h1>100 tema aktif dengan delapan pratinjau perangkat.</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
       <div className="tn-active-stage"><div className="tn-stage-toolbar"><DeviceSwitch value={device} onChange={setDevice}/><b>{previewTheme.name}</b></div><ThemeFrame theme={previewTheme} code={previewTheme.id === activeTheme.id ? themeState.code : previewTheme.code} config={previewTheme.id === activeTheme.id ? themeState.publishedConfig : undefined} widgets={previewTheme.id === activeTheme.id ? themeState.widgets : createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/>{previewTheme.id !== activeTheme.id && <div className="tn-apply-bar"><span>Pratinjau <b>{previewTheme.name}</b></span><button onClick={() => apply(previewTheme.id)}><Check/> Gunakan tema</button></div>}</div>
     </section>
 
@@ -572,5 +297,5 @@ export default function ThemeStudio({ setToast, site, user }) {
     {modal === "widgets" && <Modal portal layerClassName="tn-widget-modal-layer" title={`Widget bawaan (${WIDGET_COUNT})`} eyebrow="NGEBLOGGING WIDGET STUDIO" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeWidgets(themeState,widgetDraft),"Susunan widget disimpan"); setModal(null); }}><Save/> Simpan widget</button></>}><WidgetStudio value={widgetDraft} onChange={setWidgetDraft}/></Modal>}
     {modal === "history" && <Modal title="Cadangan dan pemulihan tema" eyebrow="VERSION CONTROL" onClose={() => setModal(null)} footer={<><button onClick={backup}><Download/> Unduh cadangan</button><button onClick={() => fileInput.current?.click()}><Upload/> Impor cadangan</button></>}><div className="tn-history">{themeState.history.map((entry,index) => <article key={entry.id}><span>{index===0?<Check/>:index+1}</span><div><b>{entry.note}</b><small>{getTheme(entry.activeThemeId).name} · {formatDate(entry.createdAt)}</small></div><button disabled={index===0} onClick={() => { try { commit(restoreThemeVersion(themeState,entry.id),"Versi tema dipulihkan"); setModal(null); } catch(error){ setToast(error.message); } }}>{index===0?"Saat ini":"Pulihkan"}</button></article>)}</div></Modal>}
     {modal === "preview" && <Modal title={previewTheme.name} eyebrow="PREVIEW SITUS RESPONSIF" size="preview" onClose={() => setModal(null)} footer={<><DeviceSwitch value={device} onChange={setDevice}/><button onClick={openSite}><ExternalLink/> Buka situs publik</button><button className="primary" disabled={previewTheme.id===activeTheme.id} onClick={() => { apply(previewTheme.id); setModal(null); }}>{previewTheme.id===activeTheme.id?"Tema aktif":"Terapkan tema"}</button></>}><ThemeFrame theme={previewTheme} code={previewTheme.id===activeTheme.id?themeState.code:previewTheme.code} config={previewTheme.id===activeTheme.id?themeState.publishedConfig:undefined} widgets={previewTheme.id===activeTheme.id?themeState.widgets:createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/></Modal>}
-  </div></>;
+  </div>;
 }
