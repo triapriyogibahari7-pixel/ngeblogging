@@ -136,3 +136,18 @@ test("v415 expands the large-device editor without restoring phone-only controls
   assert.match(mobile, /ce-ribbon button\\[title="Media"\\]/);
   assert.match(mobile, /ce-actions \\.ce-preview-action/);
 });
+
+
+test("v417 is the definitive handheld icon authority", () => {
+  const studio = read("src/StudioNext.jsx");
+  const css = read("src/studio-mobile-v417.css");
+  assert.match(studio, /studio-mobile-v417\\.css/);
+  assert.match(css, /sn-mobile-menu-mark>strong/);
+  assert.match(css, /sn-logo-mark>strong/);
+  assert.match(css, /nara-floating-button \\.nara-launcher-icon-box/);
+  assert.match(css, /nara-launcher-label/);
+  assert.match(css, /place-items:center/);
+  assert.match(css, /overflow:hidden!important/);
+  assert.doesNotMatch(css, /html\\[data-studio-device-mode="large"\\]/);
+  assert.doesNotMatch(css, /@media[^\\n]*min-width/);
+});
