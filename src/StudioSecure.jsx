@@ -17,6 +17,7 @@ import "./studio-mobile-pages-v405.css";
 import "./studio-mobile-editor-v373.css";
 import "./studio-mobile-editor-v400.css";
 import "./nara-controls-v135.js";
+import "./studio-mobile-v421.css";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
 const BACKUP_HOST_ID = "ngeblogging-backup-settings";
