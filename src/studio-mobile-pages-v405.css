@@ -16,7 +16,7 @@
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-top{
   position:sticky!important;top:0!important;z-index:900!important;display:grid!important;grid-template-columns:44px minmax(0,1fr) 42px!important;grid-template-rows:54px 42px!important;grid-template-areas:"menu workspace avatar" "cloud cloud actions"!important;gap:0 6px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:96px!important;min-height:96px!important;margin:0!important;padding:max(6px,env(safe-area-inset-top,0px)) 8px 6px!important;background:#fff!important;border-bottom:1px solid #dfe6ef!important;box-shadow:0 2px 10px rgba(28,46,74,.06)!important
 }
-:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-sidebar-toggle{grid-area:menu!important;width:42px!important;min-width:42px!important;height:42px!important;margin:0!important;padding:0!important;display:grid!important;place-items:center!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-sidebar-toggle{grid-area:menu!important;position:fixed!important;left:max(12px,env(safe-area-inset-left,0px))!important;right:auto!important;top:10px!important;z-index:6500!important;box-sizing:border-box!important;width:48px!important;min-width:48px!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;display:grid!important;place-items:center!important;overflow:visible!important;clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;transform:none!important}
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-workspace{grid-area:workspace!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) 18px!important;align-items:center!important;gap:7px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:42px!important;margin:0!important;padding:0 6px!important;overflow:hidden!important}
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-workspace>div{min-width:0!important;overflow:hidden!important}
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-workspace b{display:block!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
@@ -145,7 +145,7 @@
 
 @media(max-width:390px){
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-top{grid-template-columns:40px minmax(0,1fr) 38px!important;padding-inline:6px!important}
-  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-sidebar-toggle{width:38px!important;min-width:38px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-sidebar-toggle{left:max(10px,env(safe-area-inset-left,0px))!important;top:9px!important;width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important}
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-workspace{grid-template-columns:30px minmax(0,1fr) 16px!important;gap:5px!important}
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-media-grid{grid-template-columns:minmax(0,1fr)!important}
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-metrics{grid-template-columns:minmax(0,1fr)!important}
