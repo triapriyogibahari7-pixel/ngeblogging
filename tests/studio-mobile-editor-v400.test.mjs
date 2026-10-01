@@ -5,6 +5,7 @@ import test from "node:test";
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const secure = await readFile(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
 const css = await readFile(new URL("../src/studio-mobile-editor-v400.css", import.meta.url), "utf8");
+const css401 = await readFile(new URL("../src/studio-mobile-editor-v401.css", import.meta.url), "utf8");
 
 test("v400 mobile editor authority is wired into both editor entry paths", () => {
   assert.match(editor, /studio-mobile-editor-v400\.css/);
@@ -29,4 +30,20 @@ test("v400 is gated to the small device mode and never targets tablet or desktop
   assert.doesNotMatch(css, /data-studio-responsive-mode="tablet"/);
   assert.doesNotMatch(css, /data-studio-responsive-mode="desktop"/);
   assert.doesNotMatch(css, /editor-v266-large/);
+});
+
+
+test("v401 clean rebuild is wired and owns mobile editor geometry", () => {
+  assert.match(editor, /studio-mobile-editor-v401\.css/);
+  assert.match(editor, /data-mobile-editor-v401="true"/);
+  assert.match(css401, /html\.editor-v266-small/);
+  assert.match(css401, /\.ce-titlebar\{[\s\S]*display:grid!important/);
+  assert.match(css401, /grid-template-areas:"back file" "actions actions"!important/);
+  assert.match(css401, /\.ce-file input\{[\s\S]*width:100%!important/);
+  assert.match(css401, /\.ce-actions\{[\s\S]*display:grid!important/);
+  assert.match(css401, /\.ce-word-status\{[\s\S]*display:none!important/);
+  assert.match(css401, /#ngeblogging-editor-nav-v266/);
+  assert.doesNotMatch(css401, /editor-v266-large/);
+  assert.doesNotMatch(css401, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css401, /data-studio-responsive-mode="desktop"/);
 });
