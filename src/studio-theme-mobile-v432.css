@@ -206,3 +206,102 @@
   margin: 8px !important;
   z-index: 3 !important;
 }
+
+
+/* Device-selection fallback: use the actual ThemeFrame mobile class even when
+   Android exposes a desktop-sized CSS viewport. */
+.tn-studio > .tn-hero:has(> .tn-active-stage > .tn-frame-shell.mobile) {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+}
+
+.tn-studio > .tn-hero:has(> .tn-active-stage > .tn-frame-shell.mobile) > .tn-hero-copy {
+  grid-column:1!important;
+  grid-row:1!important;
+  position:relative!important;
+  inset:auto!important;
+  z-index:2!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  transform:none!important;
+  translate:none!important;
+}
+
+.tn-studio > .tn-hero:has(> .tn-active-stage > .tn-frame-shell.mobile) > .tn-active-stage {
+  grid-column:1!important;
+  grid-row:2!important;
+  position:relative!important;
+  inset:auto!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+  background:#fff!important;
+  box-shadow:0 8px 24px rgba(25,48,82,.06)!important;
+}
+
+.tn-studio > .tn-hero:has(> .tn-active-stage > .tn-frame-shell.mobile) > .tn-active-stage > .tn-frame-shell {
+  display:grid!important;
+  place-items:start center!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:420px!important;
+  min-height:300px!important;
+  max-height:420px!important;
+  margin:0!important;
+  padding:8px!important;
+  overflow:auto!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  background:#f4f7fb!important;
+}
+
+.tn-studio > .tn-hero:has(> .tn-active-stage > .tn-frame-shell.mobile) > .tn-active-stage > .tn-frame-shell > iframe {
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  top:auto!important;
+  width:min(var(--tn-preview-width,390px),100%)!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:720px!important;
+  min-height:720px!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  transform:none!important;
+  translate:none!important;
+  scale:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  box-shadow:none!important;
+}
