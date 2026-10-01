@@ -2,7 +2,6 @@ import React, { memo, useCallback, useImperativeHandle, useLayoutEffect, useMemo
 import {
   AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowLeft, Bold, CalendarDays,
   Check, Clock3, Code2, Eye, FileText, Heading1, Heading2, Highlighter, Image,
-  IndentDecrease, IndentIncrease, Minus, Pilcrow, RotateCcw, Subscript, Superscript,
   Italic, Link, List, ListOrdered, LoaderCircle, MapPin, Monitor, Palette, Quote,
   Redo2, Save, Send, Smartphone, Sparkles, Strikethrough, Table2, Tablet,
   Tags, Trash2, Underline, Undo2, Upload, X,
@@ -21,14 +20,6 @@ import "./studio-mobile-editor-v375.css";
 import "./studio-mobile-editor-v376.css";
 import "./studio-mobile-editor-v400.css";
 import "./studio-mobile-editor-v401.css";
-import "./studio-mobile-editor-v402.css";
-import "./studio-mobile-editor-v403.css";
-import "./studio-mobile-editor-v404.css";
-import "./studio-mobile-editor-v406.css";
-import "./studio-mobile-editor-v407.css";
-import "./studio-mobile-editor-v409.css";
-import "./studio-mobile-v414.css";
-import "./studio-mobile-v422.css";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
@@ -161,43 +152,20 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
   const updateMetadata = (values) => patch({ metadata: { ...metadata, ...values }, type: doc.type });
   const updateSeo = (values) => patch({ seo: { ...seo, ...values }, metadata, type: doc.type });
 
-  return <div className="ce-app" data-mobile-editor-v400="true" data-mobile-editor-v401="true" data-mobile-editor-v402="true" data-mobile-editor-v403="true" data-mobile-editor-v404="true" data-mobile-editor-v406="true" data-mobile-editor-v407="true" data-mobile-editor-v409="true" data-mobile-editor-v414="true">
-    <header className="ce-titlebar"><button className="ce-back" onClick={onBack}><ArrowLeft/></button><div className="ce-file"><FileText/><label><input value={doc.title} onChange={(event) => patch({ title: event.target.value, slug: slugify(event.target.value) })}/><small>{saved ? <><Check/> Tersimpan otomatis</> : <><LoaderCircle className="spin"/> Menyimpan…</>}</small></label></div><div className="ce-actions"><button className="ce-preview-action" onClick={() => setPreview(true)}><Eye/> Preview</button><button className="ce-primary" onClick={publish}><Send/>{doc.status === "published" ? "Jadikan draf" : doc.status === "scheduled" ? "Terjadwal" : "Terbitkan"}</button></div></header>
+  return <div className="ce-app" data-mobile-editor-v400="true" data-mobile-editor-v401="true">
+    <header className="ce-titlebar"><button className="ce-back" onClick={onBack}><ArrowLeft/></button><div className="ce-file"><FileText/><label><input value={doc.title} onChange={(event) => patch({ title: event.target.value, slug: slugify(event.target.value) })}/><small>{saved ? <><Check/> Tersimpan otomatis</> : <><LoaderCircle className="spin"/> Menyimpan…</>}</small></label></div><div className="ce-actions"><button onClick={() => setPreview(true)}><Eye/> Preview</button><button className="ce-primary" onClick={publish}><Send/>{doc.status === "published" ? "Jadikan draf" : doc.status === "scheduled" ? "Terjadwal" : "Terbitkan"}</button></div></header>
     <nav className="ce-tabs">{[["content","Konten"],["insert","Sisipkan"],["layout","Tata letak"],["metadata","Metadata"],["seo","SEO"],["source","HTML"]].map(([id,label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); if (id === "source") { setSourceDraft(doc.content || ""); setSourceOpen(true); } }}>{label}</button>)}</nav>
-    <div className="ce-mobile-toolbar" aria-label="Toolbar editor mobile">
-      <div className="ce-mobile-toolbar-group" aria-label="Riwayat">
-        <button type="button" title="Urungkan" aria-label="Urungkan" onClick={() => format("undo")}><Undo2/></button>
-        <button type="button" title="Ulangi" aria-label="Ulangi" onClick={() => format("redo")}><Redo2/></button>
-      </div>
-      <div className="ce-mobile-toolbar-group" aria-label="Teks">
-        <button type="button" title="Tebal" aria-label="Tebal" onClick={() => format("bold")}><Bold/></button>
-        <button type="button" title="Miring" aria-label="Miring" onClick={() => format("italic")}><Italic/></button>
-        <button type="button" title="Garis bawah" aria-label="Garis bawah" onClick={() => format("underline")}><Underline/></button>
-      </div>
-      <div className="ce-mobile-toolbar-group" aria-label="Paragraf">
-        <button type="button" title="Daftar poin" aria-label="Daftar poin" onClick={() => format("insertUnorderedList")}><List/></button>
-        <button type="button" title="Daftar nomor" aria-label="Daftar nomor" onClick={() => format("insertOrderedList")}><ListOrdered/></button>
-        <button type="button" title="Tautan" aria-label="Tautan" onClick={insertLink}><Link/></button>
-      </div>
-      <div className="ce-mobile-toolbar-group" aria-label="Sisipkan">
-        <button type="button" title="Media" aria-label="Media" onClick={() => setMediaOpen(true)}><Upload/></button>
-        <button type="button" title="Tabel" aria-label="Tabel" onClick={insertTable}><Table2/></button>
-      </div>
-      <button type="button" className="ce-mobile-toolbar-nara" title="Buka Nara AI" aria-label="Buka Nara AI" onClick={onOpenNara}><Sparkles/><span>Nara AI</span></button>
-    </div>
-
     <div className="ce-ribbon">
       <section><span>Edit</span><nav>{tool("Undo",<Undo2/>,() => format("undo"))}{tool("Redo",<Redo2/>,() => format("redo"))}{tool("Hapus format",<Trash2/>,() => format("removeFormat"))}</nav></section>
       <section className="selects"><span>Tipografi</span><nav><select aria-label="Gaya" defaultValue="p" onChange={(event) => format("formatBlock",event.target.value)}><option value="p">Paragraf</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Kutipan</option><option value="pre">Kode</option></select><select aria-label="Font" defaultValue="DM Sans" onChange={(event) => format("fontName",event.target.value)}><option>DM Sans</option><option>Georgia</option><option>Arial</option><option>Courier New</option><option>Times New Roman</option></select><select aria-label="Ukuran" defaultValue="3" onChange={(event) => format("fontSize",event.target.value)}>{[[1,"12"],[2,"14"],[3,"16"],[4,"20"],[5,"28"],[6,"38"],[7,"52"]].map(([value,label]) => <option key={value} value={value}>{label}px</option>)}</select></nav></section>
       <section><span>Font</span><nav>{tool("Bold",<Bold/>,() => format("bold"))}{tool("Italic",<Italic/>,() => format("italic"))}{tool("Underline",<Underline/>,() => format("underline"))}{tool("Coret",<Strikethrough/>,() => format("strikeThrough"))}<label className="ce-color-tool" title="Warna teks"><Palette/><input type="color" defaultValue="#17253c" onChange={(event) => format("foreColor",event.target.value)}/></label><label className="ce-color-tool" title="Sorotan"><Highlighter/><input type="color" defaultValue="#fff0a8" onChange={(event) => format("hiliteColor",event.target.value)}/></label></nav></section>
       <section><span>Paragraf</span><nav>{tool("Daftar poin",<List/>,() => format("insertUnorderedList"))}{tool("Daftar nomor",<ListOrdered/>,() => format("insertOrderedList"))}{tool("Kiri",<AlignLeft/>,() => format("justifyLeft"))}{tool("Tengah",<AlignCenter/>,() => format("justifyCenter"))}{tool("Kanan",<AlignRight/>,() => format("justifyRight"))}{tool("Rata penuh",<AlignJustify/>,() => format("justifyFull"))}</nav></section>
-      <section><span>Sisipkan</span><nav>{tool("Heading 1",<Heading1/>,() => format("formatBlock","h1"))}{tool("Heading 2",<Heading2/>,() => format("formatBlock","h2"))}{tool("Kode",<Code2/>,() => format("formatBlock","pre"))}{tool("Kutipan",<Quote/>,() => format("formatBlock","blockquote"))}{tool("Garis horizontal",<Minus/>,() => format("insertHorizontalRule"))}{tool("Paragraf",<Pilcrow/>,() => format("formatBlock","p"))}</nav></section>
-      <section><span>Struktur</span><nav>{tool("Indentasi keluar",<IndentDecrease/>,() => format("outdent"))}{tool("Indentasi masuk",<IndentIncrease/>,() => format("indent"))}{tool("Subskrip",<Subscript/>,() => format("subscript"))}{tool("Superskrip",<Superscript/>,() => format("superscript"))}{tool("Pilih semua",<RotateCcw/>,() => format("selectAll"))}{tool("Hapus format",<Trash2/>,() => format("removeFormat"))}</nav></section>
-      <section className="ce-nara-section"><span>AI</span><nav><button className="ce-nara" onClick={onOpenNara} aria-label="Tulis dengan Nara AI" title="Tulis dengan Nara AI"><Sparkles/> <b>Tulis dengan Nara</b></button></nav></section>
+      <section><span>Sisipkan</span><nav>{tool("Heading 1",<Heading1/>,() => format("formatBlock","h1"))}{tool("Heading 2",<Heading2/>,() => format("formatBlock","h2"))}{tool("Tabel",<Table2/>,insertTable)}{tool("Tautan",<Link/>,insertLink)}{tool("Media",<Upload/>,() => setMediaOpen(true))}{tool("Kutipan",<Quote/>,() => format("formatBlock","blockquote"))}</nav></section>
+      <button className="ce-nara" onClick={onOpenNara}><Sparkles/> Tulis dengan Nara</button>
     </div>
 
     <div className="ce-workspace">
-      <main className="ce-paper-shell"><RichTextEditor documentId={doc.id} initialContent={doc.content || ""} patchRef={patchRef} editorRef={editor}/><div className="ce-mobile-actions" aria-label="Aksi editor mobile"><button type="button" onClick={onOpenNara}><Sparkles/><span>Nara AI</span></button><button type="button" onClick={() => setMediaOpen(true)}><Upload/><span>Media</span></button><button type="button" onClick={() => setPreview(true)}><Eye/><span>Preview</span></button></div></main>
+      <main className="ce-paper-shell"><RichTextEditor documentId={doc.id} initialContent={doc.content || ""} patchRef={patchRef} editorRef={editor}/><div className="ce-word-status"><span>{words.toLocaleString("id-ID")} kata</span><span>± {readingMinutes} menit membaca</span><span>{String(doc.content || "").length.toLocaleString("id-ID")} karakter HTML</span></div></main>
       <aside className="ce-sidebar">
         <section><h3>Publikasi</h3><Field label="Status"><select value={doc.status || "draft"} onChange={(event) => patch({ status:event.target.value })}><option value="draft">Draf</option><option value="review">Review</option><option value="scheduled">Terjadwal</option><option value="published">Terbit</option><option value="archived">Arsip</option></select></Field><Field label="Visibilitas"><select value={doc.visibility || "public"} onChange={(event) => patch({visibility:event.target.value})}><option value="public">Publik</option><option value="members">Anggota</option><option value="private">Pribadi</option></select></Field><Field label="Jadwal terbit" help="Digunakan ketika status Terjadwal"><input type="datetime-local" value={localDateTime(doc.scheduledAt)} onChange={(event) => patch({ scheduledAt:event.target.value ? new Date(event.target.value).toISOString() : "" })}/></Field><Field label="Slug URL"><input value={doc.slug || ""} onChange={(event) => patch({slug:slugify(event.target.value)})}/></Field></section>
         <section><h3><CalendarDays/> Tanggal & waktu</h3><div className="ce-field-grid"><Field label="Tanggal acara"><input type="date" value={metadata.eventDate || ""} onChange={(event) => updateMetadata({eventDate:event.target.value})}/></Field><Field label="Waktu"><input type="time" value={metadata.eventTime || ""} onChange={(event) => updateMetadata({eventTime:event.target.value})}/></Field><Field label="Tanggal selesai"><input type="date" value={metadata.endDate || ""} onChange={(event) => updateMetadata({endDate:event.target.value})}/></Field><Field label="Waktu selesai"><input type="time" value={metadata.endTime || ""} onChange={(event) => updateMetadata({endTime:event.target.value})}/></Field></div><Field label="Zona waktu"><select value={metadata.timezone || "Asia/Jakarta"} onChange={(event) => updateMetadata({timezone:event.target.value})}><option>Asia/Jakarta</option><option>Asia/Makassar</option><option>Asia/Jayapura</option><option>UTC</option></select></Field></section>
