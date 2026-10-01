@@ -1,5 +1,5 @@
-const VERSION = "ngeblogging-app-v368-mobile-studio-editor-20261001";
-const CACHE_RELEASE = "studio-mobile-studio-editor-cache-v368";
+const VERSION = "ngeblogging-app-v369-mobile-final-20261001";
+const CACHE_RELEASE = "studio-mobile-final-cache-v369";
 const STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305 = "studio-site-switch-first-site-v305-20260805";
 const STUDIO_SITE_SWITCHER_RELEASE_V305 = "studio-real-site-switcher-v305-20260805";
 const STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305 = "studio-first-site-required-v305-20260805";
@@ -50,7 +50,7 @@ const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "mobile-studio-editor-v368";
+const FORCE_REFRESH_VALUE = "mobile-final-v369";
 const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
 const ACTIVE_CACHE_RELEASE_V258 = "studio-theme-right4-cache-v258";
 const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";
