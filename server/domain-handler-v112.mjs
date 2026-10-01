@@ -191,31 +191,9 @@ async function handleAudit(request, env, requestId) {
   }, requestId);
 }
 
-async function enforceOneDomainPerSite(request, env, requestId) {
-  const body = await request.clone().json().catch(() => ({}));
-  const siteId = String(body.siteId || "");
-  const hostname = normalizeHostname(body.hostname);
-  const listResponse = await baseList(request, env, requestId, siteId);
-  if (!listResponse.ok) return listResponse;
-  const payload = await listResponse.json().catch(() => ({}));
-  const domain = canonicalDomains(payload.domains, siteId).find((item) => item.status !== "pending_deletion") || null;
-  if (domain && normalizeHostname(domain.hostname) !== hostname) {
-    return response(409, {
-      code: "SITE_DOMAIN_LIMIT_REACHED",
-      error: `Situs aktif sudah memiliki domain ${domain.hostname}. Pilih situs lain melalui tombol Ganti situs untuk memasang domain berikutnya.`,
-      domain,
-    }, requestId);
-  }
-  return null;
-}
-
 export async function handleDomainRequest(request, env, requestId = crypto.randomUUID()) {
   const url = new URL(request.url);
   if (request.method === "POST" && url.pathname === "/api/domains/audit") return handleAudit(request, env, requestId);
-  if (request.method === "POST" && url.pathname === "/api/domains/register") {
-    const blocked = await enforceOneDomainPerSite(request, env, requestId);
-    if (blocked) return blocked;
-  }
   const result = await handleDomainRequestBase(request, env, requestId);
   if (request.method === "GET" && url.pathname === "/api/domains/list" && result.ok) {
     const payload = await result.clone().json().catch(() => ({}));
