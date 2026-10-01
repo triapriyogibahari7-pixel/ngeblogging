@@ -69,9 +69,11 @@ function syncDrawer() {
   shell.dataset.mobileDrawerOpenV176 = String(open);
 
   if (small) {
-    sidebar.setAttribute("aria-hidden", open ? "false" : "true");
-    if (open) sidebar.removeAttribute("inert");
-    else sidebar.setAttribute("inert", "");
+    // The original .sn-logo-mark is the mobile drawer launcher and lives
+    // inside the sidebar. Never mark the whole sidebar inert while closed,
+    // otherwise the only visible N button becomes unclickable.
+    sidebar.setAttribute("aria-hidden", "false");
+    sidebar.removeAttribute("inert");
   } else {
     sidebar.setAttribute("aria-hidden", "false");
     sidebar.removeAttribute("inert");
