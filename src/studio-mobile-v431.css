@@ -528,3 +528,140 @@
 @media screen and (max-width:380px){
   html body .nara-floating-proxy-v20{width:52px!important;height:52px!important;min-width:52px!important;max-width:52px!important;min-height:52px!important;max-height:52px!important;}
 }
+
+
+/* v437 FINAL MOBILE ICON AUTHORITY
+   One Studio N only; fresh Nara launcher reuses the editor's 37px / 18px Sparkles geometry.
+   These rules intentionally override every older mobile-icon experiment above. */
+@media screen and (max-width:760px){
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small){
+    #ngeblogging-studio-sidebar .sn-logo-mark,
+    .sn-top>.sn-sidebar-toggle{
+      display:none!important;
+      visibility:hidden!important;
+      pointer-events:none!important;
+    }
+
+    .sn-mobile-n-launcher{
+      position:fixed!important;
+      left:auto!important;
+      right:max(12px,env(safe-area-inset-right,0px))!important;
+      top:max(10px,env(safe-area-inset-top,0px))!important;
+      bottom:auto!important;
+      width:46px!important;
+      min-width:46px!important;
+      max-width:46px!important;
+      height:46px!important;
+      min-height:46px!important;
+      max-height:46px!important;
+      margin:0!important;
+      padding:0!important;
+      box-sizing:border-box!important;
+      display:grid!important;
+      place-items:center!important;
+      overflow:visible!important;
+      clip:unset!important;
+      clip-path:none!important;
+      transform:none!important;
+      translate:none!important;
+      border:0!important;
+      border-radius:14px!important;
+      pointer-events:auto!important;
+      touch-action:manipulation!important;
+      z-index:2147483647!important;
+    }
+    .sn-mobile-n-launcher .sn-mobile-menu-mark{
+      position:relative!important;
+      inset:auto!important;
+      width:46px!important;
+      min-width:46px!important;
+      height:46px!important;
+      min-height:46px!important;
+      margin:0!important;
+      padding:0!important;
+      display:block!important;
+      overflow:visible!important;
+      clip:unset!important;
+      clip-path:none!important;
+      transform:none!important;
+    }
+    .sn-mobile-n-launcher .sn-mobile-menu-mark>strong{
+      position:absolute!important;
+      left:50%!important;
+      top:50%!important;
+      width:max-content!important;
+      height:auto!important;
+      margin:0!important;
+      padding:0!important;
+      display:block!important;
+      overflow:visible!important;
+      clip:unset!important;
+      clip-path:none!important;
+      transform:translate(-50%,-50%)!important;
+      translate:none!important;
+      font:900 27px/1 Arial,Helvetica,sans-serif!important;
+      letter-spacing:0!important;
+      text-indent:0!important;
+      white-space:nowrap!important;
+      text-align:center!important;
+      color:#fff!important;
+      -webkit-text-fill-color:#fff!important;
+    }
+
+    /* Fresh Nara control: same outer/icon geometry as the mobile editor's .ce-nara. */
+    .sn-mobile-nara-launcher{
+      position:fixed!important;
+      left:auto!important;
+      right:max(12px,env(safe-area-inset-right,0px))!important;
+      top:auto!important;
+      bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+      width:37px!important;
+      min-width:37px!important;
+      max-width:37px!important;
+      height:37px!important;
+      min-height:37px!important;
+      max-height:37px!important;
+      margin:0!important;
+      padding:0!important;
+      box-sizing:border-box!important;
+      display:grid!important;
+      place-items:center!important;
+      border:0!important;
+      border-radius:9px!important;
+      background:linear-gradient(135deg,#2b65d2,#7b5bdb)!important;
+      color:#fff!important;
+      -webkit-text-fill-color:#fff!important;
+      box-shadow:0 8px 20px #2d6edf2c!important;
+      overflow:visible!important;
+      transform:none!important;
+      translate:none!important;
+      pointer-events:auto!important;
+      touch-action:manipulation!important;
+      z-index:2147483647!important;
+    }
+    .sn-mobile-nara-launcher>svg{
+      display:block!important;
+      width:18px!important;
+      min-width:18px!important;
+      max-width:18px!important;
+      height:18px!important;
+      min-height:18px!important;
+      max-height:18px!important;
+      margin:0!important;
+      padding:0!important;
+      flex:0 0 18px!important;
+      transform:none!important;
+      translate:none!important;
+    }
+
+    /* Remove the older floating Nara visual in Studio mobile; the fresh button above is the sole icon. */
+    .sn-shell .nara-floating-button,
+    .sn-shell .nara-floating-proxy-v18,
+    .sn-shell .nara-floating-proxy-v19,
+    .sn-shell .nara-floating-proxy-v20{
+      display:none!important;
+      visibility:hidden!important;
+      pointer-events:none!important;
+    }
+  }
+}
