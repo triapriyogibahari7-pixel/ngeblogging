@@ -215,6 +215,37 @@ export default function ThemeStudio({ setToast, site, user }) {
   const fileInput = useRef(null);
   const syncTicket = useRef(0);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const mobile = window.matchMedia("(max-width: 767px)").matches;
+    if (!mobile) return undefined;
+    const nodes = Array.from(document.querySelectorAll(
+      ".sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop],[class*=\"sn-sidebar-scrim\"]"
+    ));
+    const snapshots = nodes.map((node) => ({
+      node,
+      hidden: node.hidden,
+      style: node.getAttribute("style"),
+      ariaHidden: node.getAttribute("aria-hidden"),
+    }));
+    nodes.forEach((node) => {
+      node.hidden = true;
+      node.setAttribute("aria-hidden", "true");
+      for (const property of ["display","visibility","opacity","pointer-events","background","box-shadow","filter","backdrop-filter","-webkit-backdrop-filter"]) {
+        node.style.setProperty(property, property === "display" ? "none" : property === "visibility" ? "hidden" : property === "opacity" ? "0" : property === "pointer-events" ? "none" : property === "background" ? "transparent" : property === "box-shadow" ? "none" : "none", "important");
+      }
+    });
+    return () => {
+      snapshots.forEach(({ node, hidden, style, ariaHidden }) => {
+        node.hidden = hidden;
+        if (style === null) node.removeAttribute("style");
+        else node.setAttribute("style", style);
+        if (ariaHidden === null) node.removeAttribute("aria-hidden");
+        else node.setAttribute("aria-hidden", ariaHidden);
+      });
+    };
+  }, []);
+
   useEffect(() => { saveThemeState(themeState); }, [themeState]);
   useEffect(() => { setCustomDraft(themeState.draftConfig); setCodeDraft(themeState.code); setWidgetDraft(themeState.widgets); }, [themeState]);
   useEffect(() => { if (site?.blueprint) setBlueprint(site.blueprint); }, [site?.blueprint]);
