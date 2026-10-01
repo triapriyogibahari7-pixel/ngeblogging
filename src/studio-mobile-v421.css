@@ -3,8 +3,8 @@
    This file is intentionally imported last by StudioSecure so legacy mobile layers cannot override it. */
 
 @media screen and (max-width:760px){
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle,
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-sidebar-toggle{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-top>.sn-sidebar-toggle,
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-sidebar-toggle{
     position:fixed!important;
     left:max(12px,env(safe-area-inset-left,0px))!important;
     right:auto!important;
@@ -27,7 +27,7 @@
     transform:none!important;
   }
 
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-sidebar-toggle .sn-mobile-menu-mark{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-sidebar-toggle .sn-mobile-menu-mark{
     position:static!important;
     inset:auto!important;
     display:grid!important;
@@ -48,7 +48,7 @@
   }
 
   /* Original logo only: <strong>n</strong><i>.</i>. No replacement glyph. */
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-sidebar-toggle .sn-mobile-menu-mark>strong{
     position:static!important;
     display:block!important;
     width:max-content!important;
@@ -69,11 +69,11 @@
     -webkit-text-fill-color:#fff!important;
     transform:none!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-sidebar-toggle .sn-mobile-menu-mark>i{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-sidebar-toggle .sn-mobile-menu-mark>i{
     display:none!important;
   }
 
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) #ngeblogging-studio-sidebar .sn-logo-mark{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) #ngeblogging-studio-sidebar .sn-logo-mark{
     position:static!important;
     display:grid!important;
     place-items:center!important;
@@ -92,7 +92,7 @@
     transform:none!important;
   }
 
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) #ngeblogging-studio-sidebar .sn-logo-mark>strong{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) #ngeblogging-studio-sidebar .sn-logo-mark>strong{
     position:static!important;
     display:block!important;
     width:max-content!important;
@@ -112,12 +112,12 @@
     -webkit-text-fill-color:#fff!important;
     transform:none!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) #ngeblogging-studio-sidebar .sn-logo-mark>i{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) #ngeblogging-studio-sidebar .sn-logo-mark>i{
     display:none!important;
   }
 
   /* Nara launcher: same 54/42/21 geometry as the mobile Post/Pages editor. */
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body .nara-floating-button{
     position:fixed!important;
     left:auto!important;
     right:max(12px,env(safe-area-inset-right,0px))!important;
@@ -139,7 +139,7 @@
     transform:none!important;
     float:none!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-icon-box{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body .nara-floating-button>.nara-launcher-icon-box{
     position:static!important;
     display:grid!important;
     place-items:center!important;
@@ -155,7 +155,7 @@
     overflow:visible!important;
     transform:none!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-icon-box>svg{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body .nara-floating-button>.nara-launcher-icon-box>svg{
     display:block!important;
     position:static!important;
     width:21px!important;
@@ -175,8 +175,8 @@
 }
 
 @media screen and (max-width:390px){
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle,
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-sidebar-toggle{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-top>.sn-sidebar-toggle,
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-sidebar-toggle{
     left:max(10px,env(safe-area-inset-left,0px))!important;
     top:9px!important;
     width:46px!important;
@@ -186,7 +186,7 @@
     min-height:46px!important;
     max-height:46px!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-sidebar-toggle .sn-mobile-menu-mark{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) .sn-sidebar-toggle .sn-mobile-menu-mark{
     width:46px!important;
     min-width:46px!important;
     max-width:46px!important;
@@ -194,7 +194,7 @@
     min-height:46px!important;
     max-height:46px!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body .nara-floating-button{
     right:max(10px,env(safe-area-inset-right,0px))!important;
     width:50px!important;
     min-width:50px!important;
@@ -204,7 +204,7 @@
     max-height:50px!important;
     padding:5px!important;
   }
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-icon-box{
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body .nara-floating-button>.nara-launcher-icon-box{
     flex-basis:40px!important;
     width:40px!important;
     min-width:40px!important;
@@ -213,4 +213,20 @@
     min-height:40px!important;
     max-height:40px!important;
   }
+}
+
+
+/* Final visibility guard: there must be one mobile menu control, not two visible n marks. */
+:is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) #ngeblogging-studio-sidebar:not(.mobile-open){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+:is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body.sn-mobile-sidebar-open .sn-top>.sn-sidebar-toggle,
+:is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) body.sn-mobile-sidebar-open .sn-top .sn-sidebar-toggle{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
 }
