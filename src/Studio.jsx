@@ -226,5 +226,7 @@ import "./studio-mobile-v429.css";
 import "./studio-mobile-v430.css";
 // v431: final interaction/visual authority — the original N remains clickable and the visible Nara proxy uses the editor geometry.
 import "./studio-mobile-v431.css";
+// v432: Theme-only mobile preview containment; does not alter sidebar/Nara/API/Ringkasan.
+import "./studio-theme-mobile-v432.css";
 
 export default StudioFastGate;
