@@ -1,0 +1,155 @@
+/* Theme Studio mobile authority v433.
+   React marks the actual selected mobile preview on .tn-hero, so this does not
+   depend on Android CSS viewport width or :has() support. */
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview {
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  position:relative!important;
+  inset:auto!important;
+  overflow:visible!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+}
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy {
+  order:1!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  transform:none!important;
+  translate:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+  z-index:2!important;
+}
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage {
+  order:2!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  transform:none!important;
+  translate:none!important;
+  scale:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+  z-index:1!important;
+  contain:layout paint!important;
+  isolation:isolate!important;
+  border-radius:17px!important;
+  background:#fff!important;
+  box-shadow:0 8px 24px rgba(25,48,82,.06)!important;
+}
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-stage-toolbar {
+  order:1!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  z-index:2!important;
+  transform:none!important;
+  translate:none!important;
+  float:none!important;
+  clear:both!important;
+}
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-frame-shell {
+  position:relative!important;
+  inset:auto!important;
+  display:grid!important;
+  place-items:start center!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:420px!important;
+  min-height:300px!important;
+  max-height:420px!important;
+  margin:0!important;
+  padding:8px!important;
+  overflow:auto!important;
+  transform:none!important;
+  translate:none!important;
+  scale:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+  background:#f4f7fb!important;
+  box-shadow:none!important;
+}
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-frame-shell.mobile > iframe {
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  top:auto!important;
+  width:min(var(--tn-preview-width,390px),100%)!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:720px!important;
+  min-height:720px!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  border:0!important;
+  border-radius:10px!important;
+  transform:none!important;
+  translate:none!important;
+  scale:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  float:none!important;
+  clear:both!important;
+  box-shadow:none!important;
+}
+
+.tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-apply-bar {
+  position:relative!important;
+  inset:auto!important;
+  width:calc(100% - 16px)!important;
+  max-width:calc(100% - 16px)!important;
+  margin:8px!important;
+  transform:none!important;
+  translate:none!important;
+  z-index:3!important;
+}
+
+/* The large poster decoration is never allowed to become a viewport-sized
+   overlay in mobile Theme previews. */
+.tn-studio > .tn-hero.tn-hero-mobile-preview .tn-frame-shell.mobile {
+  isolation:isolate!important;
+}
