@@ -40,6 +40,15 @@ test("eight device previews preserve actual target width and scale into the visi
   assert.equal(release.preview.rootScalingAdded, false);
 });
 
+test("Theme mobile preview bypasses v230 desktop scaling and stays inside its own viewport", () => {
+  assert.match(runtime, /const mobilePreview = shell\.classList\.contains\("mobile"\)/);
+  assert.match(runtime, /important\(shell, "height", "420px"\)/);
+  assert.match(runtime, /important\(iframe, "position", "relative"\)/);
+  assert.match(runtime, /important\(iframe, "transform", "none"\)/);
+  assert.match(runtime, /important\(iframe, "height", "720px"\)/);
+  assert.match(runtime, /return;\n  }\n\n  important\(iframe, "position", "absolute"\)/);
+});
+
 test("sidebar exposes one visible n control, hides X and keeps menus close to Buat Post", () => {
   assert.match(runtime, /normalizeSidebarControls/);
   assert.match(runtime, /mobile-closed-logo/);
