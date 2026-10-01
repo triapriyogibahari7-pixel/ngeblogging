@@ -61,7 +61,7 @@ html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v2
 html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark > strong {
   position:static!important; inset:auto!important; margin:0!important; padding:0!important;
   color:#fff!important; -webkit-text-fill-color:#fff!important;
-  font:900 27px/1 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  font:800 24px/1 system-ui,-apple-system,"Segoe UI",sans-serif!important;
   text-align:center!important; opacity:1!important; visibility:visible!important; filter:none!important; text-shadow:none!important; transform:none!important;
 }
 
