@@ -972,11 +972,20 @@ async function refreshFullZoneDomain(
 }
 
 async function accountCustomDomainCount(env, userId) {
-  const memberships = await userJson(
-    env,
-    `site_members?user_id=eq.${encodeURIComponent(userId)}&select=site_id&limit=12`,
-  );
-  const siteIds = [...new Set((memberships || []).map((row) => String(row?.site_id || "").trim()).filter(Boolean))];
+  const [memberships, ownedSites] = await Promise.all([
+    userJson(
+      env,
+      `site_members?user_id=eq.${encodeURIComponent(userId)}&select=site_id&limit=12`,
+    ),
+    userJson(
+      env,
+      `sites?owner_id=eq.${encodeURIComponent(userId)}&select=id&limit=12`,
+    ),
+  ]);
+  const siteIds = [...new Set([
+    ...(memberships || []).map((row) => String(row?.site_id || "").trim()),
+    ...(ownedSites || []).map((row) => String(row?.id || "").trim()),
+  ].filter(Boolean))].slice(0, 12);
   if (!siteIds.length) return 0;
   const encodedIds = siteIds.map((id) => encodeURIComponent(id)).join(",");
   const rows = await userJson(
