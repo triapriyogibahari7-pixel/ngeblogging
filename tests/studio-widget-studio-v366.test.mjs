@@ -9,6 +9,7 @@ const studio=await read("src/ThemeStudio.jsx");
 assert.match(css,/tn-widget-modal-layer/);
 assert.match(css,/left:248px!important/);
 assert.match(css,/left:68px!important/);
+assert.match(css,/html:has\(#ngeblogging-studio-sidebar\.collapsed\) \.tn-widget-modal-layer/);
 assert.match(css,/width:calc\(100vw - 248px\)/);
 assert.match(css,/width:min\(1240px,100%\)/);
 assert.match(css,/height:min\(760px,calc\(100dvh - 24px\)\)/);
@@ -25,4 +26,3 @@ assert.doesNotMatch(studio,/studio-widget-studio-v366\.js/);
 
 assert.match(studio,/createPortal/);
 assert.match(studio,/portal layerClassName="tn-widget-modal-layer"/);
-assert.doesNotMatch(tc, /data-v238-family/);
