@@ -216,6 +216,7 @@
 }
 
 
+/* Deployment validation marker: v421 mobile icon authority is complete. */
 /* Final visibility guard: there must be one mobile menu control, not two visible n marks. */
 :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"],html[data-studio-v260-family="small"]) #ngeblogging-studio-sidebar:not(.mobile-open){
   display:none!important;
