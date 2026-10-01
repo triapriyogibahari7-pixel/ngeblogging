@@ -9,6 +9,7 @@ import {
 import MediaLibrary from "./MediaLibrary";
 import { slugify } from "./lib/content-data";
 import "./content-editor.css";
+import "./content-editor-mobile-v324.css";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
