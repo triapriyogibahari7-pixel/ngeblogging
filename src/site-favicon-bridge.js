@@ -140,14 +140,7 @@ function createHost(grid) {
 
 function buildInterface(host) {
   host.innerHTML = `
-    <header class="sf-header">
-      <div>
-        <small>IDENTITAS SITUS & SEO</small>
-        <h2 id="sf-title">Favicon situs</h2>
-        <p>Unggah ikon khusus untuk tab browser, bookmark, hasil pencarian, layar utama, dan aplikasi web situs aktif.</p>
-      </div>
-      <span class="sf-state" aria-live="polite">Memuat…</span>
-    </header>
+    <div class="sf-state sf-state-inline" aria-live="polite">Memuat…</div>
     <div class="sf-layout">
       <div class="sf-preview-wrap">
         <div class="sf-browser-preview">
