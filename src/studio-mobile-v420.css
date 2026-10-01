@@ -1,0 +1,74 @@
+/* v420 — final positional correction only. Do not redraw or replace the N logo. */
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle{
+    position:absolute!important;
+    left:max(12px,env(safe-area-inset-left,0px))!important;
+    right:auto!important;
+    top:10px!important;
+    box-sizing:border-box!important;
+    width:48px!important;min-width:48px!important;max-width:48px!important;
+    height:48px!important;min-height:48px!important;max-height:48px!important;
+    padding:0!important;margin:0!important;
+    display:grid!important;place-items:center!important;
+    overflow:visible!important;clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;
+    transform:none!important;
+  }
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark{
+    position:static!important;inset:auto!important;
+    width:48px!important;min-width:48px!important;height:48px!important;min-height:48px!important;
+    display:grid!important;place-items:center!important;
+    margin:0!important;padding:0!important;
+    overflow:visible!important;clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;
+    transform:none!important;text-align:center!important;line-height:1!important;
+  }
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+    position:static!important;display:block!important;
+    width:auto!important;height:auto!important;margin:0!important;padding:0!important;
+    overflow:visible!important;clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;
+    font-family:Arial,Helvetica,sans-serif!important;font-size:27px!important;font-weight:800!important;
+    line-height:1!important;letter-spacing:0!important;text-indent:0!important;text-align:center!important;
+    color:#fff!important;-webkit-text-fill-color:#fff!important;transform:none!important;
+  }
+  /* Keep the drawer logo in its own centered 48px box; never crop the original n. */
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) #ngeblogging-studio-sidebar .sn-logo-mark{
+    position:static!important;display:grid!important;place-items:center!important;
+    width:48px!important;min-width:48px!important;height:48px!important;min-height:48px!important;
+    margin:0!important;padding:0!important;overflow:visible!important;
+    clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;transform:none!important;
+  }
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) #ngeblogging-studio-sidebar .sn-logo-mark>strong{
+    position:static!important;display:block!important;width:auto!important;height:auto!important;
+    margin:0!important;padding:0!important;overflow:visible!important;
+    clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;
+    font-family:Arial,Helvetica,sans-serif!important;font-size:27px!important;font-weight:800!important;
+    line-height:1!important;letter-spacing:0!important;text-align:center!important;
+    color:#fff!important;-webkit-text-fill-color:#fff!important;transform:none!important;
+  }
+  /* Exact same floating Nara geometry as the mobile Post/Pages editor: 42px box + 21px Sparkles. */
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button{
+    position:fixed!important;left:auto!important;right:max(10px,env(safe-area-inset-right,0px))!important;
+    top:auto!important;bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+    box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
+    width:52px!important;min-width:52px!important;max-width:52px!important;
+    height:52px!important;min-height:52px!important;max-height:52px!important;
+    padding:5px!important;margin:0!important;overflow:hidden!important;transform:none!important;
+  }
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-icon-box{
+    position:static!important;display:grid!important;place-items:center!important;
+    flex:0 0 42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;
+    height:42px!important;min-height:42px!important;max-height:42px!important;
+    margin:0!important;padding:0!important;overflow:visible!important;transform:none!important;
+  }
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-icon-box>svg{
+    display:block!important;position:static!important;
+    width:21px!important;min-width:21px!important;max-width:21px!important;
+    height:21px!important;min-height:21px!important;max-height:21px!important;
+    margin:0!important;padding:0!important;flex:0 0 21px!important;transform:none!important;
+  }
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body .nara-floating-button>.nara-launcher-label{display:none!important}
+}
+@media screen and (max-width:390px){
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle{left:max(10px,env(safe-area-inset-left,0px))!important;top:9px!important;width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important}
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark{width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important}
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark>strong{font-size:26px!important}
+}
