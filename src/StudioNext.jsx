@@ -285,7 +285,7 @@ export default function StudioNext({ onExit, user }) {
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
-      <div className="sn-logo"><button type="button" className="sn-logo-mark" aria-label={deviceMode === "small" ? "Tutup menu Studio" : "n."} aria-controls="ngeblogging-studio-sidebar" aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} onClick={deviceMode === "small" ? () => setMobileSidebar(false) : undefined}><strong>n</strong><i>.</i></button><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
+      <div className="sn-logo"><button type="button" className="sn-logo-mark" aria-label={deviceMode === "small" ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : "n."} aria-controls="ngeblogging-studio-sidebar" aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} onClick={deviceMode === "small" ? () => setMobileSidebar((open) => !open) : undefined}><strong>n</strong><i>.</i></button><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
       <button type="button" className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
         <button type="button" className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
