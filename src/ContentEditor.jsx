@@ -2,7 +2,7 @@ import React, { memo, useCallback, useImperativeHandle, useLayoutEffect, useMemo
 import {
   AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowLeft, Bold, CalendarDays,
   Check, Clock3, Code2, Eye, FileText, Heading1, Heading2, Highlighter, Image,
-  IndentDecrease, IndentIncrease, Minus, Pilcrow, RotateCcw, RotateCw, Subscript, Superscript,
+  IndentDecrease, IndentIncrease, Minus, Pilcrow, RotateCcw, Subscript, Superscript,
   Italic, Link, List, ListOrdered, LoaderCircle, MapPin, Monitor, Palette, Quote,
   Redo2, Save, Send, Smartphone, Sparkles, Strikethrough, Table2, Tablet,
   Tags, Trash2, Underline, Undo2, Upload, X,
