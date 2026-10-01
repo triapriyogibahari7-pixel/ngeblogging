@@ -221,16 +221,3 @@
   .sn-shell[data-ui-release="stable-v135"] .sn-metrics,.sv124-metrics-grid{grid-template-columns:1fr}
   .nara-assistant-shell{height:min(74dvh,620px)!important}
 }
-
-
-/* Per-site custom-domain workspace: every one of the 12 account sites can be selected independently. */
-.sv124-domain-sites{margin-top:13px}
-.sv124-domain-sites-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
-.sv124-domain-site-chip{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #dfe6ef;border-radius:14px;padding:12px;background:#fbfcfe;min-width:0}
-.sv124-domain-site-chip.active{border-color:#9bbcf0;background:#f5f9ff}
-.sv124-domain-site-chip>div{display:grid;gap:3px;min-width:0}
-.sv124-domain-site-chip small{font-size:9px;font-weight:900;letter-spacing:.08em;color:#7b8798}
-.sv124-domain-site-chip b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sv124-domain-site-chip span{font-size:11px;color:#657184;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sv124-domain-site-chip button{min-height:38px;white-space:nowrap}
-@media (max-width:720px){.sv124-domain-sites-grid{grid-template-columns:1fr}.sv124-domain-site-chip{grid-template-columns:1fr}.sv124-domain-site-chip button{width:100%}}
