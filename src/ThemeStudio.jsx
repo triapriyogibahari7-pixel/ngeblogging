@@ -164,11 +164,31 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
             box-shadow:none!important;
             filter:none!important;
           }
+          /* Mobile Theme preview: the feature rail (Guest cards / Subscribe links /
+             Episode player) is the decorative panel that becomes a large dark overlay
+             on narrow screens. Hide only that panel in the mobile preview; the main
+             theme, posts, navigation and widgets remain intact. */
           .ng-hero aside{
-            position:relative!important;
-            z-index:2!important;
-            max-width:100%!important;
+            display:none!important;
+            visibility:hidden!important;
+            opacity:0!important;
+            width:0!important;
+            max-width:0!important;
+            min-width:0!important;
+            height:0!important;
+            min-height:0!important;
+            margin:0!important;
+            padding:0!important;
             overflow:hidden!important;
+            pointer-events:none!important;
+          }
+          .ng-hero .ng-hero-index{
+            display:none!important;
+          }
+          .ng-hero .ng-poster-number{
+            display:none!important;
+            visibility:hidden!important;
+            opacity:0!important;
           }
         }`
       }
