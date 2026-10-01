@@ -1,6 +1,6 @@
 /* v403 — mobile/smartphone/app editor hard reset.
  * Large/desktop/laptop/computer/tablet modes are intentionally not targeted.
- * Unlike v401/v402, controlling selectors do NOT use :where(), so legacy
+ * Unlike earlier layers, controlling selectors have explicit specificity, so legacy
  * editor rules cannot win by specificity.
  */
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"],
