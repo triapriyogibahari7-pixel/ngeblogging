@@ -11,14 +11,12 @@ test("Theme mobile recovery is loaded after the existing Theme Studio surface CS
   assert.ok(recoveryAt > widgetAt, "mobile recovery must load last in ThemeStudio");
 });
 
-test("Theme mobile recovery is limited to handheld Theme modes", () => {
-  for (const mode of ["application", "phone", "mobile", "compact"]) {
-    assert.match(css, new RegExp(`data-studio-device-variant="${mode}"`));
-    assert.match(css, new RegExp(`data-studio-responsive-mode="${mode}"`));
-  }
-  assert.doesNotMatch(css, /data-studio-device-variant="laptop"/);
-  assert.doesNotMatch(css, /data-studio-device-variant="desktop"/);
-  assert.doesNotMatch(css, /data-studio-device-variant="computer"/);
+test("Theme mobile recovery is limited to the compact Theme family except tablet", () => {
+  assert.match(css, /\\.tn-studio\\[data-v340-theme-family="compact"\\]:not\\(\\[data-v340-theme-device="tablet"\\]\\)/);
+  assert.match(css, /data-v340-theme-device="tablet"/);
+  assert.doesNotMatch(css, /data-v340-theme-device="laptop"/);
+  assert.doesNotMatch(css, /data-v340-theme-device="desktop"/);
+  assert.doesNotMatch(css, /data-v340-theme-device="computer"/);
 });
 
 test("Theme mobile recovery fixes the current Theme markup rather than retired layout selectors", () => {
