@@ -56,17 +56,43 @@ function normalizeThemePreview(shell) {
   const availableHeight = Math.max(260, shell.clientHeight - 20);
   const scale = Math.max(0.12, Math.min(1, availableWidth / targetWidth));
   const targetHeight = Math.max(640, Math.ceil(availableHeight / scale));
+  const mobilePreview = shell.classList.contains("mobile")
+    || ["application","phone","mobile"].includes(shell.dataset.previewDevice || shell.dataset.previewMode || "");
 
-  shell.dataset.v230PreviewScale = scale < 0.999 ? "scaled" : "native";
+  shell.dataset.v230PreviewScale = mobilePreview ? "native-mobile" : (scale < 0.999 ? "scaled" : "native");
   shell.dataset.v230PreviewDevice = shell.dataset.previewDevice || "unknown";
-  setVar(shell, "--v230-preview-scale", String(scale));
+  setVar(shell, "--v230-preview-scale", mobilePreview ? "1" : String(scale));
   setVar(shell, "--v230-preview-target-width", `${targetWidth}px`);
-  setVar(shell, "--v230-preview-target-height", `${targetHeight}px`);
+  setVar(shell, "--v230-preview-target-height", mobilePreview ? "720px" : `${targetHeight}px`);
 
   important(shell, "position", "relative");
   important(shell, "min-width", "0");
   important(shell, "max-width", "100%");
   important(shell, "overflow", "hidden");
+
+  if (mobilePreview) {
+    /* Theme mobile is a real bounded viewport, not a scaled desktop canvas.
+       This branch is intentionally keyed from ThemeFrame's own .mobile class
+       so it remains correct even when Android reports a desktop CSS viewport. */
+    important(shell, "height", "420px");
+    important(shell, "min-height", "300px");
+    important(shell, "max-height", "420px");
+    important(shell, "display", "grid");
+    important(shell, "place-items", "start center");
+    important(shell, "padding", "8px");
+
+    important(iframe, "position", "relative");
+    important(iframe, "left", "auto");
+    important(iframe, "top", "auto");
+    important(iframe, "width", `${targetWidth}px`);
+    important(iframe, "max-width", "100%");
+    important(iframe, "height", "720px");
+    important(iframe, "min-height", "720px");
+    important(iframe, "margin", "0 auto");
+    important(iframe, "transform", "none");
+    important(iframe, "transform-origin", "top center");
+    return;
+  }
 
   important(iframe, "position", "absolute");
   important(iframe, "left", "50%");
