@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Check, ChevronDown, Cloud, CloudOff, Code2, Copy, Download, Eye, FileArchive,
   Gauge, Globe2, History, Laptop, Monitor, Palette, Rocket, RotateCcw, Save, Search,
@@ -86,8 +87,8 @@ function DeviceSwitch({ value, onChange }) {
   return <div className="tn-device-switch" aria-label="Delapan mode pratinjau perangkat">{DEVICES.map(({ id, label, icon: Icon }) => <button key={id} type="button" aria-pressed={value === id} className={value === id ? "active" : ""} onClick={() => onChange(id)} title={`Pratinjau ${label}`}><Icon/><span>{label}</span></button>)}</div>;
 }
 
-function Modal({ title, eyebrow, onClose, size = "medium", children, footer, layerClassName = "" }) {
-  return <div className={`tn-modal-layer ${layerClassName}`.trim()} role="dialog" aria-modal="true" aria-label={title}>
+function Modal({ title, eyebrow, onClose, size = "medium", children, footer, layerClassName = "", portal = false }) {
+  const surface = <div className={`tn-modal-layer ${layerClassName}`.trim()} role="dialog" aria-modal="true" aria-label={title}>
     <button className="tn-modal-backdrop" onClick={onClose} aria-label="Tutup"/>
     <section className={`tn-modal ${size}`}>
       <header><div>{eyebrow && <small>{eyebrow}</small>}<h2>{title}</h2></div><button onClick={onClose} aria-label="Tutup"><X/></button></header>
@@ -95,6 +96,8 @@ function Modal({ title, eyebrow, onClose, size = "medium", children, footer, lay
       {footer && <footer>{footer}</footer>}
     </section>
   </div>;
+  if (portal && typeof document !== "undefined") return createPortal(surface, document.body);
+  return surface;
 }
 
 function ThemeFrame({ theme, code, config, widgets, device, title }) {
@@ -291,7 +294,7 @@ export default function ThemeStudio({ setToast, site, user }) {
 
     {modal === "customize" && <Modal title={`Sesuaikan ${activeTheme.name}`} eyebrow="VISUAL CUSTOMIZER" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button onClick={() => { commit({ ...themeState, draftConfig: customDraft, updatedAt:new Date().toISOString() },"Draf tema tersimpan"); setModal(null); }}><Save/> Simpan draf</button><button className="primary" onClick={() => { commit(publishThemeDraft(themeState,customDraft,themeState.widgets),"Kustomisasi tema diterbitkan"); setModal(null); }}><Rocket/> Terbitkan</button></>}><Customizer value={customDraft} onChange={setCustomDraft} theme={activeTheme}/></Modal>}
     {modal === "code" && <Modal title="Editor HTML, CSS, dan JavaScript" eyebrow="ADVANCED THEME EDITOR" size="fullscreen" onClose={() => setModal(null)} footer={<><span><ShieldCheck/> JavaScript berjalan dalam iframe sandbox.</span><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeCode(themeState,codeDraft),"Kode tema tersimpan dan aktif"); setModal(null); }}><Save/> Simpan kode</button></>}><CodeEditor value={codeDraft} onChange={setCodeDraft} config={themeState.publishedConfig} widgets={themeState.widgets} theme={activeTheme} device={device} onDeviceChange={setDevice}/></Modal>}
-    {modal === "widgets" && <Modal layerClassName="tn-widget-modal-layer" title={`Widget bawaan (${WIDGET_COUNT})`} eyebrow="NGEBLOGGING WIDGET STUDIO" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeWidgets(themeState,widgetDraft),"Susunan widget disimpan"); setModal(null); }}><Save/> Simpan widget</button></>}><WidgetStudio value={widgetDraft} onChange={setWidgetDraft}/></Modal>}
+    {modal === "widgets" && <Modal portal layerClassName="tn-widget-modal-layer" title={`Widget bawaan (${WIDGET_COUNT})`} eyebrow="NGEBLOGGING WIDGET STUDIO" size="large" onClose={() => setModal(null)} footer={<><button onClick={() => setModal(null)}>Batal</button><button className="primary" onClick={() => { commit(saveThemeWidgets(themeState,widgetDraft),"Susunan widget disimpan"); setModal(null); }}><Save/> Simpan widget</button></>}><WidgetStudio value={widgetDraft} onChange={setWidgetDraft}/></Modal>}
     {modal === "history" && <Modal title="Cadangan dan pemulihan tema" eyebrow="VERSION CONTROL" onClose={() => setModal(null)} footer={<><button onClick={backup}><Download/> Unduh cadangan</button><button onClick={() => fileInput.current?.click()}><Upload/> Impor cadangan</button></>}><div className="tn-history">{themeState.history.map((entry,index) => <article key={entry.id}><span>{index===0?<Check/>:index+1}</span><div><b>{entry.note}</b><small>{getTheme(entry.activeThemeId).name} · {formatDate(entry.createdAt)}</small></div><button disabled={index===0} onClick={() => { try { commit(restoreThemeVersion(themeState,entry.id),"Versi tema dipulihkan"); setModal(null); } catch(error){ setToast(error.message); } }}>{index===0?"Saat ini":"Pulihkan"}</button></article>)}</div></Modal>}
     {modal === "preview" && <Modal title={previewTheme.name} eyebrow="PREVIEW SITUS RESPONSIF" size="preview" onClose={() => setModal(null)} footer={<><DeviceSwitch value={device} onChange={setDevice}/><button onClick={openSite}><ExternalLink/> Buka situs publik</button><button className="primary" disabled={previewTheme.id===activeTheme.id} onClick={() => { apply(previewTheme.id); setModal(null); }}>{previewTheme.id===activeTheme.id?"Tema aktif":"Terapkan tema"}</button></>}><ThemeFrame theme={previewTheme} code={previewTheme.id===activeTheme.id?themeState.code:previewTheme.code} config={previewTheme.id===activeTheme.id?themeState.publishedConfig:undefined} widgets={previewTheme.id===activeTheme.id?themeState.widgets:createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/></Modal>}
   </div>;
