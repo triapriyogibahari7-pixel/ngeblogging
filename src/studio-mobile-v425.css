@@ -1,0 +1,283 @@
+/* v425 — authoritative handheld Studio chrome.
+   The mobile drawer is controlled by React's mobileSidebar state.
+   Do not let historical desktop/sidebar transforms move or trap the controls.
+*/
+
+@media screen and (max-width:760px){
+  /* Viewport-level geometry: never clip the controls through an ancestor. */
+  html body .sn-shell,
+  html body .sn-shell>.sn-main,
+  html body .sn-shell>.sn-main>.sn-top{
+    transform:none!important;
+    overflow:visible!important;
+  }
+
+  /* CLOSED: one real button, flush inside the safe viewport edge. */
+  html body:not(.sn-mobile-sidebar-open) .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle{
+    display:grid!important;
+    position:fixed!important;
+    left:12px!important;
+    right:auto!important;
+    top:max(10px,env(safe-area-inset-top))!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    place-items:center!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    transform:none!important;
+    z-index:2147483000!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+
+  html body:not(.sn-mobile-sidebar-open) .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark{
+    display:grid!important;
+    place-items:center!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    transform:none!important;
+  }
+
+  html body:not(.sn-mobile-sidebar-open) .sn-mobile-menu-mark>strong{
+    display:block!important;
+    position:static!important;
+    width:auto!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    font:900 27px/1 Arial,Helvetica,sans-serif!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    transform:none!important;
+  }
+
+  html body .sn-mobile-menu-mark>i,
+  html body .sn-logo-mark>i{
+    display:none!important;
+  }
+
+  /* OPEN: the drawer itself is a viewport-fixed surface, never a translated
+     child of the content area. The N in its header is the close button. */
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side,
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side.collapsed{
+    display:flex!important;
+    position:fixed!important;
+    left:0!important;
+    right:auto!important;
+    top:0!important;
+    bottom:0!important;
+    inset-inline-start:0!important;
+    inset-inline-end:auto!important;
+    width:min(82vw,320px)!important;
+    min-width:min(82vw,320px)!important;
+    max-width:320px!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:100dvh!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    visibility:visible!important;
+    opacity:1!important;
+    transform:none!important;
+    translate:none!important;
+    pointer-events:auto!important;
+    z-index:2147483000!important;
+  }
+
+  html body:not(.sn-mobile-sidebar-open) .sn-shell>.sn-side{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    transform:none!important;
+  }
+
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side>.sn-logo{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:58px!important;
+    min-height:58px!important;
+    margin:0!important;
+    padding:0 12px!important;
+    gap:10px!important;
+    overflow:visible!important;
+  }
+
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side>.sn-logo>.sn-logo-mark{
+    appearance:none!important;
+    -webkit-appearance:none!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    outline:0!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    background:transparent!important;
+    color:inherit!important;
+    transform:none!important;
+    cursor:pointer!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side>.sn-logo>.sn-logo-mark>strong{
+    display:block!important;
+    position:static!important;
+    width:auto!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    font:900 27px/1 Arial,Helvetica,sans-serif!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    color:#20324b!important;
+    -webkit-text-fill-color:#20324b!important;
+    transform:none!important;
+  }
+
+  /* Historical desktop collapse rules must not turn the mobile close button
+     into a second/offset logo. */
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side.collapsed .sn-logo>b,
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-side .sn-logo>b{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+
+  html body.sn-mobile-sidebar-open .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  /* Keep the backdrop clickable for a reliable close action. */
+  html body.sn-mobile-sidebar-open .sn-side-backdrop{
+    display:block!important;
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    z-index:2147482990!important;
+    pointer-events:auto!important;
+    opacity:1!important;
+  }
+
+  /* Nara = exact Post/Pages editor mobile geometry from v408:
+     52 outer, 42 icon box, Sparkles 21, right 12, bottom safe-area. */
+  html body .nara-floating-button{
+    display:flex!important;
+    position:fixed!important;
+    left:auto!important;
+    right:12px!important;
+    top:auto!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:5px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:visible!important;
+    transform:none!important;
+    float:none!important;
+    z-index:2147483001!important;
+    pointer-events:auto!important;
+  }
+
+  html body .nara-floating-button .nara-launcher-icon-box{
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 42px!important;
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    transform:none!important;
+  }
+
+  html body .nara-floating-button .nara-launcher-icon-box>svg{
+    display:block!important;
+    flex:0 0 21px!important;
+    width:21px!important;
+    min-width:21px!important;
+    max-width:21px!important;
+    height:21px!important;
+    min-height:21px!important;
+    max-height:21px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+  }
+
+  html body .nara-floating-button .nara-launcher-label{
+    display:none!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  html body:not(.sn-mobile-sidebar-open) .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle{
+    left:10px!important;
+    top:max(9px,env(safe-area-inset-top))!important;
+  }
+
+  html body .nara-floating-button{
+    right:10px!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+  }
+}
