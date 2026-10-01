@@ -14,7 +14,7 @@
   background:#f6f8fc!important;
 }
 
-.tn-studio[data-v340-theme-family="compact"]:not([data-v340-theme-device="tablet"]) .sn-view-pad:has(.tn-studio){
+.sn-view-pad:has(.tn-studio[data-v340-theme-family="compact"]:not([data-v340-theme-device="tablet"])){
   width:100%!important;
   min-width:0!important;
   max-width:100%!important;
