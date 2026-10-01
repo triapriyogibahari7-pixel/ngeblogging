@@ -1011,3 +1011,94 @@
     height:auto!important;
   }
 }
+
+
+/* v445 — Ringkasan/API Keys compact flow, scoped only to those two routes.
+   Do not touch the mobile N launcher, Nara launcher, or Nara composer. */
+@media screen and (max-width:760px){
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad{
+    margin:0!important;
+    min-height:0!important;
+    height:auto!important;
+    padding-top:0!important;
+  }
+
+  /* Ringkasan: use the same compact top rhythm as the other menu pages. */
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome{
+    margin:0 0 7px!important;
+    padding:10px!important;
+    gap:7px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:first-child{
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome h1{
+    margin:2px 0 4px!important;
+    line-height:1.05!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:last-child{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:last-child > :is(a,button){
+    width:100%!important;
+    min-width:0!important;
+    min-height:37px!important;
+    height:37px!important;
+    margin:0!important;
+    padding:0 8px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics{
+    margin:0 0 7px!important;
+    gap:6px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics > article{
+    min-height:62px!important;
+    padding:8px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid{
+    margin-top:0!important;
+    gap:7px!important;
+  }
+
+  /* API Keys: compact vertical flow; cards never inherit header positioning. */
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page{
+    margin:0!important;
+    padding:0 10px 24px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-title{
+    margin:0 0 7px!important;
+    padding:0!important;
+    gap:7px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-title h1{
+    margin:1px 0 3px!important;
+    line-height:1.05!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-title > .sn-primary{
+    height:38px!important;
+    min-height:38px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin:0 0 7px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-metrics > article{
+    min-height:62px!important;
+    padding:8px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-endpoint,
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-list{
+    margin:0 0 7px!important;
+  }
+}
+@media screen and (max-width:430px){
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-api-page > .sn-api-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
