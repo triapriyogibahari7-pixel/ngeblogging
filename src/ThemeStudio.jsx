@@ -129,7 +129,15 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
           .ng-poster-number{
             display:none!important;
             visibility:hidden!important;
+            opacity:0!important;
+            width:0!important;
+            height:0!important;
             pointer-events:none!important;
+          }
+          .ng-hero-poster .ng-poster-number,
+          .ng-hero [class*="poster-number"],
+          .ng-hero [class*="posterNumber"]{
+            display:none!important;
           }
           .ng-header,.ng-header-rail,.ng-header-poster{
             transform:none!important;
