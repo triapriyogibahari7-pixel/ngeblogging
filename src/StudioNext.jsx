@@ -33,6 +33,7 @@ import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
 import "./studio-mobile-v408.css";
 import "./studio-mobile-v410.css";
+import "./studio-mobile-v411.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
