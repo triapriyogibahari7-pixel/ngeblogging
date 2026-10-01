@@ -971,30 +971,6 @@ async function refreshFullZoneDomain(
   );
 }
 
-async function accountCustomDomainCount(env, userId) {
-  const [memberships, ownedSites] = await Promise.all([
-    userJson(
-      env,
-      `site_members?user_id=eq.${encodeURIComponent(userId)}&select=site_id&limit=12`,
-    ),
-    userJson(
-      env,
-      `sites?owner_id=eq.${encodeURIComponent(userId)}&select=id&limit=12`,
-    ),
-  ]);
-  const siteIds = [...new Set([
-    ...(memberships || []).map((row) => String(row?.site_id || "").trim()),
-    ...(ownedSites || []).map((row) => String(row?.id || "").trim()),
-  ].filter(Boolean))].slice(0, 12);
-  if (!siteIds.length) return 0;
-  const encodedIds = siteIds.map((id) => encodeURIComponent(id)).join(",");
-  const rows = await userJson(
-    env,
-    `site_domains?site_id=in.(${encodedIds})&status=neq.pending_deletion&select=id&limit=13`,
-  );
-  return Array.isArray(rows) ? rows.length : 0;
-}
-
 async function registerFullZoneDomain(
   body,
   env,
@@ -1032,39 +1008,6 @@ async function registerFullZoneDomain(
       },
       requestId,
     );
-  }
-
-  const siteDomains = await userJson(
-    env,
-    `site_domains?site_id=eq.${encodeURIComponent(siteId)}&status=neq.pending_deletion&select=id,hostname&limit=2`,
-  );
-  const anotherDomain = (siteDomains || []).find((row) => row?.id !== existingDomain?.id);
-  if (anotherDomain) {
-    return response(
-      409,
-      {
-        code: "SITE_CUSTOM_DOMAIN_ALREADY_CONFIGURED",
-        error: "Situs ini sudah memiliki domain custom. Lepaskan domain lama terlebih dahulu sebelum menambahkan domain baru.",
-        hostname: anotherDomain.hostname,
-      },
-      requestId,
-    );
-  }
-
-  if (!existingDomain) {
-    const domainCount = await accountCustomDomainCount(env, user.id);
-    if (domainCount >= 12) {
-      return response(
-        409,
-        {
-          code: "ACCOUNT_CUSTOM_DOMAIN_LIMIT_REACHED",
-          error: "Akun sudah menggunakan 12 domain custom, satu untuk masing-masing dari maksimal 12 situs.",
-          limit: 12,
-          used: domainCount,
-        },
-        requestId,
-      );
-    }
   }
 
   if (
