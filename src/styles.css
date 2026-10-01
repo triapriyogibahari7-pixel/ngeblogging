@@ -759,3 +759,160 @@ footer {
 .sv124-comments-page > .sv124-settings-card{order:30!important;position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;inset:auto!important;transform:none!important;float:none!important;clear:both!important;width:100%!important;max-width:none!important;margin:24px 0 32px!important;z-index:1!important;}
 .sv124-comments-page > .sv124-settings-card > header{position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;}
 .sv124-comments-page > .sv124-settings-card > header > button{margin-left:auto!important;flex:0 0 auto!important;}
+
+
+/* v440: mobile Nara composer controls stay in one clean row without overlap. */
+@media (max-width:760px){
+  .nara-assistant-shell .nara-composer{
+    width:100%!important;
+    min-width:0!important;
+    overflow:visible!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools{
+    width:100%!important;
+    min-width:0!important;
+    height:47px!important;
+    display:grid!important;
+    grid-template-columns:34px 34px minmax(72px,1fr) minmax(84px,1.12fr) 34px!important;
+    grid-template-rows:34px!important;
+    align-items:center!important;
+    gap:0 4px!important;
+    padding:5px!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-attachment-menu-wrap{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    height:34px!important;
+    margin:0!important;
+    flex:none!important;
+    position:relative!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-attachment-menu-wrap > button,
+  .nara-assistant-shell .nara-composer-tools > button:not(.nara-send){
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-attachment-menu-wrap > button svg,
+  .nara-assistant-shell .nara-composer-tools > button svg{
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    margin:0!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-attachment-menu-wrap + button{
+    grid-column:2!important;
+    grid-row:1!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-select.intelligence{
+    grid-column:3!important;
+    grid-row:1!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:34px!important;
+    min-height:34px!important;
+    margin:0!important;
+    padding:0 6px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-select.model{
+    grid-column:4!important;
+    grid-row:1!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:34px!important;
+    min-height:34px!important;
+    margin:0!important;
+    padding:0 6px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-select span{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    line-height:1!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-select > svg{
+    flex:0 0 11px!important;
+    width:11px!important;
+    height:11px!important;
+    margin:0!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-send{
+    grid-column:5!important;
+    grid-row:1!important;
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+
+  .nara-assistant-shell .nara-composer-tools > .nara-send svg{
+    width:17px!important;
+    height:17px!important;
+  }
+
+  .nara-assistant-shell .nara-attachment-menu{
+    left:0!important;
+    right:auto!important;
+    bottom:43px!important;
+    max-width:calc(100vw - 20px)!important;
+  }
+}
+@media (max-width:340px){
+  .nara-assistant-shell .nara-composer-tools{
+    grid-template-columns:32px 32px minmax(66px,1fr) minmax(78px,1.12fr) 32px!important;
+    column-gap:3px!important;
+    padding:4px!important;
+  }
+  .nara-assistant-shell .nara-composer-tools > .nara-attachment-menu-wrap,
+  .nara-assistant-shell .nara-composer-tools > .nara-attachment-menu-wrap > button,
+  .nara-assistant-shell .nara-composer-tools > button:not(.nara-send),
+  .nara-assistant-shell .nara-composer-tools > .nara-send{
+    width:32px!important;
+    min-width:32px!important;
+    max-width:32px!important;
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+  }
+}
