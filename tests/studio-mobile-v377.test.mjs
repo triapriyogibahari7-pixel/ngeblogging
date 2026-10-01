@@ -41,3 +41,13 @@ test("v376 explicitly fixes the flex-to-grid root cause", () => {
   assert.match(files.editorFix, /\.ce-file label\{[\s\S]*display:grid!important/);
   assert.match(files.editorFix, /\.ce-actions\{[\s\S]*display:grid!important/);
 });
+
+test("small editor keeps the real Nara button visible while large-device behavior remains hidden", async () => {
+  const secure = await readFile(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
+  assert.match(secure, /isSmallEditor/);
+  assert.match(secure, /documentElement\.classList\.contains\("editor-v266-small"\)/);
+  assert.match(secure, /dataset\.studioDeviceMode === "small"/);
+  assert.match(secure, /shell\.querySelectorAll\("\.ce-nara"\)/);
+  assert.match(secure, /if \(isSmallEditor\)/);
+  assert.match(secure, /button\.hidden = false/);
+});
