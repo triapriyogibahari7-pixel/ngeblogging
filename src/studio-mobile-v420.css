@@ -1,7 +1,7 @@
 /* v420 — final positional correction only. Do not redraw or replace the N logo. */
 @media screen and (max-width:760px){
   :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle{
-    position:absolute!important;
+    position:fixed!important;
     left:max(12px,env(safe-area-inset-left,0px))!important;
     right:auto!important;
     top:10px!important;
@@ -25,7 +25,7 @@
     position:static!important;display:block!important;
     width:auto!important;height:auto!important;margin:0!important;padding:0!important;
     overflow:visible!important;clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;
-    font-family:Arial,Helvetica,sans-serif!important;font-size:27px!important;font-weight:800!important;
+    font-size:24px!important;font-weight:800!important;
     line-height:1!important;letter-spacing:0!important;text-indent:0!important;text-align:center!important;
     color:#fff!important;-webkit-text-fill-color:#fff!important;transform:none!important;
   }
@@ -40,7 +40,7 @@
     position:static!important;display:block!important;width:auto!important;height:auto!important;
     margin:0!important;padding:0!important;overflow:visible!important;
     clip:rect(auto,auto,auto,auto)!important;clip-path:none!important;
-    font-family:Arial,Helvetica,sans-serif!important;font-size:27px!important;font-weight:800!important;
+    font-size:24px!important;font-weight:800!important;
     line-height:1!important;letter-spacing:0!important;text-align:center!important;
     color:#fff!important;-webkit-text-fill-color:#fff!important;transform:none!important;
   }
@@ -70,5 +70,5 @@
 @media screen and (max-width:390px){
   :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle{left:max(10px,env(safe-area-inset-left,0px))!important;top:9px!important;width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important}
   :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark{width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important}
-  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark>strong{font-size:26px!important}
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle .sn-mobile-menu-mark>strong{font-size:24px!important}
 }
