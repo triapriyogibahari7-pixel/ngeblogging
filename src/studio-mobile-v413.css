@@ -1,0 +1,120 @@
+/* v413 — final separation of phone-only editor controls from large-device editor.
+   Desktop/laptop/computer/tablet/large-device editor must not show mobile formatting,
+   Media/Nara/Preview controls. Publish remains in the editor header.
+   Phone/small mode alone gets the mobile toolbar and action row. */
+
+/* Large/default editor: remove controls that belong exclusively to phone UI. */
+.ce-app .ce-mobile-toolbar,
+.ce-app .ce-mobile-actions,
+.ce-app .ce-ribbon,
+.ce-app .ce-nara{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* Preview is a phone-editor action; keep Publish as the remaining header action. */
+.ce-app .ce-actions>button:first-child{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+/* Phone / app / smartphone editor only. */
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-actions{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-nara{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-actions>button:first-child{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  /* Mobile menu N: use a real 46px box and never clip the glyph. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle{
+    display:grid!important;
+    place-items:center!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark{
+    display:grid!important;
+    place-items:center!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    box-sizing:border-box!important;
+    line-height:1!important;
+    font-size:0!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+    display:block!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    color:#fff!important;
+    font:900 28px/1 Arial,sans-serif!important;
+    line-height:1!important;
+    transform:none!important;
+    text-indent:0!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>i{
+    display:none!important;
+  }
+
+  /* Sidebar brand N also gets a generous non-clipping box. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark{
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark>strong{
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    width:auto!important;
+    max-width:none!important;
+    font-size:30px!important;
+    line-height:1!important;
+  }
+}
