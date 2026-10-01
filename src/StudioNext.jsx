@@ -33,6 +33,12 @@ import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
 import "./studio-mobile-v408.css";
 import "./studio-mobile-v410.css";
+import "./studio-mobile-v411.css";
+import "./studio-mobile-v415.css";
+import "./studio-mobile-v417.css";
+import "./studio-mobile-v419.css";
+import "./studio-mobile-v420.css";
+import "./studio-mobile-v425.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
@@ -279,32 +285,32 @@ export default function StudioNext({ onExit, user }) {
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
-      <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
-      <button className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
+      <div className="sn-logo"><button type="button" className="sn-logo-mark" aria-label={deviceMode === "small" ? "Tutup menu Studio" : "n."} aria-controls="ngeblogging-studio-sidebar" aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} onClick={deviceMode === "small" ? () => setMobileSidebar(false) : undefined}><strong>n</strong><i>.</i></button><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
+      <button type="button" className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
-        <button className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
-        <button className={view === "posts" ? "active" : ""} onClick={() => chooseView("posts")}><FileText/><span>Posts</span></button>
-        <button className={view === "pages" ? "active" : ""} onClick={() => chooseView("pages")}><BookOpen/><span>Pages</span></button>
-        <button className={view === "themes" ? "active" : ""} onClick={() => chooseView("themes")}><Palette/><span>Tema</span></button>
-        <button className={view === "media" ? "active" : ""} onClick={() => chooseView("media")}><Image/><span>Media</span></button>
-        <button className={view === "analytics" ? "active" : ""} onClick={() => chooseView("analytics")}><BarChart3/><span>Analitik</span></button>
-        <button className={view === "members" ? "active" : ""} onClick={() => chooseView("members")}><Users/><span>Anggota</span></button>
-        <button className={view === "comments" ? "active" : ""} onClick={() => chooseView("comments")}><MessageCircle/><span>Komentar</span></button>
-        <button className={view === "domain" ? "active" : ""} onClick={() => chooseView("domain")}><Globe2/><span>Domain</span></button>
-        <button className={view === "api-keys" ? "active" : ""} onClick={() => chooseView("api-keys")}><KeyRound/><span>API Keys</span></button>
+        <button type="button" className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
+        <button type="button" className={view === "posts" ? "active" : ""} onClick={() => chooseView("posts")}><FileText/><span>Posts</span></button>
+        <button type="button" className={view === "pages" ? "active" : ""} onClick={() => chooseView("pages")}><BookOpen/><span>Pages</span></button>
+        <button type="button" className={view === "themes" ? "active" : ""} onClick={() => chooseView("themes")}><Palette/><span>Tema</span></button>
+        <button type="button" className={view === "media" ? "active" : ""} onClick={() => chooseView("media")}><Image/><span>Media</span></button>
+        <button type="button" className={view === "analytics" ? "active" : ""} onClick={() => chooseView("analytics")}><BarChart3/><span>Analitik</span></button>
+        <button type="button" className={view === "members" ? "active" : ""} onClick={() => chooseView("members")}><Users/><span>Anggota</span></button>
+        <button type="button" className={view === "comments" ? "active" : ""} onClick={() => chooseView("comments")}><MessageCircle/><span>Komentar</span></button>
+        <button type="button" className={view === "domain" ? "active" : ""} onClick={() => chooseView("domain")}><Globe2/><span>Domain</span></button>
+        <button type="button" className={view === "api-keys" ? "active" : ""} onClick={() => chooseView("api-keys")}><KeyRound/><span>API Keys</span></button>
       </nav>
       <div className="sn-account-footer" data-sidebar-footer-release="v135">
-        <button className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}`} onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
-        <button className="sn-account-logout-v135" onClick={onExit}><LogOut/><span>Keluar</span></button>
+        <button type="button" className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}`} onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
+        <button type="button" className="sn-account-logout-v135" onClick={onExit}><LogOut/><span>Keluar</span></button>
       </div>
     </aside>
 
     <main className="sn-main">
       <header className="sn-top">
-        <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
-          <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong><i>.</i></span>
+        {(deviceMode !== "small" || !mobileSidebar) && <button type="button" className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? "Buka menu Studio" : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
+          <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span>
           <PanelLeftClose className="sn-desktop-sidebar-icon"/>
-        </button>
+        </button>}
         <button className="sn-workspace" onClick={() => setSiteManager(true)}><span>{site?.name?.slice(0, 2).toUpperCase() || "NB"}</span><div><small>WORKSPACE</small><b>{site?.name || "Ngeblogging"}</b></div><ChevronDown/></button>
         <div className={`sn-cloud ${dataMode}`}>{dataMode === "cloud" ? <Cloud/> : dataMode === "connecting" ? <LoaderCircle className="spin"/> : <CloudOff/>}<span>{dataMode === "cloud" ? "Cloud aktif" : dataMode === "connecting" ? "Menghubungkan" : "Mode perangkat"}</span></div>
         <div className="sn-top-actions">
