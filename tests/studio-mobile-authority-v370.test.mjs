@@ -70,3 +70,21 @@ test("v370 bumps the service worker refresh/cache release", () => {
   assert.match(sw, /studio-mobile-authority-cache-v370/);
   assert.match(sw, /mobile-authority-v370/);
 });
+
+
+test("v370.1 neutralizes legacy responsive editor overlay rules", () => {
+  assert.match(css, /html\.editor-v266-small \.ce-titlebar/);
+  assert.match(css, /html\[data-studio-device-mode="small"\] \.ce-titlebar/);
+  assert.match(css, /\.ce-titlebar[\s\S]*position:relative!important/);
+  assert.match(css, /\.ce-actions[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)!important/);
+  assert.match(css, /\.ce-actions \.ce-primary[\s\S]*justify-self:stretch!important/);
+  assert.match(css, /\.ce-paper-shell[\s\S]*background:transparent!important/);
+  assert.match(css, /\.ce-paper[\s\S]*visibility:visible!important/);
+  assert.match(css, /\.ce-preview-devices[\s\S]*left:50%!important/);
+});
+
+test("mobile authority is also loaded from the Studio shell after v23", async () => {
+  const secure = await readFile(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
+  assert.match(secure, /import "\.\/studio-responsive-v23\.css";/);
+  assert.match(secure, /import "\.\/studio-mobile-authority-v370\.css";/);
+});
