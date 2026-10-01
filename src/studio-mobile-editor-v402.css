@@ -1,0 +1,134 @@
+/* Ngeblogging Studio — v402 mobile editor finishing layer
+ * ONLY active while a mobile Post/Page editor is mounted.
+ * Desktop/laptop/computer/tablet/large-device designs are untouched.
+ */
+
+/* One Nara launcher only inside the mobile editor:
+   keep the ribbon's ce-nara button and suppress global floating duplicates. */
+@media screen and (max-width:760px){
+  html.editor-v266-small body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-button,
+  html.editor-v266-small body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-proxy-v18,
+  html.editor-v266-small body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-proxy-v19,
+  html.editor-v266-small body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-proxy-v20,
+  html[data-studio-device-mode="small"] body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-button,
+  html[data-studio-device-mode="small"] body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-proxy-v18,
+  html[data-studio-device-mode="small"] body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-proxy-v19,
+  html[data-studio-device-mode="small"] body:has(.ce-app[data-mobile-editor-v402="true"]) .nara-floating-proxy-v20{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  /* Replace the old word/character status with nothing.
+     The writing canvas flows directly into the next editor section. */
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-word-status{
+    display:none!important;
+    position:absolute!important;
+    width:0!important;
+    height:0!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:0!important;
+    max-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  /* The ribbon Nara control is a real button, not a floating bubble. */
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon .ce-nara{
+    position:relative!important;
+    inset:auto!important;
+    z-index:2!important;
+    display:grid!important;
+    place-items:center!important;
+    align-content:center!important;
+    justify-content:center!important;
+    flex:0 0 42px!important;
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    margin:0 2px 0 4px!important;
+    padding:0!important;
+    border:1px solid #d7e1ef!important;
+    border-radius:11px!important;
+    background:#fff!important;
+    color:#2d6edf!important;
+    box-shadow:0 2px 8px rgba(34,66,110,.08)!important;
+    line-height:0!important;
+    font-size:0!important;
+    overflow:hidden!important;
+    transform:none!important;
+  }
+
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon .ce-nara svg{
+    display:block!important;
+    width:21px!important;
+    min-width:21px!important;
+    max-width:21px!important;
+    height:21px!important;
+    min-height:21px!important;
+    max-height:21px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    flex:none!important;
+  }
+
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon .ce-nara:focus-visible{
+    outline:3px solid rgba(45,110,223,.24)!important;
+    outline-offset:2px!important;
+  }
+
+  /* Do not let a legacy ribbon child paint an extra rectangular slot
+     underneath the writing area. */
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon{
+    isolation:isolate!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+
+  /* The editor paper is the only white writing surface. */
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-paper-shell{
+    gap:0!important;
+  }
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-paper-shell>.ce-word-status{
+    display:none!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon .ce-nara{
+    flex-basis:40px!important;
+    width:40px!important;
+    min-width:40px!important;
+    max-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+    max-height:40px!important;
+    margin-left:3px!important;
+  }
+
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon .ce-nara svg{
+    width:20px!important;
+    min-width:20px!important;
+    height:20px!important;
+    min-height:20px!important;
+  }
+}
+
+@media (display-mode:standalone) and (max-width:760px){
+  :where(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v402="true"] .ce-ribbon .ce-nara{
+    margin-bottom:max(0px,env(safe-area-inset-bottom,0px))!important;
+  }
+}
