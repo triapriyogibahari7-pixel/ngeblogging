@@ -1,0 +1,5 @@
+/* v364 final authority: preview above, code below, full width. */
+.tn-modal-layer .tn-code-workspace[data-v364-layout="preview-top-code-bottom"]{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(320px,52%) minmax(360px,48%)!important;grid-template-areas:"preview" "code"!important;width:100%!important;max-width:100%!important;min-width:0!important;height:100%!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}
+.tn-modal-layer .tn-code-workspace[data-v364-layout="preview-top-code-bottom"]>.tn-code-preview-pane{grid-area:preview!important;order:0!important;width:100%!important;max-width:100%!important;min-width:0!important}
+.tn-modal-layer .tn-code-workspace[data-v364-layout="preview-top-code-bottom"]>.tn-code-pane{grid-area:code!important;order:1!important;width:100%!important;max-width:100%!important;min-width:0!important}
+.tn-modal-layer .tn-code-workspace[data-v364-layout="preview-top-code-bottom"]>.tn-code-pane textarea{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
