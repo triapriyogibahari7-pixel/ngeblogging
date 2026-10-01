@@ -11,6 +11,7 @@ import { slugify } from "./lib/content-data";
 import "./content-editor.css";
 import "./content-editor-mobile-v324.css";
 import "./studio-mobile-app-pages-editor-v368.css";
+import "./studio-mobile-final-v369.css";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
