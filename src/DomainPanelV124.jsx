@@ -72,7 +72,7 @@ function Metric({ icon: Icon, label, value }) {
   return <article className="sv124-metric"><Icon/><span>{label}</span><b>{value}</b></article>;
 }
 
-export default function DomainPanelV124({ site, sites = [], onSiteUpdate, onSelectSite, setToast }) {
+export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToast }) {
   const [token, setToken] = useState("");
   const [config, setConfig] = useState(null);
   const initialCustomDomain = String(site?.custom_domain || "").trim().toLowerCase()
@@ -336,19 +336,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, onSele
     <section className="sv124-site-strip">
       <span><Globe2/></span><div><small>SITUS AKTIF</small><b>{site?.name || "Situs belum dipilih"}</b><p>{site?.slug ? `${site.slug}.ngeblogging.com` : ""}</p></div><i>{sites.length}/12 situs dalam akun</i>
     </section>
-    <section className="sv124-card sv124-domain-sites">
-      <header><div><small>WORKSPACE DOMAIN</small><h2>12 situs · 12 domain custom</h2><p>Setiap situs dalam akun memiliki ruang domain custom sendiri. Pilih situs di bawah untuk menambahkan atau memeriksa domainnya.</p></div></header>
-      <div className="sv124-domain-sites-grid">
-        {sites.slice(0, 12).map((item, index) => {
-          const active = item.id === site?.id;
-          const custom = String(item.custom_domain || "").trim();
-          return <article className={active ? "sv124-domain-site-chip active" : "sv124-domain-site-chip"} key={item.id}>
-            <div><small>SITUS {index + 1}</small><b>{item.name || "Situs " + (index + 1)}</b><span>{custom || ((item.slug || "situs") + ".ngeblogging.com")}</span></div>
-            <button type="button" className={active ? "sv124-primary" : "sv124-secondary"} onClick={() => onSelectSite?.(item)}>{active ? "Situs aktif" : "Kelola domain"}</button>
-          </article>;
-        })}
-      </div>
-    </section>
+
 
     {error ? <div className="sv124-error sv124-domain-error" role="alert"><span>{error}</span><button onClick={() => load()}>Coba lagi</button></div> : null}
 
@@ -366,7 +354,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, onSele
 
       <section className="sv124-card sv124-domain-register">
         <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terhubung" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Domain aktif dikelola pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola domain situs lain." : "Masukkan domain milik situs aktif. Sistem menyiapkan zone, dua nameserver, HTTPS, dan routing."}</p></div></header>
-        {!connected.length ? <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form> : null}
+        <form onSubmit={register}><label><b>{connected.length ? "Tambah / ganti domain pribadi" : "Nama domain"}</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>{connected.length ? "Situs ini sudah memiliki domain pribadi. Masukkan domain baru hanya jika ingin mengganti konfigurasi." : "Tanpa https://, tanpa www, dan tanpa path."}</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : connected.length ? "Kelola domain pribadi" : "Hubungkan domain"}</button></form>
         <div className="sv124-provider-note"><ShieldCheck/>Menggunakan Full Zone dan dua nameserver Cloudflare. Subdomain gratis Ngeblogging tetap tersedia.</div>
       </section>
 
