@@ -1,0 +1,129 @@
+/* v404 — semantic mobile editor actions.
+ * Small-device only. Desktop/laptop/computer/tablet are intentionally untouched.
+ */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section{
+  display:flex!important;
+  align-items:center!important;
+  flex:0 0 auto!important;
+  width:max-content!important;
+  min-width:max-content!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:0 4px!important;
+  border-left:1px solid #dfe6ef!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section>span{
+  display:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section nav{
+  display:flex!important;
+  align-items:center!important;
+  height:100%!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section .ce-nara{
+  position:relative!important;
+  inset:auto!important;
+  z-index:10!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:40px!important;
+  max-width:none!important;
+  height:40px!important;
+  min-height:40px!important;
+  max-height:40px!important;
+  margin:0!important;
+  padding:0 11px!important;
+  border:1px solid #cbd9ec!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#275fb3!important;
+  box-shadow:0 2px 8px rgba(34,66,110,.08)!important;
+  font-size:11px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  transform:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section .ce-nara svg{
+  display:block!important;
+  flex:0 0 18px!important;
+  width:18px!important;
+  min-width:18px!important;
+  height:18px!important;
+  min-height:18px!important;
+  margin:0!important;
+  transform:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section .ce-nara b{
+  display:block!important;
+  font:700 11px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  white-space:nowrap!important;
+}
+
+/* Replace the old word/reading strip with real mobile editor actions. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-mobile-actions{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:8px 0 0!important;
+  padding:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-mobile-actions>button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0 6px!important;
+  border:1px solid #d7e0ec!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#33445c!important;
+  box-shadow:0 1px 4px rgba(30,48,75,.05)!important;
+  font:700 11px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  transform:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-mobile-actions>button:first-child{
+  color:#275fb3!important;
+  border-color:#cbd9ec!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-mobile-actions svg{
+  flex:0 0 auto!important;
+  width:16px!important;
+  min-width:16px!important;
+  height:16px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-word-status{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+@media(max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section .ce-nara b{display:none!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-nara-section .ce-nara{width:40px!important;min-width:40px!important;padding:0!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-mobile-actions{gap:5px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-mobile-actions>button{font-size:10px!important;padding-inline:3px!important}
+}
