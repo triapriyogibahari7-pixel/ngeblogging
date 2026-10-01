@@ -62,3 +62,22 @@ test("v402 removes duplicate mobile Nara launcher and mobile status box", async 
   assert.doesNotMatch(css402, /data-studio-responsive-mode="tablet"/);
   assert.doesNotMatch(css402, /data-studio-responsive-mode="desktop"/);
 });
+
+
+test("v403 hard reset has real small-device specificity and removes the mobile overlap sources", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css403 = await readFile(new URL("../src/studio-mobile-editor-v403.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-editor-v403\.css/);
+  assert.match(editor, /data-mobile-editor-v403="true"/);
+  assert.match(css403, /:is\(html\.editor-v266-small,html\[data-studio-device-mode="small"\]\) \.ce-app\[data-mobile-editor-v403="true"\] \.ce-titlebar/);
+  assert.match(css403, /\.ce-file input\{[\s\S]*width:100%!important/);
+  assert.match(css403, /\.ce-actions\{[\s\S]*display:grid!important/);
+  assert.match(css403, /\.ce-word-status\{[\s\S]*display:none!important/);
+  assert.match(css403, /\.ce-ribbon \.ce-nara\{[\s\S]*display:grid!important/);
+  assert.match(css403, /nara-floating-button/);
+  assert.match(css403, /#ngeblogging-editor-nav-v266/);
+  assert.doesNotMatch(css403, /editor-v266-large/);
+  assert.doesNotMatch(css403, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css403, /data-studio-responsive-mode="desktop"/);
+  assert.doesNotMatch(css403, /:where\(/);
+});
