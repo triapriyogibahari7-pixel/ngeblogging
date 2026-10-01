@@ -971,6 +971,21 @@ async function refreshFullZoneDomain(
   );
 }
 
+async function accountCustomDomainCount(env, userId) {
+  const memberships = await userJson(
+    env,
+    `site_members?user_id=eq.${encodeURIComponent(userId)}&select=site_id&limit=12`,
+  );
+  const siteIds = [...new Set((memberships || []).map((row) => String(row?.site_id || "").trim()).filter(Boolean))];
+  if (!siteIds.length) return 0;
+  const encodedIds = siteIds.map((id) => encodeURIComponent(id)).join(",");
+  const rows = await userJson(
+    env,
+    `site_domains?site_id=in.(${encodedIds})&status=neq.pending_deletion&select=id&limit=13`,
+  );
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
 async function registerFullZoneDomain(
   body,
   env,
@@ -1008,6 +1023,22 @@ async function registerFullZoneDomain(
       },
       requestId,
     );
+  }
+
+  if (!existingDomain) {
+    const domainCount = await accountCustomDomainCount(env, user.id);
+    if (domainCount >= 12) {
+      return response(
+        409,
+        {
+          code: "ACCOUNT_CUSTOM_DOMAIN_LIMIT_REACHED",
+          error: "Akun sudah menggunakan 12 domain custom, satu untuk masing-masing dari maksimal 12 situs.",
+          limit: 12,
+          used: domainCount,
+        },
+        requestId,
+      );
+    }
   }
 
   if (
