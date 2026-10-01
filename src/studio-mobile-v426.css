@@ -1,0 +1,301 @@
+/* v426 — LAST handheld icon authority.
+   Loaded after StudioSecure's historical v421 rules.
+   Scope: physical handheld/application/phone/mobile/compact only.
+   Desktop/laptop/computer/tablet geometry is intentionally untouched.
+*/
+
+/* The classifier already writes the exact responsive mode on <html>.
+   The visual rule uses that marker instead of guessing from text/classes. */
+@media screen and (max-width:760px){
+  :is(
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"]
+  ){
+    /* no-op marker; keeps the scope explicit */
+  }
+
+  /* ---------------- Sidebar N: CLOSED ----------------
+     One React button only. Give the button and glyph independent paint boxes.
+     The extra 4px from the viewport edge is intentional: the glyph can never
+     touch the left clipping boundary even with font anti-aliasing. */
+  html body:not(.sn-mobile-sidebar-open)
+  .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle{
+    position:fixed!important;
+    left:max(16px,env(safe-area-inset-left,0px))!important;
+    right:auto!important;
+    top:max(10px,env(safe-area-inset-top,0px))!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    z-index:2147483640!important;
+  }
+
+  html body:not(.sn-mobile-sidebar-open)
+  .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle
+  >.sn-mobile-menu-mark{
+    position:static!important;
+    inset:auto!important;
+    display:grid!important;
+    place-items:center!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    line-height:0!important;
+    text-align:center!important;
+  }
+
+  html body:not(.sn-mobile-sidebar-open)
+  .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle
+  >.sn-mobile-menu-mark>strong{
+    position:static!important;
+    display:block!important;
+    width:max-content!important;
+    min-width:max-content!important;
+    max-width:none!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    font-size:24px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    transform:none!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+
+  /* ---------------- Sidebar N: OPEN ----------------
+     Keep the original sidebar N as the only visible N.
+     No pseudo-element and no second N is painted. */
+  html body.sn-mobile-sidebar-open
+  .sn-shell>.sn-side>.sn-logo{
+    overflow:visible!important;
+  }
+
+  html body.sn-mobile-sidebar-open
+  .sn-shell>.sn-side>.sn-logo>.sn-logo-mark{
+    position:static!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    line-height:0!important;
+    text-align:center!important;
+  }
+
+  html body.sn-mobile-sidebar-open
+  .sn-shell>.sn-side>.sn-logo>.sn-logo-mark>strong{
+    position:static!important;
+    display:block!important;
+    width:max-content!important;
+    min-width:max-content!important;
+    max-width:none!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    font-size:24px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    transform:none!important;
+    color:#20324b!important;
+    -webkit-text-fill-color:#20324b!important;
+  }
+
+  /* React already omits the top button while open; this is a defensive
+     visibility rule only, not a second control. */
+  html body.sn-mobile-sidebar-open
+  .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+
+  html body .sn-mobile-menu-mark>i,
+  html body .sn-logo-mark>i,
+  html body .sn-mobile-menu-mark::before,
+  html body .sn-mobile-menu-mark::after,
+  html body .sn-logo-mark::before,
+  html body .sn-logo-mark::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  /* ---------------- Nara AI ----------------
+     Exact visual reference: the mobile Post/Pages editor's Sparkles button.
+     Editor CSS defines the SVG at 18x18px. Use the same 52/42/18 geometry. */
+  html body
+  .nara-floating-button{
+    position:fixed!important;
+    left:auto!important;
+    right:max(12px,env(safe-area-inset-right,0px))!important;
+    top:auto!important;
+    bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:1fr!important;
+    place-items:center!important;
+    margin:0!important;
+    padding:5px!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+    rotate:0deg!important;
+    z-index:2147483641!important;
+  }
+
+  html body
+  .nara-floating-button>.nara-launcher-icon-box{
+    position:static!important;
+    grid-column:1!important;
+    grid-row:1!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:none!important;
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+  }
+
+  html body
+  .nara-floating-button>.nara-launcher-icon-box>svg{
+    display:block!important;
+    position:static!important;
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    flex:none!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    translate:none!important;
+    rotate:0deg!important;
+  }
+
+  html body
+  .nara-floating-button>.nara-launcher-label{
+    display:none!important;
+    width:0!important;
+    height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  html body:not(.sn-mobile-sidebar-open)
+  .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle{
+    left:max(14px,env(safe-area-inset-left,0px))!important;
+    top:max(9px,env(safe-area-inset-top,0px))!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+  }
+
+  html body:not(.sn-mobile-sidebar-open)
+  .sn-shell>.sn-main>.sn-top>.sn-sidebar-toggle>.sn-mobile-menu-mark{
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+  }
+
+  html body .nara-floating-button{
+    right:max(10px,env(safe-area-inset-right,0px))!important;
+    bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+    width:50px!important;
+    min-width:50px!important;
+    max-width:50px!important;
+    height:50px!important;
+    min-height:50px!important;
+    max-height:50px!important;
+  }
+
+  html body .nara-floating-button>.nara-launcher-icon-box{
+    width:40px!important;
+    min-width:40px!important;
+    max-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+    max-height:40px!important;
+  }
+}
