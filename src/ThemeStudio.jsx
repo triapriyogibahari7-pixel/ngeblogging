@@ -29,7 +29,7 @@ import "./studio-theme-code-editor-v359.js";
 import "./studio-theme-code-editor-v360.js";
 import "./studio-theme-code-editor-v363.js";
 import "./studio-theme-code-editor-v364.js";
-import "./studio-widget-studio-v368.css";
+import "./studio-widget-studio-v369.css";
 
 const DEVICES = [
   { id: "application", label: "Aplikasi", icon: Smartphone, width: 360, frameClass: "mobile" },
