@@ -43,12 +43,12 @@ html[data-studio-v260-family="small"] .sn-sidebar-toggle{
   padding:0!important;
 }
 html[data-studio-v260-family="small"] .sn-mobile-menu-mark{
-  width:42px!important;
-  height:42px!important;
-  min-width:42px!important;
-  min-height:42px!important;
-  max-width:42px!important;
-  max-height:42px!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
   display:grid!important;
   place-items:center!important;
   border-radius:12px!important;
