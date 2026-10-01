@@ -116,11 +116,8 @@ export default function BackupCenter({ user }) {
   };
 
   return <section className="bc-center" aria-labelledby="backup-center-title">
-
-    <div className="bc-summary"><article><FileText/><div><b>Seluruh Posts & Pages</b><p>HTML lengkap, status, tanggal, jadwal, lokasi, tags, kategori, metadata, SEO, dan struktur Page.</p></div></article><article><FileArchive/><div><b>Konteks situs</b><p>Identitas situs, tema aktif, widget, domain, profil, serta manifest media ikut dicatat.</p></div></article><article><ArchiveRestore/><div><b>Pemulihan aman</b><p>Default dipulihkan sebagai draf dan slug dibuat unik agar konten lama tidak tertimpa.</p></div></article></div>
     <div className="bc-actions"><button className="bc-primary" disabled={Boolean(busy)} onClick={()=>download("json")}>{busy==="json"?<LoaderCircle className="spin"/>:<HardDriveDownload/>}<span><b>Unduh cadangan lengkap</b><small>File .ngeblogging-backup.json untuk dipulihkan kembali</small></span></button><button disabled={Boolean(busy)} onClick={()=>download("html")}>{busy==="html"?<LoaderCircle className="spin"/>:<Download/>}<span><b>Unduh arsip HTML</b><small>Salinan yang mudah dibuka dan dibaca tanpa Studio</small></span></button><button disabled={Boolean(busy)} onClick={()=>inputRef.current?.click()}>{busy==="restore"?<LoaderCircle className="spin"/>:<Upload/>}<span><b>Pulihkan dari file</b><small>Impor file cadangan Ngeblogging dengan verifikasi checksum</small></span></button><input ref={inputRef} type="file" accept="application/json,.json,.ngeblogging-backup.json" hidden onChange={(event)=>restore(event.target.files?.[0])}/></div>
     <label className="bc-preserve"><input type="checkbox" checked={preserveStatuses} onChange={(event)=>setPreserveStatuses(event.target.checked)}/><span><b>Pertahankan status publikasi saat memulihkan</b><small>Nonaktif secara default agar Post/Page hasil pemulihan tidak langsung terbit.</small></span></label>
-    <div className="bc-note"><Check/><p>Cadangan menyimpan seluruh teks dan metadata konten. Berkas media besar dicatat sebagai manifest URL dan metadata; unduhan biner massal tetap memerlukan pipeline arsip media terpisah agar browser tidak kehabisan memori.</p></div>
     {message&&<p className="bc-message" role="status">{message}</p>}
   </section>;
 }
