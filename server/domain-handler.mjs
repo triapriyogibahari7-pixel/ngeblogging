@@ -895,10 +895,24 @@ async function refreshFullZoneDomain(
     );
   }
 
-  const zone = await getFullZoneStatus(
+  let zone = await getFullZoneStatus(
     env,
     zoneId,
   );
+
+  // Zone details may briefly return before the assigned nameservers are
+  // populated. Poll the authoritative Cloudflare endpoint so the existing
+  // DNS result card receives both nameservers without changing the UI.
+  for (const delay of [0, 500, 1000, 2000, 4000]) {
+    let state = publicZoneState(zone);
+    if (state.active || state.nameServers.length >= 2) break;
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    try {
+      zone = await getFullZoneStatus(env, zoneId);
+    } catch {
+      // Keep the latest successful zone response and let the next refresh retry.
+    }
+  }
 
   const zoneState =
     publicZoneState(zone);
@@ -1050,21 +1064,9 @@ async function registerFullZoneDomain(
     );
   }
 
-  if (
-    zoneState.nameServers.length < 2
-    && !zoneState.active
-  ) {
-    throw Object.assign(
-      new Error(
-        "Cloudflare belum memberikan nameserver untuk domain ini.",
-      ),
-      {
-        code: "FULL_ZONE_NAMESERVERS_UNAVAILABLE",
-        status: 502,
-      },
-    );
-  }
-
+  // Cloudflare dapat membuat zone lebih dulu lalu mengisi nameserver
+  // beberapa saat kemudian. Simpan zone sekarang agar domain tidak hilang
+  // dan endpoint refresh dapat mengambil dua nameserver saat sudah tersedia.
   const now = new Date().toISOString();
 
   const domainState = {
