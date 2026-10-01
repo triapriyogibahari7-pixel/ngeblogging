@@ -7,7 +7,7 @@ import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76
 import { setSitePublication } from "./lib/studio-data.js";
 import { supabase } from "./lib/supabase.js";
 
-const REQUEST_TIMEOUT = 15000;
+const REQUEST_TIMEOUT = 45000;
 
 function withDeadline(promise, milliseconds = REQUEST_TIMEOUT) {
   let timer = 0;
@@ -256,7 +256,18 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     try {
       const activeToken = token || await accessToken();
       setToken(activeToken);
-      await operation(activeToken);
+      const operationResult = await operation(activeToken);
+      // Tampilkan hasil registrasi/refresh langsung dari respons API sebelum
+      // hydration berikutnya selesai. Ini mencegah kartu domain dan nameserver
+      // menghilang hanya karena query daftar domain tertinggal sesaat.
+      if (operationResult?.domain?.id) {
+        setDomains((current) => {
+          const incoming = operationResult.domain;
+          const key = String(incoming.id);
+          const filtered = current.filter((item) => String(item.id) !== key && String(item.hostname || "").toLowerCase() !== String(incoming.hostname || "").toLowerCase());
+          return [incoming, ...filtered];
+        });
+      }
       if (success) setToast?.(success);
       await load({ quiet: true });
     } catch (nextError) {
