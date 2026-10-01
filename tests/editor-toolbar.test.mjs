@@ -34,10 +34,12 @@ test("editor exposes formatting layout media tables links and HTML source", () =
   assert.match(editor, /HTML konten disimpan/);
 });
 
-test("contenteditable keeps its DOM stable while React autosaves each keystroke", () => {
-  assert.match(editor, /useLayoutEffect/);
-  assert.match(editor, /element\.innerHTML !== nextContent/);
-  assert.doesNotMatch(editor, /className="ce-paper"[^>]*dangerouslySetInnerHTML/);
+test("contenteditable stays mounted while autosave state changes", () => {
+  assert.match(editor, /const RichTextEditor = memo\(function RichTextEditor/);
+  assert.match(editor, /patchRef\.current\?\.\(\{ content: event\.currentTarget\.innerHTML \}\)/);
+  assert.match(editor, /previous\.documentId === next\.documentId/);
+  assert.match(editor, /editor\.current\?\.sync\(doc\.content \|\| ""\)/);
+  assert.match(editor, /if \(document\.activeElement === root\) return/);
   assert.match(editor, /className="ce-paper" contentEditable suppressContentEditableWarning onInput=/);
 });
 
