@@ -147,6 +147,23 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
             overflow:hidden!important;
             clip-path:inset(0)!important;
           }
+          /* Mobile preview only: decorative orb/halo artwork must never become a
+             giant dark overlay. Real cards, links, navigation and widgets stay. */
+          .ng-hero::before,.ng-hero::after,
+          .ng-hero > [class*="glow"],.ng-hero > [class*="halo"],
+          .ng-hero > [class*="ambient"],.ng-hero > [class*="blur-orb"],
+          .ng-hero > [class*="orb"],.ng-hero-poster [class*="glow"],
+          .ng-hero-poster [class*="halo"],.ng-hero-poster [class*="ambient"],
+          .ng-hero-poster [class*="blur-orb"],.ng-hero-poster [class*="orb"]{
+            display:none!important;
+            visibility:hidden!important;
+            opacity:0!important;
+            content:none!important;
+            pointer-events:none!important;
+            background:none!important;
+            box-shadow:none!important;
+            filter:none!important;
+          }
           .ng-hero aside{
             position:relative!important;
             z-index:2!important;
@@ -163,7 +180,7 @@ function ThemeCardPreview({ theme }) {
   return <div className={`tn-card-mock layout-${theme.layout}`} style={{ "--p": theme.colors.primary, "--a": theme.colors.accent, "--s": theme.colors.surface, "--i": theme.colors.ink }}>
     <header><b>{theme.name.slice(0, 1)}</b><span/><span/><span/></header>
     <main><small>{theme.category}</small><h4>{theme.name}</h4><p/><p className="short"/><div><i/><i/><i/></div></main>
-  </div>;
+  </div></div>;
 }
 
 function Customizer({ value, onChange, theme }) {
@@ -326,7 +343,191 @@ export default function ThemeStudio({ setToast, site, user }) {
     } catch (error) { setToast(error.message || "File tema gagal dibaca"); }
   };
 
-  return <div className="tn-studio" data-theme-interface="v149">
+  const mobileThemeStudioStyle = `
+    .tn-studio > .tn-hero.tn-hero-mobile-preview{
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr)!important;
+      grid-template-rows:auto auto!important;
+      grid-template-areas:"copy" "stage"!important;
+      align-items:start!important;
+      justify-items:stretch!important;
+      gap:0!important;
+      position:relative!important;
+      inset:auto!important;
+      width:100%!important;
+      min-width:0!important;
+      max-width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:0!important;
+      overflow:visible!important;
+      transform:none!important;
+      translate:none!important;
+      scale:none!important;
+      filter:none!important;
+      clip-path:none!important;
+      float:none!important;
+      clear:both!important;
+      background:transparent!important;
+      box-shadow:none!important;
+      border-radius:0!important;
+      isolation:isolate!important;
+      z-index:0!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy{
+      grid-area:copy!important;
+      display:block!important;
+      position:relative!important;
+      inset:auto!important;
+      width:100%!important;
+      min-width:0!important;
+      max-width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:20px 14px!important;
+      box-sizing:border-box!important;
+      overflow:visible!important;
+      transform:none!important;
+      translate:none!important;
+      scale:none!important;
+      float:none!important;
+      clear:both!important;
+      background:#fff!important;
+      box-shadow:none!important;
+      border-radius:0!important;
+      z-index:2147483000!important;
+      isolation:isolate!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy::before,
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy::after,
+    .tn-studio > .tn-hero.tn-hero-mobile-preview::before,
+    .tn-studio > .tn-hero.tn-hero-mobile-preview::after{
+      content:none!important;
+      display:none!important;
+      visibility:hidden!important;
+      opacity:0!important;
+      pointer-events:none!important;
+      position:static!important;
+      inset:auto!important;
+      width:0!important;
+      height:0!important;
+      transform:none!important;
+      filter:none!important;
+      box-shadow:none!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-hero-copy > h1{
+      display:block!important;
+      position:relative!important;
+      inset:auto!important;
+      visibility:visible!important;
+      opacity:1!important;
+      width:100%!important;
+      max-width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:0 0 12px!important;
+      padding:0!important;
+      z-index:2147483001!important;
+      transform:none!important;
+      float:none!important;
+      clear:both!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage{
+      grid-area:stage!important;
+      display:block!important;
+      position:relative!important;
+      inset:auto!important;
+      width:100%!important;
+      min-width:0!important;
+      max-width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:18px 0 0!important;
+      padding:0!important;
+      overflow:hidden!important;
+      transform:none!important;
+      translate:none!important;
+      scale:none!important;
+      filter:none!important;
+      clip-path:none!important;
+      float:none!important;
+      clear:both!important;
+      background:#fff!important;
+      box-shadow:none!important;
+      border-radius:0!important;
+      z-index:0!important;
+      isolation:isolate!important;
+      contain:layout paint!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-stage-toolbar{
+      position:relative!important;
+      inset:auto!important;
+      display:block!important;
+      width:100%!important;
+      min-width:0!important;
+      max-width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:0!important;
+      z-index:1!important;
+      transform:none!important;
+      float:none!important;
+      clear:both!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-frame-shell{
+      position:relative!important;
+      inset:auto!important;
+      display:grid!important;
+      place-items:start center!important;
+      width:100%!important;
+      min-width:0!important;
+      max-width:100%!important;
+      height:420px!important;
+      min-height:300px!important;
+      max-height:420px!important;
+      margin:0!important;
+      padding:8px!important;
+      box-sizing:border-box!important;
+      overflow:auto!important;
+      z-index:0!important;
+      transform:none!important;
+      translate:none!important;
+      scale:none!important;
+      filter:none!important;
+      clip-path:none!important;
+      float:none!important;
+      clear:both!important;
+      background:#f4f7fb!important;
+      box-shadow:none!important;
+      border-radius:0!important;
+      isolation:isolate!important;
+    }
+    .tn-studio > .tn-hero.tn-hero-mobile-preview > .tn-active-stage > .tn-frame-shell.mobile > iframe{
+      display:block!important;
+      position:relative!important;
+      inset:auto!important;
+      width:min(var(--tn-preview-width,390px),100%)!important;
+      max-width:100%!important;
+      min-width:0!important;
+      height:720px!important;
+      min-height:720px!important;
+      max-height:none!important;
+      margin:0 auto!important;
+      padding:0!important;
+      border:0!important;
+      transform:none!important;
+      translate:none!important;
+      scale:none!important;
+      float:none!important;
+      clear:both!important;
+      z-index:0!important;
+      box-shadow:none!important;
+    }
+  `;
+  return <><style data-theme-studio-mobile-final="v439">{mobileThemeStudioStyle}</style><div className="tn-studio" data-theme-interface="v149">
     <input ref={fileInput} type="file" accept=".ngeblog-theme,.json,.html,.htm,.css,.js" hidden onChange={importFile}/>
     <section className={`tn-hero ${deviceInfo(device).frameClass === "mobile" ? "tn-hero-mobile-preview" : ""}`}>;
       <div className="tn-hero-copy"><h1>100 Tema Aktif</h1><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
