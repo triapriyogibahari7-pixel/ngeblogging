@@ -32,6 +32,7 @@ import "./studio-mobile-authority-v370.css";
 import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
 import "./studio-mobile-v408.css";
+import "./studio-mobile-v410.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
@@ -279,22 +280,22 @@ export default function StudioNext({ onExit, user }) {
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
       <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
-      <button className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button><button className="sn-new sn-new-page" onClick={() => createDoc("page")}><Plus/><span>Buat Page</span></button>
+      <button type="button" className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button><button type="button" className="sn-new sn-new-page" onClick={() => createDoc("page")}><Plus/><span>Buat Page</span></button>
       <nav aria-label="Navigasi Studio">
-        <button className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
-        <button className={view === "posts" ? "active" : ""} onClick={() => chooseView("posts")}><FileText/><span>Posts</span></button>
-        <button className={view === "pages" ? "active" : ""} onClick={() => chooseView("pages")}><BookOpen/><span>Pages</span></button>
-        <button className={view === "themes" ? "active" : ""} onClick={() => chooseView("themes")}><Palette/><span>Tema</span></button>
-        <button className={view === "media" ? "active" : ""} onClick={() => chooseView("media")}><Image/><span>Media</span></button>
-        <button className={view === "analytics" ? "active" : ""} onClick={() => chooseView("analytics")}><BarChart3/><span>Analitik</span></button>
-        <button className={view === "members" ? "active" : ""} onClick={() => chooseView("members")}><Users/><span>Anggota</span></button>
-        <button className={view === "comments" ? "active" : ""} onClick={() => chooseView("comments")}><MessageCircle/><span>Komentar</span></button>
-        <button className={view === "domain" ? "active" : ""} onClick={() => chooseView("domain")}><Globe2/><span>Domain</span></button>
-        <button className={view === "api-keys" ? "active" : ""} onClick={() => chooseView("api-keys")}><KeyRound/><span>API Keys</span></button>
+        <button type="button" className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
+        <button type="button" className={view === "posts" ? "active" : ""} onClick={() => chooseView("posts")}><FileText/><span>Posts</span></button>
+        <button type="button" className={view === "pages" ? "active" : ""} onClick={() => chooseView("pages")}><BookOpen/><span>Pages</span></button>
+        <button type="button" className={view === "themes" ? "active" : ""} onClick={() => chooseView("themes")}><Palette/><span>Tema</span></button>
+        <button type="button" className={view === "media" ? "active" : ""} onClick={() => chooseView("media")}><Image/><span>Media</span></button>
+        <button type="button" className={view === "analytics" ? "active" : ""} onClick={() => chooseView("analytics")}><BarChart3/><span>Analitik</span></button>
+        <button type="button" className={view === "members" ? "active" : ""} onClick={() => chooseView("members")}><Users/><span>Anggota</span></button>
+        <button type="button" className={view === "comments" ? "active" : ""} onClick={() => chooseView("comments")}><MessageCircle/><span>Komentar</span></button>
+        <button type="button" className={view === "domain" ? "active" : ""} onClick={() => chooseView("domain")}><Globe2/><span>Domain</span></button>
+        <button type="button" className={view === "api-keys" ? "active" : ""} onClick={() => chooseView("api-keys")}><KeyRound/><span>API Keys</span></button>
       </nav>
       <div className="sn-account-footer" data-sidebar-footer-release="v135">
-        <button className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}`} onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
-        <button className="sn-account-logout-v135" onClick={onExit}><LogOut/><span>Keluar</span></button>
+        <button type="button" className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}`} onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
+        <button type="button" className="sn-account-logout-v135" onClick={onExit}><LogOut/><span>Keluar</span></button>
       </div>
     </aside>
 
