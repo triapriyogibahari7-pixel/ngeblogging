@@ -342,3 +342,15 @@
     width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important;
   }
 }
+
+
+/* Open drawer: the drawer header owns the single visible N.
+   Prevent the fixed trigger from creating a second N above it. */
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) body.sn-mobile-sidebar-open .sn-top>.sn-sidebar-toggle,
+  :is(html.editor-v266-small,html.studio-v265-small,html[data-studio-device-mode="small"],html[data-studio-mobile-v206="true"]) .sn-top>.sn-sidebar-toggle[aria-expanded="true"]{
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+}
