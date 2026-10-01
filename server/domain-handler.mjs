@@ -1009,6 +1009,12 @@ async function registerFullZoneDomain(
   );
 
   const existingDomain = existing?.[0] || null;
+  // Reconcile a stale legacy provider row into the authoritative full-zone
+  // flow instead of blocking the owner with a provider-mismatch error.
+  const migratingLegacyDomain = Boolean(
+    existingDomain
+    && existingDomain.provider !== "cloudflare-full-zone"
+  );
 
   if (
     existingDomain
@@ -1019,21 +1025,6 @@ async function registerFullZoneDomain(
       {
         code: "DOMAIN_ALREADY_USED",
         error: "Domain ini sudah terhubung ke situs lain.",
-      },
-      requestId,
-    );
-  }
-
-  if (
-    existingDomain?.provider_hostname_id
-    && existingDomain.provider
-    && existingDomain.provider !== "cloudflare-full-zone"
-  ) {
-    return response(
-      409,
-      {
-        code: "DOMAIN_PROVIDER_MISMATCH",
-        error: "Domain ini masih terhubung melalui provider lama.",
       },
       requestId,
     );
@@ -1068,6 +1059,18 @@ async function registerFullZoneDomain(
   // beberapa saat kemudian. Simpan zone sekarang agar domain tidak hilang
   // dan endpoint refresh dapat mengambil dua nameserver saat sudah tersedia.
   const now = new Date().toISOString();
+
+  if (migratingLegacyDomain) {
+    await userJson(
+      env,
+      `sites?id=eq.${encodeURIComponent(siteId)}&custom_domain=eq.${encodeURIComponent(hostname)}`,
+      {
+        method: "PATCH",
+        prefer: "return=minimal",
+        body: JSON.stringify({ custom_domain: null, updated_at: now }),
+      },
+    );
+  }
 
   const domainState = {
     status: "verifying",
@@ -1156,6 +1159,8 @@ async function registerFullZoneDomain(
       domain: row,
       provider: "cloudflare-full-zone",
       reused: Boolean(existingDomain) || zoneReused,
+      migratedFromProvider: migratingLegacyDomain ? existingDomain?.provider || "legacy" : null,
+      migrationRelease: migratingLegacyDomain ? "domain-legacy-to-full-zone-v367-20261001" : null,
       zone: zoneState,
       instructions:
         fullZoneInstructions(zoneState),
