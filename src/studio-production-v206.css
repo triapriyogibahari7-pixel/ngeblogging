@@ -50,7 +50,7 @@ html[data-studio-production-v206][data-studio-mobile-v206="true"] .sn-sidebar-to
 html[data-studio-production-v206][data-studio-mobile-v206="true"] #ngeblogging-studio-sidebar .sn-logo-mark,
 html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] .sn-sidebar-toggle[aria-expanded="true"] .sn-mobile-menu-mark,
 html[data-studio-production-v206][data-studio-mobile-v206="true"][data-studio-v205-hotfix="true"] #ngeblogging-studio-sidebar.mobile-open .sn-logo-mark {
-  width:42px!important; height:42px!important; min-width:42px!important; min-height:42px!important;
+  width:48px!important; height:48px!important; min-width:48px!important; min-height:48px!important;
   display:grid!important; place-items:center!important; padding:0!important;
   background:linear-gradient(145deg,#2f75e8,#4f46e5)!important;
   border:1px solid #2f75e8!important; border-radius:12px!important;
