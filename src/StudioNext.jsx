@@ -294,7 +294,7 @@ export default function StudioNext({ onExit, user }) {
         <button type="button" className={view === "api-keys" ? "active" : ""} onClick={() => chooseView("api-keys")}><KeyRound/><span>API Keys</span></button>
       </nav>
       <div className="sn-account-footer" data-sidebar-footer-release="v135">
-        <button type="button" className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}` onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
+        <button type="button" className={`sn-account-settings-v135 ${view === "settings" ? "active" : ""}`} onClick={() => chooseView("settings")}><Settings/><span>Pengaturan</span></button>
         <button type="button" className="sn-account-logout-v135" onClick={onExit}><LogOut/><span>Keluar</span></button>
       </div>
     </aside>
