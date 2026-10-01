@@ -228,5 +228,7 @@ import "./studio-mobile-v430.css";
 import "./studio-mobile-v431.css";
 // v432: Theme-only mobile preview containment; does not alter sidebar/Nara/API/Ringkasan.
 import "./studio-theme-mobile-v432.css";
+// v433: React-marked Theme mobile stacking/iframe containment authority.
+import "./studio-theme-mobile-v433.css";
 
 export default StudioFastGate;
