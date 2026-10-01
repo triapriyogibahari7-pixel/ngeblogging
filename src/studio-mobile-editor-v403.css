@@ -1,0 +1,116 @@
+/* v403 — mobile/smartphone/app editor hard reset.
+ * Large/desktop/laptop/computer/tablet modes are intentionally not targeted.
+ * Unlike earlier layers, controlling selectors have explicit specificity, so legacy
+ * editor rules cannot win by specificity.
+ */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"],
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] *{box-sizing:border-box!important}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"]{
+ position:relative!important;inset:auto!important;display:block!important;width:100%!important;min-width:0!important;max-width:100vw!important;min-height:100dvh!important;height:auto!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:visible!important;transform:none!important;background:#f5f7fb!important
+}
+
+/* Header: back + title, then Preview + Terbitkan. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-titlebar{
+ position:relative!important;inset:auto!important;z-index:200!important;display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;grid-template-rows:52px 48px!important;grid-template-areas:"back file" "actions actions"!important;align-items:center!important;gap:0 8px!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:100px!important;height:auto!important;margin:0!important;padding:max(8px,env(safe-area-inset-top,0px)) 10px 8px!important;background:#fff!important;border:0!important;border-bottom:1px solid #dfe6ef!important;box-shadow:none!important;overflow:visible!important;float:none!important;clear:both!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-back{
+ grid-area:back!important;display:grid!important;place-items:center!important;position:relative!important;inset:auto!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;margin:0!important;padding:0!important;float:none!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-file{
+ grid-area:file!important;display:grid!important;grid-template-columns:20px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;position:relative!important;inset:auto!important;width:100%!important;min-width:0!important;max-width:100%!important;height:52px!important;min-height:52px!important;margin:0!important;padding:0!important;flex:none!important;float:none!important;overflow:visible!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-file>svg{display:block!important;width:20px!important;min-width:20px!important;height:20px!important;margin:0!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-file label{
+ display:grid!important;grid-template-rows:36px 12px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;overflow:hidden!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-file input{
+ display:block!important;width:100%!important;min-width:0!important;max-width:none!important;height:36px!important;min-height:36px!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;color:#17243a!important;font:800 17px/36px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;letter-spacing:-.01em!important;text-overflow:ellipsis!important;white-space:nowrap!important;overflow:hidden!important;appearance:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-file small{
+ display:flex!important;align-items:center!important;width:100%!important;min-width:0!important;max-width:100%!important;height:12px!important;margin:0!important;padding:0!important;color:#7e8a9c!important;font-size:8px!important;line-height:12px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-actions{
+ grid-area:actions!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;position:relative!important;inset:auto!important;flex:none!important;float:none!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-actions>button{
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0 10px!important;position:relative!important;inset:auto!important;border-radius:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-actions>button svg{flex:0 0 auto!important;width:16px!important;height:16px!important}
+
+/* Tabs: horizontal, touch-scrollable, never squeezed. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-tabs{
+ position:relative!important;inset:auto!important;z-index:190!important;display:flex!important;align-items:stretch!important;gap:0!important;width:100%!important;min-width:0!important;max-width:100%!important;height:46px!important;min-height:46px!important;margin:0!important;padding:0 4px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;background:#fff!important;border:0!important;border-bottom:1px solid #dfe6ef!important;box-shadow:none!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-tabs::-webkit-scrollbar{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-tabs>button{flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;max-width:none!important;height:46px!important;margin:0!important;padding:0 12px!important;white-space:nowrap!important}
+
+/* Toolbar: icon rail only; it cannot become a wrapping/striped wall. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon{
+ position:relative!important;inset:auto!important;z-index:180!important;display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:4px!important;width:100%!important;min-width:0!important;max-width:100%!important;height:56px!important;min-height:56px!important;margin:0!important;padding:5px 6px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;background:#f9fafc!important;border:0!important;border-bottom:1px solid #dfe6ef!important;box-shadow:none!important;transform:none!important;isolation:isolate!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon::-webkit-scrollbar{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon>section{
+ display:flex!important;align-items:center!important;flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;height:46px!important;min-height:46px!important;margin:0!important;padding:0 3px!important;border-right:1px solid #dfe6ef!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon>section>span,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon .selects{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon nav{display:flex!important;align-items:center!important;gap:3px!important;height:100%!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon nav button,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon .ce-color-tool{
+ flex:0 0 38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;margin:0!important;padding:0!important;display:grid!important;place-items:center!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon .ce-nara{
+ position:relative!important;inset:auto!important;z-index:2!important;display:grid!important;place-items:center!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;margin:0 2px 0 4px!important;padding:0!important;border:1px solid #d7e1ef!important;border-radius:11px!important;background:#fff!important;color:#2d6edf!important;box-shadow:0 2px 8px rgba(34,66,110,.08)!important;line-height:0!important;font-size:0!important;overflow:hidden!important;transform:none!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-ribbon .ce-nara svg{display:block!important;width:20px!important;min-width:20px!important;height:20px!important;min-height:20px!important;margin:0!important;padding:0!important;transform:none!important;flex:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v403="true"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20){display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* Editor body: toolbar -> writing canvas -> inspector. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-workspace{
+ position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#f5f7fb!important;transform:none!important;float:none!important;clear:both!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper-shell{
+ position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:10px 8px 8px!important;order:1!important;background:#f5f7fb!important;border:0!important;overflow:visible!important;transform:none!important;float:none!important;clear:both!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper{
+ position:relative!important;inset:auto!important;display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:clamp(480px,62dvh,720px)!important;height:auto!important;margin:0!important;padding:26px clamp(16px,5vw,26px)!important;border:1px solid #dfe6ef!important;border-radius:12px!important;background:#fff!important;box-shadow:0 4px 18px rgba(26,44,72,.07)!important;color:#35475f!important;font:16px/1.78 "DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;text-align:left!important;outline:0!important;overflow:visible!important;overflow-wrap:anywhere!important;word-break:normal!important;transform:none!important;float:none!important;clear:both!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper:empty::before{content:"Mulai menulis gagasan terbaik Anda…"!important;display:block!important;color:#9aa6b6!important;pointer-events:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code){width:auto!important;min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:normal!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper :is(img,video,iframe,canvas,audio){display:block!important;width:auto!important;max-width:100%!important;height:auto!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper table{display:block!important;width:max-content!important;min-width:100%!important;max-width:none!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-paper pre{max-width:100%!important;overflow-x:auto!important;white-space:pre!important}
+
+/* Remove the old striped word/character box completely on small editor. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-word-status{
+ display:none!important;visibility:hidden!important;opacity:0!important;position:absolute!important;inset:auto!important;width:0!important;height:0!important;min-width:0!important;max-width:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;box-shadow:none!important;overflow:hidden!important;pointer-events:none!important
+}
+
+/* Inspector never sits beside or over the writing canvas. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-sidebar{
+ position:relative!important;inset:auto!important;display:block!important;order:2!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;max-height:none!important;margin:0!important;padding:0 8px max(18px,env(safe-area-inset-bottom,0px))!important;overflow:visible!important;background:#f5f7fb!important;border:0!important;transform:none!important;float:none!important;clear:both!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-sidebar>section{width:100%!important;min-width:0!important;max-width:100%!important;margin:0 0 10px!important;padding:15px!important;border:1px solid #dfe6ef!important;border-radius:12px!important;background:#fff!important;overflow:visible!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-field{width:100%!important;min-width:0!important;max-width:100%!important;display:grid!important;gap:6px!important;margin-bottom:11px!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-field :is(input,select,textarea){width:100%!important;min-width:0!important;max-width:100%!important;min-height:46px!important;font-size:16px!important;line-height:1.35!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-field textarea{min-height:100px!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-field-grid{grid-template-columns:minmax(0,1fr)!important}
+
+/* Legacy injected navigation cannot paint a white sheet over this editor. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266{
+ position:fixed!important;inset:0!important;z-index:5!important;width:0!important;max-width:0!important;height:0!important;max-height:0!important;padding:0!important;margin:0!important;overflow:visible!important;pointer-events:none!important;background:transparent!important;box-shadow:none!important;border:0!important
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266:not(.mobile-open),
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266:not(.mobile-open) *{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266.mobile-open{pointer-events:auto!important}
+
+@media screen and (max-width:390px){
+ :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-titlebar{grid-template-columns:40px minmax(0,1fr)!important;padding-inline:8px!important}
+ :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-file input{font-size:16px!important}
+ :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-actions{gap:6px!important}
+ :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-actions>button{font-size:10px!important;padding-inline:6px!important}
+}
+@media (display-mode:standalone) and (max-width:760px){
+ :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v403="true"] .ce-titlebar{padding-top:max(8px,env(safe-area-inset-top,0px))!important}
+}
