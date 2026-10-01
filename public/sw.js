@@ -65,7 +65,7 @@ const ACTIVE_VERSION_V275 = "ngeblogging-app-v275-final-stability-20260804";
 const ACTIVE_CACHE_RELEASE_V275 = "studio-final-stability-cache-v275";
 const ACTIVE_VERSION_V302 = "ngeblogging-app-v302-cache-cutover-20260805";
 const ACTIVE_CACHE_RELEASE_V302 = "studio-build-nara-cache-v302";
-const MOBILE_AUTHORITY_RELEASE_V371 = "mobile-editor-fix-v370-1";
+const MOBILE_AUTHORITY_RELEASE_V371 = "mobile-authority-v371";
 const ACTIVE_VERSION_V303 = VERSION;
 const ACTIVE_CACHE_RELEASE_V303 = CACHE_RELEASE;
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
@@ -146,7 +146,7 @@ function versionPayload(type) {
     legacyVersion: LEGACY_VERSION,
     studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
     release: CACHE_RELEASE,
-    mobileAuthorityReleaseV371: MOBILE_AUTHORITY_RELEASE_V370,
+    mobileAuthorityReleaseV371: MOBILE_AUTHORITY_RELEASE_V371,
     legacyVersionV369: LEGACY_VERSION_V369,
     legacyCacheReleaseV369: LEGACY_CACHE_RELEASE_V369,
     routeRecoveryCompatRelease: ROUTE_RECOVERY_COMPAT_RELEASE,
