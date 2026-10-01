@@ -160,7 +160,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       const merged = [...dbDomains, ...apiList].filter((item) => !isManagedFreeDomain(item?.hostname));
       const seen = new Set();
       const list = merged.filter((item) => {
-        const key = normalizeDomain(item?.hostname);
+        const key = normalizeDomainName(item?.hostname);
         if (!key || seen.has(key)) return false;
         seen.add(key);
         return true;
