@@ -97,6 +97,17 @@ function directToggle(event) {
 function bindDirectTarget() {
   const mark = sidebar()?.querySelector(".sn-logo-mark");
   if (!mark) return false;
+
+  // Small/mobile is already owned by React's button handler on the original
+  // sidebar n. Do not intercept that click here: doing so can desynchronize
+  // React state from the drawer class and cause duplicate/offset controls.
+  if (family() === "small") {
+    if (boundMark) boundMark.removeEventListener("click", directToggle);
+    boundMark = null;
+    mark.dataset.v300Bound = "react-small";
+    return true;
+  }
+
   if (boundMark === mark && mark.dataset.v300Bound === "true") return true;
   if (boundMark) boundMark.removeEventListener("click", directToggle);
   mark.addEventListener("click", directToggle, { passive:false });
