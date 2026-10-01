@@ -11,10 +11,9 @@ test("Theme mobile recovery is loaded after the existing Theme Studio surface CS
   assert.ok(recoveryAt > widgetAt, "mobile recovery must load last in ThemeStudio");
 });
 
-test("Theme mobile recovery is scoped to explicit mobile/application roots", () => {
-  assert.match(css, /html\\[data-studio-device-variant="application"\\]/);
-  assert.match(css, /html\\[data-studio-device-variant="phone"\\]/);
-  assert.match(css, /html\\[data-studio-device-variant="mobile"\\]/);
+test("Theme mobile recovery is strictly smartphone-width scoped", () => {
+  assert.match(css, /@media\s*\\(max-width:\s*767px\\)/);
+  assert.match(css, /\\.tn-studio\\[data-v340-theme-family="compact"\\]/);
   assert.doesNotMatch(css, /data-v15-mobile="true"/);
   assert.doesNotMatch(css, /data-studio-device-variant="laptop"/);
   assert.doesNotMatch(css, /data-studio-device-variant="desktop"/);
