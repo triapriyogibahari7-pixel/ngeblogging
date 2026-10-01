@@ -1231,3 +1231,158 @@
     padding:0 10px!important;
   }
 }
+
+
+/* v447 — Ringkasan phone density pass.
+   Ringkasan only. API Keys, sidebar N, Nara launcher and Nara composer are untouched. */
+@media screen and (max-width:760px){
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page){
+    display:block!important;
+    align-content:start!important;
+    place-content:start!important;
+    overflow:visible!important;
+    padding:0 8px 10px!important;
+  }
+
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome{
+    box-sizing:border-box!important;
+    margin:0 0 4px!important;
+    padding:7px!important;
+    gap:4px!important;
+    border-radius:11px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:first-child{
+    display:block!important;
+    min-height:0!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome small{
+    font-size:6px!important;
+    line-height:1!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome h1{
+    margin:1px 0 2px!important;
+    font-size:clamp(18px,5.5vw,23px)!important;
+    line-height:1.02!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome p{
+    font-size:7px!important;
+    line-height:1.2!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:last-child{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:last-child > :is(a,button){
+    height:30px!important;
+    min-height:30px!important;
+    padding:0 2px!important;
+    gap:3px!important;
+    border-radius:7px!important;
+    font-size:6px!important;
+    line-height:1!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:last-child > :is(a,button) svg{
+    width:11px!important;
+    height:11px!important;
+    flex-basis:11px!important;
+  }
+
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics{
+    margin:0 0 4px!important;
+    gap:4px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics > article{
+    min-height:48px!important;
+    height:48px!important;
+    padding:5px!important;
+    gap:1px!important;
+    border-radius:9px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics > article > span,
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics > article > small{
+    font-size:6px!important;
+    line-height:1!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-metrics > article > b{
+    font-size:17px!important;
+    line-height:1!important;
+  }
+
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid{
+    margin:0!important;
+    gap:4px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section{
+    padding:6px!important;
+    border-radius:11px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section > header{
+    padding:0 1px 4px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid h2{
+    font-size:15px!important;
+    line-height:1.05!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section > button{
+    grid-template-columns:25px minmax(0,1fr) auto!important;
+    gap:5px!important;
+    padding:5px 1px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section > button > span{
+    width:24px!important;
+    height:24px!important;
+    border-radius:7px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section b{
+    font-size:8px!important;
+    line-height:1.05!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section small{
+    margin-top:1px!important;
+    font-size:6px!important;
+    line-height:1!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > section i{
+    padding:4px 5px!important;
+    font-size:5px!important;
+  }
+
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > aside{
+    padding:8px!important;
+    border-radius:11px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > aside > svg{
+    width:17px!important;
+    height:17px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > aside small{
+    margin-top:4px!important;
+    font-size:5px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > aside h2{
+    margin:3px 0!important;
+    font-size:15px!important;
+    line-height:1.05!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > aside p{
+    margin:0 0 5px!important;
+    font-size:7px!important;
+    line-height:1.2!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-home-grid > aside button{
+    height:28px!important;
+    min-height:28px!important;
+    padding:0 8px!important;
+    border-radius:7px!important;
+    font-size:7px!important;
+  }
+}
+
+@media screen and (max-width:380px){
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome h1{
+    font-size:18px!important;
+  }
+  .sn-shell[data-device-mode="small"] > .sn-main > .sn-view-pad:not(.sn-api-page) > .sn-welcome > div:last-child > :is(a,button){
+    font-size:5.5px!important;
+  }
+}
