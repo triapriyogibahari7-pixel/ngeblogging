@@ -287,7 +287,7 @@ export default function StudioNext({ onExit, user }) {
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
-      <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
+      <div className="sn-logo"><span className="sn-logo-mark" role="button" tabIndex={deviceMode === "small" ? 0 : -1} aria-label={deviceMode === "small" ? "Tutup menu Studio" : "n."} onClick={deviceMode === "small" ? toggleSidebar : undefined} onKeyDown={deviceMode === "small" ? (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggleSidebar(); } } : undefined}><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
       <button type="button" className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
         <button type="button" className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
