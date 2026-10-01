@@ -1,0 +1,24 @@
+/* Mobile editor authority v412.
+   Mobile/app phone only. The existing desktop/tablet editor remains untouched.
+   This release only suppresses the mobile-only toolbar outside the small-device editor. */
+.ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar,
+.ce-app[data-mobile-editor-v408="true"] .ce-mobile-toolbar,
+.ce-app[data-mobile-editor-v407="true"] .ce-mobile-toolbar{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v408="true"] .ce-mobile-toolbar,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v407="true"] .ce-mobile-toolbar{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}

@@ -13,7 +13,9 @@ import "./studio-domain-single-authority-v112.css";
 import "./studio-mobile-authority-v372.css";
 import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
+import "./studio-mobile-pages-v405.css";
 import "./studio-mobile-editor-v373.css";
+import "./studio-mobile-editor-v400.css";
 import "./nara-controls-v135.js";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
@@ -106,11 +108,29 @@ function syncReadinessChrome() {
   syncAccountFooter(shell);
 
 
-  shell.querySelectorAll(".sn-top-actions .sn-nara-button, .ce-nara").forEach((button) => {
+  const isSmallEditor = document.documentElement.classList.contains("editor-v266-small")
+    || document.documentElement.dataset.studioDeviceMode === "small";
+  shell.querySelectorAll(".sn-top-actions .sn-nara-button").forEach((button) => {
     button.hidden = true;
     button.disabled = true;
     button.tabIndex = -1;
     button.setAttribute("aria-hidden", "true");
+  });
+  shell.querySelectorAll(".ce-nara").forEach((button) => {
+    if (isSmallEditor) {
+      button.hidden = false;
+      button.disabled = false;
+      button.tabIndex = 0;
+      button.removeAttribute("aria-hidden");
+      button.style.removeProperty("display");
+      button.style.removeProperty("visibility");
+      button.style.removeProperty("opacity");
+    } else {
+      button.hidden = true;
+      button.disabled = true;
+      button.tabIndex = -1;
+      button.setAttribute("aria-hidden", "true");
+    }
   });
 
   const billingReady = document.documentElement.dataset.billingReady === "true";

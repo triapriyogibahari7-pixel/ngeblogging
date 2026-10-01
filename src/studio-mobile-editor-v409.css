@@ -1,0 +1,215 @@
+/* v409 — fresh mobile/phone/PWA Post + Page editor authority.
+   Scope: small mobile runtime only. Desktop/laptop/computer/tablet are untouched. */
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]){
+    margin:0!important;padding:0!important;width:100%!important;min-width:0!important;max-width:100vw!important;
+    overflow-x:hidden!important;background:#f4f6fa!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"]{
+    position:relative!important;display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    min-height:100dvh!important;height:auto!important;margin:0!important;padding:0!important;overflow:visible!important;
+    background:#f4f6fa!important;isolation:isolate!important;transform:none!important;float:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] *{box-sizing:border-box!important;min-width:0}
+  /* Header */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-titlebar{
+    position:relative!important;display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;
+    grid-template-rows:58px 50px!important;grid-template-areas:"back file" "actions actions"!important;
+    width:100%!important;height:auto!important;min-height:108px!important;margin:0!important;padding:max(6px,env(safe-area-inset-top,0px)) 10px 6px!important;
+    gap:0 7px!important;background:#fff!important;border:0!important;border-bottom:1px solid #e0e6ef!important;overflow:visible!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-back{
+    grid-area:back!important;display:grid!important;place-items:center!important;width:44px!important;height:44px!important;
+    margin:0!important;padding:0!important;transform:none!important;float:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-file{
+    grid-area:file!important;display:grid!important;grid-template-columns:20px minmax(0,1fr)!important;align-items:center!important;
+    gap:7px!important;width:100%!important;height:58px!important;margin:0!important;padding:0!important;overflow:hidden!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-file>svg{width:20px!important;height:20px!important;flex:0 0 20px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-file label{
+    display:grid!important;grid-template-rows:38px 14px!important;width:100%!important;height:52px!important;margin:0!important;overflow:hidden!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-file input{
+    display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:38px!important;margin:0!important;
+    padding:0!important;border:0!important;outline:0!important;background:transparent!important;font:800 17px/38px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    color:#17243a!important;white-space:nowrap!important;text-overflow:ellipsis!important;overflow:hidden!important;appearance:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-file small{
+    display:block!important;width:100%!important;height:14px!important;margin:0!important;padding:0!important;font-size:9px!important;line-height:14px!important;
+    color:#7b8798!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-actions{
+    grid-area:actions!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;width:100%!important;height:50px!important;margin:0!important;padding:0!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-actions>button{
+    display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:100%!important;height:44px!important;min-height:44px!important;
+    margin:0!important;padding:0 8px!important;border-radius:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  }
+  /* One simple tab strip + one simple formatting strip. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-tabs{
+    position:relative!important;display:flex!important;flex-wrap:nowrap!important;align-items:stretch!important;
+    width:100%!important;height:44px!important;margin:0!important;padding:0 3px!important;gap:0!important;
+    overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;
+    background:#fff!important;border:0!important;border-bottom:1px solid #e0e6ef!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-tabs::-webkit-scrollbar{display:none!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-tabs>button{
+    flex:0 0 auto!important;width:max-content!important;height:44px!important;margin:0!important;padding:0 12px!important;
+    border:0!important;background:transparent!important;white-space:nowrap!important;font-size:11px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-ribbon{display:none!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar{
+    display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:5px!important;
+    width:100%!important;height:50px!important;margin:0!important;padding:4px 6px!important;overflow-x:auto!important;overflow-y:hidden!important;
+    white-space:nowrap!important;scrollbar-width:none!important;background:#f8fafc!important;border-bottom:1px solid #e0e6ef!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar::-webkit-scrollbar{display:none!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar-group{
+    display:flex!important;flex:0 0 auto!important;align-items:center!important;gap:4px!important;height:42px!important;padding:0 4px!important;border-right:1px solid #e0e6ef!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar button{
+    display:grid!important;place-items:center!important;flex:0 0 40px!important;width:40px!important;height:40px!important;min-height:40px!important;
+    margin:0!important;padding:0!important;border:1px solid #d7e0ec!important;border-radius:9px!important;background:#fff!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar button svg{width:18px!important;height:18px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar-nara{
+    display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;flex:0 0 auto!important;
+    width:auto!important;min-width:82px!important;height:40px!important;padding:0 10px!important;color:#275fb3!important;font:800 11px/1 system-ui,sans-serif!important;
+  }
+  /* Writing surface: nothing may paint a second sheet over it. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-workspace{
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;min-width:0!important;height:auto!important;
+    margin:0!important;padding:0!important;background:#f4f6fa!important;overflow:visible!important;transform:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper-shell{
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;min-width:0!important;height:auto!important;
+    margin:0!important;padding:8px!important;background:#f4f6fa!important;border:0!important;overflow:visible!important;order:1!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper{
+    display:block!important;position:relative!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    min-height:560px!important;height:auto!important;margin:0!important;padding:25px clamp(16px,5vw,24px)!important;
+    background:#fff!important;border:1px solid #dbe3ee!important;border-radius:12px!important;box-shadow:0 2px 12px rgba(31,52,80,.06)!important;
+    color:#33455d!important;font:16px/1.78 "DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    text-align:left!important;outline:0!important;overflow:visible!important;overflow-wrap:anywhere!important;word-break:normal!important;transform:none!important;float:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper:empty:before{
+    content:"Mulai menulis gagasan terbaik Anda…"!important;display:block!important;color:#9aa6b6!important;pointer-events:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code){
+    max-width:100%!important;min-width:0!important;overflow-wrap:anywhere!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper :is(img,video,iframe,canvas,audio){
+    display:block!important;max-width:100%!important;width:auto!important;height:auto!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper table{
+    display:block!important;max-width:100%!important;width:100%!important;overflow-x:auto!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper pre{max-width:100%!important;overflow-x:auto!important;white-space:pre!important}
+  /* Remove all legacy status/limit strips. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] :is(.ce-word-status,.ce-word-limit-v151,.ce-word-limit-v316,.ce-word-limit-message,.ce-word-limit-notice-v151,.ce-word-limit-notice-v293){
+    display:none!important;width:0!important;height:0!important;max-width:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+  }
+  /* Clean mobile action row below writing. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-actions{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;width:100%!important;margin:8px 0 0!important;padding:0!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-actions>button{
+    display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;width:100%!important;min-width:0!important;height:44px!important;min-height:44px!important;
+    margin:0!important;padding:0 4px!important;border:1px solid #d7e0ec!important;border-radius:9px!important;background:#fff!important;font:800 11px/1 system-ui,sans-serif!important;overflow:hidden!important;
+  }
+  /* Inspector follows editor, never overlays it. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-sidebar{
+    position:relative!important;display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;
+    margin:0!important;padding:0 8px max(22px,env(safe-area-inset-bottom,0px))!important;background:#f4f6fa!important;border:0!important;overflow:visible!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-sidebar>section{
+    width:100%!important;min-width:0!important;max-width:100%!important;margin:0 0 9px!important;padding:14px!important;
+    background:#fff!important;border:1px solid #dbe3ee!important;border-radius:12px!important;overflow:visible!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-field,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-field-grid{width:100%!important;min-width:0!important;max-width:100%!important;grid-template-columns:minmax(0,1fr)!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-field :is(input,select,textarea){width:100%!important;min-width:0!important;max-width:100%!important;min-height:46px!important;font-size:16px!important;line-height:1.35!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-field textarea{min-height:100px!important}
+  /* Kill the legacy editor navigation sheet while this new editor is mounted. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) #ngeblogging-editor-nav-v266:not(.mobile-open),
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) #ngeblogging-editor-nav-v266:not(.mobile-open) *{
+    display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+  }
+  /* Keep exactly one floating Nara launcher. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) :is(.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20){
+    display:none!important;visibility:hidden!important;pointer-events:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-floating-button{
+    display:flex!important;position:fixed!important;z-index:9999!important;right:10px!important;bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+    width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important;max-width:52px!important;max-height:52px!important;
+    align-items:center!important;justify-content:center!important;padding:5px!important;margin:0!important;transform:none!important;float:none!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-floating-button .nara-launcher-icon-box{
+    display:grid!important;place-items:center!important;width:42px!important;height:42px!important;margin:0!important;padding:0!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-floating-button svg{display:block!important;width:21px!important;height:21px!important;margin:0!important}
+  /* Nara dialog: fixed, bounded, centered. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-layer{
+    position:fixed!important;inset:0!important;z-index:10000!important;width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;
+    margin:0!important;padding:0!important;overflow:hidden!important;display:block!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-backdrop{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-shell{
+    position:absolute!important;left:50%!important;top:max(5px,env(safe-area-inset-top,0px))!important;bottom:max(5px,env(safe-area-inset-bottom,0px))!important;
+    width:min(calc(100vw - 10px),520px)!important;max-width:calc(100vw - 10px)!important;height:auto!important;max-height:calc(100dvh - 10px)!important;
+    min-width:0!important;margin:0!important;padding:0!important;transform:translateX(-50%)!important;display:grid!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;overflow:hidden!important;border-radius:16px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header{
+    display:grid!important;grid-template-columns:32px minmax(0,1fr) auto auto auto!important;align-items:center!important;gap:4px!important;
+    width:100%!important;height:48px!important;min-height:48px!important;margin:0!important;padding:4px 6px!important;overflow:hidden!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header>*{min-width:0!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header .nara-brand-orb{width:30px!important;height:30px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header>div:nth-child(2){overflow:hidden!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header>div:nth-child(2)>span{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header>div:nth-child(2)>small{display:none!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header .nara-size-controls-v147{display:flex!important;gap:2px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header .nara-size-controls-v147 button,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-header>button{
+    display:grid!important;place-items:center!important;width:30px!important;min-width:30px!important;height:30px!important;min-height:30px!important;margin:0!important;padding:0!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-context-bar{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;gap:6px!important;width:100%!important;height:38px!important;min-height:38px!important;padding:4px 7px!important;overflow:hidden!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-context-bar>*{min-width:0!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-messages{
+    min-width:0!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:9px!important;overflow-x:hidden!important;overflow-y:auto!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-message,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-message>div,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-rich-text,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-rich-text>*{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-message-content :is(pre,code){max-width:100%!important;overflow-x:auto!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-quick-prompts{
+    display:flex!important;flex-wrap:nowrap!important;gap:5px!important;width:100%!important;height:40px!important;min-height:40px!important;padding:4px 6px!important;overflow-x:auto!important;overflow-y:hidden!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-quick-prompts button{flex:0 0 auto!important;width:auto!important;min-width:max-content!important;height:32px!important;margin:0!important;padding:0 8px!important;white-space:nowrap!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:6px!important;overflow:visible!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer textarea{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:56px!important;max-height:120px!important;margin:0 0 5px!important;padding:9px!important;font-size:16px!important;line-height:1.4!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools{
+    display:grid!important;grid-template-columns:38px 38px minmax(0,1fr) 38px!important;align-items:center!important;gap:5px!important;
+    width:100%!important;height:40px!important;min-height:40px!important;margin:0!important;padding:0!important;overflow:hidden!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-attachment-menu-wrap,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools>button{display:grid!important;place-items:center!important;width:38px!important;min-width:38px!important;height:38px!important;margin:0!important;padding:0!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-attachment-menu-wrap>button{display:grid!important;place-items:center!important;width:38px!important;min-width:38px!important;height:38px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-select{display:block!important;position:relative!important;width:100%!important;min-width:0!important;height:38px!important;overflow:hidden!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-select.intelligence{grid-column:3!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-select.model{display:none!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-send{grid-column:4!important;display:grid!important;place-items:center!important;width:38px!important;min-width:38px!important;height:38px!important;margin:0!important;padding:0!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools .nara-send svg{width:18px!important;height:18px!important;margin:0!important}
+}
+@media screen and (max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar button{flex-basis:38px!important;width:38px!important;height:38px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-toolbar-nara{min-width:76px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-assistant-shell{width:calc(100vw - 8px)!important;max-width:calc(100vw - 8px)!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409="true"]) .nara-composer-tools{grid-template-columns:34px 34px minmax(0,1fr) 38px!important}
+}

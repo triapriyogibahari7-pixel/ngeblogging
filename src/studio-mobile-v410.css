@@ -1,0 +1,142 @@
+/* v410 — mobile Studio navigation safety/branding.
+   Only small/mobile/PWA runtime. Desktop/tablet are untouched. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side{
+  box-sizing:border-box!important;
+  width:min(86vw,340px)!important;
+  max-width:340px!important;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px))!important;
+  gap:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo{
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) 40px!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:52px!important;
+  height:52px!important;
+  margin:0 0 10px!important;
+  padding:0 2px!important;
+  overflow:visible!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo .sn-logo-mark{
+  display:grid!important;
+  place-items:center!important;
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  line-height:1!important;
+  font-size:25px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo .sn-logo-mark strong{
+  display:block!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  line-height:1!important;
+  font-size:25px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo>b{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-side-close{
+  display:grid!important;
+  place-items:center!important;
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>.sn-new{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:9px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:44px!important;
+  min-height:44px!important;
+  margin:0 0 7px!important;
+  padding:0 12px!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>.sn-new-page{
+  margin-bottom:10px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>.sn-new svg{
+  flex:0 0 19px!important;
+  width:19px!important;
+  height:19px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>.sn-new span{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>nav{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:4px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>nav>button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:44px!important;
+  height:44px!important;
+  margin:0!important;
+  padding:0 12px!important;
+  overflow:hidden!important;
+  border-radius:9px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>nav>button svg{
+  flex:0 0 20px!important;
+  width:20px!important;
+  min-width:20px!important;
+  height:20px!important;
+  min-height:20px!important;
+  margin:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side>nav>button span{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+}
+@media(max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo{grid-template-columns:38px minmax(0,1fr) 38px!important;min-height:48px!important;height:48px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo .sn-logo-mark{width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important}
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-side .sn-logo .sn-logo-mark strong{font-size:23px!important}
+}
