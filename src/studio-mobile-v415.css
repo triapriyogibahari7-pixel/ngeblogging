@@ -1,0 +1,241 @@
+/* v415 — final mobile icon geometry.
+ * Small/mobile/PWA only. Uses the same centered, contained icon treatment
+ * as the working Nara action inside the Post/Pages editor.
+ */
+
+@media screen and (max-width:760px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle{
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark{
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    line-height:1!important;
+    text-align:center!important;
+    transform:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>strong{
+    display:block!important;
+    box-sizing:content-box!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font:900 29px/1 Arial,Helvetica,sans-serif!important;
+    line-height:1!important;
+    text-align:center!important;
+    transform:none!important;
+    text-indent:0!important;
+  }
+
+  /* The open drawer uses exactly the same safe N mark geometry. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark{
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    line-height:1!important;
+    text-align:center!important;
+    transform:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark>strong{
+    display:block!important;
+    box-sizing:content-box!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font:900 29px/1 Arial,Helvetica,sans-serif!important;
+    line-height:1!important;
+    text-align:center!important;
+    transform:none!important;
+    text-indent:0!important;
+  }
+
+  /* Nara launcher: mirror the editor's clean, centered mobile action icon.
+     Keep the touch target generous while preventing visual offset/cropping. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .nara-floating-button{
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    padding:4px!important;
+    margin:0!important;
+    border-radius:12px!important;
+    overflow:visible!important;
+    transform:none!important;
+    float:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .nara-floating-button .nara-launcher-icon-box{
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 40px!important;
+    width:40px!important;
+    min-width:40px!important;
+    max-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+    max-height:40px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    transform:none!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .nara-floating-button .nara-launcher-icon-box svg{
+    display:block!important;
+    width:20px!important;
+    min-width:20px!important;
+    max-width:20px!important;
+    height:20px!important;
+    min-height:20px!important;
+    max-height:20px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    flex:none!important;
+  }
+
+  /* Nara icon inside the editor remains the visual reference: centered SVG,
+     no inherited flex shrink or negative offset. */
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v414="true"] .ce-mobile-actions>button:first-child svg,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-actions>button:first-child svg{
+    display:block!important;
+    flex:0 0 18px!important;
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    margin:0!important;
+    transform:none!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle{
+    flex-basis:46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark{
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-sidebar-toggle .sn-mobile-menu-mark>strong,
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark>strong{
+    font-size:27px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-studio-sidebar.sn-side .sn-logo .sn-logo-mark{
+    flex-basis:46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .nara-floating-button{
+    flex-basis:46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    border-radius:11px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .nara-floating-button .nara-launcher-icon-box{
+    flex-basis:38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    max-height:38px!important;
+  }
+
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .nara-floating-button .nara-launcher-icon-box svg{
+    width:19px!important;
+    min-width:19px!important;
+    max-width:19px!important;
+    height:19px!important;
+    min-height:19px!important;
+    max-height:19px!important;
+  }
+}
