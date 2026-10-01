@@ -234,6 +234,8 @@ import "./studio-theme-mobile-v433.css";
 import "./studio-theme-mobile-v434.css";
 // v437: mobile-only Theme preview flow. Desktop/laptop/tablet remain on their original CSS.
 import "./studio-theme-mobile-v437.css";
+// v438: final mobile-only Theme header/preview stacking authority; desktop remains untouched.
+import "./studio-theme-mobile-v438.css";
 // v435: hard isolation so the mobile/theme preview can never overlap the Theme header.
 // v436: final single-column flow; Theme header is always physically before preview.
 
