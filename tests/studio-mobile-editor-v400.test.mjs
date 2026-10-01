@@ -119,3 +119,27 @@ test("v406 is the final isolated mobile Post/Page editor authority", async () =>
   assert.doesNotMatch(css406, /data-studio-responsive-mode="desktop"/);
   assert.doesNotMatch(css406, /data-studio-device-mode="large"/);
 });
+
+
+test("v407 replaces the fragile mobile ribbon with a clean phone-only toolbar", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css407 = await readFile(new URL("../src/studio-mobile-editor-v407.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-editor-v407\.css/);
+  assert.match(editor, /data-mobile-editor-v407="true"/);
+  assert.match(editor, /className="ce-mobile-toolbar"/);
+  assert.match(editor, /className="ce-mobile-toolbar-nara"/);
+  assert.match(css407, /@media screen and \(max-width:760px\)/);
+  assert.match(css407, /\.ce-ribbon\{\s*display:none!important/);
+  assert.match(css407, /\.ce-mobile-toolbar\{\s*display:flex!important/);
+  assert.match(css407, /\.ce-mobile-toolbar-nara/);
+  assert.match(css407, /\.ce-file input\{[\s\S]*width:100%!important/);
+  assert.match(css407, /\.ce-actions\{[\s\S]*display:grid!important/);
+  assert.match(css407, /\.ce-paper\{[\s\S]*width:100%!important/);
+  assert.match(css407, /\.ce-word-status/);
+  assert.match(css407, /#ngeblogging-editor-nav-v266:not\(\.mobile-open\)/);
+  assert.match(css407, /\.nara-floating-button/);
+  assert.doesNotMatch(css407, /editor-v266-large/);
+  assert.doesNotMatch(css407, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css407, /data-studio-responsive-mode="desktop"/);
+  assert.doesNotMatch(css407, /data-studio-device-mode="large"/);
+});
