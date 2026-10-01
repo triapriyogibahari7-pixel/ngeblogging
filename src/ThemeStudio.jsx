@@ -27,6 +27,7 @@ import "./studio-theme-code-editor-v358.js";
 import "./studio-theme-code-editor-v359.js";
 import "./studio-theme-code-editor-v360.js";
 import "./studio-theme-code-editor-v362.js";
+import "./studio-theme-mobile-v439.css";
 
 const DEVICES = [
   { id: "application", label: "Aplikasi", icon: Smartphone, width: 360, frameClass: "mobile" },
@@ -97,7 +98,61 @@ function Modal({ title, eyebrow, onClose, size = "medium", children, footer }) {
 
 function ThemeFrame({ theme, code, config, widgets, device, title }) {
   const mode = deviceInfo(device);
-  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(code || theme.code, config, widgets)}/></div>;
+  const source = code || theme.code;
+  const previewCode = mode.frameClass === "mobile"
+    ? {
+        ...source,
+        css: `${source?.css || ""}
+        /* v439: mobile preview only. Remove the feature rail/decorative surfaces that
+           become a large dark overlay on narrow screens. Desktop/tablet previews use
+           the original theme code unchanged. */
+        @media (max-width:720px){
+          html,body{position:relative!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+          .ng-theme{position:relative!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+          .ng-hero{position:relative!important;overflow:hidden!important;isolation:isolate!important}
+          .ng-hero aside,
+          .ng-hero .ng-hero-panels,
+          .ng-hero .ng-hero-index,
+          .ng-hero .ng-poster-number,
+          .ng-hero [class*="feature-rail"],
+          .ng-hero [class*="featureRail"],
+          .ng-hero [class*="hero-rail-panel"],
+          .ng-hero [class*="heroRailPanel"]{
+            display:none!important;visibility:hidden!important;opacity:0!important;
+            width:0!important;max-width:0!important;min-width:0!important;
+            height:0!important;max-height:0!important;min-height:0!important;
+            margin:0!important;padding:0!important;overflow:hidden!important;
+            pointer-events:none!important;box-shadow:none!important;filter:none!important;
+          }
+          .ng-hero > [class*="glow"],
+          .ng-hero > [class*="halo"],
+          .ng-hero > [class*="ambient"],
+          .ng-hero > [class*="blur-orb"],
+          .ng-hero > [class*="orb"],
+          .ng-hero [class*="glow"],
+          .ng-hero [class*="halo"],
+          .ng-hero [class*="ambient"],
+          .ng-hero [class*="blur-orb"],
+          .ng-hero [class*="orb"]{
+            display:none!important;visibility:hidden!important;opacity:0!important;
+            width:0!important;height:0!important;max-width:0!important;max-height:0!important;
+            overflow:hidden!important;pointer-events:none!important;
+            background:none!important;box-shadow:none!important;filter:none!important;
+          }
+          .ng-hero::before,.ng-hero::after{
+            content:none!important;display:none!important;opacity:0!important;
+            pointer-events:none!important;background:none!important;box-shadow:none!important;
+            filter:none!important;
+          }
+          .ng-header,.ng-header-rail,.ng-header-poster{
+            transform:none!important;contain:paint!important;position:sticky!important;top:0!important;
+            z-index:1000!important;overflow:clip!important;isolation:isolate!important;
+            background:var(--surface)!important;backdrop-filter:none!important;
+          }
+        }`
+      }
+    : source;
+  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(previewCode, config, widgets)}/></div>;
 }
 
 function ThemeCardPreview({ theme }) {
@@ -269,8 +324,8 @@ export default function ThemeStudio({ setToast, site, user }) {
 
   return <div className="tn-studio" data-theme-interface="v149">
     <input ref={fileInput} type="file" accept=".ngeblog-theme,.json,.html,.htm,.css,.js" hidden onChange={importFile}/>
-    <section className="tn-hero">
-      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><h1>100 tema aktif dengan delapan pratinjau perangkat.</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
+    <section className={`tn-hero ${deviceInfo(device).frameClass === "mobile" ? "tn-hero-mobile-preview" : ""}`}>
+      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><h1>100 Tema Aktif</h1><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
       <div className="tn-active-stage"><div className="tn-stage-toolbar"><DeviceSwitch value={device} onChange={setDevice}/><b>{previewTheme.name}</b></div><ThemeFrame theme={previewTheme} code={previewTheme.id === activeTheme.id ? themeState.code : previewTheme.code} config={previewTheme.id === activeTheme.id ? themeState.publishedConfig : undefined} widgets={previewTheme.id === activeTheme.id ? themeState.widgets : createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/>{previewTheme.id !== activeTheme.id && <div className="tn-apply-bar"><span>Pratinjau <b>{previewTheme.name}</b></span><button onClick={() => apply(previewTheme.id)}><Check/> Gunakan tema</button></div>}</div>
     </section>
 
