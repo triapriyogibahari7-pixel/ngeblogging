@@ -230,5 +230,7 @@ import "./studio-mobile-v431.css";
 import "./studio-theme-mobile-v432.css";
 // v433: React-marked Theme mobile stacking/iframe containment authority.
 import "./studio-theme-mobile-v433.css";
+// v434: final Themes-only mobile containment; removes legacy overlay/glow paint.
+import "./studio-theme-mobile-v434.css";
 
 export default StudioFastGate;
