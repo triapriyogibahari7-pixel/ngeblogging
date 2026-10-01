@@ -18,6 +18,7 @@ import "./studio-small-device-v374.css";
 import "./studio-mobile-editor-v373.css";
 import "./studio-mobile-editor-v375.css";
 import "./studio-mobile-editor-v376.css";
+import "./studio-mobile-editor-v400.css";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
@@ -150,7 +151,7 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
   const updateMetadata = (values) => patch({ metadata: { ...metadata, ...values }, type: doc.type });
   const updateSeo = (values) => patch({ seo: { ...seo, ...values }, metadata, type: doc.type });
 
-  return <div className="ce-app">
+  return <div className="ce-app" data-mobile-editor-v400="true">
     <header className="ce-titlebar"><button className="ce-back" onClick={onBack}><ArrowLeft/></button><div className="ce-file"><FileText/><label><input value={doc.title} onChange={(event) => patch({ title: event.target.value, slug: slugify(event.target.value) })}/><small>{saved ? <><Check/> Tersimpan otomatis</> : <><LoaderCircle className="spin"/> Menyimpan…</>}</small></label></div><div className="ce-actions"><button onClick={() => setPreview(true)}><Eye/> Preview</button><button className="ce-primary" onClick={publish}><Send/>{doc.status === "published" ? "Jadikan draf" : doc.status === "scheduled" ? "Terjadwal" : "Terbitkan"}</button></div></header>
     <nav className="ce-tabs">{[["content","Konten"],["insert","Sisipkan"],["layout","Tata letak"],["metadata","Metadata"],["seo","SEO"],["source","HTML"]].map(([id,label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); if (id === "source") { setSourceDraft(doc.content || ""); setSourceOpen(true); } }}>{label}</button>)}</nav>
     <div className="ce-ribbon">
