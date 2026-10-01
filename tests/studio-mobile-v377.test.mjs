@@ -80,46 +80,37 @@ test("v405 covers all ten Studio pages with small-device-only layout authority",
 });
 
 
-test("v408 adds mobile Pages shortcut and stabilizes Nara inside the mobile editor", async () => {
+test("mobile sidebar has only Post while Pages keeps its own create action", async () => {
   const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
-  const css413 = await readFile(new URL("../src/studio-mobile-v413.css", import.meta.url), "utf8");
-  const css = await readFile(new URL("../src/studio-mobile-v408.css", import.meta.url), "utf8");
-  assert.match(studio, /className="sn-new sn-new-page"/);
-  assert.match(studio, /Buat Page/);
-  assert.match(studio, /studio-mobile-v408\.css/);
-  assert.match(css, /\.sn-new-page/);
-  assert.match(css, /\.nara-floating-button/);
-  assert.match(css, /\.nara-assistant-layer/);
-  assert.match(css, /\.nara-assistant-shell/);
-  assert.match(css, /\.nara-composer-tools/);
-  assert.match(css, /\.nara-send/);
-  assert.match(css, /@media screen and \(max-width:760px\)/);
-  assert.doesNotMatch(css, /editor-v266-large/);
-  assert.doesNotMatch(css, /data-studio-responsive-mode="tablet"/);
-  assert.doesNotMatch(css, /data-studio-responsive-mode="desktop"/);
-  assert.doesNotMatch(css, /data-studio-device-mode="large"/);
-  assert.equal((css.match(/{/g)||[]).length, (css.match(/}/g)||[]).length);
-});
-
-
-test("v411 isolates mobile sidebar logo and separates Post/Page create buttons", async () => {
-  const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
-  const css = await readFile(new URL("../src/studio-mobile-v411.css", import.meta.url), "utf8");
-  assert.match(studio, /studio-mobile-v411\.css/);
-  assert.match(css, /#ngeblogging-studio-sidebar\.sn-side>\.sn-new\+\.sn-new/);
-  assert.match(css, /\.sn-logo-mark\{[\\s\\S]*clip:auto!important/);
-  assert.match(css, /\.sn-logo-mark strong\{[\\s\\S]*overflow:visible!important/);
-  assert.match(css, /max-width:760px/);
-  assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"|data-studio-device-mode="large"/);
-});
-
-  assert.match(studio, /studio-mobile-v413\\.css/);
   assert.doesNotMatch(studio, /className="sn-new sn-new-page"/);
   assert.match(studio, /view === "pages"[\\s\\S]*createDoc\(type\)/);
-  assert.match(css413, /\\.ce-app \\.ce-mobile-toolbar/);
-  assert.match(css413, /\\.ce-app \\.ce-mobile-actions/);
-  assert.match(css413, /\\.ce-app \\.ce-ribbon/);
-  assert.match(css413, /\\.ce-app \\.ce-nara/);
-  assert.match(css413, /\\.ce-actions>button:first-child/);
-  assert.match(css413, /html\\.editor-v266-small/);
-  assert.match(css413, /sn-mobile-menu-mark>strong/);
+});
+
+test("v414 preserves the desktop editor menu and hides only phone-only controls on large devices", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/studio-mobile-v414.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-v414\\.css/);
+  assert.match(editor, /data-mobile-editor-v414="true"/);
+  assert.match(editor, /className="ce-preview-action"/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Undo"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Redo"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Bold"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Italic"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Underline"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Daftar poin"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Daftar nomor"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Tautan"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Media"\\]/);
+  assert.match(css, /\\.ce-ribbon button\\[title="Tabel"\\]/);
+  assert.match(css, /\\.ce-app \\.ce-nara/);
+  assert.match(css, /\\.ce-app \\.ce-actions \\.ce-preview-action/);
+  assert.match(css, /body:has\\(\\.ce-app\\[data-mobile-editor-v414="true"\\]\\) \\.nara-floating-button/);
+  assert.match(css, /html\\.editor-v266-small/);
+  assert.match(css, /data-studio-device-mode="small"/);
+  assert.match(css, /\\.ce-mobile-toolbar/);
+  assert.match(css, /\\.ce-mobile-actions/);
+  assert.match(css, /\\.sn-mobile-menu-mark>strong/);
+  assert.match(css, /overflow:visible!important/);
+  assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"|data-studio-device-mode="large"/);
+  assert.equal((css.match(/{/g)||[]).length, (css.match(/}/g)||[]).length);
+});
