@@ -151,3 +151,17 @@ test("v417 is the definitive handheld icon authority", () => {
   assert.doesNotMatch(css, /html\\[data-studio-device-mode="large"\\]/);
   assert.doesNotMatch(css, /@media[^\\n]*min-width/);
 });
+
+
+test("v418 uses dedicated mobile icon paint and cache bust", () => {
+  const studio = read("src/StudioNext.jsx");
+  const css = read("src/studio-mobile-v418.css");
+  const sw = read("public/sw.js");
+  assert.match(studio, /studio-mobile-v418\\.css/);
+  assert.match(studio, /data-v418-n-icon/);
+  assert.match(css, /sn-v418-n-glyph/);
+  assert.match(css, /nara-launcher-icon-box>svg/);
+  assert.match(css, /transform:translateX\\(1px\\)!important/);
+  assert.match(sw, /v418-mobile-icons-20261001/);
+  assert.doesNotMatch(css, /@media[^\\n]*min-width/);
+});
