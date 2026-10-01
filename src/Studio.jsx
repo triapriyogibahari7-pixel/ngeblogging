@@ -214,5 +214,29 @@ import "./studio-theme-code-editor-v348.js";
 
 // ACTIVE: Advanced overlap guard with mobile/desktop support
 import "./studio-title-overlap-guard-v371-advanced.js";
+// v370: mobile-only final layout authority; desktop/tablet remain unchanged.
+import "./studio-mobile-all-pages-v370.css";
+// v427: absolute last authority for the original mobile sidebar N and editor-matched Nara Sparkles.
+import "./studio-mobile-v427.css";
+// v428: all handheld families use one original sidebar N and editor-matched Nara Sparkles geometry.
+import "./studio-mobile-v428.css";
+// v429: structural handheld authority; one original sidebar N and editor-matched Nara icon box.
+import "./studio-mobile-v429.css";
+// v430: closed handheld sidebar paints only the original N; Nara is optically centered to the editor reference.
+import "./studio-mobile-v430.css";
+// v431: final interaction/visual authority — the original N remains clickable and the visible Nara proxy uses the editor geometry.
+import "./studio-mobile-v431.css";
+// v432: Theme-only mobile preview containment; does not alter sidebar/Nara/API/Ringkasan.
+import "./studio-theme-mobile-v432.css";
+// v433: React-marked Theme mobile stacking/iframe containment authority.
+import "./studio-theme-mobile-v433.css";
+// v434: final Themes-only mobile containment; removes legacy overlay/glow paint.
+import "./studio-theme-mobile-v434.css";
+// v437: mobile-only Theme preview flow. Desktop/laptop/tablet remain on their original CSS.
+import "./studio-theme-mobile-v437.css";
+// v438: final mobile-only Theme header/preview stacking authority; desktop remains untouched.
+import "./studio-theme-mobile-v438.css";
+// v435: hard isolation so the mobile/theme preview can never overlap the Theme header.
+// v436: final single-column flow; Theme header is always physically before preview.
 
 export default StudioFastGate;

@@ -1,0 +1,260 @@
+/* v430 — handheld icon correction.
+   Fixes the actual source of the clipped/shifted mobile sidebar N: when the
+   sidebar is closed, only the original .sn-logo-mark is painted. The
+   desktop wordmark/close control and sidebar contents cannot participate in
+   the 56px launcher layout.
+   Nara uses the same 40px editor button geometry + 18px Sparkles SVG, with a
+   tiny 1px visual optical correction matching the editor reference.
+   Desktop/tablet are untouched. */
+
+@media screen and (max-width:760px){
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open){
+    width:56px!important;
+    min-width:56px!important;
+    max-width:56px!important;
+    height:56px!important;
+    min-height:56px!important;
+    max-height:56px!important;
+    padding:4px!important;
+    display:block!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Closed launcher: the original N is the ONLY painted control. */
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo{
+    display:block!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    position:static!important;
+    transform:none!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>b,
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-side-close,
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>:not(.sn-logo){
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:0!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark{
+    appearance:none!important;
+    -webkit-appearance:none!important;
+    display:grid!important;
+    place-items:center!important;
+    position:static!important;
+    flex:none!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    outline:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark>strong{
+    display:block!important;
+    position:static!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:content-box!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font:800 26px/1 Arial,Helvetica,sans-serif!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    text-align:center!important;
+    transform:none!important;
+    translate:none!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+
+  /* The dot is part of the original desktop wordmark, not the mobile N. */
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark>i{
+    display:none!important;
+  }
+
+  /* Nara: exactly the editor's 40px button / 18px Lucide Sparkles geometry. */
+  html body .nara-floating-button{
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    padding:6px!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    grid-template-columns:40px!important;
+    grid-template-rows:40px!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+  }
+
+  html body .nara-floating-button>.nara-launcher-icon-box{
+    position:static!important;
+    display:grid!important;
+    place-items:center!important;
+    width:40px!important;
+    min-width:40px!important;
+    max-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+    max-height:40px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    transform:none!important;
+    translate:none!important;
+  }
+
+  html body .nara-floating-button>.nara-launcher-icon-box>svg{
+    display:block!important;
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    margin:0!important;
+    padding:0!important;
+    flex:none!important;
+    box-sizing:border-box!important;
+    transform:translateX(1px)!important;
+    translate:none!important;
+  }
+
+  html body .nara-floating-button>.nara-launcher-label{
+    display:none!important;
+    width:0!important;
+    height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+}
+
+@media screen and (max-width:390px){
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open){
+    left:max(6px,env(safe-area-inset-left,0px))!important;
+    top:max(6px,env(safe-area-inset-top,0px))!important;
+  }
+
+  html body .nara-floating-button{
+    right:max(8px,env(safe-area-inset-right,0px))!important;
+    bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
+  }
+}
