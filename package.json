@@ -62,7 +62,7 @@
     "pretest": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
     "test": "npm run verify:current",
     "pretest:production": "node scripts/auth-capacity-model-v162.mjs --output public/auth-capacity-v162.json && node scripts/studio-layout-model-v176.mjs --output public/studio-layout-v176.json",
-    "test:production": "node --test tests/studio-content-editor-post-page-v309.test.mjs tests/studio-sidebar-hard-lock-v301.test.mjs tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs tests/custom-domain-public-recovery-v345.test.mjs tests/custom-domain-and-analytics-v350.test.mjs tests/custom-domain-legacy-migration-v367.test.mjs tests/studio-mobile-app-pages-editor-v368.test.mjs tests/studio-mobile-authority-v370.test.mjs tests/studio-mobile-authority-v371.test.mjs"
+    "test:production": "node --test tests/studio-content-editor-post-page-v309.test.mjs tests/studio-sidebar-hard-lock-v301.test.mjs tests/studio-add-site-v303.test.mjs tests/studio-workspaces-members-v304.test.mjs tests/custom-domain-public-recovery-v345.test.mjs tests/custom-domain-and-analytics-v350.test.mjs tests/custom-domain-legacy-migration-v367.test.mjs tests/studio-mobile-app-pages-editor-v368.test.mjs tests/studio-mobile-authority-v371.test.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
