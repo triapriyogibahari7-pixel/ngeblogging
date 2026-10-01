@@ -14,6 +14,7 @@ import "./studio-mobile-authority-v372.css";
 import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
 import "./studio-mobile-editor-v373.css";
+import "./studio-mobile-editor-v400.css";
 import "./nara-controls-v135.js";
 
 const EXTRAS_ID = "ngeblogging-settings-extras";
