@@ -109,7 +109,7 @@ test("v406 is the final isolated mobile Post/Page editor authority", async () =>
   assert.match(css406, /\.ce-file input\{[\s\S]*width:100%!important/);
   assert.match(css406, /\.ce-actions\{[\s\S]*display:grid!important/);
   assert.match(css406, /\.ce-paper\{[\s\S]*width:100%!important/);
-  assert.match(css406, /\.ce-mobile-actions\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)!important/);
+  assert.match(css406, /\.ce-mobile-actions\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
   assert.match(css406, /\.ce-word-status,[\s\S]*\.ce-word-limit-v316\{[\s\S]*display:none!important/);
   assert.match(css406, /\.nara-floating-button\{[\s\S]*display:flex!important/);
   assert.match(css406, /\.nara-floating-button svg\{[\s\S]*width:21px!important/);
