@@ -214,5 +214,7 @@ import "./studio-theme-code-editor-v348.js";
 
 // ACTIVE: Advanced overlap guard with mobile/desktop support
 import "./studio-title-overlap-guard-v371-advanced.js";
+// v370: mobile-only final layout authority; desktop/tablet remain unchanged.
+import "./studio-mobile-all-pages-v370.css";
 
 export default StudioFastGate;
