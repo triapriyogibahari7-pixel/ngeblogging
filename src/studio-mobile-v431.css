@@ -1,0 +1,235 @@
+/* v431 — restore mobile sidebar N interaction and use the editor Nara icon as the single reference.
+   The mobile sidebar N is itself the React open/close button, so it must NEVER be inert.
+   Nara's real mobile launcher is the body-level proxy; the old v430 rule only touched
+   the hidden original launcher and therefore could not correct the visible icon. */
+
+@media screen and (max-width:760px){
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar{
+    box-sizing:border-box!important;
+  }
+
+  /* Closed: one original N, centered in a 56px launcher. */
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open){
+    width:56px!important;
+    min-width:56px!important;
+    max-width:56px!important;
+    height:56px!important;
+    min-height:56px!important;
+    max-height:56px!important;
+    padding:4px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:visible!important;
+    pointer-events:auto!important;
+    inset:auto auto auto max(8px,env(safe-area-inset-left,0px))!important;
+    top:max(8px,env(safe-area-inset-top,0px))!important;
+    left:max(8px,env(safe-area-inset-left,0px))!important;
+    right:auto!important;
+    bottom:auto!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    pointer-events:auto!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark{
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 48px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    pointer-events:auto!important;
+    cursor:pointer!important;
+    border-radius:14px!important;
+    background:linear-gradient(145deg,#2f6ee8,#4745d7)!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark>strong{
+    display:block!important;
+    position:static!important;
+    width:auto!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    clip:unset!important;
+    clip-path:none!important;
+    font:800 26px/1 Arial,Helvetica,sans-serif!important;
+    line-height:1!important;
+    letter-spacing:0!important;
+    text-indent:0!important;
+    white-space:nowrap!important;
+    transform:none!important;
+    translate:none!important;
+    text-align:center!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-logo-mark>i{
+    display:none!important;
+  }
+
+  /* Keep the wordmark/close control out of the closed mobile launcher. */
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>b,
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>.sn-logo>.sn-side-close,
+  :is(
+    html[data-studio-device-mode="small"],
+    html[data-studio-responsive-mode="application"],
+    html[data-studio-responsive-mode="phone"],
+    html[data-studio-responsive-mode="mobile"],
+    html[data-studio-responsive-mode="compact"],
+    html.editor-v266-small,
+    html.studio-v265-small
+  ) #ngeblogging-studio-sidebar:not(.mobile-open)>:not(.sn-logo){
+    display:none!important;
+  }
+
+  /* The visible launcher is the v18 proxy, not .nara-floating-button.
+     Match the editor reference: 40px control with an 18px Sparkles glyph. */
+  html body .nara-floating-proxy-v18{
+    position:fixed!important;
+    right:max(8px,env(safe-area-inset-right,0px))!important;
+    bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    margin:0!important;
+    padding:6px!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    border:0!important;
+    border-radius:15px!important;
+    overflow:visible!important;
+    background:linear-gradient(145deg,#2f6ee8,#4745d7)!important;
+    box-shadow:0 6px 18px rgba(24,68,135,.28)!important;
+    transform:none!important;
+    translate:none!important;
+    rotate:0deg!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+
+  html body .nara-floating-proxy-v18::before{
+    display:none!important;
+    content:none!important;
+  }
+
+  html body .nara-floating-proxy-v18>svg{
+    display:block!important;
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    transform:none!important;
+    translate:none!important;
+  }
+
+  /* Never apply the 1px v430 nudge to the visible proxy. */
+  html body .nara-floating-button{
+    transform:none!important;
+    translate:none!important;
+  }
+}
