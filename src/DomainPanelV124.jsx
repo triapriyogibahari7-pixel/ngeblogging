@@ -43,6 +43,20 @@ async function domainApi(path, token, body = null) {
   return payload;
 }
 
+function normalizeDomainName(value = "") {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/[/?#].*$/, "");
+}
+
+function isManagedFreeDomain(value = "") {
+  const hostname = normalizeDomainName(value);
+  return hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com");
+}
+
 function nameservers(domain) {
   const values = domain?.ownership_verification?.required_name_servers;
   return Array.isArray(values) ? values.map((item) => String(item || "").trim()).filter(Boolean) : [];
@@ -75,11 +89,11 @@ function Metric({ icon: Icon, label, value }) {
 export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToast }) {
   const [token, setToken] = useState("");
   const [config, setConfig] = useState(null);
-  const initialCustomDomain = String(site?.custom_domain || "").trim().toLowerCase()
-    .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
-  const [domains, setDomains] = useState(() => initialCustomDomain ? [{
+  const initialCustomDomain = normalizeDomainName(site?.custom_domain);
+  const initialExternalCustomDomain = isManagedFreeDomain(initialCustomDomain) ? "" : initialCustomDomain;
+  const [domains, setDomains] = useState(() => initialExternalCustomDomain ? [{
     id: `site-custom-domain:${site?.id || "initial"}`, site_id: site?.id || null,
-    hostname: initialCustomDomain, status: "pending", provider: "cloudflare-full-zone",
+    hostname: initialExternalCustomDomain, status: "pending", provider: "cloudflare-full-zone",
     provider_status: "pending", ssl_status: "pending", is_primary: true,
     ownership_verification: {}, ssl_validation: [], error_message: null,
     created_at: site?.updated_at || null, updated_at: site?.updated_at || null,
@@ -91,7 +105,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   const [audit, setAudit] = useState({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
 
   const sortedDomains = useMemo(() => [...domains].sort((a, b) => Number(activeDomain(b)) - Number(activeDomain(a)) || String(a.hostname).localeCompare(String(b.hostname))), [domains]);
-  const connected = sortedDomains.filter((item) => item.status !== "pending_deletion");
+  const connected = sortedDomains.filter((item) => item.status !== "pending_deletion" && !isManagedFreeDomain(item.hostname));
   const routed = sortedDomains.reduce((total, domain) => total + (activeDomain(domain) ? 1 : 0) + addresses(domain).filter((item) => item.enabled).length, 0);
 
   const load = async ({ quiet = false } = {}) => {
@@ -141,14 +155,9 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
         }
       }
 
-      const normalizeDomain = (value = "") => String(value || "")
-        .trim()
-        .toLowerCase()
-        .replace(/^https?:\/\//, "")
-        .replace(/^www\./, "")
-        .replace(/[/?#].*$/, "");
-      const configuredCustomDomain = normalizeDomain(currentSite?.custom_domain || site?.custom_domain || "");
-      const merged = [...dbDomains, ...apiList];
+      const configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain || site?.custom_domain || "");
+      const externalConfiguredCustomDomain = isManagedFreeDomain(configuredCustomDomain) ? "" : configuredCustomDomain;
+      const merged = [...dbDomains, ...apiList].filter((item) => !isManagedFreeDomain(item?.hostname));
       const seen = new Set();
       const list = merged.filter((item) => {
         const key = normalizeDomain(item?.hostname);
@@ -157,13 +166,13 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
         return true;
       });
       const hasConfiguredCustomDomain = configuredCustomDomain && list.some(
-        (item) => normalizeDomain(item?.hostname) === configuredCustomDomain,
+        (item) => normalizeDomainName(item?.hostname) === externalConfiguredCustomDomain,
       );
-      const displayList = configuredCustomDomain && !hasConfiguredCustomDomain
+      const displayList = externalConfiguredCustomDomain && !hasConfiguredCustomDomain
         ? [{
             id: `site-custom-domain:${site.id}`,
             site_id: site.id,
-            hostname: configuredCustomDomain,
+            hostname: externalConfiguredCustomDomain,
             // Configured is intentionally not presented as DNS-active. The
             // existing status UI will show "Verifikasi nameserver" until the
             // authoritative provider reports active/SSL-ready state.
@@ -182,14 +191,16 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       setDomains(displayList);
     } catch (nextError) {
       console.error("Domain load failed", nextError);
-      let configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      let configuredCustomDomain = normalizeDomainName(site?.custom_domain);
+      if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
       if (!configuredCustomDomain && supabase && site?.id) {
         try {
           const { data: currentSite } = await withDeadline(
             supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
             10000,
           );
-          configuredCustomDomain = String(currentSite?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+          configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain);
+          if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
           if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Custom domain error fallback lookup failed", siteLookupError);
@@ -226,9 +237,9 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   useEffect(() => {
     setToken("");
     setConfig(null);
-    setDomains(site?.custom_domain ? [{
+    setDomains(site?.custom_domain && !isManagedFreeDomain(site.custom_domain) ? [{
       id: `site-custom-domain:${site.id}`, site_id: site.id,
-      hostname: String(site.custom_domain).trim().toLowerCase().replace(/^https?:\\/\\//, "").replace(/^www\\./, "").replace(/[/?#].*$/, ""),
+      hostname: isManagedFreeDomain(site.custom_domain) ? "" : normalizeDomainName(site.custom_domain),
       status: "pending", provider: "cloudflare-full-zone", provider_status: "pending", ssl_status: "pending",
       is_primary: true, ownership_verification: {}, ssl_validation: [], error_message: null,
       created_at: site.updated_at || null, updated_at: site.updated_at || null,
