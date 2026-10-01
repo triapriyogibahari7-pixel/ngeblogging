@@ -60,6 +60,11 @@
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-page-title button,
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-page-title a{width:100%!important;min-width:0!important;max-width:100%!important}
 
+/* Media library root cannot retain desktop fixed widths. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-media-library{
+  display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:visible!important
+}
+
 /* Cards and forms. */
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) :is(.sn-content-card,.sn-home-grid>section,.sn-home-grid>aside,.sn-members>article,.sn-settings-grid>section,.sn-api-card,.sn-api-endpoint,.sn-api-list,.sv124-card,.sv124-domain-item,.sv124-free-domain,.sv124-domain-register){
   width:100%!important;min-width:0!important;max-width:100%!important;overflow:hidden!important
