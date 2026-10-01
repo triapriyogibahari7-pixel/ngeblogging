@@ -232,3 +232,35 @@ body.sn-mobile-sidebar-open{overflow:auto!important;touch-action:auto!important}
   margin-top:0!important;
   gap:10px!important;
 }
+
+
+/* v443: override legacy mobile spacing on Ringkasan + API Keys only.
+   Intentionally does not target sidebar or Nara launcher. */
+@media(max-width:760px){
+  html[data-device-mode="mobile"] .sn-main > .sn-view-pad,
+  html[data-studio-device-mode="small"] .sn-main > .sn-view-pad,
+  html[data-studio-v30-compact] .sn-main > .sn-view-pad{
+    margin-top:0!important;
+    padding-top:6px!important;
+  }
+
+  html[data-device-mode="mobile"] .sn-main > .sn-view-pad.sn-api-page,
+  html[data-studio-device-mode="small"] .sn-main > .sn-view-pad.sn-api-page,
+  html[data-studio-v30-compact] .sn-main > .sn-view-pad.sn-api-page{
+    padding-top:4px!important;
+    padding-bottom:24px!important;
+    margin-top:0!important;
+  }
+
+  html[data-device-mode="mobile"] .sn-main > .sn-view-pad:not(.sn-api-page) .sn-welcome,
+  html[data-studio-device-mode="small"] .sn-main > .sn-view-pad:not(.sn-api-page) .sn-welcome,
+  html[data-studio-v30-compact] .sn-main > .sn-view-pad:not(.sn-api-page) .sn-welcome{
+    margin-top:0!important;
+  }
+
+  html[data-device-mode="mobile"] .sn-main > .sn-view-pad:not(.sn-api-page) .sn-home-grid,
+  html[data-studio-device-mode="small"] .sn-main > .sn-view-pad:not(.sn-api-page) .sn-home-grid,
+  html[data-studio-v30-compact] .sn-main > .sn-view-pad:not(.sn-api-page) .sn-home-grid{
+    margin-top:0!important;
+  }
+}
