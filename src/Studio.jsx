@@ -226,6 +226,5 @@ import "./studio-mobile-v429.css";
 import "./studio-mobile-v430.css";
 // v431: final interaction/visual authority — the original N remains clickable and the visible Nara proxy uses the editor geometry.
 import "./studio-mobile-v431.css";
-import "./studio-mobile-v431.js";
 
 export default StudioFastGate;
