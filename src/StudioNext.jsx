@@ -28,6 +28,7 @@ import "./studio-next.css";
 import "./studio-recovery-v135.css";
 import "./studio-mobile-app-pages-editor-v368.css";
 import "./studio-mobile-final-v369.css";
+import "./studio-mobile-authority-v370.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
