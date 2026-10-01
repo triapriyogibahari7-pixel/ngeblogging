@@ -187,10 +187,7 @@ const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mill
 
 async function hydrateNameservers(env, zone) {
   let current = zone;
-  // Cloudflare dapat mengembalikan zone lebih dulu lalu mengisi dua
-  // nameserver beberapa detik kemudian. Tunggu lebih lama di server supaya
-  // registrasi domain tidak gagal sebelum DNS yang wajib ditampilkan tersedia.
-  for (const delay of [0, 500, 1000, 2000, 4000, 7000]) {
+  for (const delay of [0, 500, 1000, 2000, 4000, 8000, 12000]) {
     const state = publicZoneState(current);
     if (state.nameServers.length >= 2 || state.active) return current;
     if (!/^[0-9a-f]{32}$/i.test(state.id)) return current;
