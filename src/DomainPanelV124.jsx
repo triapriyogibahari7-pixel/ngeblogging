@@ -112,8 +112,8 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       let currentSite = null;
       let dbDomains = [];
       const apiHasConfiguredDomain = apiList.some((item) =>
-        String(item?.hostname || "").trim().toLowerCase().replace(/^www\\./, "") ===
-        String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\\/\\//, "").replace(/^www\\./, "").replace(/[/?#].*$/, "")
+        String(item?.hostname || "").trim().toLowerCase().replace(/^www\./, "") ===
+        String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\\./, "").replace(/[/?#].*$/, "")
       );
       if (supabase && !apiHasConfiguredDomain && !site?.custom_domain) {
         try {
