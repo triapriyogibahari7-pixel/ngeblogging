@@ -127,7 +127,21 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
             z-index:1!important;
           }
           .ng-poster-number{
+            display:none!important;
+            visibility:hidden!important;
             pointer-events:none!important;
+          }
+          .ng-header,.ng-header-rail,.ng-header-poster{
+            transform:none!important;
+            contain:paint!important;
+          }
+          .ng-hero,.ng-hero-split,.ng-hero-stack,.ng-hero-rail,.ng-hero-cards,.ng-hero-poster{
+            overflow:hidden!important;
+            clip-path:inset(0)!important;
+          }
+          .ng-hero aside{
+            position:relative!important;
+            z-index:2!important;
             max-width:100%!important;
             overflow:hidden!important;
           }
