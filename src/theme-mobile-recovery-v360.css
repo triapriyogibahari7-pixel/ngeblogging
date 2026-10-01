@@ -472,9 +472,11 @@
 
 }
 
-/* Theme Studio mobile: never let the global sidebar scrim cover the Theme surface. */
+/* Theme Studio mobile: never let global sidebar backdrops/scrims cover the Theme surface. */
 @media (max-width: 767px){
-  .sn-shell:has(.tn-studio) > [class*="sn-sidebar-scrim"]{
+  .sn-shell:has(.tn-studio) > .sn-side-backdrop,
+  .sn-shell:has(.tn-studio) > [class*="sn-sidebar-scrim"],
+  .sn-shell:has(.tn-studio) [class*="sn-sidebar-scrim"]{
     display:none!important;
     visibility:hidden!important;
     opacity:0!important;
@@ -483,15 +485,9 @@
     box-shadow:none!important;
     backdrop-filter:none!important;
     -webkit-backdrop-filter:none!important;
-  }
-  .sn-shell:has(.tn-studio) [class*="sn-sidebar-scrim"]{
-    display:none!important;
-    visibility:hidden!important;
-    opacity:0!important;
-    pointer-events:none!important;
+    filter:none!important;
   }
 }
-
 /* v361 mobile-only overlap/icon repair — desktop/laptop/tablet/computer untouched. */
 :is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-sidebar-scrim-v15[hidden]{
   display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
