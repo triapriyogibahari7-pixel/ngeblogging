@@ -7,7 +7,7 @@ import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76
 import { setSitePublication } from "./lib/studio-data.js";
 import { supabase } from "./lib/supabase.js";
 
-const REQUEST_TIMEOUT = 15000;
+const REQUEST_TIMEOUT = 45000;
 
 function withDeadline(promise, milliseconds = REQUEST_TIMEOUT) {
   let timer = 0;
@@ -43,6 +43,20 @@ async function domainApi(path, token, body = null) {
   return payload;
 }
 
+function normalizeDomainName(value = "") {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/[/?#].*$/, "");
+}
+
+function isManagedFreeDomain(value = "") {
+  const hostname = normalizeDomainName(value);
+  return hostname === "ngeblogging.com" || hostname.endsWith(".ngeblogging.com");
+}
+
 function nameservers(domain) {
   const values = domain?.ownership_verification?.required_name_servers;
   return Array.isArray(values) ? values.map((item) => String(item || "").trim()).filter(Boolean) : [];
@@ -75,11 +89,11 @@ function Metric({ icon: Icon, label, value }) {
 export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToast }) {
   const [token, setToken] = useState("");
   const [config, setConfig] = useState(null);
-  const initialCustomDomain = String(site?.custom_domain || "").trim().toLowerCase()
-    .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
-  const [domains, setDomains] = useState(() => initialCustomDomain ? [{
+  const initialCustomDomain = normalizeDomainName(site?.custom_domain);
+  const initialExternalCustomDomain = isManagedFreeDomain(initialCustomDomain) ? "" : initialCustomDomain;
+  const [domains, setDomains] = useState(() => initialExternalCustomDomain ? [{
     id: `site-custom-domain:${site?.id || "initial"}`, site_id: site?.id || null,
-    hostname: initialCustomDomain, status: "pending", provider: "cloudflare-full-zone",
+    hostname: initialExternalCustomDomain, status: "pending", provider: "cloudflare-full-zone",
     provider_status: "pending", ssl_status: "pending", is_primary: true,
     ownership_verification: {}, ssl_validation: [], error_message: null,
     created_at: site?.updated_at || null, updated_at: site?.updated_at || null,
@@ -91,7 +105,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   const [audit, setAudit] = useState({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
 
   const sortedDomains = useMemo(() => [...domains].sort((a, b) => Number(activeDomain(b)) - Number(activeDomain(a)) || String(a.hostname).localeCompare(String(b.hostname))), [domains]);
-  const connected = sortedDomains.filter((item) => item.status !== "pending_deletion");
+  const connected = sortedDomains.filter((item) => item.status !== "pending_deletion" && !isManagedFreeDomain(item.hostname));
   const routed = sortedDomains.reduce((total, domain) => total + (activeDomain(domain) ? 1 : 0) + addresses(domain).filter((item) => item.enabled).length, 0);
 
   const load = async ({ quiet = false } = {}) => {
@@ -105,56 +119,60 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       setConfig(payload);
       const apiList = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
 
-      // Keep the existing Domain & publication UI fast: the domain API is the
-      // primary source. Only consult the canonical rows when the API omitted the
-      // active site's configured domain. This is a data-recovery path, not a second
-      // normal load.
+      // PUBLIC_DOMAIN_SOURCE_OF_TRUTH_V1:
+      // The studio must still show a configured custom domain when the domain API
+      // is unavailable, stale, or temporarily omits the site_domains row.
+      // Read the canonical site + site_domains rows directly, then merge them
+      // with the API response. This changes no presentation; it only repairs data
+      // hydration for the existing Domain & publication screen.
       let currentSite = null;
       let dbDomains = [];
-      const apiHasConfiguredDomain = apiList.some((item) =>
-        String(item?.hostname || "").trim().toLowerCase().replace(/^www\./, "") ===
-        String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\\./, "").replace(/[/?#].*$/, "")
-      );
-      if (supabase && !apiHasConfiguredDomain && !site?.custom_domain) {
+      if (supabase) {
         try {
-          const { data } = await withDeadline(
-            supabase.from("site_domains")
-              .select("id,site_id,hostname,status,provider,provider_status,ssl_status,is_primary,ownership_verification,ssl_validation,error_message,created_at,updated_at")
-              .eq("site_id", site.id)
-              .order("is_primary", { ascending: false })
-              .order("updated_at", { ascending: false, nullsFirst: false })
-              .limit(20),
-            10000,
-          );
-          dbDomains = Array.isArray(data) ? data : [];
-        } catch (domainLookupError) {
-          console.warn("Canonical domain recovery skipped", domainLookupError);
+          const [siteResult, domainResult] = await Promise.all([
+            withDeadline(
+              supabase.from("sites")
+                .select("custom_domain,status,is_public,updated_at")
+                .eq("id", site.id)
+                .maybeSingle(),
+              10000,
+            ),
+            withDeadline(
+              supabase.from("site_domains")
+                .select("id,site_id,hostname,status,provider,provider_status,ssl_status,is_primary,ownership_verification,ssl_validation,error_message,created_at,updated_at")
+                .eq("site_id", site.id)
+                .order("is_primary", { ascending: false })
+                .order("updated_at", { ascending: false, nullsFirst: false })
+                .limit(20),
+              10000,
+            ),
+          ]);
+          if (!siteResult.error) currentSite = siteResult.data || null;
+          if (!domainResult.error) dbDomains = Array.isArray(domainResult.data) ? domainResult.data : [];
+          if (currentSite?.custom_domain) onSiteUpdate?.({ ...site, ...currentSite });
+        } catch (siteLookupError) {
+          console.warn("Canonical domain data hydration failed", siteLookupError);
         }
       }
 
-      const normalizeDomain = (value = "") => String(value || "")
-        .trim()
-        .toLowerCase()
-        .replace(/^https?:\/\//, "")
-        .replace(/^www\./, "")
-        .replace(/[/?#].*$/, "");
-      const configuredCustomDomain = normalizeDomain(currentSite?.custom_domain || site?.custom_domain || "");
-      const merged = [...dbDomains, ...apiList];
+      const configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain || site?.custom_domain || "");
+      const externalConfiguredCustomDomain = isManagedFreeDomain(configuredCustomDomain) ? "" : configuredCustomDomain;
+      const merged = [...dbDomains, ...apiList].filter((item) => !isManagedFreeDomain(item?.hostname));
       const seen = new Set();
       const list = merged.filter((item) => {
-        const key = normalizeDomain(item?.hostname);
+        const key = normalizeDomainName(item?.hostname);
         if (!key || seen.has(key)) return false;
         seen.add(key);
         return true;
       });
       const hasConfiguredCustomDomain = configuredCustomDomain && list.some(
-        (item) => normalizeDomain(item?.hostname) === configuredCustomDomain,
+        (item) => normalizeDomainName(item?.hostname) === externalConfiguredCustomDomain,
       );
-      const displayList = configuredCustomDomain && !hasConfiguredCustomDomain
+      const displayList = externalConfiguredCustomDomain && !hasConfiguredCustomDomain
         ? [{
             id: `site-custom-domain:${site.id}`,
             site_id: site.id,
-            hostname: configuredCustomDomain,
+            hostname: externalConfiguredCustomDomain,
             // Configured is intentionally not presented as DNS-active. The
             // existing status UI will show "Verifikasi nameserver" until the
             // authoritative provider reports active/SSL-ready state.
@@ -173,14 +191,16 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       setDomains(displayList);
     } catch (nextError) {
       console.error("Domain load failed", nextError);
-      let configuredCustomDomain = String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+      let configuredCustomDomain = normalizeDomainName(site?.custom_domain);
+      if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
       if (!configuredCustomDomain && supabase && site?.id) {
         try {
           const { data: currentSite } = await withDeadline(
             supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
             10000,
           );
-          configuredCustomDomain = String(currentSite?.custom_domain || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
+          configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain);
+          if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
           if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Custom domain error fallback lookup failed", siteLookupError);
@@ -217,9 +237,9 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   useEffect(() => {
     setToken("");
     setConfig(null);
-    setDomains(site?.custom_domain ? [{
+    setDomains(site?.custom_domain && !isManagedFreeDomain(site.custom_domain) ? [{
       id: `site-custom-domain:${site.id}`, site_id: site.id,
-      hostname: String(site.custom_domain).trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, ""),
+      hostname: isManagedFreeDomain(site.custom_domain) ? "" : normalizeDomainName(site.custom_domain),
       status: "pending", provider: "cloudflare-full-zone", provider_status: "pending", ssl_status: "pending",
       is_primary: true, ownership_verification: {}, ssl_validation: [], error_message: null,
       created_at: site.updated_at || null, updated_at: site.updated_at || null,
@@ -236,7 +256,18 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     try {
       const activeToken = token || await accessToken();
       setToken(activeToken);
-      await operation(activeToken);
+      const operationResult = await operation(activeToken);
+      // Tampilkan hasil registrasi/refresh langsung dari respons API sebelum
+      // hydration berikutnya selesai. Ini mencegah kartu domain dan nameserver
+      // menghilang hanya karena query daftar domain tertinggal sesaat.
+      if (operationResult?.domain?.id) {
+        setDomains((current) => {
+          const incoming = operationResult.domain;
+          const key = String(incoming.id);
+          const filtered = current.filter((item) => String(item.id) !== key && String(item.hostname || "").toLowerCase() !== String(incoming.hostname || "").toLowerCase());
+          return [incoming, ...filtered];
+        });
+      }
       if (success) setToast?.(success);
       await load({ quiet: true });
     } catch (nextError) {
@@ -250,7 +281,20 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     event.preventDefault();
     const clean = hostname.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
     if (!clean) return setError("Masukkan nama domain tanpa https://, www, atau path.");
-    await mutate("register", (activeToken) => domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean }), "Domain ditambahkan. Salin dua nameserver ke registrar.");
+    await mutate("register", async (activeToken) => {
+      const result = await domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean });
+      const domainId = result?.domain?.id;
+      const nameServers = Array.isArray(result?.instructions?.nameServers) ? result.instructions.nameServers : [];
+      if (domainId && nameServers.length < 2) {
+        try {
+          await domainApi("/api/domains/refresh", activeToken, { domainId });
+        } catch {
+          // Cloudflare may still be propagating; the saved domain remains
+          // available and the existing Refresh status action can retry.
+        }
+      }
+      return result;
+    }, "Domain ditambahkan. Salin dua nameserver ke registrar.");
     setHostname("");
   };
 
@@ -328,7 +372,6 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       <span><Globe2/></span><div><small>SITUS AKTIF</small><b>{site?.name || "Situs belum dipilih"}</b><p>{site?.slug ? `${site.slug}.ngeblogging.com` : ""}</p></div><i>{sites.length}/12 situs dalam akun</i>
     </section>
 
-
     {error ? <div className="sv124-error sv124-domain-error" role="alert"><span>{error}</span><button onClick={() => load()}>Coba lagi</button></div> : null}
 
     {loading ? <div className="sv124-panel-loading sv124-domain-loading"><LoaderCircle className="spin"/><b>Menyiapkan halaman Domain…</b><p>Hanya data situs aktif yang sedang dimuat. Proses berhenti dengan pesan jelas bila jaringan bermasalah.</p></div> : <>
@@ -345,7 +388,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
 
       <section className="sv124-card sv124-domain-register">
         <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terhubung" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Domain aktif dikelola pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola domain situs lain." : "Masukkan domain milik situs aktif. Sistem menyiapkan zone, dua nameserver, HTTPS, dan routing."}</p></div></header>
-        <form onSubmit={register}><label><b>{connected.length ? "Tambah / ganti domain pribadi" : "Nama domain"}</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>{connected.length ? "Situs ini sudah memiliki domain pribadi. Masukkan domain baru hanya jika ingin mengganti konfigurasi." : "Tanpa https://, tanpa www, dan tanpa path."}</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : connected.length ? "Kelola domain pribadi" : "Hubungkan domain"}</button></form>
+        <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form>
         <div className="sv124-provider-note"><ShieldCheck/>Menggunakan Full Zone dan dua nameserver Cloudflare. Subdomain gratis Ngeblogging tetap tersedia.</div>
       </section>
 
