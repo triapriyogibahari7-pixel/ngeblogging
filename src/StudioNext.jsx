@@ -307,10 +307,10 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        {deviceMode !== "small" && <button type="button" className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio"} aria-expanded={sidebar} aria-controls="ngeblogging-studio-sidebar">
+        <button type="button" className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
           <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span>
           <PanelLeftClose className="sn-desktop-sidebar-icon"/>
-        </button>}
+        </button>
         <button className="sn-workspace" onClick={() => setSiteManager(true)}><span>{site?.name?.slice(0, 2).toUpperCase() || "NB"}</span><div><small>WORKSPACE</small><b>{site?.name || "Ngeblogging"}</b></div><ChevronDown/></button>
         <div className={`sn-cloud ${dataMode}`}>{dataMode === "cloud" ? <Cloud/> : dataMode === "connecting" ? <LoaderCircle className="spin"/> : <CloudOff/>}<span>{dataMode === "cloud" ? "Cloud aktif" : dataMode === "connecting" ? "Menghubungkan" : "Mode perangkat"}</span></div>
         <div className="sn-top-actions">
