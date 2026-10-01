@@ -1050,21 +1050,9 @@ async function registerFullZoneDomain(
     );
   }
 
-  if (
-    zoneState.nameServers.length < 2
-    && !zoneState.active
-  ) {
-    throw Object.assign(
-      new Error(
-        "Cloudflare belum memberikan nameserver untuk domain ini.",
-      ),
-      {
-        code: "FULL_ZONE_NAMESERVERS_UNAVAILABLE",
-        status: 502,
-      },
-    );
-  }
-
+  // Cloudflare dapat membuat zone lebih dulu lalu mengisi nameserver
+  // beberapa saat kemudian. Simpan zone sekarang agar domain tidak hilang
+  // dan endpoint refresh dapat mengambil dua nameserver saat sudah tersedia.
   const now = new Date().toISOString();
 
   const domainState = {
