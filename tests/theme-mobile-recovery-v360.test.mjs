@@ -32,3 +32,17 @@ test("Theme mobile recovery fixes the current Theme markup rather than retired l
     ".tn-modal",
   ]) assert.match(css, new RegExp(selector.replace(/[.*+?^{}()|[\]\\]/g, "\\$&")));
 });
+
+
+test("v361 mobile-only repair blocks desktop selectors and fixes overlay/icon geometry", () => {
+  assert.match(css, /v361 mobile-only overlap\\/icon repair/);
+  assert.match(css, /sn-sidebar-scrim-v15\\[hidden\\][\\s\\S]*display:none!important/);
+  assert.match(css, /nara-floating-button[\\s\\S]*width:56px!important[\\s\\S]*height:56px!important/);
+  assert.match(css, /sn-icon\\.sn-sidebar-edge-owner-v17[\\s\\S]*width:40px!important[\\s\\S]*height:40px!important/);
+  assert.doesNotMatch(css, /data-studio-device-variant="laptop"/);
+  assert.doesNotMatch(css, /data-studio-device-variant="desktop"/);
+  assert.doesNotMatch(css, /data-studio-device-variant="computer"/);
+  assert.doesNotMatch(css, /data-v340-theme-device="laptop"/);
+  assert.doesNotMatch(css, /data-v340-theme-device="desktop"/);
+  assert.doesNotMatch(css, /data-v340-theme-device="computer"/);
+});
