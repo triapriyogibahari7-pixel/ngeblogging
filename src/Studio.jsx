@@ -211,5 +211,6 @@ import "./studio-analytics-layout-v349.js";
 import "./studio-analytics-layout-v349.css";
 import "./studio-theme-code-editor-v346.css";
 import "./studio-theme-code-editor-v348.js";
+import "./studio-title-overlap-guard-v370.js";
 
 export default StudioFastGate;
