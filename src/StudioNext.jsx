@@ -307,7 +307,7 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        {!mobileSidebar && <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? "Buka menu Studio" : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? false : sidebar} aria-controls="ngeblogging-studio-sidebar">
+        {deviceMode !== "small" && <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio"} aria-expanded={sidebar} aria-controls="ngeblogging-studio-sidebar">
           <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span>
           <PanelLeftClose className="sn-desktop-sidebar-icon"/>
         </button>}
