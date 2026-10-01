@@ -270,7 +270,20 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     event.preventDefault();
     const clean = hostname.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
     if (!clean) return setError("Masukkan nama domain tanpa https://, www, atau path.");
-    await mutate("register", (activeToken) => domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean }), "Domain ditambahkan. Salin dua nameserver ke registrar.");
+    await mutate("register", async (activeToken) => {
+      const result = await domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean });
+      const domainId = result?.domain?.id;
+      const nameServers = Array.isArray(result?.instructions?.nameServers) ? result.instructions.nameServers : [];
+      if (domainId && nameServers.length < 2) {
+        try {
+          await domainApi("/api/domains/refresh", activeToken, { domainId });
+        } catch {
+          // Cloudflare may still be propagating; the saved domain remains
+          // available and the existing Refresh status action can retry.
+        }
+      }
+      return result;
+    }, "Domain ditambahkan. Salin dua nameserver ke registrar.");
     setHostname("");
   };
 
@@ -364,7 +377,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
 
       <section className="sv124-card sv124-domain-register">
         <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terhubung" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Domain aktif dikelola pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola domain situs lain." : "Masukkan domain milik situs aktif. Sistem menyiapkan zone, dua nameserver, HTTPS, dan routing."}</p></div></header>
-        {!connected.length ? <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form> : null}
+        <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form>
         <div className="sv124-provider-note"><ShieldCheck/>Menggunakan Full Zone dan dua nameserver Cloudflare. Subdomain gratis Ngeblogging tetap tersedia.</div>
       </section>
 
