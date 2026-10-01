@@ -25,7 +25,10 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
     "Alamat utama tanpa www · dilindungi",
     "Mendukung satu atau beberapa tingkat subdomain",
     "Ganti situs pada Workspace",
+    "domain-manager-v113-custom-domain-fix-20261001",
+    "Dua nameserver resmi",
   ]) assert.ok(manager.includes(marker), marker);
+  assert.doesNotMatch(manager, /state\\.config\\?\\.enabled === true && state\\.token && state\\.site\\?\\.id && !hasDomain/);
   assert.match(styles, /:host\{all:initial/);
   assert.match(styles, /\.register-form\{/);
   assert.match(styles, /\.address-form\{/);
