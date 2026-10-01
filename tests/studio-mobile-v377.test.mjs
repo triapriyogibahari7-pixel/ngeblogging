@@ -78,3 +78,24 @@ test("v405 covers all ten Studio pages with small-device-only layout authority",
   assert.doesNotMatch(css, /data-studio-responsive-mode="tablet"/);
   assert.doesNotMatch(css, /data-studio-responsive-mode="desktop"/);
 });
+
+
+test("v408 adds mobile Pages shortcut and stabilizes Nara inside the mobile editor", async () => {
+  const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/studio-mobile-v408.css", import.meta.url), "utf8");
+  assert.match(studio, /className="sn-new sn-new-page"/);
+  assert.match(studio, /Buat Page/);
+  assert.match(studio, /studio-mobile-v408\.css/);
+  assert.match(css, /\.sn-new-page/);
+  assert.match(css, /\.nara-floating-button/);
+  assert.match(css, /\.nara-assistant-layer/);
+  assert.match(css, /\.nara-assistant-shell/);
+  assert.match(css, /\.nara-composer-tools/);
+  assert.match(css, /\.nara-send/);
+  assert.match(css, /@media screen and \(max-width:760px\)/);
+  assert.doesNotMatch(css, /editor-v266-large/);
+  assert.doesNotMatch(css, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css, /data-studio-responsive-mode="desktop"/);
+  assert.doesNotMatch(css, /data-studio-device-mode="large"/);
+  assert.equal((css.match(/{/g)||[]).length, (css.match(/}/g)||[]).length);
+});
