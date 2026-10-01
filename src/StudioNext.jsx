@@ -316,7 +316,7 @@ export default function StudioNext({ onExit, user }) {
       {view === "analytics" && <AnalyticsView/>} 
       {view === "members" && <MembersView site={site} user={user} profile={profile} setToast={setToast}/>} 
       {view === "comments" && <CommentsPanelV124 site={site} setToast={setToast}/>} 
-      {view === "domain" && <DomainPanelV124 site={site} sites={sites} onSiteUpdate={setSite} setToast={setToast}/>} 
+      {view === "domain" && <DomainPanelV124 site={site} sites={sites} onSiteUpdate={setSite} onSelectSite={selectSite} setToast={setToast}/>} 
       {view === "api-keys" && <ApiKeysPanel setToast={setToast}/>} 
       {view === "settings" && <SettingsView site={site} setSite={setSite} profile={profile} setProfile={setProfile} user={user} setToast={setToast}/>} 
     </main>
