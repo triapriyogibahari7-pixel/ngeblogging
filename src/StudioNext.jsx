@@ -285,7 +285,7 @@ export default function StudioNext({ onExit, user }) {
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
-      <div className="sn-logo"><button type="button" className="sn-logo-mark" aria-label={deviceMode === "small" ? "Tutup menu Studio" : "n."} aria-controls="ngeblogging-studio-sidebar" aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} onClick={deviceMode === "small" ? toggleSidebar : undefined}><strong>n</strong><i>.</i></button><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
+      <div className="sn-logo"><button type="button" className="sn-logo-mark" aria-label={deviceMode === "small" ? "Tutup menu Studio" : "n."} aria-controls="ngeblogging-studio-sidebar" aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} onClick={deviceMode === "small" ? () => setMobileSidebar(false) : undefined}><strong>n</strong><i>.</i></button><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
       <button type="button" className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
         <button type="button" className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
@@ -307,7 +307,7 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        {deviceMode !== "small" && <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio"} aria-expanded={sidebar} aria-controls="ngeblogging-studio-sidebar">
+        {(deviceMode !== "small" || !mobileSidebar) && <button type="button" className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? "Buka menu Studio" : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
           <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span>
           <PanelLeftClose className="sn-desktop-sidebar-icon"/>
         </button>}
