@@ -824,3 +824,263 @@
     padding-top:max(10px,env(safe-area-inset-top,0px))!important;
   }
 }
+
+
+/* v370.1 MOBILE EDITOR OVERRIDE
+ * Higher specificity is intentional: an older responsive authority uses
+ * html:not([data-desktop-layout-requested="true"]) and must not be allowed
+ * to put editor chrome back over the document.
+ */
+html.editor-v266-small .ce-app,
+html[data-studio-device-mode="small"] .ce-app {
+  position:relative!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:hidden!important;
+}
+
+html.editor-v266-small .ce-titlebar,
+html[data-studio-device-mode="small"] .ce-titlebar {
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  inset:auto!important;
+  z-index:1!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  grid-template-areas:"back file" "actions actions"!important;
+  gap:8px!important;
+  padding:10px!important;
+  margin:0!important;
+  transform:none!important;
+  float:none!important;
+}
+
+html.editor-v266-small .ce-back,
+html[data-studio-device-mode="small"] .ce-back {
+  position:relative!important;
+  grid-area:back!important;
+  inset:auto!important;
+  margin:0!important;
+  float:none!important;
+}
+
+html.editor-v266-small .ce-file,
+html[data-studio-device-mode="small"] .ce-file {
+  position:relative!important;
+  grid-area:file!important;
+  inset:auto!important;
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+}
+
+html.editor-v266-small .ce-actions,
+html[data-studio-device-mode="small"] .ce-actions {
+  position:relative!important;
+  grid-area:actions!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  float:none!important;
+}
+
+html.editor-v266-small .ce-actions > button,
+html[data-studio-device-mode="small"] .ce-actions > button {
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  font-size:12px!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  transform:none!important;
+  float:none!important;
+}
+
+html.editor-v266-small .ce-actions .ce-primary,
+html[data-studio-device-mode="small"] .ce-actions .ce-primary {
+  position:relative!important;
+  inset:auto!important;
+  grid-area:auto!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:46px!important;
+  margin:0!important;
+  z-index:1!important;
+}
+
+html.editor-v266-small .ce-tabs,
+html[data-studio-device-mode="small"] .ce-tabs,
+html.editor-v266-small .ce-ribbon,
+html[data-studio-device-mode="small"] .ce-ribbon {
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  inset:auto!important;
+  z-index:1!important;
+  margin:0!important;
+  transform:none!important;
+  float:none!important;
+}
+
+html.editor-v266-small .ce-tabs {
+  width:100%!important;
+  min-width:0!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+
+html.editor-v266-small .ce-ribbon {
+  width:100%!important;
+  min-width:0!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+
+html[data-studio-device-mode="small"] .ce-tabs {
+  width:100%!important;
+  min-width:0!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+
+html[data-studio-device-mode="small"] .ce-ribbon {
+  width:100%!important;
+  min-width:0!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+
+html.editor-v266-small .ce-workspace,
+html[data-studio-device-mode="small"] .ce-workspace {
+  position:relative!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:visible!important;
+  margin:0!important;
+  transform:none!important;
+}
+
+html.editor-v266-small .ce-paper-shell,
+html[data-studio-device-mode="small"] .ce-paper-shell {
+  position:relative!important;
+  order:1!important;
+  z-index:0!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:10px 8px 16px!important;
+  background:transparent!important;
+  overflow:visible!important;
+}
+
+html.editor-v266-small .ce-paper,
+html[data-studio-device-mode="small"] .ce-paper {
+  position:relative!important;
+  z-index:0!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:420px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:28px clamp(16px,5vw,24px)!important;
+  background:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  transform:none!important;
+  overflow-x:hidden!important;
+}
+
+html.editor-v266-small .ce-sidebar,
+html[data-studio-device-mode="small"] .ce-sidebar {
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  inset:auto!important;
+  z-index:0!important;
+  order:2!important;
+  width:100%!important;
+  max-width:100%!important;
+  max-height:none!important;
+  height:auto!important;
+  margin:0!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+
+html.editor-v266-small .ce-preview-devices,
+html[data-studio-device-mode="small"] .ce-preview-devices {
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:max(12px,env(safe-area-inset-bottom,12px))!important;
+  z-index:3010!important;
+  width:auto!important;
+  transform:translateX(-50%)!important;
+}
+
+html.editor-v266-small :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer),
+html[data-studio-device-mode="small"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer) {
+  position:fixed!important;
+  inset:0!important;
+  z-index:3000!important;
+  width:100vw!important;
+  max-width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+}
