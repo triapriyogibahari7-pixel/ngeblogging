@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const root=new URL("../",import.meta.url);
 const read=p=>readFile(new URL(p,root),"utf8");
-const css=await read("src/studio-widget-studio-v368.css");
+const css=await read("src/studio-widget-studio-v369.css");
 const studio=await read("src/ThemeStudio.jsx");
 
 assert.match(css,/tn-widget-modal-layer/);
@@ -22,3 +22,7 @@ assert.doesNotMatch(css,/setInterval/);
 assert.match(studio,/studio-widget-studio-v368\.css/);
 assert.match(studio,/layerClassName="tn-widget-modal-layer"/);
 assert.doesNotMatch(studio,/studio-widget-studio-v366\.js/);
+
+assert.match(studio,/createPortal/);
+assert.match(studio,/portal layerClassName="tn-widget-modal-layer"/);
+assert.doesNotMatch(tc, /data-v238-family/);
