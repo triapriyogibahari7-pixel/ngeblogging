@@ -12,8 +12,8 @@ test("domain manager v80 uses a Shadow DOM as the only visible domain surface", 
     read("src/domain-manager-v80.css.js"),
     read("src/domain-manager-v79.js"),
   ]);
-  assert.match(entry, /domain-manager-v80\.js/);
-  assert.doesNotMatch(entry, /domain-manager-v79\.js/);
+  assert.match(entry, /DOMAIN_AUTHORITY_V75_COMPATIBILITY_ONLY = true/);
+  assert.doesNotMatch(entry, /import\s+['"]\.\/domain-manager-v80\.js['"]/);\n  assert.doesNotMatch(entry, /domain-manager-v79\.js/);
   for (const marker of [
     "domain-manager-v80-20260727",
     "attachShadow({ mode: \"open\" })",
