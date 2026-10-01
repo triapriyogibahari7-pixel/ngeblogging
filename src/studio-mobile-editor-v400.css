@@ -1,0 +1,650 @@
+/* Ngeblogging Studio — v400 mobile editor authority
+ * Small-device editor only: application / phone / smartphone / mobile / compact.
+ * Desktop / laptop / computer / tablet / large-device editor CSS is intentionally untouched.
+ *
+ * This layer is deliberately isolated behind [data-mobile-editor-v400="true"] so
+ * historical v324-v376 mobile rules cannot determine editor geometry.
+ */
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"],
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] *{
+  box-sizing:border-box!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"]{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100vw!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  display:block!important;
+  background:#f5f7fb!important;
+  isolation:isolate!important;
+  transform:none!important;
+}
+
+/* ===== Header =====
+   Row 1: back + full-width title.
+   Row 2: Preview + Terbitkan.
+   Nothing is fixed, sticky, absolute, or floating in this header.
+ */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
+  position:relative!important;
+  inset:auto!important;
+  z-index:20!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:max(10px,env(safe-area-inset-top,0px)) 10px 10px!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  grid-template-rows:48px 46px!important;
+  grid-template-areas:"back file" "actions actions"!important;
+  gap:8px!important;
+  align-items:center!important;
+  overflow:visible!important;
+  border:0!important;
+  border-bottom:1px solid #dfe6ef!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-back{
+  grid-area:back!important;
+  position:relative!important;
+  inset:auto!important;
+  width:40px!important;
+  min-width:40px!important;
+  max-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  max-height:40px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  flex:none!important;
+  align-self:center!important;
+  justify-self:start!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file{
+  grid-area:file!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  grid-template-columns:20px minmax(0,1fr)!important;
+  gap:8px!important;
+  align-items:center!important;
+  flex:none!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file>svg{
+  width:20px!important;
+  min-width:20px!important;
+  height:20px!important;
+  display:block!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file label{
+  position:relative!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  margin:0!important;
+  padding:0!important;
+  display:block!important;
+  overflow:hidden!important;
+  font-size:0!important;
+  line-height:1!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file input{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  margin:0!important;
+  padding:0 2px!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  background:transparent!important;
+  color:#17243a!important;
+  font:800 17px/1.25 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  letter-spacing:-.01em!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file small{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:10px!important;
+  min-height:10px!important;
+  max-height:10px!important;
+  margin:0!important;
+  padding:0!important;
+  color:#7e8a9c!important;
+  font-size:8px!important;
+  line-height:1!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions{
+  grid-area:actions!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:8px!important;
+  align-items:stretch!important;
+  flex:none!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions>button{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  flex:none!important;
+  border-radius:9px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-size:11px!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions>button svg{
+  flex:0 0 auto!important;
+  width:16px!important;
+  height:16px!important;
+}
+
+/* ===== Tabs ===== */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-tabs{
+  position:relative!important;
+  inset:auto!important;
+  z-index:15!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  margin:0!important;
+  padding:0 5px!important;
+  display:flex!important;
+  align-items:stretch!important;
+  gap:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  white-space:nowrap!important;
+  scrollbar-width:none!important;
+  overscroll-behavior-x:contain!important;
+  background:#fff!important;
+  border:0!important;
+  border-bottom:1px solid #dfe6ef!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-tabs::-webkit-scrollbar{display:none!important}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-tabs>button{
+  position:relative!important;
+  flex:0 0 auto!important;
+  width:max-content!important;
+  min-width:max-content!important;
+  max-width:none!important;
+  height:48px!important;
+  min-height:48px!important;
+  margin:0!important;
+  padding:0 12px!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+  transform:none!important;
+}
+
+/* ===== Toolbar ===== */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon{
+  position:relative!important;
+  inset:auto!important;
+  z-index:14!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+  margin:0!important;
+  padding:5px 6px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  white-space:nowrap!important;
+  overscroll-behavior-x:contain!important;
+  scrollbar-width:none!important;
+  background:#f9fafc!important;
+  border:0!important;
+  border-bottom:1px solid #dfe6ef!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon::-webkit-scrollbar{display:none!important}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon>section{
+  position:relative!important;
+  flex:0 0 auto!important;
+  width:max-content!important;
+  min-width:max-content!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  margin:0!important;
+  padding:0 4px!important;
+  display:flex!important;
+  align-items:center!important;
+  border-right:1px solid #dfe6ef!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon>section>span,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon .selects{
+  display:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon nav{
+  height:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:3px!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon nav button,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-color-tool{
+  position:relative!important;
+  flex:0 0 38px!important;
+  width:38px!important;
+  min-width:38px!important;
+  max-width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-nara{
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 40px!important;
+  width:40px!important;
+  min-width:40px!important;
+  max-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  max-height:40px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:0!important;
+}
+
+/* ===== Writing canvas ===== */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-workspace{
+  position:relative!important;
+  inset:auto!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  display:block!important;
+  overflow:visible!important;
+  transform:none!important;
+  background:#f5f7fb!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper-shell{
+  position:relative!important;
+  inset:auto!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:10px 8px 18px!important;
+  display:block!important;
+  background:#f5f7fb!important;
+  border:0!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper{
+  position:relative!important;
+  inset:auto!important;
+  z-index:1!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:clamp(460px,62dvh,720px)!important;
+  margin:0!important;
+  padding:26px clamp(16px,5vw,26px)!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 4px 18px rgba(26,44,72,.07)!important;
+  color:#35475f!important;
+  font:16px/1.78 "DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  text-align:left!important;
+  outline:0!important;
+  overflow:visible!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper:empty::before{
+  content:"Mulai menulis gagasan terbaik Anda…"!important;
+  display:block!important;
+  color:#9aa6b6!important;
+  pointer-events:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code){
+  width:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper h1{
+  margin-top:0!important;
+  font-size:clamp(28px,8.5vw,38px)!important;
+  line-height:1.12!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper h2{
+  font-size:clamp(22px,7vw,30px)!important;
+  line-height:1.16!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper h3{
+  font-size:clamp(19px,6vw,25px)!important;
+  line-height:1.2!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper :is(img,video,iframe,canvas,audio){
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  height:auto!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper figure{
+  width:100%!important;
+  max-width:100%!important;
+  margin:22px 0!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper table{
+  display:block!important;
+  width:max-content!important;
+  min-width:100%!important;
+  max-width:none!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper pre{
+  max-width:100%!important;
+  overflow-x:auto!important;
+  white-space:pre!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+/* The old word/character status is intentionally hidden on phones.
+   It was the source of the long striped/boxed line above Draf Post/Page. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-word-status{
+  display:none!important;
+}
+
+/* ===== Mobile inspector ===== */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-sidebar{
+  position:relative!important;
+  inset:auto!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0 8px max(18px,env(safe-area-inset-bottom,0px))!important;
+  display:block!important;
+  overflow:visible!important;
+  border:0!important;
+  background:#f5f7fb!important;
+  transform:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-sidebar>section{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0 0 10px!important;
+  padding:15px!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  overflow:visible!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-sidebar h3{
+  width:100%!important;
+  max-width:100%!important;
+  margin:0 0 12px!important;
+  line-height:1.35!important;
+  overflow-wrap:anywhere!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  display:grid!important;
+  gap:6px!important;
+  margin-bottom:11px!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field :is(input,select,textarea){
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:46px!important;
+  font-size:16px!important;
+  line-height:1.35!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field textarea{
+  min-height:100px!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field-grid{
+  width:100%!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:0!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-toggle{
+  width:100%!important;
+  min-width:0!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+}
+
+/* Only editor tools are allowed to cover the viewport. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer){
+  position:fixed!important;
+  inset:0!important;
+  z-index:5000!important;
+  width:100vw!important;
+  max-width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:stretch!important;
+  overflow:hidden!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  min-height:0!important;
+  margin:0!important;
+  border-radius:0!important;
+}
+
+/* Legacy injected editor navigation: never paint a white sheet over the editor.
+   If explicitly opened, only the bounded drawer is visible. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266{
+  pointer-events:none!important;
+  background:transparent!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266 .ce-editor-side-v266{
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266.mobile-open{
+  pointer-events:auto!important;
+}
+
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266{
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+/* Remove accidental fixed positioning from editor action clones/legacy controls. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] :is(.ce-primary,.ce-actions,.ce-back,.ce-file){
+  transform:none!important;
+}
+
+/* PWA / standalone application safe area. */
+@media (display-mode:standalone){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
+    padding-top:max(10px,env(safe-area-inset-top,0px))!important;
+  }
+}
+
+/* Very narrow phones: never collapse the title to a one-character field. */
+@media (max-width:390px){
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
+    grid-template-columns:38px minmax(0,1fr)!important;
+    padding-inline:8px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file{
+    grid-template-columns:20px minmax(0,1fr)!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file input{
+    font-size:16px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions{
+    gap:6px!important;
+  }
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions>button{
+    font-size:10px!important;
+    padding-inline:5px!important;
+  }
+}
