@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowLeft, Bold, CalendarDays,
   Check, Clock3, Code2, Eye, FileText, Heading1, Heading2, Highlighter, Image,
@@ -44,6 +44,36 @@ function DeviceSwitch({ value, onChange }) {
   return <div className="ce-device-switch">{DEVICES.map(({ id, label, icon: Icon }) => <button key={id} className={value === id ? "active" : ""} onClick={() => onChange(id)} title={label}><Icon/><span>{label}</span></button>)}</div>;
 }
 
+const RichTextEditor = memo(function RichTextEditor({ documentId, initialContent, patchRef, editorRef }) {
+  const rootRef = useRef(null);
+
+  const sync = useCallback((nextContent = "") => {
+    const root = rootRef.current;
+    if (!root) return;
+    if (document.activeElement === root) return;
+    if (root.innerHTML !== nextContent) root.innerHTML = nextContent;
+  }, []);
+
+  useImperativeHandle(editorRef, () => ({
+    focus: () => rootRef.current?.focus(),
+    get innerHTML() {
+      return rootRef.current?.innerHTML || "";
+    },
+    sync,
+  }), [sync]);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (root) root.innerHTML = initialContent || "";
+  }, [documentId]);
+
+  const handleInput = useCallback((event) => {
+    patchRef.current?.({ content: event.currentTarget.innerHTML });
+  }, [patchRef]);
+
+  return <article ref={rootRef} className="ce-paper" contentEditable suppressContentEditableWarning onInput={handleInput}/>;
+}, (previous, next) => previous.documentId === next.documentId);
+
 function Preview({ doc, site, device, onClose }) {
   const metadata = doc.metadata || {};
   const date = metadata.eventDate || doc.publishedAt || doc.createdAt;
@@ -54,15 +84,11 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
   const editor = useRef(null);
   const [tab, setTab] = useState("content");
 
-  // Keep the contenteditable DOM uncontrolled while typing. Replacing its
-  // innerHTML on every React render destroys the browser selection/caret,
-  // which made the caret jump to the beginning after each character.
+  const patchRef = useRef(patch);
+  patchRef.current = patch;
   useLayoutEffect(() => {
-    const element = editor.current;
-    if (!element) return;
-    const nextContent = doc.content || "";
-    if (element.innerHTML !== nextContent) element.innerHTML = nextContent;
-  }, [doc.id, doc.content]);
+    editor.current?.sync(doc.content || "");
+  }, [doc.content]);
   const [preview, setPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState("desktop");
   const [mediaOpen, setMediaOpen] = useState(false);
@@ -128,7 +154,7 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
     </div>
 
     <div className="ce-workspace">
-      <main className="ce-paper-shell"><article ref={editor} className="ce-paper" contentEditable suppressContentEditableWarning onInput={(event) => patch({ content: event.currentTarget.innerHTML })}/><div className="ce-word-status"><span>{words.toLocaleString("id-ID")} kata</span><span>± {readingMinutes} menit membaca</span><span>{String(doc.content || "").length.toLocaleString("id-ID")} karakter HTML</span></div></main>
+      <main className="ce-paper-shell"><RichTextEditor documentId={doc.id} initialContent={doc.content || ""} patchRef={patchRef} editorRef={editor}/><div className="ce-word-status"><span>{words.toLocaleString("id-ID")} kata</span><span>± {readingMinutes} menit membaca</span><span>{String(doc.content || "").length.toLocaleString("id-ID")} karakter HTML</span></div></main>
       <aside className="ce-sidebar">
         <section><h3>Publikasi</h3><Field label="Status"><select value={doc.status || "draft"} onChange={(event) => patch({ status:event.target.value })}><option value="draft">Draf</option><option value="review">Review</option><option value="scheduled">Terjadwal</option><option value="published">Terbit</option><option value="archived">Arsip</option></select></Field><Field label="Visibilitas"><select value={doc.visibility || "public"} onChange={(event) => patch({visibility:event.target.value})}><option value="public">Publik</option><option value="members">Anggota</option><option value="private">Pribadi</option></select></Field><Field label="Jadwal terbit" help="Digunakan ketika status Terjadwal"><input type="datetime-local" value={localDateTime(doc.scheduledAt)} onChange={(event) => patch({ scheduledAt:event.target.value ? new Date(event.target.value).toISOString() : "" })}/></Field><Field label="Slug URL"><input value={doc.slug || ""} onChange={(event) => patch({slug:slugify(event.target.value)})}/></Field></section>
         <section><h3><CalendarDays/> Tanggal & waktu</h3><div className="ce-field-grid"><Field label="Tanggal acara"><input type="date" value={metadata.eventDate || ""} onChange={(event) => updateMetadata({eventDate:event.target.value})}/></Field><Field label="Waktu"><input type="time" value={metadata.eventTime || ""} onChange={(event) => updateMetadata({eventTime:event.target.value})}/></Field><Field label="Tanggal selesai"><input type="date" value={metadata.endDate || ""} onChange={(event) => updateMetadata({endDate:event.target.value})}/></Field><Field label="Waktu selesai"><input type="time" value={metadata.endTime || ""} onChange={(event) => updateMetadata({endTime:event.target.value})}/></Field></div><Field label="Zona waktu"><select value={metadata.timezone || "Asia/Jakarta"} onChange={(event) => updateMetadata({timezone:event.target.value})}><option>Asia/Jakarta</option><option>Asia/Makassar</option><option>Asia/Jayapura</option><option>UTC</option></select></Field></section>
