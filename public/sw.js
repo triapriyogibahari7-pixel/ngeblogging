@@ -52,7 +52,7 @@ const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "v444-theme-mobile-refresh-20261001";
+const FORCE_REFRESH_VALUE = "v445-theme-mobile-refresh-20261001";
 const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
 const ACTIVE_CACHE_RELEASE_V258 = "studio-theme-right4-cache-v258";
 const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";
@@ -180,8 +180,8 @@ async function notifyOpenWindows() {
       const url = new URL(client.url);
       if (url.origin !== self.location.origin || isAuthSurface(url)) return;
       client.postMessage({
-        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V367"),
-        reason: "service-worker-activated-domain-runtime-v367",
+        ...versionPayload("NGE_BLOGGING_UPDATE_AVAILABLE_V445"),
+        reason: "service-worker-activated-theme-mobile-restore-v445",
         reloadRequired: false,
       });
       // Deliberately no client.navigate()/reload: preserve login/session and unsaved work.
