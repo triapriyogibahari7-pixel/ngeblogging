@@ -1,0 +1,597 @@
+/* Ngeblogging v372 — FINAL SMALL-SCREEN EDITOR AUTHORITY
+ * Only applies to the small-device editor. Desktop/laptop/computer/tablet selectors are absent.
+ * This layer is intentionally loaded LAST in ContentEditor.jsx and StudioSecure.jsx.
+ */
+
+/* Kill competing sticky/absolute geometry from legacy mobile editor layers. */
+html.editor-v266-small .ce-app,
+html[data-studio-device-mode="small"] .ce-app{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100vw!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+  background:#f5f7fb!important;
+}
+
+html.editor-v266-small .ce-titlebar,
+html[data-studio-device-mode="small"] .ce-titlebar{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  float:none!important;
+  transform:none!important;
+  z-index:100!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  grid-template-areas:"back file" "actions actions"!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:10px 10px 9px!important;
+  margin:0!important;
+  border:0!important;
+  border-bottom:1px solid #dfe6ef!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+
+html.editor-v266-small .ce-back,
+html[data-studio-device-mode="small"] .ce-back{
+  grid-area:back!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:40px!important;
+  min-width:40px!important;
+  max-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
+
+html.editor-v266-small .ce-file,
+html[data-studio-device-mode="small"] .ce-file{
+  grid-area:file!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  grid-template-columns:20px minmax(0,1fr)!important;
+  align-items:center!important;
+  column-gap:7px!important;
+  overflow:visible!important;
+}
+
+html.editor-v266-small .ce-file>svg,
+html[data-studio-device-mode="small"] .ce-file>svg{
+  display:block!important;
+  width:20px!important;
+  min-width:20px!important;
+  height:20px!important;
+}
+
+html.editor-v266-small .ce-file label,
+html[data-studio-device-mode="small"] .ce-file label{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:40px auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+html.editor-v266-small .ce-file input,
+html[data-studio-device-mode="small"] .ce-file input{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:40px!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:0 2px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#17243a!important;
+  font-size:16px!important;
+  line-height:1.25!important;
+  font-weight:800!important;
+  outline:0!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+}
+
+html.editor-v266-small .ce-file small,
+html[data-studio-device-mode="small"] .ce-file small{
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:16px!important;
+  min-height:16px!important;
+  margin:2px 0 0!important;
+  padding:0!important;
+  color:#7e8a9c!important;
+  font-size:8px!important;
+  line-height:1!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+html.editor-v266-small .ce-actions,
+html[data-studio-device-mode="small"] .ce-actions{
+  grid-area:actions!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+
+html.editor-v266-small .ce-actions>button,
+html[data-studio-device-mode="small"] .ce-actions>button{
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  border-radius:9px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+html.editor-v266-small .ce-actions .ce-primary,
+html[data-studio-device-mode="small"] .ce-actions .ce-primary{
+  grid-column:auto!important;
+  grid-row:auto!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding-inline:8px!important;
+}
+
+html.editor-v266-small .ce-tabs,
+html[data-studio-device-mode="small"] .ce-tabs{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  float:none!important;
+  transform:none!important;
+  z-index:90!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  margin:0!important;
+  padding:0 5px!important;
+  display:flex!important;
+  align-items:stretch!important;
+  gap:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  background:#fff!important;
+  border-bottom:1px solid #dfe6ef!important;
+  scrollbar-width:none!important;
+}
+
+html.editor-v266-small .ce-tabs::-webkit-scrollbar,
+html[data-studio-device-mode="small"] .ce-tabs::-webkit-scrollbar{display:none!important}
+
+html.editor-v266-small .ce-tabs>button,
+html[data-studio-device-mode="small"] .ce-tabs>button{
+  flex:0 0 auto!important;
+  width:max-content!important;
+  min-width:max-content!important;
+  max-width:none!important;
+  height:48px!important;
+  min-height:48px!important;
+  padding:0 12px!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+}
+
+html.editor-v266-small .ce-ribbon,
+html[data-studio-device-mode="small"] .ce-ribbon{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  float:none!important;
+  transform:none!important;
+  z-index:80!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+  margin:0!important;
+  padding:5px 6px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  background:#f9fafc!important;
+  border-bottom:1px solid #dfe6ef!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  scrollbar-width:none!important;
+}
+
+html.editor-v266-small .ce-ribbon::-webkit-scrollbar,
+html[data-studio-device-mode="small"] .ce-ribbon::-webkit-scrollbar{display:none!important}
+
+html.editor-v266-small .ce-ribbon>section,
+html[data-studio-device-mode="small"] .ce-ribbon>section{
+  flex:0 0 auto!important;
+  min-width:max-content!important;
+  height:48px!important;
+  min-height:48px!important;
+  margin:0!important;
+  padding:0 4px!important;
+  border-right:1px solid #dfe6ef!important;
+  display:flex!important;
+  align-items:center!important;
+}
+
+html.editor-v266-small .ce-ribbon>section>span,
+html[data-studio-device-mode="small"] .ce-ribbon>section>span,
+html.editor-v266-small .ce-ribbon .selects,
+html[data-studio-device-mode="small"] .ce-ribbon .selects{
+  display:none!important;
+}
+
+html.editor-v266-small .ce-ribbon nav,
+html[data-studio-device-mode="small"] .ce-ribbon nav{
+  display:flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  height:100%!important;
+}
+
+html.editor-v266-small .ce-ribbon nav button,
+html.editor-v266-small .ce-color-tool,
+html[data-studio-device-mode="small"] .ce-ribbon nav button,
+html[data-studio-device-mode="small"] .ce-color-tool{
+  flex:0 0 38px!important;
+  width:38px!important;
+  min-width:38px!important;
+  max-width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+html.editor-v266-small .ce-nara,
+html[data-studio-device-mode="small"] .ce-nara{
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 40px!important;
+  width:40px!important;
+  min-width:40px!important;
+  max-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:0!important;
+}
+
+html.editor-v266-small .ce-workspace,
+html[data-studio-device-mode="small"] .ce-workspace{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  display:block!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+html.editor-v266-small .ce-paper-shell,
+html[data-studio-device-mode="small"] .ce-paper-shell{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:12px 8px 18px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  background:#f5f7fb!important;
+  border:0!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+html.editor-v266-small .ce-paper,
+html[data-studio-device-mode="small"] .ce-paper{
+  position:relative!important;
+  inset:auto!important;
+  z-index:1!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:clamp(460px,60dvh,720px)!important;
+  margin:0!important;
+  padding:28px clamp(16px,5vw,24px)!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 4px 18px rgba(26,44,72,.07)!important;
+  color:#35475f!important;
+  font:16px/1.78 "DM Sans",sans-serif!important;
+  text-align:left!important;
+  outline:0!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+
+/* The editor must remain a writing canvas, not an empty outlined strip. */
+html.editor-v266-small .ce-paper:empty::before,
+html[data-studio-device-mode="small"] .ce-paper:empty::before{
+  content:"Mulai menulis gagasan terbaik Anda…" !important;
+  display:block!important;
+  color:#9aa6b6!important;
+  pointer-events:none!important;
+}
+
+html.editor-v266-small .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code),
+html[data-studio-device-mode="small"] .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code){
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-wrap:anywhere!important;
+}
+
+html.editor-v266-small .ce-paper h1,
+html[data-studio-device-mode="small"] .ce-paper h1{
+  font-size:clamp(28px,8vw,38px)!important;
+  line-height:1.12!important;
+  margin-top:0!important;
+}
+
+html.editor-v266-small .ce-paper h2,
+html[data-studio-device-mode="small"] .ce-paper h2{
+  font-size:clamp(22px,7vw,30px)!important;
+  line-height:1.15!important;
+}
+
+html.editor-v266-small .ce-paper h3,
+html[data-studio-device-mode="small"] .ce-paper h3{
+  font-size:clamp(19px,6vw,25px)!important;
+  line-height:1.2!important;
+}
+
+html.editor-v266-small .ce-paper :is(img,video,iframe,canvas,audio),
+html[data-studio-device-mode="small"] .ce-paper :is(img,video,iframe,canvas,audio){
+  display:block!important;
+  width:auto!important;
+  max-width:100%!important;
+  height:auto!important;
+}
+
+html.editor-v266-small .ce-paper figure,
+html[data-studio-device-mode="small"] .ce-paper figure{
+  width:100%!important;
+  max-width:100%!important;
+  margin:22px 0!important;
+}
+
+html.editor-v266-small .ce-paper table,
+html[data-studio-device-mode="small"] .ce-paper table{
+  display:block!important;
+  width:max-content!important;
+  min-width:100%!important;
+  max-width:none!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+html.editor-v266-small .ce-paper pre,
+html[data-studio-device-mode="small"] .ce-paper pre{
+  max-width:100%!important;
+  overflow-x:auto!important;
+  white-space:pre!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+html.editor-v266-small .ce-word-status,
+html[data-studio-device-mode="small"] .ce-word-status{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:22px!important;
+  margin:7px 0 0!important;
+  padding:0 3px!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:flex-start!important;
+  gap:5px 12px!important;
+  color:#7e8b9c!important;
+  font-size:8px!important;
+  line-height:1.4!important;
+  overflow-wrap:anywhere!important;
+}
+
+/* Inspector follows the writing area; never overlays it on small screens. */
+html.editor-v266-small .ce-sidebar,
+html[data-studio-device-mode="small"] .ce-sidebar{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  float:none!important;
+  transform:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  display:block!important;
+  overflow:visible!important;
+  border:0!important;
+  border-top:1px solid #dfe6ef!important;
+  background:#fff!important;
+}
+
+html.editor-v266-small .ce-sidebar>section,
+html[data-studio-device-mode="small"] .ce-sidebar>section{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  padding:16px 12px!important;
+  border-bottom:1px solid #e5eaf1!important;
+}
+
+/* Full-screen tools are the only intentional overlays. */
+html.editor-v266-small :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer),
+html[data-studio-device-mode="small"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer){
+  position:fixed!important;
+  inset:0!important;
+  z-index:5000!important;
+  width:100vw!important;
+  max-width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  padding:0!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:stretch!important;
+  overflow:hidden!important;
+}
+
+html.editor-v266-small :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section,
+html[data-studio-device-mode="small"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  border-radius:0!important;
+}
+
+html.editor-v266-small .ce-preview-devices,
+html[data-studio-device-mode="small"] .ce-preview-devices{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+  transform:translateX(-50%)!important;
+  z-index:5010!important;
+}
+
+html.editor-v266-small .ce-source-layer textarea,
+html[data-studio-device-mode="small"] .ce-source-layer textarea{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:0!important;
+  font-size:14px!important;
+}
+
+@media(max-width:390px){
+  html.editor-v266-small .ce-titlebar,
+  html[data-studio-device-mode="small"] .ce-titlebar{padding-inline:8px!important}
+  html.editor-v266-small .ce-paper,
+  html[data-studio-device-mode="small"] .ce-paper{padding-inline:14px!important}
+  html.editor-v266-small .ce-actions>button,
+  html[data-studio-device-mode="small"] .ce-actions>button{font-size:10px!important}
+}
+
+@media(display-mode:standalone){
+  html.editor-v266-small .ce-titlebar,
+  html[data-studio-device-mode="small"] .ce-titlebar{
+    padding-top:max(10px,env(safe-area-inset-top,0px))!important;
+  }
+}
