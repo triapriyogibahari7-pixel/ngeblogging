@@ -29,6 +29,7 @@ import "./studio-mobile-editor-v407.css";
 import "./studio-mobile-editor-v409.css";
 import "./studio-mobile-v414.css";
 import "./studio-mobile-v422.css";
+import "./studio-mobile-editor-v432.css";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
