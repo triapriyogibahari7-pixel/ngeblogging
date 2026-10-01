@@ -319,3 +319,70 @@
     margin:0!important;
   }
 }
+
+
+/* v442: final phone flow for API Keys. Keep the page compact like the other Studio menu pages. */
+@media(max-width:760px){
+  .sn-api-page{
+    min-height:0!important;
+    height:auto!important;
+    padding-top:0!important;
+    padding-bottom:34px!important;
+    margin:0!important;
+  }
+  .sn-api-page > .sn-api-title{
+    min-height:0!important;
+    height:auto!important;
+    align-content:start!important;
+    margin:0 0 10px!important;
+    gap:9px!important;
+  }
+  .sn-api-page > .sn-api-title > div{
+    min-height:0!important;
+  }
+  .sn-api-title h1{
+    margin:0 0 4px!important;
+    font-size:27px!important;
+    line-height:1.1!important;
+  }
+  .sn-api-title p{
+    font-size:10.5px!important;
+    line-height:1.45!important;
+  }
+  .sn-api-title > .sn-primary{
+    min-height:40px!important;
+    height:40px!important;
+  }
+  .sn-api-metrics{
+    margin:0 0 10px!important;
+    gap:7px!important;
+  }
+  .sn-api-metrics article{
+    min-height:68px!important;
+    padding:10px!important;
+    grid-template-columns:30px minmax(0,1fr)!important;
+    gap:1px 8px!important;
+  }
+  .sn-api-metrics article>svg{
+    width:20px!important;
+    height:20px!important;
+  }
+  .sn-api-metrics b{
+    font-size:21px!important;
+    line-height:1.05!important;
+  }
+  .sn-api-metrics span,
+  .sn-api-metrics small{
+    font-size:8.5px!important;
+  }
+  .sn-api-endpoint,
+  .sn-api-list{
+    margin:0 0 10px!important;
+  }
+  .sn-api-endpoint{
+    padding:11px!important;
+  }
+  .sn-api-list{
+    padding:11px!important;
+  }
+}
