@@ -665,3 +665,134 @@
     }
   }
 }
+
+/* v438: restore the single mobile N to the original left position.
+   Keep the native NaraAssistant launcher as the only Nara icon. */
+@media screen and (max-width:760px){
+  :is(html[data-studio-device-mode="small"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"],html[data-studio-responsive-mode="compact"],html.editor-v266-small,html.studio-v265-small){
+    .sn-mobile-n-launcher{
+      left:max(12px,env(safe-area-inset-left,0px))!important;
+      right:auto!important;
+      top:max(10px,env(safe-area-inset-top,0px))!important;
+      bottom:auto!important;
+      width:46px!important;
+      height:46px!important;
+      min-width:46px!important;
+      max-width:46px!important;
+      min-height:46px!important;
+      max-height:46px!important;
+      padding:0!important;
+      margin:0!important;
+      display:grid!important;
+      place-items:center!important;
+      overflow:visible!important;
+      clip:unset!important;
+      clip-path:none!important;
+      transform:none!important;
+      translate:none!important;
+      box-sizing:border-box!important;
+    }
+    .sn-mobile-n-launcher .sn-mobile-menu-mark{
+      width:46px!important;
+      height:46px!important;
+      min-width:46px!important;
+      min-height:46px!important;
+      margin:0!important;
+      padding:0!important;
+      display:block!important;
+      position:relative!important;
+      inset:auto!important;
+      overflow:visible!important;
+      clip:unset!important;
+      clip-path:none!important;
+      transform:none!important;
+    }
+    .sn-mobile-n-launcher .sn-mobile-menu-mark>strong{
+      position:absolute!important;
+      left:50%!important;
+      top:50%!important;
+      width:max-content!important;
+      height:auto!important;
+      margin:0!important;
+      padding:0!important;
+      display:block!important;
+      overflow:visible!important;
+      clip:unset!important;
+      clip-path:none!important;
+      transform:translate(-50%,-50%)!important;
+      translate:none!important;
+      font:900 27px/1 Arial,Helvetica,sans-serif!important;
+      letter-spacing:0!important;
+      text-indent:0!important;
+      white-space:nowrap!important;
+      text-align:center!important;
+      color:#fff!important;
+      -webkit-text-fill-color:#fff!important;
+    }
+
+    /* The native NaraAssistant button is the sole mobile Nara launcher. */
+    .sn-shell .sn-mobile-nara-launcher{
+      display:none!important;
+    }
+    .sn-shell .nara-floating-button{
+      display:grid!important;
+      position:fixed!important;
+      left:auto!important;
+      right:max(12px,env(safe-area-inset-right,0px))!important;
+      top:auto!important;
+      bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+      width:37px!important;
+      min-width:37px!important;
+      max-width:37px!important;
+      height:37px!important;
+      min-height:37px!important;
+      max-height:37px!important;
+      margin:0!important;
+      padding:0!important;
+      box-sizing:border-box!important;
+      place-items:center!important;
+      align-items:center!important;
+      justify-content:center!important;
+      border-radius:9px!important;
+      overflow:visible!important;
+      transform:none!important;
+      translate:none!important;
+      float:none!important;
+      pointer-events:auto!important;
+      touch-action:manipulation!important;
+      z-index:2147483646!important;
+    }
+    .sn-shell .nara-floating-button .nara-launcher-icon-box{
+      width:18px!important;
+      min-width:18px!important;
+      max-width:18px!important;
+      height:18px!important;
+      min-height:18px!important;
+      max-height:18px!important;
+      flex:0 0 18px!important;
+      display:grid!important;
+      place-items:center!important;
+      margin:0!important;
+      padding:0!important;
+      position:static!important;
+      overflow:visible!important;
+      transform:none!important;
+    }
+    .sn-shell .nara-floating-button .nara-launcher-icon-box>svg{
+      display:block!important;
+      width:18px!important;
+      min-width:18px!important;
+      max-width:18px!important;
+      height:18px!important;
+      min-height:18px!important;
+      max-height:18px!important;
+      flex:0 0 18px!important;
+      margin:0!important;
+      padding:0!important;
+      transform:none!important;
+    }
+    .sn-shell .nara-floating-button .nara-launcher-label{
+      display:none!important;
+    }
+  }
+}
