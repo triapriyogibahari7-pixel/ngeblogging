@@ -187,7 +187,7 @@ const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mill
 
 async function hydrateNameservers(env, zone) {
   let current = zone;
-  for (const delay of [0, 350, 800, 1500]) {
+  for (const delay of [0, 500, 1000, 2000, 3000, 4000]) {
     const state = publicZoneState(current);
     if (state.nameServers.length >= 2 || state.active) return current;
     if (!/^[0-9a-f]{32}$/i.test(state.id)) return current;
