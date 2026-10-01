@@ -15,7 +15,8 @@ test("v437 renders exactly one mobile N launcher source",()=>{
   assert.match(studio,/deviceMode !== "small" && <button type="button" className="sn-logo-mark"/);
   assert.match(studio,/deviceMode !== "small" && <button type="button" className="sn-icon sn-sidebar-toggle"/);
   assert.match(studio,/className="sn-mobile-n-launcher"/);
-  assert.doesNotMatch(studio,/sn-mobile-n-launcher[\\s\\S]*sn-logo-mark/);
+  assert.equal((studio.match(/className="sn-mobile-n-launcher"/g) || []).length, 1);
+  assert.equal((studio.match(/className="sn-mobile-nara-launcher"/g) || []).length, 1);
 });
 
 test("v437 N launcher is centered and unclipped",()=>{
