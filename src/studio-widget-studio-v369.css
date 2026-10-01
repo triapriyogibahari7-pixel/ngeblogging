@@ -18,7 +18,7 @@
   translate:none!important;
   will-change:auto!important;
 }
-.tn-widget-modal-layer:has(#ngeblogging-studio-sidebar.collapsed){
+html:has(#ngeblogging-studio-sidebar.collapsed) .tn-widget-modal-layer{
   left:68px!important;
   right:0!important;
   width:calc(100vw - 68px)!important;
