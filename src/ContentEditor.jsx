@@ -24,6 +24,7 @@ import "./studio-mobile-editor-v402.css";
 import "./studio-mobile-editor-v403.css";
 import "./studio-mobile-editor-v404.css";
 import "./studio-mobile-editor-v406.css";
+import "./studio-mobile-editor-v407.css";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
@@ -156,9 +157,31 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
   const updateMetadata = (values) => patch({ metadata: { ...metadata, ...values }, type: doc.type });
   const updateSeo = (values) => patch({ seo: { ...seo, ...values }, metadata, type: doc.type });
 
-  return <div className="ce-app" data-mobile-editor-v400="true" data-mobile-editor-v401="true" data-mobile-editor-v402="true" data-mobile-editor-v403="true" data-mobile-editor-v404="true" data-mobile-editor-v406="true">
+  return <div className="ce-app" data-mobile-editor-v400="true" data-mobile-editor-v401="true" data-mobile-editor-v402="true" data-mobile-editor-v403="true" data-mobile-editor-v404="true" data-mobile-editor-v406="true" data-mobile-editor-v407="true">
     <header className="ce-titlebar"><button className="ce-back" onClick={onBack}><ArrowLeft/></button><div className="ce-file"><FileText/><label><input value={doc.title} onChange={(event) => patch({ title: event.target.value, slug: slugify(event.target.value) })}/><small>{saved ? <><Check/> Tersimpan otomatis</> : <><LoaderCircle className="spin"/> Menyimpan…</>}</small></label></div><div className="ce-actions"><button onClick={() => setPreview(true)}><Eye/> Preview</button><button className="ce-primary" onClick={publish}><Send/>{doc.status === "published" ? "Jadikan draf" : doc.status === "scheduled" ? "Terjadwal" : "Terbitkan"}</button></div></header>
     <nav className="ce-tabs">{[["content","Konten"],["insert","Sisipkan"],["layout","Tata letak"],["metadata","Metadata"],["seo","SEO"],["source","HTML"]].map(([id,label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); if (id === "source") { setSourceDraft(doc.content || ""); setSourceOpen(true); } }}>{label}</button>)}</nav>
+    <div className="ce-mobile-toolbar" aria-label="Toolbar editor mobile">
+      <div className="ce-mobile-toolbar-group" aria-label="Riwayat">
+        <button type="button" title="Urungkan" aria-label="Urungkan" onClick={() => format("undo")}><Undo2/></button>
+        <button type="button" title="Ulangi" aria-label="Ulangi" onClick={() => format("redo")}><Redo2/></button>
+      </div>
+      <div className="ce-mobile-toolbar-group" aria-label="Teks">
+        <button type="button" title="Tebal" aria-label="Tebal" onClick={() => format("bold")}><Bold/></button>
+        <button type="button" title="Miring" aria-label="Miring" onClick={() => format("italic")}><Italic/></button>
+        <button type="button" title="Garis bawah" aria-label="Garis bawah" onClick={() => format("underline")}><Underline/></button>
+      </div>
+      <div className="ce-mobile-toolbar-group" aria-label="Paragraf">
+        <button type="button" title="Daftar poin" aria-label="Daftar poin" onClick={() => format("insertUnorderedList")}><List/></button>
+        <button type="button" title="Daftar nomor" aria-label="Daftar nomor" onClick={() => format("insertOrderedList")}><ListOrdered/></button>
+        <button type="button" title="Tautan" aria-label="Tautan" onClick={insertLink}><Link/></button>
+      </div>
+      <div className="ce-mobile-toolbar-group" aria-label="Sisipkan">
+        <button type="button" title="Media" aria-label="Media" onClick={() => setMediaOpen(true)}><Upload/></button>
+        <button type="button" title="Tabel" aria-label="Tabel" onClick={insertTable}><Table2/></button>
+      </div>
+      <button type="button" className="ce-mobile-toolbar-nara" title="Buka Nara AI" aria-label="Buka Nara AI" onClick={onOpenNara}><Sparkles/><span>Nara AI</span></button>
+    </div>
+
     <div className="ce-ribbon">
       <section><span>Edit</span><nav>{tool("Undo",<Undo2/>,() => format("undo"))}{tool("Redo",<Redo2/>,() => format("redo"))}{tool("Hapus format",<Trash2/>,() => format("removeFormat"))}</nav></section>
       <section className="selects"><span>Tipografi</span><nav><select aria-label="Gaya" defaultValue="p" onChange={(event) => format("formatBlock",event.target.value)}><option value="p">Paragraf</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Kutipan</option><option value="pre">Kode</option></select><select aria-label="Font" defaultValue="DM Sans" onChange={(event) => format("fontName",event.target.value)}><option>DM Sans</option><option>Georgia</option><option>Arial</option><option>Courier New</option><option>Times New Roman</option></select><select aria-label="Ukuran" defaultValue="3" onChange={(event) => format("fontSize",event.target.value)}>{[[1,"12"],[2,"14"],[3,"16"],[4,"20"],[5,"28"],[6,"38"],[7,"52"]].map(([value,label]) => <option key={value} value={value}>{label}px</option>)}</select></nav></section>
