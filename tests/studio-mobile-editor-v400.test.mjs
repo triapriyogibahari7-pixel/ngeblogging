@@ -97,3 +97,25 @@ test("v404 keeps Nara visible and replaces the mobile status strip with editor a
   assert.match(css, /\.ce-word-status\{/);
   assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"/);
 });
+
+
+test("v406 is the final isolated mobile Post/Page editor authority", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css406 = await readFile(new URL("../src/studio-mobile-editor-v406.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-editor-v406\.css/);
+  assert.match(editor, /data-mobile-editor-v406="true"/);
+  assert.match(css406, /\.ce-titlebar\{[\s\S]*display:grid!important/);
+  assert.match(css406, /grid-template-areas:"back file" "actions actions"!important/);
+  assert.match(css406, /\.ce-file input\{[\s\S]*width:100%!important/);
+  assert.match(css406, /\.ce-actions\{[\s\S]*display:grid!important/);
+  assert.match(css406, /\.ce-paper\{[\s\S]*width:100%!important/);
+  assert.match(css406, /\.ce-mobile-actions\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)!important/);
+  assert.match(css406, /\.ce-word-status,[\s\S]*\.ce-word-limit-v316\{[\s\S]*display:none!important/);
+  assert.match(css406, /\.nara-floating-button\{[\s\S]*display:flex!important/);
+  assert.match(css406, /\.nara-floating-button svg\{[\s\S]*width:21px!important/);
+  assert.match(css406, /#ngeblogging-editor-nav-v266:not\(\.mobile-open\)/);
+  assert.doesNotMatch(css406, /editor-v266-large/);
+  assert.doesNotMatch(css406, /data-studio-responsive-mode="tablet"/);
+  assert.doesNotMatch(css406, /data-studio-responsive-mode="desktop"/);
+  assert.doesNotMatch(css406, /data-studio-device-mode="large"/);
+});
