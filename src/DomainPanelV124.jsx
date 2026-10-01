@@ -105,39 +105,30 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       setConfig(payload);
       const apiList = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
 
-      // PUBLIC_DOMAIN_SOURCE_OF_TRUTH_V1:
-      // The studio must still show a configured custom domain when the domain API
-      // is unavailable, stale, or temporarily omits the site_domains row.
-      // Read the canonical site + site_domains rows directly, then merge them
-      // with the API response. This changes no presentation; it only repairs data
-      // hydration for the existing Domain & publication screen.
+      // Keep the existing Domain & publication UI fast: the domain API is the
+      // primary source. Only consult the canonical rows when the API omitted the
+      // active site's configured domain. This is a data-recovery path, not a second
+      // normal load.
       let currentSite = null;
       let dbDomains = [];
-      if (supabase) {
+      const apiHasConfiguredDomain = apiList.some((item) =>
+        String(item?.hostname || "").trim().toLowerCase().replace(/^www\\./, "") ===
+        String(site?.custom_domain || "").trim().toLowerCase().replace(/^https?:\\/\\//, "").replace(/^www\\./, "").replace(/[/?#].*$/, "")
+      );
+      if (supabase && !apiHasConfiguredDomain && !site?.custom_domain) {
         try {
-          const [siteResult, domainResult] = await Promise.all([
-            withDeadline(
-              supabase.from("sites")
-                .select("custom_domain,status,is_public,updated_at")
-                .eq("id", site.id)
-                .maybeSingle(),
-              10000,
-            ),
-            withDeadline(
-              supabase.from("site_domains")
-                .select("id,site_id,hostname,status,provider,provider_status,ssl_status,is_primary,ownership_verification,ssl_validation,error_message,created_at,updated_at")
-                .eq("site_id", site.id)
-                .order("is_primary", { ascending: false })
-                .order("updated_at", { ascending: false, nullsFirst: false })
-                .limit(20),
-              10000,
-            ),
-          ]);
-          if (!siteResult.error) currentSite = siteResult.data || null;
-          if (!domainResult.error) dbDomains = Array.isArray(domainResult.data) ? domainResult.data : [];
-          if (currentSite?.custom_domain) onSiteUpdate?.({ ...site, ...currentSite });
-        } catch (siteLookupError) {
-          console.warn("Canonical domain data hydration failed", siteLookupError);
+          const { data } = await withDeadline(
+            supabase.from("site_domains")
+              .select("id,site_id,hostname,status,provider,provider_status,ssl_status,is_primary,ownership_verification,ssl_validation,error_message,created_at,updated_at")
+              .eq("site_id", site.id)
+              .order("is_primary", { ascending: false })
+              .order("updated_at", { ascending: false, nullsFirst: false })
+              .limit(20),
+            10000,
+          );
+          dbDomains = Array.isArray(data) ? data : [];
+        } catch (domainLookupError) {
+          console.warn("Canonical domain recovery skipped", domainLookupError);
         }
       }
 
