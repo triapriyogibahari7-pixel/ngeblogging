@@ -38,8 +38,8 @@ import "./studio-mobile-v415.css";
 import "./studio-mobile-v417.css";
 import "./studio-mobile-v419.css";
 import "./studio-mobile-v420.css";
-import "./studio-mobile-v425.css";
-import "./studio-mobile-v431.css";
+import "./studio-mobile-v421.css";
+import "./studio-mobile-v422.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
@@ -285,11 +285,8 @@ export default function StudioNext({ onExit, user }) {
   return <div className="sn-shell" data-ui-release="stable-v138" data-navigation-owner="react-v138" data-navigation-release="v138" data-device-mode={deviceMode}>
     {toast && <div className="sn-toast"><Check/>{toast}</div>}
     {mobileSidebar && <button className="sn-side-backdrop" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu Studio"/>}
-    {deviceMode === "small" && <>
-      <button type="button" className="sn-mobile-n-launcher" onClick={() => setMobileSidebar((open) => !open)} aria-label={mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio"} aria-expanded={mobileSidebar} aria-controls="ngeblogging-studio-sidebar"><span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span></button>
-    </>}
     <aside id="ngeblogging-studio-sidebar" className={`${sidebar ? "sn-side" : "sn-side collapsed"}${mobileSidebar ? " mobile-open" : ""}`}>
-      <div className="sn-logo">{deviceMode !== "small" && <button type="button" className="sn-logo-mark" aria-label="n." aria-controls="ngeblogging-studio-sidebar" aria-expanded={sidebar} onClick={toggleSidebar}><strong>n</strong><i>.</i></button>}<b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
+      <div className="sn-logo"><span className="sn-logo-mark" aria-label="n."><strong>n</strong><i>.</i></span><b>Ngeblogging</b><button className="sn-side-close" onClick={() => setMobileSidebar(false)} aria-label="Tutup menu"><X/></button></div>
       <button type="button" className="sn-new" onClick={() => createDoc("article")}><Plus/><span>Buat Post</span></button>
       <nav aria-label="Navigasi Studio">
         <button type="button" className={view === "home" ? "active" : ""} onClick={() => chooseView("home")}><LayoutDashboard/><span>Ringkasan</span></button>
@@ -311,9 +308,10 @@ export default function StudioNext({ onExit, user }) {
 
     <main className="sn-main">
       <header className="sn-top">
-        {deviceMode !== "small" && <button type="button" className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio"} aria-expanded={sidebar} aria-controls="ngeblogging-studio-sidebar">
+        <button className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? (mobileSidebar ? "Tutup menu Studio" : "Buka menu Studio") : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
+          <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span>
           <PanelLeftClose className="sn-desktop-sidebar-icon"/>
-        </button>}
+        </button>
         <button className="sn-workspace" onClick={() => setSiteManager(true)}><span>{site?.name?.slice(0, 2).toUpperCase() || "NB"}</span><div><small>WORKSPACE</small><b>{site?.name || "Ngeblogging"}</b></div><ChevronDown/></button>
         <div className={`sn-cloud ${dataMode}`}>{dataMode === "cloud" ? <Cloud/> : dataMode === "connecting" ? <LoaderCircle className="spin"/> : <CloudOff/>}<span>{dataMode === "cloud" ? "Cloud aktif" : dataMode === "connecting" ? "Menghubungkan" : "Mode perangkat"}</span></div>
         <div className="sn-top-actions">
