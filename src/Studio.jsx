@@ -218,5 +218,7 @@ import "./studio-title-overlap-guard-v371-advanced.js";
 import "./studio-mobile-all-pages-v370.css";
 // v427: absolute last authority for the original mobile sidebar N and editor-matched Nara Sparkles.
 import "./studio-mobile-v427.css";
+// v428: all handheld families use one original sidebar N and editor-matched Nara Sparkles geometry.
+import "./studio-mobile-v428.css";
 
 export default StudioFastGate;
