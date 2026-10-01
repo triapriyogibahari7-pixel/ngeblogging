@@ -6,12 +6,12 @@
  * historical v324-v376 mobile rules cannot determine editor geometry.
  */
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"],
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] *{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"],
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] *{
   box-sizing:border-box!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"]{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"]{
   position:relative!important;
   inset:auto!important;
   width:100%!important;
@@ -34,7 +34,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"]{
    Row 2: Preview + Terbitkan.
    Nothing is fixed, sticky, absolute, or floating in this header.
  */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
   position:relative!important;
   inset:auto!important;
   z-index:20!important;
@@ -60,7 +60,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-back{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-back{
   grid-area:back!important;
   position:relative!important;
   inset:auto!important;
@@ -80,7 +80,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file{
   grid-area:file!important;
   position:relative!important;
   inset:auto!important;
@@ -101,14 +101,14 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file>svg{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file>svg{
   width:20px!important;
   min-width:20px!important;
   height:20px!important;
   display:block!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file label{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file label{
   position:relative!important;
   width:100%!important;
   min-width:0!important;
@@ -124,7 +124,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   line-height:1!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file input{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file input{
   position:relative!important;
   display:block!important;
   width:100%!important;
@@ -150,7 +150,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file small{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file small{
   position:relative!important;
   display:flex!important;
   align-items:center!important;
@@ -170,7 +170,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   white-space:nowrap!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-actions{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions{
   grid-area:actions!important;
   position:relative!important;
   inset:auto!important;
@@ -191,7 +191,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   overflow:visible!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-actions>button{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions>button{
   position:relative!important;
   inset:auto!important;
   width:100%!important;
@@ -215,14 +215,14 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-actions>button svg{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions>button svg{
   flex:0 0 auto!important;
   width:16px!important;
   height:16px!important;
 }
 
 /* ===== Tabs ===== */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-tabs{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-tabs{
   position:relative!important;
   inset:auto!important;
   z-index:15!important;
@@ -249,9 +249,9 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-tabs::-webkit-scrollbar{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-tabs::-webkit-scrollbar{display:none!important}
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-tabs>button{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-tabs>button{
   position:relative!important;
   flex:0 0 auto!important;
   width:max-content!important;
@@ -267,7 +267,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
 }
 
 /* ===== Toolbar ===== */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon{
   position:relative!important;
   inset:auto!important;
   z-index:14!important;
@@ -295,9 +295,9 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon::-webkit-scrollbar{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon::-webkit-scrollbar{display:none!important}
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon>section{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon>section{
   position:relative!important;
   flex:0 0 auto!important;
   width:max-content!important;
@@ -313,20 +313,20 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon>section>span,
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon .selects{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon>section>span,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon .selects{
   display:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon nav{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon nav{
   height:100%!important;
   display:flex!important;
   align-items:center!important;
   gap:3px!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-ribbon nav button,
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-color-tool{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-ribbon nav button,
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-color-tool{
   position:relative!important;
   flex:0 0 38px!important;
   width:38px!important;
@@ -342,7 +342,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-nara{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-nara{
   position:relative!important;
   inset:auto!important;
   flex:0 0 40px!important;
@@ -360,7 +360,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
 }
 
 /* ===== Writing canvas ===== */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-workspace{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-workspace{
   position:relative!important;
   inset:auto!important;
   z-index:1!important;
@@ -377,7 +377,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   background:#f5f7fb!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper-shell{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper-shell{
   position:relative!important;
   inset:auto!important;
   z-index:1!important;
@@ -395,7 +395,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper{
   position:relative!important;
   inset:auto!important;
   z-index:1!important;
@@ -423,14 +423,14 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper:empty::before{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper:empty::before{
   content:"Mulai menulis gagasan terbaik Anda…"!important;
   display:block!important;
   color:#9aa6b6!important;
   pointer-events:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code){
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper :is(h1,h2,h3,h4,p,li,blockquote,figcaption,a,code){
   width:auto!important;
   min-width:0!important;
   max-width:100%!important;
@@ -438,36 +438,36 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   word-break:normal!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper h1{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper h1{
   margin-top:0!important;
   font-size:clamp(28px,8.5vw,38px)!important;
   line-height:1.12!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper h2{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper h2{
   font-size:clamp(22px,7vw,30px)!important;
   line-height:1.16!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper h3{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper h3{
   font-size:clamp(19px,6vw,25px)!important;
   line-height:1.2!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper :is(img,video,iframe,canvas,audio){
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper :is(img,video,iframe,canvas,audio){
   display:block!important;
   width:auto!important;
   max-width:100%!important;
   height:auto!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper figure{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper figure{
   width:100%!important;
   max-width:100%!important;
   margin:22px 0!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper table{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper table{
   display:block!important;
   width:max-content!important;
   min-width:100%!important;
@@ -476,7 +476,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   -webkit-overflow-scrolling:touch!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-paper pre{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-paper pre{
   max-width:100%!important;
   overflow-x:auto!important;
   white-space:pre!important;
@@ -485,12 +485,12 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
 
 /* The old word/character status is intentionally hidden on phones.
    It was the source of the long striped/boxed line above Draf Post/Page. */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-word-status{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-word-status{
   display:none!important;
 }
 
 /* ===== Mobile inspector ===== */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-sidebar{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-sidebar{
   position:relative!important;
   inset:auto!important;
   z-index:1!important;
@@ -508,7 +508,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   transform:none!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-sidebar>section{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-sidebar>section{
   width:100%!important;
   max-width:100%!important;
   min-width:0!important;
@@ -520,7 +520,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   overflow:visible!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-sidebar h3{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-sidebar h3{
   width:100%!important;
   max-width:100%!important;
   margin:0 0 12px!important;
@@ -528,7 +528,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   overflow-wrap:anywhere!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-field{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field{
   width:100%!important;
   max-width:100%!important;
   min-width:0!important;
@@ -537,7 +537,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   margin-bottom:11px!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-field :is(input,select,textarea){
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field :is(input,select,textarea){
   width:100%!important;
   min-width:0!important;
   max-width:100%!important;
@@ -546,11 +546,11 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   line-height:1.35!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-field textarea{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field textarea{
   min-height:100px!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-field-grid{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-field-grid{
   width:100%!important;
   min-width:0!important;
   display:grid!important;
@@ -558,7 +558,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
   gap:0!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-toggle{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-toggle{
   width:100%!important;
   min-width:0!important;
   grid-template-columns:minmax(0,1fr) auto!important;
@@ -566,7 +566,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .c
 }
 
 /* Only editor tools are allowed to cover the viewport. */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer){
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer){
   position:fixed!important;
   inset:0!important;
   z-index:5000!important;
@@ -581,7 +581,7 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] :i
   overflow:hidden!important;
 }
 
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] :is(.ce-preview-layer,.ce-media-layer,.ce-source-layer)>section{
   position:relative!important;
   inset:auto!important;
   width:100%!important;
@@ -595,55 +595,55 @@ html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] :i
 
 /* Legacy injected editor navigation: never paint a white sheet over the editor.
    If explicitly opened, only the bounded drawer is visible. */
-html[data-studio-device-mode="small"] #ngeblogging-editor-nav-v266{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266{
   pointer-events:none!important;
   background:transparent!important;
 }
 
-html[data-studio-device-mode="small"] #ngeblogging-editor-nav-v266 .ce-editor-side-v266{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266 .ce-editor-side-v266{
   visibility:hidden!important;
   opacity:0!important;
   pointer-events:none!important;
 }
 
-html[data-studio-device-mode="small"] #ngeblogging-editor-nav-v266.mobile-open{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266.mobile-open{
   pointer-events:auto!important;
 }
 
-html[data-studio-device-mode="small"] #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) #ngeblogging-editor-nav-v266.mobile-open .ce-editor-side-v266{
   visibility:visible!important;
   opacity:1!important;
   pointer-events:auto!important;
 }
 
 /* Remove accidental fixed positioning from editor action clones/legacy controls. */
-html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] :is(.ce-primary,.ce-actions,.ce-back,.ce-file){
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] :is(.ce-primary,.ce-actions,.ce-back,.ce-file){
   transform:none!important;
 }
 
 /* PWA / standalone application safe area. */
 @media (display-mode:standalone){
-  html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
     padding-top:max(10px,env(safe-area-inset-top,0px))!important;
   }
 }
 
 /* Very narrow phones: never collapse the title to a one-character field. */
 @media (max-width:390px){
-  html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-titlebar{
     grid-template-columns:38px minmax(0,1fr)!important;
     padding-inline:8px!important;
   }
-  html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file{
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file{
     grid-template-columns:20px minmax(0,1fr)!important;
   }
-  html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-file input{
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-file input{
     font-size:16px!important;
   }
-  html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-actions{
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions{
     gap:6px!important;
   }
-  html[data-studio-device-mode="small"] .ce-app[data-mobile-editor-v400="true"] .ce-actions>button{
+  :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v400="true"] .ce-actions>button{
     font-size:10px!important;
     padding-inline:5px!important;
   }
