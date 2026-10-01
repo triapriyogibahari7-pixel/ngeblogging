@@ -1,0 +1,252 @@
+/* v369 — Widget Studio 26 is a body-level, sidebar-safe modal.
+   Geometry is owned by CSS only. Device preview selection never changes the modal frame. */
+.tn-widget-modal-layer{
+  position:fixed!important;
+  inset:0 0 0 248px!important;
+  width:calc(100vw - 248px)!important;
+  height:100dvh!important;
+  z-index:22000!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:12px!important;
+  margin:0!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+  translate:none!important;
+  will-change:auto!important;
+}
+html:has(#ngeblogging-studio-sidebar.collapsed) .tn-widget-modal-layer{
+  left:68px!important;
+  right:0!important;
+  width:calc(100vw - 68px)!important;
+}
+.tn-widget-modal-layer>.tn-modal{
+  position:relative!important;
+  inset:auto!important;
+  width:min(1240px,100%)!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:min(760px,calc(100dvh - 24px))!important;
+  max-height:calc(100dvh - 24px)!important;
+  min-height:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border-radius:18px!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+  translate:none!important;
+  animation:none!important;
+  transition:none!important;
+  will-change:auto!important;
+}
+.tn-widget-modal-layer>.tn-modal>header{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 44px!important;
+  align-items:center!important;
+  gap:12px!important;
+  min-height:82px!important;
+  height:auto!important;
+  padding:13px 16px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+}
+.tn-widget-modal-layer>.tn-modal>header>div{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.tn-widget-modal-layer>.tn-modal>header small,
+.tn-widget-modal-layer>.tn-modal>header h2{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  margin:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+  translate:none!important;
+}
+.tn-widget-modal-layer>.tn-modal>header small{
+  margin:0 0 5px!important;
+  line-height:1.25!important;
+}
+.tn-widget-modal-layer>.tn-modal>header h2{
+  font:600 clamp(21px,3vw,31px)/1.08 "Playfair Display",Georgia,serif!important;
+  letter-spacing:-.02em!important;
+}
+.tn-widget-modal-layer>.tn-modal>header>button{
+  position:static!important;
+  flex:0 0 44px!important;
+  width:44px!important;
+  min-width:44px!important;
+  max-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  margin:0!important;
+  transform:none!important;
+  translate:none!important;
+}
+.tn-widget-modal-layer>.tn-modal>.tn-modal-body{
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  max-width:100%!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  box-sizing:border-box!important;
+}
+.tn-widget-modal-layer .tn-widget-studio{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:14px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+.tn-widget-modal-layer .tn-widget-summary{
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  padding:14px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.tn-widget-modal-layer .tn-widget-summary>div,
+.tn-widget-modal-layer .tn-widget-toggle>div{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.tn-widget-modal-layer .tn-widget-summary b,
+.tn-widget-modal-layer .tn-widget-summary p,
+.tn-widget-modal-layer .tn-widget-toggle small,
+.tn-widget-modal-layer .tn-widget-toggle b,
+.tn-widget-modal-layer .tn-widget-toggle p{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  margin:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+}
+.tn-widget-modal-layer .tn-widget-summary p{margin-top:4px!important;line-height:1.45!important}
+.tn-widget-modal-layer .tn-widget-summary>button{
+  position:static!important;
+  min-width:118px!important;
+  max-width:100%!important;
+  min-height:40px!important;
+  white-space:nowrap!important;
+  transform:none!important;
+}
+.tn-widget-modal-layer .tn-widget-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.tn-widget-modal-layer .tn-widget-grid>article{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.tn-widget-modal-layer .tn-widget-toggle{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) 30px!important;
+  align-items:start!important;
+  gap:10px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+.tn-widget-modal-layer .tn-widget-modal-layer,
+.tn-widget-modal-layer *{
+  animation:none!important;
+  transition:none!important;
+}
+.tn-widget-modal-layer>.tn-modal>footer{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+@media (min-width:761px) and (max-width:1100px){
+  .tn-widget-modal-layer .tn-widget-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media (max-width:760px){
+  .tn-widget-modal-layer{
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    padding:max(6px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))!important;
+  }
+  .tn-widget-modal-layer>.tn-modal{
+    width:100%!important;
+    max-width:100%!important;
+    height:100%!important;
+    max-height:100%!important;
+    border-radius:18px!important;
+  }
+  .tn-widget-modal-layer>.tn-modal>header{
+    min-height:68px!important;
+    grid-template-columns:minmax(0,1fr) 42px!important;
+    gap:8px!important;
+    padding:10px 12px!important;
+  }
+  .tn-widget-modal-layer>.tn-modal>header>button{width:42px!important;min-width:42px!important;height:42px!important}
+  .tn-widget-modal-layer .tn-widget-studio{padding:10px!important}
+  .tn-widget-modal-layer .tn-widget-summary{
+    grid-template-columns:32px minmax(0,1fr)!important;
+    padding:12px!important;
+  }
+  .tn-widget-modal-layer .tn-widget-summary>button{
+    grid-column:1/-1!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .tn-widget-modal-layer .tn-widget-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+@media (max-width:430px){
+  .tn-widget-modal-layer>.tn-modal{border-radius:12px!important}
+  .tn-widget-modal-layer>.tn-modal>header h2{font-size:clamp(20px,6vw,27px)!important}
+}
+@media (max-width:390px){
+  .tn-widget-modal-layer>.tn-modal>header{
+    grid-template-columns:minmax(0,1fr) 40px!important;
+    padding:9px 10px!important;
+  }
+  .tn-widget-modal-layer>.tn-modal>header>button{width:40px!important;min-width:40px!important;height:40px!important}
+}
