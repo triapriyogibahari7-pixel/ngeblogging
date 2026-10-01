@@ -1,5 +1,7 @@
-const VERSION = "ngeblogging-app-v369-mobile-final-20261001";
-const CACHE_RELEASE = "studio-mobile-final-cache-v369";
+const LEGACY_VERSION_V369 = "ngeblogging-app-v369-mobile-final-20261001";
+const LEGACY_CACHE_RELEASE_V369 = "studio-mobile-final-cache-v369";
+const VERSION = "ngeblogging-app-v370-mobile-authority-20261001";
+const CACHE_RELEASE = "studio-mobile-authority-cache-v370";
 const STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305 = "studio-site-switch-first-site-v305-20260805";
 const STUDIO_SITE_SWITCHER_RELEASE_V305 = "studio-real-site-switcher-v305-20260805";
 const STUDIO_FIRST_SITE_REQUIRED_RELEASE_V305 = "studio-first-site-required-v305-20260805";
@@ -50,7 +52,7 @@ const PRODUCTION_RECOVERY_RELEASE = "production-route-recovery-v168-20260730";
 const FIRST_SITE_RELEASE = "first-site-onboarding-v169-20260730";
 const SITE_POLICY_RELEASE = "site-policy-v169-20260730";
 const FORCE_REFRESH_QUERY = "ngeblogging_release";
-const FORCE_REFRESH_VALUE = "mobile-final-v369";
+const FORCE_REFRESH_VALUE = "mobile-authority-v370";
 const ACTIVE_VERSION_V258 = "ngeblogging-app-v258-theme-right4-20260804";
 const ACTIVE_CACHE_RELEASE_V258 = "studio-theme-right4-cache-v258";
 const ACTIVE_VERSION_V259 = "ngeblogging-app-v259-six-mode-authority-20260804";
@@ -63,6 +65,7 @@ const ACTIVE_VERSION_V275 = "ngeblogging-app-v275-final-stability-20260804";
 const ACTIVE_CACHE_RELEASE_V275 = "studio-final-stability-cache-v275";
 const ACTIVE_VERSION_V302 = "ngeblogging-app-v302-cache-cutover-20260805";
 const ACTIVE_CACHE_RELEASE_V302 = "studio-build-nara-cache-v302";
+const MOBILE_AUTHORITY_RELEASE_V370 = "mobile-authority-v370";
 const ACTIVE_VERSION_V303 = VERSION;
 const ACTIVE_CACHE_RELEASE_V303 = CACHE_RELEASE;
 const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;
@@ -143,6 +146,9 @@ function versionPayload(type) {
     legacyVersion: LEGACY_VERSION,
     studioCompletionCompatVersion: STUDIO_COMPLETION_COMPAT_VERSION,
     release: CACHE_RELEASE,
+    mobileAuthorityReleaseV370: MOBILE_AUTHORITY_RELEASE_V370,
+    legacyVersionV369: LEGACY_VERSION_V369,
+    legacyCacheReleaseV369: LEGACY_CACHE_RELEASE_V369,
     routeRecoveryCompatRelease: ROUTE_RECOVERY_COMPAT_RELEASE,
     authEditorCompatRelease: AUTH_EDITOR_COMPAT_RELEASE,
     authEditorCompatStaleReason: AUTH_EDITOR_COMPAT_STALE_REASON,
