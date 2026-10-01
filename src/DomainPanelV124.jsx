@@ -106,6 +106,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
 
   const sortedDomains = useMemo(() => [...domains].sort((a, b) => Number(activeDomain(b)) - Number(activeDomain(a)) || String(a.hostname).localeCompare(String(b.hostname))), [domains]);
   const connected = sortedDomains.filter((item) => item.status !== "pending_deletion" && !isManagedFreeDomain(item.hostname));
+  const activeConnected = connected.filter(activeDomain);
   const routed = sortedDomains.reduce((total, domain) => total + (activeDomain(domain) ? 1 : 0) + addresses(domain).filter((item) => item.enabled).length, 0);
 
   const load = async ({ quiet = false } = {}) => {
@@ -408,7 +409,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       </section>
 
       <section className="sv124-card sv124-domain-register">
-        <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terhubung" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Domain aktif dikelola pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola domain situs lain." : "Masukkan domain milik situs aktif. Sistem menyiapkan zone, dua nameserver, HTTPS, dan routing."}</p></div></header>
+        <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{activeConnected.length ? "Domain pribadi sudah aktif" : "Hubungkan domain pribadi"}</h2><p>{activeConnected.length ? "Domain aktif dikelola pada kartu di bawah. Gunakan Workspace untuk berpindah situs." : connected.length ? "Domain sebelumnya belum aktif. Anda dapat menghubungkan ulang atau memperbaiki pemasangan dan sistem akan menampilkan dua nameserver yang diperlukan." : "Masukkan domain milik situs aktif. Sistem menyiapkan zone, dua nameserver, HTTPS, dan routing."}</p></div></header>
         <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form>
         <div className="sv124-provider-note"><ShieldCheck/>Menggunakan Full Zone dan dua nameserver Cloudflare. Subdomain gratis Ngeblogging tetap tersedia.</div>
       </section>
