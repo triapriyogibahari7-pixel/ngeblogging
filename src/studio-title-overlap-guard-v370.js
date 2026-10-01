@@ -1,4 +1,4 @@
-const RELEASE = "studio-title-overlap-guard-v370-20261001";
+const RELEASE = "studio-title-overlap-guard-v371-20261001";
 
 function normalize(value) {
   return String(value || "")
@@ -29,6 +29,12 @@ function overlap(a, b) {
   return smaller > 0 && intersection / smaller >= 0.35;
 }
 
+function visible(node) {
+  if (!node || node.hidden) return false;
+  const style = getComputedStyle(node);
+  return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+}
+
 function hideDuplicate(node) {
   if (!node || node.dataset.studioTitleOverlapGuard === RELEASE) return;
   node.hidden = true;
@@ -37,25 +43,35 @@ function hideDuplicate(node) {
   node.style.setProperty("display", "none", "important");
 }
 
+function cleanTitleBlocks(shell) {
+  // Only inspect the content area. The global header is deliberately excluded.
+  const blocks = [...shell.querySelectorAll(".sn-main .sn-page-title")].filter(visible);
+  if (blocks.length < 2) return;
+
+  // Legacy title layers sometimes remain mounted on top of the active title.
+  // Keep the first visible title and remove only later blocks that occupy it.
+  const primary = blocks[0];
+  const primaryRect = rect(primary);
+  blocks.slice(1).forEach((candidate) => {
+    if (overlap(primaryRect, rect(candidate))) hideDuplicate(candidate);
+  });
+}
+
 function cleanView(view) {
   const titleBlocks = [...view.querySelectorAll(":scope > .sn-page-title")];
   if (titleBlocks.length > 1) {
-    const visible = titleBlocks.filter((node) => !node.hidden && getComputedStyle(node).display !== "none");
-    if (visible.length > 1) {
-      const primaryText = normalize(visible[0].querySelector("h1,h2")?.textContent);
-      visible.slice(1).forEach((candidate) => {
+    const visibleTitles = titleBlocks.filter(visible);
+    if (visibleTitles.length > 1) {
+      const primaryText = normalize(visibleTitles[0].querySelector("h1,h2")?.textContent);
+      visibleTitles.slice(1).forEach((candidate) => {
         const candidateText = normalize(candidate.querySelector("h1,h2")?.textContent);
         if (primaryText && candidateText === primaryText) hideDuplicate(candidate);
+        else if (overlap(rect(visibleTitles[0]), rect(candidate))) hideDuplicate(candidate);
       });
     }
   }
 
-  const headings = [...view.querySelectorAll("h1, h2")].filter((node) => {
-    if (node.hidden) return false;
-    const style = getComputedStyle(node);
-    return style.display !== "none" && style.visibility !== "hidden";
-  });
-
+  const headings = [...view.querySelectorAll("h1, h2")].filter(visible);
   const groups = new Map();
   headings.forEach((node) => {
     const text = normalize(node.textContent);
@@ -81,6 +97,7 @@ function sync() {
   const shell = document.querySelector(".sn-shell");
   if (!shell) return;
   shell.dataset.studioTitleOverlapGuard = RELEASE;
+  cleanTitleBlocks(shell);
   shell.querySelectorAll(":scope > .sn-main .sn-view-pad").forEach(cleanView);
 }
 
