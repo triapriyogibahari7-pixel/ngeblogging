@@ -20,4 +20,8 @@
  * /api/domains/refresh
  * /api/domains/address
  */
-import "./domain-manager-v80.js";
+// Compatibility entry point only. The active Studio Domain surface is
+// DomainPanelV124 rendered by StudioNext. The former domain-manager-v80
+// runtime is intentionally not auto-mounted because it can create a second
+// Domain DOM owner and overwrite the live registration form/state.
+export const DOMAIN_AUTHORITY_V75_COMPATIBILITY_ONLY = true;
