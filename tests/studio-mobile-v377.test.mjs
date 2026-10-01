@@ -82,6 +82,7 @@ test("v405 covers all ten Studio pages with small-device-only layout authority",
 
 test("v408 adds mobile Pages shortcut and stabilizes Nara inside the mobile editor", async () => {
   const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
+  const css413 = await readFile(new URL("../src/studio-mobile-v413.css", import.meta.url), "utf8");
   const css = await readFile(new URL("../src/studio-mobile-v408.css", import.meta.url), "utf8");
   assert.match(studio, /className="sn-new sn-new-page"/);
   assert.match(studio, /Buat Page/);
@@ -111,3 +112,14 @@ test("v411 isolates mobile sidebar logo and separates Post/Page create buttons",
   assert.match(css, /max-width:760px/);
   assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"|data-studio-device-mode="large"/);
 });
+
+  assert.match(studio, /studio-mobile-v413\\.css/);
+  assert.doesNotMatch(studio, /className="sn-new sn-new-page"/);
+  assert.match(studio, /view === "pages"[\\s\\S]*createDoc\(type\)/);
+  assert.match(css413, /\\.ce-app \\.ce-mobile-toolbar/);
+  assert.match(css413, /\\.ce-app \\.ce-mobile-actions/);
+  assert.match(css413, /\\.ce-app \\.ce-ribbon/);
+  assert.match(css413, /\\.ce-app \\.ce-nara/);
+  assert.match(css413, /\\.ce-actions>button:first-child/);
+  assert.match(css413, /html\\.editor-v266-small/);
+  assert.match(css413, /sn-mobile-menu-mark>strong/);
