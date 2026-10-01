@@ -72,7 +72,7 @@ function Metric({ icon: Icon, label, value }) {
   return <article className="sv124-metric"><Icon/><span>{label}</span><b>{value}</b></article>;
 }
 
-export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToast }) {
+export default function DomainPanelV124({ site, sites = [], onSiteUpdate, onSelectSite, setToast }) {
   const [token, setToken] = useState("");
   const [config, setConfig] = useState(null);
   const initialCustomDomain = String(site?.custom_domain || "").trim().toLowerCase()
@@ -335,6 +335,19 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
 
     <section className="sv124-site-strip">
       <span><Globe2/></span><div><small>SITUS AKTIF</small><b>{site?.name || "Situs belum dipilih"}</b><p>{site?.slug ? `${site.slug}.ngeblogging.com` : ""}</p></div><i>{sites.length}/12 situs dalam akun</i>
+    </section>
+    <section className="sv124-card sv124-domain-sites">
+      <header><div><small>WORKSPACE DOMAIN</small><h2>12 situs · 12 domain custom</h2><p>Setiap situs dalam akun memiliki ruang domain custom sendiri. Pilih situs di bawah untuk menambahkan atau memeriksa domainnya.</p></div></header>
+      <div className="sv124-domain-sites-grid">
+        {sites.slice(0, 12).map((item, index) => {
+          const active = item.id === site?.id;
+          const custom = String(item.custom_domain || "").trim();
+          return <article className={active ? "sv124-domain-site-chip active" : "sv124-domain-site-chip"} key={item.id}>
+            <div><small>SITUS {index + 1}</small><b>{item.name || "Situs " + (index + 1)}</b><span>{custom || ((item.slug || "situs") + ".ngeblogging.com")}</span></div>
+            <button type="button" className={active ? "sv124-primary" : "sv124-secondary"} onClick={() => onSelectSite?.(item)}>{active ? "Situs aktif" : "Kelola domain"}</button>
+          </article>;
+        })}
+      </div>
     </section>
 
     {error ? <div className="sv124-error sv124-domain-error" role="alert"><span>{error}</span><button onClick={() => load()}>Coba lagi</button></div> : null}
