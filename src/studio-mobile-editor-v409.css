@@ -109,7 +109,7 @@
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-paper pre{max-width:100%!important;overflow-x:auto!important;white-space:pre!important}
   /* Remove all legacy status/limit strips. */
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] :is(.ce-word-status,.ce-word-limit-v151,.ce-word-limit-v316,.ce-word-limit-message,.ce-word-limit-notice-v151,.ce-word-limit-notice-v293){
-    display:none!important!important;width:0!important;height:0!important;max-width:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+    display:none!important;width:0!important;height:0!important;max-width:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
   }
   /* Clean mobile action row below writing. */
   :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .ce-app[data-mobile-editor-v409="true"] .ce-mobile-actions{
