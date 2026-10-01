@@ -222,5 +222,7 @@ import "./studio-mobile-v427.css";
 import "./studio-mobile-v428.css";
 // v429: structural handheld authority; one original sidebar N and editor-matched Nara icon box.
 import "./studio-mobile-v429.css";
+// v430: closed handheld sidebar paints only the original N; Nara is optically centered to the editor reference.
+import "./studio-mobile-v430.css";
 
 export default StudioFastGate;
