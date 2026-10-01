@@ -114,3 +114,25 @@ test("v414 preserves the desktop editor menu and hides only phone-only controls 
   assert.doesNotMatch(css, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"|data-studio-device-mode="large"/);
   assert.equal((css.match(/{/g)||[]).length, (css.match(/}/g)||[]).length);
 });
+
+
+test("v415 expands the large-device editor without restoring phone-only controls", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const mobile = await readFile(new URL("../src/studio-mobile-v414.css", import.meta.url), "utf8");
+  assert.match(editor, /Struktur/);
+  assert.match(editor, /Indentasi keluar/);
+  assert.match(editor, /Indentasi masuk/);
+  assert.match(editor, /Subskrip/);
+  assert.match(editor, /Superskrip/);
+  assert.match(editor, /Garis horizontal/);
+  assert.match(editor, /Pilih semua/);
+  assert.match(editor, /Kode/);
+  assert.match(editor, /Paragraf/);
+  assert.match(mobile, /ce-ribbon button\\[title="Undo"\\]/);
+  assert.match(mobile, /ce-ribbon button\\[title="Redo"\\]/);
+  assert.match(mobile, /ce-ribbon button\\[title="Bold"\\]/);
+  assert.match(mobile, /ce-ribbon button\\[title="Italic"\\]/);
+  assert.match(mobile, /ce-ribbon button\\[title="Underline"\\]/);
+  assert.match(mobile, /ce-ribbon button\\[title="Media"\\]/);
+  assert.match(mobile, /ce-actions \\.ce-preview-action/);
+});
