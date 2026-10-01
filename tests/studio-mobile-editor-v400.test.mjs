@@ -143,3 +143,35 @@ test("v407 replaces the fragile mobile ribbon with a clean phone-only toolbar", 
   assert.doesNotMatch(css407, /data-studio-responsive-mode="desktop"/);
   assert.doesNotMatch(css407, /data-studio-device-mode="large"/);
 });
+
+
+test("v409 is the fresh mobile Post/Page editor authority and is strictly small-device scoped", async () => {
+  const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
+  const css409 = await readFile(new URL("../src/studio-mobile-editor-v409.css", import.meta.url), "utf8");
+  assert.match(editor, /studio-mobile-editor-v409\.css/);
+  assert.match(editor, /data-mobile-editor-v409="true"/);
+  assert.match(css409, /@media screen and \(max-width:760px\)/);
+  assert.match(css409, /\.ce-ribbon\{display:none!important/);
+  assert.match(css409, /\.ce-titlebar\{[\\s\\S]*display:grid!important/);
+  assert.match(css409, /grid-template-areas:"back file" "actions actions"!important/);
+  assert.match(css409, /\.ce-file input\{[\\s\\S]*width:100%!important/);
+  assert.match(css409, /\.ce-actions\{[\\s\\S]*display:grid!important/);
+  assert.match(css409, /\.ce-paper\{[\\s\\S]*width:100%!important/);
+  assert.match(css409, /#ngeblogging-editor-nav-v266:not\(\.mobile-open\)/);
+  assert.match(css409, /\.nara-assistant-shell\{[\\s\\S]*left:50%!important/);
+  assert.match(css409, /\.nara-send\{[\\s\\S]*grid-column:4!important/);
+  assert.doesNotMatch(css409, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"|data-studio-device-mode="large"/);
+});
+
+test("v410 makes mobile sidebar controls deterministic and non-submit navigation", async () => {
+  const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
+  const css410 = await readFile(new URL("../src/studio-mobile-v410.css", import.meta.url), "utf8");
+  assert.match(studio, /studio-mobile-v410\.css/);
+  assert.match(studio, /sn-new-page/);
+  assert.match(studio, /<button type="button" className=\{view === "pages"/);
+  assert.match(studio, /<button type="button" className=\{view === "posts"/);
+  assert.match(css410, /\.sn-logo-mark\{[\\s\\S]*overflow:visible!important/);
+  assert.match(css410, /\.sn-new-page/);
+  assert.match(css410, /\.sn-side>nav>button\{/);
+  assert.doesNotMatch(css410, /editor-v266-large|data-studio-responsive-mode="tablet"|data-studio-responsive-mode="desktop"/);
+});
