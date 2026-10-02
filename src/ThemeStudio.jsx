@@ -355,43 +355,66 @@ export default function ThemeStudio({ setToast, site, user }) {
 
     const hidden = new Map();
 
-    const looksLikeBlackCircleOverlay = (node) => {
-      if (!(node instanceof HTMLElement) || node === root || !isHandheldTheme()) return false;
-      const style = window.getComputedStyle(node);
-      const rect = node.getBoundingClientRect();
-      if (!rect.width || !rect.height || rect.width > 720 || rect.height > 720) return false;
-      const radius = parseFloat(style.borderTopLeftRadius) || 0;
-      const circleRadius = Math.min(rect.width, rect.height) / 2;
-      const isCircle = style.borderRadius === "50%" || radius >= Math.max(18, circleRadius * 0.72);
-      if (!isCircle) return false;
-      const bg = style.backgroundColor || "";
-      const darkBg = /^#(?:000|000000|0a0a0a|111111)$/i.test(bg) || /rgba?\(\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*(?:,\s*(?:0?\.\d+|1)\s*)?\)/i.test(bg);
-      if (!darkBg) return false;
-      const z = Number.parseInt(style.zIndex, 10);
-      return style.position === "fixed" || style.position === "sticky" || style.position === "absolute" || (Number.isFinite(z) && z >= 1000);
+    const hideNode = (node) => {
+      if (!(node instanceof HTMLElement) || node === root || hidden.has(node)) return;
+      hidden.set(node, {
+        hidden: node.hidden,
+        ariaHidden: node.getAttribute("aria-hidden"),
+        style: node.getAttribute("style"),
+      });
+      node.hidden = true;
+      node.setAttribute("aria-hidden", "true");
+      for (const [property, value] of [
+        ["display", "none"],
+        ["visibility", "hidden"],
+        ["opacity", "0"],
+        ["pointer-events", "none"],
+        ["background", "transparent"],
+        ["box-shadow", "none"],
+        ["filter", "none"],
+      ]) node.style.setProperty(property, value, "important");
     };
 
-    const hideCircleOverlays = () => {
+    const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+    const looksLikeThemeMobileOverlay = (node, rail) => {
+      if (!(node instanceof HTMLElement) || node === root || !isHandheldTheme()) return false;
+      if (rail.contains(node) || node.contains(rail)) return false;
+      const style = window.getComputedStyle(node);
+      if (style.display === "none" || style.visibility === "hidden") return false;
+      const rect = node.getBoundingClientRect();
+      const railRect = rail.getBoundingClientRect();
+      if (!rect.width || !rect.height || !overlaps(rect, railRect)) return false;
+      const radius = parseFloat(style.borderTopLeftRadius) || 0;
+      const circle = style.borderRadius === "50%" || radius >= Math.max(22, Math.min(rect.width, rect.height) * 0.68);
+      const dark = /rgba?\(\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*,\s*(?:0|10|17)(?:\s*,\s*(?:0?\.\d+|1))?\s*\)/i.test(style.backgroundColor || "") ||
+        /^(?:#000|#000000|#0a0a0a|#111111)$/i.test(style.backgroundColor || "");
+      const floating = ["fixed","sticky","absolute"].includes(style.position);
+      const large = rect.width >= 90 && rect.height >= 70;
+      const high = Number.parseInt(style.zIndex, 10) >= 1000;
+      return circle && (dark || floating || high) && (floating || high || large);
+    };
+
+    const removeThemeMobileOverlays = () => {
       if (!isHandheldTheme()) return;
-      Array.from(document.body.querySelectorAll("*")).filter(looksLikeBlackCircleOverlay).forEach((node) => {
-        if (hidden.has(node)) return;
-        hidden.set(node, {
-          hidden: node.hidden,
-          ariaHidden: node.getAttribute("aria-hidden"),
-          style: node.getAttribute("style"),
-        });
-        node.hidden = true;
-        node.setAttribute("aria-hidden", "true");
-        node.style.setProperty("display", "none", "important");
-        node.style.setProperty("visibility", "hidden", "important");
-        node.style.setProperty("opacity", "0", "important");
-        node.style.setProperty("pointer-events", "none", "important");
+      const rail = root.querySelector(".tn-mobile-action-rail");
+      if (!rail) return;
+
+      document.body.querySelectorAll("*").forEach((node) => {
+        if (looksLikeThemeMobileOverlay(node, rail)) hideNode(node);
+      });
+
+      document.body.querySelectorAll('a[download],a[href*="download"],button').forEach((node) => {
+        if (!(node instanceof HTMLElement) || rail.contains(node)) return;
+        const text = String(node.textContent || "").toLowerCase();
+        const label = String(node.getAttribute("aria-label") || node.getAttribute("title") || "").toLowerCase();
+        if (/download|unduh|simpan tema|save theme|tema.*html|html.*tema/.test(text + " " + label)) hideNode(node);
       });
     };
 
-    hideCircleOverlays();
-    const observer = new MutationObserver(hideCircleOverlays);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "data-preview-device"] });
+    removeThemeMobileOverlays();
+    const observer = new MutationObserver(removeThemeMobileOverlays);
+    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "hidden", "aria-hidden", "data-preview-device"] });
 
     return () => {
       observer.disconnect();
