@@ -82,7 +82,40 @@ function ensureSiteShortcut(shell, side) {
   }
 }
 
+function themeHandheldActive() {
+  const studio = document.querySelector(".tn-studio[data-theme-mobile-device]");
+  const device = studio?.getAttribute("data-theme-mobile-device");
+  return device === "application" || device === "phone" || device === "mobile";
+}
+
 function ensureFloatingNara() {
+  if (themeHandheldActive()) {
+    document.querySelectorAll([
+      ".nara-floating-button",
+      ".nara-floating-proxy-v18",
+      ".nara-floating-proxy-v19",
+      ".nara-floating-proxy-v20",
+      ".nara-floating-proxy-v21",
+      ".nara-floating-proxy-v22",
+      ".nara-assistant-layer",
+      ".nara-assistant-backdrop",
+      ".sn-top-actions .sn-nara-button",
+      ".ce-nara",
+    ].join(",")).forEach((node) => {
+      node.hidden = true;
+      node.disabled = true;
+      node.tabIndex = -1;
+      node.setAttribute("aria-hidden", "true");
+      node.style.setProperty("display", "none", "important");
+      node.style.setProperty("visibility", "hidden", "important");
+      node.style.setProperty("opacity", "0", "important");
+      node.style.setProperty("pointer-events", "none", "important");
+      node.style.setProperty("box-shadow", "none", "important");
+      node.style.setProperty("filter", "none", "important");
+    });
+    return;
+  }
+
   document.querySelectorAll(".nara-floating-button").forEach((button) => {
     button.hidden = false;
     button.disabled = false;
