@@ -739,3 +739,27 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) .ce-nara *{
   overflow-wrap:anywhere!important;
   word-break:normal!important;
 }
+
+
+/* v367 — dedicated outer Studio header for Theme handheld mode */
+.sn-top.sn-top-theme-mobile .sn-top-actions{
+  min-width:0!important;
+  max-width:100%!important;
+}
+.sn-top.sn-top-theme-mobile .sn-nara-button{
+  display:none!important;width:0!important;min-width:0!important;max-width:0!important;
+  height:0!important;margin:0!important;padding:0!important;border:0!important;
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+@media(max-width:600px){
+  .sn-top.sn-top-theme-mobile{
+    min-height:52px!important;height:auto!important;gap:6px!important;padding:8px!important;overflow:hidden!important;
+  }
+  .sn-top.sn-top-theme-mobile .sn-workspace{
+    min-width:0!important;max-width:calc(100vw - 128px)!important;
+  }
+  .sn-top.sn-top-theme-mobile .sn-cloud{display:none!important}
+  .sn-top.sn-top-theme-mobile .sn-top-actions{
+    flex:0 0 auto!important;width:auto!important;min-width:0!important;gap:4px!important;
+  }
+}
