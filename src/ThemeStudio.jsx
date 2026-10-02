@@ -387,8 +387,8 @@ export default function ThemeStudio({ setToast, site, user }) {
       if (!rect.width || !rect.height || !overlaps(rect, railRect)) return false;
       const radius = parseFloat(style.borderTopLeftRadius) || 0;
       const circle = style.borderRadius === "50%" || radius >= Math.max(22, Math.min(rect.width, rect.height) * 0.68);
-      const dark = /rgba?\(\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*,\s*(?:0|10|17)(?:\s*,\s*(?:0?\.\d+|1))?\s*\)/i.test(style.backgroundColor || "") ||
-        /^(?:#000|#000000|#0a0a0a|#111111)$/i.test(style.backgroundColor || "");
+      const paint = [style.backgroundColor || "", style.backgroundImage || "", style.boxShadow || ""].join(" ");
+      const dark = /(?:rgba?\(\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*,\s*(?:0|10|17)|#000(?:000)?|#0a0a0a|#111111|black)/i.test(paint);
       const floating = ["fixed","sticky","absolute"].includes(style.position);
       const large = rect.width >= 90 && rect.height >= 70;
       const high = Number.parseInt(style.zIndex, 10) >= 1000;
