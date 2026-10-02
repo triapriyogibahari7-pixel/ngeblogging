@@ -336,13 +336,13 @@ export default function ThemeStudio({ setToast, site, user }) {
       if (!(node instanceof HTMLElement) || node === root || !isHandheldTheme()) return false;
       const style = window.getComputedStyle(node);
       const rect = node.getBoundingClientRect();
-      if (!rect.width || !rect.height || rect.width > 220 || rect.height > 220) return false;
+      if (!rect.width || !rect.height || rect.width > 720 || rect.height > 720) return false;
       const radius = parseFloat(style.borderTopLeftRadius) || 0;
       const circleRadius = Math.min(rect.width, rect.height) / 2;
       const isCircle = style.borderRadius === "50%" || radius >= Math.max(18, circleRadius * 0.72);
       if (!isCircle) return false;
       const bg = style.backgroundColor || "";
-      const darkBg = /^#(?:000|000000)$/i.test(bg) || /rgba?\(\s*0\s*,\s*0\s*,\s*0\s*(?:,\s*(?:0?\.\d+|1)\s*)?\)/i.test(bg);
+      const darkBg = /^#(?:000|000000|0a0a0a|111111)$/i.test(bg) || /rgba?\(\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*(?:,\s*(?:0?\.\d+|1)\s*)?\)/i.test(bg);
       if (!darkBg) return false;
       const z = Number.parseInt(style.zIndex, 10);
       return style.position === "fixed" || style.position === "sticky" || style.position === "absolute" || (Number.isFinite(z) && z >= 1000);
