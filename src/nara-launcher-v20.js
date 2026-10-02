@@ -5,6 +5,32 @@ let activation = 0;
 
 const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45L12 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M18.5 14.5l.75 2.25 2.25.75-2.25.75-.75 2.25-.75-2.25-2.25-.75 2.25-.75.75-2.25ZM5 14l.55 1.45L7 16l-1.45.55L5 18l-.55-1.45L3 16l1.45-.55L5 14Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
+function themeHandheldActive() {
+  const studio = document.querySelector(".tn-studio[data-theme-mobile-device]");
+  const device = studio?.getAttribute("data-theme-mobile-device");
+  return device === "application" || device === "phone" || device === "mobile";
+}
+
+function suppressThemeNara() {
+  if (!themeHandheldActive()) return false;
+  const nodes = document.querySelectorAll(
+    ".sn-top-actions .sn-nara-button,.ce-nara,.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-assistant-layer,.nara-assistant-backdrop"
+  );
+  nodes.forEach((node) => {
+    node.hidden = true;
+    node.setAttribute("aria-hidden", "true");
+    node.style.setProperty("display", "none", "important");
+    node.style.setProperty("visibility", "hidden", "important");
+    node.style.setProperty("opacity", "0", "important");
+    node.style.setProperty("pointer-events", "none", "important");
+    node.style.setProperty("box-shadow", "none", "important");
+    node.style.setProperty("filter", "none", "important");
+  });
+  proxy?.remove();
+  proxy = null;
+  return true;
+}
+
 function visible(element) {
   if (!element || element.disabled) return false;
   const style = getComputedStyle(element);
@@ -79,6 +105,7 @@ function activateNara() {
 }
 
 function ensureProxy() {
+  if (suppressThemeNara()) return;
   document.querySelectorAll(".nara-floating-proxy-v18,.nara-floating-proxy-v19")
     .forEach((node) => node.remove());
 
