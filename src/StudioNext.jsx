@@ -306,7 +306,7 @@ export default function StudioNext({ onExit, user }) {
     </aside>
 
     <main className="sn-main">
-      <header className="sn-top">
+      <header className={`sn-top${view === "themes" && deviceMode === "small" ? " sn-top-theme-mobile" : ""}`}>
         {(deviceMode !== "small" || !mobileSidebar) && <button type="button" className="sn-icon sn-sidebar-toggle" onClick={toggleSidebar} aria-label={deviceMode === "small" ? "Buka menu Studio" : (sidebar ? "Ciutkan menu Studio" : "Perluas menu Studio")} aria-expanded={deviceMode === "small" ? mobileSidebar : sidebar} aria-controls="ngeblogging-studio-sidebar">
           <span className="sn-mobile-menu-mark" aria-hidden="true"><strong>n</strong></span>
           <PanelLeftClose className="sn-desktop-sidebar-icon"/>
@@ -316,7 +316,7 @@ export default function StudioNext({ onExit, user }) {
         <div className="sn-top-actions">
           {site?.slug && <a className="sn-view-site" href={`https://${site.slug}.ngeblogging.com`} target="_blank" rel="noreferrer" title="Lihat situs publik"><Eye/><span>Lihat situs</span></a>}
           <button aria-label="Cari"><Search/></button>
-          <button className="sn-nara-button" onClick={() => setNaraOpen(true)}><Sparkles/> Tanya Nara</button>
+          {!(view === "themes" && deviceMode === "small") && <button className="sn-nara-button" onClick={() => setNaraOpen(true)}><Sparkles/> Tanya Nara</button>}
           <button className="sn-avatar" onClick={() => chooseView("settings")} aria-label="Buka pengaturan profil">{profile?.avatar_url ? <img src={profile.avatar_url} alt=""/> : initials}</button>
         </div>
       </header>
