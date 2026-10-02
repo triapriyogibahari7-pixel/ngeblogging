@@ -298,6 +298,29 @@ export default function ThemeStudio({ setToast, site, user }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
+    const selector = [
+      ".nara-floating-button",
+      ".nara-floating-proxy-v18",
+      ".nara-floating-proxy-v19",
+      ".nara-floating-proxy-v20",
+      ".nara-floating-proxy-v21",
+      ".nara-floating-proxy-v22",
+      ".nara-assistant-layer",
+      ".nara-assistant-backdrop",
+      ".sn-top-actions .sn-nara-button",
+      ".ce-nara",
+    ].join(",");
+    const removeThemeNara = () => {
+      document.querySelectorAll(selector).forEach((node) => node.remove());
+    };
+    removeThemeNara();
+    const observer = new MutationObserver(removeThemeNara);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
     const root = document.querySelector(".tn-studio");
     if (!root) return undefined;
 
