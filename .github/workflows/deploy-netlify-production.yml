@@ -1,6 +1,8 @@
 name: Publish Ngeblogging Netlify Secondary v160
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   workflow_run:
     workflows: ["Cloudflare Workers production"]
@@ -16,6 +18,7 @@ concurrency:
 jobs:
   publish:
     if: >-
+      github.event_name == 'push' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
