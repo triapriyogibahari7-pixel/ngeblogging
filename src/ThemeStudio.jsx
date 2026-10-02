@@ -379,7 +379,13 @@ export default function ThemeStudio({ setToast, site, user }) {
 
     const looksLikeThemeMobileOverlay = (node, rail) => {
       if (!(node instanceof HTMLElement) || node === root || !isHandheldTheme()) return false;
-      if (rail.contains(node) || node.contains(rail)) return false;
+      const protectedRailNode = node === rail
+        || node === rail.firstElementChild
+        || node === rail.lastElementChild
+        || node.matches(".tn-action-html,.tn-action-download,.tn-action-backup,.tn-action-restore")
+        || node.matches(".tn-mobile-theme-actions-left,.tn-mobile-theme-actions-right")
+        || node.matches(".tn-mobile-theme-actions-left small,.tn-mobile-theme-actions-right small");
+      if (protectedRailNode || node.contains(rail)) return false;
       const style = window.getComputedStyle(node);
       if (style.display === "none" || style.visibility === "hidden") return false;
       const rect = node.getBoundingClientRect();
@@ -405,7 +411,7 @@ export default function ThemeStudio({ setToast, site, user }) {
       });
 
       document.body.querySelectorAll('a[download],a[href*="download"],button').forEach((node) => {
-        if (!(node instanceof HTMLElement) || rail.contains(node)) return;
+        if (!(node instanceof HTMLElement) || node.matches(".tn-action-html,.tn-action-download,.tn-action-backup,.tn-action-restore")) return;
         const text = String(node.textContent || "").toLowerCase();
         const label = String(node.getAttribute("aria-label") || node.getAttribute("title") || "").toLowerCase();
         if (/download|unduh|simpan tema|save theme|tema.*html|html.*tema/.test(text + " " + label)) hideNode(node);
