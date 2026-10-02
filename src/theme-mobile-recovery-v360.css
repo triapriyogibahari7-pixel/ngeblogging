@@ -1204,3 +1204,112 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-butto
   transform:none!important;
   filter:none!important;
 }
+
+
+/* v374 — Theme handheld header: remove every legacy pseudo overlay.
+ * React/SVG controls remain; only decorative/generated pseudo layers are killed.
+ */
+.tn-studio[data-theme-mobile-device="application"] .tn-hero::before,
+.tn-studio[data-theme-mobile-device="application"] .tn-hero::after,
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy::before,
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy::after,
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy > *::before,
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy > *::after,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero::before,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero::after,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy::before,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy::after,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy > *::before,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy > *::after,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero::before,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero::after,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy::before,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy::after,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy > *::before,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy > *::after{
+  content:none!important;
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:0!important;
+  max-height:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-action-rail,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-action-rail,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-action-rail{
+  position:relative!important;
+  isolation:isolate!important;
+  z-index:2147483647!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  align-items:stretch!important;
+  gap:10px!important;
+  margin:12px 0 14px!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-action-rail > *,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-action-rail > *,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-action-rail > *{
+  position:relative!important;
+  isolation:isolate!important;
+  z-index:2147483647!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:10px!important;
+  background:#fff!important;
+  border:1px solid #d9dee8!important;
+  border-radius:14px!important;
+  box-shadow:0 2px 8px rgba(15,23,42,.06)!important;
+}
+
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-action-rail > *::before,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-action-rail > *::after,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-action-rail > *::before,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-action-rail > *::after,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-action-rail > *::before,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-action-rail > *::after{
+  content:none!important;
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-action-rail button,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-action-rail button,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-action-rail button{
+  position:relative!important;
+  z-index:2147483647!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:8px 5px!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
