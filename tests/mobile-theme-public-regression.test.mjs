@@ -13,6 +13,10 @@ const assistant = read("src/NaraAssistant.jsx");
 const workspace = read("src/NaraWorkspace.jsx");
 const integrations = read("src/lib/nara-data.js");
 const themeStudio = read("src/ThemeStudio.jsx");
+const productionGuard = read("src/studio-production-guard.js");
+const naraBridge = read("src/nara-availability-bridge.js");
+const naraInteraction = read("src/nara-interaction-guard.js");
+const naraLauncher = read("src/nara-launcher-v20.js");
 const deviceCss = read("src/theme-device-modes.css");
 const themeSystem = read("src/theme-system.js");
 const publicSite = read("src/PublicSiteNext.jsx");
@@ -69,6 +73,21 @@ test("theme preview exposes Mobile Tablet Laptop and Komputer modes", () => {
   assert.match(themeStudio, /\{ id: "desktop", label: "Komputer"/);
   assert.match(deviceCss, /\.tn-frame-shell\.laptop iframe/);
   assert.match(deviceCss, /\.tn-frame-shell\.desktop iframe/);
+});
+
+
+test("Theme handheld has a single hard stop for the Nara black floating overlay", () => {
+  for (const source of [productionGuard, naraBridge, naraInteraction, naraLauncher]) {
+    assert.match(source, /themeHandheldActive/);
+    assert.match(source, /data-theme-mobile-device/);
+    assert.match(source, /nara-floating-button/);
+  }
+  assert.match(productionGuard, /if \(themeHandheldActive\(\)\)/);
+  assert.match(naraBridge, /if \(themeHandheldActive\(\)\)/);
+  assert.match(naraInteraction, /if \(themeHandheldActive\(\)\)/);
+  assert.match(naraLauncher, /suppressThemeNara/);
+  assert.match(themeStudio, /data-theme-mobile-device=\{device\}/);
+  assert.match(themeStudio, /nara-floating-proxy-v21,\.nara-floating-proxy-v22/);
 });
 
 test("catalog contains 100 themes with distinct HTML structures", () => {
