@@ -20,7 +20,7 @@ test("Theme mobile recovery is strictly smartphone-width scoped", () => {
   assert.doesNotMatch(css, /data-studio-device-variant="computer"/);
   assert.doesNotMatch(css, /data-v340-theme-device="laptop"/);
   assert.doesNotMatch(css, /data-v340-theme-device="desktop"/);
-  assert.doesNotMatch(css, /data-v340-theme-device="computer"/);
+  assert.doesNotMatch(css, /data-theme-mobile-device="computer"/);
 });
 
 test("Theme mobile recovery fixes the current Theme markup rather than retired layout selectors", () => {
