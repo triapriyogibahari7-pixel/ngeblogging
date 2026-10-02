@@ -107,7 +107,30 @@ function ensureCapabilitySummary(layer) {
   context.append(summary);
 }
 
+function themeHandheldActive() {
+  const studio = document.querySelector(".tn-studio[data-theme-mobile-device]");
+  const device = studio?.getAttribute("data-theme-mobile-device");
+  return device === "application" || device === "phone" || device === "mobile";
+}
+
 function ensureNara() {
+  if (themeHandheldActive()) {
+    document.querySelectorAll([
+      ".nara-floating-button",
+      ".nara-floating-proxy-v18",
+      ".nara-floating-proxy-v19",
+      ".nara-floating-proxy-v20",
+      ".nara-floating-proxy-v21",
+      ".nara-floating-proxy-v22",
+      ".nara-assistant-layer",
+      ".nara-assistant-backdrop",
+      ".sn-top-actions .sn-nara-button",
+      ".ce-nara",
+    ].join(",")).forEach(conceal);
+    document.body.classList.remove("nara-modal-open");
+    return;
+  }
+
   const launcher = document.querySelector(".nara-floating-button");
   if (launcher) {
     launcher.dataset.naraInteractionAuthority = RELEASE;
