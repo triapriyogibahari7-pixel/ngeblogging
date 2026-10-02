@@ -350,6 +350,37 @@ export default function ThemeStudio({ setToast, site, user }) {
   }, []);
 
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const root = document.querySelector(".tn-studio");
+    if (!root) return undefined;
+    const isHandheld = () => ["application","phone","mobile"].includes(root.getAttribute("data-theme-mobile-device"));
+    const selectors = [
+      ".nara-floating-button",
+      ".nara-floating-proxy-v18",
+      ".nara-floating-proxy-v19",
+      ".nara-floating-proxy-v20",
+      ".nara-floating-proxy-v21",
+      ".nara-assistant-layer",
+      ".nara-assistant-backdrop",
+    ].join(",");
+    const suppressNara = () => {
+      if (!isHandheld()) return;
+      document.querySelectorAll(selectors).forEach((node) => {
+        node.hidden = true;
+        node.setAttribute("aria-hidden", "true");
+        for (const property of ["display","visibility","opacity","pointer-events","box-shadow","filter","transform"]) {
+          node.style.setProperty(property, property === "display" ? "none" : property === "visibility" ? "hidden" : property === "opacity" ? "0" : property === "pointer-events" ? "none" : property === "transform" ? "none" : "none", "important");
+        }
+      });
+    };
+    suppressNara();
+    const observer = new MutationObserver(suppressNara);
+    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class","style","hidden","aria-hidden","data-theme-mobile-device"] });
+    return () => observer.disconnect();
+  }, []);
+
+
   useEffect(() => { saveThemeState(themeState); }, [themeState]);
   useEffect(() => { setCustomDraft(themeState.draftConfig); setCodeDraft(themeState.code); setWidgetDraft(themeState.widgets); }, [themeState]);
   useEffect(() => { if (site?.blueprint) setBlueprint(site.blueprint); }, [site?.blueprint]);
