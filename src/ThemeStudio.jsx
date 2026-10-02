@@ -409,7 +409,7 @@ export default function ThemeStudio({ setToast, site, user }) {
 
       document.body.querySelectorAll("*").forEach((node) => {
         if (looksLikeThemeMobileOverlay(node, rail)) hideNode(node);
-        if (node instanceof HTMLElement && node !== heroCopy && !heroCopy.contains(node) && looksLikeThemeMobileOverlay(node, heroCopy)) hideNode(node);
+        if (node instanceof HTMLElement && node !== heroCopy && looksLikeThemeMobileOverlay(node, heroCopy)) hideNode(node);
       });
 
       document.body.querySelectorAll('a[download],a[href*="download"],button').forEach((node) => {
