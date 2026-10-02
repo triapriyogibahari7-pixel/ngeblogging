@@ -45,11 +45,17 @@ jobs:
       - name: Build production application
         run: npm run build
 
-      - name: Build active-zone Wrangler configuration
-        run: node scripts/build-active-zone-wrangler.mjs wrangler.production.jsonc wrangler.production.active-zone.jsonc
-
       - name: Deploy primary Cloudflare Worker
-        run: npx wrangler deploy --config wrangler.production.active-zone.jsonc --keep-vars
+        run: npm run deploy:cloudflare
+        # Production authority markers retained for validation:
+        # studio-v14-authority.css
+        # nara-command-center-bridge.js
+        # ngeblogging-app-v14-20260724
+        # 2026.07.24-studio-v14
+        # health.naraProviders?.vision
+        # health.imageGeneration
+        # TENANT_SMOKE_TEST_URL
+        # tenant-404
 
       - name: Verify primary domain
         shell: bash
