@@ -512,3 +512,75 @@ body:has(.tn-studio) .sn-side:not(.collapsed)+.sn-main:after{
   -webkit-backdrop-filter:none!important;
   box-shadow:none!important;
 }
+
+
+/* v361 mobile Theme final authority.
+ * The Theme page owns this surface: no Nara launcher, no shell avatar/scrim,
+ * and no legacy dark floating layer may sit above the phone/app preview.
+ */
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="application"]),
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="phone"]),
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="mobile"]){
+  position:relative!important;
+  isolation:isolate!important;
+  overflow-x:clip!important;
+}
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="application"]) ~ .nara-floating-button,
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="phone"]) ~ .nara-floating-button,
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="mobile"]) ~ .nara-floating-button,
+body:has(.tn-studio) .nara-floating-button,
+body:has(.tn-studio) .nara-floating-proxy-v20{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transform:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+body:has(.tn-studio) .nara-assistant-layer,
+body:has(.tn-studio) .nara-assistant-backdrop{
+  background:transparent!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.tn-studio:has(.tn-active-stage .tn-frame-shell:is([data-preview-device="application"],[data-preview-device="phone"],[data-preview-device="mobile"])) .tn-frame-shell{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  place-items:unset!important;
+  height:min(560px,calc(100dvh - 230px))!important;
+  min-height:340px!important;
+  max-height:560px!important;
+  padding:10px!important;
+  overflow:auto!important;
+  background:#eef2f7!important;
+  border:0!important;
+  border-radius:16px!important;
+}
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="application"]) .tn-frame-shell iframe,
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="phone"]) .tn-frame-shell iframe,
+.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="mobile"]) .tn-frame-shell iframe{
+  flex:0 0 var(--tn-preview-width,360px)!important;
+  width:var(--tn-preview-width,360px)!important;
+  min-width:var(--tn-preview-width,360px)!important;
+  max-width:var(--tn-preview-width,360px)!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 4px 18px rgba(20,35,55,.10)!important;
+}
+@media(max-width:430px){
+  .tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="application"]) .tn-frame-shell iframe,
+  .tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="phone"]) .tn-frame-shell iframe,
+  .tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="mobile"]) .tn-frame-shell iframe{
+    flex-basis:360px!important;
+    width:360px!important;
+    min-width:360px!important;
+    max-width:360px!important;
+  }
+}
