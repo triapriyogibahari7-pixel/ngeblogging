@@ -258,7 +258,7 @@ export default function ThemeStudio({ setToast, site, user }) {
     const hidden = new Map();
 
     const looksLikeBlackCircleOverlay = (node) => {
-      if (!(node instanceof HTMLElement) || root.contains(node) || !isHandheldTheme()) return false;
+      if (!(node instanceof HTMLElement) || node === root || !isHandheldTheme()) return false;
       const style = window.getComputedStyle(node);
       const rect = node.getBoundingClientRect();
       if (!rect.width || !rect.height || rect.width > 220 || rect.height > 220) return false;
