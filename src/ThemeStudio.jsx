@@ -109,6 +109,18 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
 @media (max-width: 600px) {
   html, body { max-width: 100% !important; overflow-x: hidden !important; }
 }
+.ngeblogging-mobile-hidden-overlay::before,
+.ngeblogging-mobile-hidden-overlay::after {
+  display:none !important;
+  content:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  width:0 !important;
+  height:0 !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
 </style><script>
 (() => {
   const isDownloadControl = (node) => {
@@ -118,25 +130,36 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
     const href = String(node.getAttribute("href") || "").toLowerCase();
     return /download|unduh|simpan tema|save theme|tema.*html|html.*tema/.test(text + " " + label + " " + href);
   };
+  const darkCircle = (style, width, height) => {
+    const bg = String(style.backgroundColor || "");
+    const dark = /^(rgb|rgba)\(\s*(?:0|10|17)\s*,\s*(?:0|10|17)\s*,\s*(?:0|10|17)(?:\s*,\s*(?:0?\.\d+|1))?\s*\)$/i.test(bg) || /^(#000|#000000|#0a0a0a|#111111)$/i.test(bg);
+    const radius = parseFloat(style.borderTopLeftRadius) || 0;
+    const circle = style.borderRadius === "50%" || radius >= Math.max(18, Math.min(width, height) / 2 * .72);
+    const floating = style.position === "fixed" || style.position === "sticky" || style.position === "absolute";
+    return dark && circle && floating && width > 0 && height > 0 && width <= 720 && height <= 720;
+  };
   const hideThemeFloatingControls = () => {
     document.querySelectorAll("*").forEach((node) => {
       if (!(node instanceof HTMLElement)) return;
       const style = getComputedStyle(node);
       const rect = node.getBoundingClientRect();
-      if (!rect.width || !rect.height || rect.width > 320 || rect.height > 320) return;
-      const radius = parseFloat(style.borderTopLeftRadius) || 0;
-      const circleRadius = Math.min(rect.width, rect.height) / 2;
-      const circle = style.borderRadius === "50%" || radius >= Math.max(18, circleRadius * .72);
-      const floating = style.position === "fixed" || style.position === "sticky" ||
-        (style.position === "absolute" && Number.parseInt(style.zIndex, 10) >= 1000);
-      if (!floating || (!circle && !isDownloadControl(node))) return;
-      node.hidden = true;
-      node.setAttribute("aria-hidden", "true");
-      node.style.setProperty("display", "none", "important");
-      node.style.setProperty("visibility", "hidden", "important");
-      node.style.setProperty("opacity", "0", "important");
-      node.style.setProperty("pointer-events", "none", "important");
-      node.style.setProperty("transform", "none", "important");
+      if (rect.width && rect.height && rect.width <= 720 && rect.height <= 720 && darkCircle(style, rect.width, rect.height)) {
+        node.hidden = true;
+        node.setAttribute("aria-hidden", "true");
+        node.style.setProperty("display", "none", "important");
+        node.style.setProperty("visibility", "hidden", "important");
+        node.style.setProperty("opacity", "0", "important");
+        node.style.setProperty("pointer-events", "none", "important");
+      }
+      for (const pseudo of ["::before", "::after"]) {
+        const pseudoStyle = getComputedStyle(node, pseudo);
+        const content = String(pseudoStyle.content || "");
+        const width = parseFloat(pseudoStyle.width) || 0;
+        const height = parseFloat(pseudoStyle.height) || 0;
+        if (content !== "none" && content !== '""' && darkCircle(pseudoStyle, width, height)) {
+          node.classList.add("ngeblogging-mobile-hidden-overlay");
+        }
+      }
     });
     document.querySelectorAll('a[href*="download"],a[download],button').forEach((node) => {
       if (isDownloadControl(node)) {
@@ -147,8 +170,8 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
     });
   };
   const boot = () => {
-    hideBlackCircles();
-    new MutationObserver(hideBlackCircles).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+    hideThemeFloatingControls();
+    new MutationObserver(hideThemeFloatingControls).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
@@ -477,7 +500,7 @@ export default function ThemeStudio({ setToast, site, user }) {
   return <div className="tn-studio" data-theme-interface="v149" data-v340-theme-final="ready" data-v340-theme-family={["application","phone","mobile","compact","tablet"].includes(device) ? "compact" : "large"} data-v340-theme-device={device} data-theme-mobile-device={device} data-v340-layout="ready">
     <input ref={fileInput} type="file" accept=".ngeblog-theme,.json,.html,.htm,.css,.js" hidden onChange={importFile}/>
     <section className="tn-hero">
-      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><h1>100 tema aktif dengan delapan pratinjau perangkat.</h1><section className="tn-mobile-action-rail"><div className="tn-mobile-theme-actions-left"><small>HTML TEMA</small><button className="tn-action-html" onClick={() => setModal("code")}><Code2/> HTML tema</button><button className="tn-action-download" onClick={saveHtml}><Download/> Download tema</button></div><div className="tn-mobile-theme-actions-right"><small>VERSI TEMA</small><button className="tn-action-backup" onClick={backup}><FileArchive/> Cadangan</button><button className="tn-action-restore" onClick={() => setModal("history")}><History/> Pemulihan</button></div></section><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
+      <div className="tn-hero-copy"><span><Sparkles/> TEMA NGEBLOGGING</span><label className="tn-theme-search tn-theme-search-under-title"><Search/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari tema…"/><ChevronDown/></label><h1>100 tema aktif</h1><section className="tn-mobile-action-rail"><div className="tn-mobile-theme-actions-left"><small>HTML TEMA</small><button className="tn-action-html" onClick={() => setModal("code")}><Code2/> HTML tema</button><button className="tn-action-download" onClick={saveHtml}><Download/> Download tema</button></div><div className="tn-mobile-theme-actions-right"><small>VERSI TEMA</small><button className="tn-action-backup" onClick={backup}><FileArchive/> Cadangan</button><button className="tn-action-restore" onClick={() => setModal("history")}><History/> Pemulihan</button></div></section><p>Koleksi ini memiliki HTML, CSS, struktur, palet, tipografi, widget, serta perilaku responsif untuk aplikasi, handphone, mobile, perangkat kecil, tablet, laptop, situs desktop, dan komputer.</p><div className="tn-hero-actions"><button className="primary" onClick={() => setModal("customize")}><SlidersHorizontal/> Sesuaikan</button><button onClick={() => setModal("code")}><Code2/> Edit HTML</button><button onClick={() => setModal("widgets")}><Blocks/> {WIDGET_COUNT} Widget</button><button onClick={openSite}><ExternalLink/> Lihat situs</button></div><div className="tn-trust"><span><ShieldCheck/> Sandbox kode</span><span><Zap/> 8 pratinjau</span><span><Gauge/> SEO-ready</span><span className={syncStatus}><Cloud/> {syncStatus === "synced" ? "Cloud tersinkron" : syncStatus === "syncing" || syncStatus === "loading" ? "Menyinkronkan" : "Cadangan lokal"}</span></div></div>
       <div className="tn-active-stage"><div className="tn-stage-toolbar"><DeviceSwitch value={device} onChange={setDevice}/><b>{previewTheme.name}</b></div><ThemeFrame theme={previewTheme} code={previewTheme.id === activeTheme.id ? themeState.code : previewTheme.code} config={previewTheme.id === activeTheme.id ? themeState.publishedConfig : undefined} widgets={previewTheme.id === activeTheme.id ? themeState.widgets : createDefaultWidgetState(previewTheme.defaultWidgetIds)} device={device}/>{previewTheme.id !== activeTheme.id && <div className="tn-apply-bar"><span>Pratinjau <b>{previewTheme.name}</b></span><button onClick={() => apply(previewTheme.id)}><Check/> Gunakan tema</button></div>}</div>
     </section>
 
