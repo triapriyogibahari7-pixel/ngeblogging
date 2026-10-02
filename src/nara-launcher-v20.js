@@ -106,7 +106,7 @@ function activateNara() {
 
 function ensureProxy() {
   if (suppressThemeNara()) return;
-  document.querySelectorAll(".nara-floating-proxy-v18,.nara-floating-proxy-v19")
+  document.querySelectorAll(".nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22")
     .forEach((node) => node.remove());
 
   const nativeCandidates = candidates();
