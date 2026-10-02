@@ -12,8 +12,8 @@ test("Theme mobile recovery is loaded after the existing Theme Studio surface CS
 });
 
 test("Theme mobile recovery is strictly smartphone-width scoped", () => {
-  assert.match(css, /@media\s*\\(max-width:\s*767px\\)/);
-  assert.match(css, /\\.tn-studio\\[data-v340-theme-family="compact"\\]/);
+  assert.match(css, /data-v340-theme-device="application"/);\n  assert.match(css, /data-v340-theme-device="phone"/);\n  assert.match(css, /data-v340-theme-device="mobile"/);
+  assert.doesNotMatch(css, /data-v340-theme-family="compact"/);
   assert.doesNotMatch(css, /data-v15-mobile="true"/);
   assert.doesNotMatch(css, /data-studio-device-variant="laptop"/);
   assert.doesNotMatch(css, /data-studio-device-variant="desktop"/);
