@@ -763,3 +763,127 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) .ce-nara *{
     flex:0 0 auto!important;width:auto!important;min-width:0!important;gap:4px!important;
   }
 }
+
+
+/* v362: Theme handheld action-bar authority.
+ * These are real Theme controls, not a floating overlay. Keep them above
+ * every legacy shell/Nara layer so HTML/download/backup/restore remain usable.
+ */
+.tn-studio[data-theme-mobile-device="application"] .tn-command,
+.tn-studio[data-theme-mobile-device="phone"] .tn-command,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-command{
+  position:relative!important;
+  z-index:2147483640!important;
+  isolation:isolate!important;
+  overflow:visible!important;
+  background:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+.tn-studio[data-theme-mobile-device="application"] .tn-theme-actions,
+.tn-studio[data-theme-mobile-device="phone"] .tn-theme-actions,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-theme-actions{
+  position:relative!important;
+  z-index:2147483641!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+
+.tn-studio[data-theme-mobile-device="application"] .tn-theme-actions button,
+.tn-studio[data-theme-mobile-device="phone"] .tn-theme-actions button,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-theme-actions button{
+  position:relative!important;
+  z-index:2147483642!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  max-width:none!important;
+  padding:8px 6px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+}
+
+body:has(.tn-studio[data-theme-mobile-device="application"]) :is(
+  .nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,
+  .nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,
+  .nara-assistant-layer,.nara-assistant-backdrop,
+  .sn-top-actions .sn-nara-button,.ce-nara
+){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  content-visibility:hidden!important;
+}
+body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(
+  .nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,
+  .nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,
+  .nara-assistant-layer,.nara-assistant-backdrop,
+  .sn-top-actions .sn-nara-button,.ce-nara
+){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  content-visibility:hidden!important;
+}
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(
+  .nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,
+  .nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,
+  .nara-assistant-layer,.nara-assistant-backdrop,
+  .sn-top-actions .sn-nara-button,.ce-nara
+){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  width:0!important;
+  height:0!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  content-visibility:hidden!important;
+}
