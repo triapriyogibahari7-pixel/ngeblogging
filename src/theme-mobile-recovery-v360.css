@@ -985,3 +985,88 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-butto
   margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;filter:none!important;transform:none!important;
   content-visibility:hidden!important;
 }
+
+/* v370 — replace the broken mobile action grid with two unmistakable cards. */
+.tn-studio[data-theme-mobile-device="application"] .tn-command-theme-mobile,
+.tn-studio[data-theme-mobile-device="phone"] .tn-command-theme-mobile,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-command-theme-mobile{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:100%!important;
+  margin:12px 0 14px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  position:relative!important;
+  z-index:2147483647!important;
+  isolation:isolate!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-left,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-right,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-left,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-right,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-left,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-right{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+  min-width:0!important;
+  padding:10px!important;
+  border:1px solid #d9dee8!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  box-shadow:0 2px 8px rgba(15,23,42,.06)!important;
+  position:relative!important;
+  z-index:2147483647!important;
+  isolation:isolate!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-left small,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-right small,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-left small,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-right small,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-left small,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-right small{
+  display:block!important;
+  margin:0 0 2px!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-left button,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-right button,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-left button,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-right button,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-left button,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-right button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:100%!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:8px 5px!important;
+  position:relative!important;
+  z-index:2147483647!important;
+  pointer-events:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-left::before,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-left::after,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-right::before,
+.tn-studio[data-theme-mobile-device="application"] .tn-mobile-theme-actions-right::after,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-left::before,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-left::after,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-right::before,
+.tn-studio[data-theme-mobile-device="phone"] .tn-mobile-theme-actions-right::after,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-left::before,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-left::after,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-right::before,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-mobile-theme-actions-right::after{
+  content:none!important;
+  display:none!important;
+}
