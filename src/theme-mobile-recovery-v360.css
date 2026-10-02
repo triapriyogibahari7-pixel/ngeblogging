@@ -488,31 +488,3 @@
     filter:none!important;
   }
 }
-/* v361 mobile-only overlap/icon repair — desktop/laptop/tablet/computer untouched. */
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-sidebar-scrim-v15[hidden]{
-  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
-}
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-shell:not([data-v15-sidebar-open="true"]) > .sn-sidebar-scrim-v15{
-  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
-}
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .nara-floating-button{
-  right:max(12px,env(safe-area-inset-right,0px))!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
-  width:56px!important;min-width:56px!important;max-width:56px!important;height:56px!important;min-height:56px!important;max-height:56px!important;
-  padding:0!important;border-radius:18px!important;overflow:hidden!important;transform:none!important;
-}
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .nara-floating-button>span{
-  width:100%!important;height:100%!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important;
-}
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .nara-floating-button svg{
-  display:block!important;width:24px!important;height:24px!important;margin:auto!important;transform:none!important;
-}
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-icon.sn-sidebar-edge-owner-v17,
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-icon[data-v15-original-toggle="true"]{
-  left:max(10px,calc(var(--sn-phone-rail,58px) - 20px))!important;width:40px!important;min-width:40px!important;max-width:40px!important;
-  height:40px!important;min-height:40px!important;max-height:40px!important;margin:0!important;padding:0!important;
-  display:grid!important;place-items:center!important;transform:none!important;overflow:hidden!important;
-}
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-icon.sn-sidebar-edge-owner-v17 svg,
-:is(html[data-studio-device-variant="application"],html[data-studio-device-variant="phone"],html[data-studio-device-variant="mobile"],html[data-studio-responsive-mode="application"],html[data-studio-responsive-mode="phone"],html[data-studio-responsive-mode="mobile"]) .sn-icon[data-v15-original-toggle="true"] svg{
-  display:block!important;width:20px!important;height:20px!important;max-width:20px!important;max-height:20px!important;margin:auto!important;transform:none!important;
-}
