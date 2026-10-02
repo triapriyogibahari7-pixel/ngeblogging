@@ -656,9 +656,9 @@ body:has(.tn-studio) .nara-assistant-backdrop{
   width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
 }
 /* Remove every known Nara launcher/proxy while Theme is in handheld preview. */
-body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21),
-body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21),
-body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21){
+body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22),
+body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22),
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22){
   display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
   box-shadow:none!important;filter:none!important;transform:none!important;
 }
