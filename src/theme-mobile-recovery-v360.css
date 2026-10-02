@@ -1141,3 +1141,5 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-butto
 .tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy > .tn-command{
   display:none!important;
 }
+
+/* production redeploy marker: Theme handheld action rail / overlay repair */
