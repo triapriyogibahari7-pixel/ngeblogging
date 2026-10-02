@@ -130,3 +130,15 @@ test("v29 invalidates stale shell CSS and JavaScript caches", () => {
   assert.match(serviceWorker, /fetch\(request, \{ cache: "no-store" \}\)/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\("\/src\/"\)/);
 });
+
+
+test("Theme handheld keeps HTML download backup and restore actions above legacy overlays", () => {
+  assert.match(themeStudio, /className="tn-theme-actions"/);
+  for (const action of ["tn-action-html", "tn-action-download", "tn-action-backup", "tn-action-restore"]) {
+    assert.match(themeStudio, new RegExp(action));
+  }
+  const mobileCss = read("src/theme-mobile-recovery-v360.css");
+  assert.match(mobileCss, /tn-theme-actions/);
+  assert.match(mobileCss, /z-index:2147483642/);
+  assert.match(mobileCss, /content-visibility:hidden/);
+});
