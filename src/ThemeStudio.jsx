@@ -404,10 +404,12 @@ export default function ThemeStudio({ setToast, site, user }) {
     const removeThemeMobileOverlays = () => {
       if (!isHandheldTheme()) return;
       const rail = root.querySelector(".tn-mobile-action-rail");
-      if (!rail) return;
+      const heroCopy = root.querySelector(".tn-hero-copy");
+      if (!rail || !heroCopy) return;
 
       document.body.querySelectorAll("*").forEach((node) => {
         if (looksLikeThemeMobileOverlay(node, rail)) hideNode(node);
+        if (node instanceof HTMLElement && node !== heroCopy && !heroCopy.contains(node) && looksLikeThemeMobileOverlay(node, heroCopy)) hideNode(node);
       });
 
       document.body.querySelectorAll('a[download],a[href*="download"],button').forEach((node) => {
