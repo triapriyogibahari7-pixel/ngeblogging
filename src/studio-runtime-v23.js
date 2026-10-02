@@ -224,7 +224,15 @@ function syncSidebar(shell, profile) {
   ensureScrim(shell, side, toggle, profile.compact);
 }
 
+function themeHandheldActive() {
+  const studio = document.querySelector(".tn-studio[data-theme-mobile-device]");
+  const device = studio?.getAttribute("data-theme-mobile-device");
+  return device === "application" || device === "phone" || device === "mobile";
+}
+
 function syncNara() {
+  const themeHandheld = themeHandheldActive();
+
   document.querySelectorAll([
     ".nara-floating-proxy-v14",
     ".nara-floating-proxy-v15",
@@ -242,17 +250,27 @@ function syncNara() {
     button.disabled = true;
     button.tabIndex = -1;
     button.setAttribute("aria-hidden", "true");
+    button.style.setProperty("display", "none", "important");
+    button.style.setProperty("visibility", "hidden", "important");
+    button.style.setProperty("opacity", "0", "important");
+    button.style.setProperty("pointer-events", "none", "important");
   });
 
   const launchers = [...document.querySelectorAll(".nara-floating-button")];
-  launchers.forEach((button, index) => {
+  launchers.forEach((button) => {
     button.type = "button";
     button.dataset.naraLauncherAuthority = "single-v23";
-    if (index > 0) {
+    if (themeHandheld) {
       button.hidden = true;
       button.disabled = true;
       button.tabIndex = -1;
       button.setAttribute("aria-hidden", "true");
+      button.style.setProperty("display", "none", "important");
+      button.style.setProperty("visibility", "hidden", "important");
+      button.style.setProperty("opacity", "0", "important");
+      button.style.setProperty("pointer-events", "none", "important");
+      button.style.setProperty("box-shadow", "none", "important");
+      button.style.setProperty("filter", "none", "important");
       return;
     }
     button.hidden = false;
@@ -267,8 +285,19 @@ function syncNara() {
     button.style.removeProperty("transform");
   });
 
+  if (themeHandheld) {
+    document.querySelectorAll(".nara-assistant-layer, .nara-assistant-backdrop").forEach((node) => {
+      node.hidden = true;
+      node.setAttribute("aria-hidden", "true");
+      node.style.setProperty("display", "none", "important");
+      node.style.setProperty("visibility", "hidden", "important");
+      node.style.setProperty("opacity", "0", "important");
+      node.style.setProperty("pointer-events", "none", "important");
+    });
+  }
+
   const layer = document.querySelector(".nara-assistant-layer");
-  const open = Boolean(layer);
+  const open = Boolean(layer) && !themeHandheld;
   document.documentElement.dataset.naraOpen = String(open);
   document.body.classList.toggle("nara-open-v23", open);
   if (layer) layer.dataset.naraLayerAuthority = "full-viewport-v23";
