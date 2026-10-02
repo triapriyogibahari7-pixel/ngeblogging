@@ -217,8 +217,6 @@ export default function ThemeStudio({ setToast, site, user }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
-    const mobile = window.matchMedia("(max-width: 767px)").matches;
-    if (!mobile) return undefined;
     const nodes = Array.from(document.querySelectorAll(
       ".sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop],[class*=\"sn-sidebar-scrim\"]"
     ));
