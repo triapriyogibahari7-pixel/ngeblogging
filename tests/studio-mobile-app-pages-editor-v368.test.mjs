@@ -60,11 +60,11 @@ test("v369 bumps the service-worker cache so stale mobile CSS is not retained", 
 });
 
 test("v369 editor uses natural mobile flow and never changes large layout", () => {
-  assert.match(css, /\.ce-titlebar[\\s\\S]*position:relative!important/);
-  assert.match(css, /\.ce-tabs[\\s\\S]*position:relative!important/);
-  assert.match(css, /\.ce-ribbon[\\s\\S]*position:relative!important/);
-  assert.match(css, /\.ce-workspace[\\s\\S]*display:flex!important/);
-  assert.match(css, /\.ce-field-grid[\\s\\S]*grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(css, /\.ce-titlebar[\s\S]*position:relative!important/);
+  assert.match(css, /\.ce-tabs[\s\S]*position:relative!important/);
+  assert.match(css, /\.ce-ribbon[\s\S]*position:relative!important/);
+  assert.match(css, /\.ce-workspace[\s\S]*display:flex!important/);
+  assert.match(css, /\.ce-field-grid[\s\S]*grid-template-columns:minmax\(0,1fr\)!important/);
   assert.doesNotMatch(css, /html\.editor-v266-large/);
   assert.doesNotMatch(css, /data-studio-device-mode="large"/);
 });
