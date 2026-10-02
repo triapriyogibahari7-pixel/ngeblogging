@@ -6,11 +6,13 @@ const css = await readFile(new URL("../src/studio-mobile-authority-v372.css", im
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const secure = await readFile(new URL("../src/StudioSecure.jsx", import.meta.url), "utf8");
 
-test("v372 is loaded last in both editor entry points", () => {
+test("v372 remains the final authority layer before the later small-device refinements", () => {
   assert.match(editor, /import "\.\/studio-mobile-authority-v372\.css";/);
   assert.match(secure, /import "\.\/studio-mobile-authority-v372\.css";/);
-  assert.ok(editor.lastIndexOf("studio-mobile-authority-v372.css") > editor.lastIndexOf(".css"));
-  assert.ok(secure.lastIndexOf("studio-mobile-authority-v372.css") > secure.lastIndexOf(".css"));
+  assert.ok(editor.indexOf("studio-mobile-authority-v372.css") > editor.indexOf("studio-mobile-authority-v370.css"));
+  assert.ok(editor.indexOf("studio-mobile-authority-v372.css") < editor.indexOf("studio-small-device-v374.css"));
+  assert.ok(secure.indexOf("studio-mobile-authority-v372.css") > secure.indexOf("studio-flow-integrity-v111.css"));
+  assert.ok(secure.indexOf("studio-mobile-authority-v372.css") < secure.indexOf("studio-small-device-v374.css"));
 });
 
 test("v372 is small-device only", () => {
