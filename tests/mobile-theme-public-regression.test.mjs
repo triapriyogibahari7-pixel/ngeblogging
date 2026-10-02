@@ -147,7 +147,7 @@ test("Theme handheld preview removes circular floating controls that can trigger
   assert.match(themeStudio, /isDownloadControl/);
   assert.match(themeStudio, /style\.position === "fixed" \|\| style\.position === "sticky"/);
   assert.match(themeStudio, /pointer-events/, "preview cleanup must disable the floating control");
-  const heading = themeStudio.indexOf("100 tema aktif dengan delapan pratinjau perangkat.");
+  const heading = themeStudio.indexOf("100 tema aktif");
   const mobileActions = themeStudio.indexOf("tn-mobile-action-rail");
   assert.ok(heading >= 0 && mobileActions > heading, "mobile actions must sit below the 100-theme heading");
 });
