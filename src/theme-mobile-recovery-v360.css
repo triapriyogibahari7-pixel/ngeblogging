@@ -466,3 +466,25 @@
     grid-template-columns:minmax(0,1fr)!important;
   }
 }
+
+
+/* Theme-only: remove the legacy dark overlay while Theme Studio is mounted. */
+body:has(.tn-studio) :is(.sn-side-backdrop,.sn-sidebar-backdrop,[data-legacy-sidebar-backdrop],[class*="sn-sidebar-scrim"]){
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body:has(.tn-studio) .sn-side:not(.collapsed)+.sn-main:before,
+body:has(.tn-studio) .sn-side:not(.collapsed)+.sn-main:after{
+  content:none!important;
+  display:none!important;
+  opacity:0!important;
+  background:transparent!important;
+  pointer-events:none!important;
+}
