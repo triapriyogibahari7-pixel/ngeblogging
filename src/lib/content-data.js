@@ -2,6 +2,7 @@ import { supabase, supabaseConfigured } from "./supabase.js";
 
 export const CONTENT_PAGE_SIZE = 25;
 export const CONTENT_QUERY_TIMEOUT_MS = 12_000;
+const CONTENT_STATUSES = new Set(["draft", "review", "scheduled", "published", "archived"]);
 
 function client() {
   if (!supabaseConfigured || !supabase) throw new Error("Penyimpanan cloud belum dikonfigurasi.");
@@ -38,6 +39,11 @@ function safeObject(value) {
 
 function safeArray(value, max = 100) {
   return Array.isArray(value) ? value.slice(0, max) : [];
+}
+
+function normalizeContentStatus(value, fallback = "draft") {
+  const status = String(value || fallback).toLowerCase();
+  return CONTENT_STATUSES.has(status) ? status : fallback;
 }
 
 export function normalizeMetadata(value = {}, type = "article") {
@@ -192,9 +198,10 @@ export async function updateContentDocument(contentId, values) {
     payload.body_json = { type: "html", version: 2 };
   }
   if (values.status !== undefined) {
-    payload.status = values.status;
-    payload.published_at = values.status === "published" ? (values.publishedAt || new Date().toISOString()) : null;
-    payload.scheduled_at = values.status === "scheduled" ? (values.scheduledAt || null) : values.scheduledAt || null;
+    const status = normalizeContentStatus(values.status);
+    payload.status = status;
+    payload.published_at = status === "published" ? (values.publishedAt || new Date().toISOString()) : null;
+    payload.scheduled_at = status === "scheduled" ? (values.scheduledAt || null) : values.scheduledAt || null;
   } else if (values.scheduledAt !== undefined) {
     payload.scheduled_at = values.scheduledAt || null;
   }
@@ -208,6 +215,12 @@ export async function updateContentDocument(contentId, values) {
   const { data, error } = await withTimeout(request, "Menyimpan konten");
   if (error) throw error;
   return data;
+}
+
+export async function publishContentDocument(contentId, values = {}) {
+  const status = normalizeContentStatus(values.status, "published");
+  const publishedAt = status === "published" ? (values.publishedAt || new Date().toISOString()) : "";
+  return updateContentDocument(contentId, { ...values, status, publishedAt });
 }
 
 export async function deleteContentDocument(contentId) {
