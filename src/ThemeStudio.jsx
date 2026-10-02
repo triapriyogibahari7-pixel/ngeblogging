@@ -103,7 +103,49 @@ function Modal({ title, eyebrow, onClose, size = "medium", children, footer, lay
 
 function ThemeFrame({ theme, code, config, widgets, device, title }) {
   const mode = deviceInfo(device);
-  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={buildThemeSrcDoc(code || theme.code, config, widgets)}/></div>;
+  const source = buildThemeSrcDoc(code || theme.code, config, widgets);
+  const previewSource = ["application", "phone", "mobile"].includes(device)
+    ? source.replace("</head>", `<style data-ngeblogging-mobile-preview-cleanup>
+@media (max-width: 600px) {
+  html, body { max-width: 100% !important; overflow-x: hidden !important; }
+}
+</style><script>
+(() => {
+  const isDark = (value) => {
+    const bg = String(value || "");
+    return /^rgba?\\(\\s*0\\s*,\\s*0\\s*,\\s*0\\s*(?:,\\s*(?:0?\\.\\d+|1)\\s*)?\\)$/i.test(bg)
+      || /^#(?:000|000000)$/i.test(bg);
+  };
+  const hideBlackCircles = () => {
+    document.querySelectorAll("*").forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height || rect.width > 220 || rect.height > 220) return;
+      const radius = parseFloat(style.borderTopLeftRadius) || 0;
+      const circleRadius = Math.min(rect.width, rect.height) / 2;
+      const circle = style.borderRadius === "50%" || radius >= Math.max(18, circleRadius * .72);
+      if (!circle || !isDark(style.backgroundColor)) return;
+      const z = Number.parseInt(style.zIndex, 10);
+      if (!(style.position === "fixed" || style.position === "sticky" || style.position === "absolute" || (Number.isFinite(z) && z >= 1000))) return;
+      node.hidden = true;
+      node.setAttribute("aria-hidden", "true");
+      node.style.setProperty("display", "none", "important");
+      node.style.setProperty("visibility", "hidden", "important");
+      node.style.setProperty("opacity", "0", "important");
+      node.style.setProperty("pointer-events", "none", "important");
+    });
+  };
+  const boot = () => {
+    hideBlackCircles();
+    new MutationObserver(hideBlackCircles).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
+})();
+<\/script></head>`)
+    : source;
+  return <div className={`tn-frame-shell ${mode.frameClass}`} data-preview-device={device} data-preview-mode={device} style={{ "--tn-preview-width": `${mode.width}px` }}><iframe title={title || `Pratinjau ${theme.name}`} sandbox="allow-scripts" srcDoc={previewSource}/></div>;
 }
 
 function ThemeCardPreview({ theme }) {
