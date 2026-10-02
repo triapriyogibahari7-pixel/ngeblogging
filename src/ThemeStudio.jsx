@@ -363,6 +363,8 @@ export default function ThemeStudio({ setToast, site, user }) {
       ".nara-floating-proxy-v21",
       ".nara-assistant-layer",
       ".nara-assistant-backdrop",
+      ".sn-top-actions .sn-nara-button",
+      ".ce-nara",
     ].join(",");
     const suppressNara = () => {
       if (!isHandheld()) return;
