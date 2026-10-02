@@ -151,3 +151,12 @@ test("Theme handheld preview removes circular floating controls that can trigger
   const mobileActions = themeStudio.indexOf("tn-mobile-action-rail");
   assert.ok(heading >= 0 && mobileActions > heading, "mobile actions must sit below the 100-theme heading");
 });
+
+test("Theme handheld quarantines any overlay that physically covers the action rail", () => {
+  assert.match(themeStudio, /looksLikeThemeMobileOverlay/);
+  assert.match(themeStudio, /const rail = root\.querySelector\("\.tn-mobile-action-rail"\)/);
+  assert.match(themeStudio, /overlaps\(rect, railRect\)/);
+  assert.match(themeStudio, /rail\.contains\(node\)/);
+  assert.match(themeStudio, /a\[download\],a\[href\*="download"\],button/);
+  assert.match(themeStudio, /hideNode\(node\)/);
+});
