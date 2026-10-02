@@ -111,29 +111,39 @@ function ThemeFrame({ theme, code, config, widgets, device, title }) {
 }
 </style><script>
 (() => {
-  const isDark = (value) => {
-    const bg = String(value || "");
-    return /^rgba?\\(\\s*0\\s*,\\s*0\\s*,\\s*0\\s*(?:,\\s*(?:0?\\.\\d+|1)\\s*)?\\)$/i.test(bg)
-      || /^#(?:000|000000)$/i.test(bg);
+  const isDownloadControl = (node) => {
+    if (!(node instanceof HTMLElement)) return false;
+    const text = String(node.textContent || "").toLowerCase();
+    const label = String(node.getAttribute("aria-label") || node.getAttribute("title") || "").toLowerCase();
+    const href = String(node.getAttribute("href") || "").toLowerCase();
+    return /download|unduh|simpan tema|save theme|tema.*html|html.*tema/.test(text + " " + label + " " + href);
   };
-  const hideBlackCircles = () => {
+  const hideThemeFloatingControls = () => {
     document.querySelectorAll("*").forEach((node) => {
       if (!(node instanceof HTMLElement)) return;
       const style = getComputedStyle(node);
       const rect = node.getBoundingClientRect();
-      if (!rect.width || !rect.height || rect.width > 220 || rect.height > 220) return;
+      if (!rect.width || !rect.height || rect.width > 320 || rect.height > 320) return;
       const radius = parseFloat(style.borderTopLeftRadius) || 0;
       const circleRadius = Math.min(rect.width, rect.height) / 2;
       const circle = style.borderRadius === "50%" || radius >= Math.max(18, circleRadius * .72);
-      if (!circle || !isDark(style.backgroundColor)) return;
-      const z = Number.parseInt(style.zIndex, 10);
-      if (!(style.position === "fixed" || style.position === "sticky" || style.position === "absolute" || (Number.isFinite(z) && z >= 1000))) return;
+      const floating = style.position === "fixed" || style.position === "sticky" ||
+        (style.position === "absolute" && Number.parseInt(style.zIndex, 10) >= 1000);
+      if (!floating || (!circle && !isDownloadControl(node))) return;
       node.hidden = true;
       node.setAttribute("aria-hidden", "true");
       node.style.setProperty("display", "none", "important");
       node.style.setProperty("visibility", "hidden", "important");
       node.style.setProperty("opacity", "0", "important");
       node.style.setProperty("pointer-events", "none", "important");
+      node.style.setProperty("transform", "none", "important");
+    });
+    document.querySelectorAll('a[href*="download"],a[download],button').forEach((node) => {
+      if (isDownloadControl(node)) {
+        node.disabled = true;
+        node.setAttribute("aria-disabled", "true");
+        node.style.setProperty("pointer-events", "none", "important");
+      }
     });
   };
   const boot = () => {
