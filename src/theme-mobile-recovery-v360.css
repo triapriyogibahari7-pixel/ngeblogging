@@ -887,3 +887,101 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(
   transform:none!important;
   content-visibility:hidden!important;
 }
+
+/* v368 — Theme mobile action strip is physically below the 100-theme heading.
+ * Only the four requested controls remain in handheld: HTML/download on the left,
+ * backup/restore on the right. Preview/upload stay available on desktop/tablet.
+ * The old floating circular layer is explicitly removed from this surface.
+ */
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  position:relative!important;
+  z-index:2147483647!important;
+  isolation:isolate!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:10px 0 12px!important;
+  padding:10px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+  background:#fff!important;
+  border-radius:14px!important;
+  box-shadow:none!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile>div,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile>div,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile>div{
+  width:100%!important;
+  min-width:0!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-rows:repeat(2,minmax(44px,auto))!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  position:relative!important;
+  z-index:2147483647!important;
+  overflow:visible!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-preview,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-preview,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-preview,
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-upload,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-upload,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-upload{
+  display:none!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-html,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-html,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-html{
+  grid-column:1!important;grid-row:1!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-download,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-download,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-download{
+  grid-column:1!important;grid-row:2!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-backup,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-backup{
+  grid-column:2!important;grid-row:1!important;
+}
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-backup{
+  grid-column:2!important;grid-row:1!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-restore,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-restore,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions .tn-action-restore{
+  grid-column:2!important;grid-row:2!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions button{
+  position:relative!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-width:0!important;min-height:44px!important;max-width:none!important;
+  margin:0!important;padding:8px 6px!important;pointer-events:auto!important;visibility:visible!important;opacity:1!important;
+  overflow:hidden!important;white-space:normal!important;
+}
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions button,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy .tn-command-theme-mobile .tn-theme-actions button{
+  position:relative!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-width:0!important;min-height:44px!important;max-width:none!important;
+  margin:0!important;padding:8px 6px!important;pointer-events:auto!important;visibility:visible!important;opacity:1!important;
+  overflow:hidden!important;white-space:normal!important;
+}
+/* Never allow any fixed/sticky black circular legacy node to paint over the moved controls. */
+body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,.nara-assistant-layer,.nara-assistant-backdrop,.sn-top-actions .sn-nara-button,.ce-nara),
+body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,.nara-assistant-layer,.nara-assistant-backdrop,.sn-top-actions .sn-nara-button,.ce-nara),
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,.nara-assistant-layer,.nara-assistant-backdrop,.sn-top-actions .sn-nara-button,.ce-nara){
+  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+  width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;
+  margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;filter:none!important;transform:none!important;
+  content-visibility:hidden!important;
+}
