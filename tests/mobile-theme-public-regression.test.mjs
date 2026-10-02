@@ -133,12 +133,12 @@ test("v29 invalidates stale shell CSS and JavaScript caches", () => {
 
 
 test("Theme handheld keeps HTML download backup and restore actions above legacy overlays", () => {
-  assert.match(themeStudio, /className="tn-theme-actions"/);
+  assert.match(themeStudio, /className="tn-mobile-action-rail"/);
   for (const action of ["tn-action-html", "tn-action-download", "tn-action-backup", "tn-action-restore"]) {
     assert.match(themeStudio, new RegExp(action));
   }
   const mobileCss = read("src/theme-mobile-recovery-v360.css");
-  assert.match(mobileCss, /tn-theme-actions/);
+  assert.match(mobileCss, /tn-mobile-action-rail/);
   assert.match(mobileCss, /z-index:2147483642/);
   assert.match(mobileCss, /content-visibility:hidden/);
 });
@@ -148,6 +148,6 @@ test("Theme handheld preview removes circular floating controls that can trigger
   assert.match(themeStudio, /style\.position === "fixed" \|\| style\.position === "sticky"/);
   assert.match(themeStudio, /pointer-events/, "preview cleanup must disable the floating control");
   const heading = themeStudio.indexOf("100 tema aktif dengan delapan pratinjau perangkat.");
-  const mobileActions = themeStudio.indexOf("tn-command-theme-mobile");
+  const mobileActions = themeStudio.indexOf("tn-mobile-action-rail");
   assert.ok(heading >= 0 && mobileActions > heading, "mobile actions must sit below the 100-theme heading");
 });
