@@ -667,3 +667,75 @@ body:has(.tn-studio[data-theme-mobile-device="phone"]) .nara-assistant-layer,
 body:has(.tn-studio[data-theme-mobile-device="mobile"]) .nara-assistant-layer{
   display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
 }
+
+
+/* v365 — Theme handheld header hard-stop.
+ * The Theme page must not inherit the global Nara header launcher.
+ * Remove the source element from layout/paint while application/phone/mobile preview is active.
+ */
+body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.sn-top-actions .sn-nara-button,.ce-nara),
+body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.sn-top-actions .sn-nara-button,.ce-nara),
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.sn-top-actions .sn-nara-button,.ce-nara){
+  display:none!important;
+  width:0!important;
+  min-width:0!important;
+  max-width:0!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+  transform:none!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  filter:none!important;
+  clip-path:inset(50%)!important;
+}
+body:has(.tn-studio[data-theme-mobile-device="application"]) .sn-top-actions .sn-nara-button *,
+body:has(.tn-studio[data-theme-mobile-device="phone"]) .sn-top-actions .sn-nara-button *,
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) .sn-top-actions .sn-nara-button *,
+body:has(.tn-studio[data-theme-mobile-device="application"]) .ce-nara *,
+body:has(.tn-studio[data-theme-mobile-device="phone"]) .ce-nara *,
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) .ce-nara *{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+
+/* Keep the Theme hero/header itself compact and single-column on handheld. */
+.tn-studio[data-theme-mobile-device="application"] .tn-hero,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:start!important;
+  gap:10px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:visible!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.tn-studio[data-theme-mobile-device="application"] .tn-hero-copy h1,
+.tn-studio[data-theme-mobile-device="phone"] .tn-hero-copy h1,
+.tn-studio[data-theme-mobile-device="mobile"] .tn-hero-copy h1{
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
