@@ -311,7 +311,12 @@ function syncEditor() {
 
 function sync() {
   const profile = syncDeviceFlags();
-  document.querySelectorAll(".sn-shell").forEach((shell) => syncSidebar(shell, profile));
+  const themeHandheld = themeHandheldActive();
+  document.querySelectorAll(".sn-shell").forEach((shell) => {
+    syncSidebar(shell, profile);
+    const top = shell.querySelector(":scope > .sn-main > .sn-top");
+    top?.classList.toggle("sn-top-theme-mobile", themeHandheld);
+  });
   syncNara();
   syncEditor();
 }
