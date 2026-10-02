@@ -360,7 +360,7 @@ export default function ThemeStudio({ setToast, site, user }) {
       ".nara-floating-proxy-v18",
       ".nara-floating-proxy-v19",
       ".nara-floating-proxy-v20",
-      ".nara-floating-proxy-v21",
+      ".nara-floating-proxy-v21,.nara-floating-proxy-v22",
       ".nara-assistant-layer",
       ".nara-assistant-backdrop",
       ".sn-top-actions .sn-nara-button",
