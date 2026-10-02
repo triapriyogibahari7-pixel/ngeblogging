@@ -244,6 +244,70 @@ export default function ThemeStudio({ setToast, site, user }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const root = document.querySelector(".tn-studio");
+    if (!root) return undefined;
+
+    const isHandheldTheme = () => {
+      const frame = root.querySelector(".tn-active-stage .tn-frame-shell[data-preview-device]");
+      const deviceId = frame?.getAttribute("data-preview-device");
+      return deviceId === "application" || deviceId === "phone" || deviceId === "mobile";
+    };
+
+    const hidden = new Map();
+
+    const looksLikeBlackCircleOverlay = (node) => {
+      if (!(node instanceof HTMLElement) || root.contains(node) || !isHandheldTheme()) return false;
+      const style = window.getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height || rect.width > 220 || rect.height > 220) return false;
+      const radius = parseFloat(style.borderTopLeftRadius) || 0;
+      const circleRadius = Math.min(rect.width, rect.height) / 2;
+      const isCircle = style.borderRadius === "50%" || radius >= Math.max(18, circleRadius * 0.72);
+      if (!isCircle) return false;
+      const bg = style.backgroundColor || "";
+      const darkBg = /^#(?:000|000000)$/i.test(bg) || /rgba?\(\s*0\s*,\s*0\s*,\s*0\s*(?:,\s*(?:0?\.\d+|1)\s*)?\)/i.test(bg);
+      if (!darkBg) return false;
+      const z = Number.parseInt(style.zIndex, 10);
+      return style.position === "fixed" || style.position === "sticky" || style.position === "absolute" || (Number.isFinite(z) && z >= 1000);
+    };
+
+    const hideCircleOverlays = () => {
+      if (!isHandheldTheme()) return;
+      Array.from(document.body.querySelectorAll("*")).filter(looksLikeBlackCircleOverlay).forEach((node) => {
+        if (hidden.has(node)) return;
+        hidden.set(node, {
+          hidden: node.hidden,
+          ariaHidden: node.getAttribute("aria-hidden"),
+          style: node.getAttribute("style"),
+        });
+        node.hidden = true;
+        node.setAttribute("aria-hidden", "true");
+        node.style.setProperty("display", "none", "important");
+        node.style.setProperty("visibility", "hidden", "important");
+        node.style.setProperty("opacity", "0", "important");
+        node.style.setProperty("pointer-events", "none", "important");
+      });
+    };
+
+    hideCircleOverlays();
+    const observer = new MutationObserver(hideCircleOverlays);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "data-preview-device"] });
+
+    return () => {
+      observer.disconnect();
+      hidden.forEach((snapshot, node) => {
+        node.hidden = snapshot.hidden;
+        if (snapshot.ariaHidden === null) node.removeAttribute("aria-hidden");
+        else node.setAttribute("aria-hidden", snapshot.ariaHidden);
+        if (snapshot.style === null) node.removeAttribute("style");
+        else node.setAttribute("style", snapshot.style);
+      });
+    };
+  }, []);
+
+
   useEffect(() => { saveThemeState(themeState); }, [themeState]);
   useEffect(() => { setCustomDraft(themeState.draftConfig); setCodeDraft(themeState.code); setWidgetDraft(themeState.widgets); }, [themeState]);
   useEffect(() => { if (site?.blueprint) setBlueprint(site.blueprint); }, [site?.blueprint]);
