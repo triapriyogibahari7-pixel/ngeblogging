@@ -62,8 +62,39 @@ function preserveAssistantCapabilities() {
   });
 }
 
+function themeHandheldActive() {
+  const studio = document.querySelector(".tn-studio[data-theme-mobile-device]");
+  const device = studio?.getAttribute("data-theme-mobile-device");
+  return device === "application" || device === "phone" || device === "mobile";
+}
+
 function scan() {
   syncRootState();
+  if (themeHandheldActive()) {
+    document.querySelectorAll([
+      ".nara-floating-button",
+      ".nara-floating-proxy-v18",
+      ".nara-floating-proxy-v19",
+      ".nara-floating-proxy-v20",
+      ".nara-floating-proxy-v21",
+      ".nara-floating-proxy-v22",
+      ".nara-assistant-layer",
+      ".nara-assistant-backdrop",
+      ".sn-top-actions .sn-nara-button",
+      ".ce-nara",
+    ].join(",")).forEach((button) => {
+      button.hidden = true;
+      button.disabled = true;
+      button.tabIndex = -1;
+      button.setAttribute("aria-hidden", "true");
+      button.style.setProperty("display", "none", "important");
+      button.style.setProperty("visibility", "hidden", "important");
+      button.style.setProperty("opacity", "0", "important");
+      button.style.setProperty("pointer-events", "none", "important");
+    });
+    preserveAssistantCapabilities();
+    return;
+  }
   assistantLaunchers().forEach((button) => {
     reveal(button);
     button.dataset.naraLauncher = "active";
