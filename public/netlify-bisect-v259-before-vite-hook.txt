@@ -1,0 +1,3 @@
+Ngeblogging Netlify historical bisect
+base=c76ddf8f51cebac3c195c0624897d5555957d8d7
+purpose=Test v259 finalizer/rotation scripts before they are invoked by Vite.
