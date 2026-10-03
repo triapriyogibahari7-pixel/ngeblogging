@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run pretest:production && node --test tests/*.test.mjs && vite build"
   publish = "dist"
 
 [build.environment]
