@@ -1,0 +1,4 @@
+Ngeblogging Netlify baseline diagnostic
+release=baseline-v260-final-20260804
+base=726b7318976f66e5c993bfdee05b45e4f240c272
+purpose=Verify final v260 main builds without product-code changes.
