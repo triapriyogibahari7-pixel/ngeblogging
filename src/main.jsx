@@ -325,6 +325,7 @@ function App() {
   };
   return (
     <>
+      <style>{`.nara-floating-button{display:none!important;}`}</style>
       <header>
         <a className="brand" href="#">
           ngeblogging<span>.</span>
