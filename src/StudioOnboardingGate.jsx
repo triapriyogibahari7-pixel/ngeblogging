@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import StudioSecure from "./StudioSecure.jsx";
 import { supabase, supabaseConfigured } from "./lib/supabase.js";
-import { ACTIVE_SITE_STORAGE_KEY, setActiveSiteId } from "./lib/studio-data.js";
+import { ACTIVE_SITE_STORAGE_KEY, setActiveSiteId, setSitePublication } from "./lib/studio-data.js";
 import { MAX_SITES_PER_ACCOUNT, createUserSiteWithPolicy, getSiteQuota } from "./lib/site-policy-v169.js";
 import {
   getVerifiedSession,
@@ -380,9 +380,22 @@ function FirstSiteOnboarding({ user, onCreated, onExit }) {
         // could not be written in the same round-trip.
         console.error("First-site v311 preference configuration deferred", configureError);
       }
+      // The first free site is immediately reachable on its managed
+      // subdomain. This restores the original "create -> see site" contract;
+      // it does not alter any theme/layout/content data.
+      try {
+        const published = await setSitePublication(selected.id, true);
+        selected = { ...selected, ...published, role: "owner" };
+      } catch (publicationError) {
+        console.error("First-site publication failed", publicationError);
+        throw Object.assign(
+          new Error("Situs berhasil dibuat, tetapi publikasi subdomain gratis belum selesai. Silakan coba lagi."),
+          { code: "FIRST_SITE_PUBLICATION_FAILED", cause: publicationError },
+        );
+      }
       publishActiveSite(selected);
       try { localStorage.removeItem(onboardingDraftKey(userId)); } catch { /* optional */ }
-      setCreationStatus("Situs berhasil dibuat. Membuka Studio…");
+      setCreationStatus("Situs berhasil dibuat dan subdomain gratis sudah aktif. Membuka Studio…");
       onCreated(selected);
     } catch (error) {
       if (isSessionReauthError(error)) requestReauthentication(error);
