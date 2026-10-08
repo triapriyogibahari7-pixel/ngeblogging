@@ -169,9 +169,20 @@ export default function StudioNext({ onExit, user }) {
     if (!user?.id || !supabaseConfigured) { setDataMode("local"); return; }
     let cancelled = false;
     setDataMode("connecting");
-    Promise.all([getOrCreatePrimarySite(user), listUserSites(user.id), getUserProfile(user.id)]).then(([primary, siteRows, userProfile]) => {
+    getOrCreatePrimarySite(user).then(async (primary) => {
       if (cancelled) return;
-      setSite(primary); setSites(siteRows.length ? siteRows : [primary]); setProfile(userProfile); setDataMode("cloud");
+      // Resolve the list only after the primary site exists. This prevents a
+      // first-sign-in race where the create succeeds but the workspace card
+      // renders from the pre-create empty membership list.
+      const [siteRows, userProfile] = await Promise.all([
+        listUserSites(user.id),
+        getUserProfile(user.id),
+      ]);
+      if (cancelled) return;
+      const rows = siteRows.length ? siteRows : [primary];
+      const unique = new Map(rows.map((row) => [row.id, row]));
+      unique.set(primary.id, { ...primary, ...(unique.get(primary.id) || {}) });
+      setSite(primary); setSites([...unique.values()]); setProfile(userProfile); setDataMode("cloud");
     }).catch((error) => {
       console.error("Studio bootstrap failed", error);
       if (!cancelled) { setDataMode("local"); setToast("Cloud belum dapat dijangkau; Studio memakai cadangan perangkat"); }
