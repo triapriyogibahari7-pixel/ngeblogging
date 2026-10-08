@@ -35,6 +35,7 @@ import { consumeAuthCallbackV162 } from "./lib/auth-callback-v162.js";
 
 const Studio = lazy(() => import("./Studio"));
 const PublicSite = lazy(() => import("./PublicSite"));
+const TriApriyogiBahariProfile = lazy(() => import("./TriApriyogiBahariProfile"));
 
 function clearAuthQuery() {
   const url = new URL(window.location.href);
