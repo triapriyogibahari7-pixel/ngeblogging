@@ -226,6 +226,13 @@ function RichMessage({ text }) {
   return <div className="nara-rich-text">{blocks}</div>;
 }
 
+const isPublicHomepage = () => {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  return (host === "ngeblogging.com" || host === "www.ngeblogging.com") && path === "/";
+};
+
 export default function NaraAssistant({
   user = null,
   context = null,
@@ -548,6 +555,8 @@ export default function NaraAssistant({
       setBusy(false);
     }
   };
+
+  if (isPublicHomepage()) return null;
 
   return (
     <>
