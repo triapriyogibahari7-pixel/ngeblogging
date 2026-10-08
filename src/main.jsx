@@ -295,6 +295,8 @@ function App() {
     };
   }, [publicTenant]);
 
+  if (!publicTenant && window.location.pathname === "/profil/tri-apriyogi-bahari") return <TriApriyogiBahariProfile />;
+
   if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></div>}><PublicSite target={publicTarget()} /></Suspense>;
 
   const openAuth = () => {
