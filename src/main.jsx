@@ -35,7 +35,6 @@ import { consumeAuthCallbackV162 } from "./lib/auth-callback-v162.js";
 
 const Studio = lazy(() => import("./Studio"));
 const PublicSite = lazy(() => import("./PublicSite"));
-const TriApriyogiBahariProfile = lazy(() => import("./TriApriyogiBahariProfile"));
 
 function clearAuthQuery() {
   const url = new URL(window.location.href);
@@ -295,8 +294,6 @@ function App() {
       subscription?.unsubscribe();
     };
   }, [publicTenant]);
-
-  if (!publicTenant && window.location.pathname === "/profil/tri-apriyogi-bahari") return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan profil…</b></div>}><TriApriyogiBahariProfile /></Suspense>;
 
   if (publicTenant) return <Suspense fallback={<div className="app-loading"><span/><b>Menyiapkan situs…</b></div>}><PublicSite target={publicTarget()} /></Suspense>;
 
