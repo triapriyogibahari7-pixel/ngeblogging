@@ -22,6 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import { supabase, supabaseConfigured } from "./lib/supabase";
+import "./nara-v313.css";
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_BYTES = 2_500_000;
@@ -566,8 +567,8 @@ export default function NaraAssistant({
       </button>
 
       {open && (
-        <div className="nara-assistant-layer" role="dialog" aria-modal="true" aria-label="Nara AI Assistant">
-          <button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />
+        <div className="nara-assistant-layer" role="dialog" aria-modal={size === "full" ? "true" : "false"} aria-label="Nara AI Assistant" data-nara-layer-size={size} data-nara-release-v313="studio-nara-nonmodal-v313-20260806">
+          {size === "full" && <button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />}
           <aside className="nara-assistant-shell" aria-busy={busy} data-nara-size={size} data-nara-native-size="v149">
             <div className="nara-assistant-header">
               <div className="nara-brand-orb"><Sparkles /></div>
