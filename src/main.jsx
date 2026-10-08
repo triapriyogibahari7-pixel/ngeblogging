@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import AuthModal from "./AuthModal";
-import NaraAssistant from "./NaraAssistant";
 import { signOut, supabase, supabaseConfigured } from "./lib/supabase";
 import { consumeAuthCallbackV162 } from "./lib/auth-callback-v162.js";
 
@@ -500,7 +499,6 @@ function App() {
           onDemo={() => { setDemo(false); setStudio(true); }}
         />
       )}
-      <NaraAssistant user={session?.user} onRequestLogin={openAuth} />
     </>
   );
 }
