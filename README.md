@@ -2,6 +2,38 @@
 
 Platform kehadiran digital berbasis AI untuk kreator, bisnis, media, dan komunitas Indonesia.
 
+## Tentang Pengembang
+
+**Tri Apriyogi Bahari** adalah pengembang dan pemilik proyek Ngeblogging, platform digital berbasis AI yang dikembangkan untuk kreator, bisnis, media, dan komunitas Indonesia.
+
+### Profil Profesional
+
+- **Nama:** Tri Apriyogi Bahari
+- **Proyek:** Ngeblogging
+- **Pendidikan:** D3 Teknik Mesin, Politeknik Negeri Medan
+- **Pengalaman profesional:** PT Kereta Api Indonesia (Persero), sejak 2017
+- **Pengalaman sebelumnya:** Staff CNC & Drafter di PT Hokinda Citralestari
+- **Bidang kompetensi:** teknologi informasi, komputer, desain teknis, AutoCAD, CNC, operasi perkeretaapian, keselamatan kerja, dan pengembangan produk digital
+- **Kegiatan usaha:** Aktivitas Teknologi Informasi dan Jasa Komputer Lainnya (KBLI 62090)
+
+### Pendidikan
+
+Tri Apriyogi Bahari menyelesaikan pendidikan D3 Teknik Mesin di Politeknik Negeri Medan. Latar belakang tersebut dipadukan dengan pengalaman kerja di bidang manufaktur, desain teknis, operasi perkeretaapian, pelayanan, keselamatan, dan pengembangan kompetensi profesional.
+
+### Pengalaman Kerja
+
+Sejak 2017, Tri Apriyogi Bahari berkarier di PT Kereta Api Indonesia (Persero) dalam lingkungan operasional perkeretaapian. Sebelumnya, pada 2015–2017, bekerja sebagai Staff CNC & Drafter di PT Hokinda Citralestari dengan tanggung jawab terkait gambar/desain teknis, spesifikasi pekerjaan, AutoCAD, pengoperasian mesin CNC, dan pengendalian hasil pekerjaan berdasarkan gambar kerja.
+
+### Pelatihan dan Kompetensi
+
+Riwayat pengembangan kompetensi mencakup antara lain Supervisory Management Development Program (SMDP), Asisten PPKA Komplementer, Pendukung Operasi Prasarana, Pengatur Perjalanan Kereta Api, serta pelatihan keselamatan dan kesehatan kerja (K3).
+
+### Pengembangan Ngeblogging
+
+Ngeblogging merupakan proyek teknologi yang dikembangkan untuk menyediakan pengalaman membuat, mengelola, menyesuaikan, dan menerbitkan situs web dengan dukungan AI. Platform ini menggabungkan pengelolaan konten, Theme Studio, subdomain situs, autentikasi, Supabase, Cloudflare Workers, serta Nara AI dalam satu ekosistem.
+
+> **Privasi:** README publik ini tidak memuat NIK/NPWP, nomor pegawai, data BPJS, nomor rekening, nomor telepon pribadi, alamat rumah lengkap, dokumen kependudukan, atau data keluarga. Informasi tersebut sengaja tidak dipublikasikan demi keamanan dan perlindungan privasi.
+
 ## Status
 
 MVP operasional mencakup landing page responsif, dashboard dengan navigasi mobile, CRUD artikel/halaman tersinkron Supabase, cursor pagination, editor ribbon dengan autosave dan pratinjau perangkat, status publikasi, pencarian server, Theme Studio Pro dengan 12 tema, backup/impor/pemulihan/Edit HTML sandbox, peluncuran situs publik melalui subdomain, autentikasi sosial/email, Nara Assistant universal, serta skema multi-situs dengan RLS. Tanpa environment variables, Studio tetap tersedia dalam mode demo lokal.
