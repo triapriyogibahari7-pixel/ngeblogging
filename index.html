@@ -98,7 +98,49 @@
     <link href="/src/sidebar-account-collapsed-icons-v119.css?v=119" rel="stylesheet" media="not all" data-disabled-authority="react-v144"/>
 
     <title>Ngeblogging — Platform Kehadiran Digital Berbasis AI</title>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Ngeblogging","url":"https://ngeblogging.com","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"id-ID","description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages."}</script>
+    <meta name="author" content="Tri Apriyogi Bahari"/>
+    <meta name="creator" content="Tri Apriyogi Bahari"/>
+    <script type="application/ld+json">{
+      "@context":"https://schema.org",
+      "@graph":[
+        {
+          "@type":"WebSite",
+          "@id":"https://ngeblogging.com/#website",
+          "url":"https://ngeblogging.com/",
+          "name":"Ngeblogging",
+          "inLanguage":"id-ID",
+          "creator":{"@id":"https://ngeblogging.com/#tri-apriyogi-bahari"},
+          "publisher":{"@id":"https://ngeblogging.com/#organization"}
+        },
+        {
+          "@type":"SoftwareApplication",
+          "@id":"https://ngeblogging.com/#software",
+          "name":"Ngeblogging",
+          "url":"https://ngeblogging.com/",
+          "applicationCategory":"BusinessApplication",
+          "operatingSystem":"Web",
+          "inLanguage":"id-ID",
+          "description":"Platform publikasi untuk membangun blog, website, portal, komunitas, forum, landing page, profil, portofolio, Posts, dan Pages.",
+          "creator":{"@id":"https://ngeblogging.com/#tri-apriyogi-bahari"},
+          "author":{"@id":"https://ngeblogging.com/#tri-apriyogi-bahari"}
+        },
+        {
+          "@type":"Organization",
+          "@id":"https://ngeblogging.com/#organization",
+          "name":"Ngeblogging",
+          "url":"https://ngeblogging.com/",
+          "founder":{"@id":"https://ngeblogging.com/#tri-apriyogi-bahari"}
+        },
+        {
+          "@type":"Person",
+          "@id":"https://ngeblogging.com/#tri-apriyogi-bahari",
+          "name":"Tri Apriyogi Bahari",
+          "url":"https://me.triapriyoginotes.my.id/",
+          "jobTitle":"Pengembang dan pendiri Ngeblogging.com",
+          "sameAs":["https://me.triapriyoginotes.my.id/"]
+        }
+      ]
+    }</script>
   </head>
   <body>
     <div id="root"></div>
