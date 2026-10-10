@@ -559,6 +559,9 @@ export default function NaraAssistant({
 
   if (isPublicHomepage()) return null;
 
+  // Nara is a signed-in workspace feature, never a public-homepage widget.
+  if (!user || isPublicHomepage()) return null;
+
   return (
     <>
       <button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant">
