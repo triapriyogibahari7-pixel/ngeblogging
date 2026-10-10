@@ -229,3 +229,43 @@ html body .nara-floating-proxy-v20 > svg {
     height:24px!important;
   }
 }
+
+/* Nara mobile containment: keep the launcher compact and prevent decorative
+   pseudo-elements or inherited theme button rules from becoming a full-screen disk. */
+@media (max-width: 760px) {
+  html body .nara-floating-button {
+    box-sizing: border-box !important;
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 50% !important;
+    background: linear-gradient(145deg, #377be8, #7656e8) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 22px rgba(36, 75, 150, .24) !important;
+  }
+  html body .nara-floating-button::before,
+  html body .nara-floating-button::after {
+    content: none !important;
+    display: none !important;
+  }
+  html body .nara-floating-button > b,
+  html body .nara-floating-button > small {
+    display: none !important;
+  }
+  html body .nara-assistant-layer[data-nara-layer-size="small"],
+  html body .nara-assistant-layer[data-nara-layer-size="medium"] {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    pointer-events: none !important;
+  }
+  html body .nara-assistant-layer[data-nara-layer-size="small"] .nara-assistant-shell,
+  html body .nara-assistant-layer[data-nara-layer-size="medium"] .nara-assistant-shell {
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px) !important;
+  }
+}
