@@ -59,6 +59,34 @@ export async function canonicalDomainRedirect(request, env) {
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/studio")) return null;
 
+  /* www.<custom-domain> -> <custom-domain> when the apex is the site's active
+   * primary custom domain (e.g. www.triapriyogi.com -> triapriyogi.com). */
+  const requestHost = url.hostname.toLowerCase();
+  if (requestHost.startsWith("www.")) {
+    const apex = validCustomHostname(requestHost.slice(4));
+    if (apex) {
+      const apexDomains = await rest(
+        env,
+        `site_domains?select=hostname,status,is_primary&hostname=eq.${encodeURIComponent(apex)}&status=eq.active&is_primary=eq.true&limit=1`,
+      );
+      if (apexDomains?.[0]?.hostname && validCustomHostname(apexDomains[0].hostname) === apex) {
+        const target = new URL(request.url);
+        target.protocol = "https:";
+        target.hostname = apex;
+        target.port = "";
+        return new Response(null, {
+          status: 308,
+          headers: {
+            location: target.toString(),
+            "cache-control": "public, max-age=300, s-maxage=3600",
+            "x-ngeblogging-canonical-domain": apex,
+            "x-content-type-options": "nosniff",
+          },
+        });
+      }
+    }
+  }
+
   const slug = managedSlug(url.hostname);
   if (!slug) return null;
 
