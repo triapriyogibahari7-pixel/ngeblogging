@@ -6,7 +6,7 @@
 
 /* 1) Mobile collapsed sidebar: the "n" logo was pushed to x=-17px because the
  *    v410 drawer grid (38px 1fr 38px) also applied while the sidebar is closed. */
-:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-side:not(.mobile-open) .sn-logo{
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell #ngeblogging-studio-sidebar.sn-side:not(.mobile-open) .sn-logo{
   grid-template-columns:minmax(0,1fr)!important;
   gap:0!important;
   justify-content:center!important;
@@ -56,4 +56,163 @@
 html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-mobile-toolbar,
 html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-mobile-actions{
   display:none!important;
+}
+
+/* 6) Desktop/laptop/tablet Studio homepage (Ringkasan): no floating Nara launcher.
+ *    Nara stays reachable from the "Buka Nara" card; other pages keep the launcher. */
+html:not(.editor-v266-small):not([data-studio-device-mode="small"]) body:has(.sn-shell .sn-welcome):not(:has(.nara-assistant-layer)) .nara-floating-button{
+  clip-path:inset(0 0 100% 0)!important;
+}
+
+/* 7) Mobile floating "n" logo and Nara launcher: one matching style —
+ *    a clean 52px rounded square, no clipped bottom, no white edge line.
+ *    (Mobile Post/Page editor excluded on purpose.) */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .sn-shell #ngeblogging-studio-sidebar.sn-side:not(.mobile-open){
+  padding:4px!important;overflow:visible!important;background:transparent!important;
+  border:0!important;box-shadow:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .sn-shell #ngeblogging-studio-sidebar.sn-side:not(.mobile-open) .sn-logo{
+  width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important;max-height:46px!important;
+  margin:0!important;padding:0!important;display:grid!important;place-items:center!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .sn-shell #ngeblogging-studio-sidebar.sn-side:not(.mobile-open) .sn-logo .sn-logo-mark{
+  width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important;
+  margin:0!important;border:0!important;border-radius:15px!important;
+  background:linear-gradient(145deg,#2f75e8,#4f46e5)!important;
+  box-shadow:0 2px 5px rgba(48,85,197,.22)!important;
+  display:grid!important;place-items:center!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .sn-shell #ngeblogging-studio-sidebar.sn-side:not(.mobile-open) .sn-logo .sn-logo-mark strong{
+  font-size:25px!important;line-height:1!important;color:#fff!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-floating-button{
+  width:52px!important;min-width:52px!important;height:52px!important;min-height:52px!important;
+  padding:0!important;border:0!important;outline:0!important;border-radius:16px!important;
+  background:linear-gradient(145deg,#172b4d,#2457a7)!important;
+  box-shadow:0 12px 28px rgba(10,31,65,.30)!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-floating-button .nara-launcher-icon-box{
+  width:52px!important;height:52px!important;background:transparent!important;box-shadow:none!important;
+  border-radius:16px!important;display:grid!important;place-items:center!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-floating-button .nara-launcher-icon-box svg{
+  width:24px!important;height:24px!important;color:#fff!important;
+}
+
+/* 8) Mobile Nara panel: header controls wrapped into a second row inside a fixed
+ *    64px header and overlapped "Jawaban privat"; the model select wrapped below the
+ *    composer and was clipped; quick prompts overflowed. Tidy, aligned grid. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 36px 36px!important;
+  grid-template-areas:none!important;
+  grid-template-rows:36px 36px!important;
+  align-items:center!important;
+  column-gap:8px!important;row-gap:8px!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  padding:10px 12px!important;overflow:visible!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>.nara-brand-orb{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>div:nth-child(2){grid-area:1 / 1 / 2 / 2!important;min-width:0!important;margin:0!important;justify-self:start!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>.nara-size-controls-v147{
+  grid-area:2 / 1 / 3 / 3!important;position:static!important;display:flex!important;flex-wrap:nowrap!important;
+  justify-content:flex-start!important;align-items:center!important;gap:8px!important;
+  width:auto!important;height:36px!important;margin:0!important;padding:0 4px!important;transform:none!important;justify-self:start!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>.nara-size-controls-v147>button{
+  position:static!important;flex:0 0 36px!important;width:36px!important;height:36px!important;margin:0!important;transform:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>.nara-auto-voice-v148{grid-area:1 / 2 / 2 / 3!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>button:nth-child(5){grid-area:2 / 3 / 3 / 4!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>button:nth-child(6){grid-area:1 / 3 / 2 / 4!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-assistant-header>button{
+  position:static!important;width:36px!important;height:36px!important;margin:0!important;transform:none!important;justify-self:center!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-context-bar{
+  position:static!important;margin:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-quick-prompts{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;
+  overflow:visible!important;flex-wrap:wrap!important;padding:8px 12px!important;height:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-quick-prompts>button{
+  width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;padding:0 10px!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:12.5px!important;margin:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-composer-tools{
+  display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:6px!important;
+  height:auto!important;min-height:40px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-composer-tools>*{
+  position:static!important;margin:0!important;transform:none!important;flex:0 0 auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-composer-tools>.nara-select{
+  flex:0 1 auto!important;min-width:0!important;max-width:104px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell .nara-composer-tools>.nara-send{
+  margin-left:auto!important;
+}
+
+/* 9) styles.css (landing page) has `@media(max-width:800px){ nav{position:absolute;
+ *    top:70px;padding:25px;background:#fff;box-shadow:…;flex-direction:column} }`.
+ *    It leaked into every <nav> inside Studio (Theme card tags, Edit HTML tabs…).
+ *    Neutralise it with zero-specificity :where() so component styles still win.
+ *    Mobile Post/Page editor excluded on purpose. */
+@media (max-width:800px){
+  :where(.sn-shell:not(:has(.ce-app)),.tn-modal-layer) nav{
+    position:static;top:auto;left:auto;right:auto;
+    padding:0;background:transparent;box-shadow:none;border-radius:0;flex-direction:row;
+  }
+}
+
+/* 10) Mobile Theme modals (Edit HTML, Sesuaikan, Widget…): the modal layer was
+ *     trapped under the app header and the floating "n"/Nara buttons. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .tn-studio:has(.tn-modal-layer){
+  position:relative!important;z-index:13000!important;
+}
+
+/* 11) Mobile Edit HTML: fit the box to the phone. The workspace/pane grid
+ *     templates are pinned inline by a runtime (preview row / code row, and
+ *     3 code rows), so we place children into them: tabs / tools / code. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-preview-pane:not(#ngb-v411):not(#ngb-v411b){
+  max-height:none!important;
+  height:100%!important;display:flex!important;flex-direction:column!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-preview-pane .tn-frame-shell{
+  flex:1 1 auto!important;min-height:0!important;height:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane{
+  grid-template-columns:44px minmax(0,1fr)!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>nav{
+  grid-area:1 / 1 / 2 / 3!important;display:flex!important;align-items:center!important;gap:4px!important;
+  height:44px!important;padding:0 8px!important;overflow-x:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>nav>button{
+  flex:0 0 auto!important;width:auto!important;height:36px!important;min-height:36px!important;padding:0 12px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>.tn-code-status{display:none!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>.tn-code-v350-toolbar{
+  grid-area:2 / 1 / 3 / 3!important;display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+  gap:6px!important;height:auto!important;min-height:44px!important;padding:4px 10px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;position:static!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>.tn-code-v350-toolbar>*{
+  position:static!important;flex:0 0 auto!important;margin:0!important;transform:none!important;
+  height:34px!important;min-height:34px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>.tn-code-v350-toolbar>span{
+  height:auto!important;min-height:0!important;white-space:nowrap!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>.tn-code-gutter-v363{
+  grid-area:3 / 1 / 4 / 2!important;height:auto!important;min-height:0!important;margin:0!important;
+  padding-top:17px!important;font-size:12px!important;line-height:20.4px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>textarea{
+  grid-area:3 / 2 / 4 / 3!important;height:auto!important;margin:0!important;
+}
+/* hide floating "n" and Nara while a full-screen Theme modal is open on phones */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.tn-modal-layer) #ngeblogging-studio-sidebar:not(.mobile-open),
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.tn-modal-layer) .nara-floating-button{
+  clip-path:inset(0 0 100% 0)!important;
 }

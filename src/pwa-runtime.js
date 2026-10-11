@@ -212,6 +212,10 @@ async function registerServiceWorker() {
   if (!productionHost() || !("serviceWorker" in navigator)) return;
   if (location.protocol !== "https:" && location.hostname !== "localhost") return;
   try {
+    // First visit: the new worker claiming an uncontrolled page also fires
+    // controllerchange. That is not an update, so it must not reload the page
+    // (this caused the visible "double refresh" on free *.ngeblogging.com sites).
+    const hadControllerAtLoad = Boolean(navigator.serviceWorker.controller);
     const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
     registration.update().catch(() => null);
     registration.addEventListener("updatefound", () => {
@@ -225,6 +229,7 @@ async function registerServiceWorker() {
     });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       document.documentElement.dataset.appUpdate = "applied";
+      if (!hadControllerAtLoad) return;
       reloadForNewController("controllerchange");
     });
     navigator.serviceWorker.addEventListener("message", (event) => {

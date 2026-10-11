@@ -270,8 +270,17 @@
     }
   }
 
+  // Re-attach only when the comments root was removed (e.g. the SPA re-rendered the
+  // article). Re-rendering on every DOM mutation looped forever, because render()
+  // itself mutates the DOM, and froze Post/Page views on public sites.
+  let reattachQueued = false;
   const observer = new MutationObserver(() => {
-    if (state.data?.enabled && attach()) render();
+    if (!state.data?.enabled || state.root?.isConnected || reattachQueued) return;
+    reattachQueued = true;
+    requestAnimationFrame(() => {
+      reattachQueued = false;
+      if (state.data?.enabled && !state.root?.isConnected && attach()) render();
+    });
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load, { once: true });
