@@ -60,9 +60,7 @@ html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-
 
 /* 6) Desktop/laptop/tablet Studio homepage (Ringkasan): no floating Nara launcher.
  *    Nara stays reachable from the "Buka Nara" card; other pages keep the launcher. */
-html:not(.editor-v266-small):not([data-studio-device-mode="small"]) body:has(.sn-shell .sn-welcome):not(:has(.nara-assistant-layer)) .nara-floating-button{
-  clip-path:inset(0 0 100% 0)!important;
-}
+/* (removed: Nara must stay visible in Studio on every device) */
 
 /* 7) Mobile floating "n" logo and Nara launcher: one matching style —
  *    a clean 52px rounded square, no clipped bottom, no white edge line.
@@ -182,7 +180,7 @@ html:not(.editor-v266-small):not([data-studio-device-mode="small"]) body:has(.sn
   flex:1 1 auto!important;min-height:0!important;height:auto!important;
 }
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane{
-  grid-template-columns:44px minmax(0,1fr)!important;
+  grid-template-columns:52px minmax(0,1fr)!important;
 }
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane>nav{
   grid-area:1 / 1 / 2 / 3!important;display:flex!important;align-items:center!important;gap:4px!important;
@@ -214,5 +212,138 @@ html:not(.editor-v266-small):not([data-studio-device-mode="small"]) body:has(.sn
 /* hide floating "n" and Nara while a full-screen Theme modal is open on phones */
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.tn-modal-layer) #ngeblogging-studio-sidebar:not(.mobile-open),
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(.tn-modal-layer) .nara-floating-button{
+  clip-path:inset(0 0 100% 0)!important;
+}
+
+/* 12) Mobile API Keys page title: the landing `header{height:78px;position:absolute}`
+ *     leak kept "Buat API key" on the same line, pushed off-screen top-right. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell header.sn-api-title{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important;
+  height:auto!important;min-height:0!important;position:relative!important;inset:auto!important;
+  box-shadow:none!important;background:transparent!important;padding:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell header.sn-api-title>*{
+  min-width:0!important;max-width:100%!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell header.sn-api-title>button.sn-primary{
+  width:100%!important;justify-content:center!important;margin:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-api-page>.sn-api-card{
+  margin-left:0!important;margin-right:0!important;
+}
+
+/* 13) Edit HTML: honour the "Bungkus baris" toggle. When it is off, one code
+ *     line == one numbered gutter line (scroll sideways for long lines). */
+.tn-modal-layer .tn-code-pane:has(> .tn-code-v350-toolbar [data-a="wrap"][data-active="false"])>textarea:not(#ngb-v411):not(#ngb-v411b){
+  white-space:pre!important;overflow-wrap:normal!important;word-break:normal!important;overflow-x:auto!important;
+}
+/* two stacked gutters: the legacy v293 one (10.000 lines, other metrics) painted
+ * over the accurate v363 one. Keep only v363, wide enough for 5+ digits. */
+.tn-modal-layer .tn-code-pane:has(> .tn-code-gutter-v363)>.tn-code-gutter-v293{display:none!important}
+.tn-modal-layer .tn-code-pane>.tn-code-gutter-v363:not(#ngb-v411){
+  width:100%!important;min-width:0!important;max-width:100%!important;overflow:hidden!important;
+  text-align:right!important;padding-right:8px!important;padding-left:2px!important;box-sizing:border-box!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-modal-layer .tn-modal .tn-code-workspace>.tn-code-pane{
+  grid-template-columns:52px minmax(0,1fr)!important;
+}
+
+/* 14) Mobile "Tata Letak" board (Android): rows had fixed heights so "Atas kanan"
+ *     overlapped "Sebelum post", and the 64px side stacks broke words ("Kan an").
+ *     Phones: every row auto-height; Kiri/Kanan stacks become 2x2 grids around
+ *     the main content block. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b){
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;height:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b)>section{
+  height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;
+  display:grid!important;gap:8px!important;overflow:visible!important;padding:0!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b)>section>div:not(.tn-layout-stack-v264){
+  margin:0!important;width:100%!important;height:auto!important;gap:8px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b)>section.tn-layout-content-v264{
+  grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-stack-v264{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:auto!important;
+  gap:8px!important;width:100%!important;height:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-stack-v264.left{order:0!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-post-v264{
+  order:1!important;width:100%!important;min-height:110px!important;height:auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-stack-v264.right{order:2!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-slot-v264{
+  min-height:46px!important;height:auto!important;width:100%!important;min-width:0!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;
+  padding:8px 10px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-slot-v264>span{
+  min-width:0!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;
+  text-align:left!important;line-height:1.25!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-slot-v264>b{flex:0 0 auto!important}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-map-v264:not(#ngb-v411):not(#ngb-v411b) .tn-layout-content-v264>*{
+  grid-column:1 / -1!important;grid-row:auto!important;
+}
+/* the legacy hidden canvas (.tn-layout-body, visibility:hidden child) sat on
+ * grid row 1 above the board with z-index:1 and swallowed every tap on phones */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-studio:has(> .tn-layout-map-v264)>.tn-layout-body{
+  pointer-events:none!important;
+}
+/* phone widget picker for a zone: full-width bottom sheet, never off-screen */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-popover-v264:not(#ngb-v411):not(#ngb-v411b){
+  position:fixed!important;left:8px!important;right:8px!important;top:auto!important;
+  bottom:max(8px,env(safe-area-inset-bottom,0px))!important;width:auto!important;max-width:none!important;
+  max-height:72dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;
+  transform:none!important;margin:0!important;box-sizing:border-box!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-popover-v264:not(#ngb-v411) .tn-layout-quick-v264{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-popover-v264:not(#ngb-v411) .tn-layout-quick-v264>button{
+  width:100%!important;min-width:0!important;
+}
+
+/* 15) styles.css (landing) also styles every bare <header> globally:
+ *     `position:absolute;top:0;height:78px;width:100%;z-index:10`. On phones that
+ *     made Studio panel headers float over their own content (layout picker,
+ *     API cards…). Zero-specificity reset of only the layout-breaking properties;
+ *     component rules still win. Mobile Post/Page editor excluded. */
+@media (max-width:800px){
+  :where(.sn-shell:not(:has(.ce-app)),.tn-modal-layer,.tn-layout-popover-v264) header{
+    position:relative;top:auto;height:auto;min-height:0;width:auto;z-index:auto;
+  }
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-popover-v264:not(#ngb-v411)>header{
+  position:sticky!important;top:0!important;height:auto!important;width:auto!important;z-index:2!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;
+  padding:6px 4px 10px!important;background:inherit!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-mode-room:not(#ngb-v411) button:not(.active):not([aria-pressed]){
+  background:#fff!important;border:1px solid #d9e3f0!important;border-radius:12px!important;color:#1f3657!important;
+  min-height:46px!important;font-weight:700!important;box-shadow:0 1px 2px rgba(20,40,80,.06)!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .tn-layout-mode-room:not(#ngb-v411) button:not([aria-pressed]) svg{width:18px!important;height:18px!important}
+/* tablets (<1024px, both device families): same leaked header geometry pushed
+ * "Buat API key" off-screen (820px) or left a tall empty gap (768px). */
+@media (max-width:1023px){
+  html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .sn-shell header.sn-api-title:not(#ngb-v411){
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:end!important;gap:16px!important;
+    height:auto!important;min-height:0!important;position:relative!important;inset:auto!important;padding:0!important;
+    width:auto!important;background:transparent!important;box-shadow:none!important;
+  }
+  html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .sn-shell header.sn-api-title:not(#ngb-v411)>*{min-width:0!important;max-width:100%!important;margin:0!important}
+  html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .sn-shell header.sn-api-title:not(#ngb-v411)>button.sn-primary{width:auto!important;white-space:nowrap!important;padding:0 18px!important}
+}
+@media (min-width:600px) and (max-width:1023px){
+  html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .sn-shell .sn-api-metrics:not(#ngb-v411){
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;
+  }
+}
+/* phone drawer open: keep the floating Nara launcher from sitting on top of it */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(#ngeblogging-studio-sidebar.mobile-open) .nara-floating-button{
   clip-path:inset(0 0 100% 0)!important;
 }

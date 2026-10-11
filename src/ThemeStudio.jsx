@@ -28,6 +28,7 @@ import "./studio-theme-code-editor-v358.js";
 import "./studio-theme-code-editor-v359.js";
 import "./studio-theme-code-editor-v360.js";
 import "./studio-theme-code-editor-v363.js";
+import { formatThemeCodeForEditing } from "./theme-code-format.js";
 import "./studio-theme-code-editor-v364.js";
 import "./studio-widget-studio-v369.css";
 import "./theme-mobile-recovery-v360.css";
@@ -210,6 +211,12 @@ function Customizer({ value, onChange, theme }) {
 
 function CodeEditor({ value, onChange, config, widgets, theme, device, onDeviceChange }) {
   const [tab, setTab] = useState("html");
+  /* Built-in theme code is minified on one line; expand it once when the editor
+   * opens so every line number matches a real code line (rendering-neutral). */
+  useEffect(() => {
+    const formatted = formatThemeCodeForEditing(value);
+    if (formatted !== value) onChange(formatted);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const tabs = [{ id:"html",label:"HTML",icon:FileCode2 },{ id:"css",label:"CSS",icon:Palette },{ id:"javascript",label:"JavaScript",icon:Code2 }];
   const selectedDevice = deviceInfo(device);
   return <div className="tn-code-workspace">

@@ -33,7 +33,13 @@ function ensureGutter(textarea){
     gutter.setAttribute("aria-hidden","true");
     textarea.insertAdjacentElement("beforebegin",gutter);
   }
-  if(gutter.textContent!==LINE_GUIDE) gutter.textContent=LINE_GUIDE;
+  /* at least 1–10.000, and grows with the file so numbering never stops */
+  const lines=String(textarea.value||"").split("\n").length;
+  const want=Math.max(10000,lines);
+  if(gutter.__ngebloggingLines!==want){
+    gutter.__ngebloggingLines=want;
+    gutter.textContent=want===10000?LINE_GUIDE:Array.from({length:want},(_,i)=>String(i+1)).join("\n");
+  }
   return gutter;
 }
 
@@ -51,16 +57,42 @@ function sync(){
 
   layer.querySelectorAll(".tn-code-pane textarea").forEach((textarea)=>{
     const gutter=ensureGutter(textarea);
-    textarea.wrap="soft";
+    /* Respect the "Bungkus baris" toggle (v350) instead of forcing wrap on every
+     * sync. Phones start unwrapped so each code line == one numbered gutter line. */
+    const wrapButton=textarea.parentElement?.querySelector(".tn-code-v350-toolbar [data-a='wrap']");
+    if(mobile&&!textarea.__ngebloggingV411WrapInit){
+      textarea.__ngebloggingV411WrapInit=true;
+      if(wrapButton) wrapButton.dataset.active="false";
+    }
+    const wrapOn=wrapButton?wrapButton.dataset.active!=="false":!mobile;
+    textarea.wrap=wrapOn?"soft":"off";
     textarea.spellcheck=false;
     textarea.autocomplete="off";
-    textarea.style.whiteSpace="pre-wrap";
-    textarea.style.overflowWrap="anywhere";
-    textarea.style.wordBreak="break-word";
-    textarea.style.overflowX="hidden";
-    if(gutter) gutter.scrollTop=textarea.scrollTop;
+    textarea.style.whiteSpace=wrapOn?"pre-wrap":"pre";
+    textarea.style.overflowWrap=wrapOn?"anywhere":"normal";
+    textarea.style.wordBreak=wrapOn?"break-word":"normal";
+    textarea.style.overflowX=wrapOn?"hidden":"auto";
+    if(gutter){
+      /* line numbers must use the code's exact metrics, or they drift per line */
+      /* whole-pixel line height: fractional values (20.4px) are rounded
+       * differently for <textarea> and <pre>, drifting ~1 line per 1.300 */
+      const lhNow=parseFloat(getComputedStyle(textarea).lineHeight);
+      if(Number.isFinite(lhNow)&&Math.round(lhNow)!==lhNow) textarea.style.setProperty("line-height",Math.round(lhNow)+"px","important");
+      const tc=getComputedStyle(textarea);
+      gutter.style.setProperty("font-size",tc.fontSize,"important");
+      gutter.style.setProperty("line-height",tc.lineHeight,"important");
+      gutter.style.setProperty("box-sizing","border-box","important");
+      const gr=gutter.getBoundingClientRect(),tr=textarea.getBoundingClientRect();
+      if(gr.height>0&&tr.height>0){
+        const pad=Math.max(0,Math.round((tr.top+parseFloat(tc.borderTopWidth||"0")+parseFloat(tc.paddingTop||"0")-gr.top-parseFloat(getComputedStyle(gutter).borderTopWidth||"0"))*10)/10);
+        gutter.style.setProperty("padding-top",pad+"px","important");
+        gutter.style.setProperty("padding-bottom",tc.paddingBottom,"important");
+      }
+      gutter.scrollTop=textarea.scrollTop;
+    }
     if(!textarea.__ngebloggingV363Scroll){
       textarea.__ngebloggingV363Scroll=true;
+      textarea.addEventListener("input",()=>{ensureGutter(textarea);},{passive:true});
       textarea.addEventListener("scroll",()=>{
         const active=textarea.parentElement?.querySelector(":scope > .tn-code-gutter-v363");
         if(active) active.scrollTop=textarea.scrollTop;

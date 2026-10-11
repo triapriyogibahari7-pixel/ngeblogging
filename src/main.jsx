@@ -489,7 +489,7 @@ function App() {
           ngeblogging<span>.</span>
         </a>
         <p>Bangun, kelola, dan kembangkan kehadiran digital Anda.</p>
-        <small>© 2026 Ngeblogging. Dibangun di Indonesia.</small>
+        <small>© 2026 Ngeblogging. Didirikan dan dikembangkan oleh <a href="/profil/tri-apriyogi-bahari/">Tri Apriyogi Bahari</a> · <a href="/tentang/">Tentang</a> · Dibangun di Indonesia.</small>
       </footer>
       {demo && (
         <AuthModal

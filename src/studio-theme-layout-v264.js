@@ -127,7 +127,11 @@ function setReactSelect(select, value) {
 }
 
 function openWidgetStudio() {
-  const button = document.querySelector(".tn-layout-studio-header button");
+  /* the old header button moved into the "Mode tata letak" card; find the
+   * widget launcher by its label so the picker keeps working on every device */
+  const candidates = [...document.querySelectorAll(".tn-layout-studio-header button, .tn-layout-mode-room button, .tn-layout-studio button, .tn-hero-actions button, .tn-command nav button")];
+  const button = candidates.find((node) => /atur widget/i.test(node.textContent || ""))
+    || candidates.find((node) => /\bwidget\b/i.test(node.textContent || "") && !node.closest(".tn-layout-popover-v264"));
   if (!button) return false;
   button.click();
   return true;

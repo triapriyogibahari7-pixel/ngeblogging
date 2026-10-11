@@ -61,13 +61,25 @@ function hide(node) {
   important(node, "pointer-events", "none");
 }
 
-function exposeMenu(side) {
+function exposeMenu(side, drawer = false) {
   const logo = side.querySelector(":scope>.sn-logo");
   const brand = side.querySelector(":scope>.sn-logo>b");
   const create = side.querySelector(":scope>.sn-new");
   const nav = side.querySelector(":scope>nav");
   const footer = side.querySelector(":scope>.sn-account-footer");
   show(logo, "flex");
+  if (drawer) {
+    /* reset the 46x46 collapsed-button geometry so "n Ngeblogging" is not clipped */
+    important(logo, "width", "100%");
+    important(logo, "height", "auto");
+    important(logo, "min-height", "56px");
+    important(logo, "align-items", "center");
+    important(logo, "gap", "10px");
+    important(logo, "overflow", "visible");
+    important(brand, "flex", "0 1 auto");
+    important(brand, "min-width", "0");
+    important(brand, "white-space", "nowrap");
+  }
   show(brand, "block");
   show(create, "flex");
   show(nav, "flex");
@@ -188,7 +200,7 @@ function applySmall(sh, side, content) {
     important(side, "border-right", "1px solid #dfe6ef");
     important(side, "border-radius", "0 18px 18px 0");
     important(side, "box-shadow", "14px 0 42px rgba(21,40,70,.18)");
-    exposeMenu(side);
+    exposeMenu(side, true);
   } else {
     important(side, "inset", "auto");
     important(side, "left", "max(8px, env(safe-area-inset-left, 0px))");
@@ -311,6 +323,13 @@ function boot(attempt = 0) {
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {
   document.addEventListener("click", () => { schedule(); schedule(70); }, false);
+  /* Touch-driven open/close can toggle `.mobile-open` without a click reaching
+   * document (handlers stop it), which left the drawer geometry stale and needed
+   * a second tap to close. Capture-phase pointer/touch ends always re-sync. */
+  const resyncAfterTouch = () => { schedule(); schedule(70); schedule(220); };
+  document.addEventListener("pointerup", resyncAfterTouch, { capture:true, passive:true });
+  document.addEventListener("touchend", resyncAfterTouch, { capture:true, passive:true });
+  document.addEventListener("click", resyncAfterTouch, { capture:true, passive:true });
   window.addEventListener("resize", () => schedule(30), { passive:true });
   window.addEventListener("orientationchange", () => schedule(70), { passive:true });
   window.addEventListener("pageshow", () => boot(), { passive:true });
