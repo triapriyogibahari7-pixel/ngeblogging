@@ -1,0 +1,59 @@
+/*
+ * v411 — targeted repairs (Oct 11, 2026).
+ * Each rule is scoped so that it cannot change desktop/laptop/computer/large-tablet
+ * layouts, and the mobile Post/Page editor toolbar styling (v407/v409) is untouched.
+ */
+
+/* 1) Mobile collapsed sidebar: the "n" logo was pushed to x=-17px because the
+ *    v410 drawer grid (38px 1fr 38px) also applied while the sidebar is closed. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-side:not(.mobile-open) .sn-logo{
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:0!important;
+  justify-content:center!important;
+  justify-items:center!important;
+}
+
+/* 2) Mobile Nara launcher: the hidden text label still took a grid column, so the
+ *    sparkle icon sat off-centre. Show the icon only, centred. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-floating-button{
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:0!important;
+  place-items:center!important;
+  justify-content:center!important;
+  align-content:center!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-floating-button .nara-launcher-label{
+  display:none!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-floating-button .nara-launcher-icon-box{
+  grid-column:1!important;
+  justify-self:center!important;
+  align-self:center!important;
+  margin:0!important;
+}
+
+/* 3) Mobile Ringkasan: v159 gives the welcome copy `flex:1 1 520px`; on phones the
+ *    welcome card is a column, so that basis became 520px of empty height. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-welcome>div:first-child{
+  flex:0 0 auto!important;
+}
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-welcome{
+  justify-content:flex-start!important;
+}
+
+/* 4) Mobile API Keys: the landing-page rule `header{position:absolute;top:0;height:78px}`
+ *    in styles.css leaked into the API Keys card headers and stacked them on top. */
+:is(html.editor-v266-small,html[data-studio-device-mode="small"]) .sn-shell .sn-api-card>header{
+  position:relative!important;
+  top:auto!important;
+  height:auto!important;
+  width:auto!important;
+  z-index:auto!important;
+}
+
+/* 5) Desktop/laptop/computer/tablet editor: the mobile-only toolbar and action row
+ *    (undo/redo/B/I/U/list/link/Nara) must never render outside small/phone mode. */
+html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-mobile-toolbar,
+html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-mobile-actions{
+  display:none!important;
+}

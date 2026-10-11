@@ -525,25 +525,8 @@ body:has(.tn-studio) .sn-side:not(.collapsed)+.sn-main:after{
   isolation:isolate!important;
   overflow-x:clip!important;
 }
-.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="application"]) ~ .nara-floating-button,
-.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="phone"]) ~ .nara-floating-button,
-.tn-studio:has(.tn-active-stage .tn-frame-shell[data-preview-device="mobile"]) ~ .nara-floating-button,
-body:has(.tn-studio) .nara-floating-button,
-body:has(.tn-studio) .nara-floating-proxy-v20{
-  display:none!important;
-  visibility:hidden!important;
-  opacity:0!important;
-  pointer-events:none!important;
-  transform:none!important;
-  box-shadow:none!important;
-  filter:none!important;
-}
-body:has(.tn-studio) .nara-assistant-layer,
-body:has(.tn-studio) .nara-assistant-backdrop{
-  background:transparent!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-}
+
+
 .tn-studio:has(.tn-active-stage .tn-frame-shell:is([data-preview-device="application"],[data-preview-device="phone"],[data-preview-device="mobile"])) .tn-frame-shell{
   display:flex!important;
   align-items:flex-start!important;
@@ -656,17 +639,8 @@ body:has(.tn-studio) .nara-assistant-backdrop{
   width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
 }
 /* Remove every known Nara launcher/proxy while Theme is in handheld preview. */
-body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22),
-body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22),
-body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22){
-  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
-  box-shadow:none!important;filter:none!important;transform:none!important;
-}
-body:has(.tn-studio[data-theme-mobile-device="application"]) .nara-assistant-layer,
-body:has(.tn-studio[data-theme-mobile-device="phone"]) .nara-assistant-layer,
-body:has(.tn-studio[data-theme-mobile-device="mobile"]) .nara-assistant-layer{
-  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
-}
+
+
 
 
 /* v365 — Theme handheld header hard-stop.
@@ -815,12 +789,7 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) .ce-nara *{
   overflow:hidden!important;
 }
 
-body:has(.tn-studio[data-theme-mobile-device="application"]) :is(
-  .nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,
-  .nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,
-  .nara-assistant-layer,.nara-assistant-backdrop,
-  .sn-top-actions .sn-nara-button,.ce-nara
-){
+body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.sn-top-actions .sn-nara-button,.ce-nara){
   display:none!important;
   visibility:hidden!important;
   opacity:0!important;
@@ -839,12 +808,7 @@ body:has(.tn-studio[data-theme-mobile-device="application"]) :is(
   transform:none!important;
   content-visibility:hidden!important;
 }
-body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(
-  .nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,
-  .nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,
-  .nara-assistant-layer,.nara-assistant-backdrop,
-  .sn-top-actions .sn-nara-button,.ce-nara
-){
+body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.sn-top-actions .sn-nara-button,.ce-nara){
   display:none!important;
   visibility:hidden!important;
   opacity:0!important;
@@ -863,12 +827,7 @@ body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(
   transform:none!important;
   content-visibility:hidden!important;
 }
-body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(
-  .nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,
-  .nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,
-  .nara-assistant-layer,.nara-assistant-backdrop,
-  .sn-top-actions .sn-nara-button,.ce-nara
-){
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.sn-top-actions .sn-nara-button,.ce-nara){
   display:none!important;
   visibility:hidden!important;
   opacity:0!important;
@@ -977,9 +936,9 @@ body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(
   overflow:hidden!important;white-space:normal!important;
 }
 /* Never allow any fixed/sticky black circular legacy node to paint over the moved controls. */
-body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,.nara-assistant-layer,.nara-assistant-backdrop,.sn-top-actions .sn-nara-button,.ce-nara),
-body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,.nara-assistant-layer,.nara-assistant-backdrop,.sn-top-actions .sn-nara-button,.ce-nara),
-body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.nara-floating-button,.nara-floating-proxy-v18,.nara-floating-proxy-v19,.nara-floating-proxy-v20,.nara-floating-proxy-v21,.nara-floating-proxy-v22,.nara-assistant-layer,.nara-assistant-backdrop,.sn-top-actions .sn-nara-button,.ce-nara){
+body:has(.tn-studio[data-theme-mobile-device="application"]) :is(.sn-top-actions .sn-nara-button,.ce-nara),
+body:has(.tn-studio[data-theme-mobile-device="phone"]) :is(.sn-top-actions .sn-nara-button,.ce-nara),
+body:has(.tn-studio[data-theme-mobile-device="mobile"]) :is(.sn-top-actions .sn-nara-button,.ce-nara){
   display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
   width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;
   margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;filter:none!important;transform:none!important;

@@ -33,6 +33,7 @@ import "./studio-small-device-v374.css";
 import "./studio-mobile-all-pages-v377.css";
 import "./studio-mobile-v408.css";
 import "./studio-mobile-v410.css";
+import "./studio-mobile-repair-v411.css";
 
 const ThemeStudio = lazy(() => import("./ThemeStudio"));
 const LOCAL_STORE = "ngeblogging-studio-v3";
@@ -283,7 +284,7 @@ export default function StudioNext({ onExit, user }) {
 
   if (view === "editor" && active) return <>
     <ContentEditor doc={active} site={site} user={user} saved={saved} patch={patch} publish={publish} onBack={() => setView(active.type === "page" ? "pages" : "posts")} onOpenNara={() => setNaraOpen(true)} setToast={setToast}/>
-    {view !== "themes" && <NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "editor", siteId: site?.id, siteName: site?.name, documentId: active.id, documentType: active.type, documentTitle: active.title, documentContent: (active.content || "").slice(0, 12000), metadata: active.metadata }}/>}
+    <NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "editor", siteId: site?.id, siteName: site?.name, documentId: active.id, documentType: active.type, documentTitle: active.title, documentContent: (active.content || "").slice(0, 12000), metadata: active.metadata }}/>
   </>;
 
   return <div className="sn-shell" data-ui-release="stable-v138" data-navigation-owner="react-v138" data-navigation-release="v138" data-device-mode={deviceMode}>
@@ -321,7 +322,7 @@ export default function StudioNext({ onExit, user }) {
         <div className="sn-top-actions">
           {site?.slug && <a className="sn-view-site" href={`https://${site.slug}.ngeblogging.com`} target="_blank" rel="noreferrer" title="Lihat situs publik"><Eye/><span>Lihat situs</span></a>}
           <button aria-label="Cari"><Search/></button>
-          {!(view === "themes" && deviceMode === "small") && <button className="sn-nara-button" onClick={() => setNaraOpen(true)}><Sparkles/> Tanya Nara</button>}
+          <button className="sn-nara-button" onClick={() => setNaraOpen(true)}><Sparkles/> Tanya Nara</button>
           <button className="sn-avatar" onClick={() => chooseView("settings")} aria-label="Buka pengaturan profil">{profile?.avatar_url ? <img src={profile.avatar_url} alt=""/> : initials}</button>
         </div>
       </header>
@@ -340,7 +341,7 @@ export default function StudioNext({ onExit, user }) {
     </main>
 
     {siteManager && <SiteManager sites={sites} activeSite={site} user={user} onSelect={selectSite} onClose={() => setSiteManager(false)} onCreated={(created) => { setSites((all) => [created, ...all]); selectSite(created); }} setToast={setToast}/>} 
-    {!(view === "themes" && deviceMode === "small") && <NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "studio", siteId: site?.id, siteName: site?.name, siteSlug: site?.slug, documentCount: docs.length, documentTitles: docs.slice(0, 20).map((document) => document.title) }}/>}
+    <NaraAssistant user={user} open={naraOpen} onOpenChange={setNaraOpen} context={{ area: "studio", siteId: site?.id, siteName: site?.name, siteSlug: site?.slug, documentCount: docs.length, documentTitles: docs.slice(0, 20).map((document) => document.title) }}/>
   </div>;
 }
 
