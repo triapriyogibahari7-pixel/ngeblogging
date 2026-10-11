@@ -88,3 +88,5 @@
     margin-top:14px!important;
   }
 }
+/* fix: label fitur kartu tema tidak boleh ikut aturan nav landing page (styles.css @media max-width:800px) yang membuat bulatan hitam di mode HP */
+@media(max-width:800px){.tn-theme-grid nav{position:static;inset:auto;flex-direction:row;padding:0;background:none;box-shadow:none;border-radius:0}}
