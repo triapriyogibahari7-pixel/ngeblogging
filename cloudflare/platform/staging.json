@@ -1,0 +1,12 @@
+{
+  "environment": "staging",
+  "account_id": "095e57b46e7ba7f6b188480d9e4e5fe7",
+  "database_name": "ngeblogging-platform-staging",
+  "database_id": "8634e035-5d0b-4818-bc84-29867315f54c",
+  "schema_version": "0001_platform",
+  "verified_on": "2026-10-17",
+  "production_auth_cutover": false,
+  "public_database_routes": false,
+  "r2_enabled": false,
+  "payment_live": false
+}
