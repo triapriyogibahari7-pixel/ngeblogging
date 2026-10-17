@@ -313,3 +313,18 @@ html[data-studio-desktop-sidebar-v238][data-v238-family="large"] .nara-assistant
   html[data-studio-desktop-sidebar-v238][data-v238-family="small"] .nara-assistant-shell[data-nara-size="small"]{width:min(360px,calc(100vw - 20px))!important;height:min(58dvh,490px)!important;min-height:330px!important;right:max(10px,env(safe-area-inset-right))!important;left:auto!important;bottom:max(68px,calc(env(safe-area-inset-bottom) + 60px))!important;top:auto!important;border-radius:17px!important}
   html[data-studio-desktop-sidebar-v238][data-v238-family="small"] .nara-assistant-shell[data-nara-size="medium"]{width:calc(100vw - 16px)!important;height:min(78dvh,700px)!important;left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom))!important;top:auto!important;border-radius:18px!important}
 }
+
+
+/* Nara desktop/large-screen fix: pin the open assistant to the viewport,
+   independent of page scrolling or its parent layout. Keep this scoped to
+   large devices so phone/tablet-small behavior remains unchanged. */
+@media (min-width: 761px) {
+  html[data-studio-desktop-sidebar-v238][data-v238-family="large"] .nara-assistant-shell[data-nara-size="small"],
+  html[data-studio-desktop-sidebar-v238][data-v238-family="large"] .nara-assistant-shell[data-nara-size="medium"] {
+    position: fixed !important;
+    inset: auto 18px 18px auto !important;
+    margin: 0 !important;
+    transform: none !important;
+    z-index: 2147483601 !important;
+  }
+}
