@@ -358,6 +358,11 @@ html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-
 }
 #ngeblogging-studio-sidebar .sn-logo-mark:not(#ngb-logo-override)::after{
   content:""!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  height:100%!important;
   position:absolute!important;
   inset:0!important;
   background:url("/brand/ngeblogging-premium-a.svg") center / contain no-repeat!important;
