@@ -1,16 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Ngeblogging</title>
-  <desc id="desc">Ikon huruf n untuk Ngeblogging.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="56" y1="32" x2="456" y2="480" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2563eb"/>
-      <stop offset="0.55" stop-color="#2d6edf"/>
-      <stop offset="1" stop-color="#6d4bd8"/>
+    <linearGradient id="bg" x1="64" y1="40" x2="448" y2="472" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F8CFF"/><stop offset=".55" stop-color="#3B5BFD"/><stop offset="1" stop-color="#7B3FF2"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#10254a" flood-opacity="0.24"/>
-    </filter>
+    <linearGradient id="gloss" x1="256" y1="24" x2="256" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="n" x1="150" y1="150" x2="360" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E4EAFF"/>
+    </linearGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#1B1F6B" flood-opacity=".35"/></filter>
   </defs>
-  <rect x="32" y="32" width="448" height="448" rx="116" fill="url(#bg)" filter="url(#shadow)"/>
-  <path fill="#fff" d="M118 380V132h72l145 143V132h67v248h-63L185 229v151h-67Z"/>
+  <rect x="24" y="24" width="464" height="464" rx="128" fill="url(#bg)"/>
+  <path d="M24 152C24 81 81 24 152 24h208c71 0 128 57 128 128v40C380 250 150 260 24 196z" fill="url(#gloss)"/>
+  <g filter="url(#sh)">
+    <path d="M150 372V214c0-50 38-86 92-86h12c62 0 104 40 104 100v144h-62V236c0-29-19-48-48-48h-6c-29 0-50 20-50 49v135z" fill="url(#n)"/>
+    <circle cx="384" cy="352" r="24" fill="#FFC857"/>
+  </g>
 </svg>

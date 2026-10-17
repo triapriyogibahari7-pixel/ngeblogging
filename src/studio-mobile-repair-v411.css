@@ -58,8 +58,8 @@ html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-
   display:none!important;
 }
 
-/* 6) Desktop/laptop/tablet Studio homepage (Ringkasan): no floating Nara launcher.
- *    Nara stays reachable from the "Buka Nara" card; other pages keep the launcher. */
+/* 6) Nara remains available throughout Studio, including Ringkasan.
+ *    The public landing page does not mount the Studio launcher. */
 /* (removed: Nara must stay visible in Studio on every device) */
 
 /* 7) Mobile floating "n" logo and Nara launcher: one matching style —
@@ -346,4 +346,25 @@ html:not(.editor-v266-small):not([data-studio-device-mode="small"]) .ce-app .ce-
 /* phone drawer open: keep the floating Nara launcher from sitting on top of it */
 :is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:has(#ngeblogging-studio-sidebar.mobile-open) .nara-floating-button{
   clip-path:inset(0 0 100% 0)!important;
+}
+
+/* Approved identity A. Preserve the existing button and click ownership; older
+ * sidebar runtimes rewrite its text, so render the asset over that text. */
+#ngeblogging-studio-sidebar .sn-logo-mark:not(#ngb-logo-override){
+  position:relative!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+#ngeblogging-studio-sidebar .sn-logo-mark:not(#ngb-logo-override)::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  background:url("/brand/ngeblogging-premium-a.svg") center / contain no-repeat!important;
+  pointer-events:none!important;
+  z-index:2!important;
+}
+#ngeblogging-studio-sidebar .sn-logo-mark:not(#ngb-logo-override)>strong,
+#ngeblogging-studio-sidebar .sn-logo-mark:not(#ngb-logo-override)>i{
+  opacity:0!important;
 }
