@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Building2, CreditCard, QrCode, WalletCards, RefreshCw, Download, X } from "lucide-react";
+import { Building2, CreditCard, QrCode, WalletCards, RefreshCw, Download } from "lucide-react";
 import { supabase } from "./lib/supabase";
 import { checkoutTarget, attemptKey, finished } from "./midtrans-checkout-utils.mjs";
 import "./billing-view.css";
@@ -24,7 +24,7 @@ async function api(path, token, body) {
   } finally {clearTimeout(timer);}
 }
 
-export default function BillingView({setToast=()=>{}, onClose}) {
+export default function BillingView({setToast=()=>{}}) {
   const [config,setConfig]=useState(null),[orders,setOrders]=useState([]),[legacy,setLegacy]=useState([]),[profile,setProfile]=useState(null);
   const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
   const locked=useRef(false),mounted=useRef(false),loadingLock=useRef(false);
@@ -69,16 +69,6 @@ export default function BillingView({setToast=()=>{}, onClose}) {
     if(url.searchParams.get("billing")!=="return"||!url.searchParams.get("token"))return;
     (async()=>{try{const s=await session();await api("/api/billing/paypal/capture",s.access_token,{orderId:url.searchParams.get("token")});await load();}catch(e){setError(e.message);}finally{["billing","token","PayerID"].forEach(k=>url.searchParams.delete(k));window.history.replaceState({},"",url.pathname+url.search+url.hash);}})();
   },[]);
-  function close() {
-    if(typeof onClose==="function")return onClose();
-    if(window.history.length>1)window.history.back();
-    else window.location.assign("/");
-  }
-  useEffect(()=>{
-    const onKey=e=>{if(e.key==="Escape")close();};
-    window.addEventListener("keydown",onKey);
-    return ()=>window.removeEventListener("keydown",onKey);
-  },[onClose]);
   async function pay(planId) {
     if(locked.current||!config?.ready)return;
     locked.current=true;setBusy(true);setError("");
@@ -106,7 +96,6 @@ export default function BillingView({setToast=()=>{}, onClose}) {
   const expired=profile?.plan_expires_at&&Date.parse(profile.plan_expires_at)<=Date.now();
   const plan=expired?"free":profile?.plan;
   return <div className="bv-page">
-    <button type="button" className="bv-close" aria-label="Tutup" title="Tutup" onClick={close}><X/></button>
     <header><div><small>N G E B L O G G I N G</small><h1>Pembayaran Nara Pro</h1><p>Pilih paket, lalu selesaikan pembayaran pada checkout resmi Midtrans.</p></div></header>
     {loading&&<p role="status">Memuat konfigurasi pembayaran…</p>}
     {error&&<p role="alert">{error}</p>}
