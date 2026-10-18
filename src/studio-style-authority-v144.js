@@ -1,6 +1,7 @@
 import "./production-entry-v154.js";
 import "./studio-platform-v160.js";
 import "./studio-mobile-layout-v412.css";
+import "./nara-pro-status-click.js";
 
 const RELEASE = "studio-style-authority-v160-20260730";
 
