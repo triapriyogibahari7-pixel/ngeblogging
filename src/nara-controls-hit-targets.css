@@ -27,3 +27,48 @@ html body .nara-assistant-shell .nara-composer-tools button:not(:disabled) {
 html body .nara-assistant-shell .nara-composer-tools button > svg {
   pointer-events: none;
 }
+
+/* Use the real select in normal flow, never an invisible absolute overlay. */
+html body .nara-assistant-shell .nara-composer-tools .nara-select {
+  position: relative !important;
+  isolation: isolate;
+  contain: paint;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+html body .nara-assistant-shell .nara-composer-tools .nara-select > span,
+html body .nara-assistant-shell .nara-composer-tools .nara-select > svg {
+  display: none !important;
+}
+html body .nara-assistant-shell .nara-composer-tools .nara-select > select {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  opacity: 1 !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  border-radius: inherit;
+  background: #fff !important;
+  color: #263855 !important;
+  font: inherit !important;
+  pointer-events: auto !important;
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+}
+html body .nara-assistant-shell .nara-composer-tools .nara-select > select:focus-visible {
+  outline: 2px solid #3168d4 !important;
+  outline-offset: -2px;
+}
+html body .nara-assistant-shell .nara-composer-tools .nara-select > select:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+}
