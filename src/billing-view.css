@@ -76,3 +76,4 @@
 @media (max-width:1100px){.bv-plans{grid-template-columns:repeat(2,minmax(0,1fr))}.bv-trust{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.bv-plans,.bv-trust{grid-template-columns:1fr}.bv-plan.is-selected{transform:none}.bv-account{flex-direction:column;align-items:stretch}}
 @media (prefers-reduced-motion:reduce){.bv-plan,.bv-plan>button,.bv-account button{transition:none}.bv-plan:hover,.bv-plan.is-selected{transform:none}}
+import "./billing-view-desktop-fix.css";
