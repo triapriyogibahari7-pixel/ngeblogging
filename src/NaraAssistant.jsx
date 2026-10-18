@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Check, ChevronDown, Copy, Crown, File, Image as ImageIcon, LoaderCircle, LockKeyhole, Mic, MicOff, Paperclip, Plus, RefreshCw, RotateCcw, Send, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
+import { Camera, Check, ChevronDown, Copy, Crown, File, Image as ImageIcon, LoaderCircle, LockKeyhole, Mic, MicOff, Plus, RefreshCw, RotateCcw, Send, ShieldCheck, Sparkles, X, Zap, Paperclip } from "lucide-react";
 import { supabase, supabaseConfigured } from "./lib/supabase";
+import BillingView from "./BillingView";
 import "./nara-v313.css";
+import "./nara-panel-stability.css";
+import "./nara-upgrade-mobile.css";
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_BYTES = 2_500_000;
 const MAX_SOURCE_IMAGE_BYTES = 12_000_000;
@@ -34,15 +37,12 @@ function NaraWindowIcon({ size }) {
 }
 function SpeakerIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>; }
 function uid() { return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`; }
-function fileSize(bytes) {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
+function fileSize(bytes) { return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
 function friendlyError(error, status) {
   const message = String(error || "");
   if (status === 429) return message || "Batas penggunaan hari ini sudah tercapai.";
   if (status === 403) return message || "Pilihan ini memerlukan paket Nara Pro.";
-  if (status === 503) return message || "Mesin Nara belum diaktifkan pada server. Hubungkan penyedia model AI di Netlify untuk mulai menggunakannya.";
+  if (status === 503) return message || "Layanan Nara belum tersedia pada server. Silakan coba lagi.";
   if (status === 504) return message || "Jawaban belum selesai dalam batas waktu. Tekan Coba lagi.";
   return message || "Nara belum dapat menjawab. Periksa koneksi lalu coba lagi.";
 }
@@ -63,13 +63,13 @@ async function optimizeImage(file) {
     if (globalThis.createImageBitmap) { source = await createImageBitmap(file); release = () => source.close?.(); }
     else {
       const objectUrl = URL.createObjectURL(file);
+      release = () => URL.revokeObjectURL(objectUrl);
       source = await new Promise((resolve, reject) => {
         const image = new Image();
         image.onload = () => resolve(image);
         image.onerror = () => reject(new Error(`${file.name} bukan gambar yang didukung.`));
         image.src = objectUrl;
       });
-      release = () => URL.revokeObjectURL(objectUrl);
     }
     const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(source.width, source.height));
     const canvas = document.createElement("canvas");
@@ -96,9 +96,7 @@ async function prepareFile(file) {
   if (file.type.startsWith("image/")) return optimizeImage(file);
   if (!file.type.startsWith("text/") && !TEXT_FILE_PATTERN.test(file.name)) throw new Error(`${file.name} belum didukung. Pilih gambar atau file .txt, .md, .csv, atau .json.`);
   if (file.size > MAX_ATTACHMENT_BYTES) throw new Error(`${file.name} lebih besar dari 2,5 MB.`);
-  const attachment = { id: uid(), name: file.name, type: file.type || "application/octet-stream", size: file.size, kind: "text" };
-  attachment.text = (await file.text()).slice(0, 50_000);
-  return attachment;
+  return { id: uid(), name: file.name, type: file.type || "application/octet-stream", size: file.size, kind: "text", text: (await file.text()).slice(0, 50_000) };
 }
 function inlineText(text, prefix) {
   return String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g).filter(Boolean).map((part, index) => {
@@ -175,11 +173,7 @@ export default function NaraAssistant({ user = null, context = null, onRequestLo
     utterance.onerror = () => { setSpeakingId(""); setNotice("Balasan suara belum dapat diputar."); };
     setSpeakingId(message.id); window.speechSynthesis.speak(utterance);
   };
-  const closeNara = () => {
-    stopSpeech();
-    setShowUpgrade(false);
-    setOpen(false);
-  };
+  const closeNara = () => { stopSpeech(); setShowUpgrade(false); setOpen(false); };
   const changeSize = (next) => { if (!VALID_NARA_SIZES.has(next)) return; setSize(next); writePreference(NARA_SIZE_KEY, next); };
   const toggleAutoVoice = () => { const next = !autoVoice; setAutoVoice(next); writePreference(NARA_VOICE_KEY, String(next)); if (!next) stopSpeech(); };
   useEffect(() => {
@@ -196,7 +190,7 @@ export default function NaraAssistant({ user = null, context = null, onRequestLo
       setPlan(valid ? "pro" : "free");
     });
     return () => { active = false; };
-  }, [user]);
+  }, [user, showUpgrade]);
   useEffect(() => { if (scrollArea.current) scrollArea.current.scrollTop = scrollArea.current.scrollHeight; }, [messages, busy, open]);
   useEffect(() => {
     writePreference(NARA_SIZE_KEY, size);
@@ -207,8 +201,7 @@ export default function NaraAssistant({ user = null, context = null, onRequestLo
   const selectedModel = useMemo(() => modelOptions.find((item) => item.id === model), [model]);
   const selectedIntelligence = useMemo(() => intelligenceOptions.find((item) => item.id === intelligence), [intelligence]);
   const selectPremiumAware = (kind, value) => {
-    const options = kind === "model" ? modelOptions : intelligenceOptions;
-    const option = options.find((item) => item.id === value);
+    const option = (kind === "model" ? modelOptions : intelligenceOptions).find((item) => item.id === value);
     if (option?.pro && plan !== "pro") { setShowUpgrade(true); return; }
     if (kind === "model") setModel(value); else setIntelligence(value);
   };
@@ -243,13 +236,6 @@ export default function NaraAssistant({ user = null, context = null, onRequestLo
   const copyAnswer = async (message) => {
     try { await navigator.clipboard.writeText(message.text); setCopiedId(message.id); setTimeout(() => setCopiedId((current) => current === message.id ? "" : current), 1800); }
     catch { setNotice("Jawaban belum dapat disalin otomatis. Tekan lama pada teks untuk menyalin."); }
-  };
-  const requestPro = async () => {
-    if (!user) { setShowUpgrade(false); closeNara(); onRequestLogin?.(); return; }
-    if (!supabase) { setNotice("Supabase belum tersambung pada deployment ini."); return; }
-    const { error } = await supabase.from("plan_upgrade_requests").insert({ user_id: user.id, requested_plan: "pro", source: "nara_assistant" });
-    if (error && !String(error.code).includes("23505")) { setNotice("Permintaan Pro belum tersimpan. Coba lagi sebentar."); return; }
-    setShowUpgrade(false); setNotice("Permintaan akses awal Nara Pro sudah tersimpan.");
   };
   const send = async (retryOutgoing = null, errorId = "") => {
     const retryRequest = retryOutgoing?.role === "user" ? retryOutgoing : null;
@@ -291,84 +277,54 @@ export default function NaraAssistant({ user = null, context = null, onRequestLo
       setMessages((current) => [...current, { id: uid(), role: "error", text: cancelled ? "Permintaan dihentikan. Anda dapat mencoba lagi saat siap." : friendlyError(error.message, error.status), retry: cancelled || error.retryable ? outgoing : null }]);
     } finally { clearTimeout(clientTimer); if (activeRequest.current === controller) activeRequest.current = null; setBusy(false); }
   };
-  return (
-    <>
-      <button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant">
-        <span className="nara-launcher-icon-box" aria-hidden="true"><Sparkles /></span>
-        <span className="nara-launcher-label"><b>Asisten Nara AI</b><small>Asisten resmi</small></span>
-      </button>
-      {open && (
-        <div className="nara-assistant-layer" role="dialog" aria-modal={size === "full" ? "true" : "false"} aria-label="Nara AI Assistant" data-nara-layer-size={size} data-nara-release-v313="studio-nara-nonmodal-v313-20260806">
-          {size === "full" && <button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />}
-          <aside className="nara-assistant-shell" aria-busy={busy} data-nara-size={size} data-nara-native-size="v149">
-            <div className="nara-assistant-header">
-              <div className="nara-brand-orb"><Sparkles /></div>
-              <div><span><b>Nara</b><em>AI</em>{plan === "pro" && <i>PRO</i>}</span><small><i /> Asisten resmi Ngeblogging</small></div>
-              <div className="nara-size-controls-v147 nara-native-size-controls-v149" role="group" aria-label="Ukuran jendela Nara AI">
-                {["small", "medium", "full"].map((option) => <button type="button" key={option} data-size={option} className={size === option ? "active" : ""} aria-pressed={size === option} aria-label={option === "small" ? "Ukuran kecil" : option === "medium" ? "Ukuran medium" : "Layar penuh"} title={option === "small" ? "Kecil" : option === "medium" ? "Medium" : "Layar penuh"} onClick={() => changeSize(option)}><NaraWindowIcon size={option}/></button>)}
-              </div>
-              <button className={`nara-auto-voice-v148 nara-native-auto-voice-v149${autoVoice ? " active" : ""}`} onClick={toggleAutoVoice} aria-label="Balasan suara otomatis" aria-pressed={autoVoice} title={autoVoice ? "Matikan balasan suara otomatis" : "Aktifkan balasan suara otomatis"}><SpeakerIcon/></button>
-              <button onClick={resetChat} title="Percakapan baru"><RotateCcw /></button>
-              <button onClick={closeNara} title="Tutup"><X /></button>
-            </div>
-            <div className="nara-context-bar"><span><ShieldCheck /> Jawaban privat</span><button onClick={() => setShowUpgrade(true)}>{plan === "pro" ? <><Crown /> Pro aktif</> : <><Zap /> Upgrade Pro</>}</button></div>
-            <div className="nara-assistant-messages" ref={scrollArea} aria-live="polite">
-              {messages.map((message) => (
-                <div className={`nara-message ${message.role}`} key={message.id}>
-                  {message.role !== "user" && <span className="nara-message-avatar">{message.role === "error" ? "!" : <Sparkles />}</span>}
-                  <div>
-                    {message.role === "assistant" ? <div className="nara-message-content"><RichMessage text={message.text} /></div> : <p>{message.text}</p>}
-                    {message.attachments?.some((item) => item.preview) && <div className="nara-message-image-grid">{message.attachments.filter((item) => item.preview).map((item) => <img key={item.id} src={item.preview} alt={`Lampiran ${item.name}`} />)}</div>}
-                    {message.attachments?.length > 0 && <div className="nara-message-files">{message.attachments.map((item) => <small key={item.id}><Paperclip />{item.name}</small>)}</div>}
-                    {(message.model || message.mode || Number.isFinite(message.remaining)) && <small className="nara-message-meta">{[message.model, message.mode].filter(Boolean).join(" · ")}{Number.isFinite(message.remaining) ? ` · ${message.remaining} respons tersisa hari ini` : ""}</small>}
-                    {message.role === "assistant" && message.text && <div className="nara-message-actions-v149">
-                      <button className="nara-message-action" onClick={() => copyAnswer(message)}>{copiedId === message.id ? <Check /> : <Copy />}{copiedId === message.id ? "Tersalin" : "Salin"}</button>
-                      <button className={`nara-message-action nara-speech-action-v147 nara-speech-action-v149${speakingId === message.id ? " speaking" : ""}`} onClick={() => speakMessage(message)} aria-label="Bacakan balasan Nara" aria-pressed={speakingId === message.id} title="Bacakan balasan Nara"><SpeakerIcon/><span>{speakingId === message.id ? "Hentikan" : "Dengar"}</span></button>
-                    </div>}
-                    {message.role === "error" && message.retry && <button className="nara-message-action retry" onClick={() => send(message.retry, message.id)}><RefreshCw /> Coba lagi</button>}
-                  </div>
-                </div>
-              ))}
-              {busy && <div className="nara-message assistant"><span className="nara-message-avatar"><Sparkles /></span><div className="nara-thinking"><i/><i/><i/><span>{processingLabel}</span><button onClick={() => activeRequest.current?.abort?.()}>Batalkan</button></div></div>}
-            </div>
-            <div className="nara-quick-prompts">{["Buat ide artikel", "Perbaiki tulisan", "Audit SEO", "Jelaskan gambar"].map((prompt) => <button key={prompt} onClick={() => setInput(prompt)}>{prompt}</button>)}</div>
-            <div className="nara-composer">
-              {attachments.length > 0 && <div className="nara-attachment-list">{attachments.map((item) => <span key={item.id}>{item.preview ? <img src={item.preview} alt="" /> : <File />}<i><b>{item.name}</b><small>{fileSize(item.size)}</small></i><button onClick={() => setAttachments((current) => current.filter((fileItem) => fileItem.id !== item.id))}><X /></button></span>)}</div>}
-              {notice && <div className="nara-notice">{notice}</div>}
-              <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder="Tanyakan apa saja kepada Nara…" rows={3} />
-              <div className="nara-composer-tools">
-                <div className="nara-attachment-menu-wrap">
-                  <button disabled={busy} className={attachmentMenu ? "active" : ""} onClick={() => setAttachmentMenu(!attachmentMenu)} title="Tambahkan lampiran"><Plus /></button>
-                  {attachmentMenu && <div className="nara-attachment-menu">
-                    <button onClick={() => cameraInput.current?.click()}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button>
-                    <button onClick={() => imageInput.current?.click()}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button>
-                    <button onClick={() => fileInput.current?.click()}><File /><span><b>File teks</b><small>TXT, Markdown, CSV, atau JSON</small></span></button>
-                  </div>}
-                </div>
-                <button disabled={busy} className={listening ? "listening" : ""} onClick={startVoice} title="Pertanyaan suara" aria-label={listening ? "Hentikan mikrofon" : "Mulai mikrofon"}>{listening ? <MicOff /> : <Mic />}</button>
-                <label className="nara-select intelligence"><span>{selectedIntelligence?.label}</span><ChevronDown /><select disabled={busy} value={intelligence} onChange={(event) => selectPremiumAware("intelligence", event.target.value)} aria-label="Tingkat kecerdasan">{intelligenceOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}</select></label>
-                <label className="nara-select model"><span>{selectedModel?.label}{selectedModel?.pro && <LockKeyhole />}</span><ChevronDown /><select disabled={busy} value={model} onChange={(event) => selectPremiumAware("model", event.target.value)} aria-label="Model Nara">{modelOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}</select></label>
-                <button className="nara-send" aria-label="Kirim pesan" disabled={busy || (!input.trim() && !attachments.length)} onClick={() => send()}>{busy ? <LoaderCircle className="spin" /> : <Send />}</button>
-              </div>
-              <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
-              <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
-              <input ref={fileInput} type="file" accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
-            </div>
-          </aside>
-          {showUpgrade && <div className="nara-upgrade-card">
-            <button className="nara-upgrade-close" aria-label="Tutup pilihan Pro" onClick={() => setShowUpgrade(false)}><X /></button>
-            <span className="nara-upgrade-icon"><Crown /></span><small>NARA PRO</small>
-            <h2>Lebih dalam. Lebih panjang. Lebih bertenaga.</h2>
-            <p>Buka kecerdasan Tinggi dan Maksimal, model khusus penulisan, analisis gambar, serta batas pemakaian yang lebih besar.</p>
-            <div className="nara-plan-grid">
-              <article><b>Gratis</b><strong>Rp0</strong><span><Check /> Instan & Sedang</span><span><Check /> Nara Mini</span><span><Check /> Lampiran dasar</span></article>
-              <article className="featured"><b>Pro</b><strong>Premium</strong><span><Check /> Tinggi & Maksimal</span><span><Check /> Semua model Nara</span><span><Check /> Prioritas & riwayat panjang</span></article>
-            </div>
-            <button className="nara-upgrade-cta" onClick={requestPro}>{user ? "Minta akses awal Pro" : "Masuk untuk memilih Pro"}</button>
-            <em>Pembayaran belum ditagihkan. Harga final ditampilkan sebelum paket komersial diaktifkan.</em>
-          </div>}
+  return (<>
+    <button className="nara-floating-button" onClick={() => setOpen(true)} aria-label="Buka Nara AI Assistant"><span className="nara-launcher-icon-box" aria-hidden="true"><Sparkles /></span><span className="nara-launcher-label"><b>Asisten Nara AI</b><small>Asisten resmi</small></span></button>
+    {open && <div className="nara-assistant-layer" role="dialog" aria-modal={size === "full" ? "true" : "false"} aria-label="Nara AI Assistant" data-nara-layer-size={size} data-nara-release-v313="studio-nara-nonmodal-v313-20260806">
+      {size === "full" && <button className="nara-assistant-backdrop" onClick={closeNara} aria-label="Tutup Nara" />}
+      <aside className="nara-assistant-shell" aria-busy={busy} data-nara-size={size} data-nara-native-size="v149">
+        <div className="nara-assistant-header">
+          <div className="nara-brand-orb"><Sparkles /></div>
+          <div><span><b>Nara</b><em>AI</em>{plan === "pro" && <i>PRO</i>}</span><small><i /> Asisten resmi Ngeblogging</small></div>
+          <div className="nara-size-controls-v147 nara-native-size-controls-v149" role="group" aria-label="Ukuran jendela Nara AI">{["small", "medium", "full"].map((option) => <button type="button" key={option} data-size={option} className={size === option ? "active" : ""} aria-pressed={size === option} aria-label={option === "small" ? "Ukuran kecil" : option === "medium" ? "Ukuran medium" : "Layar penuh"} title={option === "small" ? "Kecil" : option === "medium" ? "Medium" : "Layar penuh"} onClick={() => changeSize(option)}><NaraWindowIcon size={option}/></button>)}</div>
+          <button className={`nara-auto-voice-v148 nara-native-auto-voice-v149${autoVoice ? " active" : ""}`} onClick={toggleAutoVoice} aria-label="Balasan suara otomatis" aria-pressed={autoVoice} title={autoVoice ? "Matikan balasan suara otomatis" : "Aktifkan balasan suara otomatis"}><SpeakerIcon/></button>
+          <button onClick={resetChat} title="Percakapan baru"><RotateCcw /></button><button onClick={closeNara} title="Tutup"><X /></button>
         </div>
-      )}
-    </>
-  );
+        <div className="nara-context-bar"><span><ShieldCheck /> Jawaban privat</span><button onClick={() => setShowUpgrade(true)}>{plan === "pro" ? <><Crown /> Pro aktif</> : <><Zap /> Upgrade Pro</>}</button></div>
+        <div className="nara-assistant-messages" ref={scrollArea} aria-live="polite">
+          {messages.map((message) => <div className={`nara-message ${message.role}`} key={message.id}>
+            {message.role !== "user" && <span className="nara-message-avatar">{message.role === "error" ? "!" : <Sparkles />}</span>}
+            <div>
+              {message.role === "assistant" ? <div className="nara-message-content"><RichMessage text={message.text} /></div> : <p>{message.text}</p>}
+              {message.attachments?.some((item) => item.preview) && <div className="nara-message-image-grid">{message.attachments.filter((item) => item.preview).map((item) => <img key={item.id} src={item.preview} alt={`Lampiran ${item.name}`} />)}</div>}
+              {message.attachments?.length > 0 && <div className="nara-message-files">{message.attachments.map((item) => <small key={item.id}><Paperclip />{item.name}</small>)}</div>}
+              {(message.model || message.mode || Number.isFinite(message.remaining)) && <small className="nara-message-meta">{[message.model, message.mode].filter(Boolean).join(" · ")}{Number.isFinite(message.remaining) ? ` · ${message.remaining} respons tersisa hari ini` : ""}</small>}
+              {message.role === "assistant" && message.text && <div className="nara-message-actions-v149"><button className="nara-message-action" onClick={() => copyAnswer(message)}>{copiedId === message.id ? <Check /> : <Copy />}{copiedId === message.id ? "Tersalin" : "Salin"}</button><button className={`nara-message-action nara-speech-action-v147 nara-speech-action-v149${speakingId === message.id ? " speaking" : ""}`} onClick={() => speakMessage(message)} aria-label="Bacakan balasan Nara" aria-pressed={speakingId === message.id} title="Bacakan balasan Nara"><SpeakerIcon/><span>{speakingId === message.id ? "Hentikan" : "Dengar"}</span></button></div>}
+              {message.role === "error" && message.retry && <button className="nara-message-action retry" onClick={() => send(message.retry, message.id)}><RefreshCw /> Coba lagi</button>}
+            </div>
+          </div>)}
+          {busy && <div className="nara-message assistant"><span className="nara-message-avatar"><Sparkles /></span><div className="nara-thinking"><i/><i/><i/><span>{processingLabel}</span><button onClick={() => activeRequest.current?.abort?.()}>Batalkan</button></div></div>}
+        </div>
+        <div className="nara-quick-prompts">{["Buat ide artikel", "Perbaiki tulisan", "Audit SEO", "Jelaskan gambar"].map((prompt) => <button key={prompt} onClick={() => setInput(prompt)}>{prompt}</button>)}</div>
+        <div className="nara-composer">
+          {attachments.length > 0 && <div className="nara-attachment-list">{attachments.map((item) => <span key={item.id}>{item.preview ? <img src={item.preview} alt="" /> : <File />}<i><b>{item.name}</b><small>{fileSize(item.size)}</small></i><button onClick={() => setAttachments((current) => current.filter((fileItem) => fileItem.id !== item.id))}><X /></button></span>)}</div>}
+          {notice && <div className="nara-notice">{notice}</div>}
+          <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder="Tanyakan apa saja kepada Nara…" rows={3} />
+          <div className="nara-composer-tools">
+            <div className="nara-attachment-menu-wrap"><button disabled={busy} className={attachmentMenu ? "active" : ""} onClick={() => setAttachmentMenu(!attachmentMenu)} title="Tambahkan lampiran"><Plus /></button>{attachmentMenu && <div className="nara-attachment-menu"><button onClick={() => cameraInput.current?.click()}><Camera /><span><b>Kamera</b><small>Ambil foto sekarang</small></span></button><button onClick={() => imageInput.current?.click()}><ImageIcon /><span><b>Foto</b><small>Pilih dari perangkat</small></span></button><button onClick={() => fileInput.current?.click()}><File /><span><b>File teks</b><small>TXT, Markdown, CSV, atau JSON</small></span></button></div>}</div>
+            <button disabled={busy} className={listening ? "listening" : ""} onClick={startVoice} title="Pertanyaan suara" aria-label={listening ? "Hentikan mikrofon" : "Mulai mikrofon"}>{listening ? <MicOff /> : <Mic />}</button>
+            <label className="nara-select intelligence"><span>{selectedIntelligence?.label}</span><ChevronDown /><select disabled={busy} value={intelligence} onChange={(event) => selectPremiumAware("intelligence", event.target.value)} aria-label="Tingkat kecerdasan">{intelligenceOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}</select></label>
+            <label className="nara-select model"><span>{selectedModel?.label}{selectedModel?.pro && <LockKeyhole />}</span><ChevronDown /><select disabled={busy} value={model} onChange={(event) => selectPremiumAware("model", event.target.value)} aria-label="Model Nara">{modelOptions.map((item) => <option value={item.id} key={item.id}>{item.label}{item.pro ? " · Pro" : ""}</option>)}</select></label>
+            <button className="nara-send" aria-label="Kirim pesan" disabled={busy || (!input.trim() && !attachments.length)} onClick={() => send()}>{busy ? <LoaderCircle className="spin" /> : <Send />}</button>
+          </div>
+          <input ref={cameraInput} type="file" accept="image/*" capture="environment" hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
+          <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
+          <input ref={fileInput} type="file" accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json" multiple hidden onChange={(event) => { addFiles(event.target.files); event.target.value = ""; }} />
+        </div>
+      </aside>
+      {showUpgrade && <div className="nara-upgrade-card" data-nara-checkout-integration="midtrans-v1" role="dialog" aria-label="Pembayaran Nara Pro" style={{textAlign: "left"}}>
+        <button type="button" className="nara-upgrade-close" onClick={() => setShowUpgrade(false)} aria-label="Tutup pembayaran Nara Pro"><X /></button>
+        {user ? <BillingView setToast={setNotice} /> : <div><h2>Pembayaran Nara Pro</h2><p>Masuk untuk melihat status akun dan melanjutkan pembayaran.</p><button type="button" className="nara-upgrade-cta" onClick={() => { closeNara(); onRequestLogin?.(); }}>Masuk untuk melanjutkan</button></div>}
+      </div>}
+    </div>}
+  </>);
 }
