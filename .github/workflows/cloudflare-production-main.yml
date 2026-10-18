@@ -42,6 +42,8 @@ jobs:
           NODE
       - name: Test approved catalog
         run: node --test tests/billing-catalog.test.mjs
+      - name: Version application caches for this deployment
+        run: node scripts/version-service-worker.mjs
       - name: Build production bundle
         run: npx vite build
       - name: Stamp deployment commit
