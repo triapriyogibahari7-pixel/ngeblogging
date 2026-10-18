@@ -1,0 +1,36 @@
+name: Patch Nara upgrade reset
+on:
+  push:
+    branches: [fix/mobile-studio-layout-20261018]
+    paths: [.github/workflows/fix-nara-upgrade-reset.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/mobile-studio-layout-20261018
+      - name: Apply exact closeNara patch
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const path = 'src/NaraAssistant.jsx';
+          const source = readFileSync(path, 'utf8');
+          const before = '  const closeNara = () => {\n    stopSpeech();\n    setOpen(false);\n  };';
+          const after = '  const closeNara = () => {\n    stopSpeech();\n    setShowUpgrade(false);\n    setOpen(false);\n  };';
+          if (source.includes(after)) process.exit(0);
+          if (source.split(before).length !== 2) throw new Error('Expected exactly one original closeNara; no changes made');
+          writeFileSync(path, source.replace(before, after));
+          NODE
+      - name: Commit only the component patch
+        run: |
+          if git diff --quiet -- src/NaraAssistant.jsx; then exit 0; fi
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/NaraAssistant.jsx
+          git commit -m 'fix: reset upgrade state when closing Nara'
+          git push origin HEAD:fix/mobile-studio-layout-20261018
