@@ -1,4 +1,5 @@
 import baseWorker from "./worker-v69.mjs";
+import { handleMidtrans, paths as midtransPaths } from "../server/midtrans-api.mjs";
 
 export const PUBLIC_EDGE_RELEASE_V282 = "public-edge-request-dedup-v282-20260805";
 
@@ -72,6 +73,10 @@ async function serveStaticAsset(request, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+
+    if (midtransPaths.has(url.pathname)) {
+      return handleMidtrans(request, env);
+    }
 
     // Static files never need tenant canonical-domain lookup, tenant SEO resolution,
     // comment injection, or analytics HTML injection. Bypass the historical worker
