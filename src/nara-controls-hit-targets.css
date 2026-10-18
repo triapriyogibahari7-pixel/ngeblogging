@@ -1,0 +1,29 @@
+/* Keep the dialog panel above its full-screen dismissal backdrop. */
+html body .nara-assistant-layer .nara-assistant-shell {
+  isolation: isolate;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+html body .nara-assistant-layer .nara-assistant-backdrop {
+  z-index: 0 !important;
+}
+html body .nara-assistant-shell .nara-composer {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+html body .nara-assistant-shell .nara-assistant-messages {
+  min-height: 0;
+  overflow-y: auto;
+}
+html body .nara-assistant-shell .nara-composer-tools button,
+html body .nara-assistant-shell .nara-composer-tools select,
+html body .nara-floating-button {
+  touch-action: manipulation;
+}
+html body .nara-assistant-shell .nara-composer-tools button:not(:disabled) {
+  pointer-events: auto !important;
+}
+html body .nara-assistant-shell .nara-composer-tools button > svg {
+  pointer-events: none;
+}
