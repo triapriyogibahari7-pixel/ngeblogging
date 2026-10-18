@@ -1,5 +1,5 @@
 import baseWorker from "./worker-v69.mjs";
-import { handleMidtrans, paths as midtransPaths } from "../server/midtrans-api.mjs";
+import { handleMidtrans, paths as midtransPaths } from "../server/midtrans-catalog-api.mjs";
 
 export const PUBLIC_EDGE_RELEASE_V282 = "public-edge-request-dedup-v282-20260805";
 
