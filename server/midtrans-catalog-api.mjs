@@ -2,9 +2,10 @@ import { getBillingProduct } from "./billing-catalog.mjs";
 import { handleMidtrans as baseHandler, paths } from "./midtrans-api.mjs";
 export { paths };
 
-// Only products supported by the installed order/activation schema may be sold.
+const CHECKOUT_PRODUCTS = ["pro_monthly", "pro_yearly", "max_yearly"];
+
 export function catalogEnvironment(env) {
-  const prices = Object.fromEntries(["pro_monthly", "pro_yearly"].map(id => {
+  const prices = Object.fromEntries(CHECKOUT_PRODUCTS.map(id => {
     const product = getBillingProduct(id);
     if (product.currency !== "IDR" || !Number.isSafeInteger(product.amount) || product.amount <= 0) throw new Error("INVALID_CATALOG_PRICE");
     return [id, product.amount];

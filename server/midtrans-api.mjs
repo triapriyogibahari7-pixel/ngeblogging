@@ -1,6 +1,11 @@
 const out=(status,body)=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json","cache-control":"no-store"}});
 export const paths=new Set(["/api/billing/midtrans/config","/api/billing/midtrans/create","/api/billing/midtrans/orders","/api/billing/midtrans/webhook"]);
-function config(env){let prices={};try{prices=JSON.parse(env.MIDTRANS_PLAN_PRICES_JSON||"{}");}catch{}return ["pro_monthly","pro_yearly"].filter(id=>Number.isSafeInteger(prices[id])&&prices[id]>0&&prices[id]<=100000000).map(id=>({id,label:id==="pro_monthly"?"Nara Pro Bulanan":"Nara Pro Tahunan",amount:prices[id],currency:"IDR",durationDays:id==="pro_monthly"?31:366}));}
+const PRODUCT_META=Object.freeze({
+ pro_monthly:{label:"Nara Pro Bulanan",durationDays:31,tier:"pro"},
+ pro_yearly:{label:"Nara Pro Tahunan",durationDays:366,tier:"pro"},
+ max_yearly:{label:"Nara Max Tahunan",durationDays:366,tier:"max"},
+});
+function config(env){let prices={};try{prices=JSON.parse(env.MIDTRANS_PLAN_PRICES_JSON||"{}");}catch{}return Object.entries(PRODUCT_META).filter(([id])=>Number.isSafeInteger(prices[id])&&prices[id]>0&&prices[id]<=100000000).map(([id,meta])=>({id,...meta,amount:prices[id],currency:"IDR"}));}
 export function stateOf(s){if(["refund","partial_refund","chargeback","partial_chargeback"].includes(s.transaction_status))return "review_required";if(String(s.status_code)==="200"&&(!s.fraud_status||s.fraud_status==="accept")&&(s.transaction_status==="settlement"||(s.transaction_status==="capture"&&s.fraud_status==="accept")))return "paid";return ["deny","cancel","expire","failure"].includes(s.transaction_status)?"failed":"pending";}
 function amount(v){const s=String(v);if(!/^\d{1,12}(\.\d{1,2})?$/.test(s))throw Error("INVALID_AMOUNT");const [a,b=""]=s.split(".");return BigInt(a)*100n+BigInt(b.padEnd(2,"0"));}
 async function hash(algorithm,value){const d=await crypto.subtle.digest(algorithm,new TextEncoder().encode(value));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
@@ -9,7 +14,7 @@ export async function handleMidtrans(request,env,{fetchImpl=fetch}={}){
  const path=new URL(request.url).pathname;
  const plans=config(env);
  const configured=Boolean(["sandbox","production"].includes(env.MIDTRANS_ENV)&&env.MIDTRANS_SERVER_KEY&&env.SUPABASE_URL&&env.SUPABASE_PUBLISHABLE_KEY&&env.SUPABASE_SERVICE_ROLE_KEY);
- if(path.endsWith("/config")&&request.method==="GET")return out(200,{brand:"Ngeblogging",provider:"midtrans",ready:configured&&plans.length>0,environment:env.MIDTRANS_ENV==="production"?"production":"sandbox",plans});
+ if(path.endsWith("/config")&&request.method==="GET")return out(200,{brand:"Ngeblogging",provider:"midtrans",ready:configured&&plans.length===Object.keys(PRODUCT_META).length,environment:env.MIDTRANS_ENV==="production"?"production":"sandbox",plans});
  if(!paths.has(path))return out(404,{error:"NOT_FOUND"});
  if(!configured)return out(503,{error:"MIDTRANS_NOT_CONFIGURED"});
  if(!((request.method==="POST"&&(/\/(create|webhook)$/.test(path)))||(request.method==="GET"&&path.endsWith("/orders"))))return out(405,{error:"METHOD_NOT_ALLOWED"});
@@ -17,7 +22,7 @@ export async function handleMidtrans(request,env,{fetchImpl=fetch}={}){
  const db=env.SUPABASE_URL.replace(/\/$/,"");
  async function call(url,options={}){const r=await fetchImpl(url,{...options,signal:controller.signal});let value;try{value=await r.json();}catch{value=null;}if(!r.ok)throw Error("UPSTREAM_UNAVAILABLE");return value;}
  const admin={apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,"content-type":"application/json"};
- const rest=(path,options={})=>call(`${db}/rest/v1/${path}`,{...options,headers:{...admin,...options.headers}});
+ const rest=(route,options={})=>call(`${db}/rest/v1/${route}`,{...options,headers:{...admin,...options.headers}});
  try{
  if(path.endsWith("/webhook")){
   let p;try{p=await bodyOf(request);if(!p||typeof p.order_id!=="string"||!/^[A-Za-z0-9_-]{1,50}$/.test(p.order_id)||!/^\d{3}$/.test(String(p.status_code))||typeof p.gross_amount!=="string")throw Error();amount(p.gross_amount);}catch{return out(400,{error:"INVALID_PAYLOAD"});}
@@ -40,6 +45,9 @@ export async function handleMidtrans(request,env,{fetchImpl=fetch}={}){
  let b;try{b=await bodyOf(request);}catch{return out(400,{error:"INVALID_BODY"});}
  if(!b||!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(b.idempotencyKey||""))return out(400,{error:"INVALID_REQUEST"});
  const plan=plans.find(p=>p.id===b.planId);if(!plan)return out(503,{error:"PLAN_PRICE_NOT_CONFIGURED"});
+ const profile=(await rest(`profiles?id=eq.${encodeURIComponent(user.id)}&select=billing_tier,plan_expires_at&limit=1`))?.[0];
+ if(!profile)return out(409,{error:"PROFILE_NOT_FOUND"});
+ if(plan.tier==="pro"&&profile.billing_tier==="max"&&profile.plan_expires_at&&Date.parse(profile.plan_expires_at)>Date.now())return out(409,{error:"MAX_PLAN_ACTIVE"});
  const id="NARA-"+(await hash("SHA-256",`${env.MIDTRANS_ENV}:${user.id}:${b.idempotencyKey}`)).slice(0,40);
  await rest("nara_midtrans_orders?on_conflict=order_id",{method:"POST",headers:{prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify({order_id:id,user_id:user.id,plan_id:plan.id,duration_days:plan.durationDays,amount:plan.amount,environment:env.MIDTRANS_ENV})});
  const order=(await rest(`nara_midtrans_orders?order_id=eq.${id}&select=*`))?.[0];
