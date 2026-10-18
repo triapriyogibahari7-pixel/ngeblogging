@@ -1,5 +1,6 @@
 import "./production-entry-v154.js";
 import "./studio-platform-v160.js";
+import "./studio-mobile-layout-v412.css";
 
 const RELEASE = "studio-style-authority-v160-20260730";
 

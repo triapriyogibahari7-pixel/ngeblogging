@@ -1,0 +1,93 @@
+/* Mobile Studio repair. Preserve native disabled states and React click handlers. */
+@media (max-width:760px), (max-width:1024px) and (max-height:600px) and (pointer:coarse) {
+  html:root body .sn-shell .sn-main .sn-page-title {
+    position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;
+    align-items:stretch!important;justify-content:flex-start!important;flex-wrap:nowrap!important;
+    height:auto!important;min-height:0!important;max-height:none!important;
+    gap:14px!important;margin:0 0 16px!important;padding:0!important;
+  }
+  html:root body .sn-shell .sn-main .sn-page-title>div {
+    flex:0 0 auto!important;flex-basis:auto!important;height:auto!important;min-height:0!important;
+    width:100%!important;min-width:0!important;margin:0!important;
+  }
+  html:root body .sn-shell .sn-main .sn-page-title>button {
+    flex:0 0 auto!important;width:100%!important;min-height:44px!important;margin:0!important;
+  }
+  html:root body .sn-shell .sn-main .sn-page-title h1 {margin:0!important;line-height:1.2!important}
+  html:root body .sn-shell .sn-main .sn-page-title p {margin:6px 0 0!important;line-height:1.5!important}
+  html:root body .sn-shell .sn-main .sn-content-tools label {flex:0 0 auto!important;min-height:0!important}
+
+  html:root body .nara-assistant-layer .nara-assistant-shell {
+    background:#fff!important;opacity:1!important;backdrop-filter:none!important;
+    display:flex!important;flex-direction:column!important;isolation:isolate!important;
+    min-height:0!important;max-height:calc(100dvh - 20px)!important;
+    pointer-events:auto!important;overflow:hidden!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell>.nara-assistant-header,
+  html:root body .nara-assistant-layer .nara-assistant-shell>.nara-context-bar,
+  html:root body .nara-assistant-layer .nara-assistant-shell>.nara-quick-prompts,
+  html:root body .nara-assistant-layer .nara-assistant-shell>.nara-composer {
+    position:relative!important;inset:auto!important;flex:0 0 auto!important;
+    width:100%!important;min-width:0!important;margin:0!important;transform:none!important;
+    background:#fff!important;box-sizing:border-box!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell>.nara-assistant-messages {
+    position:relative!important;inset:auto!important;flex:1 1 0!important;
+    height:auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-composer {
+    z-index:2!important;padding:10px!important;border-top:1px solid #e2e8f0!important;
+    overflow:visible!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-composer textarea {
+    position:relative!important;display:block!important;width:100%!important;min-width:0!important;
+    min-height:60px!important;max-height:120px!important;font-size:16px!important;
+    pointer-events:auto!important;box-sizing:border-box!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-composer-tools {
+    position:relative!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+    gap:6px!important;height:auto!important;min-height:44px!important;overflow:visible!important;
+    width:100%!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-composer-tools>* {
+    position:relative!important;inset:auto!important;transform:none!important;margin:0!important;min-width:0!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-composer-tools .nara-select {
+    flex:1 1 90px!important;max-width:140px!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-composer-tools .nara-send {
+    flex:0 0 44px!important;width:44px!important;height:44px!important;min-height:44px!important;
+    margin-left:auto!important;pointer-events:auto!important;touch-action:manipulation!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-quick-prompts {
+    display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;
+    gap:6px!important;padding:8px 10px!important;
+  }
+  html:root body .nara-assistant-layer .nara-assistant-shell .nara-quick-prompts>button {
+    flex:0 0 auto!important;width:auto!important;white-space:nowrap!important;min-height:36px!important;
+  }
+
+  html:root body .ce-app .ce-mobile-toolbar {
+    display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;
+    width:100%!important;height:52px!important;gap:6px!important;padding:5px 8px!important;
+    overflow-x:auto!important;overflow-y:hidden!important;box-sizing:border-box!important;
+    background:#f8fafc!important;border-bottom:1px solid #dfe6ef!important;
+  }
+  html:root body .ce-app .ce-mobile-toolbar-group {
+    display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+    flex:0 0 auto!important;align-items:center!important;gap:4px!important;
+  }
+  html:root body .ce-app .ce-mobile-toolbar button {
+    display:grid!important;place-items:center!important;flex:0 0 auto!important;
+    min-width:40px!important;min-height:40px!important;margin:0!important;
+    border:1px solid #d7e0ec!important;border-radius:9px!important;background:#fff!important;
+  }
+  html:root body .ce-app .ce-ribbon {display:none!important}
+}
+@media (max-width:1024px) and (max-height:600px) and (pointer:coarse) {
+  html:root body .ce-app .ce-workspace {display:flex!important;flex-direction:column!important;width:100%!important}
+  html:root body .ce-app .ce-paper-shell,
+  html:root body .ce-app .ce-sidebar {position:relative!important;inset:auto!important;width:100%!important;min-width:0!important;margin:0!important;transform:none!important}
+  html:root body .ce-app .ce-paper {width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+  html:root body .ce-app .ce-titlebar {position:relative!important;inset:auto!important;height:auto!important;min-height:0!important}
+}
