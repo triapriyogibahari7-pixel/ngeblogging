@@ -14,3 +14,52 @@ html body .nara-assistant-layer[data-nara-layer-size] .nara-plan-grid article {m
 html body .nara-assistant-layer[data-nara-layer-size] .nara-plan-grid span {font-size:13px!important;line-height:1.5!important;}
 html body .nara-assistant-layer[data-nara-layer-size] .nara-upgrade-cta {min-height:48px!important;font-size:16px!important;white-space:normal!important;touch-action:manipulation;}
 }
+@media (min-width:761px) {
+html body .nara-assistant-layer .nara-upgrade-card {
+  position:fixed!important;inset:24px!important;margin:auto!important;
+  width:min(1280px,calc(100vw - 48px))!important;max-width:none!important;
+  height:calc(100vh - 48px)!important;max-height:none!important;
+  box-sizing:border-box!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;
+  transform:none!important;animation:none!important;z-index:2147483000!important;pointer-events:auto!important;
+  text-align:left!important;background:linear-gradient(180deg,#fff,#f3f7ff)!important;
+  border:1px solid rgba(201,162,74,.55)!important;border-radius:18px!important;
+  box-shadow:0 24px 80px rgba(11,31,77,.35)!important;
+}
+html body .nara-assistant-layer .nara-upgrade-card > .nara-upgrade-close {
+  position:sticky!important;top:12px!important;right:auto!important;left:auto!important;
+  margin:12px 12px -56px auto!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  width:44px!important;height:44px!important;padding:0!important;border-radius:999px!important;
+  background:#0b1f4d!important;color:#fff!important;border:2px solid #c9a24a!important;
+  z-index:100!important;pointer-events:auto!important;cursor:pointer!important;
+}
+html body .nara-assistant-layer .nara-upgrade-card .bv-page {
+  position:static!important;background:transparent!important;width:100%!important;max-width:1240px!important;
+  margin:0 auto!important;padding:56px 40px 48px!important;box-sizing:border-box!important;
+  display:flex!important;flex-direction:column!important;gap:28px!important;
+}
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > * {
+  position:relative!important;inset:auto!important;float:none!important;transform:none!important;margin-top:0!important;margin-bottom:0!important;
+}
+html body .nara-assistant-layer .nara-upgrade-card .bv-hero {order:1!important;display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;gap:14px!important;height:auto!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-hero h1 {display:block!important;line-height:1.2!important;height:auto!important;overflow:visible!important;white-space:normal!important;font-size:clamp(32px,3.4vw,50px)!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-hero h1 em {display:block!important;margin-top:6px!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > .bv-note,
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > .bv-error,
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > p[role="alert"],
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > p[role="status"] {
+  order:2!important;position:static!important;transform:none!important;width:100%!important;max-width:860px!important;
+  margin:0 auto!important;padding:12px 18px!important;text-align:center!important;border-radius:10px!important;
+  background:#f3f7ff!important;color:#0b1f4d!important;border:1px solid rgba(201,162,74,.55)!important;
+}
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > .bv-error,
+html body .nara-assistant-layer .nara-upgrade-card .bv-page > p[role="alert"] {background:#fff5f3!important;color:#8a2a1c!important;border-color:#e7b3a8!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-account {order:3!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-plans {order:4!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:20px!important;padding-top:18px!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-methods {order:5!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-trust {order:6!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-history {order:7!important;}
+html body .nara-assistant-layer .nara-upgrade-card .bv-foot {order:8!important;text-align:center!important;}
+}
+@media (min-width:761px) and (max-width:1180px) {
+html body .nara-assistant-layer .nara-upgrade-card .bv-plans {grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  }
