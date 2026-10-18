@@ -1,0 +1,110 @@
+/* billing-view-desktop-fix.css
+   Perbaikan header & kartu pembayaran HANYA untuk desktop/laptop/tablet besar.
+   Mobile (<=900px atau data-device-mode="mobile") tidak disentuh sama sekali. */
+@media (min-width: 901px) {
+  html:not([data-device-mode="mobile"]) body .bv-page {
+    width: 100% !important;
+    max-width: 1240px !important;
+    margin: 0 auto !important;
+    padding: 32px 40px 48px !important;
+    display: grid !important;
+    gap: 32px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page > header,
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-hero {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center !important;
+    text-align: center !important;
+    gap: 14px !important;
+    margin: 0 !important;
+    padding: 8px 0 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-hero > * {
+    position: static !important;
+    float: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    max-width: 760px !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-hero h1 {
+    font-size: clamp(34px, 3.6vw, 50px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    white-space: normal !important;
+    text-wrap: balance;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-hero p {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    color: #5b6784 !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+    align-items: stretch !important;
+    padding-top: 16px !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * {
+    position: relative !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * > [class*="ribbon"],
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * > [class*="badge"] {
+    position: absolute !important;
+    top: -13px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    white-space: nowrap !important;
+    z-index: 2 !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * > :first-child:not([class*="ribbon"]):not([class*="badge"]) {
+    margin-top: 8px !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans ul {
+    flex: 1 1 auto !important;
+    margin: 0 0 20px !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans button {
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-security {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-methods,
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-methods > div {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+}
+@media (min-width: 901px) and (max-width: 1180px) {
+  html:not([data-device-mode="mobile"]) body .bv-page { padding: 24px !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans,
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-security {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
