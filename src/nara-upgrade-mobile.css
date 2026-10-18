@@ -1,0 +1,16 @@
+@media (max-width:760px), (pointer:coarse) and (max-device-width:760px) {
+html body .nara-assistant-layer[data-nara-layer-size] .nara-upgrade-card {
+  position:fixed!important;inset:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))!important;
+  width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;
+  box-sizing:border-box!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch;pointer-events:auto!important;transform:none!important;animation:none!important;transition:none!important;
+  padding:48px 16px 20px!important;border-radius:18px!important;scroll-padding:16px;
+}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-upgrade-close {top:8px!important;right:8px!important;min-width:44px!important;min-height:44px!important;touch-action:manipulation;}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-upgrade-card h2 {font-family:inherit!important;font-size:24px!important;line-height:1.25!important;}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-upgrade-card > p {font-size:14px!important;line-height:1.6!important;}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-plan-grid {grid-template-columns:minmax(0,1fr)!important;min-width:0!important;}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-plan-grid article {min-width:0!important;}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-plan-grid span {font-size:13px!important;line-height:1.5!important;}
+html body .nara-assistant-layer[data-nara-layer-size] .nara-upgrade-cta {min-height:48px!important;font-size:16px!important;white-space:normal!important;touch-action:manipulation;}
+}
