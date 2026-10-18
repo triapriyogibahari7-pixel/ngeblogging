@@ -1,0 +1,27 @@
+html body .nara-assistant-layer > .nara-assistant-shell[data-nara-size] {
+  display:flex!important;flex-direction:column!important;min-height:0!important;box-sizing:border-box!important;overflow:hidden!important;
+  animation:none!important;transition:none!important;transform:none!important;
+}
+html body .nara-assistant-layer[data-nara-layer-size="small"] > .nara-assistant-shell[data-nara-size="small"] {
+  inset:auto max(8px,env(safe-area-inset-right,0px)) max(68px,calc(env(safe-area-inset-bottom,0px) + 64px)) auto!important;
+  width:min(420px,calc(100vw - 16px))!important;height:min(600px,74svh)!important;max-height:calc(100svh - 84px)!important;
+}
+html body .nara-assistant-layer[data-nara-layer-size="medium"] > .nara-assistant-shell[data-nara-size="medium"] {
+  inset:auto max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) auto!important;
+  width:min(640px,calc(100vw - 16px))!important;height:min(820px,88svh)!important;max-height:calc(100svh - 16px)!important;
+}
+html body .nara-assistant-layer > .nara-assistant-shell[data-nara-size] > .nara-assistant-header,
+html body .nara-assistant-layer > .nara-assistant-shell[data-nara-size] > .nara-context-bar,
+html body .nara-assistant-layer > .nara-assistant-shell[data-nara-size] > .nara-quick-prompts,
+html body .nara-assistant-layer > .nara-assistant-shell[data-nara-size] > .nara-composer {flex:0 0 auto!important;}
+html body .nara-assistant-layer > .nara-assistant-shell[data-nara-size] > .nara-assistant-messages {
+  flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important;
+  overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;scroll-behavior:auto!important;
+}
+html body .nara-assistant-shell[data-nara-size] .nara-message-content,
+html body .nara-assistant-shell[data-nara-size] .nara-rich-text {
+  max-height:none!important;-webkit-line-clamp:unset!important;line-clamp:unset!important;overflow:visible!important;overflow-wrap:anywhere!important;
+}
+html body .nara-assistant-shell[data-nara-size] .nara-rich-text pre {max-width:100%;overflow-x:auto;white-space:pre;}
+html body .nara-assistant-shell[data-nara-size] > .nara-quick-prompts {max-height:44px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;}
+html body .nara-assistant-shell[data-nara-size] .nara-composer textarea {min-height:56px!important;max-height:104px!important;}
