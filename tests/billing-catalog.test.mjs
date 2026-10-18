@@ -1,0 +1,11 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { getBillingProduct, requiresProForNextSite, qualifiesForAdditionalSites } from "../server/billing-catalog.mjs";
+test("Pro monthly and yearly prices",()=>{assert.equal(getBillingProduct("pro_monthly").amount,300000);assert.equal(getBillingProduct("pro_yearly").amount,3000000);});
+test("verification is separate from Pro",()=>{const v=getBillingProduct("verification_monthly");assert.equal(v.amount,100000);assert.equal(v.entitlement,"verification_subscription");});
+test("ambiguous Max monthly not sold",()=>assert.throws(()=>getBillingProduct("max_monthly")));
+test("12th allowed and 13th requires Pro",()=>{assert.equal(requiresProForNextSite(11),false);assert.equal(requiresProForNextSite(12),true);});
+test("expired Pro does not qualify",()=>assert.equal(qualifiesForAdditionalSites({plan:"pro",expiresAt:"2026-01-01"},Date.parse("2026-10-18")),false));
+test("active Pro qualifies",()=>assert.equal(qualifiesForAdditionalSites({plan:"pro",expiresAt:"2027-01-01"},Date.parse("2026-10-18")),true));
+test("badge does not qualify for Pro sites",()=>assert.equal(qualifiesForAdditionalSites({plan:"verification_subscription",expiresAt:"2027-01-01"},Date.parse("2026-10-18")),false));
+test("invalid count rejected",()=>assert.throws(()=>requiresProForNextSite(-1)));
