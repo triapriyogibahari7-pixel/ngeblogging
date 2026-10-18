@@ -1,110 +1,176 @@
-/* billing-view-desktop-fix.css
-   Perbaikan header & kartu pembayaran HANYA untuk desktop/laptop/tablet besar.
-   Mobile (<=900px atau data-device-mode="mobile") tidak disentuh sama sekali. */
+/* billing-view-desktop-fix.css (v2)
+   Khusus desktop/laptop/tablet besar. Mobile tidak disentuh.
+   Memperbaiki: judul header tertimpa pesan "Order Midtrans belum dapat dimuat"
+   dan "Mode sandbox", serta kartu paket & label. */
 @media (min-width: 901px) {
   html:not([data-device-mode="mobile"]) body .bv-page {
     width: 100% !important;
     max-width: 1240px !important;
     margin: 0 auto !important;
     padding: 32px 40px 48px !important;
-    display: grid !important;
-    gap: 32px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 28px !important;
     box-sizing: border-box !important;
     overflow: visible !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page > header,
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-hero {
-    position: static !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    justify-items: center !important;
+  html:not([data-device-mode="mobile"]) body .bv-page > * {
+    position: relative !important;
+    inset: auto !important;
+    float: none !important;
+    transform: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+  }
+
+  /* HEADER */
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-hero {
+    order: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
     text-align: center !important;
     gap: 14px !important;
-    margin: 0 !important;
-    padding: 8px 0 0 !important;
     height: auto !important;
     min-height: 0 !important;
+    padding: 8px 0 0 !important;
     overflow: visible !important;
   }
   html:not([data-device-mode="mobile"]) body .bv-page .bv-hero > * {
     position: static !important;
-    float: none !important;
     transform: none !important;
     margin: 0 !important;
-    max-width: 760px !important;
+    max-width: 780px !important;
   }
   html:not([data-device-mode="mobile"]) body .bv-page .bv-hero h1 {
-    font-size: clamp(34px, 3.6vw, 50px) !important;
-    line-height: 1.15 !important;
-    letter-spacing: normal !important;
-    overflow-wrap: normal !important;
-    word-break: normal !important;
+    display: block !important;
+    font-size: clamp(34px, 3.6vw, 52px) !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    overflow: visible !important;
     white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
     text-wrap: balance;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-hero h1 em {
+    display: block !important;
+    margin-top: 6px !important;
+    line-height: 1.2 !important;
+    font-style: italic;
   }
   html:not([data-device-mode="mobile"]) body .bv-page .bv-hero p {
     font-size: 16px !important;
     line-height: 1.6 !important;
-    color: #5b6784 !important;
   }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    list-style: none !important;
+    padding: 0 !important;
+  }
+
+  /* PESAN (error / sandbox / loading): jadi kotak biasa di bawah header, bukan melayang */
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-note,
+  html:not([data-device-mode="mobile"]) body .bv-page > p[role="alert"],
+  html:not([data-device-mode="mobile"]) body .bv-page > p[role="status"] {
+    order: 2 !important;
+    position: static !important;
+    inset: auto !important;
+    top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 860px !important;
+    margin: 0 auto !important;
+    padding: 12px 18px !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    border-radius: 10px !important;
+    background: #f3f7ff !important;
+    color: #0b1f4d !important;
+    border: 1px solid rgba(201,162,74,.55) !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+    animation: none !important;
+  }
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-error,
+  html:not([data-device-mode="mobile"]) body .bv-page > p[role="alert"] {
+    background: #fff5f3 !important;
+    color: #8a2a1c !important;
+    border-color: #e7b3a8 !important;
+  }
+
+  /* Urutan bagian lain */
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-account { order: 3 !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-plans { order: 4 !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-methods { order: 5 !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-trust { order: 6 !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-history { order: 7 !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page > .bv-foot { order: 8 !important; text-align: center !important; margin-left: auto !important; margin-right: auto !important; }
+
+  /* KARTU PAKET */
   html:not([data-device-mode="mobile"]) body .bv-page .bv-plans {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 20px !important;
     align-items: stretch !important;
-    padding-top: 16px !important;
+    padding-top: 18px !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * {
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plan {
     position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
     min-width: 0 !important;
     height: auto !important;
     margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
     box-sizing: border-box !important;
     overflow: visible !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * > [class*="ribbon"],
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * > [class*="badge"] {
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plan .bv-ribbon {
     position: absolute !important;
-    top: -13px !important;
+    top: -14px !important;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     white-space: nowrap !important;
     z-index: 2 !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans > * > :first-child:not([class*="ribbon"]):not([class*="badge"]) {
-    margin-top: 8px !important;
-  }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans ul {
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plan > small { margin-top: 8px !important; }
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plan ul {
     flex: 1 1 auto !important;
     margin: 0 0 20px !important;
     padding: 0 !important;
     list-style: none !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-plans button {
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-plan > button {
     margin-top: auto !important;
     width: 100% !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-security {
+
+  /* Kepercayaan & metode pembayaran */
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-trust {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 16px !important;
   }
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-methods,
   html:not([data-device-mode="mobile"]) body .bv-page .bv-methods > div {
     display: flex !important;
     flex-wrap: wrap !important;
     justify-content: center !important;
-    align-items: center !important;
     gap: 12px !important;
   }
 }
+
 @media (min-width: 901px) and (max-width: 1180px) {
   html:not([data-device-mode="mobile"]) body .bv-page { padding: 24px !important; }
   html:not([data-device-mode="mobile"]) body .bv-page .bv-plans,
-  html:not([data-device-mode="mobile"]) body .bv-page .bv-security {
+  html:not([data-device-mode="mobile"]) body .bv-page .bv-trust {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
