@@ -1,3 +1,4 @@
+import './theme-editor-repair-v436.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {lineGuide,lineTarget} from '../src/lib/theme-code-lines-v435.mjs';import {transformHtmlAccess} from '../scripts/theme-html-access-v435.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('guide follows real lines',()=>{assert.equal(lineGuide('a\nb\nc'),'1\n2\n3');assert.equal(lineGuide(''),'1');});
