@@ -1,0 +1,6 @@
+/* One display name; the badge is part of the same inline identity. */
+html body .sn-shell .sn-main span.oi419-name.oi422-inline{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;vertical-align:middle!important;gap:7px!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important}
+html body .sn-shell .sn-main span.oi419-name.oi422-inline>strong{flex:0 1 auto!important;font:inherit!important;letter-spacing:inherit!important;color:inherit!important;min-width:0!important;overflow-wrap:anywhere!important}
+html body .sn-shell .sn-main span.oi419-name.oi422-inline>img{display:inline-block!important;position:static!important;inset:auto!important;width:28px!important;height:28px!important;min-width:28px!important;flex:0 0 28px!important;object-fit:contain!important;margin:0!important}
+html body .sn-shell .sn-main .nv418-card span.oi419-name.oi422-inline>strong{font-size:22px!important;font-weight:800!important;line-height:1.5!important}
+html body .sn-shell .sn-main .nv418-card span.oi419-name.oi422-inline{margin:10px 0!important}
