@@ -1,3 +1,4 @@
+import './theme-editor-stage9-v435.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {editorSource,sameCode} from '../src/lib/theme-editor-source-v434.mjs';import {BUILT_IN_THEMES,activateTheme,createDefaultThemeState} from '../src/theme-system.js';import {transformThemeEditor} from '../scripts/theme-editor-v434.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('stage 8 uses the persisted active theme, not a preview theme',()=>{for(const theme of BUILT_IN_THEMES){const state=activateTheme(createDefaultThemeState(),theme.id);state.previewThemeId=BUILT_IN_THEMES[(BUILT_IN_THEMES.indexOf(theme)+1)%100].id;const result=editorSource(state);assert.equal(result.theme.id,theme.id);assert.equal(result.code.html,theme.code.html);}});

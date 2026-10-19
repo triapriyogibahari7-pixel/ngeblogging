@@ -1,0 +1,3 @@
+export const MAX_LINE_NUMBERS=10000;
+export function lineGuide(source){const total=String(source??'').split('\n').length;return Array.from({length:Math.min(total,MAX_LINE_NUMBERS)},(_,i)=>i+1).join('\n');}
+export function lineTarget(source,requested){const text=String(source??'');const total=text.split('\n').length;const number=Number(requested);const line=Math.min(total,MAX_LINE_NUMBERS,Math.max(1,Number.isFinite(number)?Math.floor(number):1));let start=0;for(let i=1;i<line;i++)start=text.indexOf('\n',start)+1;const next=text.indexOf('\n',start);return {line,start,end:next<0?text.length:next,total};}
