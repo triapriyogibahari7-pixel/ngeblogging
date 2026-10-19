@@ -1,0 +1,9 @@
+html body .sn-shell .sn-main>.nb-account .od418-metrics{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr))!important;gap:14px!important;margin:20px 0!important;min-width:0!important}
+html body .sn-shell .sn-main>.nb-account .od418-metrics>article{padding:20px!important;border:1px solid #dce6f8!important;border-radius:14px!important;background:#fff!important;min-width:0!important}
+html body .sn-shell .sn-main>.nb-account .od418-metrics strong{display:block!important;font-size:30px!important;line-height:1.4!important;color:#2455a0!important}
+html body .sn-shell .sn-main>.nb-account .od418-content>article{display:grid!important;gap:6px!important;padding:14px 0!important;border-bottom:1px solid #e3eaf6!important;min-width:0!important;overflow-wrap:anywhere!important}
+html body .sn-shell .sn-main>.nb-account .od418-content time{font-size:13px;color:#526582}
+html body .sn-shell .sn-main>.nb-account .nv418-card{display:block!important;position:static!important;width:100%!important;min-width:0!important;padding:20px!important;margin:20px 0!important;border:1px solid #dcc995!important;border-top:3px solid #b58b2a!important;border-radius:16px!important;background:linear-gradient(135deg,#fff,#f3f7ff)!important}
+html body .sn-shell .sn-main>.nb-account .nv418-name{display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important;margin:10px 0!important}
+html body .sn-shell .sn-main>.nb-account .nv418-name>strong{flex:1 1 auto!important;min-width:0!important;overflow-wrap:anywhere!important;font-size:22px!important;line-height:1.5!important}
+html body .sn-shell .sn-main>.nb-account .nv418-name>img{display:block!important;position:static!important;width:28px!important;height:28px!important;flex:0 0 28px!important;object-fit:contain!important}
