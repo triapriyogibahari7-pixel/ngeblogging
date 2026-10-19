@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --test tests/theme-widget-stage5-v431.test.mjs 2>&1 | tee theme-widget-v431.log
+          node --test tests/theme-widget-stage5-v431.test.mjs tests/theme-layout-stage7-v433.test.mjs 2>&1 | tee theme-widget-v431.log
       - name: Preserve theme validation log
         if: always()
         uses: actions/upload-artifact@v4

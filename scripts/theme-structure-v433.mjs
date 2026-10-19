@@ -1,0 +1,3 @@
+import {transformWidgetDialog} from './widget-dialog-v430.mjs';
+function once(s,a,b){if(s.split(a).length!==2)throw Error('V433: pola pratinjau tema berubah; build dihentikan agar tidak menimpa bagian lain.');return s.replace(a,b);}
+export function transformThemeStructure(source,id){const prior=transformWidgetDialog(source,id);let code=prior?.code||source;const path=id.split('?')[0].replaceAll('\\','/');if(!path.endsWith('/src/ThemeStudio.jsx'))return prior;code=once(code,"import LayoutMap from './components/theme/ThemeLayoutMapV428';","import LayoutMap from './components/theme/ThemeLayoutDiagramV433';");code=once(code,'data-v340-layout="ready"','data-v340-layout="ready" data-theme-layout-v433="true"');return {code,map:null};}
