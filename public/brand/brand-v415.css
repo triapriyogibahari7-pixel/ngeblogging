@@ -1,0 +1,11 @@
+/* Preserve the existing Studio sidebar; change editor marks only. */
+html body #ngeblogging-editor-nav-v266 .ce-editor-sidebar-toggle-v266,html body #ngeblogging-editor-nav-v266 .ce-editor-side-v266 .sn-logo-mark{background:transparent url('/brand/ngeblogging-premium-a.svg') center/contain no-repeat!important;border:0!important;color:transparent!important;box-shadow:none!important}
+html body #ngeblogging-editor-nav-v266 .ce-editor-sidebar-toggle-v266>strong,html body #ngeblogging-editor-nav-v266 .ce-editor-side-v266 .sn-logo-mark>strong,html body #ngeblogging-editor-nav-v266 .ce-editor-side-v266 .sn-logo-mark>i{display:none!important}
+html body .sn-shell .sn-main>.nb-account .nb-section input[hidden]{display:none!important}
+html body .sn-shell .sn-main>.nb-account .nb-photo-v415{display:flex!important;position:static!important;flex-wrap:wrap!important;align-items:center!important;gap:16px!important;margin:16px 0 24px!important}
+html body .sn-shell .sn-main>.nb-account .nb-photo-v415>img{width:80px!important;height:80px!important;object-fit:cover!important;border-radius:50%!important;border:2px solid #dce6f8!important}
+html body .sn-shell .sn-main>.nb-account .nb-rewards-v415{border-top:3px solid #b58b2a!important}
+html body .sn-shell .sn-main>.nb-account .sf-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:18px!important;min-width:0!important;max-width:100%!important}
+html body .sn-shell .sn-main>.nb-account .sf-layout>*{min-width:0!important;max-width:100%!important}
+.nb-launch-v415{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#f7f8fc;color:#2455a0;font:600 16px/1.5 system-ui,sans-serif}
+.nb-launch-v415 img{display:block;width:96px;height:96px}

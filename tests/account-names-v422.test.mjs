@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {transformAccountNames} from '../scripts/account-names-v422.mjs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const build=p=>transformAccountNames(read(p),'/'+p).code;
+test('settings has one account identity and no repeated account-like page title',()=>{const c=build('src/pages/SiteSettingsPage.jsx');assert.equal(c.split('<OwnerIdentityHeader/>').length-1,1);assert.ok(c.includes('<h1>Pengaturan situs</h1>'));assert.ok(!c.includes('<h1>Pengaturan {site.name}</h1>'));});
+test('verification card uses the shared account-name row, not another standalone name',()=>{const c=build('src/components/account/VerificationIdentityCard.jsx');assert.ok(c.includes('<VerifiedAccountName name={profile?.display_name} verification={v}/>'));assert.ok(!c.includes('<div className="nv418-name">'));});
+test('welcome and saved profile updates use the same verified identity path',()=>{assert.ok(build('src/StudioNext.jsx').includes('<OwnerIdentityHeader compact fallbackName={displayName}/>'));assert.ok(build('src/pages/ProfilePage.jsx').includes("new CustomEvent('ngeblogging:profile-updated'"));});
+test('shared name row checks active server verification and does not infer payment',()=>{const c=read('src/components/account/OwnerIdentityHeader.jsx');assert.ok(c.includes('isVerificationActive(verification)'));assert.ok(c.includes('data-account-name="single"'));assert.ok(!c.includes("plan==='pro'"));});
