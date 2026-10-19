@@ -1,11 +1,12 @@
 import React,{useEffect,useState} from 'react';
 import {ownerIdentity} from '../../services/privateEmailService';
 import {publicDisplayName,isVerificationActive} from '../../services/private-email-validation-v419.mjs';
+import verifiedArtwork from '../../assets/verified-upload-v426';
 import '../../styles/account-email-v419.css';
 import '../../styles/account-names-v422.css';
 import '../../styles/verification-rosette-v425.css';
 const labels={ownership:'Kepemilikan akun terverifikasi',identity:'Identitas terverifikasi',public_figure:'Tokoh publik terverifikasi'};
-export function VerifiedAccountName({name,verification,compact=true}){const active=isVerificationActive(verification),label=labels[verification?.verification_kind]||'Akun terverifikasi';return <span className={compact?'oi419-name oi422-inline':'oi419-name'} data-account-name="single"><strong>{publicDisplayName(name)}</strong>{active&&<img className="nb-verification-v425" src="/brand/verified-rosette-v425.svg" width="42" height="42" alt={label} title={label}/>}</span>;}
+export function VerifiedAccountName({name,verification,compact=true}){const active=isVerificationActive(verification),label=labels[verification?.verification_kind]||'Akun terverifikasi';return <span className={compact?'oi419-name oi422-inline':'oi419-name'} data-account-name="single"><strong>{publicDisplayName(name)}</strong>{active&&<img className="nb-verification-v425" src={verifiedArtwork} width="42" height="42" alt={label} title={label}/>}</span>;}
 export default function OwnerIdentityHeader({compact=false,fallbackName}){
  const [identity,setIdentity]=useState(null),[error,setError]=useState('');
  useEffect(()=>{let live=true;const load=()=>ownerIdentity().then(v=>{if(live){setIdentity(v);setError('');}}).catch(e=>{if(live){setIdentity(null);setError(e.message);}});load();const timer=setInterval(load,60000);window.addEventListener('focus',load);window.addEventListener('ngeblogging:profile-updated',load);return()=>{live=false;clearInterval(timer);window.removeEventListener('focus',load);window.removeEventListener('ngeblogging:profile-updated',load);};},[]);
