@@ -1,3 +1,4 @@
+import './theme-editor-stage8-v434.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {transformThemeStructure} from '../scripts/theme-structure-v433.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('stage 7 replaces only the layout component, preserving the main preview',()=>{const source=read('src/ThemeStudio.jsx');const next=transformThemeStructure(source,'/src/ThemeStudio.jsx').code;assert.ok(next.includes("import LayoutMap from './components/theme/ThemeLayoutDiagramV433'"));assert.ok(!next.includes("import LayoutMap from './components/theme/ThemeLayoutMapV428'"));assert.ok(next.includes('className="tn-active-stage"'));assert.ok(next.includes('data-theme-layout-v433="true"'));assert.ok(next.includes('tn-widget-modal-v430'));});
