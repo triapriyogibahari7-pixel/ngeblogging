@@ -1,0 +1,10 @@
+import {transformOwnerModule} from './owner-dashboard-v418.mjs';
+function once(s,a,b){if(s.split(a).length!==2)throw Error('Integrasi privasi akun berubah; build dihentikan.');return s.replace(a,b);}
+export function transformPrivacyModule(source,id){const prior=transformOwnerModule(source,id);let code=prior?.code||source;const path=id.split('?')[0].replaceAll('\\','/');
+ if(path.endsWith('/src/pages/ProfilePage.jsx')){code="import PrivateEmailManager from '../components/account/PrivateEmailManager';\n"+code;return {code:once(code,'<h2>Keamanan akun</h2>','<h2>Keamanan akun</h2><PrivateEmailManager/>'),map:null};}
+ if(path.endsWith('/src/pages/OwnerDashboardPage.jsx')){code="import OwnerIdentityHeader from '../components/account/OwnerIdentityHeader';\n"+code;return {code:once(code,'<h1>Dashboard Pemilik</h1>','<OwnerIdentityHeader/><h1>Dashboard Pemilik</h1>'),map:null};}
+ if(path.endsWith('/src/components/account/VerificationIdentityCard.jsx')){code="import {isVerificationActive} from '../../services/private-email-validation-v419.mjs';\n"+code;code=once(code,"active=v?.state==='verified'&&Boolean(v.verified_at)&&(!v.expires_at||Date.parse(v.expires_at)>Date.now());",'active=isVerificationActive(v);');return {code:once(code,'/brand/verified-v418.svg','/brand/verified-premium-v419.svg'),map:null};}
+ if(path.endsWith('/src/StudioNext.jsx')){code="import {publicDisplayName} from './services/private-email-validation-v419.mjs';\n"+code;return {code:once(code,'const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Kreator";','const displayName = publicDisplayName(profile?.display_name, user?.user_metadata?.full_name);'),map:null};}
+ if(path.endsWith('/src/studio-mobile-stability-v176.js')){code="import {publicDisplayName} from './services/private-email-validation-v419.mjs';\n"+code;return {code:once(code,'const displayName = profileName.length >= 2 ? profileName : metadataName || String(user.email || "").split("@")[0] || "Akun Ngeblogging";','const displayName = publicDisplayName(profileName, metadataName);'),map:null};}
+ return prior;
+}

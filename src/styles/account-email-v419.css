@@ -1,0 +1,15 @@
+html body .sn-shell .sn-main>.nb-account .pe419-panel{position:static!important;display:block!important;min-width:0!important;width:100%!important;padding:20px!important;margin:20px 0!important;border:1px solid #dce6f8!important;border-radius:16px!important;background:#f7faff!important}
+html body .sn-shell .sn-main>.nb-account .pe419-panel h3{position:static!important;font-size:18px!important;line-height:1.5!important;margin:0 0 10px!important}
+html body .sn-shell .sn-main>.nb-account .pe419-heading,html body .sn-shell .sn-main>.nb-account .pe419-actions{display:flex!important;position:static!important;flex-wrap:wrap!important;gap:10px!important;align-items:center!important;min-width:0!important}
+html body .sn-shell .sn-main>.nb-account .pe419-heading{justify-content:space-between!important;margin-bottom:16px!important}
+html body .sn-shell .sn-main>.nb-account .pe419-heading>div{min-width:0!important;flex:1 1 220px!important}
+html body .sn-shell .sn-main>.nb-account .pe419-heading>span{font-size:12px!important;color:#476384!important}
+html body .sn-shell .sn-main>.nb-account .pe419-primary,html body .sn-shell .sn-main>.nb-account .pe419-row{position:static!important;display:block!important;min-width:0!important;max-width:100%!important;padding:16px!important;margin:14px 0!important;border:1px solid #dce6f8!important;border-radius:12px!important;background:#fff!important}
+html body .sn-shell .sn-main>.nb-account p.pe419-address{font-size:14px!important;font-weight:650!important;word-break:break-all!important;overflow-wrap:anywhere!important;line-height:1.6!important;margin:8px 0!important}
+html body .sn-shell .sn-main>.nb-account .pe419-actions button.pe419-delete{background:#fff!important;color:#a02f3c!important;border-color:#e8bac1!important}
+html body .sn-shell .sn-main>.nb-account .oi419-identity{display:block!important;min-width:0!important;max-width:100%!important;margin:8px 0!important}
+html body .sn-shell .sn-main>.nb-account .oi419-name{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-width:0!important;max-width:100%!important}
+html body .sn-shell .sn-main>.nb-account .oi419-name>strong{font-size:24px!important;line-height:1.5!important;min-width:0!important;overflow-wrap:anywhere!important}
+html body .sn-shell .sn-main>.nb-account .oi419-name>img{display:block!important;position:static!important;width:32px!important;height:32px!important;flex:0 0 32px!important;object-fit:contain!important}
+html body .sn-shell .sn-main>.nb-account .nv418-name>strong{flex:0 1 auto!important}
+@media(max-width:600px){html body .sn-shell .sn-main>.nb-account .pe419-panel{padding:14px!important}html body .sn-shell .sn-main>.nb-account .pe419-primary,html body .sn-shell .sn-main>.nb-account .pe419-row{padding:12px!important}html body .sn-shell .sn-main>.nb-account .oi419-name>strong{font-size:21px!important}}

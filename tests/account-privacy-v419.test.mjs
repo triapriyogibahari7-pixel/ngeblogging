@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {validateAdditionalEmails,publicDisplayName,isVerificationActive} from '../src/services/private-email-validation-v419.mjs';
+import {transformPrivacyModule} from '../scripts/account-privacy-v419.mjs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('one primary plus eleven additional emails is accepted',()=>assert.equal(validateAdditionalEmails(Array.from({length:11},(_,i)=>`a${i}@example.com`),'owner@example.com').length,11));
+test('twelve additional addresses are rejected',()=>assert.throws(()=>validateAdditionalEmails(Array.from({length:12},(_,i)=>`a${i}@example.com`),'owner@example.com')));
+test('duplicates and primary duplicates are rejected',()=>{assert.throws(()=>validateAdditionalEmails(['A@example.com','a@example.com'],'owner@example.com'));assert.throws(()=>validateAdditionalEmails(['OWNER@example.com'],'owner@example.com'));});
+test('email is never a public display-name fallback',()=>{assert.equal(publicDisplayName('owner@example.com','Tri Apriyogi Bahari'),'Tri Apriyogi Bahari');assert.equal(publicDisplayName('owner@example.com'),'Pemilik akun');});
+test('expired verification is inactive',()=>{const v={state:'verified',verified_at:'2026-10-19T07:48:53Z',expires_at:'2026-11-19T07:48:53Z'};assert.equal(isVerificationActive(v,Date.parse('2026-10-19T08:00:00Z')),true);assert.equal(isVerificationActive(v,Date.parse(v.expires_at)),false);});
+test('private manager mounts in security and identity mounts in dashboard',()=>{assert.ok(transformPrivacyModule(read('src/pages/ProfilePage.jsx'),'/src/pages/ProfilePage.jsx').code.includes('<h2>Keamanan akun</h2><PrivateEmailManager/>'));assert.ok(transformPrivacyModule(read('src/pages/OwnerDashboardPage.jsx'),'/src/pages/OwnerDashboardPage.jsx').code.includes('<OwnerIdentityHeader/>'));});
