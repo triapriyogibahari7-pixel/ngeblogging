@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {transformAccountModule,ACCOUNT_EVENT} from '../scripts/account-layout-v414.mjs';
+const read=(p)=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('active legacy menu routes to React profile, never to photo picker',()=>{const source=read('src/studio-shell-authority-v298.js');const {code}=transformAccountModule(source,'/src/studio-shell-authority-v298.js');assert.ok(code.includes(ACCOUNT_EVENT));assert.ok(!code.includes('__ngebloggingOpenAvatarPicker'));assert.ok(!code.includes('return openSettingsSection(1)'));assert.ok(code.includes('["profile", "Profil",'));assert.equal(transformAccountModule(code,'/src/studio-shell-authority-v298.js').code,code);});
+test('React owns separate account views and subscribes to menu navigation',()=>{const source=read('src/StudioNext.jsx');const {code}=transformAccountModule(source,'/src/StudioNext.jsx');assert.ok(code.includes(ACCOUNT_EVENT));assert.ok(code.includes('chooseView(next)'));assert.ok(code.includes('window.removeEventListener'));assert.ok(code.includes('{view === "profile" && <ProfilePage'));assert.ok(code.includes('{view === "settings" && <SiteSettingsPage'));assert.ok(!code.includes('{view === "settings" && <SettingsView'));assert.equal(transformAccountModule(code,'/src/StudioNext.jsx').code,code);});
+test('layout is scoped and neutralizes inherited absolute header and mobile nav',()=>{const css=read('src/styles/account-settings.css');assert.ok(css.includes('.nb-account>header'));assert.ok(css.includes('nav.nb-tabs'));assert.ok(css.includes('position:static!important'));assert.ok(css.includes('container-type:inline-size'));assert.ok(css.includes('@container (min-width:700px)'));assert.ok(css.includes('[data-device-mode=small]'));});
+test('unrelated modules are not modified',()=>assert.equal(transformAccountModule('original','/src/BillingView.jsx'),null));
