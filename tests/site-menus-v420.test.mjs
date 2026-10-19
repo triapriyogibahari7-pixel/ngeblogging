@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {transformSiteMenus} from '../scripts/site-menus-v420.mjs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const build=p=>transformSiteMenus(read(p),'/'+p).code;
+test('add and switch use separate dialog entry points',()=>{const c=build('src/studio-shell-authority-v298.js');assert.ok(c.includes('if (action === "add-site") return openCreateSiteV303()'));assert.ok(c.includes('if (action === "switch-site") return openSiteSwitcherV305()'));assert.ok(!c.includes('if (action === "add-site" || action === "switch-site")'));});
+test('creation does not install a second window click owner',()=>{const c=build('src/studio-add-site-v303.js');assert.ok(!c.includes('window.addEventListener("click", interceptedAddSiteClick, true)'));assert.ok(c.includes('timezone: draft.timezone, settings'));assert.ok(c.includes('maxlength="500"'));});
+test('deletion requires typed slug and owner filter without performing a deletion in tests',()=>{const c=build('src/studio-site-switcher-v305.js');assert.ok(c.includes('typed !== site.slug'));assert.ok(c.includes('.eq("owner_id", userId)'));assert.ok(c.includes('Hapus situs'));assert.ok(!c.includes('window.addEventListener("click", capturedSiteAction, true)'));});
+test('settings displays logged-in account identity separately from site name',()=>{const c=build('src/pages/SiteSettingsPage.jsx');assert.ok(c.includes('AKUN YANG MASUK'));assert.ok(c.includes('<OwnerIdentityHeader/>'));assert.ok(c.includes('Pengaturan {site.name}'));});
