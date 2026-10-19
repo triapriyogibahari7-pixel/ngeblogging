@@ -1,0 +1,2 @@
+import React,{useEffect,useState} from 'react';
+export default function FeaturedImage({src,alt}){const [failed,setFailed]=useState(false);useEffect(()=>setFailed(false),[src]);if(!src)return null;if(failed)return <p className="ps-image-unavailable" role="status">Gambar sampul belum dapat dimuat. Isi tulisan tetap tersedia.</p>;return <img className="ps-featured" src={src} alt={alt||'Gambar sampul'} decoding="async" onError={()=>setFailed(true)}/>;}
