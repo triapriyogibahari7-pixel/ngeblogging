@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {transformBrandingModule,transformBrandingHtml} from '../scripts/branding-v415.mjs';
+import {brandPng} from '../scripts/brand-icons-v415.mjs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+test('photo upload control is inside profile identity form',()=>assert.ok(transformBrandingModule(read('src/pages/ProfilePage.jsx'),'/src/pages/ProfilePage.jsx').code.includes('<ProfilePhotoControls')));
+test('favicon and Rewards are visible outside settings tabs',()=>{const code=transformBrandingModule(read('src/pages/SiteSettingsPage.jsx'),'/src/pages/SiteSettingsPage.jsx').code;assert.ok(code.includes('<SiteFaviconPanel'));assert.ok(code.includes('<RewardsSettingsCard'));assert.ok(code.indexOf('<RewardsSettingsCard')<code.indexOf('<nav className="nb-tabs"'));});
+test('favicon bridge accepts explicit selected-site context and default logo',()=>{const code=transformBrandingModule(read('src/site-favicon-bridge.js'),'/src/site-favicon-bridge.js').code;assert.ok(code.includes('forcedContext || await loadActiveSite()'));assert.ok(code.includes('export { mount }'));assert.ok(code.includes('/brand/ngeblogging-premium-a.svg'));});
+test('app HTML uses PNG touch icon and branded startup',()=>{const html=transformBrandingHtml(read('index.html'));assert.ok(html.includes('/brand/icon-180-v415.png'));assert.ok(html.includes('site.webmanifest?v=415'));assert.ok(html.includes('nb-launch-v415'));});
+test('generated PNG icons have the declared dimensions',()=>{for(const s of [180,192,512]){const png=brandPng(s);assert.equal(png.subarray(1,4).toString(),'PNG');assert.equal(png.readUInt32BE(16),s);assert.equal(png.readUInt32BE(20),s);}});
