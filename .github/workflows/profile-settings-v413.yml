@@ -1,0 +1,39 @@
+name: Profile and site settings v413
+on:
+  push:
+    branches: [agent/profile-settings-20261019]
+    paths:
+      - 'src/pages/ProfilePage.jsx'
+      - 'src/pages/SiteSettingsPage.jsx'
+      - 'src/services/accountSettings.js'
+      - 'src/styles/account-settings.css'
+      - 'scripts/separate-profile-settings-v413.mjs'
+      - '.github/workflows/profile-settings-v413.yml'
+permissions:
+  contents: write
+concurrency:
+  group: profile-settings-v413
+  cancel-in-progress: false
+jobs:
+  verify-and-integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/profile-settings-20261019
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci
+      - run: node scripts/separate-profile-settings-v413.mjs
+      - run: npm run test:production
+      - run: npm run build
+      - name: Commit verified navigation patch on repair branch only
+        run: |
+          if git diff --quiet -- src/StudioNext.jsx; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/StudioNext.jsx
+          git commit -m 'fix: integrate separate profile and site settings navigation v413'
+          git push origin HEAD:agent/profile-settings-20261019
