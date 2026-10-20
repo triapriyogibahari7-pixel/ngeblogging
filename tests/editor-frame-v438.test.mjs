@@ -1,3 +1,4 @@
+import './editor-phone-space-v439.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {withEditorDeadline} from '../src/lib/editor-deadline-v438.mjs';import {transformEditorFrame} from '../scripts/editor-frame-v438.mjs';import {readableEditorText} from '../src/lib/readable-editor-v437.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('successful read is returned',async()=>assert.equal(await withEditorDeadline(Promise.resolve('ok'),'Read',1000),'ok'));
