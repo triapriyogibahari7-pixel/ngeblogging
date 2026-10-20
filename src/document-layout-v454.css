@@ -1,0 +1,6 @@
+.ce454-tools{display:none}.ce454-tools[hidden]{display:none!important}
+@media screen and (min-width:768px){.ce454-tools:not([hidden]){display:block;padding:14px 20px;background:#f7faff;border-bottom:1px solid #dce3ed}.ce454-fields{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.ce454-fields label{display:grid;gap:5px;min-width:0}.ce454-fields input{width:88px;box-sizing:border-box}.ce454-fields input,.ce454-fields select,.ce454-fields button{min-height:44px;padding:8px;border:1px solid #b8c7db;border-radius:6px;background:#fff;color:#173c72}.ce454-tools p,.ce454-tools small{font-size:12px;line-height:1.6}
+.ce-app[data-document-view-v454="document"] .ce-paper-shell{min-width:0;max-width:100%;overflow:auto;padding:8px;box-sizing:border-box}
+.ce-app[data-document-view-v454="document"] .ce-paper{box-sizing:border-box!important;width:var(--ce454-width)!important;max-width:none!important;min-height:var(--ce454-height)!important;height:auto!important;margin:0 auto!important;padding:var(--ce454-padding)!important;zoom:var(--ce454-zoom,1);background:#fff}
+.ce-app[data-document-view-v454="document"][data-document-outline-v454="true"] .ce-paper{outline:1px solid #aab8ca;outline-offset:-1px}
+}
