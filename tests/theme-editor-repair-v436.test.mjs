@@ -1,3 +1,4 @@
+import './editor-physical-v437.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {prepareThemeUpload} from '../src/lib/theme-upload-v436.mjs';import {transformEditorRepair} from '../scripts/theme-editor-repair-v436.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');const code={html:'<p>old</p>',css:'old',javascript:'old'};
 test('CSS merges only CSS without mutating original',()=>{const original=JSON.stringify(code);const r=prepareThemeUpload('premium.css','body {color:blue}',code);assert.equal(r.code.html,code.html);assert.equal(r.code.css,'body {color:blue}');assert.equal(JSON.stringify(code),original);});

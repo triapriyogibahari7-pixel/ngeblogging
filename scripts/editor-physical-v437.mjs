@@ -1,0 +1,16 @@
+import {transformEditorRepair} from './theme-editor-repair-v436.mjs';
+function once(s,a,b){if(s.split(a).length!==2)throw Error('V437: pola editor berubah; build dihentikan agar tidak menimpa kode lain.');return s.replace(a,b);}
+export function transformPhysicalEditor(source,id){const prior=transformEditorRepair(source,id);let code=prior?.code||source;const path=id.split('?')[0].replaceAll('\\','/');if(!path.endsWith('/src/components/theme/ThemeCodeDialogV434.jsx'))return prior;
+  code="import {editorViewport} from '../../lib/editor-viewport-v437.mjs';\nimport {readableEditorText} from '../../lib/readable-editor-v437.mjs';\nimport physicalStyles from '../../styles/editor-physical-v437.css?inline';\n"+code;
+  code=once(code,'  const sourceField=useRef(null);','  const [editedTabs,setEditedTabs]=useState({});\n  const sourceField=useRef(null);');
+  const before='  const ready=Boolean(snapshot&&draft&&loaded);const dirty=ready&&!sameCode(draft,loaded.code);';
+  const hooks=`\n  useEffect(()=>setEditedTabs({}),[loaded]);\n  useEffect(()=>{if(guide.current)guide.current.scrollTop=0;},[tab]);\n  useLayoutEffect(()=>{const layer=surfaceRoot?.querySelector('.tc434-layer');if(!layer)return;const sync=()=>{const value=editorViewport({layoutWidth:document.documentElement.clientWidth||window.innerWidth,visibleHeight:window.visualViewport?.height||window.innerHeight,screenWidth:window.screen?.width,screenHeight:window.screen?.height,touch:navigator.maxTouchPoints>0,coarse:window.matchMedia?.('(pointer: coarse)').matches,mobile:Boolean(navigator.userAgentData?.mobile)||/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'')});layer.dataset.editorPhysical=value.form;layer.dataset.editorCompact=String(value.compact);layer.style.setProperty('--tc437-zoom',String(value.zoom));layer.style.setProperty('--tc437-width',value.width.toFixed(2)+'px');layer.style.setProperty('--tc437-height',value.height.toFixed(2)+'px');};sync();window.addEventListener('resize',sync);window.addEventListener('orientationchange',sync);window.visualViewport?.addEventListener('resize',sync);return()=>{window.removeEventListener('resize',sync);window.removeEventListener('orientationchange',sync);window.visualViewport?.removeEventListener('resize',sync);};},[surfaceRoot]);\n`;
+  code=once(code,before,before+hooks);
+  code=once(code,'baseStyles+accessStyles+surfaceStyles','baseStyles+accessStyles+surfaceStyles+physicalStyles');
+  code=once(code,"  const text=String(draft?.[tab]||'');","  const text=useMemo(()=>readableEditorText(draft,tab,Boolean(editedTabs[tab])),[draft,tab,editedTabs]);");
+  code=once(code,'onChange={e=>setDraft({...draft,[tab]:e.target.value})}','onChange={e=>{const value=e.target.value;setEditedTabs(previous=>({...previous,[tab]:true}));setDraft(previous=>({...previous,[tab]:value}));}}');
+  code=once(code,'setDraft(result.code);setPreview(false);','setEditedTabs({});setDraft(result.code);setPreview(false);');
+  code=once(code,'Sumber template lengkap, bukan HTML gabungan postingan. Tidak ada kode yang dipotong saat ditampilkan.','HTML/CSS yang dipadatkan dirapikan untuk dibaca. Sumber asli dipertahankan sampai Anda mengetik; hanya tab yang diedit menjadi draf perubahan. JavaScript ditampilkan apa adanya.');
+  code=once(code,'baris sumber</span>','baris tampilan</span>');
+  return {code,map:null};
+}
