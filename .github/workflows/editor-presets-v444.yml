@@ -1,0 +1,21 @@
+name: Editor typography v444 stage 3a
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/EditorTypographyV444.jsx', 'src/lib/editor-presets-v444.mjs', 'scripts/editor-shell-v444.mjs', 'tests/editor-presets-v444.test.mjs', '.github/workflows/editor-presets-v444.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/editor-shell-v444.test.mjs tests/editor-catalog-v444.test.mjs tests/editor-presets-v444.test.mjs
+      - run: npx vite build

@@ -1,0 +1,4 @@
+const colors=['#17253c','#153e75','#065f46','#7c2d12','#581c87','#9f1239','#164e63','#3f6212','#3730a3','#92400e','#334155','#111827'];
+const styles=[['Isi ringkas',14,400,'normal',1.6],['Isi standar',16,400,'normal',1.7],['Isi besar',18,400,'normal',1.8],['Penekanan',16,700,'normal',1.7],['Catatan miring',14,400,'italic',1.6],['Subjudul',20,600,'normal',1.5],['Judul kecil',24,700,'normal',1.4],['Judul sedang',30,700,'normal',1.3],['Judul besar',36,700,'normal',1.2],['Kutipan',20,400,'italic',1.8]];
+export const presets=Object.freeze(styles.flatMap(([name,size,weight,fontStyle,lineHeight],s)=>colors.map((color,c)=>Object.freeze({id:`preset-${s+1}-${c+1}`,label:`${name} · Palet ${c+1}`,css:Object.freeze({fontSize:`${size}px`,fontWeight:String(weight),fontStyle,lineHeight:String(lineHeight),color})}))));
+export function getPreset(id){return presets.find(item=>item.id===id)||null;}
