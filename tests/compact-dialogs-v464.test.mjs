@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {compactMediaShortcut} from '../scripts/editor-mode-v463.mjs';
+const media='<button type="button" onClick={() => setMediaOpen(true)}><Upload/><span>Media</span></button>';
+test('duplicate shortcut becomes a real Save action, not publication',()=>{const out=compactMediaShortcut(media);assert.ok(out.includes('await onSaveV456()'));assert.ok(out.includes('<Save/><span>Simpan</span>'));assert.ok(out.includes('catch(error)'));assert.ok(!out.includes('publish('));assert.ok(!out.includes('setMediaOpen(true)'));});
+test('other media entry and document source remain unchanged',()=>{const prefix='<button aria-label="Media" onClick={()=>setMediaOpen(true)}><Upload/></button><article>{doc.content}</article>';const out=compactMediaShortcut(prefix+media);assert.ok(out.startsWith(prefix));assert.equal(compactMediaShortcut(prefix),prefix);assert.equal(compactMediaShortcut(out),out);});
+test('ambiguous replacement fails instead of rewriting multiple actions',()=>assert.throws(()=>compactMediaShortcut(media+media),/AMBIGUOUS/));

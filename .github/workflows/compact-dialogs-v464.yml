@@ -1,0 +1,31 @@
+name: Compact Media and Add Site dialogs
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/MobileEditorSectionsV459.jsx', 'src/compact-dialogs-v464.css', 'scripts/editor-mode-v463.mjs', 'tests/compact-dialogs-v464.test.mjs', 'tests/compact-dialogs-v464.browser.mjs', '.github/workflows/compact-dialogs-v464.yml']
+permissions:
+  contents: read
+jobs:
+  compact-dialogs-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/compact-dialogs-v464.test.mjs tests/editor-mode-v463.test.mjs tests/editor-phone-v459.test.mjs
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/editor-mode-v463.browser.mjs
+      - run: node tests/compact-dialogs-v464.browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compact-dialogs-browser-report
+          path: compact-dialogs-browser-report.json
+          if-no-files-found: ignore
