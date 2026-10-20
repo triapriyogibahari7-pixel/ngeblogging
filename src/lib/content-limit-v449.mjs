@@ -1,0 +1,2 @@
+export const MAX_CONTENT_UNITS=5_000_000;
+export function assertContentFits(value){const html=String(value);if(html.length>MAX_CONTENT_UNITS){const error=new Error('Isi belum disimpan: HTML melebihi batas 5.000.000 unit teks. Isi tidak dipotong. Unduh salinan HTML sebelum menutup editor.');error.code='CONTENT_TOO_LARGE';error.actualUnits=html.length;error.maxUnits=MAX_CONTENT_UNITS;throw error;}return html;}
