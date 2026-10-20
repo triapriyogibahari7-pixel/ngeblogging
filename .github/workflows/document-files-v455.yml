@@ -1,0 +1,30 @@
+name: Document downloads and print v455 stage 8a
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/lib/document-files-v455.mjs', 'src/DocumentFileToolsV455.jsx', 'src/document-files-v455.css', 'scripts/document-files-v455.mjs', 'tests/document-files-v455.test.mjs', 'tests/document-files-v455.browser.mjs', 'vite.config.js', '.github/workflows/document-files-v455.yml']
+permissions:
+  contents: read
+jobs:
+  export-preview-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/document-files-v455.test.mjs tests/document-layout-v454.test.mjs tests/content-limit-v449.test.mjs
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/document-files-v455.browser.mjs
+      - run: npx vite build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: document-files-report
+          path: document-files-report.json
+          if-no-files-found: ignore

@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {snapshotDocument,documentFilename} from '../src/lib/document-files-v455.mjs';
+import {transformDocumentFiles} from '../scripts/document-files-v455.mjs';
+import {transformDocumentLayout} from '../scripts/document-layout-v454.mjs';
+test('raw content and document layout preserved through JSON',()=>{const doc={type:'page',title:'Tes',content:'<p>😀 &amp; isi</p>',metadata:{customFields:{documentLayoutV454:{paper:'A4'}}}};const output=snapshotDocument(doc);assert.equal(output.document.content,doc.content);assert.equal(output.document.metadata.customFields.documentLayoutV454.paper,'A4');assert.equal(output.document.type,'page');});
+test('does not mutate document or include account config fields',()=>{const doc={title:'A',content:'x',access_token:'secret',user:{password:'secret'}};const before=JSON.stringify(doc);assert.ok(!JSON.stringify(snapshotDocument(doc)).includes('secret'));assert.equal(JSON.stringify(doc),before);});
+test('empty current content is not replaced by stale content',()=>assert.equal(snapshotDocument({content:'old'},'').document.content,''));
+test('filenames remove paths and reject unknown formats',()=>{assert.ok(!documentFilename('../../bad/name','html').includes('/'));assert.ok(!documentFilename('..','json').startsWith('.'));assert.throws(()=>documentFilename('a','../exe'));});
+test('export toolbar and stage labels connected in plugin order',()=>{const editor=readFileSync(new URL('../src/ContentEditor.jsx',import.meta.url),'utf8');assert.ok(transformDocumentFiles(editor,'/repo/src/ContentEditor.jsx').code.includes('<DocumentFileToolsV455'));const shell=readFileSync(new URL('../src/EditorShellV444.jsx',import.meta.url),'utf8');const first=transformDocumentLayout(shell,'/repo/src/EditorShellV444.jsx');assert.ok(transformDocumentFiles(first.code,'/repo/src/EditorShellV444.jsx').code.includes('Tahap 8a / 10'));});
