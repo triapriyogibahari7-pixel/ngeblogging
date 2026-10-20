@@ -1,0 +1,21 @@
+name: Editor media v448 stage 5a
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/EditorMediaToolsV448.jsx', 'src/lib/editor-media-v448.mjs', 'src/editor-media-v448.css', 'scripts/editor-media-v448.mjs', 'tests/editor-media-v448.test.mjs', 'vite.config.js', '.github/workflows/editor-media-v448.yml']
+permissions:
+  contents: read
+jobs:
+  media-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/editor-media-v448.test.mjs tests/editor-tabs-v445.test.mjs tests/editor-shell-v444.test.mjs tests/html-source-v446.test.mjs
+      - run: npx vite build
