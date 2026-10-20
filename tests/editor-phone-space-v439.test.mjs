@@ -1,3 +1,4 @@
+import './theme-actions-v440.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {editorGutterWidth} from '../src/lib/editor-gutter-v439.mjs';import {transformPhoneSpace} from '../scripts/editor-phone-space-v439.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('short guides release editor width',()=>{assert.equal(editorGutterWidth(1),40);assert.equal(editorGutterWidth(83),40);});
