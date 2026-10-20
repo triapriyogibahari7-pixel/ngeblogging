@@ -1,0 +1,30 @@
+name: Responsive Post Pages preview
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/lib/post-preview-v458.mjs', 'src/PostPreviewDialogV458.jsx', 'src/styles/post-preview-v458.css', 'scripts/post-preview-v458.mjs', 'tests/post-preview-v458.test.mjs', 'tests/post-preview-v458.browser.mjs', 'vite.config.js', '.github/workflows/post-preview-v458.yml']
+permissions:
+  contents: read
+jobs:
+  responsive-preview-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/post-preview-v458.test.mjs tests/editor-clean-v457.test.mjs tests/document-save-v456.test.mjs tests/document-save-transform-v456.test.mjs
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/post-preview-v458.browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: post-preview-browser-report
+          path: post-preview-browser-report.json
+          if-no-files-found: ignore
