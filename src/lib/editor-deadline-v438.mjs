@@ -1,0 +1,1 @@
+export async function withEditorDeadline(promise,label,ms=15000){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' melewati batas waktu. Data belum dapat diverifikasi; coba muat ulang.')),ms);})]);}finally{clearTimeout(timer);}}
