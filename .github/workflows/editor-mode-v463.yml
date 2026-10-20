@@ -1,0 +1,30 @@
+name: Editor layout preference priority
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/lib/editor-mode-v463.mjs', 'src/lib/editor-phone-v459.mjs', 'src/EditorModeControlV463.jsx', 'scripts/editor-mode-v463.mjs', 'src/editor-mode-v463.css', 'tests/editor-mode-v463.test.mjs', 'tests/editor-mode-v463.browser.mjs', 'vite.config.js', '.github/workflows/editor-mode-v463.yml']
+permissions:
+  contents: read
+jobs:
+  editor-mode-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/editor-mode-v463.test.mjs tests/editor-phone-v459.test.mjs tests/post-preview-v458.test.mjs tests/editor-clean-v457.test.mjs tests/document-save-v456.test.mjs
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/editor-mode-v463.browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: editor-mode-browser-report
+          path: editor-mode-browser-report.json
+          if-no-files-found: ignore
