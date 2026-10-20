@@ -1,3 +1,4 @@
+import './theme-export-v441.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {checkedThemeBackup} from '../src/lib/theme-backup-v440.mjs';import {transformThemeActions} from '../scripts/theme-actions-v440.mjs';import {transformPhoneSpace} from '../scripts/editor-phone-space-v439.mjs';import {serializeThemeBackup,parseThemeFile,createDefaultThemeState} from '../src/theme-system.js';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');const state={activeThemeId:'example',code:{html:'<h1>Judul</h1>\n<p>Isi</p>',css:'p{color:red}',javascript:'const text="</script>";'},widgets:[],history:[]};const serialize=value=>JSON.stringify({type:'ngeblogging-theme',version:2,theme:value});
 test('backup retains source exactly',()=>assert.deepEqual(JSON.parse(checkedThemeBackup(state,serialize)).theme,state));

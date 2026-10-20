@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {activeSnapshot,makeThemeExport,sourceFiles,wordpressFiles,POST_MARKER} from '../src/lib/theme-export-v441.mjs';import {zipFiles} from '../src/lib/theme-zip-v441.mjs';
+const saved={activeThemeId:'one',previewThemeId:'other',publishedConfig:{brandName:'Situs',customCss:'p{color:blue}'},code:{enabled:true,html:'<main>Contoh</main>',css:'p{}',javascript:'const x="</script>]]>";'},widgets:[],history:[{activeThemeId:'old'}]};const s=activeSnapshot(saved,null),json=JSON.stringify(s),portable={html:'<div><main>'+POST_MARKER+'</main></div>',xml:'<div><main>'+POST_MARKER+'</main></div>'},p={json,html:'<!doctype html><title>Contoh</title>',portable};
+test('one active theme without old history or preview',()=>{assert.equal(s.previewThemeId,'one');assert.deepEqual(s.history,[]);assert.equal(saved.history[0].activeThemeId,'old');assert.ok(!json.includes('other'));});
+test('disabled custom code uses active built-in source',()=>assert.equal(activeSnapshot({...saved,code:{...saved.code,enabled:false}},{html:'builtin',css:'',javascript:''}).code.html,'builtin'));
+test('source archive has ten meaningful files',()=>assert.equal(Object.keys(sourceFiles(s,json,p.html)).length,10));
+test('JavaScript is exported without evaluation or edits',()=>assert.equal(makeThemeExport(s,p,'js').data,s.code.javascript));
+test('platform conversion requires one main marker',()=>assert.throws(()=>makeThemeExport(s,{...p,portable:{}},'blogger')));
+test('PHP injection in source HTML blocks WordPress conversion',()=>assert.throws(()=>wordpressFiles(s,{html:'<?php bad(); ?>'+POST_MARKER},json),/dibatalkan/));
+test('WordPress pack contains native theme files and a post loop',()=>{const f=wordpressFiles(s,portable,json);assert.ok(f['ngeblogging-export/index.php'].includes('have_posts()'));assert.ok(f['ngeblogging-export/functions.php'].includes('wp_enqueue_style'));assert.ok(f['ngeblogging-export/style.css'].includes('Theme Name:'));});
+test('unsafe ZIP paths are rejected',()=>{assert.throws(()=>zipFiles({'../bad.txt':'x'}));assert.throws(()=>zipFiles({'/bad.txt':'x'}));});
