@@ -1,0 +1,2 @@
+import {transformThemeActions} from './theme-actions-v440.mjs';
+export function transformNaraLauncher(source,id){const prior=transformThemeActions(source,id);const code=prior?.code||source;const path=id.split('?')[0].replaceAll('\\','/');if(!path.endsWith('/src/NaraAssistant.jsx')&&!path.endsWith('/src/ContentEditor.jsx'))return prior;const statement="import './styles/nara-launcher-v442.css';\n";return {code:code.includes(statement)?code:statement+code,map:null};}
