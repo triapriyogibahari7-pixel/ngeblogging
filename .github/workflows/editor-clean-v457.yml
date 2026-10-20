@@ -1,0 +1,21 @@
+name: Clean editor workspace
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/EditorPanelV457.jsx', 'src/editor-clean-v457.css', 'scripts/editor-clean-v457.mjs', 'tests/editor-clean-v457.test.mjs', 'vite.config.js', '.github/workflows/editor-clean-v457.yml']
+permissions:
+  contents: read
+jobs:
+  clean-editor-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/editor-clean-v457.test.mjs tests/document-save-v456.test.mjs tests/document-save-transform-v456.test.mjs tests/document-files-v455.test.mjs tests/document-layout-v454.test.mjs tests/content-limit-v449.test.mjs
+      - run: npx vite build
