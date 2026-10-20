@@ -1,3 +1,4 @@
+import './theme-preview-v443.test.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {transformNaraLauncher} from '../scripts/nara-launcher-v442.mjs';import {transformThemeActions} from '../scripts/theme-actions-v440.mjs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('Nara styling is confined to large viewports and Nara controls',()=>{const css=read('src/styles/nara-launcher-v442.css').trim();assert.ok(css.startsWith('@media(min-width:761px){'));assert.equal((css.match(/@media/g)||[]).length,1);for(const forbidden of ['ellipsis','display:none','z-index:','zoom:','position:fixed','.tc434-','.ts440-'])assert.ok(!css.includes(forbidden),forbidden);assert.ok(css.includes('width:max-content'));assert.ok(css.includes('height:auto'));assert.ok(css.includes('overflow-wrap:anywhere'));assert.ok(css.includes('.ce-nara-section button.ce-nara'));});
