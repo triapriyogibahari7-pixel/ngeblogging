@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {transformPublicTypography} from '../scripts/public-typography-v444.mjs';
+const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+test('theme frame receives width CSS without changing template or widget inputs',()=>{const source=read('src/theme-system.js'),out=transformPublicTypography(source,'/repo/src/theme-system.js').code;assert.ok(out.includes('${widgetCss}${themeWidthCssV476}'));assert.ok(out.includes('widgetsMarkup(widgets, "sidebar")'));assert.ok(out.includes('code?.html'));assert.equal(transformPublicTypography(out,'/repo/src/theme-system.js'),null);});
+test('public article renderer imports scoped width rules and preserves article title',()=>{const out=transformPublicTypography(read('src/PublicSiteNext.jsx'),'/repo/src/PublicSiteNext.jsx').code;assert.ok(out.includes('import "./styles/public-width-v476.css"'));assert.ok(out.includes('<h1>{content.title}</h1>'));assert.ok(out.includes('className="ps-side"'));});
+test('editor and storage modules are untouched',()=>{for(const path of ['ContentEditor.jsx','StudioNext.jsx','MediaLibrary.jsx','lib/content-data.js'])assert.equal(transformPublicTypography('same','/repo/src/'+path),null);});
+test('phone breakpoints and sidebar visibility are not overridden',()=>{const css=read('src/styles/public-width-v476.css');assert.ok(css.includes('(min-width:981px)'));assert.ok(css.includes('(min-width:1025px)'));assert.ok(!css.includes('display:none'));assert.ok(!css.includes('100vw'));assert.ok(!css.includes('.ce-'));});
