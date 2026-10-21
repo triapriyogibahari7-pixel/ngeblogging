@@ -21,3 +21,5 @@
 #ce459-editor[data-editor-mobile-v459="true"] .ce-paper-shell{width:100%!important;max-width:100%!important;padding:8px 12px!important}
 #ce459-editor[data-editor-mobile-v459="true"] .ce-paper{width:100%!important;max-width:100%!important;min-height:70dvh!important;padding:24px!important}
 }
+/* v470: only the mode control on the explicit large compact surface. */
+#ce459-editor[data-editor-mobile-v459="true"][data-compact-surface-v468="large"]>details.ce463-mode{margin-left:16px!important;margin-right:auto!important;text-align:left!important}
