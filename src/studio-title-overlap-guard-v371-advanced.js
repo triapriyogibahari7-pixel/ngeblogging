@@ -69,6 +69,9 @@ function overlap(a, b) {
 
 function hideDuplicate(node) {
   if (!node || removed.has(node)) return;
+  // Geometry alone must never hide user content, dialogs, or working controls.
+  const protectedArea = ".ce-app,.sn-media-library,.ce-media-layer,.ce-source-layer,.ce-preview-layer,[contenteditable],[role='dialog'],[aria-modal='true'],dialog,button,a,input,select,textarea,[role='button']";
+  if (node.closest(protectedArea) || node.querySelector(protectedArea)) return;
   removed.add(node);
   node.hidden = true;
   node.setAttribute("aria-hidden", "true");
