@@ -1,17 +1,15 @@
-/* Public sites only: edge-to-edge outer shells, never Studio/editor selectors. */
-html:has(.ps-site),html:has(.ps-theme-home),html:has(body>.ng-theme),body:has(.ps-site),body:has(.ps-theme-home),body:has(>.ng-theme),#root:has(.ps-site),#root:has(.ps-theme-home){box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:0!important}
-html body .ps-site,html body .ps-theme-home,html body .ps-theme-home>iframe{box-sizing:border-box!important;display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:0!important}
-html body .ps-theme-home>iframe{border:0!important}
-html body .ps-site.is-post>.ps-content-shell,html body .ps-site.is-page>.ps-content-shell{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:0!important}
-html body .ps-site>.ps-header,html body .ps-site>.ps-footer{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:0!important}
-html body .ps-site .ps-content,html body .ps-site .ps-body,html body .ps-site .ps-side{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;overflow-wrap:anywhere}
-html body .ng-theme,html body .ng-theme>main,html body .ng-theme>.ng-site-rail,html body .ng-theme .ng-site-body,html body .ng-theme .ng-site-body>main{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:0!important}
-html body .ng-theme .ng-section,html body .ng-theme .ng-hero,html body .ng-theme .ng-intro,html body .ng-theme .ng-widget-area,html body .ng-theme .ng-site-body>footer,html body .ng-theme>footer{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:0!important}
-html body .ng-theme .ng-header:not(.ng-header-rail){box-sizing:border-box!important;width:100%!important;max-width:none!important;margin-inline:0!important;padding-inline:0!important}
-html body .ng-theme .ng-cards{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important}
-html body .ng-theme .ng-site-body,html body .ng-theme .ng-cards article{min-width:0!important;overflow-wrap:anywhere}
-html body .ng-theme .ng-editorial-grid,html body .ng-theme .ng-knowledge{min-width:0!important;max-width:100%!important}
-html body .ng-theme .ng-editorial-grid>*,html body .ng-theme .ng-knowledge>*{min-width:0!important}
+/* Keep public outer shells fluid; let each theme own its content spacing. */
+.ps-theme-home,.ps-theme-home>iframe{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+.ps-theme-home>iframe{display:block;margin:0;padding:0;border:0}
+@media screen and (min-width:981px){
+.ps-site{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+.ps-site.is-post>.ps-content-shell,.ps-site.is-page>.ps-content-shell{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-inline:0!important;padding-inline:clamp(18px,2vw,32px)!important}
+.ps-site>.ps-content-shell>.ps-content,.ps-site>.ps-content-shell>.ps-side{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere}
+html body .ng-theme,html body .ng-theme>main,html body .ng-theme>.ng-site-rail,html body .ng-theme .ng-site-body,html body .ng-theme .ng-site-body>main{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+html body .ng-theme .ng-site-body{overflow-wrap:anywhere}
+html body .ng-theme .ng-editorial-grid,html body .ng-theme .ng-knowledge{min-width:0;max-width:100%}
+html body .ng-theme .ng-editorial-grid>*,html body .ng-theme .ng-knowledge>*{min-width:0}
+}
 @media screen and (min-width:1025px){
 html body .ng-theme>.ng-site-rail{grid-template-columns:96px minmax(0,1fr)}
 html body .ng-theme .ng-editorial-grid{grid-template-columns:220px minmax(0,1fr)}
