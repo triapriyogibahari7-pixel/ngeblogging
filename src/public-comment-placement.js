@@ -1,8 +1,12 @@
 function relocatePublicComments() {
+  const host = window.location.hostname.toLowerCase();
+  if (['ngeblogging.com', 'www.ngeblogging.com', 'studio.ngeblogging.com', 'api.ngeblogging.com'].includes(host)) return false;
   const article = document.querySelector('#root > .ps-site > .ps-content-shell > article.ps-content');
   const comments = document.getElementById('ngeblogging-comments');
-  if (!article || !comments || comments.parentElement === article) return false;
-  article.append(comments);
+  const body = article?.querySelector(':scope > .ps-body');
+  if (!article || !body || !comments || comments.contains(article)) return false;
+  if (body.nextElementSibling === comments) return false;
+  body.after(comments);
   return true;
 }
 
