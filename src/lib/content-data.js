@@ -171,9 +171,7 @@ export async function createContentDocument({ siteId, userId, type = "article" }
     status: "draft",
     visibility: "public",
     body_json: { type: "html", version: 2 },
-    body_html: isPage
-      ? "<h1>Judul page</h1><p>Bangun halaman profesional dengan struktur yang jelas.</p>"
-      : "<h1>Judul post</h1><p>Mulai menulis gagasan terbaik Anda.</p>",
+    body_html: "",
     excerpt: "",
     metadata,
     seo,
