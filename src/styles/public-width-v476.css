@@ -15,3 +15,11 @@ html body .ng-theme>.ng-site-rail{grid-template-columns:96px minmax(0,1fr)}
 html body .ng-theme .ng-editorial-grid{grid-template-columns:220px minmax(0,1fr)}
 html body .ng-theme .ng-knowledge{grid-template-columns:240px minmax(0,1fr)}
 }
+/* v481: public Post/Page only; no changes to homepage composition or editor. */
+html body .ps-site.is-post,html body .ps-site.is-page{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important}
+html body .ps-site.is-post>.ps-content-shell,html body .ps-site.is-page>.ps-content-shell{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important;padding-left:clamp(16px,2vw,32px)!important;padding-right:clamp(16px,2vw,32px)!important}
+html body .ps-site>.ps-content-shell>article.ps-content{box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;overflow-wrap:anywhere}
+html body .ps-site article.ps-content>.ps-body{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important}
+html body .ps-site article.ps-content>#ngeblogging-comments.ngc-root{box-sizing:border-box!important;position:static!important;float:none!important;width:100%!important;max-width:none!important;min-width:0!important;margin:32px 0 24px!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+html body .ps-site article.ps-content>#ngeblogging-comments.ngc-root :is(.ngc-heading,.ngc-form,.ngc-list,.ngc-fields,.ngc-comment,.ngc-replies){box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere}
+html body .ps-site article.ps-content>#ngeblogging-comments.ngc-root>.ngc-heading{border-bottom:0!important}
