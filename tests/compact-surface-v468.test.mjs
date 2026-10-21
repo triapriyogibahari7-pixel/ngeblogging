@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {compactSurfaceV468 as surface,scopeCompactCssV468 as scope} from '../src/lib/compact-surface-v468.mjs';
+import {readFileSync} from 'node:fs';
+test('phone portrait and landscape retain phone skin',()=>{for(const width of [390,844])assert.equal(surface({width,screenWidth:390,screenHeight:844,coarse:true,touchPoints:5,mobileHint:true}),'phone');});
+test('wide phone rotation stays phone',()=>assert.equal(surface({width:932,screenWidth:430,screenHeight:932,coarse:true,touchPoints:5}),'phone'));
+test('desktop-site viewport beyond phone screen can use large skin',()=>assert.equal(surface({width:980,screenWidth:390,screenHeight:844,coarse:true,touchPoints:5}),'large'));
+test('computer and large touch tablet use large skin',()=>{assert.equal(surface({width:1280,screenWidth:1920,screenHeight:1080}),'large');assert.equal(surface({width:820,screenWidth:820,screenHeight:1180,coarse:true,touchPoints:5}),'large');});
+test('small viewport stays phone and missing phone screen is conservative',()=>{assert.equal(surface({width:600}),'phone');assert.equal(surface({width:980,mobileHint:true}),'phone');});
+test('every large skin root selector requires explicit surface guard',()=>{const css=readFileSync(new URL('../src/compact-large-v467.css',import.meta.url),'utf8'),out=scope(css),root='#ce459-editor[data-editor-mobile-v459="true"]';assert.ok(out.includes(root+'[data-compact-surface-v468="large"]'));assert.equal(out.replaceAll(root+'[data-compact-surface-v468="large"]','').includes(root),false);});
+test('unrecognized stylesheet fails closed',()=>assert.throws(()=>scope('body{}'),/SELECTOR_MISSING/));
