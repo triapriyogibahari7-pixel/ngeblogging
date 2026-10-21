@@ -1,0 +1,37 @@
+/* Scope document resets to the shared public renderer, never Studio. */
+html:has(body > #root > .ps-site),
+html body:has(> #root > .ps-site),
+html body > #root:has(> .ps-site) {
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+html body > #root > .ps-site {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+html body > #root > .ps-site > .ps-header,
+html body > #root > .ps-site > .ps-footer {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+@media (min-width: 721px) {
+  html body > #root > .ps-site > .ps-header > nav {
+    position: static;
+    inset: auto;
+    width: auto;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+}
