@@ -1,0 +1,5 @@
+/* Remove the whole AI ribbon column, without touching other Nara launchers. */
+@media screen and (min-width:768px){
+#ce459-editor[data-desktop-v445="true"]>.ce-ribbon>section.ce-nara-section,
+#ce459-editor[data-editor-mobile-v459="true"][data-compact-surface-v468="large"]>.ce-ribbon>section.ce-nara-section{display:none!important}
+}
