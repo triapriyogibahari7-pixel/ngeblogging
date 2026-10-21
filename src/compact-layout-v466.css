@@ -23,3 +23,8 @@
 }
 /* v470: only the mode control on the explicit large compact surface. */
 #ce459-editor[data-editor-mobile-v459="true"][data-compact-surface-v468="large"]>details.ce463-mode{margin-left:16px!important;margin-right:auto!important;text-align:left!important}
+/* v472: only the AI ribbon column; preserve all baseline layout rules above. */
+@media screen and (min-width:768px){
+#ce459-editor[data-desktop-v445="true"]>.ce-ribbon>section.ce-nara-section,
+#ce459-editor[data-editor-mobile-v459="true"][data-compact-surface-v468="large"]>.ce-ribbon>section.ce-nara-section{display:none!important}
+}
