@@ -1,5 +1,6 @@
 import "./studio-shell-v261.css";
 import "./studio-shell-v262.css";
+import "./studio-editor-ai-ribbon-recovery-20261022.css";
 
 export {
   COMPACT_MAX as SMALL_MAX,

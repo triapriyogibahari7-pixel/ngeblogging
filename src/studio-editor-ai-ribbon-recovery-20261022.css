@@ -1,0 +1,5 @@
+/* Hide only the unused AI ribbon column in the large Post/Page editor.
+   Keep the separate mobile Nara controls and the assistant unchanged. */
+:is(html.editor-v266-large, html[data-studio-device-mode="large"]) .ce-app > .ce-ribbon > .ce-nara-section {
+  display: none !important;
+}
