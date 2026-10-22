@@ -10,7 +10,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   restore:
-    if: github.event.head_commit.message == 'ops: request exact baseline restoration to 0c08b319'
+    if: >-
+      github.event.head_commit.message == 'ops: request exact baseline restoration to 0c08b319'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
