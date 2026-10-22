@@ -11,9 +11,9 @@ export default function EditorModeRecovery20261022() {
     const app = document.querySelector('.ce-app');
     const sync = () => {
       const preference = currentEditorPreference();
+      if (app) app.dataset.editorModeRecovery = preference;
       setValue(preference);
       setResolved(currentStudioDeviceMode() === 'large' ? 'desktop' : 'mobile');
-      if (app) app.dataset.editorModeRecovery = preference;
     };
     const changed = () => { sync(); window.dispatchEvent(new Event('resize')); };
     window.addEventListener(EDITOR_MODE_EVENT, changed);
@@ -33,5 +33,5 @@ export default function EditorModeRecovery20261022() {
     setValue(result.value);
     setMessage(result.persisted ? '' : 'Pilihan dipakai untuk sesi ini, tetapi belum tersimpan di browser.');
   }
-  return <details className="ce463-mode"><summary>Tampilan editor: {labels[value]}{value === 'auto' ? ' — ' + labels[resolved] : ''}</summary><label>Mode <select aria-label="Mode editor" value={value} onChange={event => change(event.target.value)}>{Object.entries(labels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label><small>Pilihan disimpan pada browser ini, bukan ke akun atau isi tulisan. Ponsel normal tetap memakai editor ringkas.</small>{message && <p role="status">{message}</p>}</details>;
+  return <details className="ce463-mode"><summary>Tampilan editor: {labels[value]}{value === 'auto' ? ' — ' + labels[resolved] : ''}</summary><label>Mode <select aria-label="Mode editor" value={value} onChange={event => change(event.target.value)}>{Object.entries(labels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label><small>Pilihan disimpan pada browser ini, bukan ke akun atau isi tulisan. Otomatis mengikuti perangkat; pilihan manual mengubah klasifikasi layout. Kesesuaian CSS masih dalam pengujian.</small>{message && <p role="status">{message}</p>}</details>;
 }

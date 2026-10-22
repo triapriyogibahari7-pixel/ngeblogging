@@ -4,12 +4,12 @@ export function normalizeEditorMode(value) {
   return ['auto', 'mobile', 'desktop'].includes(value) ? value : 'auto';
 }
 export function resolveEditorMode(env = {}, preference = 'auto') {
+  const choice = normalizeEditorMode(preference);
+  if (choice !== 'auto') return choice;
   const dimension = value => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : Infinity;
   const sw = dimension(env.screenWidth), sh = dimension(env.screenHeight), width = Number(env.viewportWidth);
   const phone = env.mobileHint === true || (env.coarse && Number(env.touchPoints) > 0 && Math.min(sw, sh) <= 600);
   if (phone && Number.isFinite(sw) && Number.isFinite(sh) && width <= Math.max(sw, sh) + 1) return 'mobile';
-  const choice = normalizeEditorMode(preference);
-  if (choice !== 'auto') return choice;
   if (!(width >= 768)) return 'mobile';
   if (env.mobileHint === false) return 'desktop';
   return phone ? 'mobile' : 'desktop';
@@ -35,12 +35,9 @@ const store = createEditorPreferenceStore({getItem: key => window.localStorage.g
 export const currentEditorPreference = () => store.get();
 export const setEditorPreference = value => store.set(value);
 export function syncEditorPreference(event) { if (event.key === EDITOR_MODE_KEY || event.key === null) store.sync(); }
-export function editorResponsiveOverride(view) {
-  if (typeof document === 'undefined' || !document.querySelector('.ce-app')) return null;
+export function editorResponsiveOverride() {
+  if (typeof document === 'undefined' || !document.querySelector('.ce-app[data-editor-mode-recovery]')) return null;
   const preference = currentEditorPreference();
   if (preference === 'auto') return null;
-  const env = {screenWidth: view.screenWidth, screenHeight: view.screenHeight, viewportWidth: view.layoutWidth, mobileHint: navigator.userAgentData?.mobile, touchPoints: navigator.maxTouchPoints || 0, coarse: window.matchMedia?.('(pointer: coarse)')?.matches === true};
-  // Keep normal phones on their existing compact path, as in the original v463 policy.
-  if (resolveEditorMode(env, 'desktop') === 'mobile') return null;
-  return resolveEditorMode(env, preference) === 'desktop' ? 'desktop' : 'compact';
+  return preference === 'desktop' ? 'desktop' : 'compact';
 }
