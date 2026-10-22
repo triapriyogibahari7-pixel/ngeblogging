@@ -32,3 +32,4 @@ jobs:
           git push origin "${RESTORE_COMMIT}:refs/heads/main"
           echo "Restored commit: $RESTORE_COMMIT" >> "$GITHUB_STEP_SUMMARY"
           echo "Exact baseline tree: $TARGET_TREE" >> "$GITHUB_STEP_SUMMARY"
+# Re-requested by user for full baseline restoration on 2026-10-22.
