@@ -1,0 +1,21 @@
+.ce-app>.ce463-mode{box-sizing:border-box;max-width:100%;margin:8px 12px;padding:8px 12px;border:1px solid #d6e2f0;border-radius:8px;background:#fff;color:#173c72;font:13px/1.5 system-ui}
+.ce-app>.ce463-mode>summary{cursor:pointer;overflow-wrap:anywhere;min-height:28px}
+.ce-app>.ce463-mode>label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+.ce-app>.ce463-mode select{min-width:0;max-width:100%;min-height:44px;padding:8px;border:1px solid #bdcde2;border-radius:6px;background:#fff;font-size:16px;color:#173c72}
+.ce-app>.ce463-mode small{display:block;margin-top:8px;line-height:1.6}
+.ce-app>.ce463-mode p{margin:6px 0}
+.ce-app>.ce463-mode summary:focus-visible,.ce-app>.ce463-mode select:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+@media screen and (min-width:761px){html[data-studio-device-mode="small"] body .ce-app[data-editor-mode-recovery="mobile"]{max-width:760px!important;margin-inline:auto!important}}
+/* Explicit desktop restores existing controls; automatic/mobile rules stay unchanged. */
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon{position:relative!important;top:auto!important;display:flex!important;flex-wrap:wrap!important;align-items:stretch!important;gap:3px!important;min-height:62px!important;height:auto!important;max-height:none!important;overflow:visible!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;padding:6px 10px!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon>section{display:flex!important;flex:0 0 auto!important;flex-direction:column!important;justify-content:space-between!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon>section>span{display:block!important;visibility:visible!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon nav{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:2px!important;visibility:visible!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon nav button{display:grid!important;place-items:center!important;width:30px!important;min-width:30px!important;height:30px!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon select{display:inline-block!important;height:30px!important;max-width:100px!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon svg{display:block!important;width:15px!important;height:15px!important;visibility:visible!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon .ce-color-tool{display:grid!important;place-items:center!important;width:30px!important;height:30px!important;visibility:visible!important;pointer-events:auto!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon .ce-nara{position:static!important;display:flex!important;align-items:center!important;gap:6px!important;width:auto!important;min-width:0!important;min-height:36px!important;height:auto!important;padding:0 13px!important;font-size:9px!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-ribbon .ce-nara b{display:inline!important;visibility:visible!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-mobile-toolbar{display:none!important;}
+html body .ce-app.ce-app[data-editor-mode-recovery="desktop"][data-editor-mode-recovery] .ce-mobile-actions{display:none!important;}

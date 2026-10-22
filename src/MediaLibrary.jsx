@@ -32,6 +32,7 @@ export default function MediaLibrary({ site, user, setToast, onInsert }) {
   const [filter,setFilter] = useState("all");
   const [selected,setSelected] = useState(null);
   const input = useRef(null);
+  const uploadLock = useRef(false);
 
   const refresh = async () => {
     if (!site?.id) { setAssets([]); setLoading(false); return; }
@@ -45,20 +46,40 @@ export default function MediaLibrary({ site, user, setToast, onInsert }) {
   const shown = useMemo(() => assets.filter((asset) => (filter === "all" || asset.kind === filter) && asset.filename.toLowerCase().includes(query.toLowerCase())), [assets,filter,query]);
 
   const uploadFiles = async (fileList) => {
-    const files = [...(fileList || [])].slice(0,30);
-    if (!files.length || !site?.id || !user?.id) return;
-    setUploading(true);
-    let complete = 0;
-    const failures = [];
-    for (const file of files) {
-      try { await uploadMedia({file,siteId:site.id,userId:user.id}); complete += 1; }
-      catch(error){ failures.push(`${file.name}: ${error.message}`); }
+    const files = [...(fileList || [])];
+    if (!files.length) return;
+    if (uploadLock.current) { setToast("Unggahan masih berjalan. Tunggu sampai selesai."); return; }
+    if (!site?.id || !user?.id) {
+      setToast("Akun atau situs aktif belum siap. Pilih situs dan pastikan Anda sudah masuk.");
+      if (input.current) input.current.value = "";
+      return;
     }
-    await refresh();
-    setUploading(false);
-    if (input.current) input.current.value = "";
-    if (complete) setToast(`${complete} berkas berhasil diunggah`);
-    if (failures.length) setToast(failures.slice(0,2).join(" · "));
+    if (files.length > 30) {
+      setToast("Maksimal 30 berkas per unggahan. Pilih paling banyak 30 berkas lalu coba lagi.");
+      if (input.current) input.current.value = "";
+      return;
+    }
+    uploadLock.current = true;
+    setUploading(true);
+    try {
+      let complete = 0;
+      const failures = [];
+      for (const file of files) {
+        try { await uploadMedia({file,siteId:site.id,userId:user.id}); complete += 1; }
+        catch(error){ failures.push(`${file.name}: ${error?.message || "Unggahan gagal"}`); }
+      }
+      await refresh();
+      const messages = [];
+      if (complete) messages.push(`${complete} berkas berhasil diunggah`);
+      if (failures.length) messages.push(failures.slice(0,2).join(" · "));
+      if (messages.length) setToast(messages.join(" · "));
+    } catch(error) {
+      setToast(error?.message || "Unggahan belum dapat diselesaikan. Coba lagi.");
+    } finally {
+      uploadLock.current = false;
+      setUploading(false);
+      if (input.current) input.current.value = "";
+    }
   };
 
   const remove = async (asset) => {
