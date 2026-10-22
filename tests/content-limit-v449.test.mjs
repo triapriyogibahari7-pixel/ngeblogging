@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {MAX_CONTENT_UNITS,assertContentFits} from '../src/lib/content-limit-v449.mjs';
+import {transformContentLimit} from '../scripts/content-limit-v449.mjs';
+test('boundary accepts exact limit without truncation',()=>{const input='a'.repeat(MAX_CONTENT_UNITS);assert.equal(assertContentFits(input),input);});
+test('oversize throws explicit error without mutating source',()=>{const input='a'.repeat(MAX_CONTENT_UNITS+1);assert.throws(()=>assertContentFits(input),error=>error.code==='CONTENT_TOO_LARGE'&&error.actualUnits===MAX_CONTENT_UNITS+1);assert.equal(input.length,MAX_CONTENT_UNITS+1);});
+test('300000-word fixture survives guard and JSON roundtrip for article and page',()=>{const input='<p>'+'tulisan '.repeat(299999)+'PENANDA_AKHIR</p>';const hash=value=>createHash('sha256').update(value).digest('hex');for(const kind of ['article','page']){const saved=JSON.parse(JSON.stringify({kind,body_html:assertContentFits(input)}));assert.equal(hash(saved.body_html),hash(input));assert.ok(saved.body_html.endsWith('PENANDA_AKHIR</p>'));assert.equal(saved.body_html.replace(/<[^>]+>/g,' ').trim().split(/\s+/).length,300000);}});
+test('unicode and whitespace preserved exactly',()=>{for(const value of ['  <p>😀é</p>\n','', '<p>teks &amp; simbol</p>'])assert.equal(assertContentFits(value),value);});
+test('save path no longer silently slices content',()=>{const source=readFileSync(new URL('../src/lib/content-data.js',import.meta.url),'utf8');const output=transformContentLimit(source,'/repo/src/lib/content-data.js');assert.ok(output.code.includes('payload.body_html = assertContentFits(values.content);'));assert.ok(!output.code.includes('String(values.content).slice(0, 5_000_000)'));assert.equal(transformContentLimit(output.code,'/repo/src/lib/content-data.js'),null);});
+test('editor shows warning and guards publication toolbar',()=>{const source=readFileSync(new URL('../src/ContentEditor.jsx',import.meta.url),'utf8');const output=transformContentLimit(source,'/repo/src/ContentEditor.jsx');assert.ok(output.code.includes('<ContentLimitNoticeV449'));assert.ok(output.code.includes('Belum tersimpan: isi melewati batas'));assert.ok(output.code.includes('assertContentFits(doc.content'));});

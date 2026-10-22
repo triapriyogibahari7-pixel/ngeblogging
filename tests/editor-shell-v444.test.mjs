@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {transformEditorShell} from '../scripts/editor-shell-v444.mjs';
+const source=readFileSync(new URL('../src/ContentEditor.jsx',import.meta.url),'utf8');
+test('integrates toolbar, library and status with actual shared editor',()=>{const {code}=transformEditorShell(source,'/repo/src/ContentEditor.jsx');assert.ok(code.includes('<EditorWorkspaceBarV444 saved={saved}'));assert.ok(code.includes('<aside className="ce-sidebar"><EditorLibraryV444/>'));assert.ok(code.includes('<EditorStatusV444 words={words}'));assert.ok(code.includes('onInput={handleInput}'));assert.ok(code.includes('onClick={publish}'));assert.ok(code.includes('className="ce-mobile-toolbar"'));});
+test('does not transform other components',()=>assert.equal(transformEditorShell(source,'/repo/src/Other.jsx'),null));
+test('fails closed when editor anchors change',()=>assert.throws(()=>transformEditorShell('export default {}','/repo/src/ContentEditor.jsx'),/ANCHOR_INVALID/));
+test('does not inject twice',()=>{const output=transformEditorShell(source,'/repo/src/ContentEditor.jsx');assert.equal(transformEditorShell(output.code,'/repo/src/ContentEditor.jsx'),null);});
+test('supports touch tablets and preserves content editing path',()=>{const css=readFileSync(new URL('../src/editor-shell-v444.css',import.meta.url),'utf8');assert.ok(css.includes('min-width:768px'));assert.ok(css.includes('min-width:1200px'));assert.ok(!css.includes('pointer:fine'));assert.ok(css.includes('grid-template-columns:minmax(0,1fr);'));assert.ok(!css.includes('@page'));const {code}=transformEditorShell(source,'/repo/src/ContentEditor.jsx');assert.ok(code.includes('patchRef.current?.({ content: event.currentTarget.innerHTML })'));});

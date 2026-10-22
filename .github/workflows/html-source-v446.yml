@@ -1,0 +1,21 @@
+name: HTML source v446 stage 4b
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/HtmlSourceWorkbenchV446.jsx', 'src/lib/html-source-v446.mjs', 'src/html-source-v446.css', 'scripts/html-source-v446.mjs', 'tests/html-source-v446.test.mjs', 'vite.config.js', '.github/workflows/html-source-v446.yml']
+permissions:
+  contents: read
+jobs:
+  source-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/html-source-v446.test.mjs tests/editor-tabs-v445.test.mjs tests/editor-shell-v444.test.mjs
+      - run: npx vite build

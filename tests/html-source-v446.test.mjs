@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {inspectHtmlSource,findSource} from '../src/lib/html-source-v446.mjs';
+import {transformHtmlSource} from '../scripts/html-source-v446.mjs';
+test('recognizes source without executing or changing it',()=>{for(const [source,kind] of [['<p>Isi</p>','html-fragment'],['<!-- wp:paragraph --><p>Isi</p><!-- /wp:paragraph -->','wordpress-blocks'],['<b:section id="main"/>','blogger-xml'],['<?php get_header(); ?>','wordpress-php'],['<!doctype html><html><body>x</body></html>','html-document'],['<?xml version="1.0"?><root/>','xml']]){assert.equal(inspectHtmlSource(source).kind,kind);assert.equal(typeof source,'string');}});
+test('template modes are not eligible for direct article apply',()=>{assert.equal(inspectHtmlSource('<?php echo 1; ?>').template,true);assert.equal(inspectHtmlSource('<b:widget/>').template,true);assert.equal(inspectHtmlSource('<p>x</p>').template,false);});
+test('search wraps and counts CRLF correctly',()=>{assert.deepEqual(findSource('ABC abc','abc',4),{start:4,end:7});assert.deepEqual(findSource('ABC abc','abc',7),{start:0,end:3});assert.equal(findSource('abc','missing'),null);assert.equal(inspectHtmlSource('a\r\nb').lines,2);});
+test('workbench connected and guarded without changing outer frame',()=>{const source=readFileSync(new URL('../src/EditorDesktopV445.jsx',import.meta.url),'utf8');const output=transformHtmlSource(source,'/repo/src/EditorDesktopV445.jsx');assert.ok(output.code.includes('<HtmlSourceWorkbenchV446'));assert.ok(output.code.includes('if(report.template)'));assert.ok(output.code.includes('createPortal'));assert.equal(transformHtmlSource(output.code,'/repo/src/EditorDesktopV445.jsx'),null);assert.throws(()=>transformHtmlSource('changed','/repo/src/EditorDesktopV445.jsx'),/ANCHOR_INVALID/);});

@@ -1,0 +1,30 @@
+name: Compact workspace sidebar fit
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/lib/compact-workspace-v465.mjs', 'src/useCompactWorkspaceV465.jsx', 'src/compact-workspace-v465.css', 'src/EditorModeControlV463.jsx', 'tests/compact-workspace-v465.test.mjs', 'tests/compact-workspace-v465.browser.mjs', '.github/workflows/compact-workspace-v465.yml']
+permissions:
+  contents: read
+jobs:
+  compact-workspace-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/compact-workspace-v465.test.mjs tests/editor-mode-v463.test.mjs tests/compact-dialogs-v464.test.mjs
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/compact-workspace-v465.browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compact-workspace-browser-report
+          path: compact-workspace-browser-report.json
+          if-no-files-found: ignore

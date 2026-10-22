@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {compactWorkspaceMetrics as metrics} from '../src/lib/compact-workspace-v465.mjs';
+test('collapsed rail reserves its visible width',()=>assert.deepEqual(metrics({viewportWidth:1080,sidebar:{left:0,right:80}}),{inset:80,available:1080}));
+test('expanded rail updates width without a hard-coded gutter',()=>assert.equal(metrics({viewportWidth:1440,sidebar:{left:0,right:260}}).inset,260));
+test('existing parent gutter is not counted twice',()=>assert.deepEqual(metrics({viewportWidth:1080,editorLeft:80,sidebar:{left:0,right:80}}),{inset:0,available:1000}));
+test('hidden and offscreen sidebars do not move content',()=>{assert.equal(metrics({viewportWidth:1080,sidebar:{left:0,right:80,visible:false}}).inset,0);assert.equal(metrics({viewportWidth:1080,sidebar:{left:-260,right:0}}).inset,0);});
+test('portrait phones and overlay drawers keep their existing layout',()=>{assert.equal(metrics({viewportWidth:390,sidebar:{left:0,right:80}}).inset,0);assert.equal(metrics({viewportWidth:980,drawer:true,sidebar:{left:0,right:320}}).inset,0);});
+test('landscape width and no-sidebar cases remain bounded',()=>{assert.equal(metrics({viewportWidth:844,sidebar:{left:0,right:80}}).inset,80);assert.deepEqual(metrics({viewportWidth:1280,editorLeft:24}),{inset:0,available:1256});assert.ok(metrics({viewportWidth:0}).available>=1);});

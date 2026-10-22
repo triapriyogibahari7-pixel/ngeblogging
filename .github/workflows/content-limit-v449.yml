@@ -1,0 +1,21 @@
+name: Content preservation v449 stage 5b
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/lib/content-limit-v449.mjs', 'src/ContentLimitNoticeV449.jsx', 'scripts/content-limit-v449.mjs', 'tests/content-limit-v449.test.mjs', 'src/lib/content-data.js', 'vite.config.js', '.github/workflows/content-limit-v449.yml']
+permissions:
+  contents: read
+jobs:
+  content-preservation-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/content-limit-v449.test.mjs tests/editor-media-v448.test.mjs tests/editor-tabs-v445.test.mjs tests/editor-shell-v444.test.mjs
+      - run: npx vite build

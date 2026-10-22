@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {buildMediaHtml,mediaUrl} from '../src/lib/editor-media-v448.mjs';
+import {transformEditorMedia} from '../scripts/editor-media-v448.mjs';
+test('escapes image attributes and caption',()=>{const html=buildMediaHtml({kind:'image',url:'https://example.com/a.png',filename:'test'},{alt:'" onerror="alert(1)',caption:'<script>x</script>'});assert.ok(html.includes('&quot; onerror=&quot;'));assert.ok(html.includes('&lt;script&gt;'));assert.ok(!html.includes('<script>'));});
+test('rejects dangerous URLs and credentials',()=>{for(const url of ['javascript:alert(1)','data:text/html,test','https://user:pass@example.com/a'])assert.throws(()=>mediaUrl(url));});
+test('validates width and alignment',()=>{const asset={kind:'image',url:'https://example.com/x.png'};assert.ok(buildMediaHtml(asset,{width:640,align:'right'}).includes('width="640"'));for(const width of [0,31,4097,'auto','1;bad'])assert.throws(()=>buildMediaHtml(asset,{width}));assert.ok(buildMediaHtml(asset,{align:'evil'}).includes('data-media-align="center"'));});
+test('supports video audio and document',()=>{for(const kind of ['video','audio'])assert.ok(buildMediaHtml({kind,url:'https://example.com/a',filename:'x'}).includes(`<${kind} `));assert.ok(buildMediaHtml({kind:'document',url:'https://example.com/a.pdf',filename:'<x>'}).includes('&lt;x&gt;'));});
+test('connects editor insertion and safe public image attributes',()=>{const editor=readFileSync(new URL('../src/ContentEditor.jsx',import.meta.url),'utf8');assert.ok(transformEditorMedia(editor,'/repo/src/ContentEditor.jsx').code.includes('insertHtml(buildMediaHtml(asset)'));const sanitizer=readFileSync(new URL('../src/lib/public-typography-v444.mjs',import.meta.url),'utf8');const output=transformEditorMedia(sanitizer,'/repo/src/lib/public-typography-v444.mjs').code;assert.ok(output.includes('MEDIA_ATTRIBUTES_V448'));assert.ok(output.includes('data-media-align'));assert.equal(transformEditorMedia(output,'/repo/src/lib/public-typography-v444.mjs'),null);});

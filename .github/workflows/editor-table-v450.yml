@@ -1,0 +1,30 @@
+name: Editor table and Nara v450 stage 6a
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/EditorTableToolsV450.jsx', 'src/lib/editor-table-v450.mjs', 'src/editor-table-nara-v450.css', 'scripts/editor-table-nara-v450.mjs', 'tests/editor-table-v450.test.mjs', 'tests/editor-table-v450.browser.mjs', 'vite.config.js', '.github/workflows/editor-table-v450.yml']
+permissions:
+  contents: read
+jobs:
+  table-nara-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/editor-table-v450.test.mjs tests/content-limit-v449.test.mjs tests/editor-media-v448.test.mjs
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/editor-table-v450.browser.mjs
+      - run: npx vite build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: editor-table-nara-report
+          path: editor-table-nara-report.json
+          if-no-files-found: ignore

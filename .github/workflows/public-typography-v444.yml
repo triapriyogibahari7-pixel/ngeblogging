@@ -1,0 +1,30 @@
+name: Public typography v444 integration
+on:
+  push:
+    branches: [agent/editor-post-pages-v444-20261020]
+  pull_request:
+    paths: ['src/PublicTypographyV444.jsx', 'src/lib/public-typography-v444.mjs', 'scripts/public-typography-v444.mjs', 'src/PublicSiteNext.jsx', 'tests/public-typography-v444.browser.mjs', 'vite.config.js', '.github/workflows/public-typography-v444.yml']
+permissions:
+  contents: read
+jobs:
+  browser-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/public-typography-v444.browser.mjs
+      - run: node --test tests/editor-shell-v444.test.mjs tests/editor-catalog-v444.test.mjs tests/editor-presets-v444.test.mjs tests/editor-fonts-v444.test.mjs
+      - run: npx vite build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-typography-browser-report
+          path: public-typography-browser-report.json
+          if-no-files-found: ignore

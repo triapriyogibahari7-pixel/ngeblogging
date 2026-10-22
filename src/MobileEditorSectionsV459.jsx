@@ -1,0 +1,3 @@
+import React from 'react';
+import './compact-dialogs-v464.css';
+export default function MobileEditorSectionsV459({tab,onChange,onMedia,onTable,onLink}){const items=[['content','Menulis'],['insert','Sisipkan'],['layout','Tata letak'],['metadata','Informasi tulisan'],['seo','SEO'],['source','HTML']];return <div className="ce459-sections"><label>Bagian <select aria-label="Bagian editor" value={items.some(([id])=>id===tab)?tab:'content'} onChange={event=>onChange(event.target.value)}>{items.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>{tab==='insert'&&<div className="ce459-insert"><button type="button" onClick={onTable}>Tabel</button><button type="button" onClick={onLink}>Tautan</button></div>}</div>;}

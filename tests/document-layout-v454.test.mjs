@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {PAPER_SIZES,normalizeDocumentLayout,documentMetrics,documentZoom} from '../src/lib/document-layout-v454.mjs';
+import {transformDocumentLayout} from '../scripts/document-layout-v454.mjs';
+test('six paper sizes and orientation dimensions',()=>{assert.equal(Object.keys(PAPER_SIZES).length,6);assert.equal(documentMetrics({paper:'A4'}).widthMm,210);assert.equal(documentMetrics({paper:'A4',orientation:'landscape'}).widthMm,297);assert.equal(documentMetrics({paper:'Letter'}).heightMm,279.4);});
+test('invalid margins and settings rejected',()=>{for(const value of [{margins:{top:-1}},{margins:{left:'bad'}},{paper:'A5',margins:{left:80,right:80}},{paper:'unknown'}])assert.throws(()=>normalizeDocumentLayout(value));});
+test('fit and manual zoom bounded',()=>{assert.ok(documentZoom('fit',794,680)<1);assert.equal(documentZoom(150,794,680),1.5);assert.throws(()=>documentZoom(201,794,680));assert.throws(()=>documentZoom(24,794,680));});
+test('layout JSON roundtrip preserves normalized settings',()=>{const layout=normalizeDocumentLayout({paper:'Legal',orientation:'landscape',margins:{left:15}});assert.deepEqual(normalizeDocumentLayout(JSON.parse(JSON.stringify(layout))),layout);});
+test('editor wiring and stage labels update without public renderer changes',()=>{for(const [file,marker] of [['src/ContentEditor.jsx','import DocumentLayoutToolsV454'],['src/EditorDesktopV445.jsx','DOCUMENT_HELP_V454'],['src/EditorShellV444.jsx','DOCUMENT_STAGE_LABEL_V454']]){const source=readFileSync(new URL('../'+file,import.meta.url),'utf8');const output=transformDocumentLayout(source,'/repo/'+file);assert.ok(output.code.includes(marker));assert.equal(transformDocumentLayout(output.code,'/repo/'+file),null);}assert.equal(transformDocumentLayout('public source','/repo/src/PublicSiteNext.jsx'),null);});
