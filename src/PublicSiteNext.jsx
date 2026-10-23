@@ -55,7 +55,16 @@ function homeCode(site,theme,posts,pages) {
   const linkTo=(slug)=>'/'+encodeURIComponent(slug)+(freePreview?'?ngeblogging-free-preview=1':'');
   document.title=data.site.name;
   const brand=document.querySelector('.ng-brand');
-  if(brand){brand.textContent=data.site.name;const dot=document.createElement('i');dot.textContent='.';brand.append(dot)}
+  if(brand){
+    const label=document.createElement('span');
+    label.className=brand.className;
+    label.style.cssText=brand.style.cssText;
+    if(brand.id)label.id=brand.id;
+    label.style.cursor='default';
+    label.textContent=data.site.name;
+    const dot=document.createElement('i');dot.textContent='.';label.append(dot);
+    brand.replaceWith(label);
+  }
   const hero=document.querySelector('.ng-hero');
   const title=hero?.querySelector('h1');
   const description=hero?.querySelector('p');
