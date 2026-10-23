@@ -18,3 +18,13 @@
   html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label>b{display:block!important;width:auto!important;margin:0!important;padding:0!important;font:800 14px/1.15 system-ui,sans-serif!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-align:left!important}
   html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label>small{display:block!important;width:auto!important;margin:0!important;padding:0!important;font:600 10px/1.1 system-ui,sans-serif!important;white-space:nowrap!important;opacity:.82!important;text-align:left!important}
 }
+
+/* Keep both text lines on one shared left edge. */
+@media screen and (min-width:761px){
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto!important;align-content:center!important;align-items:start!important;justify-content:start!important;justify-items:stretch!important;gap:1px!important;direction:ltr!important;
+  }
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label>:is(b,small){
+    position:static!important;inset:auto!important;display:block!important;float:none!important;clear:none!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;box-sizing:border-box!important;text-align:left!important;text-indent:0!important;align-self:start!important;justify-self:stretch!important;transform:none!important;translate:none!important;writing-mode:horizontal-tb!important;direction:ltr!important;white-space:nowrap!important;
+  }
+}
