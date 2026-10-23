@@ -1,0 +1,20 @@
+/* Match the shared desktop launcher in nara-interaction-authority.css. */
+@media screen and (min-width:761px){
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button{
+    display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;grid-template-rows:1fr!important;align-items:center!important;justify-content:start!important;gap:0 9px!important;
+    width:auto!important;min-width:206px!important;max-width:calc(100vw - 28px)!important;height:58px!important;min-height:58px!important;max-height:58px!important;padding:8px 13px!important;border-radius:18px!important;box-sizing:border-box!important;overflow:hidden!important;text-align:left!important;
+    border:1px solid rgba(255,255,255,.28)!important;background:linear-gradient(145deg,#172b4d,#2457a7)!important;color:#fff!important;box-shadow:0 18px 54px rgba(10,31,65,.34)!important;
+  }
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-icon-box{
+    position:static!important;inset:auto!important;grid-column:1!important;grid-row:1!important;display:grid!important;place-items:center!important;flex:none!important;
+    width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;margin:0!important;padding:0!important;
+    border-radius:12px!important;background:rgba(255,255,255,.14)!important;line-height:0!important;box-sizing:border-box!important;transform:none!important;
+  }
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-icon-box>svg{display:block!important;width:20px!important;height:20px!important;margin:0!important;padding:0!important;transform:none!important}
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label{
+    position:static!important;grid-column:2!important;grid-row:1!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;gap:1px!important;
+    min-width:0!important;width:100%!important;max-width:100%!important;height:42px!important;margin:0!important;padding:0 8px!important;border-radius:11px!important;background:rgba(255,255,255,.10)!important;box-sizing:border-box!important;overflow:hidden!important;text-align:left!important;transform:none!important;
+  }
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label>b{display:block!important;width:auto!important;margin:0!important;padding:0!important;font:800 14px/1.15 system-ui,sans-serif!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-align:left!important}
+  html body:has(.ce-app[data-mobile-editor-v402="true"]:not(.ce-dialog-host)) button.nara-floating-button>.nara-launcher-label>small{display:block!important;width:auto!important;margin:0!important;padding:0!important;font:600 10px/1.1 system-ui,sans-serif!important;white-space:nowrap!important;opacity:.82!important;text-align:left!important}
+}
