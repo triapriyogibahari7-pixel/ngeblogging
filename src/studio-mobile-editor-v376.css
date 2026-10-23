@@ -77,9 +77,17 @@ html body .ce-app[data-mobile-editor-v402="true"] .ce-ribbon>section.ce-nara-sec
   display:none!important;
 }
 
-/* The first tab is Konten in ContentEditor.jsx. Do not hide the writing surface. */
+/* Remove the whole mobile tab strip, not successive individual tabs.
+ * display:none also removes its box from flow so the toolbars move up.
+ * No writing-surface, document-content, storage, or publishing rules change.
+ */
 @media screen and (max-width:760px){
-  html body .ce-app[data-mobile-editor-v402="true"]>nav.ce-tabs>button:first-child{
+  html body div.ce-app[data-mobile-editor-v402="true"][data-mobile-editor-v409="true"]>nav.ce-tabs{
     display:none!important;
+    height:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
   }
 }
