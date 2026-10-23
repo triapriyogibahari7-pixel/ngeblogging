@@ -1,0 +1,123 @@
+/* Public Post/Page only. Preserve Studio, marketing and theme-home iframe. */
+html:has(body > #root > .ps-site),
+html body:has(> #root > .ps-site),
+html body > #root:has(> .ps-site) {
+  box-sizing: border-box !important;
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-y: visible !important;
+  transform: none !important;
+}
+html body > #root > .ps-site {
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  max-height: none !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+html body > #root > .ps-site > .ps-header { flex: 0 0 auto !important; }
+html body > #root > .ps-site > .ps-content-shell {
+  box-sizing: border-box !important;
+  flex: 1 0 auto !important;
+  display: grid !important;
+  align-items: start !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin-inline: 0 !important;
+}
+html body > #root > .ps-site :is(.ps-content,.ps-side,.ps-body,.ps-header,.ps-footer) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+html body > #root > .ps-site .ps-body :is(img,video,audio,figure,table,pre) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+html body > #root > .ps-site .ps-body :is(img,video) { height: auto; }
+html body > #root > .ps-site .ps-body figure { margin-inline: 0; }
+html body > #root > .ps-site .ps-body :is(table,pre) {
+  display: block;
+  overflow-x: auto;
+}
+html body > #root > .ps-site > .ps-header > .ps-brand {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  cursor: default;
+}
+html body > #root > .ps-site > .ps-footer {
+  box-sizing: border-box !important;
+  position: static !important;
+  inset: auto !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+}
+@media screen and (max-width: 980px) {
+  html body > #root > .ps-site > .ps-content-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html body > #root > .ps-site .ps-side { position: static; }
+}
+@media screen and (min-width: 981px) {
+  html body > #root > .ps-site > .ps-content-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px) !important;
+  }
+}
+@media screen and (max-width: 760px) {
+  html body > #root > .ps-site > .ps-header { min-height: 62px; padding: 0 16px; }
+  html body > #root > .ps-site > .ps-header > nav {
+    display: none !important;
+    position: absolute !important;
+    inset: 70px 12px auto !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: auto !important;
+    border: 1px solid #dce4ee;
+    border-radius: 14px;
+    padding: 10px;
+    background: var(--ps-surface);
+    box-shadow: 0 20px 50px #17294230;
+  }
+  html body > #root > .ps-site > .ps-header > nav.open { display: flex !important; }
+  html body > #root > .ps-site > .ps-header > nav a { padding: 11px; }
+  html body > #root > .ps-site > .ps-header > button { display: grid !important; }
+  html body > #root > .ps-site > .ps-content-shell { padding: 38px 18px; gap: 35px; }
+  html body > #root > .ps-site .ps-content > h1 { font-size: 3rem; }
+  html body > #root > .ps-site .ps-lead { font-size: 1.05rem; }
+  html body > #root > .ps-site .ps-meta { align-items: flex-start; flex-direction: column; }
+  html body > #root > .ps-site .ps-body { font-size: 1rem; }
+  html body > #root > .ps-site .ps-body h2 { font-size: 1.8rem; }
+  html body > #root > .ps-site :is(.ps-side,.ps-related > div) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html body > #root > .ps-site > .ps-footer { align-items: flex-start; flex-direction: column; }
+}
