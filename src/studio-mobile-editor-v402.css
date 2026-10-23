@@ -132,3 +132,70 @@
     margin-bottom:max(0px,env(safe-area-inset-bottom,0px))!important;
   }
 }
+
+/* Desktop Post/Page fixes only; original mobile rules above are preserved. */
+@media screen and (min-width:761px){
+  .ce-app .ce-ribbon .ce-nara{
+    display:flex!important;align-items:center!important;justify-content:flex-start!important;
+    position:relative!important;inset:auto!important;gap:8px!important;
+    width:auto!important;min-width:40px!important;max-width:100%!important;
+    height:36px!important;min-height:36px!important;padding:0 12px!important;
+    margin:0!important;text-align:left!important;line-height:1.2!important;
+    font-size:12px!important;transform:none!important;
+  }
+  .ce-app .ce-ribbon .ce-nara>svg{
+    display:block!important;flex:0 0 20px!important;width:20px!important;height:20px!important;
+    margin:0!important;padding:0!important;transform:none!important;
+  }
+  body:has(.ce-app) .nara-floating-button{align-items:center!important;justify-content:flex-start!important;gap:8px!important;text-align:left!important}
+  body:has(.ce-app) .nara-floating-button .nara-launcher-icon-box{
+    display:grid!important;place-items:center!important;flex:0 0 32px!important;
+    width:32px!important;height:32px!important;margin:0!important;padding:0!important;
+  }
+  body:has(.ce-app) .nara-floating-button .nara-launcher-icon-box svg{
+    display:block!important;width:20px!important;height:20px!important;margin:0!important;transform:none!important;
+  }
+  .ce-app :is(.ce-media-layer,.ce-source-layer,.ce-preview-layer){
+    position:fixed!important;inset:0!important;box-sizing:border-box!important;
+    display:grid!important;place-items:center!important;padding:24px!important;
+    width:auto!important;height:auto!important;max-width:100vw!important;max-height:100dvh!important;
+    overflow:hidden!important;z-index:5000!important;
+  }
+  .ce-app :is(.ce-media-layer,.ce-source-layer,.ce-preview-layer)>section{
+    box-sizing:border-box!important;position:relative!important;
+    display:flex!important;flex-direction:column!important;
+    width:min(1200px,100%)!important;max-width:100%!important;min-width:0!important;
+    height:min(900px,calc(100dvh - 48px))!important;max-height:100%!important;min-height:0!important;
+    margin:0!important;border:1px solid #dfe5ed!important;border-radius:18px!important;
+    overflow:hidden!important;background:#fff!important;
+  }
+  .ce-app :is(.ce-media-layer,.ce-source-layer,.ce-preview-layer)>section>header{
+    flex:0 0 auto!important;min-width:0!important;min-height:60px!important;
+  }
+  .ce-app :is(.ce-media-layer,.ce-source-layer,.ce-preview-layer)>section>header>div{min-width:0!important}
+  .ce-app :is(.ce-media-layer,.ce-source-layer,.ce-preview-layer)>section>header h2{overflow-wrap:anywhere!important}
+  .ce-app :is(.ce-media-layer,.ce-source-layer,.ce-preview-layer)>section>header>button{flex-shrink:0!important}
+  .ce-app .ce-media-layer .sn-media-library{
+    box-sizing:border-box!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;
+    width:100%!important;overflow:auto!important;overscroll-behavior:contain;
+  }
+  .ce-app .ce-media-layer .sn-media-preview :is(img,video){object-fit:contain!important;max-width:100%!important}
+  .ce-app .ce-source-layer textarea{
+    box-sizing:border-box!important;flex:1 1 0!important;width:100%!important;
+    min-width:0!important;min-height:0!important;overflow:auto!important;resize:none!important;
+  }
+  .ce-app .ce-source-layer footer{flex:0 0 auto!important;flex-wrap:wrap!important}
+  .ce-app .ce-preview-canvas{
+    box-sizing:border-box!important;flex:1 1 0!important;min-width:0!important;min-height:0!important;
+    display:block!important;overflow:auto!important;padding:24px 24px 84px!important;
+  }
+  .ce-app .ce-preview-canvas>article{box-sizing:border-box!important;margin-inline:auto!important;max-width:100%!important}
+  .ce-app .ce-preview-canvas.desktop>article{width:1040px!important}
+  .ce-app .ce-preview-canvas.tablet>article{width:820px!important}
+  .ce-app .ce-preview-canvas.mobile>article{width:390px!important}
+  .ce-app .ce-preview-canvas .body{min-width:0!important;overflow-wrap:anywhere}
+  .ce-app .ce-preview-canvas .body :is(img,video){max-width:100%!important;height:auto!important}
+  .ce-app .ce-preview-canvas .body audio{width:100%;max-width:100%}
+  .ce-app .ce-preview-canvas .body :is(pre,table){max-width:100%;overflow:auto}
+  .ce-app .ce-preview-devices{z-index:5010!important;max-width:calc(100vw - 48px)!important}
+}
