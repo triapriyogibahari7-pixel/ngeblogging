@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import "./editor-dialog-boundary.css";
+import "./editor-media-content.css";
 
 export default function EditorDialogBoundary({ children, onClose }) {
   const [host] = useState(() => {
