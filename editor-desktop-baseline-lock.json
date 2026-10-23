@@ -1,0 +1,19 @@
+{
+  "baseline_name": "editor-desktop-stable-2026-10-23-5da6573",
+  "repository": "triapriyogibahari7-pixel/ngeblogging",
+  "baseline_commit": "5da6573ae7d0b11c769afca65c756dd3bdafa8cb",
+  "approved_date": "2026-10-23",
+  "timezone": "Asia/Jakarta",
+  "scope": "Post and Pages web editor in desktop layout: browser desktop-site mode, laptop, computer, large tablet, and other large devices",
+  "desktop_media_query_boundary_min_viewport_width_px": 761,
+  "device_name_alone_does_not_determine_layout": true,
+  "status": "FROZEN_BY_OWNER_POLICY",
+  "explicit_owner_approval_required_for_editor_changes": true,
+  "restore_guide": "EDITOR_BASELINE_LOCK.md",
+  "desktop_guide": "EDITOR_DESKTOP_BASELINE_LOCK.md",
+  "related_mobile_baseline": "editor-mobile-stable-2026-10-23-5da6573",
+  "github_protection_configured_by_this_change": false,
+  "git_tag_or_snapshot_branch_created_by_this_change": false,
+  "automated_tests_build_deployment_live_verification": "not_verified_in_this_baseline_record",
+  "database_or_media_backup_included": false
+}
