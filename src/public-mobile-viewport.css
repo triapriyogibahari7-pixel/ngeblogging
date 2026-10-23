@@ -1,0 +1,35 @@
+/* Public Post/Page mobile only. No zoom-disabling touch handlers. */
+@media screen and (max-width: 760px) {
+  html:has(body > #root > .ps-site),
+  html body:has(> #root > .ps-site),
+  html body > #root:has(> .ps-site) {
+    box-sizing: border-box !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+    overflow-x: clip !important;
+    transform: none !important;
+  }
+  html body > #root > .ps-site,
+  html body > #root > .ps-site > .ps-content-shell,
+  html body > #root > .ps-site > .ps-content-shell > .ps-content {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+    overflow-wrap: anywhere;
+  }
+  html body > #root > .ps-site .ps-body :is(img,video,audio,figure,table,pre) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+  html body > #root > .ps-site .ps-body :is(table,pre) {
+    overflow-x: auto;
+  }
+}

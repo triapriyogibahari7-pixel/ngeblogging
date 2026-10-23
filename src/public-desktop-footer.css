@@ -1,0 +1,82 @@
+/* Public Post/Page desktop only. Keep homepage iframe and Studio unchanged.
+ * This layer loads after public-page-boundary.css.
+ */
+@media screen and (min-width: 761px) {
+  /* Keep the public renderer's pending/error state full-width as well.
+   * The earlier application bootstrap spinner is not selected here.
+   */
+  html:has(body > #root > .ps-state),
+  html body:has(> #root > .ps-state),
+  html body > #root:has(> .ps-state) {
+    box-sizing: border-box !important;
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+  html body > #root > .ps-state {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 100dvh !important;
+    margin: 0 !important;
+  }
+  /* A normal-flow footer: bottom-aligned for short pages, never fixed
+   * over long posts, comments, media, or keyboard-focused controls.
+   */
+  html body > #root > .ps-site {
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  html body > #root > .ps-site > .ps-header {
+    flex: 0 0 auto !important;
+  }
+  html body > #root > .ps-site > .ps-content-shell {
+    flex: 1 0 auto !important;
+    align-items: start !important;
+    padding-bottom: clamp(20px, 3vw, 40px) !important;
+  }
+  html body > #root > .ps-site > .ps-footer {
+    box-sizing: border-box !important;
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding-block: 16px !important;
+    padding-inline: clamp(18px, 5vw, 72px) !important;
+    transform: none !important;
+  }
+  html body > #root > .ps-site > .ps-footer > * {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
