@@ -76,3 +76,10 @@
 html body .ce-app[data-mobile-editor-v402="true"] .ce-ribbon>section.ce-nara-section{
   display:none!important;
 }
+
+/* The first tab is Konten in ContentEditor.jsx. Do not hide the writing surface. */
+@media screen and (max-width:760px){
+  html body .ce-app[data-mobile-editor-v402="true"]>nav.ce-tabs>button:first-child{
+    display:none!important;
+  }
+}
