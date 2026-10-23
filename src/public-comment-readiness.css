@@ -48,3 +48,35 @@ html body > #root > .ps-site .ps-content > #ngeblogging-comments > .ngc-heading 
   width: 24px !important;
   height: 24px !important;
 }
+
+/* The article already supplies mobile gutters. Do not add 12px margins
+ * outside a 100%-wide comment widget (legacy comments-v93.css).
+ */
+@media screen and (max-width: 760px) {
+  html body > #root > .ps-site .ps-content > #ngeblogging-comments {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+  html body > #root > .ps-site .ps-content > #ngeblogging-comments :is(.ngc-form,.ngc-fields,.ngc-list,.ngc-comment,.ngc-replies,.ngc-mood-picker,.ngc-moods) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  html body > #root > .ps-site .ps-content > #ngeblogging-comments .ngc-fields {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html body > #root > .ps-site .ps-content > #ngeblogging-comments .ngc-form :is(input:not(.ngc-honeypot):not([type="hidden"]),textarea,select) {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  html body > #root > .ps-site .ps-content > #ngeblogging-comments .ngc-replies {
+    margin-inline-start: 0;
+    padding-inline-start: 10px;
+  }
+}
