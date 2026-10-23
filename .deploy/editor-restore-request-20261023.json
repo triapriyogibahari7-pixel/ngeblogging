@@ -1,0 +1,6 @@
+{
+  "purpose": "Deploy editor source after reverting assistant patch 5961ce2",
+  "restoration_commit": "58b13ee865999b87bcf95354b7dc2429270997af",
+  "editor_css_baseline_commit": "05dc780d33e7a5c6c66d1c5ba1f21ac4467d8285",
+  "editor_css_blob": "abd6f40b8fb7e025a546c1573e9e29efcf6bc50b"
+}
