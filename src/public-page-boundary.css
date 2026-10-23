@@ -35,3 +35,112 @@ html body > #root > .ps-site > .ps-footer {
     flex-wrap: wrap;
   }
 }
+
+/* Desktop public articles/pages share this boundary across theme choices.
+ * Do not target ps-theme-home, theme iframes, the marketing page or ce-app.
+ */
+@media screen and (min-width: 761px) {
+  html:has(body > #root > .ps-site),
+  html body:has(> #root > .ps-site),
+  html body > #root:has(> .ps-site) {
+    position: static !important;
+    inset: auto !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+  html body > #root > .ps-site {
+    display: block !important;
+    position: relative !important;
+    inset: auto !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+  html body > #root > .ps-site > .ps-content-shell {
+    box-sizing: border-box !important;
+    display: grid !important;
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding-inline: clamp(18px, 7vw, 110px) !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+  html body > #root > .ps-site > .ps-content-shell > .ps-content {
+    box-sizing: border-box !important;
+    display: block !important;
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow-wrap: anywhere;
+    transform: none !important;
+  }
+  html body > #root > .ps-site .ps-content > h1,
+  html body > #root > .ps-site .ps-lead,
+  html body > #root > .ps-site .ps-body,
+  html body > #root > .ps-site .ps-side {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  html body > #root > .ps-site .ps-body :is(figure,img,video,audio,pre,table) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100% !important;
+  }
+  html body > #root > .ps-site .ps-body figure { margin-inline: 0; }
+  html body > #root > .ps-site .ps-body :is(img,video) { height: auto; }
+  html body > #root > .ps-site .ps-body :is(pre,table) { overflow-x: auto; }
+  html body > #root > .ps-site .ps-body table { display: block; }
+  html body > #root > .ps-site .ps-related > div {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  html body > #root > .ps-site > .ps-header { flex-wrap: wrap; }
+  html body > #root > .ps-site > .ps-header > nav {
+    display: flex;
+    position: static;
+    inset: auto;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  html body > #root > .ps-site .ps-header :is(a,button),
+  html body > #root > .ps-site .ps-side a,
+  html body > #root > .ps-site .ps-related a {
+    pointer-events: auto;
+    overflow-wrap: anywhere;
+  }
+}
+@media screen and (min-width: 981px) {
+  html body > #root > .ps-site > .ps-content-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px) !important;
+    gap: clamp(20px, 3vw, 50px);
+  }
+}
+@media screen and (min-width: 761px) and (max-width: 980px) {
+  html body > #root > .ps-site > .ps-content-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html body > #root > .ps-site .ps-side { position: static; }
+  html body > #root > .ps-site .ps-related > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
