@@ -25,3 +25,68 @@ html body .nara-assistant-shell[data-nara-size] .nara-rich-text {
 html body .nara-assistant-shell[data-nara-size] .nara-rich-text pre {max-width:100%;overflow-x:auto;white-space:pre;}
 html body .nara-assistant-shell[data-nara-size] > .nara-quick-prompts {max-height:44px!important;overflow-x:auto!important;overflow-y:hidden!important;flex-wrap:nowrap!important;}
 html body .nara-assistant-shell[data-nara-size] .nara-composer textarea {min-height:56px!important;max-height:104px!important;}
+
+/* One shared mobile Nara layout, independent of editor/sidebar context.
+ * Do not target editor geometry, launcher, billing dialog or desktop panels.
+ */
+@media screen and (max-width:760px){
+  html:root body .nara-assistant-layer[data-nara-release-v313][data-nara-layer-size][role="dialog"]{
+    box-sizing:border-box!important;position:fixed!important;inset:0!important;
+    display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0!important;
+    overflow:hidden!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313][data-nara-layer-size][role="dialog"]>.nara-assistant-shell[data-nara-size]{
+    box-sizing:border-box!important;position:absolute!important;
+    left:50%!important;right:auto!important;
+    top:max(6px,env(safe-area-inset-top,0px))!important;
+    bottom:max(6px,env(safe-area-inset-bottom,0px))!important;
+    width:min(calc(100vw - 12px),520px)!important;min-width:0!important;max-width:calc(100vw - 12px)!important;
+    height:auto!important;min-height:0!important;max-height:calc(100dvh - 12px)!important;
+    display:flex!important;flex-direction:column!important;
+    margin:0!important;padding:0!important;border-radius:16px!important;
+    transform:translateX(-50%)!important;overflow:hidden!important;
+    background:#fff!important;opacity:1!important;pointer-events:auto!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>:is(.nara-assistant-header,.nara-context-bar,.nara-quick-prompts,.nara-composer){
+    box-sizing:border-box!important;position:relative!important;inset:auto!important;
+    flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    margin:0!important;transform:none!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-assistant-header{
+    display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:5px!important;
+    height:auto!important;min-height:48px!important;max-height:none!important;padding:5px 7px!important;overflow:visible!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-assistant-header>div:nth-child(2){flex:1 1 80px!important;min-width:0!important}
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-assistant-header>div:nth-child(2)>small{display:none!important}
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-assistant-header>button{
+    position:static!important;flex:0 0 32px!important;width:32px!important;min-width:32px!important;
+    height:32px!important;margin:0!important;padding:0!important;transform:none!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-assistant-messages{
+    box-sizing:border-box!important;position:relative!important;inset:auto!important;
+    flex:1 1 0!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:10px!important;
+    overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-quick-prompts{
+    display:flex!important;flex-wrap:nowrap!important;height:42px!important;min-height:42px!important;
+    gap:5px!important;padding:4px 7px!important;overflow-x:auto!important;overflow-y:hidden!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size]>.nara-composer{padding:7px!important;overflow:visible!important;background:#fff!important}
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size] .nara-composer textarea{
+    box-sizing:border-box!important;display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    min-height:58px!important;max-height:104px!important;margin:0 0 6px!important;font-size:16px!important;resize:none!important;
+  }
+  html:root body .nara-assistant-layer[data-nara-release-v313]>.nara-assistant-shell[data-nara-size] .nara-composer-tools{
+    display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:5px!important;
+    width:100%!important;min-width:0!important;height:auto!important;min-height:40px!important;overflow:visible!important;
+  }
+}
+@media screen and (max-width:390px){
+  html:root body .nara-assistant-layer[data-nara-release-v313][data-nara-layer-size][role="dialog"]>.nara-assistant-shell[data-nara-size]{
+    width:calc(100vw - 8px)!important;max-width:calc(100vw - 8px)!important;
+    top:max(4px,env(safe-area-inset-top,0px))!important;bottom:max(4px,env(safe-area-inset-bottom,0px))!important;
+    max-height:calc(100dvh - 8px)!important;
+  }
+}
