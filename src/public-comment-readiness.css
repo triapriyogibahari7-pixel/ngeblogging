@@ -1,0 +1,50 @@
+/* Only the public comment widget; no Studio/editor or theme-home changes. */
+#root > #ngeblogging-comments,
+#root > .app-loading #ngeblogging-comments,
+#root > .ps-state #ngeblogging-comments {
+  display: none !important;
+}
+html body > #root > .ps-site .ps-content > #ngeblogging-comments {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+html body > #root > .ps-site .ps-content > #ngeblogging-comments > .ngc-heading {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+html body > #root > .ps-site .ps-content > #ngeblogging-comments > .ngc-heading > div {
+  min-width: 0;
+}
+html body > #root > .ps-site .ps-content > #ngeblogging-comments > .ngc-heading h2 {
+  margin: 0 !important;
+  font-size: clamp(20px, 2vw, 26px) !important;
+  line-height: 1.25 !important;
+  letter-spacing: normal !important;
+  overflow-wrap: anywhere;
+}
+html body > #root > .ps-site .ps-content > #ngeblogging-comments > .ngc-heading .ngc-mark {
+  box-sizing: border-box;
+  display: inline-grid !important;
+  place-items: center;
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  overflow: hidden;
+}
+html body > #root > .ps-site .ps-content > #ngeblogging-comments > .ngc-heading .ngc-mark svg {
+  width: 24px !important;
+  height: 24px !important;
+}
