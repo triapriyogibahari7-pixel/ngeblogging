@@ -26,21 +26,15 @@ import "./studio-mobile-editor-v404.css";
 import "./studio-mobile-editor-v406.css";
 import "./studio-mobile-editor-v407.css";
 import "./studio-mobile-editor-v409.css";
+import EditorDialogBoundary from "./EditorDialogBoundary";
 
 const DEVICES = [
   { id: "desktop", label: "Desktop", icon: Monitor },
   { id: "tablet", label: "Tablet", icon: Tablet },
   { id: "mobile", label: "Mobile", icon: Smartphone },
 ];
-
-function command(name, value = null) {
-  document.execCommand(name, false, value);
-}
-
-function csv(value) {
-  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 50);
-}
-
+function command(name, value = null) { document.execCommand(name, false, value); }
+function csv(value) { return String(value || "").split(",").map((item) => item.trim()).filter(Boolean).slice(0, 50); }
 function localDateTime(value) {
   if (!value) return "";
   const date = new Date(value);
@@ -48,64 +42,46 @@ function localDateTime(value) {
   const pad = (number) => String(number).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
-
 function Field({ label, help, children, wide = false }) {
   return <label className={wide ? "ce-field wide" : "ce-field"}><span>{label}</span>{children}{help && <small>{help}</small>}</label>;
 }
-
 function Toggle({ label, help, checked, onChange }) {
   return <label className="ce-toggle"><span><b>{label}</b>{help && <small>{help}</small>}</span><input type="checkbox" checked={Boolean(checked)} onChange={(event) => onChange(event.target.checked)}/></label>;
 }
-
 function DeviceSwitch({ value, onChange }) {
   return <div className="ce-device-switch">{DEVICES.map(({ id, label, icon: Icon }) => <button key={id} className={value === id ? "active" : ""} onClick={() => onChange(id)} title={label}><Icon/><span>{label}</span></button>)}</div>;
 }
-
 const RichTextEditor = memo(function RichTextEditor({ documentId, initialContent, patchRef, editorRef }) {
   const rootRef = useRef(null);
-
   const sync = useCallback((nextContent = "") => {
     const root = rootRef.current;
     if (!root) return;
     if (document.activeElement === root) return;
     if (root.innerHTML !== nextContent) root.innerHTML = nextContent;
   }, []);
-
   useImperativeHandle(editorRef, () => ({
     focus: () => rootRef.current?.focus(),
-    get innerHTML() {
-      return rootRef.current?.innerHTML || "";
-    },
+    get innerHTML() { return rootRef.current?.innerHTML || ""; },
     sync,
   }), [sync]);
-
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (root) root.innerHTML = initialContent || "";
   }, [documentId]);
-
-  const handleInput = useCallback((event) => {
-    patchRef.current?.({ content: event.currentTarget.innerHTML });
-  }, [patchRef]);
-
+  const handleInput = useCallback((event) => { patchRef.current?.({ content: event.currentTarget.innerHTML }); }, [patchRef]);
   return <article ref={rootRef} className="ce-paper" contentEditable suppressContentEditableWarning onInput={handleInput}/>;
 }, (previous, next) => previous.documentId === next.documentId);
-
 function Preview({ doc, site, device, onClose }) {
   const metadata = doc.metadata || {};
   const date = metadata.eventDate || doc.publishedAt || doc.createdAt;
-  return <div className="ce-preview-layer"><button className="ce-preview-backdrop" onClick={onClose} aria-label="Tutup preview"/><section><header><div><small>PREVIEW SITUS</small><h2>{doc.title}</h2></div><button onClick={onClose}><X/></button></header><div className={`ce-preview-canvas ${device}`}><article><nav><b>{site?.name || "Ngeblogging"}</b><span>Beranda · {doc.type === "page" ? "Pages" : "Posts"}</span></nav><main><small>{doc.type === "page" ? "PAGE" : "POST"}{date ? ` · ${new Intl.DateTimeFormat("id-ID", { dateStyle: "long" }).format(new Date(date))}` : ""}</small><h1>{doc.title}</h1>{doc.excerpt && <p className="lead">{doc.excerpt}</p>}{metadata.locationName && <p className="location"><MapPin/> {metadata.locationName}</p>}<div className="body" dangerouslySetInnerHTML={{ __html: doc.content || "" }}/>{metadata.tags?.length > 0 && <div className="tags">{metadata.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}</main><footer>© {new Date().getFullYear()} {site?.name || "Ngeblogging"}</footer></article></div></section></div>;
+  return <div className="ce-preview-layer"><button className="ce-preview-backdrop" onClick={onClose} aria-label="Tutup preview"/><section role="dialog" aria-modal="true" aria-label="Preview situs"><header><div><small>PREVIEW SITUS</small><h2>{doc.title}</h2></div><button type="button" onClick={onClose} aria-label="Tutup preview"><X/></button></header><div className={`ce-preview-canvas ${device}`}><article><nav><b>{site?.name || "Ngeblogging"}</b><span>Beranda · {doc.type === "page" ? "Pages" : "Posts"}</span></nav><main><small>{doc.type === "page" ? "PAGE" : "POST"}{date ? ` · ${new Intl.DateTimeFormat("id-ID", { dateStyle: "long" }).format(new Date(date))}` : ""}</small><h1>{doc.title}</h1>{doc.excerpt && <p className="lead">{doc.excerpt}</p>}{metadata.locationName && <p className="location"><MapPin/> {metadata.locationName}</p>}<div className="body" dangerouslySetInnerHTML={{ __html: doc.content || "" }}/>{metadata.tags?.length > 0 && <div className="tags">{metadata.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}</main><footer>© {new Date().getFullYear()} {site?.name || "Ngeblogging"}</footer></article></div></section></div>;
 }
-
 export default function ContentEditor({ doc, site, user, saved, patch, publish, onBack, onOpenNara, setToast }) {
   const editor = useRef(null);
   const [tab, setTab] = useState("content");
-
   const patchRef = useRef(patch);
   patchRef.current = patch;
-  useLayoutEffect(() => {
-    editor.current?.sync(doc.content || "");
-  }, [doc.content]);
+  useLayoutEffect(() => { editor.current?.sync(doc.content || ""); }, [doc.content]);
   const [preview, setPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState("desktop");
   const [mediaOpen, setMediaOpen] = useState(false);
@@ -114,7 +90,6 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
   const metadata = doc.metadata || {};
   const seo = doc.seo || {};
   const isPage = doc.type === "page";
-
   const words = useMemo(() => String(doc.content || "").replace(/<[^>]+>/g, " ").trim().split(/\s+/).filter(Boolean).length, [doc.content]);
   const readingMinutes = Math.max(1, Math.ceil(words / 220));
   const seoScore = useMemo(() => {
@@ -128,13 +103,9 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
     if (words >= 300 || isPage) score += 5;
     return Math.min(100, score);
   }, [doc.title, doc.excerpt, metadata, site?.slug, words, isPage]);
-
   const format = (name, value = null) => {
-    editor.current?.focus();
-    command(name, value);
-    patch({ content: editor.current?.innerHTML || doc.content });
+    editor.current?.focus(); command(name, value); patch({ content: editor.current?.innerHTML || doc.content });
   };
-
   const insertHtml = (html) => format("insertHTML", html);
   const insertLink = () => {
     const url = window.prompt("Alamat tautan HTTPS");
@@ -157,32 +128,16 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
   const tool = (title, icon, action) => <button title={title} aria-label={title} onClick={action}>{icon}</button>;
   const updateMetadata = (values) => patch({ metadata: { ...metadata, ...values }, type: doc.type });
   const updateSeo = (values) => patch({ seo: { ...seo, ...values }, metadata, type: doc.type });
-
   return <div className="ce-app" data-mobile-editor-v400="true" data-mobile-editor-v401="true" data-mobile-editor-v402="true" data-mobile-editor-v403="true" data-mobile-editor-v404="true" data-mobile-editor-v406="true" data-mobile-editor-v407="true" data-mobile-editor-v409="true">
     <header className="ce-titlebar"><button className="ce-back" onClick={onBack}><ArrowLeft/></button><div className="ce-file"><FileText/><label><input value={doc.title} onChange={(event) => patch({ title: event.target.value, slug: slugify(event.target.value) })}/><small>{saved ? <><Check/> Tersimpan otomatis</> : <><LoaderCircle className="spin"/> Menyimpan…</>}</small></label></div><div className="ce-actions"><button onClick={() => setPreview(true)}><Eye/> Preview</button><button className="ce-primary" onClick={publish}><Send/>{doc.status === "published" ? "Jadikan draf" : doc.status === "scheduled" ? "Terjadwal" : "Terbitkan"}</button></div></header>
     <nav className="ce-tabs">{[["content","Konten"],["insert","Sisipkan"],["layout","Tata letak"],["metadata","Metadata"],["seo","SEO"],["source","HTML"]].map(([id,label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); if (id === "source") { setSourceDraft(doc.content || ""); setSourceOpen(true); } }}>{label}</button>)}</nav>
     <div className="ce-mobile-toolbar" aria-label="Toolbar editor mobile">
-      <div className="ce-mobile-toolbar-group" aria-label="Riwayat">
-        <button type="button" title="Urungkan" aria-label="Urungkan" onClick={() => format("undo")}><Undo2/></button>
-        <button type="button" title="Ulangi" aria-label="Ulangi" onClick={() => format("redo")}><Redo2/></button>
-      </div>
-      <div className="ce-mobile-toolbar-group" aria-label="Teks">
-        <button type="button" title="Tebal" aria-label="Tebal" onClick={() => format("bold")}><Bold/></button>
-        <button type="button" title="Miring" aria-label="Miring" onClick={() => format("italic")}><Italic/></button>
-        <button type="button" title="Garis bawah" aria-label="Garis bawah" onClick={() => format("underline")}><Underline/></button>
-      </div>
-      <div className="ce-mobile-toolbar-group" aria-label="Paragraf">
-        <button type="button" title="Daftar poin" aria-label="Daftar poin" onClick={() => format("insertUnorderedList")}><List/></button>
-        <button type="button" title="Daftar nomor" aria-label="Daftar nomor" onClick={() => format("insertOrderedList")}><ListOrdered/></button>
-        <button type="button" title="Tautan" aria-label="Tautan" onClick={insertLink}><Link/></button>
-      </div>
-      <div className="ce-mobile-toolbar-group" aria-label="Sisipkan">
-        <button type="button" title="Media" aria-label="Media" onClick={() => setMediaOpen(true)}><Upload/></button>
-        <button type="button" title="Tabel" aria-label="Tabel" onClick={insertTable}><Table2/></button>
-      </div>
+      <div className="ce-mobile-toolbar-group" aria-label="Riwayat"><button type="button" title="Urungkan" aria-label="Urungkan" onClick={() => format("undo")}><Undo2/></button><button type="button" title="Ulangi" aria-label="Ulangi" onClick={() => format("redo")}><Redo2/></button></div>
+      <div className="ce-mobile-toolbar-group" aria-label="Teks"><button type="button" title="Tebal" aria-label="Tebal" onClick={() => format("bold")}><Bold/></button><button type="button" title="Miring" aria-label="Miring" onClick={() => format("italic")}><Italic/></button><button type="button" title="Garis bawah" aria-label="Garis bawah" onClick={() => format("underline")}><Underline/></button></div>
+      <div className="ce-mobile-toolbar-group" aria-label="Paragraf"><button type="button" title="Daftar poin" aria-label="Daftar poin" onClick={() => format("insertUnorderedList")}><List/></button><button type="button" title="Daftar nomor" aria-label="Daftar nomor" onClick={() => format("insertOrderedList")}><ListOrdered/></button><button type="button" title="Tautan" aria-label="Tautan" onClick={insertLink}><Link/></button></div>
+      <div className="ce-mobile-toolbar-group" aria-label="Sisipkan"><button type="button" title="Media" aria-label="Media" onClick={() => setMediaOpen(true)}><Upload/></button><button type="button" title="Tabel" aria-label="Tabel" onClick={insertTable}><Table2/></button></div>
       <button type="button" className="ce-mobile-toolbar-nara" title="Buka Nara AI" aria-label="Buka Nara AI" onClick={onOpenNara}><Sparkles/><span>Nara AI</span></button>
     </div>
-
     <div className="ce-ribbon">
       <section><span>Edit</span><nav>{tool("Undo",<Undo2/>,() => format("undo"))}{tool("Redo",<Redo2/>,() => format("redo"))}{tool("Hapus format",<Trash2/>,() => format("removeFormat"))}</nav></section>
       <section className="selects"><span>Tipografi</span><nav><select aria-label="Gaya" defaultValue="p" onChange={(event) => format("formatBlock",event.target.value)}><option value="p">Paragraf</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Kutipan</option><option value="pre">Kode</option></select><select aria-label="Font" defaultValue="DM Sans" onChange={(event) => format("fontName",event.target.value)}><option>DM Sans</option><option>Georgia</option><option>Arial</option><option>Courier New</option><option>Times New Roman</option></select><select aria-label="Ukuran" defaultValue="3" onChange={(event) => format("fontSize",event.target.value)}>{[[1,"12"],[2,"14"],[3,"16"],[4,"20"],[5,"28"],[6,"38"],[7,"52"]].map(([value,label]) => <option key={value} value={value}>{label}px</option>)}</select></nav></section>
@@ -191,7 +146,6 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
       <section><span>Sisipkan</span><nav>{tool("Heading 1",<Heading1/>,() => format("formatBlock","h1"))}{tool("Heading 2",<Heading2/>,() => format("formatBlock","h2"))}{tool("Tabel",<Table2/>,insertTable)}{tool("Tautan",<Link/>,insertLink)}{tool("Media",<Upload/>,() => setMediaOpen(true))}{tool("Kutipan",<Quote/>,() => format("formatBlock","blockquote"))}</nav></section>
       <section className="ce-nara-section"><span>AI</span><nav><button className="ce-nara" onClick={onOpenNara} aria-label="Tulis dengan Nara AI" title="Tulis dengan Nara AI"><Sparkles/> <b>Tulis dengan Nara</b></button></nav></section>
     </div>
-
     <div className="ce-workspace">
       <main className="ce-paper-shell"><RichTextEditor documentId={doc.id} initialContent={doc.content || ""} patchRef={patchRef} editorRef={editor}/><div className="ce-mobile-actions" aria-label="Aksi editor mobile"><button type="button" onClick={onOpenNara}><Sparkles/><span>Nara AI</span></button><button type="button" onClick={() => setMediaOpen(true)}><Upload/><span>Media</span></button><button type="button" onClick={() => setPreview(true)}><Eye/><span>Preview</span></button></div></main>
       <aside className="ce-sidebar">
@@ -203,9 +157,11 @@ export default function ContentEditor({ doc, site, user, saved, patch, publish, 
         <section><h3>SEO & sosial</h3><Field label="Meta description" help={`${(doc.excerpt || "").length}/160 karakter`}><textarea maxLength={160} value={doc.excerpt || ""} onChange={(event) => patch({excerpt:event.target.value})} placeholder="Ringkasan unik 120–160 karakter"/></Field><Field label="Focus keyword"><input value={metadata.focusKeyword || ""} onChange={(event) => updateMetadata({focusKeyword:event.target.value})}/></Field><Field label="Canonical URL"><input type="url" value={metadata.canonicalUrl || ""} onChange={(event) => updateMetadata({canonicalUrl:event.target.value})} placeholder={site?.slug ? `https://${site.slug}.ngeblogging.com/${doc.slug}` : "https://..."}/></Field><Field label="Schema type"><select value={metadata.schemaType || (isPage ? "WebPage" : "BlogPosting")} onChange={(event) => updateMetadata({schemaType:event.target.value})}><option>BlogPosting</option><option>NewsArticle</option><option>Article</option><option>WebPage</option><option>AboutPage</option><option>ContactPage</option><option>Event</option><option>FAQPage</option><option>HowTo</option><option>Product</option><option>ProfilePage</option></select></Field><Toggle label="Izinkan index" checked={seo.index !== false} onChange={(value) => updateSeo({index:value})}/><Toggle label="Izinkan follow" checked={seo.follow !== false} onChange={(value) => updateSeo({follow:value})}/><div className="ce-score"><span>Skor SEO</span><b className={seoScore >= 80 ? "good" : seoScore >= 60 ? "medium" : "low"}>{seoScore}/100</b></div></section>
       </aside>
     </div>
-
-    {preview && <Preview doc={doc} site={site} device={previewDevice} onClose={() => setPreview(false)}/>} {preview && <div className="ce-preview-devices"><DeviceSwitch value={previewDevice} onChange={setPreviewDevice}/></div>}
-    {mediaOpen && <div className="ce-media-layer"><button className="ce-media-backdrop" onClick={() => setMediaOpen(false)} aria-label="Tutup"/><section><header><div><small>PUSTAKA MEDIA</small><h2>Sisipkan media</h2></div><button onClick={() => setMediaOpen(false)}><X/></button></header><MediaLibrary site={site} user={user} setToast={setToast} onInsert={insertMedia}/></section></div>}
-    {sourceOpen && <div className="ce-source-layer"><button className="ce-source-backdrop" onClick={() => setSourceOpen(false)} aria-label="Tutup"/><section><header><div><small>HTML KONTEN</small><h2>Edit source post/page</h2></div><button onClick={() => setSourceOpen(false)}><X/></button></header><textarea value={sourceDraft} onChange={(event) => setSourceDraft(event.target.value)} spellCheck="false"/><footer><span><Code2/> Script, iframe, object, dan event handler akan dibersihkan saat tampil publik.</span><button onClick={() => setSourceOpen(false)}>Batal</button><button className="ce-primary" onClick={() => { patch({content:sourceDraft}); setSourceOpen(false); setToast("HTML konten disimpan"); }}><Save/> Simpan HTML</button></footer></section></div>}
+    {(preview || mediaOpen || sourceOpen) && <EditorDialogBoundary onClose={() => { setPreview(false); setMediaOpen(false); setSourceOpen(false); }}>
+      {preview && <Preview doc={doc} site={site} device={previewDevice} onClose={() => setPreview(false)}/>}
+      {preview && <div className="ce-preview-devices"><DeviceSwitch value={previewDevice} onChange={setPreviewDevice}/></div>}
+      {mediaOpen && <div className="ce-media-layer"><button type="button" className="ce-media-backdrop" onClick={() => setMediaOpen(false)} aria-label="Tutup media"/><section role="dialog" aria-modal="true" aria-label="Sisipkan media"><header><div><small>PUSTAKA MEDIA</small><h2>Sisipkan media</h2></div><button type="button" onClick={() => setMediaOpen(false)} aria-label="Tutup media"><X/></button></header><MediaLibrary site={site} user={user} setToast={setToast} onInsert={insertMedia}/></section></div>}
+      {sourceOpen && <div className="ce-source-layer"><button type="button" className="ce-source-backdrop" onClick={() => setSourceOpen(false)} aria-label="Tutup HTML"/><section role="dialog" aria-modal="true" aria-label="Edit HTML konten"><header><div><small>HTML KONTEN</small><h2>Edit source post/page</h2></div><button type="button" onClick={() => setSourceOpen(false)} aria-label="Tutup HTML"><X/></button></header><textarea value={sourceDraft} onChange={(event) => setSourceDraft(event.target.value)} spellCheck="false"/><footer><span><Code2/> Script, iframe, object, dan event handler akan dibersihkan saat tampil publik.</span><button onClick={() => setSourceOpen(false)}>Batal</button><button className="ce-primary" onClick={() => { patch({content:sourceDraft}); setSourceOpen(false); setToast("HTML konten disimpan"); }}><Save/> Simpan HTML</button></footer></section></div>}
+    </EditorDialogBoundary>}
   </div>;
 }
