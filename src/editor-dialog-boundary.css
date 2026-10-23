@@ -17,7 +17,7 @@ html body .ce-app.ce-dialog-host .sn-media-tools{display:flex!important;flex-wra
 html body .ce-app.ce-dialog-host .sn-media-tools>label{min-width:0!important;max-width:100%!important}
 html body .ce-app.ce-dialog-host .sn-media-tools input{min-width:0!important;width:100%!important}
 html body .ce-app.ce-dialog-host .sn-media-tools nav{max-width:100%!important;overflow:auto!important}
-html body .ce-app.ce-dialog-host .sn-media-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)))!important;gap:12px!important;min-width:0!important}
+html body .ce-app.ce-dialog-host .sn-media-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))!important;gap:12px!important;min-width:0!important}
 html body .ce-app.ce-dialog-host .sn-media-grid>article{min-width:0!important;max-width:100%!important;overflow:hidden!important}
 html body .ce-app.ce-dialog-host .sn-media-preview :is(img,video){object-fit:contain!important}
 html body .ce-app.ce-dialog-host .ce-source-layer textarea{resize:none!important}
