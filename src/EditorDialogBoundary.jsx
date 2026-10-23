@@ -4,6 +4,7 @@ import "./editor-dialog-boundary.css";
 import "./editor-media-content.css";
 import "./editor-nara-summary-parity.css";
 import "./editor-empty-draft.mjs";
+import "./editor-preview-mobile-frame.css";
 
 export default function EditorDialogBoundary({ children, onClose }) {
   const [host] = useState(() => {
