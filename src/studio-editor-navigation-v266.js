@@ -163,6 +163,8 @@ function buildEditorNavigation() {
   host.id = "ngeblogging-editor-nav-v266";
   host.dataset.release = RELEASE;
   host.dataset.cleanCloneRelease = STUDIO_EDITOR_NAVIGATION_CLEAN_CLONE_V317;
+  host.style.setProperty("display", "none", "important");
+  host.dataset.editorNavigationPending = "true";
   host.innerHTML = `
     <button type="button" class="ce-editor-sidebar-toggle-v266" aria-label="Buka menu Studio"><strong>n</strong></button>
     <button type="button" class="ce-editor-sidebar-backdrop-v266" aria-label="Tutup menu Studio"></button>
@@ -213,7 +215,7 @@ function buildEditorNavigation() {
 
 function syncEditorNavigation() {
   cacheStudioSidebar();
-  const editor = document.querySelector(".ce-app");
+  const editor = [...document.querySelectorAll(".ce-app")].find((node) => !node.classList.contains("ce-dialog-host") && node.querySelector(".ce-paper[contenteditable]"));
   let host = document.getElementById("ngeblogging-editor-nav-v266");
   if (!editor) {
     host?.remove();
@@ -237,6 +239,10 @@ function syncEditorNavigation() {
     document.documentElement.classList.toggle("editor-v266-collapsed", !expanded);
   }
   syncAria(host);
+  if (host.dataset.editorNavigationPending === "true") {
+    host.style.removeProperty("display");
+    delete host.dataset.editorNavigationPending;
+  }
 }
 
 function sync() {
