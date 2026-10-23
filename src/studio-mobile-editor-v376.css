@@ -71,3 +71,8 @@
   min-width:0!important;
   max-width:100%!important;
 }
+
+/* Remove only the dedicated AI ribbon section in Post/Page editors. */
+html body .ce-app[data-mobile-editor-v402="true"] .ce-ribbon>section.ce-nara-section{
+  display:none!important;
+}
