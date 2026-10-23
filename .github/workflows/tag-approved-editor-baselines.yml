@@ -1,0 +1,62 @@
+name: Tag approved editor baselines
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tag-approved-editor-baselines.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tag-approved-editor-baselines
+  cancel-in-progress: false
+
+jobs:
+  tag-baselines:
+    if: github.repository == 'triapriyogibahari7-pixel/ngeblogging' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create and verify all three annotated tags
+        shell: bash
+        env:
+          BASELINE: 5da6573ae7d0b11c769afca65c756dd3bdafa8cb
+        run: |
+          set -euo pipefail
+          git fetch origin main --tags
+          test "$(git rev-parse "${BASELINE}^{commit}")" = "$BASELINE"
+          git merge-base --is-ancestor "$BASELINE" origin/main
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tags=(
+            'editor-stable-2026-10-23-5da6573'
+            'editor-mobile-stable-2026-10-23-5da6573'
+            'editor-desktop-stable-2026-10-23-5da6573'
+          )
+          for tag in "${tags[@]}"; do
+            if git show-ref --verify --quiet "refs/tags/$tag"; then
+              test "$(git rev-parse "refs/tags/${tag}^{commit}")" = "$BASELINE" || { echo "Refusing to move existing tag: $tag" >&2; exit 1; }
+              test "$(git cat-file -t "refs/tags/$tag")" = 'tag' || { echo "Existing tag is not annotated; refusing replacement: $tag" >&2; exit 1; }
+            fi
+          done
+          refs=()
+          for tag in "${tags[@]}"; do
+            if ! git show-ref --verify --quiet "refs/tags/$tag"; then
+              git tag -a "$tag" "$BASELINE" -m "Owner-approved Post/Page editor baseline: $tag. Fixed code snapshot $BASELINE, approved 2026-10-23 Asia/Jakarta. Not branch protection, a signed-tag certification, a database backup, or proof of tests/deployment."
+            fi
+            refs+=("refs/tags/$tag:refs/tags/$tag")
+          done
+          git push --atomic origin "${refs[@]}"
+          for tag in "${tags[@]}"; do
+            actual="$(git ls-remote origin "refs/tags/${tag}^{}" | cut -f1)"
+            test "$actual" = "$BASELINE" || { echo "Remote verification failed: $tag" >&2; exit 1; }
+            printf '%s -> %s\n' "$tag" "$actual"
+            printf -- '- `%s` -> `%s`\n' "$tag" "$actual" >> "$GITHUB_STEP_SUMMARY"
+          done
