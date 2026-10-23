@@ -1,10 +1,6 @@
 name: Tag approved editor baselines
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/tag-approved-editor-baselines.yml'
   workflow_dispatch:
 
 permissions:
