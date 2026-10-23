@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import "./editor-dialog-boundary.css";
 import "./editor-media-content.css";
 import "./editor-nara-summary-parity.css";
+import "./editor-empty-draft.mjs";
 
 export default function EditorDialogBoundary({ children, onClose }) {
   const [host] = useState(() => {
