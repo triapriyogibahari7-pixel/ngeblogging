@@ -63,7 +63,7 @@ function homeCode(site,theme,posts,pages) {
   const description=hero?.querySelector('p');
   if(title)title.textContent=data.site.name;
   if(description)description.textContent=data.site.description;
-  const footerBrand=document.querySelector('.ng-theme footer>b');
+  const footerBrand=document.querySelector('.ng-theme footer b');
   if(footerBrand)footerBrand.textContent=data.site.name;
   const nav=document.querySelector('.ng-header nav');
   if(nav){
