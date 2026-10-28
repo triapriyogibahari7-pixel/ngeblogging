@@ -1,6 +1,7 @@
+import {configuredMidtransPlans} from './midtrans-plan-catalog.mjs';
 const out=(status,body)=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json","cache-control":"no-store"}});
 export const paths=new Set(["/api/billing/midtrans/config","/api/billing/midtrans/create","/api/billing/midtrans/orders","/api/billing/midtrans/webhook"]);
-function config(env){let prices={};try{prices=JSON.parse(env.MIDTRANS_PLAN_PRICES_JSON||"{}");}catch{}return ["pro_monthly","pro_yearly"].filter(id=>Number.isSafeInteger(prices[id])&&prices[id]>0&&prices[id]<=100000000).map(id=>({id,label:id==="pro_monthly"?"Nara Pro Bulanan":"Nara Pro Tahunan",amount:prices[id],currency:"IDR",durationDays:id==="pro_monthly"?31:366}));}
+function config(env){return configuredMidtransPlans(env.MIDTRANS_PLAN_PRICES_JSON);}
 export function stateOf(s){if(["refund","partial_refund","chargeback","partial_chargeback"].includes(s.transaction_status))return "review_required";if(String(s.status_code)==="200"&&(!s.fraud_status||s.fraud_status==="accept")&&(s.transaction_status==="settlement"||(s.transaction_status==="capture"&&s.fraud_status==="accept")))return "paid";return ["deny","cancel","expire","failure"].includes(s.transaction_status)?"failed":"pending";}
 function amount(v){const s=String(v);if(!/^\d{1,12}(\.\d{1,2})?$/.test(s))throw Error("INVALID_AMOUNT");const [a,b=""]=s.split(".");return BigInt(a)*100n+BigInt(b.padEnd(2,"0"));}
 async function hash(algorithm,value){const d=await crypto.subtle.digest(algorithm,new TextEncoder().encode(value));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
@@ -40,6 +41,13 @@ export async function handleMidtrans(request,env,{fetchImpl=fetch}={}){
  let b;try{b=await bodyOf(request);}catch{return out(400,{error:"INVALID_BODY"});}
  if(!b||!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(b.idempotencyKey||""))return out(400,{error:"INVALID_REQUEST"});
  const plan=plans.find(p=>p.id===b.planId);if(!plan)return out(503,{error:"PLAN_PRICE_NOT_CONFIGURED"});
+ const profiles=await rest(`profiles?id=eq.${encodeURIComponent(user.id)}&select=id,plan,plan_expires_at&limit=1`);
+ const profile=Array.isArray(profiles)&&profiles.length===1?profiles[0]:null;
+ if(!profile||profile.id!==user.id||!['free','pro','business','supporter'].includes(profile.plan))return out(409,{error:"PROFILE_NOT_READY"});
+ const expiry=profile.plan_expires_at===null?null:Date.parse(profile.plan_expires_at);
+ if(expiry!==null&&!Number.isFinite(expiry))return out(409,{error:"PROFILE_NOT_READY"});
+ const target=plan.entitlement==='nara_max'?'business':'pro';
+ if(['pro','business'].includes(profile.plan)&&(expiry===null||(expiry>Date.now()&&profile.plan!==target)))return out(409,{error:"EXISTING_ENTITLEMENT_REQUIRES_REVIEW"});
  const id="NARA-"+(await hash("SHA-256",`${env.MIDTRANS_ENV}:${user.id}:${b.idempotencyKey}`)).slice(0,40);
  await rest("nara_midtrans_orders?on_conflict=order_id",{method:"POST",headers:{prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify({order_id:id,user_id:user.id,plan_id:plan.id,duration_days:plan.durationDays,amount:plan.amount,environment:env.MIDTRANS_ENV})});
  const order=(await rest(`nara_midtrans_orders?order_id=eq.${id}&select=*`))?.[0];
