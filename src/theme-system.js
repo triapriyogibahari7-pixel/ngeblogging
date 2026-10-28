@@ -1,5 +1,6 @@
 import { BUILT_IN_THEMES, THEME_COUNT, themeCodeFor } from "./theme-catalog.js";
 import { createDefaultWidgetState, normalizeWidgetState, widgetsMarkup } from "./widget-system.js";
+import { THEME_LOCAL_LINKS_SCRIPT } from "./theme-local-links.js";
 
 export { BUILT_IN_THEMES, THEME_COUNT };
 export const THEME_FILE_VERSION = 2;
@@ -237,7 +238,7 @@ function injectBeforeClosingTag(html, tagName, markup) {
 }
 
 export function buildThemeSrcDoc(code, config = DEFAULT_THEME_CONFIG, widgets = []) {
-  const safeScript = validString(code?.javascript, "", 120000).replace(/<\/script/gi, "<\\/script");
+  const safeScript = (THEME_LOCAL_LINKS_SCRIPT + "\n" + validString(code?.javascript, "", 120000)).replace(/<\/script/gi, "<\\/script");
   const sourceHtml = validString(code?.html, "", 350000);
   const beforeFooter = widgetsMarkup(widgets, "after-content");
   const footerWidgets = widgetsMarkup(widgets, "footer");
