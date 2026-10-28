@@ -9,6 +9,10 @@ export function validateBilling(body) {
     if (!plan || plan.currency!=="IDR" || plan.amount!==amount) throw Error("LIVE_PRICE_MISMATCH");
   }
 }
+export function validateProductionReadiness(body) {
+  if (body?.environment !== "production") throw Error("MIDTRANS_NOT_PRODUCTION");
+  if (body?.ready !== true) throw Error("MIDTRANS_NOT_READY");
+}
 async function get(url) {
   const response = await fetch(url,{headers:{"cache-control":"no-cache",accept:"application/json"},signal:AbortSignal.timeout(15000)});
   if (!response.ok) throw Error(`HTTP_${response.status}`);
@@ -24,6 +28,7 @@ export async function verifyDeployment(expected) {
         validateRelease(await get(`${origin}/release-v344.json?${query}`),expected);
         const config=await get(`${origin}/api/billing/midtrans/config?${query}`);
         validateBilling(config);
+        validateProductionReadiness(config);
         console.log(JSON.stringify({origin,commit:expected,codeVerified:true,merchantConfigured:config.ready===true,environment:config.environment}));
         last=null;break;
       } catch(error) {last=error;if(attempt<12)await new Promise(r=>setTimeout(r,5000));}
