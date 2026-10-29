@@ -37,6 +37,27 @@ async function serveStaticAsset(request, env) {
   if (request.method === "HEAD") return new Response(null, {status:response.status,statusText:response.statusText,headers});
   return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
 }
+async function billingHealth(response, request, env) {
+  if (!response.ok || !String(response.headers.get("content-type") || "").includes("application/json")) return response;
+  try {
+    const report = await response.clone().json();
+    const configUrl = new URL("/api/billing/midtrans/config", request.url);
+    const configResponse = await handleMidtrans(new Request(configUrl, {method: "GET"}), env);
+    if (!configResponse.ok) return response;
+    const config = await configResponse.json();
+    const providers = {...(report.billingProviders || {}), midtrans: config.ready === true};
+    const result = {...report, billing: Object.values(providers).some(value => value === true), billingProviders: providers, midtrans: {configured: config.ready === true, environment: config.environment, plans: (config.plans || []).map(plan => plan.id), readinessScope: "configuration-only", transactionProbe: "not-run"}};
+    const headers = new Headers(response.headers);
+    headers.set("content-type", "application/json; charset=utf-8");
+    headers.set("cache-control", "no-store");
+    headers.delete("content-length");
+    headers.delete("content-encoding");
+    headers.delete("etag");
+    return new Response(JSON.stringify(result), {status: response.status, statusText: response.statusText, headers});
+  } catch {
+    return response;
+  }
+}
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
@@ -47,7 +68,8 @@ export default {
       const staticResponse = await serveStaticAsset(request, env);
       if (staticResponse) return staticResponse;
     }
-    const response = await legalDiscovery(request, await baseWorker.fetch(request, env, context));
+    let response = await legalDiscovery(request, await baseWorker.fetch(request, env, context));
+    if (SYSTEM_HOSTS.has(url.hostname.toLowerCase()) && url.pathname === "/api/health" && request.method === "GET") response = await billingHealth(response, request, env);
     const headers = new Headers(response.headers);
     headers.set("x-ngeblogging-public-edge", PUBLIC_EDGE_RELEASE_V282);
     if (SYSTEM_HOSTS.has(url.hostname.toLowerCase()) && url.pathname === "/api/health") headers.set("x-ngeblogging-static-fast-path", "enabled");
