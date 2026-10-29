@@ -1,50 +1,58 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { hostedCheckoutUrl } from './midtrans-hosted-checkout.mjs';
+import { recoverSnapToken } from './midtrans-token-recovery.mjs';
+import { loadPaymentSdk, openPaymentPopup, paymentPopupVisible } from './midtrans-popup-sdk.mjs';
 import './premium-checkout.css';
-export default function PremiumCheckout({ orderId, environment, productName, amount, url, onRefresh, onBack }) {
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('Pembayaran dibuka di halaman resmi Midtrans, tanpa bingkai tertanam.');
-  const live = useRef(false);
-  const refreshLock = useRef(false);
-  useEffect(() => { live.current = true; return () => { live.current = false; }; }, []);
-  const target = hostedCheckoutUrl(url, environment);
-  const validOrder = /^NARA-[a-f0-9]{40}$/.test(orderId || '');
-  const validAmount = Number.isSafeInteger(amount) && amount > 0;
-  const ready = Boolean(target && validOrder && validAmount);
-  const price = validAmount ? new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(amount) : 'Harga belum terverifikasi';
-  async function refresh() {
-    if (refreshLock.current) return;
-    refreshLock.current = true;
-    setBusy(true);
-    setMessage('Memeriksa catatan pembayaran pada server Ngeblogging...');
+export default function PremiumCheckout({orderId,token,clientKey,environment,productName,amount,url,onRefresh,onBack}) {
+  const [state,setState]=useState('ready'),[message,setMessage]=useState('Klik Tampilkan pembayaran untuk membuka kotak pembayaran Midtrans di atas halaman ini.');
+  const live=useRef(false),lock=useRef(false),monitor=useRef(null),active=useRef(null),callbacks=useRef({onRefresh});
+  callbacks.current={onRefresh};
+  useEffect(()=>{live.current=true;return()=>{live.current=false;clearInterval(monitor.current);if(active.current)active.current.hide?.();};},[]);
+  const target=hostedCheckoutUrl(url,environment);
+  async function refresh() { await onRefresh?.(); }
+  function report(next,text) { if(live.current){setState(next);setMessage(text);} }
+  function stop() { clearInterval(monitor.current);monitor.current=null;lock.current=false; }
+  function verifiedRefresh() { Promise.resolve().then(()=>callbacks.current.onRefresh?.()).catch(()=>report('error','Status server belum dapat diperiksa. Jangan membayar ulang sebelum status jelas.')); }
+  async function open() {
+    if(lock.current)return;lock.current=true;report('loading','Memuat kotak pembayaran untuk order yang sama...');
     try {
-      await onRefresh?.();
-      if (live.current) setMessage('Pemeriksaan selesai. Lihat status server pada riwayat order. Jangan membayar ulang jika hasilnya belum jelas.');
-    } catch {
-      if (live.current) setMessage('Status belum dapat diperiksa. Jangan membuat tagihan atau pembayaran pengganti.');
-    } finally {
-      refreshLock.current = false;
-      if (live.current) setBusy(false);
-    }
+      let storage;try{storage=window.sessionStorage;}catch{}
+      const resolved=recoverSnapToken({token,orderId,environment,storage});
+      const sdk=await loadPaymentSdk(environment,clientKey);
+      if(!live.current){lock.current=false;return;}
+      active.current=sdk;
+      openPaymentPopup(sdk,resolved,{
+        onSuccess:()=>{stop();report('ready','Midtrans melaporkan pembayaran. Aktivasi tetap menunggu verifikasi server.');verifiedRefresh();},
+        onPending:()=>{stop();report('ready','Pembayaran masih menunggu penyelesaian. Periksa status order sebelum membayar ulang.');verifiedRefresh();},
+        onError:()=>{stop();report('error','Midtrans melaporkan kendala. Periksa status order yang sama sebelum mencoba kembali.');verifiedRefresh();},
+        onClose:()=>{stop();report('ready','Kotak pembayaran ditutup. Anda dapat membukanya kembali untuk order yang sama.');verifiedRefresh();}
+      });
+      if(!lock.current)return;
+      report('opening','Menunggu kotak pembayaran benar-benar terlihat...');
+      const started=Date.now();let seen=false;
+      monitor.current=setInterval(()=>{
+        if(!live.current){stop();return;}
+        if(paymentPopupVisible(document,window,environment)){
+          if(!seen){seen=true;report('open','Kotak pembayaran Midtrans terlihat. Pilih metode yang tersedia di dalamnya.');}
+        }else if(!seen&&Date.now()-started>20000){
+          stop();report('error','Kotak pembayaran belum terlihat. Gunakan tautan resmi di bawah untuk order yang sama; jangan membuat tagihan baru.');
+        }
+      },500);
+    }catch(error){stop();report('error',error.message||'Pembayaran belum dapat dibuka.');}
   }
+  const validAmount=Number.isSafeInteger(amount)&&amount>0;
+  const price=validAmount?new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(amount):'Harga belum terverifikasi';
+  const canOpen=validAmount&&/^NARA-[a-f0-9]{40}$/.test(orderId||'')&&Boolean(clientKey);
   return <section className="pc-shell" aria-label="Checkout Ngeblogging">
-    <aside className="pc-summary">
-      <span className="pc-eyebrow">NGEBLOGGING · CHECKOUT</span>
-      <h2>Ringkasan pembayaran</h2><h3>{productName}</h3>
-      <strong className="pc-price">{price}</strong><p className="pc-order">ID pesanan: {orderId}</p>
-      <p>Harga dan aktivasi paket diverifikasi server.</p>
-      {environment === 'sandbox' && <p role="status">Mode sandbox — bukan pembayaran produksi.</p>}
-      <button type="button" onClick={onBack}>Kembali ke pilihan paket</button>
-    </aside>
-    <div className="pc-payment">
-      <span className="pc-eyebrow">PEMBAYARAN DIPROSES MIDTRANS</span>
-      <h2>Lanjutkan pembayaran order ini</h2>
-      <p>Pilihan bank/Virtual Account, GoPay, dan QRIS mengikuti metode yang ditawarkan Midtrans untuk transaksi ini. Ketersediaan GoPay Later belum diverifikasi.</p>
+    <aside className="pc-summary"><span className="pc-eyebrow">NGEBLOGGING · CHECKOUT</span><h2>Ringkasan pembayaran</h2><h3>{productName}</h3><strong className="pc-price">{price}</strong><p className="pc-order">ID pesanan: {orderId}</p>{environment==='sandbox'&&<p role="status">Mode sandbox — bukan pembayaran produksi.</p>}<button type="button" onClick={onBack}>Kembali ke pilihan paket</button></aside>
+    <div className="pc-payment"><span className="pc-eyebrow">PEMBAYARAN MIDTRANS DI DALAM SITUS</span><h2>Pilih cara bayar Anda</h2>
+      <p>Ini popup resmi Midtrans di atas halaman Ngeblogging, bukan checkout Core API kustom. Pilihan VA, GoPay, dan QRIS mengikuti metode yang tersedia untuk transaksi ini. Ketersediaan GoPay Later belum diverifikasi.</p>
       <p role="status" aria-live="polite" className="pc-status">{message}</p>
-      {ready ? <p><a href={target} rel="noreferrer">Buka pembayaran resmi Midtrans</a></p> : <p role="alert">Data atau tautan pembayaran tidak valid. Jangan membayar sebelum status order diperiksa.</p>}
-      <ol><li>Buka pembayaran resmi dengan tombol di atas.</li><li>Pilih salah satu metode yang tersedia di Midtrans dan ikuti instruksinya.</li><li>Setelah membayar, kembali ke Ngeblogging dan periksa status order.</li></ol>
-      <button type="button" disabled={busy} onClick={refresh}>{busy ? 'Memeriksa...' : 'Periksa status order yang sama'}</button>
-      <p>Tombol ini tidak membuat order baru. Klik tombol atau bukti tangkapan layar tidak mengaktifkan paket; aktivasi menunggu verifikasi pembayaran pada server.</p>
+      <button type="button" disabled={!canOpen||['loading','opening','open'].includes(state)} onClick={open}>{state==='loading'?'Memuat pembayaran...':state==='open'?'Pembayaran sedang terbuka':'Tampilkan pembayaran'}</button>
+      <button type="button" onClick={()=>refresh().catch(()=>report('error','Status server belum dapat diperiksa.'))}>Periksa status order</button>
+      {!canOpen&&<p role="alert">Konfigurasi popup belum lengkap. Gunakan pembayaran resmi untuk order yang sama.</p>}
+      {target&&<p><a href={target} rel="noreferrer">Jika popup gagal, buka pembayaran order ini di Midtrans</a></p>}
+      <p>Browser tidak mengaktifkan paket. Aktivasi mengikuti verifikasi pembayaran pada server; jangan membuat pembayaran pengganti saat status belum jelas.</p>
     </div>
   </section>;
 }
