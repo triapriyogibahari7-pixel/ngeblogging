@@ -29,22 +29,14 @@
   }
 }
 
-/* Compact only the mobile editor small composer; preserve v1 frame geometry. */
+/* Small editor composer only: attachment, microphone, intelligence, model, send. Preserve frame geometry. */
 @media screen and (max-width:760px){
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools{grid-template-columns:38px 38px minmax(0,1fr) minmax(0,1fr) 40px!important;grid-template-rows:40px!important;gap:5px!important;min-height:40px!important;height:auto!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select.model{grid-column:3!important;grid-row:1!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select.intelligence{grid-column:4!important;grid-row:1!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select{padding:0 6px!important;}
+html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools{grid-template-columns:38px 38px minmax(0,1fr) minmax(0,1fr) 40px!important;grid-template-rows:40px!important;gap:4px!important;min-height:40px!important;height:auto!important;}
+html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select.model{grid-column:4!important;grid-row:1!important;}
+html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select.intelligence{grid-column:3!important;grid-row:1!important;}
+html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select{padding:0 4px!important;}
 html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select>span{font-size:11px!important;}
 html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools>.nara-attachment-menu-wrap{grid-column:1!important;grid-row:1!important;}
 html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools>button:not(.nara-send){grid-column:2!important;grid-row:1!important;}
 html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools>.nara-send{grid-column:5!important;grid-row:1!important;}
-}
-@media screen and (max-width:370px){
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:40px 40px!important;min-height:85px!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select.model{grid-column:1/3!important;grid-row:1!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools .nara-select.intelligence{grid-column:3/5!important;grid-row:1!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools>.nara-attachment-menu-wrap{grid-column:1!important;grid-row:2!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools>button:not(.nara-send){grid-column:2!important;grid-row:2!important;}
-html body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-shell[data-nara-size="small"] .nara-composer-tools>.nara-send{grid-column:4!important;grid-row:2!important;}
 }
