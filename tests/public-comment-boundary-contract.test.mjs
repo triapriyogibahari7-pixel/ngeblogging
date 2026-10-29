@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const css=readFileSync(new URL('../src/public-layout-containment.css',import.meta.url),'utf8');
+const marker='/* Public comment boundary contract:';
+const patch=css.slice(css.indexOf(marker));
+test('comment boundary remains present and covers Post and Page',()=>{assert.ok(css.includes(marker));assert.ok(patch.includes('.ps-site:is(.is-post,.is-page)'));assert.match(patch,/margin-inline:0!important/);});
+test('comment headings and form footer stay in normal flow',()=>{assert.match(patch,/\.ngc-comment>header\)\{position:relative!important;inset:auto!important/);assert.match(patch,/\.ngc-form footer\{position:static!important;inset:auto!important/);assert.match(patch,/min-width:0!important;max-width:100%!important;height:auto!important/);});
+test('comment icon and text cannot claim an unconstrained width',()=>{assert.match(patch,/\.ngc-heading>\.ngc-mark\{flex:0 0 52px!important/);assert.match(patch,/\.ngc-mark>svg\{display:block!important;width:24px!important;height:24px!important/);assert.match(patch,/overflow-wrap:anywhere!important/);});
+test('patch cannot silently broaden into Studio or document clipping',()=>{assert.doesNotMatch(patch,/overflow-x:\s*(hidden|clip)|\.nara-|\.ce-app|\.bv-|\.sn-site-create/);for(const line of patch.split('\n').filter(s=>s.includes('{')))assert.ok(line.includes('#ngeblogging-comments.ngc-root'),line);});
