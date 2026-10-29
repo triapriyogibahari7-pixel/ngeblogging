@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { hostedCheckoutUrl } from './midtrans-hosted-checkout.mjs';
 import { recoverSnapToken } from './midtrans-token-recovery.mjs';
 import { loadPaymentSdk, openPaymentPopup, paymentPopupVisible } from './midtrans-popup-sdk.mjs';
+import { embedFrameState } from './midtrans-embed-watchdog.mjs';
 import './premium-checkout.css';
 export default function PremiumCheckout({orderId,token,clientKey,environment,productName,amount,url,onRefresh,onBack}) {
   const [state,setState]=useState('ready'),[message,setMessage]=useState('Klik Tampilkan pembayaran untuk membuka kotak pembayaran Midtrans di atas halaman ini.');
@@ -29,12 +30,18 @@ export default function PremiumCheckout({orderId,token,clientKey,environment,pro
       });
       if(!lock.current)return;
       report('opening','Menunggu kotak pembayaran benar-benar terlihat...');
-      const started=Date.now();let seen=false;
+      const started=Date.now();let seen=false,missingSince=null;
       monitor.current=setInterval(()=>{
         if(!live.current){stop();return;}
-        if(paymentPopupVisible(document,window,environment)){
+        const now=Date.now(),visible=paymentPopupVisible(document,window,environment);
+        if(visible)missingSince=null;
+        else if(seen&&missingSince===null)missingSince=now;
+        const frameState=embedFrameState({visible,seen,elapsed:now-started,missingFor:missingSince===null?0:now-missingSince});
+        if(frameState==='visible'){
           if(!seen){seen=true;report('open','Kotak pembayaran Midtrans terlihat. Pilih metode yang tersedia di dalamnya.');}
-        }else if(!seen&&Date.now()-started>20000){
+        }else if(frameState==='missing'){
+          stop();report('error','Kotak pembayaran tidak terlihat lagi. Tekan Tampilkan pembayaran untuk membuka order yang sama, atau gunakan tautan resmi di bawah. Jangan membuat tagihan baru.');
+        }else if(frameState==='timeout'){
           stop();report('error','Kotak pembayaran belum terlihat. Gunakan tautan resmi di bawah untuk order yang sama; jangan membuat tagihan baru.');
         }
       },500);
