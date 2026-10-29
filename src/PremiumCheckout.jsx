@@ -1,81 +1,50 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
-import { checkoutTarget } from './midtrans-checkout-utils.mjs';
-import { recoverSnapToken } from './midtrans-token-recovery.mjs';
-import { embedFrameState } from './midtrans-embed-watchdog.mjs';
+import React, { useEffect, useRef, useState } from 'react';
+import { hostedCheckoutUrl } from './midtrans-hosted-checkout.mjs';
 import './premium-checkout.css';
-const scripts = new Map();
-export function loadSnap(environment, clientKey) {
-  if (!['production', 'sandbox'].includes(environment) || typeof clientKey !== 'string' || !clientKey.trim()) return Promise.reject(new Error('Konfigurasi checkout embedded belum lengkap.'));
-  const src = environment === 'production' ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js';
-  const existing = document.querySelector('script[data-ngeblogging-snap]');
-  if (existing && (existing.src !== src || existing.dataset.clientKey !== clientKey)) return Promise.reject(new Error('Konfigurasi pembayaran berubah. Muat ulang halaman.'));
-  if (scripts.has(src)) return scripts.get(src);
-  const promise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src; script.async = true; script.dataset.clientKey = clientKey; script.dataset.ngebloggingSnap = 'true';
-    const fail = () => { clearTimeout(timer); script.remove(); scripts.delete(src); reject(new Error('Checkout Midtrans gagal dimuat. Gunakan muat ulang pembayaran untuk order yang sama.')); };
-    const timer = setTimeout(fail, 20000);
-    script.onerror = fail;
-    script.onload = () => { clearTimeout(timer); if (typeof window.snap?.embed !== 'function') { fail(); return; } resolve(window.snap); };
-    document.head.appendChild(script);
-  });
-  scripts.set(src, promise); return promise;
-}
-export default function PremiumCheckout({ orderId, token, clientKey, environment, productName, amount, url, onRefresh, onBack }) {
-  const baseId = 'nb-snap-' + useId().replace(/[^a-zA-Z0-9_-]/g, '');
-  const callbacks = useRef({ onRefresh }); callbacks.current = { onRefresh };
-  const [message, setMessage] = useState('Menyiapkan pembayaran aman…');
-  const [mode, setMode] = useState('loading');
-  const [attempt, setAttempt] = useState(0);
-  const id = `${baseId}-${attempt}`;
-  let hostedUrl = null;
-  try { hostedUrl = checkoutTarget(url, environment); } catch {}
-  useEffect(() => {
-    let live = true, instance, monitor, seen = false, missingSince = null, terminal = false;
-    setMode('loading'); setMessage('Menyiapkan pembayaran aman…');
-    let storage; try { storage = window.sessionStorage; } catch {}
-    const resolved = recoverSnapToken({ token, orderId, environment, storage });
-    const fail = text => { if (!live) return; clearInterval(monitor); setMode('error'); setMessage(text); };
-    if (!resolved) {
-      setMode('hosted');
-      setMessage('Token embedded tidak tersedia untuk order ini. Periksa status order yang sama; jangan membuat tagihan baru.');
-      return () => { live = false; };
+export default function PremiumCheckout({ orderId, environment, productName, amount, url, onRefresh, onBack }) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('Pembayaran dibuka di halaman resmi Midtrans, tanpa bingkai tertanam.');
+  const live = useRef(false);
+  const refreshLock = useRef(false);
+  useEffect(() => { live.current = true; return () => { live.current = false; }; }, []);
+  const target = hostedCheckoutUrl(url, environment);
+  const validOrder = /^NARA-[a-f0-9]{40}$/.test(orderId || '');
+  const validAmount = Number.isSafeInteger(amount) && amount > 0;
+  const ready = Boolean(target && validOrder && validAmount);
+  const price = validAmount ? new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(amount) : 'Harga belum terverifikasi';
+  async function refresh() {
+    if (refreshLock.current) return;
+    refreshLock.current = true;
+    setBusy(true);
+    setMessage('Memeriksa catatan pembayaran pada server Ngeblogging...');
+    try {
+      await onRefresh?.();
+      if (live.current) setMessage('Pemeriksaan selesai. Lihat status server pada riwayat order. Jangan membayar ulang jika hasilnya belum jelas.');
+    } catch {
+      if (live.current) setMessage('Status belum dapat diperiksa. Jangan membuat tagihan atau pembayaran pengganti.');
+    } finally {
+      refreshLock.current = false;
+      if (live.current) setBusy(false);
     }
-    const update = text => { if (!live) return; setMessage(text); Promise.resolve().then(() => callbacks.current.onRefresh?.()).catch(() => { if (live) setMessage('Status server belum dapat diperbarui. Periksa kembali sebelum membayar ulang.'); }); };
-    loadSnap(environment, clientKey).then(snap => {
-      if (!live) return; instance = snap;
-      const startedAt = Date.now();
-      snap.embed(resolved, { embedId: id, uiMode: 'qr',
-        onSuccess: () => { terminal = true; clearInterval(monitor); if (live) setMode('completed'); update('Pembayaran diproses. Menunggu verifikasi server untuk aktivasi paket.'); },
-        onPending: () => update('Menunggu pembayaran. Ikuti instruksi metode yang Anda pilih.'),
-        onError: () => { terminal = true; fail('Checkout melaporkan kendala. Muat ulang pembayaran order ini atau periksa status sebelum membayar ulang.'); },
-        onClose: () => { terminal = true; fail('Checkout ditutup. Muat ulang pembayaran untuk membuka order yang sama.'); }
-      });
-      if (!live || terminal) return;
-      setMessage('Menunggu bingkai pembayaran Midtrans tampil…');
-      const inspect = () => {
-        if (!live || terminal) return;
-        const frame = document.getElementById(id)?.querySelector('iframe');
-        const rect = frame?.getBoundingClientRect();
-        const style = frame ? window.getComputedStyle(frame) : null;
-        const visible = Boolean(rect && rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0');
-        const now = Date.now();
-        if (visible) missingSince = null;
-        else if (missingSince === null) missingSince = now;
-        const state = embedFrameState({ visible, seen, elapsed: now - startedAt, missingFor: missingSince === null ? 0 : now - missingSince });
-        if (state === 'visible' && !seen) {
-          seen = true; setMode('embedded'); setMessage('Bingkai pembayaran ditampilkan. Jika isinya kosong, gunakan Muat ulang pembayaran untuk order yang sama.');
-        } else if (state === 'timeout' || state === 'missing') {
-          fail('Bingkai pembayaran tidak tampil atau menghilang. Klik Muat ulang pembayaran; order dan tagihan tetap sama.');
-        }
-      };
-      monitor = setInterval(inspect, 500); inspect();
-    }).catch(error => fail(error.message));
-    return () => { live = false; clearInterval(monitor); if (instance) instance.hide?.(); };
-  }, [token, orderId, clientKey, environment, id]);
-  const price = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
+  }
   return <section className="pc-shell" aria-label="Checkout Ngeblogging">
-    <aside className="pc-summary"><span className="pc-eyebrow">NGEBLOGGING · CHECKOUT</span><h2>Satu langkah menuju lebih banyak kemungkinan.</h2><p>Ringkasan pesanan</p><h3>{productName}</h3><strong className="pc-price">{price}</strong><p className="pc-order">ID pesanan: {orderId}</p><p>Harga dan aktivasi diverifikasi server. Jangan membayar ulang sebelum memeriksa status.</p>{environment === 'sandbox' && <p role="status">Mode uji sandbox — bukan pembayaran produksi.</p>}<button type="button" onClick={onBack}>Kembali ke pilihan paket</button></aside>
-    <div className="pc-payment"><span className="pc-eyebrow">PEMBAYARAN AMAN OLEH MIDTRANS</span><h2>Pilih cara bayar Anda</h2><p>QRIS, bank/Virtual Account, dan metode lain hanya ditampilkan jika tersedia pada akun merchant.</p><p role="status" aria-live="polite" className="pc-status">{message}</p><button type="button" disabled={mode === 'loading'} onClick={() => { setMode('loading'); setAttempt(value => value + 1); }}>Muat ulang pembayaran</button><div key={id} id={id} className={mode === 'hosted' ? undefined : 'pc-snap'} />{(mode === 'hosted' || mode === 'error') && (hostedUrl ? <p><a href={hostedUrl} rel="noreferrer">Lanjutkan pembayaran order ini di Midtrans</a></p> : <p role="alert">Tautan pembayaran tidak dapat diverifikasi. Periksa status order; jangan membuat pembayaran pengganti.</p>)}<p>Konfirmasi pada layar pembayaran bukan bukti aktivasi. Status paket mengikuti hasil verifikasi server.</p></div>
+    <aside className="pc-summary">
+      <span className="pc-eyebrow">NGEBLOGGING · CHECKOUT</span>
+      <h2>Ringkasan pembayaran</h2><h3>{productName}</h3>
+      <strong className="pc-price">{price}</strong><p className="pc-order">ID pesanan: {orderId}</p>
+      <p>Harga dan aktivasi paket diverifikasi server.</p>
+      {environment === 'sandbox' && <p role="status">Mode sandbox — bukan pembayaran produksi.</p>}
+      <button type="button" onClick={onBack}>Kembali ke pilihan paket</button>
+    </aside>
+    <div className="pc-payment">
+      <span className="pc-eyebrow">PEMBAYARAN DIPROSES MIDTRANS</span>
+      <h2>Lanjutkan pembayaran order ini</h2>
+      <p>Pilihan bank/Virtual Account, GoPay, dan QRIS mengikuti metode yang ditawarkan Midtrans untuk transaksi ini. Ketersediaan GoPay Later belum diverifikasi.</p>
+      <p role="status" aria-live="polite" className="pc-status">{message}</p>
+      {ready ? <p><a href={target} rel="noreferrer">Buka pembayaran resmi Midtrans</a></p> : <p role="alert">Data atau tautan pembayaran tidak valid. Jangan membayar sebelum status order diperiksa.</p>}
+      <ol><li>Buka pembayaran resmi dengan tombol di atas.</li><li>Pilih salah satu metode yang tersedia di Midtrans dan ikuti instruksinya.</li><li>Setelah membayar, kembali ke Ngeblogging dan periksa status order.</li></ol>
+      <button type="button" disabled={busy} onClick={refresh}>{busy ? 'Memeriksa...' : 'Periksa status order yang sama'}</button>
+      <p>Tombol ini tidak membuat order baru. Klik tombol atau bukti tangkapan layar tidak mengaktifkan paket; aktivasi menunggu verifikasi pembayaran pada server.</p>
+    </div>
   </section>;
 }
