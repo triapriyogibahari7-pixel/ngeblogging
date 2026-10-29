@@ -5,11 +5,13 @@ export function stateOf(s){if(["refund","partial_refund","chargeback","partial_c
 function amount(v){const s=String(v);if(!/^\d{1,12}(\.\d{1,2})?$/.test(s))throw Error("INVALID_AMOUNT");const [a,b=""]=s.split(".");return BigInt(a)*100n+BigInt(b.padEnd(2,"0"));}
 async function hash(algorithm,value){const d=await crypto.subtle.digest(algorithm,new TextEncoder().encode(value));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
 async function bodyOf(request){const r=request.body?.getReader();if(!r)throw Error("INVALID_BODY");const chunks=[];let n=0;while(true){const v=await r.read();if(v.done)break;n+=v.value.length;if(n>65536){await r.cancel();throw Error("BODY_TOO_LARGE");}chunks.push(v.value);}const b=new Uint8Array(n);let i=0;for(const c of chunks){b.set(c,i);i+=c.length;}return JSON.parse(new TextDecoder().decode(b));}
+const validSnapToken=value=>typeof value==="string"&&/^[A-Za-z0-9_-]{10,200}$/.test(value);
 export async function handleMidtrans(request,env,{fetchImpl=fetch}={}){
  const path=new URL(request.url).pathname;
  const plans=config(env);
  const configured=Boolean(["sandbox","production"].includes(env.MIDTRANS_ENV)&&env.MIDTRANS_SERVER_KEY&&env.SUPABASE_URL&&env.SUPABASE_PUBLISHABLE_KEY&&env.SUPABASE_SERVICE_ROLE_KEY);
- if(path.endsWith("/config")&&request.method==="GET")return out(200,{brand:"Ngeblogging",provider:"midtrans",ready:configured&&plans.length>0,environment:env.MIDTRANS_ENV==="production"?"production":"sandbox",plans});
+ const clientKey=typeof env.MIDTRANS_CLIENT_KEY==="string"&&/^(SB-)?Mid-client-[A-Za-z0-9_-]+$/.test(env.MIDTRANS_CLIENT_KEY)&&env.MIDTRANS_CLIENT_KEY.startsWith("SB-")===(env.MIDTRANS_ENV==="sandbox")?env.MIDTRANS_CLIENT_KEY:null;
+ if(path.endsWith("/config")&&request.method==="GET")return out(200,{brand:"Ngeblogging",provider:"midtrans",ready:configured&&plans.length>0,environment:env.MIDTRANS_ENV==="production"?"production":"sandbox",clientKey,plans});
  if(!paths.has(path))return out(404,{error:"NOT_FOUND"});
  if(!configured)return out(503,{error:"MIDTRANS_NOT_CONFIGURED"});
  if(!((request.method==="POST"&&(/\/(create|webhook)$/.test(path)))||(request.method==="GET"&&path.endsWith("/orders"))))return out(405,{error:"METHOD_NOT_ALLOWED"});
@@ -42,16 +44,18 @@ export async function handleMidtrans(request,env,{fetchImpl=fetch}={}){
  const plan=plans.find(p=>p.id===b.planId);if(!plan)return out(503,{error:"PLAN_PRICE_NOT_CONFIGURED"});
  const id="NARA-"+(await hash("SHA-256",`${env.MIDTRANS_ENV}:${user.id}:${b.idempotencyKey}`)).slice(0,40);
  await rest("nara_midtrans_orders?on_conflict=order_id",{method:"POST",headers:{prefer:"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify({order_id:id,user_id:user.id,plan_id:plan.id,duration_days:plan.durationDays,amount:plan.amount,environment:env.MIDTRANS_ENV})});
- const order=(await rest(`nara_midtrans_orders?order_id=eq.${id}&select=*`))?.[0];
+ const order=(await rest(`nara_midtrans_orders?order_id=eq.${id}&user_id=eq.${encodeURIComponent(user.id)}&environment=eq.${env.MIDTRANS_ENV}&select=*`))?.[0];
  if(!order||order.user_id!==user.id||order.plan_id!==plan.id||order.environment!==env.MIDTRANS_ENV)return out(409,{error:"IDEMPOTENCY_CONFLICT"});
  if(order.status!=="pending")return out(409,{error:"ORDER_ALREADY_PROCESSED",orderId:id,status:order.status});
  const base=env.MIDTRANS_ENV==="production"?"https://app.midtrans.com":"https://app.sandbox.midtrans.com";
  function validUrl(v){try{const u=new URL(v);return u.origin===base&&!u.username&&!u.password?u.href:null;}catch{return null;}}
- if(order.checkout_url){const u=validUrl(order.checkout_url);if(!u)return out(503,{error:"INVALID_STORED_CHECKOUT"});return out(200,{orderId:id,checkoutUrl:u,reused:true});}
+ if(order.checkout_url){const u=validUrl(order.checkout_url);if(!u)return out(503,{error:"INVALID_STORED_CHECKOUT"});return out(200,{orderId:id,checkoutUrl:u,snapToken:validSnapToken(order.snap_token)?order.snap_token:null,reused:true});}
+ if(order.snap_token)return out(409,{error:"ORDER_RECONCILIATION_REQUIRED",orderId:id});
  const n=Number(order.amount);if(!Number.isSafeInteger(n)||n<=0||n>100000000)return out(409,{error:"INVALID_STORED_PRICE"});
  const snap=await call(`${base}/snap/v1/transactions`,{method:"POST",headers:{authorization:`Basic ${btoa(env.MIDTRANS_SERVER_KEY+":")}`,"content-type":"application/json"},body:JSON.stringify({transaction_details:{order_id:id,gross_amount:n},item_details:[{id:plan.id,price:n,quantity:1,name:plan.label}],customer_details:{email:user.email||undefined}})});
  const u=validUrl(snap?.redirect_url);if(!u)return out(502,{error:"INVALID_CHECKOUT_URL",orderId:id});
- await rest(`nara_midtrans_orders?order_id=eq.${id}`,{method:"PATCH",headers:{prefer:"return=minimal"},body:JSON.stringify({checkout_url:u})});
- return out(200,{orderId:id,checkoutUrl:u});
+ const snapToken=validSnapToken(snap?.token)?snap.token:null;
+ await rest(`nara_midtrans_orders?order_id=eq.${id}&user_id=eq.${encodeURIComponent(user.id)}&environment=eq.${env.MIDTRANS_ENV}`,{method:"PATCH",headers:{prefer:"return=minimal"},body:JSON.stringify({checkout_url:u,snap_token:snapToken})});
+ return out(200,{orderId:id,checkoutUrl:u,snapToken});
  }catch{return out(503,{error:"PAYMENT_RETRY_OR_RECONCILIATION_REQUIRED"});}finally{clearTimeout(timer);}
 }
