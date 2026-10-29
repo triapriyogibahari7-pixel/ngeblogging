@@ -30,6 +30,8 @@ function sanitizePublishedHtml(html) {
 
 function homeCode(site,theme,posts,pages) {
   const freePreview=typeof window!=="undefined"&&new URLSearchParams(window.location.search).get("ngeblogging-free-preview")==="1";
+  const publicOrigin=window.location.origin;
+  const initialHash=window.location.hash;
   const custom=site.theme?.code?.enabled;
   const base=custom?site.theme.code:(theme.code||createDefaultThemeState().code);
   const normalizedPosts=posts.slice(0,12).map((post)=>({
@@ -43,6 +45,7 @@ function homeCode(site,theme,posts,pages) {
   const categories=[...new Set(normalizedPosts.flatMap((post)=>post.categories).filter(Boolean))].slice(0,12);
   const tags=[...new Set(normalizedPosts.flatMap((post)=>post.tags).filter(Boolean))].slice(0,20);
   const payload=JSON.stringify({
+    origin:publicOrigin,initialHash,
     site:{name:site.name,description:site.description||"Gagasan, karya, dan cerita dalam satu ruang digital."},
     posts:normalizedPosts,
     pages:pages.slice(0,6).map((page)=>({title:page.title,slug:page.slug})),
@@ -50,10 +53,25 @@ function homeCode(site,theme,posts,pages) {
     tags,
   }).replace(/</g,"\\u003c");
   const injection=`
-(()=>{
-  const freePreview=${freePreview ? "true" : "false"};\n  const data=${payload};
+;(()=>{
+  const freePreview=${freePreview ? "true" : "false"};
+  const data=${payload};
   const escapeText=(value)=>String(value||'');
-  const linkTo=(slug)=>'/'+encodeURIComponent(slug)+(freePreview?'?ngeblogging-free-preview=1':'');
+  const linkTo=(slug)=>new URL('/'+encodeURIComponent(slug)+(freePreview?'?ngeblogging-free-preview=1':''),data.origin).href;
+  const scrollToFragment=(hash)=>{
+    if(!hash||hash==='#')return false;
+    let id;try{id=decodeURIComponent(hash.slice(1))}catch{return false}
+    const target=document.getElementById(id);
+    if(!target)return false;
+    target.scrollIntoView({behavior:'auto',block:'start'});
+    return true;
+  };
+  document.addEventListener('click',(event)=>{
+    const anchor=event.target.closest?.('a[href]');
+    if(!anchor||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const href=anchor.getAttribute('href');
+    if(href?.startsWith('#')&&scrollToFragment(href))event.preventDefault();
+  });
   document.title=data.site.name;
   const brand=document.querySelector('.ng-brand');
   if(brand){brand.textContent=data.site.name;const dot=document.createElement('i');dot.textContent='.';brand.append(dot)}
@@ -67,7 +85,7 @@ function homeCode(site,theme,posts,pages) {
   const nav=document.querySelector('.ng-header nav');
   if(nav){
     nav.replaceChildren();
-    const home=document.createElement('a');home.href=freePreview?'/?ngeblogging-free-preview=1':'/';home.target='_top';home.textContent='Beranda';nav.append(home);
+    const home=document.createElement('a');home.href=new URL(freePreview?'/?ngeblogging-free-preview=1':'/',data.origin).href;home.target='_top';home.textContent='Beranda';nav.append(home);
     data.pages.slice(0,4).forEach((page)=>{const link=document.createElement('a');link.href=linkTo(page.slug);link.target='_top';link.textContent=page.title;nav.append(link)});
   }
   const cards=[...document.querySelectorAll('.ng-cards article')];
@@ -93,13 +111,14 @@ function homeCode(site,theme,posts,pages) {
       card.querySelectorAll('a[href="#"],a:not([href])').forEach((link)=>{link.href=linkTo(post.slug);link.target='_top';});
       if(!card.dataset.bound){
         const open=()=>{window.open(linkTo(post.slug),'_top')};
-        card.addEventListener('click',(event)=>{if(!event.target.closest('a'))open()});
+        card.addEventListener('click',(event)=>{if(!event.target.closest('a,button,input,select,textarea'))open()});
         card.addEventListener('keydown',(event)=>{if(event.target===card&&(event.key==='Enter'||event.key===' ')){event.preventDefault();open()}});
         card.dataset.bound='true';
       }
     });
   };
   renderCards();
+  if(data.initialHash)requestAnimationFrame(()=>scrollToFragment(data.initialHash));
   const populatePostList=(selector,items)=>{
     const list=document.querySelector(selector);
     if(!list)return;
@@ -167,7 +186,6 @@ export default function PublicSiteNext({target}) {
     resolvePublishedSite(target).then(async(resolved)=>{
       if(!active)return;
       if(!resolved)throw new Error("Situs tidak ditemukan atau belum diluncurkan.");
-
       const [pageRows,postPage,item]=await Promise.all([
         listPublishedPages(resolved.id),
         listPublishedContent({siteId:resolved.id,kind:"article"}),
@@ -175,21 +193,18 @@ export default function PublicSiteNext({target}) {
       ]);
       if(!active)return;
       if(slug&&!item)throw new Error("Post atau Page tidak ditemukan.");
-
       const orderedPages=pageRows.sort((a,b)=>(a.metadata?.menuOrder||0)-(b.metadata?.menuOrder||0)||a.title.localeCompare(b.title));
       setPages(orderedPages);
       setPosts(postPage.contents);
       setPageInfo({cursor:postPage.cursor,hasMore:postPage.hasMore});
       setContent(item);
-      // PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218: publish site LAST so the theme iframe
-      // is created once with final pages/posts/content instead of reloading srcDoc.
+      // Publish site last so the iframe is created once with final content.
       setSite(resolved);
       if(typeof document!=="undefined")document.documentElement.dataset.publicSiteBootstrap=PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218;
     }).catch((loadError)=>{
       console.error("Public site load failed",loadError);
       if(active)setError(loadError.message||"Situs belum dapat dibuka.");
     }).finally(()=>{if(active)setLoading(false);});
-
     return()=>{active=false};
   },[target.slug,target.hostname,slug]);
 
@@ -199,7 +214,6 @@ export default function PublicSiteNext({target}) {
   if(!site)return null;
 
   const theme=getTheme(site.theme?.active_theme_id),config={...DEFAULT_THEME_CONFIG,...site.theme?.published_config},widgets=site.theme?.widgets?.length?site.theme.widgets:createDefaultWidgetState(theme.defaultWidgetIds),style={"--ps-primary":config.primary,"--ps-accent":config.accent,"--ps-surface":config.surface,"--ps-ink":config.ink,"--ps-radius":`${config.radius||12}px`,"--ps-font":config.font==="Playfair Display"?'"Playfair Display",serif':'"DM Sans",sans-serif'};
-
   if(!content){const code=homeCode(site,theme,posts,pages);return <main className="ps-theme-home"><h1 className="ps-visually-hidden">{site.name}</h1><iframe title={site.name} sandbox="allow-scripts allow-forms allow-popups allow-top-navigation-by-user-activation" srcDoc={buildThemeSrcDoc(code,config,widgets)}/></main>;}
 
   const metadata=content.metadata||{},safeHtml=sanitizePublishedHtml(content.body_html),isPage=content.kind==="page",related=posts.filter((post)=>post.id!==content.id&&(!metadata.categories?.length||post.metadata?.categories?.some((category)=>metadata.categories.includes(category)))).slice(0,3);
