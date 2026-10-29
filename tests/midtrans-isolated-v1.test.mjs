@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {checkoutTokenFromUrl,savedOrderToken} from '../public/midtrans-isolated-v1.mjs';
+const token='11111111-1111-4111-8111-111111111111',order='NARA-'+'a'.repeat(40);
+for(const env of ['production','sandbox'])for(const path of ['v2/vtweb','v4/redirection'])test(`${env} ${path}`,()=>{const origin=env==='production'?'https://app.midtrans.com':'https://app.sandbox.midtrans.com';assert.equal(checkoutTokenFromUrl(`${origin}/snap/${path}/${token}`,env),token);});
+test('rejects untrusted and cross-environment links',()=>{const url=`https://app.midtrans.com/snap/v4/redirection/${token}`;for(const v of [url+'?x=1',url+'#x',url.replace('https://','https://u:p@'),url.replace('app.midtrans.com','evil.example'),'javascript:alert(1)'])assert.equal(checkoutTokenFromUrl(v,'production'),null);assert.equal(checkoutTokenFromUrl(url,'sandbox'),null);});
+test('reads only the exact existing order token namespace',()=>{assert.equal(savedOrderToken({getItem:k=>{assert.equal(k,'ngeblogging:snap-token:production:'+order);return token;}},'production',order),token);assert.equal(savedOrderToken({getItem:()=>token},'production','other'),null);assert.equal(savedOrderToken({getItem:()=>{throw Error();}},'production',order),null);});
+test('page is isolated and does not create transactions or force iframe visible',()=>{const html=readFileSync(new URL('../public/midtrans-isolated-v1.html',import.meta.url),'utf8'),js=readFileSync(new URL('../public/midtrans-isolated-v1.mjs',import.meta.url),'utf8');assert.doesNotMatch(html,/react|\/src\/main|snap-midtrans/);assert.doesNotMatch(js,/snap\.hide|\/create|\/charge|MIDTRANS_SERVER_KEY|innerHTML|style\.setProperty/);assert.match(js,/window\.snap\.embed\(token/);assert.match(js,/\/api\/billing\/midtrans\/config/);});
