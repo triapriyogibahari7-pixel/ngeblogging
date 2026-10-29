@@ -4,10 +4,26 @@ export function paymentScriptUrl(environment) {
   if (environment === 'sandbox') return 'https://app.sandbox.midtrans.com/snap/snap.js';
   throw Error('Lingkungan pembayaran tidak valid.');
 }
+export function ensurePaymentPopupLayer(doc) {
+  const id = 'ngeblogging-midtrans-popup-layer';
+  if (doc.getElementById(id)) return;
+  const style = doc.createElement('style');
+  style.id = id;
+  style.textContent = `html body iframe#snap-midtrans,
+html body iframe[src^="https://app.midtrans.com/snap/"],
+html body iframe[src^="https://app.sandbox.midtrans.com/snap/"] {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  isolation: isolate !important;
+  pointer-events: auto !important;
+}`;
+  doc.head.appendChild(style);
+}
 export function loadPaymentSdk(environment, clientKey, {doc = document, win = window, timeoutMs = 20000} = {}) {
   const src = paymentScriptUrl(environment);
   const key = typeof clientKey === 'string' ? clientKey.trim() : '';
   if (!key || key.startsWith('SB-') !== (environment === 'sandbox')) return Promise.reject(Error('Client key pembayaran tidak sesuai lingkungan.'));
+  ensurePaymentPopupLayer(doc);
   const previous = cache.get(doc);
   if (previous) {
     if (previous.src !== src || previous.key !== key) return Promise.reject(Error('Konfigurasi pembayaran berubah. Muat ulang halaman.'));
@@ -41,7 +57,12 @@ export function paymentPopupVisible(doc, win, environment) {
       const source = new URL(frame.src);
       if (source.origin !== origin || !source.pathname.startsWith('/snap/')) return false;
       const rect=frame.getBoundingClientRect(),style=win.getComputedStyle(frame);
-      return rect.width>0 && rect.height>0 && style.display!=='none' && style.visibility!=='hidden' && style.opacity!=='0';
+      if (!(rect.width>0 && rect.height>0) || style.display==='none' || style.visibility==='hidden' || style.opacity==='0') return false;
+      if (typeof doc.elementFromPoint !== 'function') return false;
+      const left=Math.max(0,rect.left),top=Math.max(0,rect.top);
+      const right=Math.min(win.innerWidth,rect.right),bottom=Math.min(win.innerHeight,rect.bottom);
+      if (right<=left || bottom<=top) return false;
+      return doc.elementFromPoint((left+right)/2,(top+bottom)/2)===frame;
     } catch { return false; }
   });
 }
