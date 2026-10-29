@@ -41,7 +41,7 @@ export default function PremiumCheckout({ orderId, token, clientKey, environment
     const update = text => { if (!live) return; setMessage(text); Promise.resolve().then(() => callbacks.current.onRefresh?.()).catch(() => { if (live) setMessage('Status server belum dapat diperbarui. Periksa kembali sebelum membayar ulang.'); }); };
     loadSnap(environment, clientKey).then(snap => {
       if (!live) return; instance = snap;
-      snap.embed(resolved, { embedId: id,
+      snap.embed(resolved, { embedId: id, uiMode: 'qr',
         onSuccess: () => update('Pembayaran diproses. Menunggu verifikasi server untuk aktivasi paket.'),
         onPending: () => update('Menunggu pembayaran. Ikuti instruksi metode yang Anda pilih.'),
         onError: () => { if (live) setMode('error'); update('Checkout melaporkan kendala. Periksa status atau lanjutkan order yang sama melalui tautan resmi.'); },
