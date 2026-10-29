@@ -2,6 +2,7 @@ import { getBillingProduct } from "./billing-catalog.mjs";
 import { handleMidtrans as baseHandler, paths } from "./midtrans-api.mjs";
 export { paths };
 
+// Build retry marker: Max checkout merged in 55cee834; 2026-10-29.
 export function catalogEnvironment(env) {
   const prices = Object.fromEntries(["pro_monthly", "pro_yearly", "max_monthly", "max_yearly"].map(id => {
     const product = getBillingProduct(id);
