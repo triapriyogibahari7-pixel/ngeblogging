@@ -8,7 +8,7 @@ export function recoverStoredCheckoutToken(value, environment) {
     const url = new URL(value);
     const origin = environment === 'production' ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
     if (url.origin !== origin || url.username || url.password || url.hash) return null;
-    const match = /^\/snap\/v2\/vtweb\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i.exec(url.pathname);
+    const match = /^\/snap\/(?:v2\/vtweb|v4\/redirection)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i.exec(url.pathname);
     return match ? match[1] : null;
   } catch { return null; }
 }
