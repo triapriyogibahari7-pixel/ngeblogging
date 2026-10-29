@@ -1,0 +1,27 @@
+/* Checkout is a body-level sibling of Nara; Snap remains above it. */
+.pc-portal-layer{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147483646!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  isolation:isolate;
+  background:rgba(10,20,36,.55);
+  padding:16px;
+  box-sizing:border-box;
+  pointer-events:auto!important;
+}
+.pc-portal-layer>.pc-shell{
+  width:min(1120px,100%);
+  margin:16px auto;
+  box-sizing:border-box;
+}
+body:has(>.pc-portal-layer) .nara-assistant-layer{
+  z-index:2147482000!important;
+}
+@media(max-width:760px){
+  .pc-portal-layer{
+    padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+  }
+  .pc-portal-layer>.pc-shell{margin:0 auto;}
+}

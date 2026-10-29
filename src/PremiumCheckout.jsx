@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { hostedCheckoutUrl } from './midtrans-hosted-checkout.mjs';
 import { recoverSnapToken } from './midtrans-token-recovery.mjs';
 import { loadPaymentSdk, openPaymentPopup, paymentPopupVisible } from './midtrans-popup-sdk.mjs';
 import { embedFrameState } from './midtrans-embed-watchdog.mjs';
 import './premium-checkout.css';
+import './payment-checkout-portal.css';
 export default function PremiumCheckout({orderId,token,clientKey,environment,productName,amount,url,onRefresh,onBack}) {
   const [state,setState]=useState('ready'),[message,setMessage]=useState('Klik Tampilkan pembayaran untuk membuka kotak pembayaran Midtrans di atas halaman ini.');
   const live=useRef(false),lock=useRef(false),monitor=useRef(null),active=useRef(null),callbacks=useRef({onRefresh});
@@ -50,7 +52,8 @@ export default function PremiumCheckout({orderId,token,clientKey,environment,pro
   const validAmount=Number.isSafeInteger(amount)&&amount>0;
   const price=validAmount?new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(amount):'Harga belum terverifikasi';
   const canOpen=validAmount&&/^NARA-[a-f0-9]{40}$/.test(orderId||'')&&Boolean(clientKey);
-  return <section className="pc-shell" aria-label="Checkout Ngeblogging">
+  if(typeof document==='undefined')return null;
+  return createPortal(<div className="pc-portal-layer" role="dialog" aria-modal="true" aria-label="Pembayaran Nara AI"><section className="pc-shell" aria-label="Checkout Ngeblogging">
     <aside className="pc-summary"><span className="pc-eyebrow">NGEBLOGGING · CHECKOUT</span><h2>Ringkasan pembayaran</h2><h3>{productName}</h3><strong className="pc-price">{price}</strong><p className="pc-order">ID pesanan: {orderId}</p>{environment==='sandbox'&&<p role="status">Mode sandbox — bukan pembayaran produksi.</p>}<button type="button" onClick={onBack}>Kembali ke pilihan paket</button></aside>
     <div className="pc-payment"><span className="pc-eyebrow">PEMBAYARAN MIDTRANS DI DALAM SITUS</span><h2>Pilih cara bayar Anda</h2>
       <p>Ini popup resmi Midtrans di atas halaman Ngeblogging, bukan checkout Core API kustom. Pilihan VA, GoPay, dan QRIS mengikuti metode yang tersedia untuk transaksi ini. Ketersediaan GoPay Later belum diverifikasi.</p>
@@ -61,5 +64,5 @@ export default function PremiumCheckout({orderId,token,clientKey,environment,pro
       {target&&<p><a href={target} rel="noreferrer">Jika popup gagal, buka pembayaran order ini di Midtrans</a></p>}
       <p>Browser tidak mengaktifkan paket. Aktivasi mengikuti verifikasi pembayaran pada server; jangan membuat pembayaran pengganti saat status belum jelas.</p>
     </div>
-  </section>;
+  </section></div>,document.body);
 }
