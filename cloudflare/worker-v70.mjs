@@ -1,4 +1,5 @@
 import baseWorker from "./worker-v69.mjs";
+import { paymentDiagnosticPage } from "../server/payment-diagnostic-page.mjs";
 import { handleMidtrans, paths as midtransPaths } from "../server/midtrans-catalog-api.mjs";
 import { legalResponse, legalDiscovery } from "../server/legal-pages.mjs";
 export const PUBLIC_EDGE_RELEASE_V282 = "public-edge-request-dedup-v282-20260805";
@@ -40,6 +41,8 @@ async function serveStaticAsset(request, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const paymentDiagnostic = await paymentDiagnosticPage(request, env);
+    if (paymentDiagnostic) return paymentDiagnostic;
     const legal = legalResponse(request);
     if (legal) return legal;
     if (midtransPaths.has(url.pathname)) return handleMidtrans(request, env);
