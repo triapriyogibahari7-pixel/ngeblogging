@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarDays, Clock3, LoaderCircle, MapPin, Menu, Search, Sh
 import { buildThemeSrcDoc, createDefaultThemeState, DEFAULT_THEME_CONFIG, getTheme } from "./theme-system";
 import { createDefaultWidgetState } from "./widget-system";
 import { getPublishedContent, listPublishedContent, listPublishedPages, resolvePublishedSite } from "./lib/public-data";
+import { PLATFORM_CREDIT_TEXT, withPlatformCredit, publicHrefWithPreview } from "./public-site-contract.mjs";
 import "./public-site-next.css";
 
 const PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218 = "public-site-atomic-bootstrap-v218-20260802";
@@ -61,12 +62,12 @@ function homeCode(site,theme,posts,pages) {
   const description=hero?.querySelector('p');
   if(title)title.textContent=data.site.name;
   if(description)description.textContent=data.site.description;
-  const footerBrand=document.querySelector('.ng-theme>footer>b');
+  const footerBrand=document.querySelector('.ng-theme footer>b');
   if(footerBrand)footerBrand.textContent=data.site.name;
   const nav=document.querySelector('.ng-header nav');
   if(nav){
     nav.replaceChildren();
-    const home=document.createElement('a');home.href='/';home.target='_top';home.textContent='Beranda';nav.append(home);
+    const home=document.createElement('a');home.href=freePreview?'/?ngeblogging-free-preview=1':'/';home.target='_top';home.textContent='Beranda';nav.append(home);
     data.pages.slice(0,4).forEach((page)=>{const link=document.createElement('a');link.href=linkTo(page.slug);link.target='_top';link.textContent=page.title;nav.append(link)});
   }
   const cards=[...document.querySelectorAll('.ng-cards article')];
@@ -89,10 +90,11 @@ function homeCode(site,theme,posts,pages) {
       if(small)small.textContent=escapeText(post.category).toUpperCase();
       if(heading)heading.textContent=post.title;
       if(copy)copy.textContent=post.excerpt;
+      card.querySelectorAll('a[href="#"],a:not([href])').forEach((link)=>{link.href=linkTo(post.slug);link.target='_top';});
       if(!card.dataset.bound){
         const open=()=>{window.open(linkTo(post.slug),'_top')};
-        card.addEventListener('click',open);
-        card.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open()}});
+        card.addEventListener('click',(event)=>{if(!event.target.closest('a'))open()});
+        card.addEventListener('keydown',(event)=>{if(event.target===card&&(event.key==='Enter'||event.key===' ')){event.preventDefault();open()}});
         card.dataset.bound='true';
       }
     });
@@ -137,7 +139,7 @@ function homeCode(site,theme,posts,pages) {
     if(id&&!supported.has(id))widget.hidden=true;
   });
 })();`;
-  return {...base,javascript:`${base.javascript||""}${injection}`};
+  return {...base,html:withPlatformCredit(base.html),javascript:`${base.javascript||""}${injection}`};
 }
 
 function share(content) {
@@ -150,7 +152,7 @@ export default function PublicSiteNext({target}) {
   const [site,setSite]=useState(null),[posts,setPosts]=useState([]),[pages,setPages]=useState([]),[content,setContent]=useState(null),[pageInfo,setPageInfo]=useState({cursor:null,hasMore:false}),[loading,setLoading]=useState(true),[error,setError]=useState(""),[menu,setMenu]=useState(false),[search,setSearch]=useState("");
   const slug=useMemo(()=>decodeURIComponent(window.location.pathname.split("/").filter(Boolean)[0]||""),[]);
   const previewQuery=useMemo(()=>new URLSearchParams(window.location.search).get("ngeblogging-free-preview")==="1"?"?ngeblogging-free-preview=1":"",[]);
-  const publicHref=(path)=>`${path}${previewQuery}`;
+  const publicHref=(path)=>publicHrefWithPreview(path,previewQuery);
 
   useEffect(()=>{
     let active=true;
@@ -203,5 +205,5 @@ export default function PublicSiteNext({target}) {
   const metadata=content.metadata||{},safeHtml=sanitizePublishedHtml(content.body_html),isPage=content.kind==="page",related=posts.filter((post)=>post.id!==content.id&&(!metadata.categories?.length||post.metadata?.categories?.some((category)=>metadata.categories.includes(category)))).slice(0,3);
   const filteredPosts=posts.filter((post)=>`${post.title} ${post.excerpt} ${(post.metadata?.tags||[]).join(" ")}`.toLowerCase().includes(search.toLowerCase()));
 
-  return <div className={`ps-site layout-${theme.layout} ${isPage?"is-page":"is-post"}`} style={style}><header className="ps-header"><a className="ps-brand" href={publicHref("/")}>{site.name}<i>.</i></a><nav className={menu?"open":""}><a href={publicHref("/")}>Beranda</a>{pages.slice(0,6).map((page)=><a key={page.id} href={publicHref(`/${page.slug}`)}>{page.title}</a>)}<a href={publicHref("/#posts")}>Posts</a></nav><button onClick={()=>setMenu(!menu)} aria-label="Menu">{menu?<X/>:<Menu/>}</button></header><main className="ps-content-shell"><article className="ps-content"><a className="ps-back" href={publicHref("/")}><ArrowLeft/> Kembali</a><div className="ps-kicker">{isPage?"PAGE":"POST"}{metadata.categories?.[0]?` · ${metadata.categories[0]}`:""}</div><h1>{content.title}</h1>{content.excerpt&&<p className="ps-lead">{content.excerpt}</p>}<div className="ps-meta">{metadata.showDate!==false&&content.published_at&&<span><CalendarDays/> {formatDate(content.published_at)}</span>}{!isPage&&<span><Clock3/> {Math.max(1,Math.ceil(String(content.body_html||"").replace(/<[^>]+>/g," ").split(/\s+/).filter(Boolean).length/220))} menit</span>}{metadata.locationName&&<span><MapPin/> {metadata.locationName}</span>} {metadata.showShare!==false&&<button onClick={()=>share(content)}><Share2/> Bagikan</button>}</div>{content.featured_image_path&&<img className="ps-featured" src={content.featured_image_path} alt={metadata.socialTitle||content.title}/>}<div className="ps-body" dangerouslySetInnerHTML={{__html:safeHtml}}/>{metadata.eventDate&&<section className="ps-event"><CalendarDays/><div><b>{formatDate(metadata.eventDate,{dateStyle:"full"})}{metadata.eventTime?` · ${metadata.eventTime}`:""}</b>{metadata.locationName&&<span>{metadata.locationName}</span>}{metadata.address&&<p>{metadata.address}</p>}</div></section>}{metadata.tags?.length>0&&<div className="ps-tags"><Tags/>{metadata.tags.map((tag)=><span key={tag}>#{tag}</span>)}</div>}{metadata.showAuthor!==false&&metadata.authorName&&<section className="ps-author"><span>{metadata.authorName.slice(0,2).toUpperCase()}</span><div><small>PENULIS</small><b>{metadata.authorName}</b>{metadata.authorUrl&&<a href={metadata.authorUrl} rel="author noopener">Lihat profil</a>}</div></section>}{!isPage&&related.length>0&&<section className="ps-related"><h2>Post terkait</h2><div>{related.map((post)=><article key={post.id}><small>{post.metadata?.categories?.[0]||"Post"}</small><h3><a href={publicHref(`/${post.slug}`)}>{post.title}</a></h3><p>{post.excerpt}</p></article>)}</div></section>}</article><aside className="ps-side"><label><Search/><input value={search} onChange={(event)=>setSearch(event.target.value)} placeholder="Cari post…"/></label><section><h3>Post terbaru</h3>{filteredPosts.slice(0,6).map((post)=><a key={post.id} href={publicHref(`/${post.slug}`)}><b>{post.title}</b><small>{formatDate(post.published_at)}</small></a>)}</section><section><h3>Pages</h3>{pages.map((page)=><a key={page.id} href={publicHref(`/${page.slug}`)}>{page.title}</a>)}</section><section><h3>Discovery</h3><a href="/sitemap.xml">Sitemap XML</a><a href="/feed.xml">RSS Feed</a><a href="/llms.txt">LLMs.txt</a></section></aside></main><footer className="ps-footer"><b>{site.name}</b><span>© {new Date().getFullYear()}</span><a href="https://ngeblogging.com">Dibuat dengan Ngeblogging</a></footer></div>;
+  return <div className={`ps-site layout-${theme.layout} ${isPage?"is-page":"is-post"}`} style={style}><header className="ps-header"><a className="ps-brand" href={publicHref("/")}>{site.name}<i>.</i></a><nav className={menu?"open":""}><a href={publicHref("/")}>Beranda</a>{pages.slice(0,6).map((page)=><a key={page.id} href={publicHref(`/${page.slug}`)}>{page.title}</a>)}<a href={publicHref("/#posts")}>Posts</a></nav><button onClick={()=>setMenu(!menu)} aria-label="Menu">{menu?<X/>:<Menu/>}</button></header><main className="ps-content-shell"><article className="ps-content"><a className="ps-back" href={publicHref("/")}><ArrowLeft/> Kembali</a><div className="ps-kicker">{isPage?"PAGE":"POST"}{metadata.categories?.[0]?` · ${metadata.categories[0]}`:""}</div><h1>{content.title}</h1>{content.excerpt&&<p className="ps-lead">{content.excerpt}</p>}<div className="ps-meta">{metadata.showDate!==false&&content.published_at&&<span><CalendarDays/> {formatDate(content.published_at)}</span>}{!isPage&&<span><Clock3/> {Math.max(1,Math.ceil(String(content.body_html||"").replace(/<[^>]+>/g," ").split(/\s+/).filter(Boolean).length/220))} menit</span>}{metadata.locationName&&<span><MapPin/> {metadata.locationName}</span>} {metadata.showShare!==false&&<button onClick={()=>share(content)}><Share2/> Bagikan</button>}</div>{content.featured_image_path&&<img className="ps-featured" src={content.featured_image_path} alt={metadata.socialTitle||content.title}/>}<div className="ps-body" dangerouslySetInnerHTML={{__html:safeHtml}}/>{metadata.eventDate&&<section className="ps-event"><CalendarDays/><div><b>{formatDate(metadata.eventDate,{dateStyle:"full"})}{metadata.eventTime?` · ${metadata.eventTime}`:""}</b>{metadata.locationName&&<span>{metadata.locationName}</span>}{metadata.address&&<p>{metadata.address}</p>}</div></section>}{metadata.tags?.length>0&&<div className="ps-tags"><Tags/>{metadata.tags.map((tag)=><span key={tag}>#{tag}</span>)}</div>}{metadata.showAuthor!==false&&metadata.authorName&&<section className="ps-author"><span>{metadata.authorName.slice(0,2).toUpperCase()}</span><div><small>PENULIS</small><b>{metadata.authorName}</b>{metadata.authorUrl&&<a href={metadata.authorUrl} rel="author noopener">Lihat profil</a>}</div></section>}{!isPage&&related.length>0&&<section className="ps-related"><h2>Post terkait</h2><div>{related.map((post)=><article key={post.id}><small>{post.metadata?.categories?.[0]||"Post"}</small><h3><a href={publicHref(`/${post.slug}`)}>{post.title}</a></h3><p>{post.excerpt}</p></article>)}</div></section>}</article><aside className="ps-side"><label><Search/><input value={search} onChange={(event)=>setSearch(event.target.value)} placeholder="Cari post…"/></label><section><h3>Post terbaru</h3>{filteredPosts.slice(0,6).map((post)=><a key={post.id} href={publicHref(`/${post.slug}`)}><b>{post.title}</b><small>{formatDate(post.published_at)}</small></a>)}</section><section><h3>Pages</h3>{pages.map((page)=><a key={page.id} href={publicHref(`/${page.slug}`)}>{page.title}</a>)}</section><section><h3>Discovery</h3><a href="/sitemap.xml">Sitemap XML</a><a href="/feed.xml">RSS Feed</a><a href="/llms.txt">LLMs.txt</a></section></aside></main><footer className="ps-footer"><b>{site.name}</b><span>© {new Date().getFullYear()}</span><a href="https://ngeblogging.com">{PLATFORM_CREDIT_TEXT}</a></footer></div>;
 }
