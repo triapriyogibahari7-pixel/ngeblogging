@@ -228,7 +228,7 @@ export function openCreateSiteV303() {
     <button class="sn-site-create-v303-backdrop" type="button" aria-label="Tutup Tambah situs"></button>
     <section class="sn-site-create-v303" role="dialog" aria-modal="true" aria-labelledby="sn-site-create-v303-title">
       <header>
-        <div><small>SITUS BARU</small><h2 id="sn-site-create-v303-title">Tambah situs gratis</h2><p>Buat situs baru dengan alamat <strong>*.ngeblogging.com</strong>. Situs dimulai sebagai draf sampai Anda menerbitkannya.</p></div>
+        <div><small>SITUS BARU</small><h2 id="sn-site-create-v303-title">Tambah situs gratis</h2></div>
         <button type="button" data-site-v303-close aria-label="Tutup">×</button>
       </header>
       <form>

@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const js=readFileSync(new URL('../src/studio-add-site-v303.js',import.meta.url),'utf8');
+const css=readFileSync(new URL('../src/studio-add-site-v303.css',import.meta.url),'utf8');
+const removed='<p>Buat situs baru dengan alamat <strong>*.ngeblogging.com</strong>. Situs dimulai sebagai draf sampai Anda menerbitkannya.</p>';
+const blob=text=>{const b=Buffer.from(text);return createHash('sha1').update(Buffer.concat([Buffer.from('blob '+b.length+'\0'),b])).digest('hex');};
+test('remove only explanatory header paragraph and preserve titles and close button',()=>{const header=js.match(/<header>[\s\S]*?<\/header>/)[0];assert.doesNotMatch(header,/<p>|Situs dimulai sebagai draf/);assert.match(header,/<small>SITUS BARU<\/small>/);assert.match(header,/>Tambah situs gratis<\/h2>/);assert.match(header,/data-site-v303-close/);});
+test('site-creation JavaScript remains byte-identical apart from paragraph removal',()=>{const restored=js.replace('Tambah situs gratis</h2>','Tambah situs gratis</h2>'+removed);assert.equal(blob(restored),'bfe46339effbe33130e1df2bee42e3d16a3b6793');});
+test('only three header font sizes change in CSS',()=>{assert.match(css,/header small\{[^}]*font-size:10px/);assert.match(css,/header h2\{margin:5px 0 6px;font-size:22px/);assert.match(css,/@media\(max-width:760px\)[\s\S]*header h2\{font-size:19px\}/);const restored=css.replace('header small{display:block;color:#2d6edf;font-size:10px;','header small{display:block;color:#2d6edf;font-size:11px;').replace('header h2{margin:5px 0 6px;font-size:22px;','header h2{margin:5px 0 6px;font-size:24px;').replace('header h2{font-size:19px}','header h2{font-size:21px}');assert.equal(blob(restored),'f035fa078ec99ce7e33f80dfa901e9f5d22295de');});
