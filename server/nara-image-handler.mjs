@@ -43,7 +43,7 @@ async function verify(request, env) {
   const user = await userResponse.json();
   const profileResponse = await fetch(`${url}/rest/v1/profiles?id=eq.${user.id}&select=plan,plan_expires_at`,{headers:{apikey:key,authorization:`Bearer ${token}`}});
   const profile = profileResponse.ok ? (await profileResponse.json())?.[0] : null;
-  const pro = profile?.plan === "pro" && (!profile.plan_expires_at || new Date(profile.plan_expires_at) > new Date());
+  const pro = (profile?.plan === "pro" && !profile.plan_expires_at) || (["pro","business"].includes(profile?.plan) && Date.parse(profile.plan_expires_at || "") > Date.now());
   return {token,user,pro,url,key};
 }
 
@@ -174,7 +174,8 @@ export async function handleNaraImage(request, env, requestId = crypto.randomUUI
     await verifySiteAccess(session,siteId);
 
     const size = ["1K","2K","4K"].includes(body.size) ? body.size : "1K";
-    if (size === "4K" && !session.pro) return json(403,{code:"PLAN_REQUIRED",error:"Resolusi 4K memerlukan paket Pro."},requestId);
+    if (size === "4K" && !session.pro) return json(403,{code:"PLAN_REQUIRED",error:"Resolusi 4K memerlukan paket Pro atau Max aktif."},requestId);
+    if (size === "4K" && !qwenReady(env)) return json(503,{code:"IMAGE_4K_PROVIDER_REQUIRED",error:"Penyedia gambar 4K belum dikonfigurasi. Gunakan 1K atau 2K."},requestId);
     const requestedModel = body.model === "wan2.7-image-pro" ? "wan2.7-image-pro" : "wan2.7-image";
     const selectedModel = requestedModel === "wan2.7-image-pro" && !session.pro ? "wan2.7-image" : requestedModel;
     const quota = await consumeImageQuota(session, selectedModel);
