@@ -1,9 +1,10 @@
 import referenceCss from "./studio-mobile-repair-v411.css?raw";
+import "./editor-nara-billing-parity.css";
 
 // Reuse the reference interior declarations; never copy outer frame rules.
 export function editorNaraReferenceCss(source) {
   const prefix = ':is(html.editor-v266-small,html[data-studio-device-mode="small"]) body:not(:has(.ce-app)) .nara-assistant-shell';
-  const target = 'html:root:is(.editor-v266-small,[data-studio-device-mode="small"]) body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-layer .nara-assistant-shell:is([data-nara-size="small"],[data-nara-size="medium"],[data-nara-size="full"])';
+  const target = 'html:root body:has(.ce-app[data-mobile-editor-v409][data-mobile-editor-v402]:not(.ce-dialog-host)) .nara-assistant-layer .nara-assistant-shell:is([data-nara-size="small"],[data-nara-size="medium"],[data-nara-size="full"])';
   const clean = source.replace(/\/\*[\s\S]*?\*\//g, "");
   const rules = [];
   for (const match of clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
