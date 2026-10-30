@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-30",
+  "baseDialogCommit": "4857610da00ac21c7b52b15e9e8a70b8873665d0",
+  "scope": "New standalone flow/classifier with stored dialog rendered in React StrictMode/Chromium; synthetic move/read callbacks, not live database/provider E2E",
+  "unitTests": {"passed": 8, "failed": 0, "runtime": "Node.js"},
+  "domTests": {"passed": 7, "failed": 0, "react": "19.2.7", "babel": "8.0.10", "browserErrors": []},
+  "passedDomScenarios": ["Target reread displays observed result and calls parent observer once without mutation replay", "Source observation is not called rollback and does not restore a mutation form", "Inconsistent owner-role read remains read-only", "Same-tick reload is single-flight with loading controls disabled", "Timeout ignores a later target result", "Source context change ignores the previous read", "Observer failure preserves observed target state and hides internal details"],
+  "productionConnection": false,
+  "limits": ["Not integrated into active DomainPanel", "loadState must be supplied as authenticated read-only transport", "No live Supabase Auth/PostgREST or PostgreSQL 17 verification in these tests", "No provider/DNS/HTTPS/cache verification", "No deployment or production activation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}
