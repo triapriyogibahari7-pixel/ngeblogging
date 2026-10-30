@@ -185,20 +185,10 @@ export async function createFullZone(env, input) {
 
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-async function hydrateNameservers(env, zone) {
-  let current = zone;
-  for (const delay of [0, 500, 1000, 2000, 4000, 8000, 12000]) {
-    const state = publicZoneState(current);
-    if (state.nameServers.length >= 2 || state.active) return current;
-    if (!/^[0-9a-f]{32}$/i.test(state.id)) return current;
-    if (delay) await wait(delay);
-    try {
-      current = await getFullZoneStatus(env, state.id);
-    } catch {
-      // Respons pembuatan awal tetap dipakai apabila status belum dapat dibaca.
-    }
-  }
-  return current;
+async function hydrateNameservers(_env, zone) {
+  // Return the authoritative snapshot immediately. The authenticated refresh
+  // endpoint retrieves nameservers later instead of blocking registration.
+  return zone;
 }
 
 export async function getOrCreateFullZone(env, input) {
