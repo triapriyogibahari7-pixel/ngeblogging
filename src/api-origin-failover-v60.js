@@ -80,7 +80,8 @@ async function responseDetails(response) {
   let payload = null;
   try { payload = await response.clone().json(); } catch {}
   const validJson = Boolean(payload && typeof payload === "object" && !Array.isArray(payload));
-  return {validJson,usefulError:Boolean(validJson && (payload.error || payload.code || payload.message))};
+  const validRegistration = validJson && ["id", "site_id", "hostname"].every(key => typeof payload.domain?.[key] === "string" && payload.domain[key].trim().length > 0);
+  return {validJson,validRegistration,usefulError:Boolean(validJson && (payload.error || payload.code || payload.message))};
 }
 
 function diagnosticResponse(message, status = 502, code = "DOMAIN_API_UNAVAILABLE", details = {}) {
@@ -122,12 +123,15 @@ async function resilientDomainFetch(input, init) {
   if (primary.signal.aborted) throw primary.signal.reason || new DOMException("Permintaan dibatalkan.", "AbortError");
   const primaryUrl = new URL(primary.url);
   const readOnly = ["GET","HEAD"].includes(primary.method);
+  const registration = primary.method === "POST" && primaryUrl.pathname === "/api/domains/register";
   const alreadyBackup = primaryUrl.origin === API_ORIGIN;
   let primaryResponse = null, primaryFailure = null;
   try {
     primaryResponse = await timedNativeFetch(primary.clone(), readOnly ? PRIMARY_TIMEOUT_MS : MUTATION_TIMEOUT_MS, "API domain Ngeblogging");
     const details = await responseDetails(primaryResponse);
-    if ((primaryResponse.ok && (details.validJson || primary.method === "HEAD")) || details.usefulError) return primaryResponse;
+    const accepted = primaryResponse.ok && (details.validJson || primary.method === "HEAD") && (!registration || details.validRegistration);
+    const reportedError = details.usefulError && (!registration || !primaryResponse.ok);
+    if (accepted || reportedError) return primaryResponse;
   } catch (error) {
     if (primary.signal.aborted) throw primary.signal.reason || error;
     primaryFailure = error;
