@@ -1,0 +1,39 @@
+name: Domain transfer V2 PostgreSQL smoke
+on:
+  push:
+    branches: [fix/domain-react-api-timeout-diagnostics]
+    paths:
+      - 'docs/drafts/domain-*.sql'
+      - 'tests/sql/domain-transfer-v2-smoke.sql'
+      - '.github/workflows/domain-transfer-v2-postgres.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: domain_transfer_test
+          POSTGRES_PASSWORD: isolated-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Execute draft SQL against disposable representative schema
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGDATABASE: domain_transfer_test
+          PGPASSWORD: isolated-ci-only
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/domain-transfer-v2-smoke.sql

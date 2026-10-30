@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {assignedNameservers,applyDomainInstructions,domainRowsForSite} from '../src/lib/domain-panel-result.mjs';
+const siteId='site-a';
+const saved={id:'domain-a',site_id:siteId,hostname:'customer.example',status:'verifying',ownership_verification:{required_name_servers:['one.ns.example','two.ns.example']}};
+test('uses provider instructions only for the matching site',()=>{const result={domain:{...saved,ownership_verification:{}},instructions:{nameServers:['assigned-one.ns.example','assigned-two.ns.example']}};assert.deepEqual(applyDomainInstructions(result,siteId).domain.ownership_verification.required_name_servers,result.instructions.nameServers);assert.equal(applyDomainInstructions(result,'site-b'),result);});
+test('does not fabricate nameservers when provider data is absent',()=>{const result=applyDomainInstructions({domain:{...saved,ownership_verification:{}}},siteId);assert.deepEqual(result.domain.ownership_verification.required_name_servers,[]);});
+test('partial instructions do not replace the stored complete pair',()=>{const result=applyDomainInstructions({domain:saved,instructions:{nameServers:['partial.ns.example']}},siteId);assert.deepEqual(result.domain.ownership_verification.required_name_servers,saved.ownership_verification.required_name_servers);});
+test('accepted registration survives an empty or stale list response',()=>{const stale={...saved,ownership_verification:{}};assert.equal(domainRowsForSite(siteId,saved,[])[0],saved);assert.deepEqual(domainRowsForSite(siteId,saved,[stale]),[saved]);});
+test('foreign, missing-site and platform rows are excluded',()=>{const rows=[{...saved,id:'foreign',site_id:'site-b'},{...saved,id:'missing',site_id:undefined},{...saved,id:'platform',hostname:'free.ngeblogging.com'}];assert.deepEqual(domainRowsForSite(siteId,null,rows),[]);});
+test('normalizes genuine hostnames without creating branded values',()=>{assert.deepEqual(assignedNameservers([' ONE.NS.EXAMPLE. ','one.ns.example','https://bad.example','bad value',null]),['one.ns.example']);});

@@ -186,20 +186,34 @@ export default function PublicSiteNext({target}) {
     resolvePublishedSite(target).then(async(resolved)=>{
       if(!active)return;
       if(!resolved)throw new Error("Situs tidak ditemukan atau belum diluncurkan.");
-      const [pageRows,postPage,item]=await Promise.all([
+      const itemPromise=slug?getPublishedContent(resolved.id,slug):Promise.resolve(null);
+      // Handle auxiliary rejection immediately while the requested content loads.
+      const auxiliary=Promise.all([
         listPublishedPages(resolved.id),
         listPublishedContent({siteId:resolved.id,kind:"article"}),
-        slug?getPublishedContent(resolved.id,slug):Promise.resolve(null),
-      ]);
+      ]).then(values=>({values}),error=>({error}));
+      const item=await itemPromise;
       if(!active)return;
       if(slug&&!item)throw new Error("Post atau Page tidak ditemukan.");
+      if(slug){
+        setContent(item);
+        setSite(resolved);
+        setLoading(false);
+      }
+      const extra=await auxiliary;
+      if(!active)return;
+      if(extra.error){
+        if(!slug)throw extra.error;
+        console.warn("Public auxiliary content unavailable; requested content remains visible",extra.error);
+        return;
+      }
+      const [pageRows,postPage]=extra.values;
       const orderedPages=pageRows.sort((a,b)=>(a.metadata?.menuOrder||0)-(b.metadata?.menuOrder||0)||a.title.localeCompare(b.title));
       setPages(orderedPages);
       setPosts(postPage.contents);
       setPageInfo({cursor:postPage.cursor,hasMore:postPage.hasMore});
-      setContent(item);
-      // Publish site last so the iframe is created once with final content.
-      setSite(resolved);
+      // Home still publishes once with final iframe content; articles render earlier.
+      if(!slug){setContent(item);setSite(resolved);}
       if(typeof document!=="undefined")document.documentElement.dataset.publicSiteBootstrap=PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218;
     }).catch((loadError)=>{
       console.error("Public site load failed",loadError);

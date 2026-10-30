@@ -201,6 +201,7 @@ function isPublicTenantHost() {
   const hostname = String(window.location.hostname || "").toLowerCase().split(":")[0];
   if (!hostname || hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") return false;
   if (hostname === "ngeblogging.com" || hostname === "www.ngeblogging.com" || hostname === "studio.ngeblogging.com" || hostname === "api.ngeblogging.com") return false;
+  if ([".workers.dev", ".pages.dev", ".netlify.app"].some(suffix => hostname.endsWith(suffix))) return false;
   return hostname.endsWith(".ngeblogging.com") || hostname.includes(".");
 }
 

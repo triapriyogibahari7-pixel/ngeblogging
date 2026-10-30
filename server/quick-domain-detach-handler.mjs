@@ -143,6 +143,7 @@ export async function handleQuickDomainDetach(
   env,
   requestId = crypto.randomUUID(),
 ) {
+  let phase = "validate-request";
   try {
     const body = await request.json().catch(() => ({}));
 
@@ -160,7 +161,9 @@ export async function handleQuickDomainDetach(
       }, requestId);
     }
 
+    phase = "authenticate";
     const { user, token } = await verifyUser(request, env);
+    phase = "load-domain";
     const rows = await userJson(
       env,
       token,
@@ -177,10 +180,13 @@ export async function handleQuickDomainDetach(
 
     if (domain.provider !== "cloudflare-full-zone") return null;
 
+    phase = "authorize-site";
     await verifySiteManager(env, token, domain.site_id, user.id);
+    phase = "detach-provider";
     const detachedIds = await detachWorkerDomains(env, domain);
     const now = new Date().toISOString();
 
+    phase = "clear-site-mapping";
     await userJson(
       env,
       token,
@@ -192,6 +198,7 @@ export async function handleQuickDomainDetach(
       },
     );
 
+    phase = "delete-domain-record";
     await userJson(
       env,
       token,
@@ -214,15 +221,26 @@ export async function handleQuickDomainDetach(
       message: "Domain dilepaskan dari situs. Zone Cloudflare dan nameserver tetap disimpan agar domain dapat dipasang kembali kapan saja.",
     }, requestId);
   } catch (error) {
+    const reconciliationRequired = ["detach-provider", "clear-site-mapping", "delete-domain-record"].includes(phase);
     console.error("Quick domain detach failed", {
       requestId,
+      phase,
       code: error?.code,
       status: error?.status,
+      reconciliationRequired,
     });
 
     return response(error?.status || 500, {
-      code: error?.code || "DOMAIN_DETACH_ERROR",
-      error: error?.message || "Domain belum dapat dilepaskan.",
+      code: reconciliationRequired ? "DOMAIN_DETACH_INCOMPLETE" : error?.code || "DOMAIN_DETACH_ERROR",
+      error: reconciliationRequired
+        ? "Pelepasan domain belum selesai. Sebagian perubahan mungkin sudah diterapkan. Periksa status domain sebelum mencoba lagi."
+        : error?.message || "Domain belum dapat dilepaskan.",
+      causeCode: error?.code || "DOMAIN_DETACH_ERROR",
+      requestId,
+      phase,
+      reconciliationRequired,
+      providerChangesMayHaveOccurred: reconciliationRequired,
+      siteMappingMayHaveChanged: ["clear-site-mapping", "delete-domain-record"].includes(phase),
     }, requestId);
   }
 }

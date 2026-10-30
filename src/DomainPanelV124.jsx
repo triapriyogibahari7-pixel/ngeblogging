@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Check, Clipboard, ExternalLink, Globe2, Link2, LoaderCircle, Plus,
   RefreshCw, Send, ShieldCheck, Trash2, Unlink, Zap,
@@ -6,6 +6,7 @@ import {
 import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76.js";
 import { setSitePublication } from "./lib/studio-data.js";
 import { supabase } from "./lib/supabase.js";
+import { assignedNameservers, applyDomainInstructions, domainRowsForSite } from "./lib/domain-panel-result.mjs";
 
 const REQUEST_TIMEOUT = 45000;
 
@@ -27,20 +28,28 @@ async function accessToken() {
 }
 
 async function domainApi(path, token, body = null) {
-  const response = await withDeadline(fetch(path, {
-    method: body ? "POST" : "GET",
-    cache: "no-store",
-    headers: {
-      accept: "application/json",
-      "cache-control": "no-cache",
-      authorization: `Bearer ${token}`,
-      ...(body ? { "content-type": "application/json" } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  }));
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(payload.error || "Permintaan Domain belum berhasil."), { status: response.status, code: payload.code });
-  return payload;
+  const controller = new AbortController();
+  try {
+    return await withDeadline((async () => {
+      const response = await fetch(path, {
+        method: body ? "POST" : "GET",
+        cache: "no-store",
+        signal: controller.signal,
+        headers: {
+          accept: "application/json",
+          "cache-control": "no-cache",
+          authorization: `Bearer ${token}`,
+          ...(body ? { "content-type": "application/json" } : {}),
+        },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw Object.assign(new Error(payload.error || "Permintaan Domain belum berhasil."), { status: response.status, code: payload.code, requestId: payload.requestId || response.headers.get("x-request-id"), payload });
+      return payload;
+    })());
+  } finally {
+    controller.abort();
+  }
 }
 
 function normalizeDomainName(value = "") {
@@ -58,8 +67,7 @@ function isManagedFreeDomain(value = "") {
 }
 
 function nameservers(domain) {
-  const values = domain?.ownership_verification?.required_name_servers;
-  return Array.isArray(values) ? values.map((item) => String(item || "").trim()).filter(Boolean) : [];
+  return assignedNameservers(domain?.ownership_verification?.required_name_servers);
 }
 
 function addresses(domain) {
@@ -89,6 +97,14 @@ function Metric({ icon: Icon, label, value }) {
 export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToast }) {
   const [token, setToken] = useState("");
   const [config, setConfig] = useState(null);
+  const siteRef = useRef(site?.id);
+  const loadGeneration = useRef(0);
+  const mutationLock = useRef(false);
+  const siteGeneration = useRef(0);
+  if (siteRef.current !== site?.id) {
+    siteGeneration.current += 1;
+    siteRef.current = site?.id;
+  }
   const initialCustomDomain = normalizeDomainName(site?.custom_domain);
   const initialExternalCustomDomain = isManagedFreeDomain(initialCustomDomain) ? "" : initialCustomDomain;
   const [domains, setDomains] = useState(() => initialExternalCustomDomain ? [{
@@ -108,23 +124,24 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   const connected = sortedDomains.filter((item) => item.status !== "pending_deletion" && !isManagedFreeDomain(item.hostname));
   const routed = sortedDomains.reduce((total, domain) => total + (activeDomain(domain) ? 1 : 0) + addresses(domain).filter((item) => item.enabled).length, 0);
 
-  const load = async ({ quiet = false } = {}) => {
+  const load = async ({ quiet = false, acceptedDomain = null } = {}) => {
     if (!site?.id) return;
+    const targetSiteId = site.id;
+    const generation = ++loadGeneration.current;
+    const targetSiteGeneration = siteGeneration.current;
+    const current = () => siteRef.current === targetSiteId
+      && siteGeneration.current === targetSiteGeneration
+      && loadGeneration.current === generation;
     if (!quiet) setLoading(true);
     setError("");
     try {
       const nextToken = token || await accessToken();
+      if (!current()) return;
       setToken(nextToken);
       const payload = await domainApi(`/api/domains/list?siteId=${encodeURIComponent(site.id)}`, nextToken);
+      if (!current()) return;
       setConfig(payload);
-      const apiList = Array.isArray(payload?.domains) ? payload.domains.filter((item) => !item.site_id || item.site_id === site.id) : [];
-
-      // PUBLIC_DOMAIN_SOURCE_OF_TRUTH_V1:
-      // The studio must still show a configured custom domain when the domain API
-      // is unavailable, stale, or temporarily omits the site_domains row.
-      // Read the canonical site + site_domains rows directly, then merge them
-      // with the API response. This changes no presentation; it only repairs data
-      // hydration for the existing Domain & publication screen.
+      const apiList = Array.isArray(payload?.domains) ? payload.domains : [];
       let currentSite = null;
       let dbDomains = [];
       if (supabase) {
@@ -147,25 +164,19 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
               10000,
             ),
           ]);
+          if (!current()) return;
           if (!siteResult.error) currentSite = siteResult.data || null;
           if (!domainResult.error) dbDomains = Array.isArray(domainResult.data) ? domainResult.data : [];
-          if (currentSite?.custom_domain) onSiteUpdate?.({ ...site, ...currentSite });
+          if (currentSite) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Canonical domain data hydration failed", siteLookupError);
         }
       }
-
-      const configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain || site?.custom_domain || "");
+      if (!current()) return;
+      const configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain !== undefined ? currentSite.custom_domain : site?.custom_domain);
       const externalConfiguredCustomDomain = isManagedFreeDomain(configuredCustomDomain) ? "" : configuredCustomDomain;
-      const merged = [...dbDomains, ...apiList].filter((item) => !isManagedFreeDomain(item?.hostname));
-      const seen = new Set();
-      const list = merged.filter((item) => {
-        const key = normalizeDomainName(item?.hostname);
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      const hasConfiguredCustomDomain = configuredCustomDomain && list.some(
+      const list = domainRowsForSite(site.id, acceptedDomain, [...dbDomains, ...apiList]);
+      const hasConfiguredCustomDomain = externalConfiguredCustomDomain && list.some(
         (item) => normalizeDomainName(item?.hostname) === externalConfiguredCustomDomain,
       );
       const displayList = externalConfiguredCustomDomain && !hasConfiguredCustomDomain
@@ -173,9 +184,6 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
             id: `site-custom-domain:${site.id}`,
             site_id: site.id,
             hostname: externalConfiguredCustomDomain,
-            // Configured is intentionally not presented as DNS-active. The
-            // existing status UI will show "Verifikasi nameserver" until the
-            // authoritative provider reports active/SSL-ready state.
             status: "pending",
             provider: "cloudflare-full-zone",
             provider_status: "pending",
@@ -190,7 +198,13 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
         : list;
       setDomains(displayList);
     } catch (nextError) {
+      if (!current()) return;
       console.error("Domain load failed", nextError);
+      if (acceptedDomain?.site_id === site.id) {
+        setDomains(domainRowsForSite(site.id, acceptedDomain));
+        setError(`Hasil domain sudah diterima, tetapi daftar terbaru belum dapat dimuat: ${nextError.message || "layanan belum merespons"}`);
+        return;
+      }
       let configuredCustomDomain = normalizeDomainName(site?.custom_domain);
       if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
       if (!configuredCustomDomain && supabase && site?.id) {
@@ -199,13 +213,15 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
             supabase.from("sites").select("custom_domain,status,is_public,updated_at").eq("id", site.id).maybeSingle(),
             10000,
           );
+          if (!current()) return;
           configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain);
           if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
-          if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
+          if (currentSite) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Custom domain error fallback lookup failed", siteLookupError);
         }
       }
+      if (!current()) return;
       if (configuredCustomDomain) {
         setDomains([{
           id: `site-custom-domain:${site.id}`,
@@ -222,24 +238,25 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
           created_at: site.updated_at || null,
           updated_at: site.updated_at || null,
         }]);
-        setError("");
-      } else {
-        setError(nextError.message || "Data Domain belum dapat dimuat.");
       }
-      if (isSessionReauthError(nextError) || [401, 403].includes(nextError.status)) {
+      setError(nextError.message || "Data Domain belum dapat dimuat.");
+      if (isSessionReauthError(nextError) || nextError.status === 401) {
         window.dispatchEvent(new CustomEvent("ngeblogging:session-invalid", { detail: { message: nextError.message } }));
       }
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
   };
 
   useEffect(() => {
+    siteGeneration.current += 1;
+    mutationLock.current = false;
     setToken("");
     setConfig(null);
+    setBusy("");
     setDomains(site?.custom_domain && !isManagedFreeDomain(site.custom_domain) ? [{
       id: `site-custom-domain:${site.id}`, site_id: site.id,
-      hostname: isManagedFreeDomain(site.custom_domain) ? "" : normalizeDomainName(site.custom_domain),
+      hostname: normalizeDomainName(site.custom_domain),
       status: "pending", provider: "cloudflare-full-zone", provider_status: "pending", ssl_status: "pending",
       is_primary: true, ownership_verification: {}, ssl_validation: [], error_message: null,
       created_at: site.updated_at || null, updated_at: site.updated_at || null,
@@ -247,33 +264,64 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
     setHostname("");
     load();
+    return () => {
+      siteGeneration.current += 1;
+      loadGeneration.current += 1;
+    };
   }, [site?.id]);
 
-  const mutate = async (key, operation, success) => {
-    if (!site?.id || busy) return;
+  const beginOperation = (key) => {
+    if (!site?.id || busy || mutationLock.current) return null;
+    const operation = { siteId: site.id, generation: siteGeneration.current };
+    mutationLock.current = operation;
+    loadGeneration.current += 1;
     setBusy(key);
     setError("");
+    const current = () => siteRef.current === operation.siteId
+      && siteGeneration.current === operation.generation;
+    return {
+      current,
+      finish: () => {
+        if (mutationLock.current === operation) mutationLock.current = false;
+        if (current()) setBusy("");
+      },
+    };
+  };
+
+  const mutate = async (key, operation, success) => {
+    const task = beginOperation(key);
+    if (!task) return null;
+    const targetSiteId = site.id;
     try {
-      const activeToken = token || await accessToken();
+      const activeToken = await accessToken();
+      if (!task.current()) return null;
       setToken(activeToken);
-      const operationResult = await operation(activeToken);
-      // Tampilkan hasil registrasi/refresh langsung dari respons API sebelum
-      // hydration berikutnya selesai. Ini mencegah kartu domain dan nameserver
-      // menghilang hanya karena query daftar domain tertinggal sesaat.
-      if (operationResult?.domain?.id) {
-        setDomains((current) => {
-          const incoming = operationResult.domain;
-          const key = String(incoming.id);
-          const filtered = current.filter((item) => String(item.id) !== key && String(item.hostname || "").toLowerCase() !== String(incoming.hostname || "").toLowerCase());
-          return [incoming, ...filtered];
-        });
+      const operationResult = applyDomainInstructions(await operation(activeToken), targetSiteId);
+      if (!task.current()) return null;
+      const acceptedDomain = operationResult?.domain || null;
+      if (acceptedDomain && acceptedDomain.site_id !== targetSiteId) {
+        throw Object.assign(new Error("Respons domain tidak cocok dengan situs aktif."), { code: "DOMAIN_SITE_MISMATCH" });
       }
-      if (success) setToast?.(success);
-      await load({ quiet: true });
+      if (acceptedDomain?.id) {
+        setDomains((current) => domainRowsForSite(targetSiteId, acceptedDomain, current));
+        setLoading(false);
+      }
+      const message = typeof success === "function" ? success(operationResult) : success;
+      if (message) setToast?.(message);
+      if (key === "register" && acceptedDomain?.id) {
+        void load({ quiet: true, acceptedDomain });
+      } else {
+        await load({ quiet: true, acceptedDomain });
+      }
+      return operationResult;
     } catch (nextError) {
-      setError(nextError.message || "Perubahan Domain belum berhasil.");
+      if (task.current()) {
+        const detail = [nextError.code, nextError.requestId ? `ID ${nextError.requestId}` : ""].filter(Boolean).join(" · ");
+        setError(`${nextError.message || "Perubahan Domain belum berhasil."}${detail ? ` (${detail})` : ""}`);
+      }
+      return null;
     } finally {
-      setBusy("");
+      task.finish();
     }
   };
 
@@ -281,42 +329,12 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     event.preventDefault();
     const clean = hostname.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
     if (!clean) return setError("Masukkan nama domain tanpa https://, www, atau path.");
-    await mutate("register", async (activeToken) => {
-      let result = await domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean });
-      const domainId = result?.domain?.id;
-      let nameServers = Array.isArray(result?.instructions?.nameServers) ? result.instructions.nameServers : [];
-      if (domainId && nameServers.length < 2) {
-        try {
-          // Use the authoritative refresh response immediately. The previous
-          // flow refreshed the server state but discarded that response, so the
-          // result card could render without the two nameservers even though
-          // Cloudflare had already assigned them.
-          const refreshed = await domainApi("/api/domains/refresh", activeToken, { domainId });
-          if (refreshed?.domain) {
-            result = {
-              ...result,
-              ...refreshed,
-              instructions: refreshed.instructions || result.instructions,
-            };
-            nameServers = Array.isArray(result.instructions?.nameServers) ? result.instructions.nameServers : nameServers;
-          }
-        } catch {
-          // Cloudflare may still be propagating; the saved domain remains
-          // available and the existing Refresh status action can retry.
-        }
-      }
-      if (result?.domain && nameServers.length >= 2) {
-        result.domain = {
-          ...result.domain,
-          ownership_verification: {
-            ...(result.domain.ownership_verification || {}),
-            required_name_servers: nameServers,
-          },
-        };
-      }
-      return result;
-    }, "Domain ditambahkan. Salin dua nameserver ke registrar.");
-    setHostname("");
+    const targetSiteGeneration = siteGeneration.current;
+    const result = await mutate("register", (activeToken) => domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean }),
+      (payload) => nameservers(payload?.domain).length >= 2
+        ? "Domain terdaftar. Salin nameserver yang ditampilkan ke registrar."
+        : "Domain terdaftar. Nameserver belum tersedia; gunakan Periksa koneksi.");
+    if (result && siteRef.current === site.id && siteGeneration.current === targetSiteGeneration) setHostname("");
   };
 
   const refresh = (domain) => mutate(`refresh:${domain.id}`, (activeToken) => domainApi("/api/domains/refresh", activeToken, { domainId: domain.id }), "Pemeriksaan DNS dan HTTPS selesai.");
@@ -338,34 +356,36 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   };
 
   const togglePublication = async () => {
-    if (!site?.id || busy) return;
+    const task = beginOperation("publication");
+    if (!task) return;
     const published = site.status === "active" && site.is_public;
-    setBusy("publication");
-    setError("");
     try {
-      const updated = await setSitePublication(site.id, !published);
+      const updated = await withDeadline(setSitePublication(site.id, !published));
+      if (!task.current()) return;
       onSiteUpdate?.({ ...site, ...updated });
       setToast?.(published ? "Situs kembali menjadi draf" : "Subdomain gratis diterbitkan");
     } catch (nextError) {
-      setError(nextError.message || "Status publikasi belum dapat diubah.");
+      if (task.current()) setError(nextError.message || "Status publikasi belum dapat diubah.");
     } finally {
-      setBusy("");
+      task.finish();
     }
   };
 
   const runAudit = async () => {
-    if (!site?.id || busy) return;
-    setBusy("audit");
-    setError("");
+    const task = beginOperation("audit");
+    if (!task) return;
     setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
     try {
       const activeToken = token || await accessToken();
+      if (!task.current()) return;
       setToken(activeToken);
       const primary = sortedDomains[0];
       if (primary?.id) {
         try { await domainApi("/api/domains/refresh", activeToken, { domainId: primary.id }); } catch { /* audit menjelaskan hasil */ }
+        if (!task.current()) return;
       }
       const payload = await domainApi("/api/domains/audit", activeToken, { siteId: site.id });
+      if (!task.current()) return;
       setAudit({
         results: Array.isArray(payload.results) ? payload.results : [],
         passed: Number(payload.passed || 0),
@@ -375,9 +395,9 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       });
       await load({ quiet: true });
     } catch (nextError) {
-      setError(nextError.message || "Audit alamat belum dapat dijalankan.");
+      if (task.current()) setError(nextError.message || "Audit alamat belum dapat dijalankan.");
     } finally {
-      setBusy("");
+      task.finish();
     }
   };
 
@@ -404,13 +424,13 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       </div>
 
       <section className="sv124-card sv124-free-domain">
-        <span><Globe2/></span><div><small>SUBDOMAIN GRATIS · TETAP ADA</small><h2>{site?.slug ? `${site.slug}.ngeblogging.com` : "Menunggu situs"}</h2><p>{published ? "Alamat gratis aktif permanen. Domain pribadi tidak menghapus URL ini." : "Alamat gratis sudah dicadangkan. Terbitkan ketika situs siap."}</p></div><aside><i className={published ? "active" : "draft"}>{published ? "Aktif" : "Draf"}</i>{site?.slug ? <a href={`https://${site.slug}.ngeblogging.com?ngeblogging-free-preview=1`} target="_blank" rel="noreferrer"><ExternalLink/>Buka</a> : null}<button className="sv124-primary" onClick={togglePublication} disabled={Boolean(busy)}><Send/>{busy === "publication" ? "Memproses…" : published ? "Jadikan draf" : "Terbitkan"}</button></aside>
+        <span><Globe2/></span><div><small>SUBDOMAIN GRATIS · TETAP ADA</small><h2>{site?.slug ? `${site.slug}.ngeblogging.com` : "Menunggu situs"}</h2><p>{published ? "Alamat gratis aktif permanen. Domain pribadi tidak menghapus URL ini." : "Alamat gratis sudah dicadangkan. Terbitkan ketika situs siap."}</p></div><aside><i className={published ? "active" : "draft"}>{published ? "Aktif" : "Draf"}</i>{site?.slug ? <a href={`https://${site.slug}.ngeblogging.com?ngeblogging-free-preview=1`} target="_blank" rel="noreferrer"><ExternalLink/>Lihat situs</a> : null}<button className="sv124-primary" onClick={togglePublication} disabled={Boolean(busy)}><Send/>{busy === "publication" ? "Memproses…" : published ? "Jadikan draf" : "Terbitkan"}</button></aside>
       </section>
 
       <section className="sv124-card sv124-domain-register">
-        <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terhubung" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Domain aktif dikelola pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola domain situs lain." : "Masukkan domain milik situs aktif. Sistem menyiapkan zone, dua nameserver, HTTPS, dan routing."}</p></div></header>
+        <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terdaftar" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Status dan nameserver domain situs ini ada pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola situs lain." : "Masukkan domain milik situs aktif. Sistem meminta nameserver dari provider; DNS dan HTTPS diperiksa secara terpisah."}</p></div></header>
         <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form>
-        <div className="sv124-provider-note"><ShieldCheck/>Menggunakan Full Zone dan dua nameserver Cloudflare. Subdomain gratis Ngeblogging tetap tersedia.</div>
+        <div className="sv124-provider-note"><ShieldCheck/>Ngeblogging menampilkan nameserver asli untuk domain Anda dari Cloudflare. Gunakan hanya nilai pada kartu domain; nameserver bermerek Ngeblogging belum diaktifkan. Subdomain gratis tetap tersedia.</div>
       </section>
 
       <section className="sv124-card sv124-domain-list">
@@ -420,11 +440,11 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
           const ns = nameservers(domain);
           const domainAddresses = addresses(domain);
           return <article className="sv124-domain-item" key={domain.id}>
-            <header><span><Globe2/></span><div><small>DOMAIN UTAMA SITUS</small><h3>{domain.hostname}</h3><p>{activeDomain(domain) ? "Zone, HTTPS, dan routing aktif." : "Ganti nameserver di registrar, lalu jalankan pemeriksaan ulang."}</p></div><i className={tone}>{label}</i></header>
+            <header><span><Globe2/></span><div><small>DOMAIN UTAMA SITUS</small><h3>{domain.hostname}</h3><p>{activeDomain(domain) ? "Zone, HTTPS, dan routing aktif." : ns.length >= 2 ? "Ganti nameserver di registrar, lalu jalankan pemeriksaan ulang." : "Nameserver belum tersedia lengkap. Jangan mengubah DNS sebelum nilai domain ini tampil."}</p></div><i className={tone}>{label}</i></header>
             {domain.error_message ? <p className="sv124-inline-error">{domain.error_message}</p> : null}
-            {ns.length ? <section className="sv124-nameservers"><header><div><small>DUA NAMESERVER RESMI</small><b>Salin ke registrar domain</b></div><button onClick={() => copy(ns.join("\n"), "Semua nameserver disalin")}><Clipboard/>Salin semua</button></header>{ns.map((value, index) => <div key={value}><span>Nameserver {index + 1}</span><code>{value}</code><button onClick={() => copy(value)} aria-label={`Salin nameserver ${index + 1}`}><Clipboard/></button></div>)}</section> : null}
+            {ns.length >= 2 ? <section className="sv124-nameservers"><header><div><small>NAMESERVER RESMI DOMAIN INI</small><b>Salin ke registrar domain</b></div><button onClick={() => copy(ns.join("\n"), "Semua nameserver disalin")}><Clipboard/>Salin semua</button></header>{ns.map((value, index) => <div key={value}><span>Nameserver {index + 1}</span><code>{value}</code><button onClick={() => copy(value)} aria-label={`Salin nameserver ${index + 1}`}><Clipboard/></button></div>)}</section> : domain.status !== "pending_deletion" && !activeDomain(domain) ? <p className="sv124-inline-error" role="status">Nameserver belum tersedia. Tekan Periksa koneksi untuk meminta status terbaru. Jangan gunakan nameserver domain Ngeblogging atau nama bermerek yang belum aktif.</p> : null}
             {domainAddresses.length ? <section className="sv124-addresses"><h4>Alamat tambahan</h4>{domainAddresses.map((item) => <div key={`${domain.id}:${item.host}`}><span><b>{item.hostname}</b><small>{item.enabled ? "Routing aktif" : "Routing nonaktif"}</small></span><button className={item.enabled ? "on" : "off"} onClick={() => toggleAddress(domain, item)} disabled={Boolean(busy)}><i/>{item.enabled ? "Aktif" : "Nonaktif"}</button></div>)}</section> : null}
-            <footer>{activeDomain(domain) ? <a href={`https://${domain.hostname}`} target="_blank" rel="noreferrer"><ExternalLink/>Buka di browser</a> : null}<button onClick={() => refresh(domain)} disabled={Boolean(busy)}><RefreshCw className={busy === `refresh:${domain.id}` ? "spin" : ""}/>Periksa koneksi</button><button className="danger" onClick={() => remove(domain)} disabled={Boolean(busy)}><Unlink/>Lepaskan</button></footer>
+            <footer>{activeDomain(domain) ? <a href={`https://${domain.hostname}`} target="_blank" rel="noreferrer"><ExternalLink/>Lihat situs</a> : null}<button onClick={() => refresh(domain)} disabled={Boolean(busy)}><RefreshCw className={busy === `refresh:${domain.id}` ? "spin" : ""}/>Periksa koneksi</button><button className="danger" onClick={() => remove(domain)} disabled={Boolean(busy)}><Unlink/>Lepaskan</button></footer>
           </article>;
         })}
       </section>

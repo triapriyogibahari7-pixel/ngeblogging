@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile(new URL('../src/PublicSiteNext.jsx',import.meta.url),'utf8');
+const prefix='resolvePublishedSite(target).then(async(resolved)=>{';
+const start=source.indexOf(prefix),end=source.indexOf('    }).catch((loadError)=>{',start);
+assert.ok(start>=0&&end>start);
+const body=source.slice(start+prefix.length,end);
+const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
+const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+const pageData=[{title:'Later',metadata:{menuOrder:2}},{title:'First',metadata:{menuOrder:1}}];
+const postData={contents:[{id:'related'}],cursor:'cursor',hasMore:true};
+function setup(slug='article',options={}){
+ const pages=deferred(),posts=deferred(),item=deferred(),events=[],requests=[],warnings=[];
+ const state={site:null,content:null,pages:[],posts:[],loading:true};
+ const c=vm.createContext({active:true,slug,PUBLIC_SITE_ATOMIC_BOOTSTRAP_V218:'reviewed-marker',document:{documentElement:{dataset:{}}},getPublishedContent:(id,path)=>{requests.push({kind:'item',id,path});return item.promise;},listPublishedPages:id=>{requests.push({kind:'pages',id});return pages.promise;},listPublishedContent:({siteId})=>{requests.push({kind:'posts',id:siteId});return posts.promise;},setContent:value=>{state.content=value;events.push('content');},setSite:value=>{state.site=value;events.push('site');},setLoading:value=>{state.loading=value;events.push('loading');},setPages:value=>{state.pages=value;events.push('pages');},setPosts:value=>{state.posts=value;events.push('posts');},setPageInfo:value=>{state.pageInfo=value;events.push('pageInfo');},console:{warn:(...args)=>warnings.push(args)}});
+ vm.runInContext('globalThis.load=async(resolved)=>{'+body+'\n};',c);
+ const resolved={id:'site-a',name:'Site A'};
+ const run=()=>c.load(options.missingSite?null:resolved);
+ const finish=()=>{pages.resolve(pageData.map(x=>({...x})));posts.resolve(postData);};
+ return {c,pages,posts,item,state,events,requests,warnings,resolved,run,finish};
+}
+test('article appears while navigation and related posts are still pending',async()=>{const h=setup();const pending=h.run();h.item.resolve({id:'article',kind:'article',body_html:'actual content'});await settle();try{assert.equal(h.state.site,h.resolved);assert.equal(h.state.content.body_html,'actual content');assert.equal(h.state.loading,false);assert.equal(h.events.includes('pages'),false);}finally{h.finish();await pending;}assert.ok(h.events.indexOf('site')<h.events.indexOf('pages'));});
+test('published Page uses the same early content path',async()=>{const h=setup('about');const pending=h.run();h.item.resolve({id:'page',kind:'page'});await settle();try{assert.equal(h.state.content.kind,'page');assert.equal(h.state.site,h.resolved);}finally{h.finish();await pending;}});
+test('home keeps atomic iframe bootstrap after pages and posts',async()=>{const h=setup('');const pending=h.run();await settle();assert.equal(h.state.site,null);assert.equal(h.requests.some(x=>x.kind==='item'),false);h.pages.resolve(pageData.map(x=>({...x})));await settle();assert.equal(h.state.site,null);h.posts.resolve(postData);await pending;assert.equal(h.events.filter(x=>x==='site').length,1);assert.ok(h.events.indexOf('site')>h.events.indexOf('pages'));assert.ok(h.events.indexOf('site')>h.events.indexOf('posts'));assert.equal(h.state.content,null);});
+test('auxiliary failure does not hide a successfully loaded article',async()=>{const h=setup();const pending=h.run();h.pages.reject(Error('navigation unavailable'));h.item.resolve({id:'article'});h.posts.resolve(postData);await pending;assert.equal(h.state.site,h.resolved);assert.equal(h.state.content.id,'article');assert.equal(h.warnings.length,1);});
+test('missing requested content never publishes the home fallback',async()=>{const h=setup();const pending=h.run();const rejected=assert.rejects(pending,/Post atau Page tidak ditemukan/);h.finish();h.item.resolve(null);await rejected;assert.equal(h.state.site,null);assert.equal(h.state.content,null);});
+test('primary fetch failure is not replaced by an auxiliary success',async()=>{const h=setup();const pending=h.run();const rejected=assert.rejects(pending,/primary unavailable/);h.finish();h.item.reject(Error('primary unavailable'));await rejected;assert.equal(h.state.site,null);});
+test('inactive effect cannot issue data requests',async()=>{const h=setup();h.c.active=false;await h.run();assert.equal(h.requests.length,0);assert.equal(h.events.length,0);});
+test('late auxiliary results cannot update a replaced site',async()=>{const h=setup();const pending=h.run();h.item.resolve({id:'article'});await settle();const count=h.events.length;h.c.active=false;h.finish();await pending;assert.equal(h.events.length,count);assert.equal(h.state.pages.length,0);});
+test('all content reads stay scoped to the resolved site and preserve page ordering',async()=>{const h=setup();const pending=h.run();h.item.resolve({id:'article'});h.finish();await pending;assert.ok(h.requests.every(x=>x.id==='site-a'));assert.equal(h.state.pages[0].title,'First');assert.equal(h.state.pageInfo.cursor,'cursor');});
+test('home auxiliary failure remains a failure rather than empty success',async()=>{const h=setup('');const pending=h.run();const rejected=assert.rejects(pending,/pages unavailable/);h.pages.reject(Error('pages unavailable'));h.posts.resolve(postData);await rejected;assert.equal(h.state.site,null);});
+test('missing site never starts content queries',async()=>{const h=setup('article',{missingSite:true});await assert.rejects(h.run(),/Situs tidak ditemukan/);assert.equal(h.requests.length,0);assert.equal(h.events.length,0);});

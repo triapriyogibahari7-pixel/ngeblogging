@@ -68,5 +68,18 @@
     "NARA_PRODUCTION_PROBE": "passed",
     "NARA_RUNTIME": "cloudflare-worker-production-v160"
   },
+  "previews": {
+    "vars": {
+      "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
+      "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
+      "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",
+      "CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls",
+      "CUSTOM_DOMAIN_DNS_V67": "false",
+      "CLOUDFLARE_SAAS_ENABLED": "false",
+      "CLOUDFLARE_CUSTOM_HOSTNAMES_READY": "false",
+      "CLOUDFLARE_ACCOUNT_ID": "095e57b46e7ba7f6b188480d9e4e5fe7",
+      "CUSTOM_DOMAIN_PROVIDER": "cloudflare-full-zone"
+    }
+  },
   "observability": {"enabled": true,"head_sampling_rate": 0.1}
 }
