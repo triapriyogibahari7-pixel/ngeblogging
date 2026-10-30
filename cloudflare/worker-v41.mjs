@@ -11,6 +11,19 @@ const CANONICAL_DOMAIN_RELEASE = "2026.07.27-canonical-custom-domain-v65";
 const LEGACY_FULL_ZONE_RELEASE = "2026.07.27-full-zone-domains-v62";
 const LEGACY_DOMAIN_RELEASE = "2026.07.26-custom-domains-v41";
 
+function fullZoneRequestEnvironment(url, env, domain) {
+  if (!url.pathname.startsWith("/api/domains/") || domain.provider !== "cloudflare-full-zone") return env;
+  const token = String(env.CLOUDFLARE_DOMAIN_API_TOKEN || "").trim()
+    || String(env.CLOUDFLARE_API_TOKEN || "").trim();
+  // Normalize only this request; never update persisted bindings or other services.
+  return {
+    ...env,
+    CUSTOM_DOMAIN_PROVIDER: "cloudflare-full-zone",
+    CLOUDFLARE_DOMAIN_API_TOKEN: token,
+    CLOUDFLARE_API_TOKEN: token,
+  };
+}
+
 function databaseAccessReady(env) {
   return Boolean(
     String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || "").trim()
@@ -326,6 +339,7 @@ export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
     const domain = selectedDomainProvider(env);
+    env = fullZoneRequestEnvironment(url, env, domain);
 
     if (!url.pathname.startsWith("/api/")) {
       const canonical = await canonicalDomainRedirect(request, env).catch(() => null);
