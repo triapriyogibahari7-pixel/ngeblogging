@@ -138,8 +138,6 @@ async function enrichHealth(response, env) {
   }
 }
 
-const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
-
 function isFullZoneRegistration(request, url, domain) {
   return request.method === "POST"
     && url.pathname === "/api/domains/register"
@@ -259,93 +257,37 @@ async function normalizeDomainApiResponse(response, request) {
   });
 }
 
-async function activateRegistrationWhenZoneIsAlreadyActive(response, originalRequest, env, context) {
-  if (!response.ok) return response;
-
-  let payload = null;
-  try {
-    payload = await response.clone().json();
-  } catch {
-    return response;
-  }
-
-  const domainId = String(payload?.domain?.id || "").trim();
-  const zoneActive = payload?.zone?.active === true
-    || String(payload?.zone?.status || "").toLowerCase() === "active";
-
-  if (!zoneActive || !/^[0-9a-f-]{36}$/i.test(domainId)) return response;
-
-  const headers = new Headers(originalRequest.headers);
-  headers.set("content-type", "application/json");
-  headers.set("accept", "application/json");
-
-  const refreshRequest = new Request(
-    new URL("/api/domains/refresh", originalRequest.url),
-    {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ domainId }),
-    },
-  );
-
-  try {
-    const refreshed = await baseWorker.fetch(refreshRequest, env, context);
-    if (!refreshed.ok) return response;
-    return withReleaseHeader(
-      refreshed,
-      "x-ngeblogging-domain-reattach",
-      REVERSIBLE_DETACH_RELEASE,
-    );
-  } catch {
-    return response;
-  }
-}
-
 async function finalizeRegistrationResponse(response, request, env, context, recovered = false) {
   const normalized = await normalizeDomainApiResponse(response, request);
-  const activated = await activateRegistrationWhenZoneIsAlreadyActive(
-    normalized,
-    request,
-    env,
-    context,
-  );
-
+  // Registration returns instructions first. Routing activation belongs to
+  // the separately authenticated refresh operation, not this response path.
   return recovered
     ? withReleaseHeader(
-        activated,
+        normalized,
         "x-ngeblogging-domain-registration-recovery",
         REGISTRATION_RECOVERY_RELEASE,
       )
-    : activated;
+    : normalized;
 }
 
 async function runRegistrationWithRecovery(request, env, context) {
-  const delays = [0, 700, 1400, 2800, 5000, 8000];
-  const attempts = delays.map(() => request.clone());
   let lastResponse = null;
   let lastError = null;
 
-  for (let index = 0; index < attempts.length; index += 1) {
-    if (delays[index]) await wait(delays[index]);
-
-    try {
-      const response = await baseWorker.fetch(attempts[index], env, context);
-      lastResponse = response;
-      if (response.ok) {
-        return finalizeRegistrationResponse(response, request, env, context, index > 0);
-      }
-
-      const details = await registrationFailureDetails(response);
-      if (!details.retry) {
-        return finalizeRegistrationResponse(response, request, env, context, index > 0);
-      }
-      if (index === attempts.length - 1) break;
-    } catch (error) {
-      lastError = error;
-      if (index === attempts.length - 1) break;
+  try {
+    lastResponse = await baseWorker.fetch(request.clone(), env, context);
+    if (lastResponse.ok) {
+      return finalizeRegistrationResponse(lastResponse, request, env, context);
     }
+    const details = await registrationFailureDetails(lastResponse);
+    if (!details.retry) {
+      return finalizeRegistrationResponse(lastResponse, request, env, context);
+    }
+  } catch (error) {
+    lastError = error;
   }
 
+  // Recover the existing zone once; never replay the mutating registration.
   const accepted = await recoverPendingFullZoneRegistration(
     request.clone(),
     env,
@@ -364,8 +306,8 @@ async function runRegistrationWithRecovery(request, env, context) {
 
   const requestId = crypto.randomUUID();
   return new Response(JSON.stringify({
-    code: "DOMAIN_REGISTRATION_RETRY_EXHAUSTED",
-    error: lastError?.message || "Cloudflare belum dapat menyelesaikan pendaftaran domain setelah beberapa percobaan.",
+    code: "DOMAIN_REGISTRATION_UPSTREAM_ERROR",
+    error: "Layanan pendaftaran domain belum merespons. Periksa status domain sebelum mencoba menghubungkan kembali.",
     status: 503,
     requestId,
     release: RELEASE,
