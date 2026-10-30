@@ -25,7 +25,6 @@ jobs:
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
       VITE_PUBLIC_SITE_URL: https://ngeblogging.com
-      TARGET_DOMAIN: triapriyogi.com
       WORKER_SERVICE: ngeblogging
 
     steps:
@@ -47,7 +46,9 @@ jobs:
           set -euo pipefail
           [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]] || { echo "CLOUDFLARE_ACCOUNT_ID_INVALID"; exit 1; }
           test -n "${CLOUDFLARE_API_TOKEN}" || { echo "CLOUDFLARE_API_TOKEN_MISSING"; exit 1; }
-          test -n "${CLOUDFLARE_DOMAIN_API_TOKEN}" || { echo "CLOUDFLARE_DOMAIN_API_TOKEN_MISSING"; exit 1; }
+
+      - name: Check platform-only deployment routes
+        run: node --test tests/platform-domain-deployment.test.mjs
 
       - name: Build production application
         run: npm run build
@@ -70,23 +71,20 @@ jobs:
           echo "PRODUCTION_SHELL_VERIFY_FAILED"
           exit 1
 
-      - name: Repair and verify active custom domain
-        run: node scripts/repair-custom-domain-v350.mjs
-
-      - name: Verify free and custom public roots
+      - name: Verify free public root
         shell: bash
         run: |
           set -euo pipefail
-          for host in "tri-apriyogi-bahari.ngeblogging.com" "triapriyogi.com" "www.triapriyogi.com"; do
+          for host in "tri-apriyogi-bahari.ngeblogging.com"; do
             code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o /tmp/public-${host}.html -w '%{http_code}' -H 'cache-control: no-cache' "https://${host}/?public_verify=${GITHUB_SHA}" || true)"
             if [[ "${code}" != "200" ]] || ! grep -q 'id="root"' "/tmp/public-${host}.html"; then
               echo "PUBLIC_ROOT_VERIFY_FAILED ${host} HTTP=${code}"
               exit 1
             fi
           done
-          echo "FREE_AND_CUSTOM_PUBLIC_ROOTS_VERIFIED"
+          echo "FREE_PUBLIC_ROOT_VERIFIED"
 
-      - name: Verify a published post on free and custom domains
+      - name: Verify a published post on free domain
         shell: bash
         run: |
           set -euo pipefail
@@ -97,11 +95,11 @@ jobs:
           post_slug="$(node -e 'const x=JSON.parse(process.argv[1]); process.stdout.write(x[0]?.slug || "")' "$posts_json")"
           if [[ -z "$post_slug" ]]; then echo "NO_PUBLISHED_POST_TO_VERIFY"; exit 0; fi
           encoded_slug="$(node -e 'console.log(encodeURIComponent(process.argv[1]))' "$post_slug")"
-          for host in "tri-apriyogi-bahari.ngeblogging.com" "triapriyogi.com"; do
+          for host in "tri-apriyogi-bahari.ngeblogging.com"; do
             code="$(curl -sS -L --connect-timeout 10 --max-time 25 -o "/tmp/post-${host}.html" -w '%{http_code}' -H 'cache-control: no-cache' "https://${host}/${encoded_slug}?public_post_verify=${GITHUB_SHA}" || true)"
             if [[ "$code" != "200" ]] || ! grep -q 'id="root"' "/tmp/post-${host}.html"; then
               echo "PUBLIC_POST_VERIFY_FAILED ${host} HTTP=${code} slug=${post_slug}"
               exit 1
             fi
           done
-          echo "FREE_AND_CUSTOM_PUBLISHED_POST_VERIFIED ${post_slug}"
+          echo "FREE_PUBLISHED_POST_VERIFIED ${post_slug}"
