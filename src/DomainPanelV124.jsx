@@ -167,13 +167,13 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
           if (!current()) return;
           if (!siteResult.error) currentSite = siteResult.data || null;
           if (!domainResult.error) dbDomains = Array.isArray(domainResult.data) ? domainResult.data : [];
-          if (currentSite?.custom_domain) onSiteUpdate?.({ ...site, ...currentSite });
+          if (currentSite) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Canonical domain data hydration failed", siteLookupError);
         }
       }
       if (!current()) return;
-      const configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain || site?.custom_domain || "");
+      const configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain !== undefined ? currentSite.custom_domain : site?.custom_domain);
       const externalConfiguredCustomDomain = isManagedFreeDomain(configuredCustomDomain) ? "" : configuredCustomDomain;
       const list = domainRowsForSite(site.id, acceptedDomain, [...dbDomains, ...apiList]);
       const hasConfiguredCustomDomain = externalConfiguredCustomDomain && list.some(
@@ -216,7 +216,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
           if (!current()) return;
           configuredCustomDomain = normalizeDomainName(currentSite?.custom_domain);
           if (isManagedFreeDomain(configuredCustomDomain)) configuredCustomDomain = "";
-          if (configuredCustomDomain) onSiteUpdate?.({ ...site, ...currentSite });
+          if (currentSite) onSiteUpdate?.({ ...site, ...currentSite });
         } catch (siteLookupError) {
           console.warn("Custom domain error fallback lookup failed", siteLookupError);
         }
@@ -424,7 +424,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       </div>
 
       <section className="sv124-card sv124-free-domain">
-        <span><Globe2/></span><div><small>SUBDOMAIN GRATIS · TETAP ADA</small><h2>{site?.slug ? `${site.slug}.ngeblogging.com` : "Menunggu situs"}</h2><p>{published ? "Alamat gratis aktif permanen. Domain pribadi tidak menghapus URL ini." : "Alamat gratis sudah dicadangkan. Terbitkan ketika situs siap."}</p></div><aside><i className={published ? "active" : "draft"}>{published ? "Aktif" : "Draf"}</i>{site?.slug ? <a href={`https://${site.slug}.ngeblogging.com?ngeblogging-free-preview=1`} target="_blank" rel="noreferrer"><ExternalLink/>Buka</a> : null}<button className="sv124-primary" onClick={togglePublication} disabled={Boolean(busy)}><Send/>{busy === "publication" ? "Memproses…" : published ? "Jadikan draf" : "Terbitkan"}</button></aside>
+        <span><Globe2/></span><div><small>SUBDOMAIN GRATIS · TETAP ADA</small><h2>{site?.slug ? `${site.slug}.ngeblogging.com` : "Menunggu situs"}</h2><p>{published ? "Alamat gratis aktif permanen. Domain pribadi tidak menghapus URL ini." : "Alamat gratis sudah dicadangkan. Terbitkan ketika situs siap."}</p></div><aside><i className={published ? "active" : "draft"}>{published ? "Aktif" : "Draf"}</i>{site?.slug ? <a href={`https://${site.slug}.ngeblogging.com?ngeblogging-free-preview=1`} target="_blank" rel="noreferrer"><ExternalLink/>Lihat situs</a> : null}<button className="sv124-primary" onClick={togglePublication} disabled={Boolean(busy)}><Send/>{busy === "publication" ? "Memproses…" : published ? "Jadikan draf" : "Terbitkan"}</button></aside>
       </section>
 
       <section className="sv124-card sv124-domain-register">
@@ -444,7 +444,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
             {domain.error_message ? <p className="sv124-inline-error">{domain.error_message}</p> : null}
             {ns.length >= 2 ? <section className="sv124-nameservers"><header><div><small>NAMESERVER RESMI DOMAIN INI</small><b>Salin ke registrar domain</b></div><button onClick={() => copy(ns.join("\n"), "Semua nameserver disalin")}><Clipboard/>Salin semua</button></header>{ns.map((value, index) => <div key={value}><span>Nameserver {index + 1}</span><code>{value}</code><button onClick={() => copy(value)} aria-label={`Salin nameserver ${index + 1}`}><Clipboard/></button></div>)}</section> : domain.status !== "pending_deletion" && !activeDomain(domain) ? <p className="sv124-inline-error" role="status">Nameserver belum tersedia. Tekan Periksa koneksi untuk meminta status terbaru. Jangan gunakan nameserver domain Ngeblogging atau nama bermerek yang belum aktif.</p> : null}
             {domainAddresses.length ? <section className="sv124-addresses"><h4>Alamat tambahan</h4>{domainAddresses.map((item) => <div key={`${domain.id}:${item.host}`}><span><b>{item.hostname}</b><small>{item.enabled ? "Routing aktif" : "Routing nonaktif"}</small></span><button className={item.enabled ? "on" : "off"} onClick={() => toggleAddress(domain, item)} disabled={Boolean(busy)}><i/>{item.enabled ? "Aktif" : "Nonaktif"}</button></div>)}</section> : null}
-            <footer>{activeDomain(domain) ? <a href={`https://${domain.hostname}`} target="_blank" rel="noreferrer"><ExternalLink/>Buka di browser</a> : null}<button onClick={() => refresh(domain)} disabled={Boolean(busy)}><RefreshCw className={busy === `refresh:${domain.id}` ? "spin" : ""}/>Periksa koneksi</button><button className="danger" onClick={() => remove(domain)} disabled={Boolean(busy)}><Unlink/>Lepaskan</button></footer>
+            <footer>{activeDomain(domain) ? <a href={`https://${domain.hostname}`} target="_blank" rel="noreferrer"><ExternalLink/>Lihat situs</a> : null}<button onClick={() => refresh(domain)} disabled={Boolean(busy)}><RefreshCw className={busy === `refresh:${domain.id}` ? "spin" : ""}/>Periksa koneksi</button><button className="danger" onClick={() => remove(domain)} disabled={Boolean(busy)}><Unlink/>Lepaskan</button></footer>
           </article>;
         })}
       </section>
