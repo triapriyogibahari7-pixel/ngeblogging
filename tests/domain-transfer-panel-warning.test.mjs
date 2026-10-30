@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const source=readFileSync(new URL('../src/DomainPanelStage5Candidate.jsx',import.meta.url),'utf8');
+const match=source.match(/if\((!domains\.length&&!selected(?:&&!blocked\.length)?)\)return null;/);
+assert.ok(match,'Expected empty-entry guard');
+const hides=new Function('domains','selected','blocked',`return Boolean(${match[1]});`);
+test('blocked warning survives empty choices and closed dialog',()=>{assert.equal(hides([],null,['domain']),false);});
+test('actual source guard follows all eight visibility combinations',()=>{for(const hasDomains of [false,true])for(const hasSelection of [false,true])for(const hasBlocked of [false,true]){assert.equal(hides(hasDomains?[{}]:[],hasSelection?{}:null,hasBlocked?['domain']:[]),!hasDomains&&!hasSelection&&!hasBlocked);}});
+test('repeat filtering alert and isolated gate remain present',()=>{assert.ok(source.includes('!blocked.includes(row.id)'));assert.ok(source.includes('blocked.length?<p role="alert">'));assert.ok(source.includes('if(!canUseTransferPanel(source,config))return null;'));assert.ok(source.includes('transfer=null'));});

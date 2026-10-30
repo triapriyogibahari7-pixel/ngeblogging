@@ -26,7 +26,7 @@ function TransferEntry({source,sites,config,onSourceObserved}){
   const eligible=eligibleTransferDomains(source,config);
   if(selected&&!completed.includes(selected.id)&&!eligible.some(row=>row.id===selected.id))return null;
   const domains=eligible.filter(row=>!completed.includes(row.id)&&!blocked.includes(row.id));
-  if(!domains.length&&!selected)return null;
+  if(!domains.length&&!selected&&!blocked.length)return null;
   async function reconciled(data){
     if(data?.phase!=='at_target'||data.observedOnly!==true||data.request?.p_source_site_id!==source.id||data.request?.p_domain_id!==selected?.id||data.snapshot?.sourceSite?.id!==source.id)throw new Error('TRANSFER_PANEL_OBSERVATION_MISMATCH');
     setCompleted(ids=>[...new Set([...ids,selected.id])]);
