@@ -28,20 +28,28 @@ async function accessToken() {
 }
 
 async function domainApi(path, token, body = null) {
-  const response = await withDeadline(fetch(path, {
-    method: body ? "POST" : "GET",
-    cache: "no-store",
-    headers: {
-      accept: "application/json",
-      "cache-control": "no-cache",
-      authorization: `Bearer ${token}`,
-      ...(body ? { "content-type": "application/json" } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  }));
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(payload.error || "Permintaan Domain belum berhasil."), { status: response.status, code: payload.code, requestId: payload.requestId || response.headers.get("x-request-id"), payload });
-  return payload;
+  const controller = new AbortController();
+  try {
+    return await withDeadline((async () => {
+      const response = await fetch(path, {
+        method: body ? "POST" : "GET",
+        cache: "no-store",
+        signal: controller.signal,
+        headers: {
+          accept: "application/json",
+          "cache-control": "no-cache",
+          authorization: `Bearer ${token}`,
+          ...(body ? { "content-type": "application/json" } : {}),
+        },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw Object.assign(new Error(payload.error || "Permintaan Domain belum berhasil."), { status: response.status, code: payload.code, requestId: payload.requestId || response.headers.get("x-request-id"), payload });
+      return payload;
+    })());
+  } finally {
+    controller.abort();
+  }
 }
 
 function normalizeDomainName(value = "") {
@@ -92,7 +100,11 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   const siteRef = useRef(site?.id);
   const loadGeneration = useRef(0);
   const mutationLock = useRef(false);
-  siteRef.current = site?.id;
+  const siteGeneration = useRef(0);
+  if (siteRef.current !== site?.id) {
+    siteGeneration.current += 1;
+    siteRef.current = site?.id;
+  }
   const initialCustomDomain = normalizeDomainName(site?.custom_domain);
   const initialExternalCustomDomain = isManagedFreeDomain(initialCustomDomain) ? "" : initialCustomDomain;
   const [domains, setDomains] = useState(() => initialExternalCustomDomain ? [{
@@ -116,7 +128,10 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     if (!site?.id) return;
     const targetSiteId = site.id;
     const generation = ++loadGeneration.current;
-    const current = () => siteRef.current === targetSiteId && loadGeneration.current === generation;
+    const targetSiteGeneration = siteGeneration.current;
+    const current = () => siteRef.current === targetSiteId
+      && siteGeneration.current === targetSiteGeneration
+      && loadGeneration.current === generation;
     if (!quiet) setLoading(true);
     setError("");
     try {
@@ -234,6 +249,8 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   };
 
   useEffect(() => {
+    siteGeneration.current += 1;
+    mutationLock.current = false;
     setToken("");
     setConfig(null);
     setBusy("");
@@ -247,42 +264,64 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
     setHostname("");
     load();
-    return () => { loadGeneration.current += 1; };
+    return () => {
+      siteGeneration.current += 1;
+      loadGeneration.current += 1;
+    };
   }, [site?.id]);
 
-  const mutate = async (key, operation, success) => {
+  const beginOperation = (key) => {
     if (!site?.id || busy || mutationLock.current) return null;
-    mutationLock.current = true;
-    const targetSiteId = site.id;
+    const operation = { siteId: site.id, generation: siteGeneration.current };
+    mutationLock.current = operation;
     loadGeneration.current += 1;
     setBusy(key);
     setError("");
+    const current = () => siteRef.current === operation.siteId
+      && siteGeneration.current === operation.generation;
+    return {
+      current,
+      finish: () => {
+        if (mutationLock.current === operation) mutationLock.current = false;
+        if (current()) setBusy("");
+      },
+    };
+  };
+
+  const mutate = async (key, operation, success) => {
+    const task = beginOperation(key);
+    if (!task) return null;
+    const targetSiteId = site.id;
     try {
       const activeToken = await accessToken();
-      if (siteRef.current !== targetSiteId) return null;
+      if (!task.current()) return null;
       setToken(activeToken);
       const operationResult = applyDomainInstructions(await operation(activeToken), targetSiteId);
-      if (siteRef.current !== targetSiteId) return null;
+      if (!task.current()) return null;
       const acceptedDomain = operationResult?.domain || null;
       if (acceptedDomain && acceptedDomain.site_id !== targetSiteId) {
         throw Object.assign(new Error("Respons domain tidak cocok dengan situs aktif."), { code: "DOMAIN_SITE_MISMATCH" });
       }
       if (acceptedDomain?.id) {
         setDomains((current) => domainRowsForSite(targetSiteId, acceptedDomain, current));
+        setLoading(false);
       }
       const message = typeof success === "function" ? success(operationResult) : success;
       if (message) setToast?.(message);
-      await load({ quiet: true, acceptedDomain });
+      if (key === "register" && acceptedDomain?.id) {
+        void load({ quiet: true, acceptedDomain });
+      } else {
+        await load({ quiet: true, acceptedDomain });
+      }
       return operationResult;
     } catch (nextError) {
-      if (siteRef.current === targetSiteId) {
+      if (task.current()) {
         const detail = [nextError.code, nextError.requestId ? `ID ${nextError.requestId}` : ""].filter(Boolean).join(" · ");
         setError(`${nextError.message || "Perubahan Domain belum berhasil."}${detail ? ` (${detail})` : ""}`);
       }
       return null;
     } finally {
-      mutationLock.current = false;
-      if (siteRef.current === targetSiteId) setBusy("");
+      task.finish();
     }
   };
 
@@ -290,11 +329,12 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     event.preventDefault();
     const clean = hostname.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/?#].*$/, "");
     if (!clean) return setError("Masukkan nama domain tanpa https://, www, atau path.");
+    const targetSiteGeneration = siteGeneration.current;
     const result = await mutate("register", (activeToken) => domainApi("/api/domains/register", activeToken, { siteId: site.id, hostname: clean }),
       (payload) => nameservers(payload?.domain).length >= 2
         ? "Domain terdaftar. Salin nameserver yang ditampilkan ke registrar."
         : "Domain terdaftar. Nameserver belum tersedia; gunakan Periksa koneksi.");
-    if (result && siteRef.current === site.id) setHostname("");
+    if (result && siteRef.current === site.id && siteGeneration.current === targetSiteGeneration) setHostname("");
   };
 
   const refresh = (domain) => mutate(`refresh:${domain.id}`, (activeToken) => domainApi("/api/domains/refresh", activeToken, { domainId: domain.id }), "Pemeriksaan DNS dan HTTPS selesai.");
@@ -316,34 +356,36 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   };
 
   const togglePublication = async () => {
-    if (!site?.id || busy) return;
+    const task = beginOperation("publication");
+    if (!task) return;
     const published = site.status === "active" && site.is_public;
-    setBusy("publication");
-    setError("");
     try {
-      const updated = await setSitePublication(site.id, !published);
+      const updated = await withDeadline(setSitePublication(site.id, !published));
+      if (!task.current()) return;
       onSiteUpdate?.({ ...site, ...updated });
       setToast?.(published ? "Situs kembali menjadi draf" : "Subdomain gratis diterbitkan");
     } catch (nextError) {
-      setError(nextError.message || "Status publikasi belum dapat diubah.");
+      if (task.current()) setError(nextError.message || "Status publikasi belum dapat diubah.");
     } finally {
-      setBusy("");
+      task.finish();
     }
   };
 
   const runAudit = async () => {
-    if (!site?.id || busy) return;
-    setBusy("audit");
-    setError("");
+    const task = beginOperation("audit");
+    if (!task) return;
     setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
     try {
       const activeToken = token || await accessToken();
+      if (!task.current()) return;
       setToken(activeToken);
       const primary = sortedDomains[0];
       if (primary?.id) {
         try { await domainApi("/api/domains/refresh", activeToken, { domainId: primary.id }); } catch { /* audit menjelaskan hasil */ }
+        if (!task.current()) return;
       }
       const payload = await domainApi("/api/domains/audit", activeToken, { siteId: site.id });
+      if (!task.current()) return;
       setAudit({
         results: Array.isArray(payload.results) ? payload.results : [],
         passed: Number(payload.passed || 0),
@@ -353,9 +395,9 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       });
       await load({ quiet: true });
     } catch (nextError) {
-      setError(nextError.message || "Audit alamat belum dapat dijalankan.");
+      if (task.current()) setError(nextError.message || "Audit alamat belum dapat dijalankan.");
     } finally {
-      setBusy("");
+      task.finish();
     }
   };
 
