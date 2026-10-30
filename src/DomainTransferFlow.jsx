@@ -1,5 +1,6 @@
 import React, {useEffect,useRef,useState} from 'react';
 import DomainTransferDialog from './DomainTransferDialog.jsx';
+import {moveWithReadback} from './lib/domain-transfer-completion.mjs';
 import {classifyTransferSnapshot} from './lib/domain-transfer-reconciliation.mjs';
 
 // Standalone, default-off flow. loadState must perform authenticated reads only.
@@ -12,9 +13,12 @@ function TransferSession({loadState,onMove,onReconciled,onClose,enabled=false,re
   const mounted=useRef(false),attempt=useRef(null),readLock=useRef(null),latestRead=useRef(null);
   const [reading,setReading]=useState(false),[state,setState]=useState({phase:'idle'}),[notice,setNotice]=useState('');
   useEffect(()=>{mounted.current=true;return ()=>{mounted.current=false;};},[]);
-  const move=async request=>{attempt.current=Object.freeze({...request});return onMove(request);};
+  const move=async request=>{
+    const captured=Object.freeze({...request});attempt.current=captured;
+    return moveWithReadback(captured,{move:onMove,read:reload,isCurrent:()=>mounted.current&&attempt.current===captured});
+  };
   async function reload(){
-    if(readLock.current||!attempt.current||typeof loadState!=='function')return;
+    if(!mounted.current||readLock.current||!attempt.current||typeof loadState!=='function')return;
     const ticket={request:attempt.current};readLock.current=ticket;latestRead.current=ticket;setReading(true);setState({phase:'loading'});setNotice('');let timer;
     const limit=Number.isFinite(readTimeoutMs)&&readTimeoutMs>0&&readTimeoutMs<=30000?readTimeoutMs:10000;
     try{

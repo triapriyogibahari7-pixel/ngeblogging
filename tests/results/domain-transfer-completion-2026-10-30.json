@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "273fef7ab1569531b7fbdfe3bd318361f86418a8",
+  "originalFlowBlobVerified": "7423366b004e13d354576dafa8a2492fba836e2c",
+  "scope": "Candidate completion helper executed by Node.js: nine behavioral cases and one Flow source-wiring assertion; updated JSX was not rendered or built in this pass",
+  "passed": 10,
+  "failed": 0,
+  "negativeControl": {"mutation": "Disable matching-receipt read trigger", "exit": 1, "testsRejectedMutation": 2},
+  "behavior": ["Matching receipt starts one independent readback", "Mismatched receipt or stale/disposed attempt does not auto-read", "Move rejection propagates without replay", "Read failure does not replace a valid mutation receipt", "Flow keeps default-off and mounted/current-attempt guards"],
+  "readErrorContract": "Readback must own its error UI; the existing reload function reports needs_review on read failure",
+  "updatedFlowBrowserVerified": false,
+  "activeDomainPanelChanged": false,
+  "productionConnection": false,
+  "sqlExecuted": false,
+  "limits": ["Prior 11 browser passes apply to original Flow, not this updated candidate", "Updated Flow needs browser regression, including automatic-read pending/failure and session changes", "No active-panel wiring, authenticated E2E, native database concurrency or provider/cache verification", "No merge or production activation authorized"],
+  "stage5": "OPEN"
+}
