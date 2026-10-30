@@ -1,27 +1,14 @@
-/* Checkout is a body-level sibling of Nara; Snap remains above it. */
-.pc-portal-layer{
-  position:fixed!important;
-  inset:0!important;
-  z-index:2147483646!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  isolation:isolate;
-  background:rgba(10,20,36,.55);
-  padding:16px;
-  box-sizing:border-box;
-  pointer-events:auto!important;
-}
-.pc-portal-layer>.pc-shell{
-  width:min(1120px,100%);
-  margin:16px auto;
-  box-sizing:border-box;
-}
-body:has(>.pc-portal-layer) .nara-assistant-layer{
-  z-index:2147482000!important;
-}
-@media(max-width:760px){
-  .pc-portal-layer{
-    padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
-  }
-  .pc-portal-layer>.pc-shell{margin:0 auto;}
-}
+/* Checkout is isolated above Nara and below the official Snap layer. */
+.pc-portal-layer{position:fixed!important;inset:0!important;z-index:2147483646!important;overflow-y:auto!important;overflow-x:hidden!important;isolation:isolate;background:rgba(10,20,36,.55);padding:16px;box-sizing:border-box;pointer-events:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.pc-portal-layer,.pc-portal-layer *{box-sizing:border-box;}
+.pc-portal-layer>.pc-shell{position:relative!important;display:grid!important;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;width:min(1120px,100%)!important;min-width:0!important;max-width:100%!important;height:auto!important;max-height:none!important;margin:16px auto!important;transform:none!important;}
+.pc-portal-layer .pc-summary,.pc-portal-layer .pc-payment{position:static!important;min-width:0!important;max-width:100%!important;height:auto!important;padding:clamp(16px,3vw,40px)!important;}
+.pc-portal-layer :is(h2,h3,p,.pc-eyebrow,.pc-price){position:static!important;white-space:normal!important;overflow-wrap:anywhere!important;height:auto!important;transform:none!important;}
+.pc-portal-layer h2,.pc-portal-layer h3{line-height:1.25!important;}
+.pc-portal-layer :is(button,a){white-space:normal!important;overflow-wrap:anywhere!important;max-width:100%!important;touch-action:manipulation;}
+.pc-portal-layer .pc-payment>button{display:block!important;width:100%!important;min-height:44px!important;margin:10px 0!important;}
+.pc-portal-layer button:disabled{opacity:.6;cursor:wait;}
+.pc-portal-layer a:focus-visible{outline:3px solid #60a5fa;outline-offset:3px;}
+body:has(>.pc-portal-layer) .nara-assistant-layer{z-index:2147482000!important;}
+@media(max-width:900px){.pc-portal-layer>.pc-shell{grid-template-columns:minmax(0,1fr)!important;margin:0 auto!important;}.pc-portal-layer .pc-summary h2{margin:12px 0!important;font-size:25px!important;}.pc-portal-layer .pc-price{margin:12px 0!important;font-size:30px!important;}}
+@media(max-width:760px){.pc-portal-layer{padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));}.pc-portal-layer .pc-payment>:is(.pc-eyebrow,h2,p,button){margin-left:0!important;margin-right:0!important;}}
