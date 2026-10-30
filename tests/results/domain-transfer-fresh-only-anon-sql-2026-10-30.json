@@ -1,0 +1,51 @@
+{
+  "executionLocalDate": "2026-10-30",
+  "executionTimezone": "Asia/Jakarta",
+  "checkpointLocalDate": "2026-10-31",
+  "recordType": "Observed browser run checkpoint; saving is not another execution",
+  "runner": "tests/browser/domain-transfer-fresh-only-anon-sql.html",
+  "sourceCommit": "d21c8761a374cc6c45464ea7329f2fa9a3e41bce",
+  "setupCommit": "cbcfe16210356d37a6bb25c732430f86eaa49cc3",
+  "sqlSourceCommit": "323fce910fa37599f97aa3176acff85edfed5190",
+  "scope": "Fresh-only candidate plus actual anonymous SQL/RLS in catalog-aligned PostgreSQL WASM; injected REST bridge, not Supabase Auth/PostgREST or deployed Worker",
+  "engine": {"version": "PostgreSQL 17.5", "name": "template1", "num": "170005", "runtime": "PGlite 0.3.16 WASM"},
+  "verifiedBlobs": {
+    "domain-transfer-redirect-lookup.mjs": "9e75e80810d102c2a29658565e44dca5099601e2",
+    "domain-transfer-redirect-pipeline.mjs": "91f15c34b50c5fbbe5027d3df89450aba172bbde",
+    "domain-transfer-fresh-only-test-resolver.mjs": "90ed0fb464894e62cb1445431dcc62712d4aab51"
+  },
+  "tests": [
+    {"name": "public rule is read by actual anon SQL role", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "actual public-to-public RPC preserves redirect visibility", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "actual public-to-private RPC hides fresh rule despite warm positive cache", "passed": true, "evidence": {"fresh": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}, "cachedControlStatus": 307, "cachedControlSqlQueries": 0}},
+    {"name": "actual private-source to public-target RPC bypasses warm negative cache", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "pending remains anonymously invisible after actual RPC", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "verifying remains anonymously invisible after actual RPC", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "actual SQL disable suppresses warm rule on fresh path", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "actual SQL remove suppresses warm rule on fresh path", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "actual SQL target edit is observed without cache mutation", "passed": true, "evidence": {"queries": 1, "sqlRoles": ["anon"], "sqlErrors": [], "cacheGets": 0, "cacheSets": 0}},
+    {"name": "SQL privilege denial returns 503 rather than absence and recovers", "passed": true, "evidence": {"queries": 3, "sqlRoles": ["anon", "anon", "anon"], "sqlErrors": ["42501", "42501"], "cacheGets": 0, "cacheSets": 0}}
+  ],
+  "passedCount": 10,
+  "failedCount": 0,
+  "passed": true,
+  "catalogMatrixAssertionsNotExecuted": true,
+  "uiIntegrationAssertionsNotExecuted": true,
+  "limits": [
+    "Catalog slice only, not full production schema",
+    "Actual anon/authenticated roles and RLS in WASM, but auth.uid uses fixture claims, not real Supabase Auth/PostgREST",
+    "REST-to-SQL bridge is injected and maps SQL errors to fixture HTTP 503",
+    "Seeded in-memory candidate cache, no TTL, Cloudflare Cache API, purge or global invalidation proof",
+    "Serialized operations, not native concurrent PostgreSQL sessions",
+    "Management endpoints and outer Worker fallthrough/tenant identity not executed",
+    "Cached control uses the original candidate API with fresh=false, not the legacy active handler",
+    "No provider, DNS, TLS, deployment, flags, resources or production changes"
+  ],
+  "productionConnection": false,
+  "newSupabaseResource": false,
+  "activeHandlerChanged": false,
+  "databaseClosed": true,
+  "stage4": "OPEN",
+  "stage5": "OPEN",
+  "releaseHold": "No merge to main or production activation before stage 10 completion, verification and separate owner release approval. This record does not alter CI or branch protection."
+}
