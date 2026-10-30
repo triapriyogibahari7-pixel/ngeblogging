@@ -30,7 +30,7 @@ export default function DomainTransferDialog({domain,source,sites=[],userId,targ
   const blocked=view.phase!=='idle';
   async function submit(event){
     event.preventDefault();
-    if(!enabled||blocked||validation||typeof onMove!=='function')return;
+    if(!enabled||blocked||controller.phase!=='idle'||validation||typeof onMove!=='function')return;
     setError('');
     try{await controller.submit(input);}catch(problem){if(current.current===controller)setError(problem.code||'TRANSFER_RECONCILIATION_REQUIRED');}
   }
