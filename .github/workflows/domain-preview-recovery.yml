@@ -1,0 +1,128 @@
+name: Stage 4 preview-only recovery
+
+on:
+  push:
+    branches: [fix/domain-react-api-timeout-diagnostics]
+    paths: [.github/workflows/domain-preview-recovery.yml]
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ngeblogging-stage4-preview-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: cloudflare-production
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Configure and verify only the approved preview
+        id: recovery
+        env:
+          CF_DEPLOY_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_DOMAIN_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const account = '095e57b46e7ba7f6b188480d9e4e5fe7';
+          const base = `/accounts/${account}/workers/workers/ngeblogging/previews/fix-domain-react-api-timeout-diagnostics/deployments`;
+          const report = { ready: false, phase: 'credentials', productionMutationRequested: false, domainRegistrationRequested: false };
+          async function api(path, token, method = 'GET', body) {
+            const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+              method, redirect: 'error', signal: AbortSignal.timeout(20000),
+              headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/merge-patch+json' } : {}) },
+              ...(body ? { body: JSON.stringify(body) } : {})
+            });
+            const data = await response.json();
+            if (!response.ok || data.success !== true) {
+              const codes = (data.errors || []).map(x => x.code).join(',');
+              throw new Error(`${method} ${path.split('?')[0]}: HTTP ${response.status}; codes=${codes}`);
+            }
+            return data.result;
+          }
+          try {
+            if (!process.env.CF_DEPLOY_TOKEN) throw new Error('GITHUB_DEPLOY_TOKEN_MISSING');
+            if (!process.env.CF_DOMAIN_TOKEN) throw new Error('GITHUB_DOMAIN_TOKEN_MISSING; no deployment-token fallback permitted');
+            report.phase = 'domain-read';
+            const zones = await api(`/zones?account.id=${account}&name=triapriyogi.com&per_page=1`, process.env.CF_DOMAIN_TOKEN);
+            report.domainZoneReadAllowed = true;
+            report.domainZoneExists = Array.isArray(zones) && zones.some(x => x.name === 'triapriyogi.com' && x.account?.id === account);
+            report.phase = 'preview-check';
+            const current = await api(`${base}/latest`, process.env.CF_DEPLOY_TOKEN);
+            const approved = new Set(['d08d7d44c2cb33c4a9c494db2fb0b2d4d8bf8997', process.env.GITHUB_SHA]);
+            if (current.id !== '033b67c5-375d-4a4f-8f3d-c7441890e19f' && !approved.has(current.annotations?.['workers/commit_sha'])) throw new Error('PREVIEW_SOURCE_CHANGED; fresh approval required');
+            report.sourceDeployment = current.id;
+            const vars = {
+              SUPABASE_URL: 'https://polvmlrhqoiflumibfqs.supabase.co',
+              SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-',
+              CLOUDFLARE_WORKER_SERVICE: 'ngeblogging', CUSTOM_DOMAIN_DATABASE_MODE: 'user-jwt-rls',
+              CUSTOM_DOMAIN_DNS_V67: 'false', CLOUDFLARE_SAAS_ENABLED: 'false', CLOUDFLARE_CUSTOM_HOSTNAMES_READY: 'false',
+              CLOUDFLARE_ACCOUNT_ID: account, CUSTOM_DOMAIN_PROVIDER: 'cloudflare-full-zone'
+            };
+            const env = Object.fromEntries(Object.entries(vars).map(([k, text]) => [k, { type: 'plain_text', text }]));
+            env.CLOUDFLARE_DOMAIN_API_TOKEN = { type: 'secret_text', text: process.env.CF_DOMAIN_TOKEN };
+            const again = await api(`${base}/latest`, process.env.CF_DEPLOY_TOKEN);
+            if (again.id !== current.id) throw new Error('PREVIEW_CHANGED_DURING_CHECK; no update performed');
+            report.phase = 'preview-update';
+            report.updateAttempted = true;
+            const deployed = await api(`${base}/${encodeURIComponent(current.id)}`, process.env.CF_DEPLOY_TOKEN, 'PATCH', {
+              env, annotations: { 'workers/message': 'Stage 4 preview-only configuration recovery through GitHub Actions; no production deployment', 'workers/tag': 'stage4-preview-recovery' }
+            });
+            report.deploymentId = deployed.id;
+            const url = (deployed.urls || []).find(value => {
+              try { const u = new URL(value); return u.protocol === 'https:' && /^[a-f0-9]{8}-ngeblogging\.triapriyogibahari7\.workers\.dev$/.test(u.hostname) && !u.username && !u.password; } catch { return false; }
+            });
+            if (!url) throw new Error('PREVIEW_URL_NOT_VERIFIED; update may already have occurred');
+            report.previewUrl = new URL(url).origin;
+            report.phase = 'health';
+            const response = await fetch(`${report.previewUrl}/api/health`, { redirect: 'error', signal: AbortSignal.timeout(20000) });
+            if (!response.ok) throw new Error(`PREVIEW_HEALTH_HTTP_${response.status}; update already occurred`);
+            const health = await response.json();
+            report.checks = {
+              statusOk: health.status === 'ok', customDomains: health.customDomains === true,
+              domainToken: health.customDomainBindings?.domainApiToken === true,
+              accountId: health.customDomainBindings?.accountId === true,
+              databaseAccess: health.customDomainBindings?.databaseAccess === true,
+              fullZoneProvider: health.customDomainProvider === 'cloudflare-full-zone'
+            };
+            const latest = await api(`${base}/latest`, process.env.CF_DEPLOY_TOKEN);
+            report.checks.latestDeploymentMatches = latest.id === deployed.id;
+            report.ready = Object.values(report.checks).every(Boolean);
+            report.phase = report.ready ? 'runtime-ready-not-end-to-end-tested' : 'runtime-not-ready';
+          } catch (error) {
+            let message = String(error.message || 'Recovery failed');
+            for (const token of [process.env.CF_DEPLOY_TOKEN, process.env.CF_DOMAIN_TOKEN]) if (token) message = message.split(token).join('[REDACTED]');
+            report.error = message;
+          } finally {
+            const text = JSON.stringify(report, null, 2);
+            fs.writeFileSync('preview-recovery.json', text);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Stage 4 preview recovery\n\n\`\`\`json\n${text}\n\`\`\`\n\nRuntime readiness only; authenticated registration and nameserver end-to-end tests remain unverified.\n`);
+            console.log(text);
+          }
+          if (!report.ready) process.exitCode = 1;
+          NODE
+      - name: Publish recovery status
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          RECOVERY_OUTCOME: ${{ steps.recovery.outcome }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const r = fs.existsSync('preview-recovery.json') ? JSON.parse(fs.readFileSync('preview-recovery.json', 'utf8')) : {};
+            const success = process.env.RECOVERY_OUTCOME === 'success' && r.ready === true;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner, repo: context.repo.repo, sha: context.sha,
+              context: 'Stage 4 preview readiness', state: success ? 'success' : 'failure',
+              description: `${r.phase || 'runner/setup'}; E2E not verified`.slice(0, 140),
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
