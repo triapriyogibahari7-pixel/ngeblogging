@@ -1,5 +1,5 @@
+import { canPollNameservers, nextNameserverPoll, NAMESERVER_POLL_LIMIT } from './domain-nameserver-poll.mjs';
 const RELEASE = "domain-operation-authority-v65-20260727";
-const POLL_LIMIT = 8;
 const pollState = new WeakMap();
 let frame = 0;
 let lastDiagnostic = window.__ngebloggingLastDomainDiagnostic || null;
@@ -147,36 +147,51 @@ function syncCanonicalExperience() {
   }
 }
 
-function shouldPoll(domain) {
-  if (!domain?.state || busy()) return false;
-  if (domain.status.includes("aktif") || domain.status.includes("gagal") || domain.status.includes("hapus")) return false;
-  return domain.nameservers.length < 2 || domain.status.includes("verifikasi") || domain.status.includes("propagasi");
+function pendingNameserverNotice() {
+  const panel = root(), domain = connectedDomain();
+  const existing = panel?.querySelector('[data-nameservers-pending]');
+  if (!domain?.state || !canPollNameservers(domain)) { existing?.remove(); return; }
+  let node = existing;
+  if (!node) {
+    node = document.createElement('p');
+    node.className = 'dfz-inline-warning';
+    node.dataset.nameserversPending = 'true';
+    node.setAttribute('role','status');
+    domain.state.querySelector('.dfz-actions')?.before(node);
+  }
+  const attempts = pollState.get(panel)?.get(domain.hostname)?.count || 0;
+  const message = attempts >= NAMESERVER_POLL_LIMIT
+    ? 'Nameserver belum tersedia setelah pemeriksaan otomatis. Tekan Periksa koneksi untuk mencoba kembali; jangan mengganti nameserver di registrar sebelum nilai asli domain ini tampil.'
+    : 'Nameserver domain ini belum tersedia. Pemeriksaan otomatis berjalan terbatas. Gunakan hanya nameserver yang ditampilkan untuk domain ini, bukan nameserver domain Ngeblogging atau nama bermerek yang belum aktif.';
+  if (node.textContent !== message) node.textContent = message;
 }
 
 function schedulePoll() {
-  const domain = connectedDomain();
-  if (!shouldPoll(domain)) return;
-
-  const current = pollState.get(domain.state) || { count: 0, timer: 0 };
-  if (current.timer || current.count >= POLL_LIMIT) return;
-
-  const delay = Math.min(3500 + current.count * 2000, 15000);
+  const panel = root(), domain = connectedDomain();
+  if (!panel || !canPollNameservers(domain, busy())) return;
+  let domains = pollState.get(panel);
+  if (!domains) { domains = new Map(); pollState.set(panel, domains); }
+  const current = domains.get(domain.hostname) || { count: 0, timer: 0 };
+  domains.set(domain.hostname, current);
+  const next = nextNameserverPoll(current.count);
+  if (current.timer || !next) return;
   current.timer = window.setTimeout(() => {
     current.timer = 0;
-    if (!domain.state.isConnected || busy()) return;
-    const button = domain.state.querySelector('[data-action="refresh-root"]');
+    if (!panel.isConnected || root() !== panel) return;
+    const fresh = connectedDomain();
+    if (fresh?.hostname !== domain.hostname || !canPollNameservers(fresh, busy())) return;
+    const button = fresh.state.querySelector('[data-action="refresh-root"]');
     if (!button || button.disabled) return;
-    current.count += 1;
-    pollState.set(domain.state, current);
+    current.count = next.count;
     button.click();
-  }, delay);
-  pollState.set(domain.state, current);
+  }, next.delay);
 }
 
 function reconcile() {
   repairNotice();
   syncCanonicalExperience();
   schedulePoll();
+  pendingNameserverNotice();
   document.documentElement.dataset.domainOperationAuthorityV65 = RELEASE;
 }
 
