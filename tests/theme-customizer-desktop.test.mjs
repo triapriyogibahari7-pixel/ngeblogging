@@ -1,0 +1,6 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {customizeSource} from '../scripts/theme-customizer-desktop.mjs';
+const fixture='before\n    {modal === "customize" && <Modal title={`Sesuaikan ${activeTheme.name}`}><Customizer value={customDraft}/></Modal>}\nafter';
+test('scopes transformation to ThemeStudio and preserves mobile fallback',()=>{assert.equal(customizeSource(fixture,'/src/Editor.jsx'),null);const result=customizeSource(fixture,'/src/ThemeStudio.jsx').code;assert.ok(result.includes('fallback={<Modal title={`Sesuaikan ${activeTheme.name}`}><Customizer value={customDraft}/></Modal>}'));assert.ok(result.endsWith('\nafter'));assert.ok(result.includes('widgets={themeState.widgets}'));assert.ok(result.includes('code={themeState.code?.enabled?themeState.code:activeTheme.code}'));assert.ok(result.includes('value={customDraft}'));assert.ok(result.includes('publishThemeDraft(themeState,customDraft,themeState.widgets)'));});
+test('fails closed on missing or ambiguous source anchors',()=>{assert.throws(()=>customizeSource('nothing','/src/ThemeStudio.jsx'));assert.throws(()=>customizeSource(fixture+fixture,'/src/ThemeStudio.jsx'));assert.throws(()=>customizeSource('    {modal === "customize" && <Modal ','/src/ThemeStudio.jsx'));});
