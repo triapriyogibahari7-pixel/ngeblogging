@@ -116,6 +116,9 @@ export async function resolvePublishedSite({ slug = "", hostname = "" }) {
     } catch (tenantError) {
       console.warn("Free-host tenant lookup failed", tenantError);
     }
+    // Never resolve a different tenant from the path when this host is missing,
+    // unpublished, or unavailable. The path identifies content, not another site.
+    if (!siteId) return null;
   }
 
   if (!isNgebloggingHost) {
