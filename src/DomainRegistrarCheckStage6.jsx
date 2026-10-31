@@ -2,27 +2,30 @@ import React,{useEffect,useRef,useState} from 'react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {expiredRegistrarOfferView} from './lib/registrar-offer-view.mjs';
 import {readTimedRegistrarOfferView,registrarOfferClockNow} from './lib/registrar-offer-clock.mjs';
+import {normalizeRegistrarSearchInput,readRegistrarSearchView} from './lib/registrar-search-view.mjs';
 import {watchRegistrarOfferExpiry} from './lib/registrar-offer-expiry.mjs';
 import './domain-registrar-check-stage6.css';
 const PREVIEW='https://feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const messages={secret_missing:'Konfigurasi registrar belum tersedia.',access_denied:'Akses registrar ditolak.',rate_limited:'Batas permintaan tercapai. Coba lagi nanti.',timeout:'Pemeriksaan kehabisan waktu.',network_error:'Koneksi registrar gagal.',invalid_response:'Respons registrar belum dapat divalidasi.',provider_error:'Registrar sedang mengalami gangguan.',redirect_rejected:'Respons pengalihan registrar ditolak.',invalid_clock:'Waktu pemeriksaan belum valid.'};
-const restrictions={domain_unavailable:'Domain tidak tersedia.',domain_premium:'Domain premium belum didukung untuk pembelian.',extension_not_supported_via_api:'Ekstensi belum didukung melalui API.',extension_not_supported:'Ekstensi belum didukung.',extension_disallows_registration:'Ekstensi tidak mengizinkan pendaftaran.'};
+const restrictions={domain_unavailable:'Domain tidak tersedia menurut pemeriksaan registrar saat ini.',domain_premium:'Domain premium belum didukung untuk pembelian.',extension_not_supported_via_api:'Pemeriksaan dan pembelian ekstensi ini belum didukung melalui API registrar yang digunakan. Ini bukan berarti domain sudah terdaftar. Coba Cari alternatif atau gunakan Hubungkan domain sendiri jika sudah memilikinya.',extension_not_supported:'Ekstensi ini belum didukung oleh registrar yang digunakan. Ketersediaan domain belum dapat dipastikan.',extension_disallows_registration:'Registrar melaporkan bahwa pendaftaran ekstensi ini tidak diizinkan melalui pemeriksaan ini. Ketersediaan domain belum dapat dipastikan.'};
+const expiredResult=result=>result?.candidates?{domain:result.domain,message:'Hasil pencarian sementara sudah kedaluwarsa. Cari ulang untuk hasil terbaru.'}:expiredRegistrarOfferView(result.domain);
 export default function DomainRegistrarCheckStage6(){
  const [input,setInput]=useState(''),[busy,setBusy]=useState(false),[result,setResult]=useState(null);
  const active=useRef(null);
  useEffect(()=>()=>{active.current?.abort();active.current=null;},[]);
  useEffect(()=>{
   if(!result?.expiresAt)return;
-  return watchRegistrarOfferExpiry(result.expiresAt,{clock:()=>registrarOfferClockNow(result,performance.now()),onExpire:()=>setResult(current=>current===result?expiredRegistrarOfferView(result.domain):current)});
+  return watchRegistrarOfferExpiry(result.expiresAt,{clock:()=>registrarOfferClockNow(result,performance.now()),onExpire:()=>setResult(current=>current===result?expiredResult(result):current)});
  },[result]);
  if(typeof window==='undefined'||window.location.origin!==PREVIEW)return null;
  const offerNow=result?.expiresAt?registrarOfferClockNow(result,performance.now()):null;
- const displayResult=result?.expiresAt&&(!Number.isFinite(offerNow)||Date.parse(result.expiresAt)<=offerNow)?expiredRegistrarOfferView(result.domain):result;
- async function submit(event){
+ const displayResult=result?.expiresAt&&(!Number.isFinite(offerNow)||Date.parse(result.expiresAt)<=offerNow)?expiredResult(result):result;
+ async function submit(event,{value=input,search=false}={}){
   event.preventDefault();if(active.current)return;
   let domain;
-  try{const raw=input.trim().replace(/\.$/,'');if(!raw||/[\s\u0000-\u001f\u007f/\\:@?#%]/u.test(raw))throw Error();domain=new URL('https://'+raw).hostname.toLowerCase();if(domain.length>253||!domain.includes('.'))throw Error();}catch{setResult({message:'Masukkan nama domain lengkap, misalnya nama-domain.com, tanpa protokol atau path.'});return;}
-  const controller=new AbortController();active.current=controller;setBusy(true);setResult({domain,message:'Memeriksa ketersediaan dan harga…'});
+  if(search){try{domain=normalizeRegistrarSearchInput(value);}catch{setResult({message:'Masukkan kata kunci atau nama domain untuk mencari alternatif, maksimal 100 karakter, tanpa protokol atau path.'});return;}}
+  else{try{const raw=value.trim().replace(/\.$/,'');if(!raw||/[\s\u0000-\u001f\u007f/\\:@?#%]/u.test(raw))throw Error();domain=new URL('https://'+raw).hostname.toLowerCase();if(domain.length>253||!domain.includes('.'))throw Error();}catch{setResult({message:'Masukkan nama domain lengkap, misalnya nama-domain.com, tanpa protokol atau path.'});return;}}
+  const controller=new AbortController();active.current=controller;setBusy(true);setResult({domain,message:search?'Mencari kandidat dari registrar…':'Memeriksa ketersediaan dan harga…'});
   const current=()=>active.current===controller&&!controller.signal.aborted;
   const timer=setTimeout(()=>{if(current()){controller.abort();active.current=null;setBusy(false);setResult({domain,message:'Pemeriksaan kehabisan waktu. Belum ada hasil terkonfirmasi.'});}},20000);
   try{
@@ -30,7 +33,7 @@ export default function DomainRegistrarCheckStage6(){
    if(!current())return;
    if(auth?.verification!=='verified'||!auth?.user?.id||!auth?.session?.access_token)throw Error();
    const requestStartedAt=performance.now();
-   const response=await fetch('/api/admin/registrar/check/'+encodeURIComponent(domain),{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{Authorization:'Bearer '+auth.session.access_token}});
+   const response=await fetch('/api/admin/registrar/'+(search?'search/':'check/')+encodeURIComponent(domain),{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{Authorization:'Bearer '+auth.session.access_token}});
    if(!current())return;
    if(response.status===401){setResult({domain,message:'Sesi tidak valid. Silakan login kembali.'});return;}
    const data=await response.json();
@@ -40,8 +43,14 @@ export default function DomainRegistrarCheckStage6(){
    if(next?.verification!=='verified'||next?.user?.id!==auth.user.id)throw Error();
    if(response.status===403){setResult({domain,message:'Pemeriksaan saat ini hanya tersedia untuk admin yang diizinkan.'});return;}
    if(data?.code==='INVALID_DOMAIN'){setResult({domain,message:'Nama domain tidak valid atau merupakan subdomain. Gunakan nama domain utama, misalnya nama-domain.com.'});return;}
+   if(data?.code==='INVALID_SEARCH_QUERY'){setResult({domain,message:'Kata kunci pencarian tidak valid. Gunakan maksimal 100 karakter tanpa protokol atau path.'});return;}
    if(data?.code==='AUTH_UNAVAILABLE'){setResult({domain,message:'Layanan verifikasi sesi belum tersedia. Ketersediaan domain belum dapat diperiksa.'});return;}
    if(data?.code==='DIAGNOSTIC_DISABLED'){setResult({domain,message:'Layanan pemeriksaan domain belum dikonfigurasi.'});return;}
+   if(search){
+    if(data?.code!=='REGISTRAR_SEARCH'||data?.query!==domain||data?.providerId!=='cloudflare'||data?.lookupOnly!==true||data?.purchaseAllowed!==false)throw Error();
+    if(!response.ok){setResult({domain,message:messages[data.status]||'Pencarian belum berhasil. Belum ada kandidat terkonfirmasi.'});return;}
+    setResult(readRegistrarSearchView(data,{query:domain,requestStartedAt,receivedAt:performance.now()}));return;
+   }
    if(data?.code!=='REGISTRAR_CHECK'||data?.domain!==domain||data?.providerId!=='cloudflare')throw Error();
    if(data.lookupOnly!==true||data.purchaseAllowed!==false)throw Error();
    if(!response.ok){setResult({domain,message:messages[data.status]||'Pemeriksaan belum berhasil. Belum ada hasil terkonfirmasi.'});return;}
@@ -49,8 +58,8 @@ export default function DomainRegistrarCheckStage6(){
    if(data.status==='not_registrable'&&data.registrable===false){setResult({domain,message:restrictions[data.reason]||'Domain belum dapat didaftarkan. Ketersediaan tidak dapat disimpulkan.'});return;}
    if(data.status==='premium_not_supported'&&data.registrable===true&&data.tier==='premium'){setResult({domain,message:'Domain premium terdeteksi. Penawaran standar dan pembelian belum didukung.'});return;}
    setResult(readTimedRegistrarOfferView(data,{domain,requestStartedAt,receivedAt:performance.now()}));
-  }catch(error){if(current())setResult({domain,message:['INVALID_INDICATIVE_OFFER_VIEW','INVALID_OFFER_CLOCK'].includes(error?.message)?'Harga belum dapat ditampilkan karena penawaran atau masa berlakunya belum valid. Silakan periksa ulang.':'Sesi, jaringan, atau respons pemeriksaan belum dapat diverifikasi. Tidak ada pembelian dilakukan.'});}
+  }catch(error){if(current())setResult({domain,message:['INVALID_INDICATIVE_OFFER_VIEW','INVALID_OFFER_CLOCK','INVALID_REGISTRAR_SEARCH_VIEW'].includes(error?.message)?'Hasil pencarian atau harga belum dapat ditampilkan karena respons atau masa berlakunya belum valid. Silakan periksa ulang.':'Sesi, jaringan, atau respons pemeriksaan belum dapat diverifikasi. Tidak ada pembelian dilakukan.'});}
   finally{clearTimeout(timer);if(active.current===controller){active.current=null;setBusy(false);}}
  }
- return <section className="sv124-card sv124-registrar-search" aria-label="Periksa domain" data-stage6-registrar-check="lookup-only"><form onSubmit={submit}><label>Nama domain <input type="text" value={input} onChange={e=>{setInput(e.target.value);setResult(null);}} maxLength={253} placeholder="nama-domain.com" autoComplete="off" spellCheck={false} disabled={busy} required/></label><button type="submit" className="sv124-primary" disabled={busy}>{busy?'Memeriksa…':'Periksa ketersediaan dan harga'}</button></form><div role="status" aria-live="polite" aria-busy={busy}>{displayResult?<><p>{displayResult.domain?<strong>{displayResult.domain}: </strong>:null}{displayResult.message}</p>{displayResult.currency?<><dl><dt>Pendaftaran · 1 tahun</dt><dd>{displayResult.currency} {displayResult.registration}</dd><dt>Perpanjangan · 1 tahun</dt><dd>{displayResult.currency} {displayResult.renewal}</dd></dl><p>Diperiksa: <time dateTime={displayResult.checkedAt}>{new Date(displayResult.checkedAt).toLocaleString('id-ID')}</time>. Berlaku sampai <time dateTime={displayResult.expiresAt}>{new Date(displayResult.expiresAt).toLocaleString('id-ID')}</time>.</p></>:null}</>:null}</div><details><summary>Informasi harga dan batas layanan</summary><p>Periksa satu nama domain lengkap. Daftar saran domain belum tersedia di formulir ini. Harga sementara bukan tagihan final; pajak, transfer, dan kelayakan pendaftar belum diperiksa. Pembelian belum diaktifkan dan hasil pemeriksaan tidak menghubungkan domain ke situs.</p></details></section>;
+ return <section className="sv124-card sv124-registrar-search" aria-label="Periksa domain" data-stage6-registrar-check="lookup-only"><form onSubmit={submit}><label>Nama domain atau kata kunci <input type="text" value={input} onChange={e=>{setInput(e.target.value);setResult(null);}} maxLength={253} placeholder="nama-domain.com atau nama blog" autoComplete="off" spellCheck={false} disabled={busy} required/></label><button type="submit" className="sv124-primary" disabled={busy}>{busy?'Memproses…':'Periksa ketersediaan dan harga'}</button><button type="button" className="sv124-primary" disabled={busy||!input.trim()} onClick={event=>submit(event,{search:true})}>Cari alternatif (maks. 50)</button></form><div role="status" aria-live="polite" aria-busy={busy}>{displayResult?<><p>{displayResult.domain?<strong>{displayResult.domain}: </strong>:null}{displayResult.message}</p>{displayResult.candidates?<ul>{displayResult.candidates.map(candidate=><li key={candidate.domain}><p><strong>{candidate.domain}</strong> — {candidate.status}{candidate.premium?' · Premium':''}</p>{candidate.prices?<p>Harga pencarian sementara · Pendaftaran 1 tahun: {candidate.prices.currency} {candidate.prices.registration} · Perpanjangan 1 tahun: {candidate.prices.currency} {candidate.prices.renewal}. Pajak belum diketahui.</p>:null}{candidate.canCheck?<button type="button" className="sv124-primary" disabled={busy} onClick={event=>{setInput(candidate.domain);submit(event,{value:candidate.domain});}}>Periksa harga</button>:null}</li>)}</ul>:null}{displayResult.currency?<><dl><dt>Pendaftaran · 1 tahun</dt><dd>{displayResult.currency} {displayResult.registration}</dd><dt>Perpanjangan · 1 tahun</dt><dd>{displayResult.currency} {displayResult.renewal}</dd></dl><p>Diperiksa: <time dateTime={displayResult.checkedAt}>{new Date(displayResult.checkedAt).toLocaleString('id-ID')}</time>. Berlaku sampai <time dateTime={displayResult.expiresAt}>{new Date(displayResult.expiresAt).toLocaleString('id-ID')}</time>.</p></>:null}</>:null}</div><details><summary>Informasi harga dan batas layanan</summary><p>Periksa satu nama domain lengkap atau cari alternatif dari kata kunci. Pencarian mengembalikan maksimal 50 kandidat per permintaan, bisa lebih sedikit, hanya dari dukungan registrar yang digunakan. Hasil pencarian dapat berasal dari cache; ketersediaan dan harga harus diperiksa ulang. Harga sementara bukan tagihan final; pajak, transfer, dan kelayakan pendaftar belum diperiksa. Pembelian belum diaktifkan dan hasil pemeriksaan tidak menghubungkan domain ke situs.</p></details></section>;
 }
