@@ -8,6 +8,7 @@ export const PUBLIC_EDGE_RELEASE_V282 = "public-edge-request-dedup-v282-20260805
 const SYSTEM_HOSTS = new Set(["ngeblogging.com", "www.ngeblogging.com"]);
 const SEO_DYNAMIC_PATHS = new Set(["/robots.txt", "/sitemap.xml", "/sitemap-posts.xml", "/feed.xml", "/rss.xml", "/atom.xml", "/llms.txt", "/manifest.webmanifest"]);
 const DIRECT_STATIC_PATHS = new Set(["/sw.js", "/favicon.svg", "/favicon.ico", "/apple-touch-icon.png", "/browserconfig.xml"]);
+const REGISTRAR_DIAGNOSTIC_ASSETS = new Set(["/assets/registrar-diagnostic-stage6", "/assets/registrar-diagnostic-stage6.html", "/assets/registrar-diagnostic-stage6.mjs"]);
 const RELEASE_MANIFEST = /^\/release-v\d+\.json$/i;
 const STATIC_EXTENSION = /\.(?:m?js|css|map|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|eot|mp4|webm|mp3|m4a|wav|ogg|pdf)$/i;
 const HASHED_ASSET = /(?:^|\/)[^/]*[-_.][a-f0-9]{8,}\.[a-z0-9]+$/i;
@@ -19,6 +20,7 @@ function isDirectStaticRequest(request, url) {
   return STATIC_EXTENSION.test(url.pathname) && !url.pathname.startsWith("/.well-known/");
 }
 function cachePolicy(url) {
+  if (REGISTRAR_DIAGNOSTIC_ASSETS.has(url.pathname)) return "no-store, max-age=0, must-revalidate";
   if (url.pathname === "/sw.js") return "no-cache, no-store, must-revalidate";
   if (RELEASE_MANIFEST.test(url.pathname)) return "no-store, max-age=0, must-revalidate";
   if (HASHED_ASSET.test(url.pathname) || url.pathname.startsWith("/assets/")) return "public, max-age=31536000, immutable";
@@ -29,7 +31,7 @@ async function serveStaticAsset(request, env) {
   const response = await env.ASSETS.fetch(request);
   const url = new URL(request.url);
   const contentType = String(response.headers.get("content-type") || "").toLowerCase();
-  if (contentType.includes("text/html") && !/\.html?$/i.test(url.pathname)) {
+  if (contentType.includes("text/html") && !/\.html?$/i.test(url.pathname) && url.pathname !== "/assets/registrar-diagnostic-stage6") {
     return new Response(request.method === "HEAD" ? null : "Asset not found", {status:404,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-ngeblogging-public-edge":PUBLIC_EDGE_RELEASE_V282,"x-ngeblogging-static-fallback-blocked":"true"}});
   }
   const headers = new Headers(response.headers);
