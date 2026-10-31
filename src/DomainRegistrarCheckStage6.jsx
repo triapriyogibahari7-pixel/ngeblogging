@@ -20,17 +20,21 @@ export default function DomainRegistrarCheckStage6(){
    if(!current())return;
    if(auth?.verification!=='verified'||!auth?.user?.id||!auth?.session?.access_token)throw Error();
    const response=await fetch('/api/admin/registrar/check/'+encodeURIComponent(domain),{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{Authorization:'Bearer '+auth.session.access_token}});
+   if(!current())return;
+   if(response.status===401){setResult({message:'Sesi tidak valid. Silakan login kembali.'});return;}
    const data=await response.json();
    const next=await getVerifiedSession({force:true});
    if(!current())return;
    if(next?.verification!=='verified'||next?.user?.id!==auth.user.id)throw Error();
-   if(response.status===401){setResult({message:'Sesi tidak valid. Silakan login kembali.'});return;}
    if(response.status===403){setResult({message:'Pemeriksaan preview ini hanya tersedia untuk admin yang diizinkan.'});return;}
    if(data?.code==='INVALID_DOMAIN'){setResult({message:'Nama domain tidak valid atau merupakan subdomain.'});return;}
    if(data?.code!=='REGISTRAR_CHECK'||data?.domain!==domain)throw Error();
+   if(data.lookupOnly!==true||data.purchaseAllowed!==false)throw Error();
    if(!response.ok){setResult({domain,message:messages[data.status]||'Pemeriksaan belum berhasil. Belum ada hasil terkonfirmasi.'});return;}
+   if(typeof data.checkedAt!=='string'||!Number.isFinite(Date.parse(data.checkedAt)))throw Error();
    if(data.status==='not_registrable'&&data.registrable===false){setResult({domain,message:restrictions[data.reason]||'Domain belum dapat didaftarkan. Ketersediaan tidak dapat disimpulkan.'});return;}
    if(!['checked','premium_not_supported'].includes(data.status)||data.registrable!==true)throw Error();
+   if((data.status==='checked'&&data.tier!=='standard')||(data.status==='premium_not_supported'&&data.tier!=='premium')||data.mustRecheckBeforePurchase!==true)throw Error();
    const p=data.prices,valid=v=>typeof v==='string'&&/^(?:0|[1-9]\d{0,11})(?:\.\d{1,6})?$/.test(v);
    if(!/^[A-Z]{3}$/.test(p?.currency||'')||!valid(p?.registration?.amount)||!valid(p?.renewal?.amount)||p.registration.termYears!==1||p.renewal.termYears!==1)throw Error();
    setResult({domain,message:data.status==='checked'?'Domain dapat didaftarkan menurut pemeriksaan saat ini.':'Domain premium terdeteksi. Pembelian belum didukung.',currency:p.currency,registration:p.registration.amount,renewal:p.renewal.amount});
