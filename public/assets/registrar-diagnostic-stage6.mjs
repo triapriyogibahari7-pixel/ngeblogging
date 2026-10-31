@@ -1,3 +1,4 @@
+import './registrar-sandbox-a510eb783791.mjs';
 const host='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const output=document.getElementById('result');
 const buttons=[document.getElementById('preflight'),document.getElementById('run')];
