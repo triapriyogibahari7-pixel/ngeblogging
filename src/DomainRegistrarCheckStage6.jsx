@@ -24,6 +24,7 @@ export default function DomainRegistrarCheckStage6(){
    if(!current())return;
    if(response.status===401){setResult({message:'Sesi tidak valid. Silakan login kembali.'});return;}
    const data=await response.json();
+   if(!current())return;
    const next=await getVerifiedSession({force:true});
    if(!current())return;
    if(next?.verification!=='verified'||next?.user?.id!==auth.user.id)throw Error();
