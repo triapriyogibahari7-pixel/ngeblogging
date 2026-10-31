@@ -1,3 +1,4 @@
+import { domainPaymentNotificationResponse } from "../server/domain-payment-notification-handler.mjs";
 import { domainQuotePreviewResponse } from "../server/domain-quote-preview-handler.mjs";
 import { domainOrderPreviewResponse } from "../server/domain-order-preview-handler.mjs";
 import { registrarDiagnosticResponse } from "../server/registrar-diagnostic-handler.mjs";
@@ -47,6 +48,8 @@ async function serveStaticAsset(request, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const domainPayment = await domainPaymentNotificationResponse(request, env);
+    if (domainPayment) return domainPayment;
     const domainQuote = await domainQuotePreviewResponse(request, env);
     if (domainQuote) return domainQuote;
     const domainOrder = await domainOrderPreviewResponse(request, env);
