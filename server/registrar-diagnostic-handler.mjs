@@ -3,7 +3,7 @@ export async function registrarDiagnosticResponse(request, env) {
  const url = new URL(request.url);
  if(url.pathname !== '/api/admin/registrar/diagnostic') return null;
  const reply = (status, code, extra = {}) => new Response(JSON.stringify({code,...extra}), {status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}});
- if(!['ngeblogging.com','www.ngeblogging.com','ngeblogging.triapriyogibahari7.workers.dev'].includes(url.hostname) || url.protocol !== 'https:') return reply(404,'NOT_FOUND');
+ if(!['ngeblogging.com','www.ngeblogging.com','ngeblogging.triapriyogibahari7.workers.dev','feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev'].includes(url.hostname) || url.protocol !== 'https:') return reply(404,'NOT_FOUND');
  if(request.method !== 'POST') return reply(405,'METHOD_NOT_ALLOWED');
  const admin = env?.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID;
  if(typeof admin !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(admin)) return reply(503,'DIAGNOSTIC_DISABLED');
