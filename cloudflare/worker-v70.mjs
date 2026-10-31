@@ -1,3 +1,4 @@
+import { registrarDiagnosticResponse } from "../server/registrar-diagnostic-handler.mjs";
 import { stage5PreviewResponse } from "./domain-stage5-preview-router.mjs";
 import baseWorker from "./worker-v69.mjs";
 import { paymentDiagnosticPage } from "../server/payment-diagnostic-page.mjs";
@@ -42,6 +43,8 @@ async function serveStaticAsset(request, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const registrarDiagnostic = await registrarDiagnosticResponse(request, env);
+    if (registrarDiagnostic) return registrarDiagnostic;
     const stage5 = await stage5PreviewResponse(request);
     if (stage5) return stage5;
     const paymentDiagnostic = await paymentDiagnosticPage(request, env);
