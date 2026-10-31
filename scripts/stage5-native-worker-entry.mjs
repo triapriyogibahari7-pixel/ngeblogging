@@ -15,7 +15,9 @@ export default {async fetch(request,env){
   const phase=path.endsWith('/site_domain_redirects')?'redirect-lookup':path.endsWith('/tenant_render_probe')?'tenant-content':'tenant-lookup';
   const detail={phase,requestHost:u.hostname,requestMethod:request.method,path};
   try{
-   const response=await env.BACKEND.fetch(input,options),payload=await response.clone().json().catch(()=>null);
+   const response=await env.BACKEND.fetch(input,{...options,redirect:'manual'});
+   if(response.status>=300&&response.status<400){await response.body?.cancel();throw Error('UNEXPECTED_BACKEND_REDIRECT');}
+   const payload=await response.clone().json().catch(()=>null);
    console.error('[stage5-worker-fetch] '+JSON.stringify({...detail,status:response.status,rows:Array.isArray(payload)?payload.length:undefined,code:String(payload?.code||'').replace(/[^A-Za-z0-9_]/g,'').slice(0,40)}));
    return response;
   }catch(error){console.error('[stage5-worker-fetch] '+JSON.stringify({...detail,error:{name:error?.name||'Error',message:scrub(error?.message||'Fetch failed')}}));throw error;}
