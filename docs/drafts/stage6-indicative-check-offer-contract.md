@@ -1,20 +1,19 @@
 # Stage 6 indicative Check offer contract
 
 ## Integration scope
-The preview-only, authenticated admin Check handler now passes the Cloudflare Check result through attachRegistrarCheckOffer. Valid standard results preserve old Check fields and add offerStatus and offer. The UI still reads the old fields; it does not yet display or enforce offer expiry. The canonical quote router, publication, checkout, payment, registration, renewal, transfer, DNS and production are not connected to this contract.
+The preview-only authenticated admin Check handler decorates Cloudflare Check results with offerStatus and offer. The preview Domain search card now reads standard prices from the validated offer, displays checkedAt/expiresAt, and clears expired prices via a timer plus focus/visibility rechecks. It sends no automatic registrar refresh. Premium results show a warning, not a standard price offer. The free-site panel and publication controls remain unchanged.
+
+The canonical quote router, checkout, payments, registration, renewal, registrar transfer, DNS and production are not connected to this offer contract.
 
 ## Boundaries
-- Default validity is 60 seconds from checkedAt, not from conversion time. This is a local indicative-display policy, not a provider price guarantee.
-- Expired or future-dated standard results return invalid_response with no prices or offer. Premium and non-registrable results do not become standard offers.
-- Transfer is not_quoted, not zero and not a claim that transfer is unsupported. Tax remains unknown/null.
-- Purchase stays disabled. Domain ownership and site connection are not acquired.
-- quoteId is an identifier only: not signed, persisted, authoritative, or redeemable for checkout. Later orders must independently revalidate eligibility, price and availability.
-- This differs from the canonical quote-router contract, which requires boolean taxIncluded and explicit operation support. Do not treat these contracts as interchangeable.
+- Default validity is 60 seconds from checkedAt, not conversion time. This is a local indicative-display policy, not a provider guarantee.
+- Expired or future-dated standard results do not produce a valid offer. The UI also rejects inconsistent timestamps and removes expired price/quote identity from its view state.
+- Tax remains unknown/null. Transfer remains not_quoted, not zero or a claim of unsupported operation.
+- Purchase remains disabled. Availability does not establish ownership or site connection.
+- quoteId is not signed, persisted or redeemable for checkout. Orders require independent server-side verification.
+- The canonical quote router requires a different tax/operation-support contract; these formats are not interchangeable.
 
 ## Evidence and remaining work
-The offer candidate passed 21 local fixture tests. Its response decorator passed 19 local fixture tests. Repository test imports are relocated to ../server; assertions are unchanged. These are not live provider, React render, HTTP integration, payment or production acceptance results. After HTTP wiring, rerun the existing endpoint suite and verify deployed admin responses before claiming integration acceptance.
+Local fixture results before UI wiring: offer module 21 passes; response decorator 19 passes; UI offer reader 23 passes; expiry watcher 16 passes. A separate Node VM handler-wiring harness passed 14 cases with mocked auth, normalization and Check adapter. These are different scopes, not a single end-to-end suite. The original endpoint suite was not rerun after offer wiring. UI module artifacts were tested standalone; their React integration and real browser lifecycle have not been verified.
 
-Offline commands:
-node --test tests/registrar-check-indicative-offer.test.mjs tests/registrar-check-result.test.mjs tests/registrar-check-handler-stage6.test.mjs
-
-Tests require no provider credentials. Existing stage 4/5 and production release holds remain. No merge to main is authorized.
+After this commit, verify JSX build, combined UI behavior, browser focus/visibility handling, account/site switching and deployed admin responses. Existing GitHub Actions billing blockage is not resolved by this code. Do not claim stage 6 acceptance, live provider acceptance or production readiness. Existing stage 4/5 and release holds remain. No merge to main is authorized.
