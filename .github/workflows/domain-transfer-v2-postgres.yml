@@ -7,6 +7,8 @@ on:
       - 'tests/sql/domain-transfer-v2-smoke.sql'
       - 'tests/browser/domain-transfer-catalog-matrix.html'
       - 'scripts/domain-stage5-native-acceptance.mjs'
+      - 'scripts/stage5-build-diagnostics.mjs'
+      - 'scripts/stage5-cloudflare-native-build.mjs'
       - '.github/workflows/domain-transfer-v2-postgres.yml'
   workflow_dispatch:
 permissions:
