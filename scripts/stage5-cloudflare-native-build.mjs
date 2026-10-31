@@ -10,8 +10,19 @@ const BRANCH='feature/domain-stages5-10-integration-20261030';
 export const selected=env=>env.WORKERS_CI==='1'&&env.WORKERS_CI_BRANCH===BRANCH;
 export function nativePath(root,value){assert.equal(typeof value,'string');const p=resolve(root,value),native=join(root,'native')+sep;assert.ok(p.startsWith(native),'SYMLINK_OUTSIDE_NATIVE_PACKAGE');return p;}
 const git=(args,env)=>execFileSync('git',args,{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:4*1024*1024}).trim();
-async function command(file,args,options={}){
-  await new Promise((done,reject)=>{const child=spawn(file,args,{stdio:'inherit',...options});const timer=setTimeout(()=>{child.kill('SIGTERM');reject(Error('NATIVE_BUILD_COMMAND_TIMEOUT'));},180000);child.on('error',e=>{clearTimeout(timer);reject(e);});child.on('exit',(code,signal)=>{clearTimeout(timer);code===0?done():reject(Error('NATIVE_BUILD_COMMAND_FAILED '+(code??signal)));});});
+function redactCommandText(value){return String(value).replace(/Bearer\s+[^\s"']+/gi,'Bearer [REDACTED]').replace(/(?:sb_secret_|ghp_|github_pat_)[A-Za-z0-9_]+/g,'[REDACTED]').replace(/((?:password|authorization|token|api[_-]?key)\s*[:=]\s*)[^\s,;]+/gi,'$1[REDACTED]');}
+export async function command(file,args,{timeoutMs=180000,...options}={}){
+  const name=file.split(/[\\/]/).at(-1);assert.ok(Number.isInteger(timeoutMs)&&timeoutMs>0&&timeoutMs<=180000);
+  await new Promise((done,reject)=>{
+    let tail='',settled=false;
+    const child=spawn(file,args,{...options,stdio:['ignore','pipe','pipe']});
+    const failure=(code)=>Error('NATIVE_BUILD_COMMAND_FAILED '+name+' '+code+'\n'+redactCommandText(tail));
+    const finish=error=>{if(settled)return;settled=true;clearTimeout(timer);error?reject(error):done();};
+    const capture=stream=>chunk=>{const text=chunk.toString('utf8');tail=(tail+text).slice(-4096);stream.write(redactCommandText(text));};
+    child.stdout.on('data',capture(process.stdout));child.stderr.on('data',capture(process.stderr));
+    const timer=setTimeout(()=>{child.kill('SIGTERM');finish(failure('TIMEOUT'));},timeoutMs);
+    child.on('error',error=>finish(failure(error.code||error.name)));child.on('close',(code,signal)=>finish(code===0?null:failure(code??signal)));
+  });
 }
 export async function runStage5NativeBuild(){
   if(!selected(process.env)){console.log('[stage5-native] skipped outside the selected Cloudflare preview branch');return;}
