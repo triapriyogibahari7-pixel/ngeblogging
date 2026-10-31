@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
-import {readRegistrarOfferView,expiredRegistrarOfferView} from './lib/registrar-offer-view.mjs';
+import {expiredRegistrarOfferView} from './lib/registrar-offer-view.mjs';
+import {readTimedRegistrarOfferView,registrarOfferClockNow} from './lib/registrar-offer-clock.mjs';
 import {watchRegistrarOfferExpiry} from './lib/registrar-offer-expiry.mjs';
 import './domain-registrar-check-stage6.css';
 const PREVIEW='https://feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
@@ -12,10 +13,11 @@ export default function DomainRegistrarCheckStage6(){
  useEffect(()=>()=>{active.current?.abort();active.current=null;},[]);
  useEffect(()=>{
   if(!result?.expiresAt)return;
-  return watchRegistrarOfferExpiry(result.expiresAt,{onExpire:()=>setResult(current=>current===result?expiredRegistrarOfferView(result.domain):current)});
+  return watchRegistrarOfferExpiry(result.expiresAt,{clock:()=>registrarOfferClockNow(result,performance.now()),onExpire:()=>setResult(current=>current===result?expiredRegistrarOfferView(result.domain):current)});
  },[result]);
  if(typeof window==='undefined'||window.location.origin!==PREVIEW)return null;
- const displayResult=result?.expiresAt&&Date.parse(result.expiresAt)<=Date.now()?expiredRegistrarOfferView(result.domain):result;
+ const offerNow=result?.expiresAt?registrarOfferClockNow(result,performance.now()):null;
+ const displayResult=result?.expiresAt&&(!Number.isFinite(offerNow)||Date.parse(result.expiresAt)<=offerNow)?expiredRegistrarOfferView(result.domain):result;
  async function submit(event){
   event.preventDefault();if(active.current)return;
   let domain;
@@ -27,6 +29,7 @@ export default function DomainRegistrarCheckStage6(){
    const auth=await getVerifiedSession({force:true});
    if(!current())return;
    if(auth?.verification!=='verified'||!auth?.user?.id||!auth?.session?.access_token)throw Error();
+   const requestStartedAt=performance.now();
    const response=await fetch('/api/admin/registrar/check/'+encodeURIComponent(domain),{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{Authorization:'Bearer '+auth.session.access_token}});
    if(!current())return;
    if(response.status===401){setResult({domain,message:'Sesi tidak valid. Silakan login kembali.'});return;}
@@ -45,8 +48,8 @@ export default function DomainRegistrarCheckStage6(){
    if(typeof data.checkedAt!=='string'||!Number.isFinite(Date.parse(data.checkedAt)))throw Error();
    if(data.status==='not_registrable'&&data.registrable===false){setResult({domain,message:restrictions[data.reason]||'Domain belum dapat didaftarkan. Ketersediaan tidak dapat disimpulkan.'});return;}
    if(data.status==='premium_not_supported'&&data.registrable===true&&data.tier==='premium'){setResult({domain,message:'Domain premium terdeteksi. Penawaran standar dan pembelian belum didukung.'});return;}
-   setResult(readRegistrarOfferView(data,{domain}));
-  }catch(error){if(current())setResult({domain,message:error?.message==='INVALID_INDICATIVE_OFFER_VIEW'?'Harga belum dapat ditampilkan karena penawaran atau waktunya belum valid. Pastikan tanggal dan jam perangkat benar, lalu periksa ulang.':'Sesi, jaringan, atau respons pemeriksaan belum dapat diverifikasi. Tidak ada pembelian dilakukan.'});}
+   setResult(readTimedRegistrarOfferView(data,{domain,requestStartedAt,receivedAt:performance.now()}));
+  }catch(error){if(current())setResult({domain,message:['INVALID_INDICATIVE_OFFER_VIEW','INVALID_OFFER_CLOCK'].includes(error?.message)?'Harga belum dapat ditampilkan karena penawaran atau masa berlakunya belum valid. Silakan periksa ulang.':'Sesi, jaringan, atau respons pemeriksaan belum dapat diverifikasi. Tidak ada pembelian dilakukan.'});}
   finally{clearTimeout(timer);if(active.current===controller){active.current=null;setBusy(false);}}
  }
  return <section className="sv124-card sv124-registrar-search" aria-label="Periksa domain" data-stage6-registrar-check="lookup-only"><form onSubmit={submit}><label>Nama domain <input type="text" value={input} onChange={e=>{setInput(e.target.value);setResult(null);}} maxLength={253} placeholder="nama-domain.com" autoComplete="off" spellCheck={false} disabled={busy} required/></label><button type="submit" className="sv124-primary" disabled={busy}>{busy?'Memeriksa…':'Periksa ketersediaan dan harga'}</button></form><div role="status" aria-live="polite" aria-busy={busy}>{displayResult?<><p>{displayResult.domain?<strong>{displayResult.domain}: </strong>:null}{displayResult.message}</p>{displayResult.currency?<><dl><dt>Pendaftaran · 1 tahun</dt><dd>{displayResult.currency} {displayResult.registration}</dd><dt>Perpanjangan · 1 tahun</dt><dd>{displayResult.currency} {displayResult.renewal}</dd></dl><p>Diperiksa: <time dateTime={displayResult.checkedAt}>{new Date(displayResult.checkedAt).toLocaleString('id-ID')}</time>. Berlaku sampai <time dateTime={displayResult.expiresAt}>{new Date(displayResult.expiresAt).toLocaleString('id-ID')}</time>.</p></>:null}</>:null}</div><details><summary>Informasi harga dan batas layanan</summary><p>Periksa satu nama domain lengkap. Daftar saran domain belum tersedia di formulir ini. Harga sementara bukan tagihan final; pajak, transfer, dan kelayakan pendaftar belum diperiksa. Pembelian belum diaktifkan dan hasil pemeriksaan tidak menghubungkan domain ke situs.</p></details></section>;
