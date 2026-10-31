@@ -1,4 +1,13 @@
 import { diagnoseRegistrarAccess } from './registrar-token-diagnostic.mjs';
+async function emptyBody(request) {
+ if(request.body === null)return true;
+ const reader=request.body.getReader();let timer;
+ try {
+  const result=await Promise.race([reader.read(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('BODY_TIMEOUT')),2000);})]);
+  return result.done === true;
+ } catch {return false;}
+ finally {clearTimeout(timer);reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}
+}
 export async function registrarDiagnosticResponse(request, env) {
  const url = new URL(request.url);
  if(url.pathname !== '/api/admin/registrar/diagnostic') return null;
@@ -8,7 +17,7 @@ export async function registrarDiagnosticResponse(request, env) {
  const admin = env?.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID;
  if(typeof admin !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(admin)) return reply(503,'DIAGNOSTIC_DISABLED');
  if(request.headers.get('origin') !== url.origin) return reply(403,'ORIGIN_NOT_ALLOWED');
- if(url.search || request.headers.get('content-length') && request.headers.get('content-length') !== '0' || request.body !== null) return reply(400,'EMPTY_REQUEST_REQUIRED');
+ if(url.search || (request.headers.get('content-length') && request.headers.get('content-length') !== '0') || !(await emptyBody(request))) return reply(400,'EMPTY_REQUEST_REQUIRED');
  const auth = request.headers.get('authorization') || '';
  if(!/^Bearer [^\s]{1,8192}$/.test(auth)) return reply(401,'AUTH_REQUIRED');
  let base; try {base = new URL(env.SUPABASE_URL);} catch {return reply(503,'AUTH_UNAVAILABLE');}
