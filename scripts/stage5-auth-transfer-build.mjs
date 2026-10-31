@@ -15,8 +15,8 @@ export async function runStage5AuthTransferBuild(){
  source=source.replace(nativeImport,JSON.stringify(pathToFileURL(resolve('scripts/stage5-cloudflare-native-build.mjs')).href));
  const marker='assert.equal(report.tests.length,10);report.passed=true;report.passedCount=10;';
  assert.equal(source.split(marker).length,2,'AUTH_SUCCESS_ANCHOR');
- const extra="report.transferIntegration=await runAuthTransferIntegration({db,http,actors:{a,b}});assert.equal(report.transferIntegration.passed,true);assert.equal(report.transferIntegration.passedCount,12);report.authRunnerAdapter={baseBlob:'"+expected+"',mode:'In-memory additive integration before original cleanup; original ten assertions unchanged'};";
- source="import {runAuthTransferIntegration} from "+JSON.stringify(pathToFileURL(resolve('scripts/stage5-auth-transfer-supplement.mjs')).href)+";\n"+source.replace(marker,extra+marker);
+ const extra="report.transferIntegration=await runAuthTransferIntegration({db,http,actors:{a,b}});assert.equal(report.transferIntegration.passed,true);assert.equal(report.transferIntegration.passedCount,12);report.nativeWorkerIntegration=await runNativeWorkerIntegration({db,actors:{a,b}});assert.equal(report.nativeWorkerIntegration.passed,true);assert.equal(report.nativeWorkerIntegration.passedCount,12);assert.equal(report.nativeWorkerIntegration.workerdDisposed,true);report.authRunnerAdapter={baseBlob:'"+expected+"',mode:'In-memory additive integration before original cleanup; original ten assertions unchanged'};";
+ source="import {runAuthTransferIntegration} from "+JSON.stringify(pathToFileURL(resolve('scripts/stage5-auth-transfer-supplement.mjs')).href)+";\nimport {runNativeWorkerIntegration} from "+JSON.stringify(pathToFileURL(resolve('scripts/stage5-native-worker-supplement.mjs')).href)+";\n"+source.replace(marker,extra+marker);
  const module=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
  await module.runStage5IsolatedAuthBuild();
 }
