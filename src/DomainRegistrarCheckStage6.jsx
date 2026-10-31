@@ -1,5 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
+import './domain-registrar-check-stage6.css';
 const PREVIEW='https://feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const messages={secret_missing:'Konfigurasi registrar belum tersedia.',access_denied:'Akses registrar ditolak.',rate_limited:'Batas permintaan tercapai. Coba lagi nanti.',timeout:'Pemeriksaan kehabisan waktu.',network_error:'Koneksi registrar gagal.',invalid_response:'Respons registrar belum dapat divalidasi.',provider_error:'Registrar sedang mengalami gangguan.',redirect_rejected:'Respons pengalihan registrar ditolak.',invalid_clock:'Waktu pemeriksaan belum valid.'};
 const restrictions={domain_unavailable:'Domain tidak tersedia.',domain_premium:'Domain premium belum didukung untuk pembelian.',extension_not_supported_via_api:'Ekstensi belum didukung melalui API.',extension_not_supported:'Ekstensi belum didukung.',extension_disallows_registration:'Ekstensi tidak mengizinkan pendaftaran.'};

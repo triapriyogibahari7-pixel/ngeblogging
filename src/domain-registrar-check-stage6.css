@@ -1,0 +1,83 @@
+[data-stage6-registrar-check="lookup-only"] {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+[data-stage6-registrar-check="lookup-only"] > .sv124-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+[data-stage6-registrar-check="lookup-only"] form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-block: 20px;
+}
+[data-stage6-registrar-check="lookup-only"] form label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 600;
+}
+[data-stage6-registrar-check="lookup-only"] input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+}
+[data-stage6-registrar-check="lookup-only"] button {
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+[data-stage6-registrar-check="lookup-only"] :is(input, button):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+[data-stage6-registrar-check="lookup-only"] :disabled {
+  cursor: not-allowed;
+  opacity: .65;
+}
+[data-stage6-registrar-check="lookup-only"] dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 16px;
+  margin-block: 16px;
+}
+[data-stage6-registrar-check="lookup-only"] :is(dt, dd) {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+[data-stage6-registrar-check="lookup-only"] dd {
+  text-align: end;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  [data-stage6-registrar-check="lookup-only"] form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-stage6-registrar-check="lookup-only"] form button {
+    width: 100%;
+  }
+}
+@media (max-width: 360px) {
+  [data-stage6-registrar-check="lookup-only"] dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  [data-stage6-registrar-check="lookup-only"] dd {
+    text-align: start;
+    margin-block-end: 8px;
+  }
+}
