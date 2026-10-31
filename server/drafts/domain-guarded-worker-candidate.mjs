@@ -5,12 +5,23 @@ import {createTenantHtmlBoundary} from './domain-tenant-html-boundary.mjs';
 const cancel=response=>{try{response?.body?.cancel()?.catch(()=>{});}catch{}};
 const terminal=(request,status)=>new Response(request.method==='HEAD'?null:status===405?'Method not allowed':'Service unavailable',{status,headers:{'cache-control':'no-store','content-type':'text/plain; charset=utf-8','x-content-type-options':'nosniff',...(status===405?{allow:'GET, HEAD'}:{})}});
 const mime=response=>String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
-export function createGuardedWorkerCandidate({enabled=false,environment='',worker,classifyRequest,resolveRedirect,resolveTenant,renderTenant}={}){
+export function createGuardedWorkerCandidate({enabled=false,environment='',worker,classifyRequest,resolveRedirect,resolveTenant,renderTenant,resolveCanonical=async()=>null}={}){
  if(typeof worker?.fetch!=='function')throw Error('WORKER_REQUIRED');
  if(enabled!==false&&enabled!==true)throw Error('BOOLEAN_OPT_IN_REQUIRED');
  if(!enabled)return {fetch:(request,env,context)=>worker.fetch(request,env,context)};
- if(environment!=='isolated-test'||![classifyRequest,resolveRedirect,resolveTenant,renderTenant].every(fn=>typeof fn==='function'))throw Error('ISOLATED_COMPOSITION_REQUIRED');
+ if(environment!=='isolated-test'||![classifyRequest,resolveRedirect,resolveTenant,renderTenant,resolveCanonical].every(fn=>typeof fn==='function'))throw Error('ISOLATED_COMPOSITION_REQUIRED');
  const boundary=createTenantHtmlBoundary({enabled:true,environment,matchesTenantHtml:()=>true,resolveRedirect,resolveTenant,renderTenant:async(request,env,context,identity)=>{
+  // The injected resolver must freshly validate the target mapping; null means no canonical.
+  const canonical=await resolveCanonical(request,env,context,identity);
+  if(canonical!==null){
+   const source=new URL(request.url),response=canonical?.response;
+   if(canonical?.kind!=='www-to-apex'||!source.hostname.startsWith('www.')||!source.hostname.slice(4).includes('.')||!(response instanceof Response)||response.status!==308){cancel(response);throw Error('CANONICAL_CONTRACT_MISMATCH');}
+   const expected=new URL(source);expected.protocol='https:';expected.hostname=source.hostname.slice(4);expected.port='';expected.hash='';
+   let target;try{target=new URL(response.headers.get('location'));}catch{cancel(response);throw Error('CANONICAL_TARGET_INVALID');}
+   if(target.href!==expected.href||canonical.targetIdentity?.siteId!==identity.siteId||canonical.targetIdentity?.hostname!==expected.hostname){cancel(response);throw Error('CANONICAL_IDENTITY_OR_TARGET_MISMATCH');}
+   cancel(response);
+   return new Response(null,{status:308,headers:{location:target.href,'cache-control':'no-store','x-content-type-options':'nosniff'}});
+  }
   const result=await renderTenant(request,env,context,identity,()=>worker.fetch(request,env,context));
   if(result?.siteId!==identity.siteId||result?.hostname!==identity.hostname||!(result?.response instanceof Response)||result.response.status!==200||mime(result.response)!=='text/html'){cancel(result?.response);throw Error('TENANT_RENDER_CONTRACT_MISMATCH');}
   return result.response;
