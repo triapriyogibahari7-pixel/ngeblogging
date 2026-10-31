@@ -12,6 +12,10 @@ export async function registrarDiagnosticResponse(request, env) {
  const url = new URL(request.url);
  if(url.pathname !== '/api/admin/registrar/diagnostic') return null;
  const reply = (status, code, extra = {}) => new Response(JSON.stringify({code,...extra}), {status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}});
+ const unavailable = (reason, upstreamStatus) => {
+  console.warn(JSON.stringify({event:'registrar_auth_unavailable',reason,...(Number.isInteger(upstreamStatus)?{upstreamStatus}:{})}));
+  return reply(503,'AUTH_UNAVAILABLE');
+ };
  if(!['ngeblogging.com','www.ngeblogging.com','ngeblogging.triapriyogibahari7.workers.dev','feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev'].includes(url.hostname) || url.protocol !== 'https:') return reply(404,'NOT_FOUND');
  if(request.method !== 'POST') return reply(405,'METHOD_NOT_ALLOWED');
  const admin = env?.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID;
@@ -20,18 +24,20 @@ export async function registrarDiagnosticResponse(request, env) {
  if(url.search || (request.headers.get('content-length') && request.headers.get('content-length') !== '0') || !(await emptyBody(request))) return reply(400,'EMPTY_REQUEST_REQUIRED');
  const auth = request.headers.get('authorization') || '';
  if(!/^Bearer [^\s]{1,8192}$/.test(auth)) return reply(401,'AUTH_REQUIRED');
- let base; try {base = new URL(env.SUPABASE_URL);} catch {return reply(503,'AUTH_UNAVAILABLE');}
- if(base.protocol !== 'https:' || !base.hostname.endsWith('.supabase.co') || base.port || base.username || base.password) return reply(503,'AUTH_UNAVAILABLE');
- if(typeof env.SUPABASE_PUBLISHABLE_KEY !== 'string' || !env.SUPABASE_PUBLISHABLE_KEY) return reply(503,'AUTH_UNAVAILABLE');
+ let base; try {base = new URL(env.SUPABASE_URL);} catch {return unavailable('supabase_url_invalid');}
+ if(base.protocol !== 'https:' || !base.hostname.endsWith('.supabase.co') || base.port || base.username || base.password) return unavailable('supabase_url_disallowed');
+ if(typeof env.SUPABASE_PUBLISHABLE_KEY !== 'string' || !env.SUPABASE_PUBLISHABLE_KEY) return unavailable('publishable_key_missing');
  const controller = new AbortController();
  const timer = setTimeout(() => controller.abort(), 5000);
+ let phase='fetch';
  try {
   const response = await fetch(new URL('/auth/v1/user',base),{method:'GET',redirect:'error',headers:{Authorization:auth,apikey:env.SUPABASE_PUBLISHABLE_KEY},signal:controller.signal});
   if([401,403].includes(response.status)) return reply(401,'INVALID_SESSION');
-  if(!response.ok) return reply(503,'AUTH_UNAVAILABLE');
+  if(!response.ok) return unavailable('upstream_http_error',response.status);
+  phase='decode';
   const user = await response.json();
   if(user?.id !== admin) return reply(403,'ADMIN_REQUIRED');
- } catch {return reply(503,'AUTH_UNAVAILABLE');}
+ } catch {return unavailable(controller.signal.aborted?'verification_timeout':phase==='decode'?'upstream_json_invalid':'verification_fetch_failed');}
  finally {clearTimeout(timer);}
  const result = await diagnoseRegistrarAccess(env);
  return reply(result.status === 'registrar_search_access_confirmed' ? 200 : 502,'REGISTRAR_DIAGNOSTIC',result);
