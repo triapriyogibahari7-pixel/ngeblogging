@@ -1,3 +1,4 @@
+import { stage5PreviewResponse } from "./domain-stage5-preview-router.mjs";
 import baseWorker from "./worker-v69.mjs";
 import { paymentDiagnosticPage } from "../server/payment-diagnostic-page.mjs";
 import { handleMidtrans, paths as midtransPaths } from "../server/midtrans-catalog-api.mjs";
@@ -41,6 +42,8 @@ async function serveStaticAsset(request, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const stage5 = await stage5PreviewResponse(request);
+    if (stage5) return stage5;
     const paymentDiagnostic = await paymentDiagnosticPage(request, env);
     if (paymentDiagnostic) return paymentDiagnostic;
     const legal = legalResponse(request);
