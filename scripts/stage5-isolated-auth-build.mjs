@@ -25,7 +25,7 @@ export async function runStage5IsolatedAuthBuild(){
  const ready=async(base,path,child)=>{for(let i=0;i<90;i++){if(child.startError||child.exitCode!==null||child.signalCode!==null)throw Error('LOCAL_SERVICE_START_FAILED '+(child.startError||child.exitCode)+' '+child.tail);try{if((await http(base,path)).ok)return;}catch{}await new Promise(r=>setTimeout(r,500));}throw Error('LOCAL_SERVICE_NOT_READY '+child.tail);};
  try{
   await mkdir(deps);await mkdir(socket);await writeFile(join(deps,'package.json'),JSON.stringify({private:true,type:'module',dependencies:{pg:'8.13.1','@embedded-postgres/linux-x64':'17.6.0-beta.15'}}));
-  await command('npm',['install','--prefix',deps,'--ignore-scripts','--no-package-lock','--no-audit','--no-fund','--registry=https://registry.npmjs.org'],{cwd:deps,env:clean});
+  await command('npm',['install','--prefix',deps,'--ignore-scripts','--no-package-lock','--no-audit','--no-fund','--registry=https://registry.npmjs.org'],{cwd:deps,env:{...clean,HOME:process.env.HOME||clean.HOME}});
   const require=createRequire(join(deps,'package.json')),entry=require.resolve('@embedded-postgres/linux-x64'),root=resolve(dirname(entry),'..');
   for(const link of JSON.parse(await readFile(join(root,'native/pg-symlinks.json'),'utf8'))){const source=nativePath(root,link.source),target=nativePath(root,link.target);try{await symlink(relative(dirname(target),source),target);}catch(e){if(e.code!=='EEXIST')throw e;}}
   pg=await import(pathToFileURL(entry).href);pgEnv={...clean,LD_LIBRARY_PATH:resolve(dirname(pg.postgres),'../lib')};const pw=join(work,'password');await writeFile(pw,'isolated-ci-only\n',{mode:0o600});
