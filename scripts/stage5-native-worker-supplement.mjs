@@ -18,7 +18,13 @@ export async function runNativeWorkerIntegration({db,actors}){
  for(const name of ['domain-tenant-html-boundary.mjs','domain-transfer-fresh-only-test-resolver.mjs','domain-transfer-redirect-pipeline.mjs','domain-transfer-redirect-lookup.mjs']){const path=resolve('server/drafts',name),bytes=await readFile(path);report.sourceBlobs[name]=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');modules.push({type:'ESModule',path,contents:bytes.toString('utf8')});}
  assert.equal(report.sourceBlobs['domain-tenant-html-boundary.mjs'],'7b1b673cf2ff6ffee8b29b755a3f819ee94efce1');
  let beforeContent=null,mf;
- const test=async(name,fn)=>{await fn();report.tests.push({name,passed:true});};
+ const test=async(name,fn)=>{
+  const index=report.tests.length+1;
+  const log=(event,details={})=>console.error('[stage5-worker-test] '+JSON.stringify({event,index,name,passedCount:report.tests.length,backendReads:report.backendReads,renderViewReads:report.renderViewReads,...details}));
+  log('start');
+  try{await fn();report.tests.push({name,passed:true});log('pass');}
+  catch(error){log('fail',{assertion:error?.code==='ERR_ASSERTION',actual:typeof error?.actual==='number'?error.actual:undefined,expected:typeof error?.expected==='number'?error.expected:undefined});throw error;}
+ };
  try{
   mf=new Miniflare({host:'127.0.0.1',port:0,cf:false,compatibilityFlags:report.compatibilityFlags,modules,outboundService:()=>{throw Error('UNEXPECTED_OUTBOUND_NETWORK');},serviceBindings:{BACKEND:async request=>{
    const u=new URL(request.url);assert.equal(u.origin,'https://storage.test');const auth=u.pathname==='/auth/v1/user',rpc=u.pathname==='/rest/v1/rpc/move_site_domain_v2',read=['/rest/v1/sites','/rest/v1/site_domains','/rest/v1/site_domain_redirects','/rest/v1/tenant_render_probe'].includes(u.pathname);
