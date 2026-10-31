@@ -7,6 +7,11 @@ export function normalizeRegistrarSearchQuery(value){
  if(!query||query.length>100||query.startsWith('.')||!/^[\p{L}\p{M}\p{N} .-]+$/u.test(query))throw new Error('INVALID_SEARCH_QUERY');
  return query;
 }
+export function registrarSuggestionKeyword(value){
+ const query=normalizeRegistrarSearchQuery(value);
+ const domainLike=/^[\p{L}\p{M}\p{N}-]+(?:\.[\p{L}\p{M}\p{N}-]+)+\.?$/u.test(query)&&!/^\d+(?:\.\d+){3}$/.test(query);
+ return domainLike?query.split('.')[0]:query;
+}
 function candidate(row){
  const name=row?.name;
  if(typeof name!=='string'||name.length>253||name!==name.toLowerCase()||name.split('.').length<2||/^\d+(?:\.\d+){3}$/.test(name)||name.split('.').some(x=>!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(x))||typeof row.registrable!=='boolean')throw new Error('INVALID_SEARCH_RESPONSE');
@@ -23,10 +28,11 @@ function candidate(row){
 export async function searchCloudflareRegistrar(env,input,{fetchImpl=globalThis.fetch,clock=Date.now}={}){
  const query=normalizeRegistrarSearchQuery(input?.query),limit=input?.limit??20;
  if(!Number.isInteger(limit)||limit<1||limit>50)throw new Error('INVALID_SEARCH_LIMIT');
- const base={query,providerId:'cloudflare',lookupOnly:true,purchaseAllowed:false,advisory:true,mustRecheckBeforePurchase:true,limit};
+ const searchTerm=registrarSuggestionKeyword(query);
+ const base={query,searchTerm,providerId:'cloudflare',lookupOnly:true,purchaseAllowed:false,advisory:true,mustRecheckBeforePurchase:true,limit};
  const token=env?.CLOUDFLARE_REGISTRAR_API_TOKEN;
  if(typeof token!=='string'||!token.trim())return {...base,status:'secret_missing'};
- const url=new URL(ENDPOINT);url.searchParams.set('q',query);url.searchParams.set('limit',String(limit));
+ const url=new URL(ENDPOINT);url.searchParams.set('q',searchTerm);url.searchParams.set('limit',String(limit));
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
  try{
   const response=await fetchImpl(url.toString(),{method:'GET',redirect:'manual',cache:'no-store',headers:{Authorization:'Bearer '+token},signal:controller.signal});
