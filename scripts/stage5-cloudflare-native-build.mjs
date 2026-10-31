@@ -34,7 +34,7 @@ export async function runStage5NativeBuild(){
   const clean={PATH:process.env.PATH,HOME:work,TMPDIR:work,LANG:'C.UTF-8',CI:'true'};
   try{
     await mkdir(deps);await mkdir(socket);await writeFile(join(deps,'package.json'),JSON.stringify({private:true,type:'module',dependencies:{pg:'8.13.1','@embedded-postgres/linux-x64':'17.6.0-beta.15'}}));
-    await command('npm',['install','--prefix',deps,'--ignore-scripts','--no-package-lock','--no-audit','--no-fund','--registry=https://registry.npmjs.org'],{cwd:deps,env:clean});
+    await command('npm',['install','--prefix',deps,'--ignore-scripts','--no-package-lock','--no-audit','--no-fund','--registry=https://registry.npmjs.org'],{cwd:deps,env:{...clean,HOME:process.env.HOME||clean.HOME}});
     const require=createRequire(join(deps,'package.json')),entry=require.resolve('@embedded-postgres/linux-x64'),binaryRoot=resolve(dirname(entry),'..');
     const links=JSON.parse(await readFile(join(binaryRoot,'native/pg-symlinks.json'),'utf8'));assert.ok(Array.isArray(links));
     for(const link of links){const source=nativePath(binaryRoot,link.source),target=nativePath(binaryRoot,link.target);try{await symlink(relative(dirname(target),source),target);}catch(e){if(e.code!=='EEXIST')throw e;}}
