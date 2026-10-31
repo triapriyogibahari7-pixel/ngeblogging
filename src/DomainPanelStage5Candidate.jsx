@@ -1,5 +1,6 @@
 import React,{lazy,Suspense,useEffect,useRef,useState} from 'react';
 import DomainPanelV124 from './DomainPanelV124.jsx';
+import DomainRegistrarCheckStage6 from './DomainRegistrarCheckStage6.jsx';
 import {canUseTransferPanel,eligibleTransferDomains,transferPanelScope} from './lib/domain-transfer-panel-gate.mjs';
 const TransferFlow=lazy(()=>import('./DomainTransferFlow.jsx'));
 
@@ -17,6 +18,7 @@ export default function DomainPanelStage5Candidate({transfer=null,...panelProps}
   };
   return <>
     <DomainPanelV124 {...panelProps} key={JSON.stringify([scope,epoch])}/>
+    <DomainRegistrarCheckStage6 key={JSON.stringify([panelProps.site?.id,scope])}/>
     <TransferEntry key={scope} source={panelProps.site} sites={panelProps.sites||[]} config={transfer} onSourceObserved={sourceObserved}/>
   </>;
 }
