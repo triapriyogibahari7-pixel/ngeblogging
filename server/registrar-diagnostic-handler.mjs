@@ -1,6 +1,7 @@
 import { diagnoseRegistrarAccess } from './registrar-token-diagnostic.mjs';
 import { checkCloudflareRegistrar } from './cloudflare-registrar-check.mjs';
 import { normalizeRegistrarDomain } from './domain-registrar-quote-router.mjs';
+import { attachRegistrarCheckOffer } from './registrar-check-result.mjs';
 const PREVIEW='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const CHECK='/api/admin/registrar/check/';
 async function emptyBody(request) {
@@ -55,7 +56,7 @@ export async function registrarDiagnosticResponse(request, env) {
  if(isCheck){
   let domain;
   try{const raw=decodeURIComponent(url.pathname.slice(CHECK.length));if(raw.length>253)throw new Error();domain=normalizeRegistrarDomain(raw).domain;}catch{return reply(400,'INVALID_DOMAIN');}
-  const result=await checkCloudflareRegistrar(env,{domain});
+  const result=attachRegistrarCheckOffer(await checkCloudflareRegistrar(env,{domain}),{domain});
   return reply(['checked','not_registrable','premium_not_supported'].includes(result.status)?200:502,'REGISTRAR_CHECK',result);
  }
  const result = await diagnoseRegistrarAccess(env);

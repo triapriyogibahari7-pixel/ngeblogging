@@ -1,19 +1,20 @@
-# Stage 6 indicative Check offer candidate
+# Stage 6 indicative Check offer contract
 
-This module is staged only. It is not connected to the HTTP Check handler, canonical quote router, UI, publication, checkout, payment, registration, renewal, transfer, DNS or production.
+## Integration scope
+The preview-only, authenticated admin Check handler now passes the Cloudflare Check result through attachRegistrarCheckOffer. Valid standard results preserve old Check fields and add offerStatus and offer. The UI still reads the old fields; it does not yet display or enforce offer expiry. The canonical quote router, publication, checkout, payment, registration, renewal, transfer, DNS and production are not connected to this contract.
 
-## Contract
-- Standard registrable Cloudflare Check results can become indicative snapshots.
-- Default validity is 60 seconds from checkedAt, not from conversion time. This is a proposed local display policy, not a provider price guarantee.
-- Expired and future-dated standard results produce no offer. Premium and non-registrable results do not become standard offers.
-- Transfer is not_quoted, not zero and not a claim that the operation is unsupported. Tax is unknown/null.
-- Purchase remains disabled. No ownership or site connection is acquired.
-- quoteId is an identifier only: it is not signed, persisted, authoritative, or redeemable for checkout. A later server-side order flow must independently verify eligibility, price and current availability.
-- This contract differs from the existing canonical quote-router contract, which requires boolean taxIncluded and explicit operation support. Do not pass this candidate into that router as though it were compatible.
+## Boundaries
+- Default validity is 60 seconds from checkedAt, not from conversion time. This is a local indicative-display policy, not a provider price guarantee.
+- Expired or future-dated standard results return invalid_response with no prices or offer. Premium and non-registrable results do not become standard offers.
+- Transfer is not_quoted, not zero and not a claim that transfer is unsupported. Tax remains unknown/null.
+- Purchase stays disabled. Domain ownership and site connection are not acquired.
+- quoteId is an identifier only: not signed, persisted, authoritative, or redeemable for checkout. Later orders must independently revalidate eligibility, price and availability.
+- This differs from the canonical quote-router contract, which requires boolean taxIncluded and explicit operation support. Do not treat these contracts as interchangeable.
 
-## Evidence
-The candidate module and 21 tests ran locally with mocked Check inputs: 21 passed, zero failed. The repository test import is relocated to ../server/registrar-check-indicative-offer.mjs; assertions are unchanged from the local test bundle. This is not GitHub Actions, React render, provider, payment or production acceptance.
+## Evidence and remaining work
+The offer candidate passed 21 local fixture tests. Its response decorator passed 19 local fixture tests. Repository test imports are relocated to ../server; assertions are unchanged. These are not live provider, React render, HTTP integration, payment or production acceptance results. After HTTP wiring, rerun the existing endpoint suite and verify deployed admin responses before claiming integration acceptance.
 
-Run offline: node --test tests/registrar-check-indicative-offer.test.mjs
+Offline commands:
+node --test tests/registrar-check-indicative-offer.test.mjs tests/registrar-check-result.test.mjs tests/registrar-check-handler-stage6.test.mjs
 
-No dependency download or credential is needed for this test. Existing release holds remain in place; no merge to main is authorized.
+Tests require no provider credentials. Existing stage 4/5 and production release holds remain. No merge to main is authorized.
