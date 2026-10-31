@@ -1,0 +1,35 @@
+name: Stage 6 Registrar diagnostic checks
+on:
+  push:
+    branches: [feature/domain-stages5-10-integration-20261030]
+    paths:
+      - '.github/workflows/registrar-diagnostic-stage6.yml'
+      - 'server/registrar-token-diagnostic.mjs'
+      - 'server/registrar-diagnostic-handler.mjs'
+      - 'cloudflare/worker-v70.mjs'
+      - 'tests/registrar-diagnostic-denial.test.mjs'
+  pull_request:
+    paths:
+      - '.github/workflows/registrar-diagnostic-stage6.yml'
+      - 'server/registrar-token-diagnostic.mjs'
+      - 'server/registrar-diagnostic-handler.mjs'
+      - 'cloudflare/worker-v70.mjs'
+      - 'tests/registrar-diagnostic-denial.test.mjs'
+permissions:
+  contents: read
+jobs:
+  diagnostic-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check module syntax
+        run: |
+          node --check server/registrar-token-diagnostic.mjs
+          node --check server/registrar-diagnostic-handler.mjs
+          node --check cloudflare/worker-v70.mjs
+      - name: Run offline access-denial tests
+        run: node --test tests/registrar-diagnostic-denial.test.mjs
