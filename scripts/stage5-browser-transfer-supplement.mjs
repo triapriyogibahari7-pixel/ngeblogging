@@ -41,7 +41,7 @@ export async function runBrowserTransferIntegration({db,actors}){
  const test=async(name,fn)=>{await fn();report.tests.push({name,passed:true});};
  try{
   await mkdir(deps);await writeFile(join(deps,'package.json'),JSON.stringify({private:true,dependencies:{esbuild:'0.25.0','playwright-core':'1.49.1','@sparticuz/chromium':'131.0.1'}}));
-  await command('npm',['install','--prefix',deps,'--ignore-scripts','--no-package-lock','--no-audit','--no-fund','--registry=https://registry.npmjs.org'],{cwd:deps,env:clean});
+  await command('npm',['install','--prefix',deps,'--ignore-scripts','--no-package-lock','--no-audit','--no-fund','--registry=https://registry.npmjs.org'],{cwd:deps,env:{...clean,HOME:process.env.HOME||clean.HOME}});
   const require=createRequire(join(deps,'package.json')),esbuild=require('esbuild'),chromium=require('@sparticuz/chromium'),{chromium:playwright}=require('playwright-core');
   const entry=`import React from 'react';import {createRoot} from 'react-dom/client';
 import Flow from ${JSON.stringify(resolve('src/DomainTransferFlow.jsx'))};
