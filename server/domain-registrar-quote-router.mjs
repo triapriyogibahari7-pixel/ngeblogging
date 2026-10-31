@@ -1,5 +1,6 @@
 const OPS=Object.freeze(['registration','renewal','transfer']);
 export const INDONESIAN_SUFFIXES=Object.freeze(['id','my.id','web.id','biz.id','co.id','or.id','ac.id','sch.id','ponpes.id','net.id','go.id','mil.id','desa.id']);
+export const COMMON_COMPOUND_SUFFIXES=Object.freeze(['co.uk','org.uk','me.uk']);
 const issue=code=>Object.assign(new Error(code),{code});
 function suffix(value){
  if(typeof value!=='string')throw issue('INVALID_EXTENSION_CONFIG');
@@ -14,7 +15,7 @@ export function normalizeRegistrarDomain(value,knownSuffixes=[]){
  let name;try{name=new URL('https://'+raw).hostname.toLowerCase();}catch{throw issue('INVALID_DOMAIN');}
  const labels=name.split('.');
  if(name.length>253||labels.length<2||/^\d+(?:\.\d+){3}$/.test(name)||labels.some(x=>!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(x)))throw issue('INVALID_DOMAIN');
- const catalog=[...new Set([...INDONESIAN_SUFFIXES,'com','net','org',...knownSuffixes].map(suffix))].sort((a,b)=>b.length-a.length);
+ const catalog=[...new Set([...INDONESIAN_SUFFIXES,...COMMON_COMPOUND_SUFFIXES,'com','net','org',...knownSuffixes].map(suffix))].sort((a,b)=>b.length-a.length);
  const extension=catalog.find(s=>name===s||name.endsWith('.'+s))||labels.at(-1);
  const prefix=name===extension?'':name.slice(0,-extension.length-1);
  if(!prefix)throw issue('DOMAIN_NAME_REQUIRED');
