@@ -60,10 +60,10 @@ createRoot(document.getElementById('app')).render(React.createElement(Flow,{sour
   const browserContext=await browser.newContext({viewport:{width:1280,height:900}});
   await browserContext.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
   page=await browserContext.newPage();page.setDefaultTimeout(15000);
-  const open=async next=>{mode=next;await page.goto(origin,{waitUntil:'networkidle'});await page.waitForFunction(()=>window.__browserReady||window.__bootFailure);assert.equal(await page.evaluate(()=>window.__bootFailure),undefined,'BROWSER_BOOT_FAILED');await page.locator('dialog[open]').waitFor();return context();};
+  const open=async next=>{mode=next;await page.goto(origin,{waitUntil:'networkidle'});await page.locator('dialog[open], #app:has-text("BOOT_FAILED")').first().waitFor();assert.equal(await page.evaluate(()=>window.__bootFailure),undefined,'BROWSER_BOOT_FAILED');await page.locator('dialog[open]').waitFor();return context();};
   const stateAs=async(token,ctx)=>page.evaluate(async({token,ctx})=>{const url=new URL('/api/domains/move-state',location.origin);url.search=new URLSearchParams(ctx);const r=await fetch(url,{headers:token?{authorization:'Bearer '+token}:{},cache:'no-store'});return {status:r.status,body:await r.json()};},{token,ctx});
   const fill=async ctx=>{await page.locator('select').selectOption(ctx.targetSiteId);await page.locator('input').fill('example.test');};
-  const atTarget=async()=>{await page.waitForFunction(()=>document.body.textContent.includes('Domain sudah berada di situs tujuan'));assert.equal(await page.evaluate(()=>window.__observedPhase),'at_target');};
+  const atTarget=async()=>{await page.getByRole('status').filter({hasText:'Domain sudah berada di situs tujuan'}).waitFor();assert.equal(await page.evaluate(()=>window.__observedPhase),'at_target');};
   let ctx=await open('normal');
   await test('browser unsigned state request is rejected before RPC',async()=>{const before=report.rpcCalls,r=await stateAs(null,ctx);assert.equal(r.status,401);assert.equal(report.rpcCalls,before);});
   await test('browser tampered real Auth token is rejected',async()=>{const parts=actors.a.token.split('.');parts[2]=(parts[2][0]==='A'?'B':'A')+parts[2].slice(1);const r=await stateAs(parts.join('.'),ctx);assert.equal(r.status,401);});
