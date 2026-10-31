@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "45bcbc6c5b227a3f5f80050da170371a781b421d",
+  "originalPanelReviewedBlob": "718a6620c66a04c883fb93124dafb5ef5d3fcc72",
+  "scope": "Ten Node behavioral gate/scope tests and one source-composition assertion; new candidate JSX was not built or browser-rendered in this pass",
+  "passed": 11,
+  "failed": 0,
+  "composition": "New candidate imports the unchanged original DomainPanelV124 and lazily opens the existing tested TransferFlow only after isolated-test UI gates pass",
+  "uiChecks": ["Explicit enabled true and isolated-test environment", "Owner identity, nonempty session key and matching loaded source scope", "Valid non-placeholder domain identifiers and no duplicate or foreign-source rows", "External full-zone domain states only", "Read/move callbacks required; eligibility invokes neither"],
+  "candidateBehaviorToVerifyInBrowser": ["Correct source update and remount of original panel after observed target state", "Completed domains excluded from further source transfer choices", "Session/site changes clear dialog context", "Lazy load/render errors isolated with warning and blocked repeat choice", "Background panel operations and modal interaction do not conflict"],
+  "activeStudioEntryChanged": false,
+  "originalDomainPanelChanged": false,
+  "sharedCssOrEditorChanged": false,
+  "productionConnection": false,
+  "limits": ["New candidate not imported by active Studio entry", "Prior nine Flow browser passes are not evidence that this candidate composition has passed", "UI gate is not authorization; future caller must supply trusted authenticated state and transports", "No real Supabase Auth/RLS or native database concurrency verification", "No provider/cache E2E, DNS changes, merge or production activation"],
+  "stage5": "OPEN",
+  "releaseHold": "No merge to main or production activation before stage 10 completion, verification and separate owner approval"
+}

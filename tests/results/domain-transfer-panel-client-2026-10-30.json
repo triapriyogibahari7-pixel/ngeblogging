@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "601d52097a8698e4ff8242e7136e2d2de102b101",
+  "existingStateReaderBlobVerified": "1213c2f7aa61c9a9a0e2bb9a29652b645d5695f5",
+  "scope": "Node tests of the new panel transport using the unchanged existing state reader and injected HTTP responses; no server runtime or real network request executed",
+  "passed": 15,
+  "failed": 0,
+  "contract": ["onMove performs one POST to explicit test origin without failover or replay", "loadState reuses the existing read-only GET client", "Token is obtained per operation; privileged token patterns rejected before dispatch", "Current-scope guard checked around token acquisition and result delivery", "Pre-dispatch timeout prevents late token from sending", "Post-dispatch uncertainty requires reread and never claims rollback", "Only matching receipts with providerCacheVerified false are accepted"],
+  "authorizationLimit": "Client token decoding only denies known privileged claims; it does not validate JWT signatures or establish authorization. Server authentication and RLS remain mandatory.",
+  "originLimit": "Explicit approved origin and known production-origin blocks are safety configuration, not proof that a remote environment is disposable",
+  "activeStudioEntryChanged": false,
+  "productionConnection": false,
+  "limits": ["Panel plus client plus actual isolated runtime still needs integration testing", "Browser same-origin behavior was simulated in Node, not tested against a deployed test origin", "No real Supabase Auth/PostgREST/RLS or native PostgreSQL concurrency verification", "No provider/cache E2E, SQL execution, DNS changes, merge, deployment or production activation"],
+  "stage5": "OPEN",
+  "releaseHold": "Until stage 10 completion, verification and separate owner approval"
+}

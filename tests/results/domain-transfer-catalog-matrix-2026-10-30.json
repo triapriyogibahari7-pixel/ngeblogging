@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-30",
+  "sourceCommit": "323fce910fa37599f97aa3176acff85edfed5190",
+  "runner": "tests/browser/domain-transfer-catalog-matrix.html",
+  "engine": "PostgreSQL 17.5 WASM via PGlite 0.3.16",
+  "passed": 33,
+  "failed": 0,
+  "caseCounts": {"enumCatalog": 1, "nonOwnerMembershipBySide": 10, "inactiveTargetStates": 3, "ownerMismatchBySide": 2, "missingOrUnrelatedActor": 2, "invalidDomainStates": 2, "confirmation": 1, "managedSubdomain": 1, "immutableVerifiedAt": 1, "redirectRls": 1, "compositeFk": 1, "invalidLegacyEnum": 1, "injectedFailureRollback": 1, "repeatWithinTransaction": 1, "validTransfersAndVisibility": 5},
+  "fixtureAlignment": ["Audited enum labels", "Role-helper behavior; original parameter names retained", "Audited synchronization and timestamp behavior with verified_at", "Relevant read/write RLS followed by candidate correlation correction", "is_public, settings, theme key and selected redirect flags modeled"],
+  "history": {"firstSetup": "42601 at dollar quote; zero scenarios executed", "repair": "fixture.replace(from,()=>to) preserves SQL dollar quotes", "observedRerun": "33 passed, zero failed; temporary database closed"},
+  "previousIntegrationRun": {"passed": 8, "fixture": "Original representative schema", "notReusedAsProofForCatalogSlice": true},
+  "productionConnection": false,
+  "newSupabaseResource": false,
+  "databaseClosed": true,
+  "limits": ["Catalog-aligned slice, not a full production schema clone", "No profile/auth foreign keys, signup or account-limit trigger coverage", "Test-only grants and auth.uid claim injection, not real Supabase Auth", "SQL-only execution, no UI/runtime rerun on this new slice yet", "No native concurrent-session, deployed PostgREST, provider/cache or production proof", "No application, migration, active Studio entry or deployment configuration change"],
+  "reproduction": "Execute the runner HTML in an isolated browser with module/WASM access and wait for #result[data-done=true]. SQL inputs are pinned to sourceCommit; the in-memory database guard and psql includes are adapted only by the runner.",
+  "stage5": "OPEN",
+  "releaseHold": "No merge to main or production activation before stage 10 completion, verification and separate owner approval; this record does not change CI or branch protection"
+}

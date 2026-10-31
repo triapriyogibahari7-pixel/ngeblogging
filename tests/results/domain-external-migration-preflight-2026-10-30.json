@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "8cf2fd4cf5d1c1f1840262f7afe91c2fefec7266",
+  "scope": "Pure preflight planner and evidence predicate tested in Node.js using synthetic capabilities and evidence; no automatic migration was executed",
+  "passed": 15,
+  "failed": 0,
+  "priority": "Automatic configuration after approval when required integrations and permissions exist; manual fallback otherwise",
+  "sourceFindings": ["Reviewed worker-v67 defaults to cloudflare-full-zone and separately gates optional SaaS", "Reviewed optional v67 DNS handler gives manual CNAME instructions and automates provider provisioning after DNS checks; its automation flag is not evidence of external registrar/DNS write access"],
+  "scenarioCoverage": ["Existing delegated full-zone with or without zone write capability", "External full-zone with both zone and registrar nameserver capabilities", "Manual nameserver fallback when registrar API capability is absent", "DNSSEC review and provider-assigned nameserver requirements", "Optional SaaS DNS API and authorized Domain Connect scenarios", "Ownership, target readiness and reviewed snapshot blockers", "Input snapshot immutability and intended unrelated-record preservation policy", "Routing-evidence predicate rejects wrong tenant, missing DNS or missing HTTPS"],
+  "executionAllowed": false,
+  "productionConnection": false,
+  "liveDomainSelected": false,
+  "limits": ["Capabilities and evidence are fixture inputs, not validated live permissions or observations", "Future caller must derive these inputs from trusted server-side verification, never client assertions", "No DNS diff application, backup restore, rollback or email delivery verification", "No Domain Connect template, consent flow or registrar API integration implemented", "No DNSSEC modification, nameserver change, real hosting cutover or registrar transfer", "No provider, TLS, browser, multi-location cache or real tenant-identity verification", "Not wired to active panel/Worker; no merge, deployment or paid-service activation"],
+  "liveTestPrerequisite": "Resolve the domain still on the old host and exact destination Ngeblogging site; inspect current state read-only, then obtain approval for exact changes",
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

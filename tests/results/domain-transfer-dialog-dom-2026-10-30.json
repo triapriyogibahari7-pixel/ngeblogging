@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "77657741e05675f023d2ce685680d95fe93f9e1a",
+  "component": "src/DomainTransferDialog.jsx",
+  "scope": "Actual component JSX compiled and rendered in Chromium with React StrictMode, synthetic props and callback transport; not active-panel, database or provider E2E",
+  "reactVersion": "19.2.7",
+  "babelVersion": "8.0.10",
+  "productionConnection": false,
+  "before": {"passed": 7, "failed": 1, "failure": "Same-tick duplicate submit left RELOAD_REQUIRED_OR_BUSY alert after the single mutation succeeded"},
+  "patch": "Submit handler checks controller.phase synchronously before submitting; remaining component unchanged",
+  "after": {"passed": 8, "failed": 0, "browserErrors": []},
+  "passedScenarios": [
+    "StrictMode opens dialog and default feature remains disabled",
+    "Only active owned target sites are selectable",
+    "Wrong hostname or unloaded target blocks submission",
+    "Valid confirmation sends exact RPC fields without claiming routing verified",
+    "Pending blocks close, cancel and repeated submission",
+    "Failed response requests reread without automatic replay",
+    "Same-tick double submit sends once and leaves no false success error",
+    "Source change clears confirmation and ignores the old response"
+  ],
+  "limits": ["No integration into active DomainPanel", "No authenticated Supabase session or real database call", "No provider/cache/HTTPS verification", "No full application build or device-matrix verification"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

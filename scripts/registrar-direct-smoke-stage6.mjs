@@ -1,0 +1,14 @@
+import { writeFile, appendFile } from 'node:fs/promises';
+import { diagnoseRegistrarAccess } from '../server/registrar-token-diagnostic.mjs';
+const raw = await diagnoseRegistrarAccess({CLOUDFLARE_REGISTRAR_API_TOKEN:process.env.CLOUDFLARE_REGISTRAR_API_TOKEN});
+const allowed = new Set(['secret_missing','invalid_response','access_denied','rate_limited','provider_error','registrar_search_access_confirmed','timeout','network_error']);
+const status = allowed.has(raw.status) ? raw.status : 'invalid_response';
+const passed = status === 'registrar_search_access_confirmed';
+const report = {checkedAt:new Date().toISOString(),credentialSource:'github_actions_secret',workerSecretVerified:false,passed,status,lookupOnly:true,purchaseAllowed:false,realTimeAvailabilityChecked:false};
+if(Number.isInteger(raw.httpStatus)) report.httpStatus=raw.httpStatus;
+if(Number.isInteger(raw.candidateCount)) report.candidateCount=raw.candidateCount;
+if(Array.isArray(raw.errorCodes)) report.errorCodes=raw.errorCodes.filter(Number.isInteger).slice(0,10);
+await writeFile('registrar-direct-smoke-report.json',JSON.stringify(report,null,2)+'\n',{mode:0o600});
+if(process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY,'## Registrar direct smoke\n\n```json\n'+JSON.stringify(report,null,2)+'\n```\n');
+console.log(JSON.stringify(report));
+process.exitCode=passed?0:1;

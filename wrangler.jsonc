@@ -70,6 +70,7 @@
   },
   "previews": {
     "vars": {
+      "REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID": "91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3",
       "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
       "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
       "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",

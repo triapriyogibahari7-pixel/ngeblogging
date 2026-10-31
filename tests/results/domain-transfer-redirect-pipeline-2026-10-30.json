@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "cf4173f3ff4bc9ecf1f362e3d8487b52bba1508e",
+  "lookupBlobVerified": "9e75e80810d102c2a29658565e44dca5099601e2",
+  "scope": "Fixture-only adapter, existing candidate lookup and HTTP response resolver executed in Node.js; not an active Worker or Supabase integration",
+  "passed": 21,
+  "failed": 0,
+  "injectedResponseCases": 18,
+  "nativeLoopbackHttpCases": 3,
+  "nativeHttpVerified": ["Filtered GET through native fetch to a temporary loopback fixture server", "Backend 503 maps to resolver 503 and is not negatively cached before recovery", "Stalled response body triggers deadline and abort signal"],
+  "resolverContract": {"found": "307 or 308 redirect with no-store", "missing": "null fallthrough", "unavailable": "503 with generic error code and no-store", "freshDefault": true},
+  "adapter": {"credentialsSent": false, "methods": ["GET"], "allowedOrigins": "HTTPS .test hostnames or HTTP/HTTPS literal loopback/localhost origins", "redirectMode": "error", "defaultTimeoutMs": 2000, "timeoutScope": "Fetch headers and body read; timer-driven, not a hard real-time guarantee"},
+  "productionConnection": false,
+  "activeHandlerChanged": false,
+  "purgePerformed": false,
+  "temporaryServersClosed": true,
+  "limits": ["No actual Supabase/PostgREST authentication or RLS test", "No native Cloudflare Worker or Cache API execution", "No provider/DNS/TLS/browser or alias tenant-identity verification", "No global cache invalidation or concurrency guarantee", "No body-size cap, multi-host redirect-cycle detection or forced termination guarantee for an uncooperative injected fetch", "No merge, deployment, environment activation or production mutation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}
