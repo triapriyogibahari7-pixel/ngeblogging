@@ -1,5 +1,6 @@
 import {normalizeRegistrarDomain} from './domain-registrar-quote-router.mjs';
 const ENDPOINT='https://api.cloudflare.com/client/v4/accounts/095e57b46e7ba7f6b188480d9e4e5fe7/registrar/domain-check';
+const REASONS=new Set(['extension_not_supported_via_api','extension_not_supported','extension_disallows_registration','domain_premium','domain_unavailable']);
 const amount=v=>typeof v==='string'&&/^(?:0|[1-9]\d{0,11})(?:\.\d{1,6})?$/.test(v);
 export async function checkCloudflareRegistrar(env,input,{fetchImpl=globalThis.fetch,clock=Date.now}={}){
  const domain=normalizeRegistrarDomain(input?.domain).domain;
@@ -19,8 +20,11 @@ export async function checkCloudflareRegistrar(env,input,{fetchImpl=globalThis.f
   const now=clock();
   if(!Number.isFinite(now)||Math.abs(now)>8640000000000000)return {...base,status:'invalid_clock'};
   const checkedAt=new Date(now).toISOString();
-  if(!row.registrable)return {...base,status:'not_registrable',registrable:false,checkedAt,availability:'not_confirmed',quote:null};
-  if(!['standard','premium'].includes(row.tier))return {...base,status:'invalid_response'};
+  if(!row.registrable){
+   const reason=REASONS.has(row.reason)?row.reason:'unknown_restriction';
+   return {...base,status:'not_registrable',registrable:false,reason,checkedAt,availability:reason==='domain_unavailable'?'unavailable':'not_confirmed',quote:null,...(['standard','premium'].includes(row.tier)?{tier:row.tier}:{})};
+  }
+  if(row.reason!==undefined||!['standard','premium'].includes(row.tier))return {...base,status:'invalid_response'};
   const p=row.pricing;
   if(!p||typeof p.currency!=='string'||!/^[A-Z]{3}$/.test(p.currency)||!amount(p.registration_cost)||!amount(p.renewal_cost))return {...base,status:'invalid_response'};
   return {...base,status:row.tier==='premium'?'premium_not_supported':'checked',registrable:true,tier:row.tier,checkedAt,mustRecheckBeforePurchase:true,prices:{currency:p.currency,registration:{amount:p.registration_cost,termYears:1},renewal:{amount:p.renewal_cost,termYears:1},transfer:null,taxIncluded:null},registrantEligibility:'not_checked'};
