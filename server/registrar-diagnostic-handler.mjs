@@ -33,12 +33,13 @@ export async function registrarDiagnosticResponse(request, env) {
  catch(error){return unavailable('verification_headers_invalid',undefined,error);}
  const controller = new AbortController();
  let verificationRequest;
- try {verificationRequest=new Request(new URL('/auth/v1/user',base),{method:'GET',redirect:'error',headers,signal:controller.signal});}
+ try {verificationRequest=new Request(new URL('/auth/v1/user',base),{method:'GET',redirect:'manual',headers,signal:controller.signal});}
  catch(error){return unavailable('verification_request_invalid',undefined,error);}
  const timer = setTimeout(() => controller.abort(), 5000);
  let phase='fetch';
  try {
   const response = await fetch(verificationRequest);
+  if(response.status>=300 && response.status<400) return unavailable('upstream_redirect_rejected',response.status);
   if([401,403].includes(response.status)) return reply(401,'INVALID_SESSION');
   if(!response.ok) return unavailable('upstream_http_error',response.status);
   phase='decode';
