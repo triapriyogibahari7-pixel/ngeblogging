@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {runCapacitySupplement} from './stage5-native-capacity-supplement.mjs';
 import {spawn,execFileSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
@@ -48,6 +49,7 @@ export async function runStage5NativeBuild(){
     for(const pin of pins){try{git(['cat-file','-e',pin+'^{commit}'],clean);}catch{await command('git',['fetch','--no-tags','--depth=1','https://github.com/triapriyogibahari7-pixel/ngeblogging.git',pin],{env:clean});}}
     await command(process.execPath,['scripts/domain-stage5-native-acceptance.mjs'],{env:{...env,NODE_PATH:join(deps,'node_modules'),STAGE5_DISPOSABLE_NATIVE:'true',PGHOST:'127.0.0.1',PGPORT:'5432',PGUSER:'postgres',PGDATABASE:'domain_transfer_test',PGPASSWORD:'isolated-ci-only'}});
     nativeResult=JSON.parse(await readFile('output/stage5-native/result.json','utf8'));assert.equal(nativeResult.passed,true);assert.equal(nativeResult.catalog?.passedCount,33);assert.equal(nativeResult.catalog?.failedCount,0);assert.equal(nativeResult.nativeConcurrencyPassed,3);assert.equal(nativeResult.nativeSessionsClosed,true);assert.equal(nativeResult.productionConnection,false);
+    nativeResult.capacitySupplement=await runCapacitySupplement(Client);assert.equal(nativeResult.capacitySupplement.passed,true);assert.equal(nativeResult.capacitySupplement.passedCount,16);assert.equal(nativeResult.capacitySupplement.testDatabaseRemoved,true);assert.equal(nativeResult.capacitySupplement.nativeSessionsClosed,true);
   }finally{
     if(started)await command(binaries.pg_ctl,['-D',data,'-m','fast','-w','stop'],{env:{...clean,LD_LIBRARY_PATH:resolve(dirname(binaries.postgres),'../lib')}});
     await rm(work,{recursive:true,force:true});
