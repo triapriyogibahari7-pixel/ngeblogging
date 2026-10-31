@@ -23,7 +23,7 @@ export async function runStage5BuildDiagnostics(task,{env=process.env,cwd=proces
   try{
     await task();const proof=JSON.parse(await readFile(evidence,'utf8'));
     assert.equal(proof.passed,true);assert.equal(proof.catalog?.passedCount,33);assert.equal(proof.catalog?.failedCount,0);assert.equal(proof.nativeConcurrencyPassed,3);assert.equal(proof.nativeSessionsClosed,true);assert.equal(proof.nativeServerStopped,true);assert.equal(proof.temporaryFilesRemoved,true);assert.equal(proof.productionConnection,false);assert.equal(proof.cloudflareBuild?.commit,sha);
-    return {plugins:[failurePlugin],proof};
+    return {plugins:[],proof};
   }catch(error){
     const report=await writeFailure(error,'native-precheck-or-acceptance');return {plugins:[failurePlugin],diagnostic:report};
   }
