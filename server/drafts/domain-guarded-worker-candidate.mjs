@@ -3,7 +3,7 @@
 // not proof of HTML ownership or snapshot consistency. No production rollout.
 import {createTenantHtmlBoundary} from './domain-tenant-html-boundary.mjs';
 const cancel=response=>{try{response?.body?.cancel()?.catch(()=>{});}catch{}};
-const terminal=(request,status)=>new Response(request.method==='HEAD'?null:status===405?'Method not allowed':'Service unavailable',{status,headers:{'cache-control':'no-store','content-type':'text/plain; charset=utf-8','x-content-type-options':'nosniff',...(status===405?{allow:'GET, HEAD'}:{})}});
+const terminal=(request,status)=>new Response(request.method==='HEAD'?null:status===404?'Not found':status===405?'Method not allowed':'Service unavailable',{status,headers:{'cache-control':'no-store','content-type':'text/plain; charset=utf-8','x-content-type-options':'nosniff',...(status===405?{allow:'GET, HEAD'}:{})}});
 const mime=response=>String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
 export function createGuardedWorkerCandidate({enabled=false,environment='',worker,classifyRequest,resolveRedirect,resolveTenant,renderTenant,resolveCanonical=async()=>null}={}){
  if(typeof worker?.fetch!=='function')throw Error('WORKER_REQUIRED');
@@ -22,8 +22,10 @@ export function createGuardedWorkerCandidate({enabled=false,environment='',worke
    cancel(response);
    return new Response(null,{status:308,headers:{location:target.href,'cache-control':'no-store','x-content-type-options':'nosniff'}});
   }
+  // kind must describe the data read for rendering, not just the initial lookup.
   const result=await renderTenant(request,env,context,identity,()=>worker.fetch(request,env,context));
-  if(result?.siteId!==identity.siteId||result?.hostname!==identity.hostname||!(result?.response instanceof Response)||result.response.status!==200||mime(result.response)!=='text/html'){cancel(result?.response);throw Error('TENANT_RENDER_CONTRACT_MISMATCH');}
+  if(result?.kind==='not_visible'){cancel(result?.response);return terminal(request,404);}
+  if(result?.kind!=='public'||result?.siteId!==identity.siteId||result?.hostname!==identity.hostname||!(result?.response instanceof Response)||result.response.status!==200||mime(result.response)!=='text/html'){cancel(result?.response);throw Error('TENANT_RENDER_CONTRACT_MISMATCH');}
   return result.response;
  }});
  return {async fetch(request,env,context){
