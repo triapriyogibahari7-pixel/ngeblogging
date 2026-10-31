@@ -1,3 +1,4 @@
+import {registrarCostInRupiah} from './domain-money-conversion.mjs';
 export const DOMAIN_TARGET_MARGIN_IDR=25000;
 const MAX=1000000000000;
 const invalid=()=>new Error('INVALID_DOMAIN_PRICE_COSTS');
@@ -13,4 +14,10 @@ export function minimumDomainSalePriceIdr(input){
  const fee=fixed+ceil(price*rate,10000n),margin=price-base-fee;
  if(margin<target)throw invalid();
  return Object.freeze({currency:'IDR',totalPriceIdr:Number(price),registrarCostIdr:Number(registrar),otherDirectCostsIdr:Number(other),paymentFeeIdr:Number(fee),transactionMarginIdr:Number(margin),targetMarginIdr:DOMAIN_TARGET_MARGIN_IDR,roundUpToIdr:Number(step),indicative:true,costVerification:'not_performed',purchaseAllowed:false});
+}
+export function minimumDomainSalePriceFromRegistrar(input,{now=Date.now()}={}){
+ if(!input)throw invalid();
+ const cost=registrarCostInRupiah({amount:input.registrarPrice?.amount,currency:input.registrarPrice?.currency,fx:input.fx},now);
+ const sale=minimumDomainSalePriceIdr({currency:'IDR',registrarCostIdr:cost.amountIdr,otherDirectCostsIdr:input.otherDirectCostsIdr,paymentFixedFeeIdr:input.paymentFixedFeeIdr,paymentRateBps:input.paymentRateBps,roundUpToIdr:input.roundUpToIdr});
+ return Object.freeze({...sale,sourceCurrency:cost.sourceCurrency,fxSource:cost.fxSource,fxObservedAt:cost.fxObservedAt,fxExpiresAt:cost.fxExpiresAt});
 }
