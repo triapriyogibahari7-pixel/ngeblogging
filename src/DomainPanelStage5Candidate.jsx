@@ -17,8 +17,10 @@ export default function DomainPanelStage5Candidate({transfer=null,...panelProps}
     setEpoch(value=>value+1);
   };
   return <>
-    <DomainPanelV124 {...panelProps} key={JSON.stringify([scope,epoch])}/>
-    <DomainRegistrarCheckStage6 key={JSON.stringify([panelProps.site?.id,scope])}/>
+    <section className="sv124-page sv124-domain-page" data-domain-stage6-layout="compact" aria-label="Domain dan publikasi">
+      <DomainPanelV124 {...panelProps} key={JSON.stringify([scope,epoch])}/>
+      <DomainRegistrarCheckStage6 key={JSON.stringify([panelProps.site?.id,scope])}/>
+    </section>
     <TransferEntry key={scope} source={panelProps.site} sites={panelProps.sites||[]} config={transfer} onSourceObserved={sourceObserved}/>
   </>;
 }

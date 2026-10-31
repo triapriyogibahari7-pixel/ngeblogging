@@ -10,8 +10,8 @@ export default function DomainPanelStage5Entry({user,...props}){
  return <PreviewTransferPanel {...props} user={user}/>;
 }
 function PreviewTransferPanel({user,site,sites=[],onSiteUpdate,...props}){
- const [revision,setRevision]=useState(0),[state,setState]=useState(null);
- const scope=JSON.stringify([user?.id,site?.id,site?.owner_id,sites.map(s=>[s.id,s.owner_id,s.status]).sort(),revision]),currentScope=useRef(scope);currentScope.current=scope;
+ const [state,setState]=useState(null);
+ const scope=JSON.stringify([user?.id,site?.id,site?.owner_id,sites.map(s=>[s.id,s.owner_id,s.status]).sort()]),currentScope=useRef(scope);currentScope.current=scope;
  useEffect(()=>{
   let alive=true;const current=()=>alive&&currentScope.current===scope,controller=new AbortController();
   setState({scope,loading:true,transfer:null,notice:'Memeriksa kesiapan pemindahan dari server…'});
@@ -46,6 +46,6 @@ function PreviewTransferPanel({user,site,sites=[],onSiteUpdate,...props}){
  const observed=next=>{setState(old=>old?.scope===scope?{...old,sourceSite:next}:old);onSiteUpdate?.(next);};
  return <>
   <DomainPanelStage5Candidate {...props} site={data?.sourceSite||site} sites={data?.freshSites||sites} onSiteUpdate={observed} transfer={data?.transfer||null}/>
-  <section className="sv124-card" data-stage5-studio-transfer={data?.transfer?'ready':data?.loading?'loading':'disabled'}><p role="status">{data?.notice||'Memeriksa kesiapan pemindahan…'}</p>{data&&!data.loading&&!data.transfer?<button type="button" onClick={()=>setRevision(v=>v+1)}>Periksa kesiapan pemindahan</button>:null}</section>
+  {data?.transfer?<p role="status" data-stage5-studio-transfer="ready">{data.notice}</p>:null}
  </>;
 }
