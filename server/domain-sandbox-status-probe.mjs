@@ -26,15 +26,39 @@ export async function probeDomainSandboxStatus(env,{fetchImpl=globalThis.fetch,t
 export const PROBE_SCRIPT=String.raw`const button=document.getElementById('probe'),output=document.getElementById('result');
 let busy=false,lastToken=null;
 const messages={sandbox_required:'Environment harus sandbox.',key_missing:'Kunci sandbox khusus domain belum terbaca.',key_format_invalid:'Format kunci sandbox belum sesuai.',authentication_rejected:'Autentikasi atau izin baca status ditolak Midtrans. Ini bukan konfirmasi izin membuat Snap.',status_read_accepted:'Midtrans menerima permintaan baca status. ID uji tidak ditemukan, sesuai rancangan. Izin membuat Snap dan biaya belum diverifikasi.',not_confirmed:'Akses baca belum terkonfirmasi. Tidak ada transaksi dibuat.'};
+const failures={AUTH_REQUIRED:'Sesi login belum tersedia.',INVALID_SESSION:'Sesi login perlu diperbarui.',ADMIN_REQUIRED:'Akun ini bukan admin preview yang dikonfigurasi.',CONFIGURATION_REQUIRED:'Konfigurasi verifikasi sesi backend belum sesuai.',AUTH_UNAVAILABLE:'Backend belum dapat memverifikasi sesi Ngeblogging; belum merupakan hasil uji kunci Midtrans.',EMPTY_REQUEST_REQUIRED:'Backend menolak bentuk permintaan kosong. Ini masalah permintaan uji, bukan bukti kunci Midtrans salah.',ORIGIN_NOT_ALLOWED:'Origin permintaan tidak cocok dengan preview.',QUERY_NOT_ALLOWED:'Endpoint API menolak parameter query.',METHOD_NOT_ALLOWED:'Metode permintaan tidak sesuai.'};
 function session(){try{const s=JSON.parse(localStorage.getItem('sb-polvmlrhqoiflumibfqs-auth-token')||'null');if(!Number.isFinite(s?.expires_at)||s.expires_at*1000<=Date.now()||typeof s.access_token!=='string'||!/^\S{1,8192}$/.test(s.access_token))return null;return s.access_token;}catch{return null;}}
 function refresh(){const token=session();button.disabled=busy||!token;if(lastToken&&lastToken!==token){lastToken=null;output.textContent='Sesi berubah. Hasil sebelumnya disembunyikan.';}if(!token)output.textContent='Login dengan akun Ngeblogging yang sudah ada pada preview ini; tidak perlu mendaftar ulang.';}
-button.addEventListener('click',async()=>{if(busy)return;const token=session();if(!token){refresh();return;}busy=true;lastToken=null;refresh();output.textContent='Memeriksa akses baca Midtrans Sandbox, tanpa membuat transaksi...';const c=new AbortController(),timer=setTimeout(()=>c.abort(),18000);try{const r=await fetch('/api/admin/commerce/domains/sandbox-status-probe',{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',headers:{authorization:'Bearer '+token},signal:c.signal});const d=await r.json();if(session()!==token){output.textContent='Sesi berubah. Hasil disembunyikan.';return;}if(r.status===401||r.status===403){output.textContent='Login kembali menggunakan akun admin preview.';return;}if(d?.code!=='DOMAIN_SANDBOX_STATUS_PROBE'||d.environment!=='sandbox'||d.statusReadOnly!==true||d.snapWriteVerified!==false||d.paymentCreated!==false||d.registrationStarted!==false||d.costsVerified!==false||!Object.hasOwn(messages,d.status))throw Error();lastToken=token;output.textContent=messages[d.status]+'\nTidak ada token Snap, pembayaran, atau registrasi domain yang dibuat.';}catch{output.textContent='Hasil belum terkonfirmasi. Tidak ada aktivasi pembayaran.';}finally{clearTimeout(timer);busy=false;refresh();}});
+button.addEventListener('click',async()=>{
+ if(busy)return;const token=session();if(!token){refresh();return;}busy=true;lastToken=null;refresh();output.textContent='Memeriksa akses baca Midtrans Sandbox, tanpa membuat transaksi...';
+ const c=new AbortController(),timer=setTimeout(()=>c.abort(),18000);
+ try{
+  const r=await fetch('/api/admin/commerce/domains/sandbox-status-probe',{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',headers:{authorization:'Bearer '+token},signal:c.signal});
+  let d;try{d=await r.json();}catch{output.textContent='Respons backend bukan JSON yang dapat diperiksa (HTTP '+r.status+'). Akses Midtrans belum terkonfirmasi.';return;}
+  if(session()!==token){output.textContent='Sesi berubah. Hasil disembunyikan.';return;}
+  if(typeof d?.code==='string'&&Object.hasOwn(failures,d.code)){output.textContent='Uji belum selesai: HTTP '+r.status+' / '+d.code+'\n'+failures[d.code]+'\nTidak ada aktivasi pembayaran.';return;}
+  if(r.status===401||r.status===403){output.textContent='Login kembali menggunakan akun admin preview (HTTP '+r.status+').';return;}
+  if(d?.code!=='DOMAIN_SANDBOX_STATUS_PROBE'||d.environment!=='sandbox'||d.statusReadOnly!==true||d.snapWriteVerified!==false||d.paymentCreated!==false||d.registrationStarted!==false||d.costsVerified!==false||!Object.hasOwn(messages,d.status)){output.textContent='Format hasil backend belum terverifikasi (HTTP '+r.status+'). Tidak ada aktivasi pembayaran.';return;}
+  lastToken=token;output.textContent=messages[d.status]+'\nTidak ada token Snap, pembayaran, atau registrasi domain yang dibuat.';
+ }catch{output.textContent=c.signal.aborted?'Permintaan uji melewati batas waktu. Akses baca belum terkonfirmasi; pembayaran tetap nonaktif.':'Permintaan uji gagal dikirim atau diterima. Akses baca belum terkonfirmasi; pembayaran tetap nonaktif.';}
+ finally{clearTimeout(timer);busy=false;refresh();}
+});
 window.addEventListener('focus',refresh);window.addEventListener('storage',refresh);refresh();
+
 `;
 const PAGE=String.raw`<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Uji baca Midtrans Sandbox</title><style>body{font:16px system-ui;background:#f4f8ff;color:#15345b;margin:0;padding:20px}main{max-width:720px;margin:auto;background:white;padding:20px;border:1px solid #d6e5fa;border-radius:12px}button{background:#1463dc;color:white;border:0;border-radius:8px;padding:14px;font:inherit}button:disabled{opacity:.5}pre{white-space:pre-wrap;overflow-wrap:anywhere}a{color:#1463dc}</style></head><body><main><h1>Uji akses baca Midtrans Sandbox</h1><p>Khusus admin preview. Hanya GET status untuk ID uji acak. Tidak membuat pesanan, token Snap, pembayaran, atau registrasi domain. Tidak mengubah flag transaksi.</p><p><a href="/?auth=signin" target="_blank" rel="noopener noreferrer">Login dengan akun Ngeblogging yang sudah ada</a></p><button id="probe" type="button">Uji akses baca sandbox</button><pre id="result" role="status" aria-live="polite">Belum diperiksa.</pre><p><a href="/assets/registrar-diagnostic-stage6">Kembali ke diagnostik domain</a></p></main><script type="module" src="/assets/domain-sandbox-status-probe-stage6.mjs"></script></body></html>`;
 const HOST='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const API='/api/admin/commerce/domains/sandbox-status-probe',PAGE_PATH='/assets/domain-sandbox-status-probe-stage6',JS_PATH=PAGE_PATH+'.mjs';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+async function emptyProbeBody(request){
+ const length=request.headers.get('content-length');if(length!==null&&length!=='0'){request.body?.cancel().catch(()=>{});return false;}
+ if(request.body===null)return true;
+ const reader=request.body.getReader();let timer,abort;
+ const stopped=new Promise((_,reject)=>{abort=()=>reject(Error('EMPTY_BODY_UNAVAILABLE'));timer=setTimeout(abort,2000);request.signal.addEventListener('abort',abort,{once:true});});
+ try{if(request.signal.aborted)return false;for(let i=0;i<16;i++){const x=await Promise.race([reader.read(),stopped]);if(x.done)return true;if(x.value?.byteLength!==0)return false;}return false;}
+ catch{return false;}
+ finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}
+}
 async function limitedJson(response,wait,limit){const reader=response.body?.getReader();if(!reader)throw Error();try{let size=0;const chunks=[];for(;;){const x=await wait(reader.read());if(x.done)break;size+=x.value.length;if(size>limit)throw Error();chunks.push(x.value);}const bytes=new Uint8Array(size);let pos=0;for(const b of chunks){bytes.set(b,pos);pos+=b.length;}return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}finally{reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}}
 export async function domainSandboxStatusProbeResponse(request,env,{fetchImpl=globalThis.fetch,probeOptions={}}={}){
  const u=new URL(request.url);if(![API,PAGE_PATH,JS_PATH].includes(u.pathname))return null;
@@ -45,7 +69,7 @@ export async function domainSandboxStatusProbeResponse(request,env,{fetchImpl=gl
  if(u.pathname!==API){if(!['GET','HEAD'].includes(request.method))return reply(405,'METHOD_NOT_ALLOWED');return new Response(request.method==='HEAD'?null:u.pathname===PAGE_PATH?PAGE:PROBE_SCRIPT,{headers:{...headers,'content-type':u.pathname===PAGE_PATH?'text/html; charset=utf-8':'application/javascript; charset=utf-8'}});}
  if(request.method!=='POST')return reply(405,'METHOD_NOT_ALLOWED');
  if(request.headers.get('origin')!==u.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
- if(request.body!==null)return reply(400,'EMPTY_REQUEST_REQUIRED');
+ if(!(await emptyProbeBody(request)))return reply(400,'EMPTY_REQUEST_REQUIRED');
  const auth=request.headers.get('authorization')||'';if(!/^Bearer [^\s]{1,8192}$/.test(auth))return reply(401,'AUTH_REQUIRED');
  if(!UUID.test(env?.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID||'')||!env.SUPABASE_PUBLISHABLE_KEY||env.SUPABASE_URL!=='https://polvmlrhqoiflumibfqs.supabase.co')return reply(503,'CONFIGURATION_REQUIRED');
  if(request.signal.aborted)return reply(503,'AUTH_UNAVAILABLE');
