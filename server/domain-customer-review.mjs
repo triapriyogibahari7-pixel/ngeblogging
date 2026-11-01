@@ -1,5 +1,6 @@
 import {Buffer} from 'node:buffer';
-import {issueDomainReviewReceipt} from './domain-review-receipt.mjs';
+import {issueProviderDomainReviewReceipt} from './domain-provider-review-receipt.mjs';
+import {resolveCustomerRegistrarContext} from './domain-customer-provider-context.mjs';
 const PREFIX='/api/domains/commerce/review/',BASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 const UUID=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const fail=()=>{throw Error('DOMAIN_REVIEW_UNAVAILABLE');};
@@ -21,7 +22,8 @@ export function createDomainCustomerReview({fetchImpl=globalThis.fetch,priceChec
   if(!/^Bearer [^\s]{1,8192}$/.test(auth))return reply(401,'AUTH_REQUIRED');
   let domain;try{const raw=url.pathname.slice(PREFIX.length);if(!raw||raw.length>1200)fail();const value=decodeURIComponent(raw).trim().replace(/\.$/,'');if(!value||/[\s\u0000-\u001f\u007f/\\:@?#%]/u.test(value))fail();domain=new URL('https://'+value).hostname.toLowerCase();if(domain.length>253||!domain.includes('.')||/^\d+(?:\.\d+){3}$/.test(domain)||domain.split('.').some(label=>!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label)))fail();}catch{return reply(400,'INVALID_DOMAIN');}
   if(env?.DOMAIN_CUSTOMER_REVIEW_ENABLED!=='true')return reply(503,'DOMAIN_REVIEW_DISABLED');
-  const signingKey=env.DOMAIN_CUSTOMER_REVIEW_SIGNING_KEY;
+  const signingKey=env.DOMAIN_CUSTOMER_REVIEW_SIGNING_KEY;let context;
+  try{context=resolveCustomerRegistrarContext(env);}catch{return reply(503,'DOMAIN_REVIEW_CONFIGURATION_UNAVAILABLE');}
   if(!keyReady(signingKey))return reply(503,'DOMAIN_REVIEW_CONFIGURATION_UNAVAILABLE');
   if(typeof env.SUPABASE_URL!=='string'||env.SUPABASE_URL.replace(/\/$/,'')+'/'!==BASE||typeof env.SUPABASE_PUBLISHABLE_KEY!=='string'||!env.SUPABASE_PUBLISHABLE_KEY||env.SUPABASE_PUBLISHABLE_KEY.length>8192||request.signal.aborted)return reply(503,'AUTH_UNAVAILABLE');
   const controller=new AbortController();let stop;
@@ -35,13 +37,13 @@ export function createDomainCustomerReview({fetchImpl=globalThis.fetch,priceChec
    const headers=new Headers(request.headers);headers.set('x-site-id',siteId);headers.delete('content-length');headers.delete('content-type');
    const target=new URL('/api/domains/commerce/check/'+encodeURIComponent(domain),url.origin);
    const delegated=await wait(check(new Request(target,{method:'POST',headers,signal:controller.signal,cache:'no-store',credentials:'omit',redirect:'error'}),env));
-   if(delegated?.status!==200){try{Promise.resolve(delegated?.body?.cancel()).catch(()=>{});}catch{}const status=[400,401,403,409,429].includes(delegated?.status)?delegated.status:503;const code=status===401?'INVALID_SESSION':status===403?'SITE_OWNER_REQUIRED':status===429?'LOOKUP_RATE_LIMITED':'DOMAIN_REVIEW_UNAVAILABLE';return reply(status,code);}
+   if(delegated?.status!==200){try{Promise.resolve(delegated?.body?.cancel()).catch(()=>{});}catch{}const status=[400,401,403,409,429].includes(delegated?.status)?delegated.status:503;return reply(status,status===401?'INVALID_SESSION':status===403?'SITE_OWNER_REQUIRED':status===429?'LOOKUP_RATE_LIMITED':'DOMAIN_REVIEW_UNAVAILABLE');}
    const result=await readJson(delegated,wait);
-   if(result?.code!=='DOMAIN_CUSTOMER_PRICE_CHECK'||result.siteId!==siteId||result.domain!==domain)return reply(503,'DOMAIN_REVIEW_UNAVAILABLE');
+   if(result?.code!=='DOMAIN_CUSTOMER_PRICE_CHECK'||result.siteId!==siteId||result.domain!==domain||result.legacyReviewReceiptCompatible!==(context.providerId==='opensrs'))return reply(503,'DOMAIN_REVIEW_UNAVAILABLE');
    if(result.availability==='unavailable')return reply(409,'DOMAIN_REVIEW_UNAVAILABLE');
    if(controller.signal.aborted||request.signal.aborted)fail();
-   const receipt=issueDomainReviewReceipt(result,{key:signingKey,userId:user.id.toLowerCase(),siteId,now:clock()});
-   return reply(200,'DOMAIN_CUSTOMER_REVIEW',{environment:'production',siteId,domain,reviewOnly:true,orderCreated:false,paymentStarted:false,purchaseAllowed:false,checkoutAvailable:false,review:receipt});
+   const receipt=issueProviderDomainReviewReceipt({...result,quoteContext:context},{key:signingKey,userId:user.id.toLowerCase(),siteId,...context,now:clock()});
+   return reply(200,'DOMAIN_CUSTOMER_REVIEW',{environment:'production',siteId,domain,reviewReceiptVersion:2,reviewOnly:true,orderCreated:false,paymentStarted:false,purchaseAllowed:false,checkoutAvailable:false,review:receipt});
   }catch{return reply(503,'DOMAIN_REVIEW_UNAVAILABLE');}
   finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);controller.signal.removeEventListener('abort',stop);controller.abort();}
  };
