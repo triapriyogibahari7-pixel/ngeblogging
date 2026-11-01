@@ -1,3 +1,4 @@
+import { domainProductionRegistrarLookupResponse } from "../server/domain-production-registrar-lookup.mjs";
 import { domainOrderStatusPageResponse } from "../server/domain-order-status-page.mjs";
 import { domainProductionOrderStatusResponse } from "../server/domain-production-order-status-handler.mjs";
 import { domainRegistrantResponse, domainRegistrationPaymentResponse, runDomainRegistrationDueJobs } from "../server/domain-registration-runtime.mjs";
@@ -66,6 +67,8 @@ export default {
   },
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const domainLookup = await domainProductionRegistrarLookupResponse(request, env);
+    if (domainLookup) return domainLookup;
     const domainRegistrant = await domainRegistrantResponse(request, env);
     if (domainRegistrant) return domainRegistrant;
     const domainStatusPage = await domainOrderStatusPageResponse(request, env);
