@@ -7,6 +7,8 @@ on:
       - 'cloudflare/worker-v70.mjs'
       - 'server/domain-isolated-sandbox-*.mjs'
       - 'tests/domain-isolated-sandbox-*.test.mjs'
+      - 'public/assets/isolated-probe-guard-check-v1.html'
+      - 'public/assets/isolated-probe-guard-check-*.mjs'
       - '.github/workflows/isolated-sandbox-probe-checks.yml'
   pull_request:
     paths:
@@ -14,6 +16,8 @@ on:
       - 'cloudflare/worker-v70.mjs'
       - 'server/domain-isolated-sandbox-*.mjs'
       - 'tests/domain-isolated-sandbox-*.test.mjs'
+      - 'public/assets/isolated-probe-guard-check-v1.html'
+      - 'public/assets/isolated-probe-guard-check-*.mjs'
       - '.github/workflows/isolated-sandbox-probe-checks.yml'
 permissions:
   contents: read
@@ -27,4 +31,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run offline contracts, handlers and guarded routing tests
-        run: node --experimental-vm-modules --test-concurrency=1 --test tests/domain-isolated-sandbox-probe.test.mjs tests/domain-isolated-sandbox-handler.test.mjs tests/domain-isolated-sandbox-notification.test.mjs tests/domain-isolated-sandbox-router.test.mjs
+        run: node --experimental-vm-modules --test-concurrency=1 --test tests/domain-isolated-sandbox-probe.test.mjs tests/domain-isolated-sandbox-handler.test.mjs tests/domain-isolated-sandbox-notification.test.mjs tests/domain-isolated-sandbox-router.test.mjs tests/domain-isolated-sandbox-guard-page.test.mjs
