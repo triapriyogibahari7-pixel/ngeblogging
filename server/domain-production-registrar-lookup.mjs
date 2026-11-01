@@ -5,7 +5,7 @@ import {normalizeRegistrarDomain} from './domain-registrar-quote-router.mjs';
 import {attachRegistrarCheckOffer} from './registrar-check-result.mjs';
 const PREFIX='/api/domains/registrar/';
 const HOSTS=new Set(['ngeblogging.com','www.ngeblogging.com']);
-const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[a-f0-9]{4}-[0-9a-f]{12}$/i;
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'};
 const reply=(status,code,extra={})=>new Response(JSON.stringify({...extra,code}),{status,headers});
 async function emptyBody(request){

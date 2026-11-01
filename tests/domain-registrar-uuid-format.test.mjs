@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../server/domain-production-registrar-lookup.mjs',import.meta.url),'utf8');
+const declaration=source.match(/^const UUID=\/(.+)\/i;$/m);
+assert.ok(declaration,'The legacy UUID validator must remain explicitly testable.');
+const uuid=new RegExp(declaration[1],'i');
+for(const value of ['11111111-1111-4111-8111-111111111111','abcdef01-abcd-4abc-8abc-abcdefabcdef','ABCDEF01-ABCD-4ABC-8ABC-ABCDEFABCDEF'])test('legacy validator accepts standard UUID '+value,()=>assert.equal(uuid.test(value),true));
+for(const value of ['11111111-1111-4111-111111111111','11111111-1111-4111-8111-1111-111111111111','11111111111141118111111111111111','gggggggg-1111-4111-8111-111111111111','','11111111-1111-4111-8111-111111111111\n',' 11111111-1111-4111-8111-111111111111'])test('legacy validator rejects malformed UUID '+JSON.stringify(value),()=>assert.equal(uuid.test(value),false));
+test('legacy entry still routes customer prices and preserves old handler',()=>{assert.ok(source.includes('customerPrice??legacyProductionRegistrarLookupResponse(request,env)'));assert.ok(source.includes('export function createProductionRegistrarLookup'));});
