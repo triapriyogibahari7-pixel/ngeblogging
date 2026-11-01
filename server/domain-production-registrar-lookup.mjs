@@ -1,3 +1,5 @@
+import {domainCustomerReviewResponse} from './domain-customer-review.mjs';
+import {domainCustomerPriceCheckResponse} from './domain-customer-price-check.mjs';
 import {checkCloudflareRegistrar} from './cloudflare-registrar-check.mjs';
 import {searchCloudflareRegistrar,normalizeRegistrarSearchQuery} from './cloudflare-registrar-search.mjs';
 import {normalizeRegistrarDomain} from './domain-registrar-quote-router.mjs';
@@ -81,4 +83,10 @@ export function createProductionRegistrarLookup({fetchImpl=(...args)=>fetch(...a
   }finally{pending.delete(user.id);}
  };
 }
-export const domainProductionRegistrarLookupResponse=createProductionRegistrarLookup();
+const legacyProductionRegistrarLookupResponse=createProductionRegistrarLookup();
+export async function domainProductionRegistrarLookupResponse(request,env){
+ const customerReview=await domainCustomerReviewResponse(request,env);
+ if(customerReview)return customerReview;
+ const customerPrice=await domainCustomerPriceCheckResponse(request,env);
+ return customerPrice??legacyProductionRegistrarLookupResponse(request,env);
+}
