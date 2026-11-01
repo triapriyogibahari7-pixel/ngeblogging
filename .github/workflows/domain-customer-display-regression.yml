@@ -1,0 +1,43 @@
+name: Domain customer display regression
+on:
+  push:
+    branches: [fix/domain-search-backend-complete-20261101]
+    paths:
+      - 'server/domain-*.mjs'
+      - 'shared/domain-currency-display.mjs'
+      - 'src/DomainCustomer*.jsx'
+      - 'src/lib/domain-customer-*.mjs'
+      - 'tests/domain-customer-display-regression.test.mjs'
+      - '.github/workflows/domain-customer-display-regression.yml'
+      - 'package*.json'
+  pull_request:
+    paths:
+      - 'server/domain-*.mjs'
+      - 'shared/domain-currency-display.mjs'
+      - 'src/DomainCustomer*.jsx'
+      - 'src/lib/domain-customer-*.mjs'
+      - 'tests/domain-customer-display-regression.test.mjs'
+      - '.github/workflows/domain-customer-display-regression.yml'
+      - 'package*.json'
+permissions:
+  contents: read
+concurrency:
+  group: domain-customer-display-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Offline currency, suggestions and receipt contracts
+        run: node --test tests/domain-customer-display-regression.test.mjs
+      - name: Build application without deployment
+        run: npm run build
