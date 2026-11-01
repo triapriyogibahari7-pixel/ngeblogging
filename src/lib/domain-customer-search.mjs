@@ -1,3 +1,4 @@
+import {readCustomerCurrencyContext} from '../../shared/domain-currency-display.mjs';
 const UUID=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const invalid=()=>Object.assign(new Error('CUSTOMER_SEARCH_UNVERIFIED'),{code:'CUSTOMER_SEARCH_UNVERIFIED'});
 const bad=()=>{throw invalid();};
@@ -17,6 +18,10 @@ export function readCustomerSearchView(data,{siteId,query,requestStartedAt,recei
  if(data.candidateCount!==count||!Array.isArray(data.candidates)||data.candidates.length!==count||typeof data.complete!=='boolean'||typeof data.timedOut!=='boolean')bad();
  const started=stamp(data.startedAt),completed=stamp(data.completedAt),anchor=completed+(receivedAt-requestStartedAt);
  if(completed<started||completed-started>30000||!Number.isFinite(anchor)||Math.abs(anchor)>8640000000000000)bad();
+ let currencyContext=null;
+ if(Object.hasOwn(data,'currencyContext')){try{currencyContext=readCustomerCurrencyContext(data.currencyContext);}catch{bad();}if(Date.parse(currencyContext.observedAt)>started)bad();}
+ const hasStats=['suggestionModelCount','configuredExtensionCount','candidateExtensionCount'].some(k=>Object.hasOwn(data,k));
+ if(hasStats&&(data.suggestionModelCount!==20||!integer(data.configuredExtensionCount,1,2000)||!integer(data.candidateExtensionCount,1,Math.min(data.configuredExtensionCount,count))))bad();
  const seen=new Set();let checked=0,unverified=0,notChecked=0;
  const rows=data.candidates.map((row,index)=>{
   if(!domain(row?.domain)||seen.has(row.domain)||typeof row.isPrimary!=='boolean'||row.isPrimary!==(row.domain===primary)||!['available','unavailable','unverified','not_checked'].includes(row.status))bad();seen.add(row.domain);
@@ -24,17 +29,18 @@ export function readCustomerSearchView(data,{siteId,query,requestStartedAt,recei
   if(['available','unavailable'].includes(row.status))checked++;else if(row.status==='unverified')unverified++;else notChecked++;
   if(row.status!=='available'){if(row.price!==null)bad();return Object.freeze({domain:row.domain,isPrimary:row.isPrimary,status:row.status,price:null});}
   const p=row.price,at=stamp(row.checkedAt),expiry=stamp(row.expiresAt);
-  if(at<started||at>completed||expiry<=at||expiry-at>300000||p?.currency!=='IDR'||!integer(p.amountIdr,1,1000000000000)||p.termYears!==1||p.expiresAt!==row.expiresAt||p.indicative!==true||p.purchaseAllowed!==false)bad();
+  if(at<started||at>completed||expiry<=at||expiry-at>300000||p?.currency!=='IDR'||!integer(p.amountIdr,1,1000000000000)||p.termYears!==1||p.expiresAt!==row.expiresAt||p.indicative!==true||p.purchaseAllowed!==false||(currencyContext&&expiry>Date.parse(currencyContext.expiresAt)))bad();
   return Object.freeze({domain:row.domain,isPrimary:row.isPrimary,status:expiry<=anchor?'expired':'available',checkedAt:row.checkedAt,expiresAt:row.expiresAt,price:expiry<=anchor?null:Object.freeze({currency:'IDR',amountIdr:p.amountIdr,termYears:1})});
  });
  if(data.checkedCount!==checked||data.unverifiedCount!==unverified||data.notCheckedCount!==notChecked||data.attemptedCount!==checked+unverified||data.complete!==(checked===count))bad();
  const limits=data.limits;if(!integer(limits?.requestBudget,1,256)||!integer(limits.requestsUsed,0,limits.requestBudget)||typeof limits.exhausted!=='boolean')bad();
- return Object.freeze({siteId,query,primaryDomain:primary,requestedDomain:requested,requestedExtensionSupported:data.requestedExtensionSupported,candidateCount:count,suggestionCount:50,checkedCount:checked,complete:data.complete,timedOut:data.timedOut,budgetExhausted:limits.exhausted,rows:Object.freeze(rows),clockAnchorMs:anchor,monotonicAnchorMs:receivedAt});
+ return Object.freeze({siteId,query,primaryDomain:primary,requestedDomain:requested,requestedExtensionSupported:data.requestedExtensionSupported,candidateCount:count,suggestionCount:50,suggestionModelCount:hasStats?data.suggestionModelCount:null,configuredExtensionCount:hasStats?data.configuredExtensionCount:null,candidateExtensionCount:hasStats?data.candidateExtensionCount:null,currencyContext,checkedCount:checked,complete:data.complete,timedOut:data.timedOut,budgetExhausted:limits.exhausted,rows:Object.freeze(rows),clockAnchorMs:anchor,monotonicAnchorMs:receivedAt});
 }
 export function currentCustomerSearchView(view,monotonicNow){
  const valid=Number.isFinite(monotonicNow)&&monotonicNow>=view.monotonicAnchorMs,now=valid?view.clockAnchorMs+monotonicNow-view.monotonicAnchorMs:NaN;
  const rows=view.rows.map(row=>row.status==='available'&&(!Number.isFinite(now)||Date.parse(row.expiresAt)<=now)?Object.freeze({domain:row.domain,isPrimary:row.isPrimary,status:Number.isFinite(now)?'expired':'unverified',price:null}):row);
- return Object.freeze({...view,rows:Object.freeze(rows),clockUnverified:!Number.isFinite(now)});
+ const usdDisplayAvailable=Number.isFinite(now)&&!!view.currencyContext&&Date.parse(view.currencyContext.observedAt)<=now&&Date.parse(view.currencyContext.expiresAt)>now;
+ return Object.freeze({...view,rows:Object.freeze(rows),clockUnverified:!Number.isFinite(now),displayNowMs:now,usdDisplayAvailable});
 }
 export async function fetchCustomerDomainSearch(query,{siteId,token,signal,fetchImpl=globalThis.fetch,monotonic=()=>performance.now(),timeoutMs=25000}={}){
  query=normalizeCustomerSearchQuery(query);
