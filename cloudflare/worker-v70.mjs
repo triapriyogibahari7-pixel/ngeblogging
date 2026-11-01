@@ -1,6 +1,6 @@
 import { domainOrderStatusPageResponse } from "../server/domain-order-status-page.mjs";
 import { domainProductionOrderStatusResponse } from "../server/domain-production-order-status-handler.mjs";
-import { domainProductionPaymentNotificationResponse } from "../server/domain-production-payment-notification-handler.mjs";
+import { domainRegistrantResponse, domainRegistrationPaymentResponse, runDomainRegistrationDueJobs } from "../server/domain-registration-runtime.mjs";
 import { isolatedSandboxPreviewResponse } from "./domain-isolated-sandbox-router.mjs";
 import { domainSandboxStatusProbeResponse } from "../server/domain-sandbox-status-probe.mjs";
 import { domainCheckoutPreviewResponse } from "../server/domain-checkout-preview-handler.mjs";
@@ -61,13 +61,18 @@ async function serveStaticAsset(request, env) {
   return new Response(response.body, {status:response.status,statusText:response.statusText,headers});
 }
 export default {
+  async scheduled(controller, env, context) {
+    context.waitUntil(runDomainRegistrationDueJobs(env));
+  },
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const domainRegistrant = await domainRegistrantResponse(request, env);
+    if (domainRegistrant) return domainRegistrant;
     const domainStatusPage = await domainOrderStatusPageResponse(request, env);
     if (domainStatusPage) return domainStatusPage;
     const domainOrderStatus = await domainProductionOrderStatusResponse(request, env);
     if (domainOrderStatus) return domainOrderStatus;
-    const domainProductionPayment = await domainProductionPaymentNotificationResponse(request, env);
+    const domainProductionPayment = await domainRegistrationPaymentResponse(request, env, context);
     if (domainProductionPayment) return domainProductionPayment;
     const isolatedSandbox = await isolatedSandboxPreviewResponse(request, env, {runtimeReady:false});
     if (isolatedSandbox) return isolatedSandbox;
