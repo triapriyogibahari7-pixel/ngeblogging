@@ -1,0 +1,30 @@
+name: Isolated sandbox probe checks
+on:
+  push:
+    branches: [feature/domain-stages5-10-integration-20261030]
+    paths:
+      - 'cloudflare/domain-isolated-sandbox-router.mjs'
+      - 'cloudflare/worker-v70.mjs'
+      - 'server/domain-isolated-sandbox-*.mjs'
+      - 'tests/domain-isolated-sandbox-*.test.mjs'
+      - '.github/workflows/isolated-sandbox-probe-checks.yml'
+  pull_request:
+    paths:
+      - 'cloudflare/domain-isolated-sandbox-router.mjs'
+      - 'cloudflare/worker-v70.mjs'
+      - 'server/domain-isolated-sandbox-*.mjs'
+      - 'tests/domain-isolated-sandbox-*.test.mjs'
+      - '.github/workflows/isolated-sandbox-probe-checks.yml'
+permissions:
+  contents: read
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run offline contracts, handlers and guarded routing tests
+        run: node --experimental-vm-modules --test-concurrency=1 --test tests/domain-isolated-sandbox-probe.test.mjs tests/domain-isolated-sandbox-handler.test.mjs tests/domain-isolated-sandbox-notification.test.mjs tests/domain-isolated-sandbox-router.test.mjs
