@@ -1,5 +1,5 @@
 const PREFIX='/api/commerce/domains/orders/';
-const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const ORDER=/^DOM-[a-f0-9]{40}$/;
 const PAYMENTS=['pending','paid','failed','expired','cancelled','review_required','refund_pending','refunded'];
 const REGISTRATIONS=['not_started','queued','processing','registered','failed','review_required'];
