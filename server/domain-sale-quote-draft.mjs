@@ -1,3 +1,4 @@
+import {validateDomainPricingSnapshot} from './domain-pricing-snapshot.mjs';
 // Private server calculation only. Caller must verify the account and obtain trusted
 // registrar, FX and cost-policy snapshots. No fetch, persistence, checkout or registration.
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -9,7 +10,11 @@ function micro(value){if(typeof value!=='string'||!/^(?:0|[1-9]\d{0,11})(?:\.\d{
 function idr(value){if(!Number.isSafeInteger(value)||value<0||value>1000000000000)fail('INVALID_IDR_COST');return BigInt(value);}
 function number(value){if(value<0n||value>1000000000000n)fail('PRICE_OUT_OF_RANGE');return Number(value);}
 export function buildDomainSaleQuoteDraft(check,{userId,environment,fx,policy,now=Date.now(),makeId=()=>crypto.randomUUID()}={}){
- if(environment!=='sandbox')fail('SANDBOX_REQUIRED');
+ if(!['sandbox','production'].includes(environment))fail('INVALID_QUOTE_ENVIRONMENT');
+ if(environment==='production'){
+  validateDomainPricingSnapshot({environment,fx,policy},{now,environment});
+  if(check?.fixtureOnly===true||check?.fixture_only===true||check?.referenceOnly===true)fail('PRODUCTION_REGISTRAR_INPUT_UNVERIFIED');
+ }
  if(typeof userId!=='string'||!UUID.test(userId)||!Number.isSafeInteger(now)||Math.abs(now)>8640000000000000||typeof makeId!=='function')fail('INVALID_QUOTE_CONTEXT');
  if(check?.providerId!=='cloudflare'||check.status!=='checked'||check.registrable!==true||check.tier!=='standard'||check.lookupOnly!==true||check.purchaseAllowed!==false||check.mustRecheckBeforePurchase!==true)fail('REGISTRAR_CHECK_NOT_ELIGIBLE');
  const domain=check.domain;
@@ -35,6 +40,6 @@ export function buildDomainSaleQuoteDraft(check,{userId,environment,fx,policy,no
  const expires=Math.min(checked+60000,fxExpires,policyExpires);if(expires-now<5000)fail('SNAPSHOT_REFRESH_REQUIRED');
  const quoteId=makeId();if(typeof quoteId!=='string'||!UUID.test(quoteId))fail('INVALID_QUOTE_ID');
  const saleUsd=(cents/100n).toString()+'.'+(cents%100n).toString().padStart(2,'0');
- const row={id:quoteId.toLowerCase(),user_id:userId.toLowerCase(),environment:'sandbox',domain,provider_id:'cloudflare',operation:'registration',years:1,currency:'IDR',sale_price_idr:number(sale),registrar_cost_idr:number(registrar),other_direct_costs_idr:number(other),payment_cost_idr:number(payment),pricing_version:policy.version,cost_basis:{source_ref:policy.sourceRef,provider_checked_at:check.checkedAt,provider_price_currency:'USD',provider_price_amount:check.prices.registration.amount,tax_status:'verified',tax_source_ref:policy.taxSourceRef,payment_fee_mode:'conservative_ceiling',payment_fee_source_ref:policy.paymentFeeSourceRef,payment_fee_basis_points:policy.paymentFeeBasisPoints,payment_fixed_cost_idr:Number(fixed),minimum_margin_idr:Number(margin),computed_margin_idr:number(net),cost_policy_verified_at:policy.verifiedAt,cost_policy_expires_at:policy.expiresAt},checked_at:new Date(now).toISOString(),expires_at:new Date(expires).toISOString(),display_currency:'USD',sale_price_usd:saleUsd,fx_rate_usd_idr:fx.rate,fx_source:fx.source,fx_observed_at:fx.observedAt,fx_expires_at:fx.expiresAt};
+ const row={id:quoteId.toLowerCase(),user_id:userId.toLowerCase(),environment,domain,provider_id:'cloudflare',operation:'registration',years:1,currency:'IDR',sale_price_idr:number(sale),registrar_cost_idr:number(registrar),other_direct_costs_idr:number(other),payment_cost_idr:number(payment),pricing_version:policy.version,cost_basis:{source_ref:policy.sourceRef,provider_checked_at:check.checkedAt,provider_price_currency:'USD',provider_price_amount:check.prices.registration.amount,tax_status:'verified',tax_source_ref:policy.taxSourceRef,payment_fee_mode:'conservative_ceiling',payment_fee_source_ref:policy.paymentFeeSourceRef,payment_fee_basis_points:policy.paymentFeeBasisPoints,payment_fixed_cost_idr:Number(fixed),minimum_margin_idr:Number(margin),computed_margin_idr:number(net),cost_policy_verified_at:policy.verifiedAt,cost_policy_expires_at:policy.expiresAt},checked_at:new Date(now).toISOString(),expires_at:new Date(expires).toISOString(),display_currency:'USD',sale_price_usd:saleUsd,fx_rate_usd_idr:fx.rate,fx_source:fx.source,fx_observed_at:fx.observedAt,fx_expires_at:fx.expiresAt};
  return {status:'quote_draft',lookupOnly:true,purchaseAllowed:false,checkoutCreated:false,registrationStarted:false,row};
 }

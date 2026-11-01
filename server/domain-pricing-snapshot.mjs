@@ -2,10 +2,11 @@ const fail=code=>{throw Object.assign(new Error(code),{code});};
 function shape(value,keys){if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length!==keys.length||keys.some(k=>!Object.hasOwn(value,k)))fail('INVALID_PRICING_SNAPSHOT_SHAPE');}
 function reference(value){if(typeof value!=='string'||!value.trim()||value.length>200||/[\u0000-\u001f\u007f]/.test(value))fail('INVALID_PRICING_REFERENCE');}
 function timestamp(value){if(typeof value!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d:\d\d)$/.test(value)||!Number.isSafeInteger(Date.parse(value)))fail('INVALID_PRICING_TIME');return Date.parse(value);}
-export function validateDomainPricingSnapshot(input,{now=Date.now()}={}){
+export function validateDomainPricingSnapshot(input,{now=Date.now(),environment='sandbox'}={}){
  if(!Number.isSafeInteger(now)||Math.abs(now)>8640000000000000)fail('INVALID_PRICING_CLOCK');
+ if(!['sandbox','production'].includes(environment))fail('INVALID_PRICING_ENVIRONMENT');
  shape(input,['environment','fx','policy']);
- if(input.environment!=='sandbox')fail('SANDBOX_REQUIRED');
+ if(input.environment!==environment)fail(environment==='sandbox'?'SANDBOX_REQUIRED':'PRODUCTION_REQUIRED');
  const f=input.fx,p=input.policy;
  shape(f,['base','quote','rate','observedAt','expiresAt','source','costBasisVerified']);
  shape(p,['taxStatus','costScope','paymentFeeMode','sourceRef','taxSourceRef','paymentFeeSourceRef','version','verifiedAt','expiresAt','otherDirectCostsIdr','paymentFixedCostIdr','minimumMarginIdr','paymentFeeBasisPoints']);
@@ -24,7 +25,7 @@ export function validateDomainPricingSnapshot(input,{now=Date.now()}={}){
  for(const k of ['otherDirectCostsIdr','paymentFixedCostIdr','minimumMarginIdr'])if(!Number.isSafeInteger(p[k])||p[k]<0||p[k]>1000000000000)fail('INVALID_IDR_COST');
  if(p.minimumMarginIdr<25000)fail('MINIMUM_MARGIN_BELOW_REQUIRED');
  if(!Number.isInteger(p.paymentFeeBasisPoints)||p.paymentFeeBasisPoints<0||p.paymentFeeBasisPoints>=10000)fail('INVALID_PAYMENT_FEE');
- return {environment:'sandbox',fx:{...f},policy:{...p}};
+ return {environment,fx:{...f},policy:{...p}};
 }
 export function parseDomainPricingSnapshot(text,options){
  if(typeof text!=='string'||new TextEncoder().encode(text).length>16384)fail('PRICING_SNAPSHOT_TOO_LARGE');
