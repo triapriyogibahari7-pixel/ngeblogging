@@ -1,3 +1,4 @@
+import {readCustomerCurrencyContext} from '../../shared/domain-currency-display.mjs';
 const UUID=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const fields=['v','reviewId','userId','siteId','environment','providerId','registrarAccountRef','operation','domain','currency','amountIdr','years','issuedAt','expiresAt'];
 const invalid=()=>Object.assign(new Error('CUSTOMER_REVIEW_UNVERIFIED'),{code:'CUSTOMER_REVIEW_UNVERIFIED'});
@@ -18,13 +19,16 @@ export function readCustomerDomainReview(data,{userId,siteId,domain:expectedDoma
  const bytes=decode(parts[1],3072);if(bytes.byteLength>2048)bad();let claims;try{claims=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}catch{bad();}
  const issued=stamp(r.issuedAt),expires=stamp(r.expiresAt),anchor=issued+receivedAt-requestStartedAt;
  if(!claims||Array.isArray(claims)||typeof claims!=='object'||Object.keys(claims).length!==fields.length||fields.some(key=>!Object.hasOwn(claims,key))||claims.v!==2||claims.environment!=='production'||claims.operation!=='registration'||claims.providerId!==q.providerId||claims.registrarAccountRef!==q.registrarAccountRef||claims.reviewId!==r.reviewId||claims.userId!==userId||claims.siteId!==siteId||claims.domain!==expectedDomain||claims.currency!=='IDR'||claims.years!==1||claims.amountIdr!==p.amountIdr||claims.issuedAt!==issued||claims.expiresAt!==expires||issued<0||expires<=issued||expires-issued>120000||!Number.isFinite(anchor)||Math.abs(anchor)>8640000000000000)bad();
+ let currencyContext=null;
+ if(Object.hasOwn(data,'currencyContext')){try{currencyContext=readCustomerCurrencyContext(data.currencyContext);}catch{bad();}if(Date.parse(currencyContext.observedAt)>issued||Date.parse(currencyContext.expiresAt)<expires)bad();}
  const ready=expires>anchor;
- return Object.freeze({userId,siteId,domain:expectedDomain,reviewId:r.reviewId,quoteContext:Object.freeze({providerId:q.providerId,registrarAccountRef:q.registrarAccountRef}),issuedAt:r.issuedAt,expiresAt:r.expiresAt,token:ready?r.token:null,price:ready?Object.freeze({currency:'IDR',amountIdr:p.amountIdr,termYears:1}):null,status:ready?'ready':'expired',clockAnchorMs:anchor,monotonicAnchorMs:receivedAt,signatureVerified:false,purchaseAllowed:false,checkoutAvailable:false});
+ return Object.freeze({userId,siteId,domain:expectedDomain,reviewId:r.reviewId,quoteContext:Object.freeze({providerId:q.providerId,registrarAccountRef:q.registrarAccountRef}),issuedAt:r.issuedAt,expiresAt:r.expiresAt,currencyContext,token:ready?r.token:null,price:ready?Object.freeze({currency:'IDR',amountIdr:p.amountIdr,termYears:1}):null,status:ready?'ready':'expired',clockAnchorMs:anchor,monotonicAnchorMs:receivedAt,signatureVerified:false,purchaseAllowed:false,checkoutAvailable:false});
 }
 export function currentCustomerDomainReview(view,monotonicNow){
  const now=Number.isFinite(monotonicNow)&&monotonicNow>=view.monotonicAnchorMs?view.clockAnchorMs+monotonicNow-view.monotonicAnchorMs:NaN;
- if(view.status!=='ready'||!Number.isFinite(now)||Date.parse(view.expiresAt)<=now)return Object.freeze({...view,status:Number.isFinite(now)?'expired':'unverified',token:null,price:null});
- return view;
+ if(view.status!=='ready'||!Number.isFinite(now)||Date.parse(view.expiresAt)<=now)return Object.freeze({...view,status:Number.isFinite(now)?'expired':'unverified',token:null,price:null,displayNowMs:now,usdDisplayAvailable:false});
+ const usdDisplayAvailable=!!view.currencyContext&&Date.parse(view.currencyContext.observedAt)<=now&&Date.parse(view.currencyContext.expiresAt)>now;
+ return Object.freeze({...view,displayNowMs:now,usdDisplayAvailable});
 }
 export async function fetchCustomerDomainReview(name,{userId,siteId,token,signal,fetchImpl=globalThis.fetch,monotonic=()=>performance.now(),timeoutMs=28000}={}){
  name=domain(name);userId=id(userId);siteId=id(siteId);
