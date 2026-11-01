@@ -41,7 +41,7 @@ export async function domainSandboxStatusProbeResponse(request,env,{fetchImpl=gl
  const headers={'cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer','x-robots-tag':'noindex,nofollow','content-security-policy':"default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"};
  const reply=(status,code,extra={})=>new Response(JSON.stringify({code,...extra}),{status,headers:{...headers,'content-type':'application/json; charset=utf-8',...(status===405?{allow:u.pathname===API?'POST':'GET, HEAD'}:{})}});
  if(u.protocol!=='https:'||u.hostname!==HOST||u.port)return reply(404,'NOT_FOUND');
- if(u.search)return reply(400,'QUERY_NOT_ALLOWED');
+ if(u.search){const tracking=[...u.searchParams];const allowed=u.pathname===PAGE_PATH&&['GET','HEAD'].includes(request.method)&&u.search.length<=2048&&tracking.length>0&&tracking.length<=10&&tracking.every(([k,v])=>/^utm_[a-z0-9_]{1,40}$/i.test(k)&&v.length<=256);if(!allowed)return reply(400,'QUERY_NOT_ALLOWED');}
  if(u.pathname!==API){if(!['GET','HEAD'].includes(request.method))return reply(405,'METHOD_NOT_ALLOWED');return new Response(request.method==='HEAD'?null:u.pathname===PAGE_PATH?PAGE:PROBE_SCRIPT,{headers:{...headers,'content-type':u.pathname===PAGE_PATH?'text/html; charset=utf-8':'application/javascript; charset=utf-8'}});}
  if(request.method!=='POST')return reply(405,'METHOD_NOT_ALLOWED');
  if(request.headers.get('origin')!==u.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
