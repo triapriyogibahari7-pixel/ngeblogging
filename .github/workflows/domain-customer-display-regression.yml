@@ -1,0 +1,80 @@
+name: Domain customer display regression
+on:
+  push:
+    branches: [fix/domain-search-backend-complete-20261101]
+    paths:
+      - 'server/domain-*.mjs'
+      - 'server/drafts/domain-customer-purchase-intent*'
+      - 'shared/domain-currency-display.mjs'
+      - 'src/DomainCustomer*.jsx'
+      - 'src/lib/domain-customer-*.mjs'
+      - 'tests/domain-customer-*'
+      - '.github/workflows/domain-customer-display-regression.yml'
+      - 'package*.json'
+  pull_request:
+    paths:
+      - 'server/domain-*.mjs'
+      - 'server/drafts/domain-customer-purchase-intent*'
+      - 'shared/domain-currency-display.mjs'
+      - 'src/DomainCustomer*.jsx'
+      - 'src/lib/domain-customer-*.mjs'
+      - 'tests/domain-customer-*'
+      - '.github/workflows/domain-customer-display-regression.yml'
+      - 'package*.json'
+permissions:
+  contents: read
+concurrency:
+  group: domain-customer-display-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Offline currency, receipt and purchase intent contracts
+        run: node --test tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
+      - name: Build application without deployment
+        run: npm run build
+  postgres-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: offline-ci-only
+          POSTGRES_DB: domain_intent_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: domain_intent_ci
+      PGPASSWORD: offline-ci-only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated database client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Apply both drafts and test constraints and roles in disposable PostgreSQL
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/domain-customer-purchase-intent.postgres.sql
+      - name: Test concurrent idempotent reuse and receipt replay
+        run: bash tests/domain-customer-purchase-intent-concurrency.sh
