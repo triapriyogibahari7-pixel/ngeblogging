@@ -70,6 +70,11 @@
   },
   "previews": {
     "vars": {
+      "DOMAIN_ORDER_ENV": "sandbox",
+      "DOMAIN_QUOTE_PREVIEW_ENABLED": "false",
+      "DOMAIN_ORDER_PREVIEW_ENABLED": "false",
+      "DOMAIN_CHECKOUT_PREVIEW_ENABLED": "false",
+      "DOMAIN_PAYMENT_NOTIFICATION_PREVIEW_ENABLED": "false",
       "REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID": "91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3",
       "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
       "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
