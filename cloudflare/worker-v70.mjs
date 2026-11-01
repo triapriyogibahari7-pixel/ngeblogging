@@ -1,3 +1,4 @@
+import { domainProductionOrderStatusResponse } from "../server/domain-production-order-status-handler.mjs";
 import { domainProductionPaymentNotificationResponse } from "../server/domain-production-payment-notification-handler.mjs";
 import { isolatedSandboxPreviewResponse } from "./domain-isolated-sandbox-router.mjs";
 import { domainSandboxStatusProbeResponse } from "../server/domain-sandbox-status-probe.mjs";
@@ -61,6 +62,8 @@ async function serveStaticAsset(request, env) {
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const domainOrderStatus = await domainProductionOrderStatusResponse(request, env);
+    if (domainOrderStatus) return domainOrderStatus;
     const domainProductionPayment = await domainProductionPaymentNotificationResponse(request, env);
     if (domainProductionPayment) return domainProductionPayment;
     const isolatedSandbox = await isolatedSandboxPreviewResponse(request, env, {runtimeReady:false});
