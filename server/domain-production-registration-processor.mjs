@@ -1,0 +1,59 @@
+import {checkCloudflareRegistrar} from './cloudflare-registrar-check.mjs';
+const ACCOUNT='095e57b46e7ba7f6b188480d9e4e5fe7',API='https://api.cloudflare.com/client/v4',ROOT='/accounts/'+ACCOUNT+'/registrar';
+const ORDER=/^DOM-[a-f0-9]{40}$/,UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i,HASH=/^[a-f0-9]{64}$/;
+const fail=()=>{throw Error('REGISTRATION_UNVERIFIED');};
+const time=x=>typeof x==='string'&&Number.isFinite(Date.parse(x));
+export function registrationCanonical(value){if(Array.isArray(value))return '['+value.map(registrationCanonical).join(',')+']';if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+registrationCanonical(value[k])).join(',')+'}';return JSON.stringify(value);}
+export async function registrationDigest(value){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(registrationCanonical(value)));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('');}
+function micro(value){if(typeof value!=='string'||!/^(?:0|[1-9]\d{0,11})(?:\.\d{1,6})?$/.test(value))fail();const [a,b='']=value.split('.');return BigInt(a)*1000000n+BigInt(b.padEnd(6,'0'));}
+function link(value,path){if(typeof value!=='string')return false;try{const u=new URL(value,'https://api.cloudflare.com/');return u.origin==='https://api.cloudflare.com'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname.replace(/^\/client\/v4(?=\/)/,'')===path;}catch{return false;}}
+export function readRegistrationWorkflow(value,domain,startedAt,{now=Date.now()}={}){
+ const w=value?.result,ref=ROOT+'/registrations/'+domain;
+ if(value?.success!==true||!Array.isArray(value.errors)||value.errors.length||!w||!['pending','in_progress','blocked','action_required','succeeded','failed'].includes(w.state)||w.completed!==['succeeded','failed'].includes(w.state)||w.context?.domain_name!==domain||!time(w.created_at)||!time(w.updated_at)||Date.parse(w.updated_at)<Date.parse(w.created_at)||Date.parse(w.updated_at)>now+300000||!link(w.links?.self,ref+'/registration-status')||(w.links.resource!==undefined&&!link(w.links.resource,ref)))fail();
+ let registeredAt=null;
+ if(w.state==='succeeded'){const r=w.context.registration;if(!link(w.links.resource,ref)||r?.domain_name!==domain||r.status!=='active'||!time(r.created_at)||!time(r.expires_at)||Date.parse(r.expires_at)<=Date.parse(r.created_at)||!time(startedAt)||Date.parse(r.created_at)<Date.parse(startedAt)-300000||Date.parse(r.created_at)>now+300000||r.auto_renew!==false)fail();registeredAt=r.created_at;}
+ if(w.state==='failed'&&(typeof w.error?.code!=='string'||!w.error.code||typeof w.error.message!=='string'))fail();
+ if(w.state==='action_required'&&(typeof w.context.action!=='string'||!w.context.action))fail();
+ return {state:w.state,resourceRef:w.links.resource?ref:null,registeredAt,observedAt:w.updated_at};
+}
+function budget(ms){const c=new AbortController();let stop;const ended=new Promise((_,reject)=>{stop=()=>reject(Error('TIMEOUT'));c.signal.addEventListener('abort',stop,{once:true});});const timer=setTimeout(()=>c.abort(),ms);return {signal:c.signal,wait:p=>Promise.race([p,ended]),close:()=>{clearTimeout(timer);c.signal.removeEventListener('abort',stop);}};}
+async function json(stream,b){const reader=stream?.getReader();if(!reader)fail();try{let size=0;const chunks=[];for(;;){const x=await b.wait(reader.read());if(x.done)break;size+=x.value.length;if(size>65536)fail();chunks.push(x.value);}const bytes=new Uint8Array(size);let at=0;for(const x of chunks){bytes.set(x,at);at+=x.length;}return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}finally{reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}}
+// Internal backend task only. Wiring this export is not activation: the explicit runtime flag stays off until release approval.
+export async function processProductionDomainRegistration(env,orderId,{fetchImpl=globalThis.fetch,checkImpl=checkCloudflareRegistrar,clock=Date.now,reconcile=false}={}){
+ if(env?.DOMAIN_REGISTRATION_PRODUCTION_ENABLED!=='true'||env.DOMAIN_ORDER_ENV!=='production')return {ok:false,code:'DOMAIN_REGISTRATION_DISABLED'};
+ if(!ORDER.test(orderId)||env.SUPABASE_URL?.replace(/\/$/,'')!=='https://polvmlrhqoiflumibfqs.supabase.co'||typeof env.SUPABASE_SERVICE_ROLE_KEY!=='string'||!env.SUPABASE_SERVICE_ROLE_KEY||typeof env.CLOUDFLARE_REGISTRAR_API_TOKEN!=='string'||!env.CLOUDFLARE_REGISTRAR_API_TOKEN.trim()||typeof env.DOMAIN_REGISTRATION_TERMS_VERSION!=='string'||!env.DOMAIN_REGISTRATION_TERMS_VERSION)return {ok:false,code:'DOMAIN_REGISTRATION_CONFIGURATION_UNAVAILABLE'};
+ const b=budget(20000),base='https://polvmlrhqoiflumibfqs.supabase.co',db={apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY},cf={authorization:'Bearer '+env.CLOUDFLARE_REGISTRAR_API_TOKEN,accept:'application/json'};let job,attempt=null,stage='load';
+ const call=async(url,options,bound=b)=>{const r=await bound.wait(fetchImpl(url,{...options,redirect:'manual',signal:bound.signal}));return {status:r.status,value:await json(r.body,bound)};};
+ const loadJob=async(bound=b)=>{const u=new URL('/rest/v1/domain_registration_jobs',base);u.searchParams.set('select','*');u.searchParams.set('order_id','eq.'+orderId);u.searchParams.set('limit','1');const r=await call(u.href,{method:'GET',headers:db},bound);if(r.status!==200||!Array.isArray(r.value)||r.value.length!==1||r.value[0].order_id!==orderId)fail();return r.value[0];};
+ const rpc=async(name,args,bound=b)=>{const r=await call(base+'/rest/v1/rpc/'+name,{method:'POST',headers:{...db,'content-type':'application/json'},body:JSON.stringify(args)},bound);if(r.status!==200||r.value?.ok!==true||r.value.order_id!==orderId)fail();return r.value;};
+ const review=async()=>{let recorded=false;const clean=budget(4000);try{const latest=await loadJob(clean);if(latest.attempt_id!==null&&!UUID.test(latest.attempt_id))fail();const r=await rpc('domain_observe_production_registration',{p_order_id:orderId,p_attempt_id:latest.attempt_id,p_provider_state:'unknown',p_resource_ref:null,p_registered_at:null,p_observed_at:new Date(clock()).toISOString(),p_evidence_sha256:await registrationDigest({order_id:orderId,attempt_id:latest.attempt_id,stage,result:'unknown'})},clean);recorded=r.observation_recorded===true&&['review_required','conflict'].includes(r.state);}catch{}finally{clean.close();}return {ok:false,code:'DOMAIN_REGISTRATION_REVIEW_REQUIRED',orderId,reviewRecorded:recorded,newRegistrationAllowed:false};};
+ const observe=async result=>{const w=readRegistrationWorkflow(result,job.domain,job.post_started_at,{now:clock()});const r=await rpc('domain_observe_production_registration',{p_order_id:orderId,p_attempt_id:attempt,p_provider_state:w.state,p_resource_ref:w.resourceRef,p_registered_at:w.registeredAt,p_observed_at:w.observedAt,p_evidence_sha256:await registrationDigest(result)});if(r.environment!=='production'||r.observation_recorded!==true||r.registration_action_taken!==false||r.registration_confirmed!==(w.state==='succeeded')||!['processing','blocked','action_required','succeeded','failed','review_required','conflict'].includes(r.state))fail();return {ok:true,code:'DOMAIN_REGISTRATION_OBSERVED',orderId,state:r.state,registrationConfirmed:r.registration_confirmed,newRegistrationAllowed:false};};
+ try{
+  job=await loadJob();attempt=job.attempt_id;
+  if(typeof job.domain!=='string'||job.domain.length>253||job.domain.split('.').some(x=>!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(x))||job.domain.split('.').length!==2||!HASH.test(job.schema_sha256)||!HASH.test(job.payload_sha256)||job.terms_version!==env.DOMAIN_REGISTRATION_TERMS_VERSION||!time(job.consent_at)||job.payload?.domain_name!==job.domain||job.payload.years!==1||job.payload.auto_renew!==false||!job.payload.contacts?.registrant||micro(String(job.expected_cost_usd))<=0n)fail();
+  const u=new URL('/rest/v1/domain_purchase_orders',base);u.searchParams.set('select','order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,review_reason,paid_at,midtrans_transaction_id,registered_at,registrar_domain_ref');u.searchParams.set('order_id','eq.'+orderId);u.searchParams.set('environment','eq.production');u.searchParams.set('limit','1');const order=await call(u.href,{method:'GET',headers:db});const o=order.status===200&&Array.isArray(order.value)&&order.value.length===1?order.value[0]:null;
+  if(o?.order_id!==orderId||o.user_id!==job.user_id||o.quote_id!==job.quote_id||o.environment!=='production'||o.currency!=='IDR'||o.amount_idr!==job.amount_idr)fail();
+  if(o.payment_state!=='paid'){if(job.state==='prepared')return {ok:false,code:'VERIFIED_PAYMENT_REQUIRED',orderId,newRegistrationAllowed:false};fail();}
+  if(!time(o.paid_at)||typeof o.midtrans_transaction_id!=='string'||!o.midtrans_transaction_id)fail();
+  if(job.state==='succeeded'){if(o.registration_state!=='registered'||!time(o.registered_at)||!o.registrar_domain_ref)fail();return {ok:true,code:'DOMAIN_ALREADY_REGISTERED',orderId,registrationConfirmed:true,newRegistrationAllowed:false};}
+  const ref=ROOT+'/registrations/'+job.domain;
+  if(job.state!=='prepared'){
+   if(!UUID.test(attempt)||!time(job.post_started_at))return await review();
+   if(['failed','action_required','review_required','conflict'].includes(job.state)&&!reconcile)return {ok:false,code:'DOMAIN_REGISTRATION_REVIEW_REQUIRED',orderId,newRegistrationAllowed:false};
+   if(job.next_check_at&&Date.parse(job.next_check_at)>clock()&&!reconcile)return {ok:true,code:'DOMAIN_REGISTRATION_WAIT',orderId,newRegistrationAllowed:false};
+   stage='poll';const r=await call(API+ref+'/registration-status',{method:'GET',headers:cf});if(r.status!==200)fail();return await observe(r.value);
+  }
+  if(o.registration_state!=='not_started'||o.review_reason!==null)fail();
+  stage='preflight';
+  for(const path of [ref,ref+'/registration-status']){const r=await call(API+path,{method:'GET',headers:cf});if(r.status!==404||r.value?.success!==false||!Array.isArray(r.value.errors))fail();}
+  const schema=await call(API+ROOT+'/extensions/'+job.domain.split('.').at(-1),{method:'GET',headers:cf});const s=schema.value?.result?.registration_schema;if(schema.status!==200||schema.value?.success!==true||!s||Array.isArray(s)||typeof s!=='object'||await registrationDigest(s)!==job.schema_sha256)fail();
+  const check=await b.wait(checkImpl(env,{domain:job.domain},{fetchImpl,clock}));if(check?.status!=='checked'||check.domain!==job.domain||check.registrable!==true||check.tier!=='standard'||check.prices?.currency!=='USD'||check.prices.registration?.termYears!==1||!time(check.checkedAt)||micro(check.prices.registration.amount)<=0n||micro(check.prices.registration.amount)>micro(String(job.expected_cost_usd)))fail();
+  stage='claim';const claim=await rpc('domain_claim_production_registration',{p_order_id:orderId,p_schema_sha256:job.schema_sha256,p_live_cost_usd:check.prices.registration.amount,p_checked_at:check.checkedAt});
+  if(claim.new_registration_allowed===false)return {ok:true,code:'DOMAIN_REGISTRATION_RECONCILIATION_ONLY',orderId,newRegistrationAllowed:false};
+  if(claim.environment!=='production'||claim.action!=='create'||claim.new_registration_allowed!==true||!UUID.test(claim.attempt_id)||claim.domain!==job.domain||claim.payload_sha256!==job.payload_sha256||registrationCanonical(claim.payload)!==registrationCanonical(job.payload)||!time(claim.post_started_at))fail();
+  attempt=claim.attempt_id;job={...job,attempt_id:attempt,post_started_at:claim.post_started_at};stage='post';
+  const posted=await call(API+ROOT+'/registrations',{method:'POST',headers:{...cf,'content-type':'application/json',Prefer:'respond-async'},body:JSON.stringify(claim.payload)});
+  if(![201,202].includes(posted.status))fail();return await observe(posted.value);
+ }catch{return await review();}
+ finally{b.close();}
+}
