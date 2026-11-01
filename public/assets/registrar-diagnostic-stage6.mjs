@@ -12,7 +12,8 @@ const input=document.createElement('input');input.type='text';input.maxLength=25
 const check=document.createElement('button');check.type='button';check.textContent='Periksa ketersediaan dan harga';
 const note=document.createElement('p');note.textContent='Check khusus admin pada preview. Harga transfer dan pajak belum diketahui. Tidak membeli, mereservasi, atau mengubah DNS.';
 const readiness=document.createElement('button');readiness.type='button';readiness.textContent='Periksa kesiapan checkout sandbox';
-box.append(label,check,note,readiness);output.before(box);buttons.push(check,readiness);
+const referenceFx=document.createElement('button');referenceFx.type='button';referenceFx.textContent='Muat kurs referensi USD–IDR';
+box.append(label,check,note,readiness,referenceFx);output.before(box);buttons.push(check,readiness,referenceFx);
 let readinessBearer=null;
 function token(){
  try {
@@ -23,7 +24,7 @@ function token(){
   return typeof session.access_token==='string' && /^[^\s]{1,8192}$/.test(session.access_token)?session.access_token:null;
  } catch {return null;}
 }
-async function run(authenticated,isCheck=false,isReadiness=false){
+async function run(authenticated,isCheck=false,isReadiness=false,isFx=false){
  readinessBearer=null;
  if(location.protocol!=='https:' || location.hostname!==host){output.textContent='Gunakan hostname preview resmi tahap 6.';return;}
  const bearer=authenticated?token():null;
@@ -38,9 +39,18 @@ async function run(authenticated,isCheck=false,isReadiness=false){
  const controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),20000);
  try {
-  const path=isReadiness?'/api/admin/registrar/domain-sandbox-readiness':isCheck?'/api/admin/registrar/check/'+encodeURIComponent(domain):'/api/admin/registrar/diagnostic';
+  const path=isFx?'/api/admin/registrar/domain-reference-fx':isReadiness?'/api/admin/registrar/domain-sandbox-readiness':isCheck?'/api/admin/registrar/check/'+encodeURIComponent(domain):'/api/admin/registrar/diagnostic';
   const response=await fetch(path,{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',headers:bearer?{Authorization:'Bearer '+bearer}:{},signal:controller.signal});
   const data=await response.json();
+  if(isFx){
+   if(token()!==bearer){output.textContent='Sesi berubah. Hasil kurs disembunyikan.';return;}
+   if(response.status===401||response.status===403){output.textContent='Login kembali dengan akun admin preview untuk membaca kurs referensi.';return;}
+   const fetched=Date.parse(data?.retrievedAt),refresh=Date.parse(data?.refreshAfter),rateDate=Date.parse(data?.rateDate+'T00:00:00Z');
+   if(response.status!==200||data?.code!=='DOMAIN_REFERENCE_FX'||data.status!=='reference_available'||data.referenceOnly!==true||data.costBasisVerified!==false||data.usableForCustomerQuote!==false||data.purchaseAllowed!==false||data.base!=='USD'||data.quote!=='IDR'||typeof data.rate!=='string'||!/^(?:0|[1-9]\d{0,6})(?:\.\d{1,6})?$/.test(data.rate)||Number(data.rate)<=0||Number(data.rate)>1000000||!Number.isFinite(fetched)||fetched>Date.now()+30000||Date.now()-fetched>300000||refresh-fetched!==300000||typeof data.rateDate!=='string'||!/^\d{4}-\d\d-\d\d$/.test(data.rateDate)||!Number.isFinite(rateDate)||new Date(rateDate).toISOString().slice(0,10)!==data.rateDate||!Number.isInteger(data.sourceDateAgeDays)||data.sourceDateAgeDays<0||data.sourceDateAgeDays>7||(Date.parse(new Date(fetched).toISOString().slice(0,10)+'T00:00:00Z')-rateDate)/86400000!==data.sourceDateAgeDays)throw Error('UNVERIFIED_FX_REFERENCE');
+   readinessBearer=bearer;
+   output.textContent='Kurs referensi saja: 1 USD = '+data.rate+' IDR\nTanggal sumber: '+data.rateDate+' (selisih '+data.sourceDateAgeDays+' hari kalender dari pengambilan)\nDiambil pada: '+data.retrievedAt+'\nSumber: ECB melalui Frankfurter\n\nBukan kurs PayPal atau biaya pendanaan Cloudflare. Bukan quote pelanggan, tidak menjamin margin, dan tidak mengaktifkan pembayaran.';
+   return;
+  }
   if(isReadiness){
    if(token()!==bearer){output.textContent='Sesi berubah. Hasil pemeriksaan disembunyikan.';return;}
    const labels={quote:'Quote sandbox',order:'Pesanan sandbox',checkout:'Checkout sandbox',notification:'Notifikasi domain',environment:'Environment sandbox',sandbox_key:'Kunci sandbox khusus domain',service_role:'Akses backend database',pricing_snapshot:'Snapshot biaya dan kurs'};
@@ -71,7 +81,7 @@ async function run(authenticated,isCheck=false,isReadiness=false){
   }
   safe.purchaseAllowed=false;
   output.textContent=JSON.stringify(safe,null,2);
- }catch{output.textContent='Respons tidak terbaca atau koneksi timeout. Belum ada hasil pemeriksaan yang terkonfirmasi.';}
+ }catch{output.textContent=isFx?'Kurs referensi belum terkonfirmasi atau tidak tersedia. Tidak menggunakan kurs cadangan.':'Respons tidak terbaca atau koneksi timeout. Belum ada hasil pemeriksaan yang terkonfirmasi.';}
  finally{clearTimeout(timer);buttons.forEach(b=>b.disabled=false);input.disabled=false;}
 }
 buttons[0].addEventListener('click',()=>run(false));
@@ -80,3 +90,4 @@ check.addEventListener('click',()=>run(true,true));
 readiness.addEventListener('click',()=>run(true,false,true));
 function hideOldReadiness(){if(readinessBearer&&token()!==readinessBearer){readinessBearer=null;output.textContent='Sesi berubah. Hasil kesiapan sebelumnya disembunyikan.';}}
 window.addEventListener('focus',hideOldReadiness);window.addEventListener('storage',hideOldReadiness);
+referenceFx.addEventListener('click',()=>run(true,false,false,true));
