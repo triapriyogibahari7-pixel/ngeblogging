@@ -11,7 +11,9 @@ const label=document.createElement('label');label.textContent='Domain yang ingin
 const input=document.createElement('input');input.type='text';input.maxLength=253;input.placeholder='nama-domain.com';input.autocomplete='off';input.spellcheck=false;label.append(input);
 const check=document.createElement('button');check.type='button';check.textContent='Periksa ketersediaan dan harga';
 const note=document.createElement('p');note.textContent='Check khusus admin pada preview. Harga transfer dan pajak belum diketahui. Tidak membeli, mereservasi, atau mengubah DNS.';
-box.append(label,check,note);output.before(box);buttons.push(check);
+const readiness=document.createElement('button');readiness.type='button';readiness.textContent='Periksa kesiapan checkout sandbox';
+box.append(label,check,note,readiness);output.before(box);buttons.push(check,readiness);
+let readinessBearer=null;
 function token(){
  try {
   const value=localStorage.getItem('sb-polvmlrhqoiflumibfqs-auth-token');
@@ -21,7 +23,8 @@ function token(){
   return typeof session.access_token==='string' && /^[^\s]{1,8192}$/.test(session.access_token)?session.access_token:null;
  } catch {return null;}
 }
-async function run(authenticated,isCheck=false){
+async function run(authenticated,isCheck=false,isReadiness=false){
+ readinessBearer=null;
  if(location.protocol!=='https:' || location.hostname!==host){output.textContent='Gunakan hostname preview resmi tahap 6.';return;}
  const bearer=authenticated?token():null;
  if(authenticated&&!bearer){output.textContent='Sesi belum tersedia atau kedaluwarsa di preview ini. Login lewat tautan di atas, lalu kembali. Jangan salin token ke chat.';return;}
@@ -35,9 +38,18 @@ async function run(authenticated,isCheck=false){
  const controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),20000);
  try {
-  const path=isCheck?'/api/admin/registrar/check/'+encodeURIComponent(domain):'/api/admin/registrar/diagnostic';
+  const path=isReadiness?'/api/admin/registrar/domain-sandbox-readiness':isCheck?'/api/admin/registrar/check/'+encodeURIComponent(domain):'/api/admin/registrar/diagnostic';
   const response=await fetch(path,{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',headers:bearer?{Authorization:'Bearer '+bearer}:{},signal:controller.signal});
   const data=await response.json();
+  if(isReadiness){
+   if(token()!==bearer){output.textContent='Sesi berubah. Hasil pemeriksaan disembunyikan.';return;}
+   const labels={quote:'Quote sandbox',order:'Pesanan sandbox',checkout:'Checkout sandbox',notification:'Notifikasi domain',environment:'Environment sandbox',sandbox_key:'Kunci sandbox khusus domain',service_role:'Akses backend database',pricing_snapshot:'Snapshot biaya dan kurs'};
+   const states={enabled:'aktif',disabled:'nonaktif',missing:'belum dipasang',invalid:'format/konfigurasi tidak sesuai',sandbox:'sandbox',configured:'terpasang; belum membuktikan validitas layanan atau biaya'};
+   if(response.status!==200||data?.code!=='DOMAIN_SANDBOX_READINESS'||data.scope!=='preview_runtime_configuration_only'||data.readyForPayments!==false||data.purchaseAllowed!==false||data.checkoutCreated!==false||data.registrationStarted!==false||!Array.isArray(data.checks)||data.checks.length!==8||new Set(data.checks.map(c=>c?.id)).size!==8||data.checks.some(c=>!Object.hasOwn(labels,c?.id)||!Object.hasOwn(states,c?.status)))throw Error('UNVERIFIED_READINESS');
+   readinessBearer=bearer;
+   output.textContent='Kesiapan konfigurasi pada runtime preview:\n'+data.checks.map(c=>'- '+labels[c.id]+': '+states[c.status]).join('\n')+'\n\nIni hanya pemeriksaan konfigurasi. Biaya/kurs, kredensial Midtrans, akses RPC, dan alur pembayaran sandbox tetap perlu diverifikasi. Tidak ada transaksi atau perubahan konfigurasi.';
+   return;
+  }
   const safe={httpStatus:response.status,code:codes.has(data?.code)?data.code:'UNEXPECTED_RESPONSE',authenticatedAttempt:authenticated};
   if(statuses.has(data?.status))safe.status=data.status;
   if(!isCheck){
@@ -65,3 +77,6 @@ async function run(authenticated,isCheck=false){
 buttons[0].addEventListener('click',()=>run(false));
 buttons[1].addEventListener('click',()=>run(true));
 check.addEventListener('click',()=>run(true,true));
+readiness.addEventListener('click',()=>run(true,false,true));
+function hideOldReadiness(){if(readinessBearer&&token()!==readinessBearer){readinessBearer=null;output.textContent='Sesi berubah. Hasil kesiapan sebelumnya disembunyikan.';}}
+window.addEventListener('focus',hideOldReadiness);window.addEventListener('storage',hideOldReadiness);

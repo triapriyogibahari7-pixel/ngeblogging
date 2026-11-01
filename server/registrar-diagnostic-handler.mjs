@@ -1,3 +1,4 @@
+import { domainSandboxReadiness } from './domain-sandbox-readiness.mjs';
 import { diagnoseRegistrarAccess } from './registrar-token-diagnostic.mjs';
 import { checkCloudflareRegistrar } from './cloudflare-registrar-check.mjs';
 import { searchCloudflareRegistrar, normalizeRegistrarSearchQuery } from './cloudflare-registrar-search.mjs';
@@ -17,15 +18,15 @@ async function emptyBody(request) {
 }
 export async function registrarDiagnosticResponse(request, env) {
  const url = new URL(request.url);
- const isCheck=url.pathname.startsWith(CHECK),isSearch=url.pathname.startsWith(SEARCH);
- if(url.pathname !== '/api/admin/registrar/diagnostic' && !isCheck && !isSearch) return null;
+ const isCheck=url.pathname.startsWith(CHECK),isSearch=url.pathname.startsWith(SEARCH),isReadiness=url.pathname==='/api/admin/registrar/domain-sandbox-readiness';
+ if(url.pathname !== '/api/admin/registrar/diagnostic' && !isCheck && !isSearch && !isReadiness) return null;
  const reply = (status, code, extra = {}) => new Response(JSON.stringify({code,...extra}), {status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}});
  const unavailable = (reason, upstreamStatus, error) => {
   const errorType=error instanceof TypeError?'type_error':error instanceof RangeError?'range_error':error instanceof Error?'error':'unknown';
   console.warn(JSON.stringify({event:'registrar_auth_unavailable',diagnosticVersion:2,reason,...(Number.isInteger(upstreamStatus)?{upstreamStatus}:{}),...(error?{errorType}:{})}));
   return reply(503,'AUTH_UNAVAILABLE');
  };
- if(!['ngeblogging.com','www.ngeblogging.com','ngeblogging.triapriyogibahari7.workers.dev',PREVIEW].includes(url.hostname) || url.protocol !== 'https:' || ((isCheck||isSearch) && url.hostname!==PREVIEW)) return reply(404,'NOT_FOUND');
+ if(!['ngeblogging.com','www.ngeblogging.com','ngeblogging.triapriyogibahari7.workers.dev',PREVIEW].includes(url.hostname) || url.protocol !== 'https:' || ((isCheck||isSearch||isReadiness) && url.hostname!==PREVIEW)) return reply(404,'NOT_FOUND');
  if(request.method !== 'POST') return reply(405,'METHOD_NOT_ALLOWED');
  const admin = env?.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID;
  if(typeof admin !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(admin)) return reply(503,'DIAGNOSTIC_DISABLED');
@@ -55,6 +56,7 @@ export async function registrarDiagnosticResponse(request, env) {
   if(user?.id !== admin) return reply(403,'ADMIN_REQUIRED');
  } catch(error) {return unavailable(controller.signal.aborted?'verification_timeout':phase==='decode'?'upstream_json_invalid':'verification_fetch_failed',undefined,error);}
  finally {clearTimeout(timer);}
+ if(isReadiness)return reply(200,'DOMAIN_SANDBOX_READINESS',domainSandboxReadiness(env));
  if(isSearch){
   let query;
   try{const raw=url.pathname.slice(SEARCH.length);if(raw.length>1200)throw new Error();query=normalizeRegistrarSearchQuery(decodeURIComponent(raw));}catch{return reply(400,'INVALID_SEARCH_QUERY');}
