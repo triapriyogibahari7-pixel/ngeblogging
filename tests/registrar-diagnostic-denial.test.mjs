@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { registrarDiagnosticResponse as handle } from '../server/registrar-diagnostic-handler.mjs';
+const origin='https://ngeblogging.com';
+const path='/api/admin/registrar/diagnostic';
+const env={REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID:'11111111-1111-4111-8111-111111111111'};
+test('unrelated routes pass through',async()=>{assert.equal(await handle(new Request(origin+'/api/health'),{}),null);});
+test('wrong host rejected',async()=>{assert.equal((await handle(new Request('https://example.org'+path,{method:'POST'}),env)).status,404);});
+test('GET cannot invoke diagnostic',async()=>{assert.equal((await handle(new Request(origin+path),env)).status,405);});
+test('missing admin disables diagnostic',async()=>{const r=await handle(new Request(origin+path,{method:'POST'}),{});assert.equal(r.status,503);assert.equal((await r.json()).code,'DIAGNOSTIC_DISABLED');});
+test('cross origin rejected',async()=>{assert.equal((await handle(new Request(origin+path,{method:'POST',headers:{origin:'https://example.org'}}),env)).status,403);});
+test('anonymous rejected before network',async()=>{assert.equal((await handle(new Request(origin+path,{method:'POST',headers:{origin}}),env)).status,401);});
+test('query rejected',async()=>{assert.equal((await handle(new Request(origin+path+'?token=forbidden',{method:'POST',headers:{origin}}),env)).status,400);});
+test('request body rejected',async()=>{assert.equal((await handle(new Request(origin+path,{method:'POST',headers:{origin},body:'{}'}),env)).status,400);});

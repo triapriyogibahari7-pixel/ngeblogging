@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ngeblogging-stage5-isolated",
+  "main": "./cloudflare/worker-domain-stage5-isolated.mjs",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": true,
+  "routes": [],
+  "vars": {
+    "STAGE5_ENVIRONMENT": "isolated-test",
+    "STAGE5_TRANSFER_ENABLED": "false"
+  }
+}

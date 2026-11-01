@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "eb499b45ed27467a32295c31bf4c0dc9148d3d4c",
+  "scope": "Isolated candidate module executed by Node.js with injected backend responses, in-memory cache and simulated clock; not the existing publicRule handler",
+  "passed": 16,
+  "failed": 0,
+  "outcomes": ["found", "missing", "unavailable"],
+  "missingMeaning": "Successful empty query result in the caller's visibility context, not proof of global nonexistence",
+  "negativeControl": {"mutation": "Treat HTTP failure as missing and negatively cache it", "exit": 1, "testsRejectedMutation": 2},
+  "verifiedLocally": ["Positive TTL 30 seconds and negative TTL 15 seconds", "HTTP, transport and payload failures are not negatively cached", "Immediate retry after simulated backend recovery", "Fresh mode bypasses local cache reads and writes", "Fresh denied or empty response does not return stale cached redirect", "Cache I/O failure does not invent backend absence", "Hostname validation, namespace isolation and rule field whitelist"],
+  "freshLimit": "Does not delete or update existing entries; a later non-fresh lookup may still return an older cached rule. The no-store option is a hint passed to the injected adapter, not proof of upstream freshness.",
+  "activeHandlerChanged": false,
+  "productionConnection": false,
+  "purgePerformed": false,
+  "limits": ["No actual Supabase/PostgREST adapter or RLS verification", "No native Worker or Cloudflare Cache API execution", "No browser, provider, DNS, TLS or alias tenant-identity verification", "No global invalidation, timeout or concurrency guarantee", "No merge, deployment, environment flag activation or production mutation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

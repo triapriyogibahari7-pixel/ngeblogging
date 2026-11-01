@@ -1,10 +1,14 @@
 name: Domain transfer V2 PostgreSQL smoke
 on:
   push:
-    branches: [fix/domain-react-api-timeout-diagnostics]
+    branches: [fix/domain-react-api-timeout-diagnostics, feature/domain-stages5-10-integration-20261030]
     paths:
       - 'docs/drafts/domain-*.sql'
       - 'tests/sql/domain-transfer-v2-smoke.sql'
+      - 'tests/browser/domain-transfer-catalog-matrix.html'
+      - 'scripts/domain-stage5-native-acceptance.mjs'
+      - 'scripts/stage5-build-diagnostics.mjs'
+      - 'scripts/stage5-cloudflare-native-build.mjs'
       - '.github/workflows/domain-transfer-v2-postgres.yml'
   workflow_dispatch:
 permissions:
@@ -27,13 +31,28 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-      - name: Execute draft SQL against disposable representative schema
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install isolated native database driver
+        run: npm install --prefix "$RUNNER_TEMP/stage5-native-deps" --no-package-lock --ignore-scripts pg@8.13.1
+      - name: Execute catalog matrix and native concurrent-session acceptance
         env:
-          PGHOST: localhost
+          NODE_PATH: ${{ runner.temp }}/stage5-native-deps/node_modules
+          STAGE5_DISPOSABLE_NATIVE: 'true'
+          PGHOST: '127.0.0.1'
           PGPORT: '5432'
           PGUSER: postgres
           PGDATABASE: domain_transfer_test
           PGPASSWORD: isolated-ci-only
-        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/domain-transfer-v2-smoke.sql
+        run: node scripts/domain-stage5-native-acceptance.mjs
+      - name: Preserve native acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage5-native-postgres-evidence
+          path: output/stage5-native/result.json
+          if-no-files-found: warn
+          retention-days: 7

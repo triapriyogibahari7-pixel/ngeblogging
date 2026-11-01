@@ -1,0 +1,44 @@
+.sv124-catalog-launch{display:inline-flex;align-items:center;margin:12px 0;padding:7px 0;border:0;background:transparent;color:#2563eb;font:inherit;font-weight:700;cursor:pointer;text-align:start}
+/* Catalog only: mobile media-upload frame and desktop Widget Studio 26 geometry. */
+html body dialog.sv124-domain-catalog{position:fixed!important;inset:auto!important;top:var(--dc-viewport-top,0px)!important;left:var(--dc-sidebar-left,0px)!important;width:calc(100vw - var(--dc-sidebar-left,0px))!important;max-width:none!important;height:var(--dc-viewport-height,100dvh)!important;max-height:none!important;min-width:0!important;min-height:0!important;margin:0!important;padding:12px!important;box-sizing:border-box!important;border:0!important;background:transparent!important;overflow:hidden!important;color:#17253c;font:inherit;transform:none!important;translate:none!important;animation:none!important;transition:none!important;writing-mode:horizontal-tb}
+html body dialog.sv124-domain-catalog[open]{display:grid!important;place-items:center!important}
+html body dialog.sv124-domain-catalog::backdrop{background:#10234499;backdrop-filter:blur(4px)}
+.sv124-domain-catalog .dc-frame,.sv124-domain-catalog .dc-frame *{box-sizing:border-box}
+html body .sv124-domain-catalog>.dc-frame{position:relative!important;inset:auto!important;display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;width:min(1240px,100%)!important;height:min(760px,100%)!important;max-width:100%!important;max-height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:1px solid #dfe5ed!important;border-radius:18px!important;background:#fff!important;box-shadow:0 24px 90px #10234440;overflow:hidden!important;transform:none!important}
+html body .sv124-domain-catalog .dc-frame>.dc-header{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;align-items:center!important;gap:12px!important;min-height:82px!important;height:auto!important;width:100%!important;min-width:0!important;margin:0!important;padding:13px 16px!important;border-bottom:1px solid #e7edf6;background:linear-gradient(120deg,#f0f5ff,#fff);transform:none!important;z-index:1}
+.sv124-domain-catalog .dc-header>div{min-width:0;max-width:100%}
+html body .sv124-domain-catalog .dc-header h2{position:static!important;margin:0!important;max-width:100%;font:600 clamp(21px,3vw,31px)/1.15 'Playfair Display',Georgia,serif;letter-spacing:-.02em;white-space:normal!important;overflow-wrap:anywhere;transform:none!important}
+.sv124-domain-catalog .dc-eyebrow{margin:0 0 5px;font-size:11px;font-weight:800;line-height:1.25;letter-spacing:.08em;color:#2563eb;overflow-wrap:anywhere}
+html body .sv124-domain-catalog .dc-close{position:static!important;inset:auto!important;display:grid!important;place-items:center!important;width:44px!important;min-width:44px!important;max-width:44px!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0!important;transform:none!important;touch-action:manipulation}
+.sv124-domain-catalog .dc-close svg{width:20px;height:20px;pointer-events:none}
+html body .sv124-domain-catalog .dc-frame>.dc-content{position:relative!important;inset:auto!important;width:100%!important;min-width:0!important;min-height:0!important;max-width:100%!important;margin:0!important;padding:14px!important;overflow:auto!important;overscroll-behavior:contain;scrollbar-gutter:stable;transform:none!important}
+.sv124-domain-catalog .dc-editorial{margin:0 0 14px;color:#61718a;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.sv124-domain-catalog .dc-label{display:grid;gap:8px;min-width:0;font-weight:600}
+.sv124-domain-catalog .dc-search{width:100%;max-width:100%;min-width:0;min-height:44px;padding:12px;border:1px solid #cad8ec;border-radius:12px;background:#fff;color:#17253c;font:inherit;font-size:16px}
+.sv124-domain-catalog .dc-categories{display:flex;flex-wrap:wrap;gap:8px;min-width:0;max-width:100%;margin:16px 0}
+.sv124-domain-catalog :is(.dc-close,.dc-categories button,.dc-pages button,.dc-back){min-height:44px;padding:8px 12px;border:1px solid #d6e1f0;border-radius:10px;background:#fff;color:#244569;font:inherit;cursor:pointer}
+.sv124-domain-catalog .dc-categories button{max-width:100%;overflow-wrap:anywhere}
+.sv124-domain-catalog .dc-categories [aria-pressed=true]{background:#eaf1ff;border-color:#2563eb;color:#174bb9}
+.sv124-domain-catalog .dc-notice{padding:12px 14px;border-radius:12px;background:#f4f7fc;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.sv124-domain-catalog .dc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;min-width:0}
+.sv124-domain-catalog .dc-card{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid #e0e7f2;border-radius:16px;background:#fff;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.sv124-domain-catalog .dc-card[data-featured=true]{border-color:#7da6ff;background:linear-gradient(150deg,#f0f5ff,#fff)}
+.sv124-domain-catalog .dc-badge{align-self:flex-start;max-width:100%;padding:5px 9px;border-radius:99px;background:#edf3ff;color:#2458ad;font-size:12px}
+.sv124-domain-catalog h3{margin:4px 0;font-size:30px;overflow-wrap:anywhere}
+.sv124-domain-catalog .dc-card p{margin:0;line-height:1.6}.sv124-domain-catalog .dc-card small{color:#61718a}.sv124-domain-catalog .dc-price{font-weight:700}
+.sv124-domain-catalog .sv124-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0;max-width:100%;min-height:44px;padding:10px 14px;border:1px solid #2563eb;border-radius:10px;background:#2563eb;color:#fff;font:inherit;font-weight:700;white-space:normal;overflow-wrap:anywhere;cursor:pointer}.sv124-domain-catalog .sv124-primary:hover:not(:disabled){background:#1d4ed8}.sv124-domain-catalog .dc-detail p{line-height:1.6}
+.sv124-domain-catalog .dc-card button{margin-top:auto;min-width:0;max-width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere}
+html body .sv124-domain-catalog .dc-frame>.dc-pages{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;width:100%;min-width:0;margin:0!important;padding:10px 16px;border-top:1px solid #e7edf6;background:#fff;transform:none!important}
+.sv124-domain-catalog .dc-pages button{min-width:0;white-space:normal;overflow-wrap:anywhere;font-size:13px;line-height:1.35}.sv124-domain-catalog .dc-pages span{text-align:center;white-space:nowrap}
+.sv124-domain-catalog .dc-detail{padding:18px;border:1px solid #dce5f2;border-radius:16px;min-width:0;overflow-wrap:anywhere}.sv124-domain-catalog .dc-detail dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:16px 0}.sv124-domain-catalog .dc-detail dd{margin:0;text-align:end;overflow-wrap:anywhere}
+.sv124-domain-catalog :disabled{opacity:.55;cursor:not-allowed}.sv124-domain-catalog :focus-visible,.sv124-catalog-launch:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+@media(max-width:1100px){.sv124-domain-catalog .dc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+html body dialog.sv124-domain-catalog[data-compact=true]{left:0!important;width:100vw!important;padding:max(6px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))!important}
+html body .sv124-domain-catalog[data-compact=true]>.dc-frame{width:100%!important;height:100%!important;border-radius:12px!important}
+html body .sv124-domain-catalog[data-compact=true] .dc-frame>.dc-header{min-height:68px!important;gap:8px!important;padding:10px 12px!important}
+.sv124-domain-catalog[data-compact=true] .dc-header h2{font-size:clamp(22px,6vw,27px)}
+html body .sv124-domain-catalog[data-compact=true] .dc-frame>.dc-content{padding:10px!important}
+.sv124-domain-catalog[data-compact=true] .dc-grid{grid-template-columns:minmax(0,1fr)}
+.sv124-domain-catalog[data-compact=true] .dc-categories{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-inline:contain;padding-bottom:5px}.sv124-domain-catalog[data-compact=true] .dc-categories button{flex:0 0 auto;white-space:nowrap}
+.sv124-domain-catalog[data-compact=true] .dc-detail dl{grid-template-columns:minmax(0,1fr)}.sv124-domain-catalog[data-compact=true] .dc-detail dd{text-align:start}
+html body .sv124-domain-catalog[data-compact=true] .dc-frame>.dc-pages{padding:10px 12px}

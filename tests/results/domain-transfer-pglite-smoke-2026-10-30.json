@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "sourceCommit": "df84652fb2665bcbca6d9e51cd46d9120df696cc",
+  "engine": "PostgreSQL 18.6, PGlite 0.5.13, wasm32",
+  "scope": "Executed SQL on an in-memory PostgreSQL engine with representative schema and synthetic fixtures; not production PostgreSQL 17 or authenticated application E2E",
+  "productionConnection": false,
+  "newSupabaseResource": false,
+  "passed": true,
+  "stateChecksPassed": 11,
+  "baseline": {"domainRows": 3, "redirectRows": 1, "customDomainSite": "source", "sourceMapping": "example.test", "targetMapping": "target.ngeblogging.com"},
+  "beforeRollback": {"role": "authenticated", "customDomainSite": "target", "redirectSite": "target", "sourceMapping": "source.ngeblogging.com", "targetMapping": "example.test"},
+  "afterRollback": {"domainRows": 3, "redirectRows": 1, "customDomainSite": "source", "redirectSite": "source", "sourceMapping": "example.test", "targetMapping": "target.ngeblogging.com"},
+  "databaseClosed": true,
+  "includedSqlModified": false,
+  "harnessAdaptations": ["Expanded psql includes", "Adjusted fixture database-name guard", "Separated setup, migrations, fixture seed and test transaction batches", "Added read-only state observations"],
+  "initialHarnessIssues": ["NOTICE callback was not observed; completion is now checked by execution and state queries", "Single-batch execution rolled back fixture seed; fixed by preserving psql commit boundaries"],
+  "stillUnverified": ["PostgreSQL 17 compatibility", "Full production schema and trigger set", "Concurrent sessions and lock performance", "Direct table-write integrity guards", "Provider and hostname cache reconciliation", "React rendering and authenticated end-to-end transfer"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const config=JSON.parse(readFileSync(new URL('../wrangler.jsonc',import.meta.url),'utf8'));
+const vars=config.previews.vars;
+const flags=['DOMAIN_QUOTE_PREVIEW_ENABLED','DOMAIN_ORDER_PREVIEW_ENABLED','DOMAIN_CHECKOUT_PREVIEW_ENABLED','DOMAIN_PAYMENT_NOTIFICATION_PREVIEW_ENABLED'];
+test('preview domain environment is explicitly sandbox',()=>assert.equal(vars.DOMAIN_ORDER_ENV,'sandbox'));
+for(const flag of flags)test(flag+' remains explicitly disabled in preview',()=>{assert.equal(vars[flag],'false');assert.equal(Object.hasOwn(config.vars,flag),false);});
+test('sandbox domain environment is not added to production vars',()=>assert.equal(Object.hasOwn(config.vars,'DOMAIN_ORDER_ENV'),false));
+for(const name of ['DOMAIN_MIDTRANS_SANDBOX_SERVER_KEY','SUPABASE_SERVICE_ROLE_KEY','DOMAIN_PRICING_SNAPSHOT_JSON'])test(name+' is never provisioned by this plaintext config',()=>{assert.equal(Object.hasOwn(vars,name),false);assert.equal(Object.hasOwn(config.vars,name),false);});
+test('existing preview admin and database public bindings retained',()=>{assert.equal(vars.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID,'91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3');assert.equal(vars.SUPABASE_URL,'https://polvmlrhqoiflumibfqs.supabase.co');assert.equal(typeof vars.SUPABASE_PUBLISHABLE_KEY,'string');});
+test('existing Nara production declarations retained',()=>{assert.equal(config.vars.NARA_PRODUCTION_READY,'true');assert.equal(config.vars.NARA_PRODUCTION_PROBE,'passed');assert.equal(config.vars.NARA_RUNTIME,'cloudflare-worker-production-v160');});
+test('worker entry, asset routing, and keep_vars retained',()=>{assert.equal(config.main,'./cloudflare/worker-v70.mjs');assert.equal(config.keep_vars,true);assert.equal(config.assets.binding,'ASSETS');assert.equal(config.assets.run_worker_first,true);assert.equal(config.routes.length,3);});

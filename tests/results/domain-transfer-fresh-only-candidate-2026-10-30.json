@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-30",
+  "recordType": "Checkpoint summary of the observed local run; saving does not constitute a new execution",
+  "sourceCommit": "0d384fb51ff2cc65fcadaaa5b0fdcb192e136116",
+  "scope": "Offline Node fixture tests of the fresh-only wrapper around exact Git-blob-verified candidate modules, not active handler integration",
+  "runner": "tests/fresh-only-resolver.test.mjs",
+  "candidate": "server/drafts/domain-transfer-fresh-only-test-resolver.mjs",
+  "verifiedDependencyBlobs": {
+    "server/drafts/domain-transfer-redirect-lookup.mjs": "9e75e80810d102c2a29658565e44dca5099601e2",
+    "server/drafts/domain-transfer-redirect-pipeline.mjs": "91f15c34b50c5fbbe5027d3df89450aba172bbde"
+  },
+  "verificationMethod": "Before the observed run, reconstructed full module bytes were hashed as Git blob objects and matched both tool-reported blob IDs. The runner itself does not repeat that hash check.",
+  "passedCount": 16,
+  "failedCount": 0,
+  "passed": true,
+  "nodeExit": 0,
+  "coverage": [
+    "Explicit isolated-test opt-in and rejection of nonfixture origins",
+    "Empty visibility response and available rule bypass old cache regardless of its contents",
+    "HTTP failure, malformed JSON and transport failure return 503 without poisoning the next request",
+    "Updated target and fixture disable/remove are read on the next request",
+    "Cooperative stalled-body abort and recovery; HEAD error has no body",
+    "HTTP target, same-host target and duplicate rows fail closed",
+    "Caller fresh=false cannot override the wrapper",
+    "Excluded method/platform host bypass; temporary redirect and target query preservation"
+  ],
+  "limits": [
+    "Cache get/set throw if reached, proving zero cache access rather than actual warm-cache migration or purge",
+    "Fixture row/visibility changes, not real transfer SQL, RLS or Supabase Auth/PostgREST",
+    "Only this wrapper forces fresh; legacy and direct nonfresh candidate paths remain unchanged",
+    "No upstream freshness, native Worker/Cache API, concurrency, hard timeout, provider/DNS/TLS or tenant-identity proof",
+    "No active routing or deployed integration is tested"
+  ],
+  "externalNetworkCalls": 0,
+  "productionConnection": false,
+  "activeHandlerChanged": false,
+  "cachePurged": false,
+  "newSupabaseResource": false,
+  "stage4": "OPEN",
+  "stage5": "OPEN",
+  "releaseHold": "No merge to main or production activation before stage 10 completion, verification and separate owner release approval. This record does not alter CI or branch protection."
+}

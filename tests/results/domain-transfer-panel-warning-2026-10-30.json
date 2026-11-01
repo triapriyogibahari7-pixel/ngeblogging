@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "98694c2e26238b8b548c55358ea2c4dbfbec2ad6",
+  "originalCandidateBlobVerified": "8ae04b27e099882c91855c7259e3f2af9a096468",
+  "baselineBrowser": {"passed": 8, "failed": 1, "failure": "Review warning disappeared after closing failed confirmation"},
+  "change": "Hide empty entry only when no selected dialog AND no blocked domains remain",
+  "scope": "Node execution of the actual extracted render-guard expression plus source assertions; not a JSX render or browser rerun",
+  "passed": 3,
+  "failed": 0,
+  "visibilityCombinationsChecked": 8,
+  "negativeControl": {"originalSourceExit": 1, "regressionTestsFailingOnOriginal": 2},
+  "browserRerunPending": true,
+  "warningScope": "Current eligible session/site context while blocked state remains; no persistence across reloads or sessions is asserted",
+  "activeStudioEntryChanged": false,
+  "originalDomainPanelChanged": false,
+  "mutationLogicChanged": false,
+  "productionConnection": false,
+  "limits": ["Existing eight browser passes do not prove patched candidate passes", "Rerun the same nine browser scenarios without weakening the failed assertion", "No authenticated Studio, native PostgreSQL concurrency or provider/cache E2E verification", "No merge, deployment, DNS/database changes or production activation"],
+  "stage5": "OPEN",
+  "releaseHold": "Until stage 10 completion, verification and separate owner approval"
+}

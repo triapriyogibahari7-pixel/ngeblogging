@@ -1,0 +1,87 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><pre id="result">Running complete wrapper-chain routing fixture</pre><script type="module">const report={date:'2026-10-31',sourceCommit:'034b492862ef8655e1304cbe2cfeeea526616e4b',tests:[],verifiedBlobs:{},productionConnection:false,activeHandlerChanged:false,scope:'All eight configured Worker wrappers plus original canonical, SEO, legal and fresh-only candidate modules; browser fixture backend/assets, not deployed runtime or SQL/RLS'},out=document.getElementById('result'),nativeFetch=fetch.bind(globalThis);let f,entry,createFresh,id=0;
+const assert=(v,m)=>{if(!v)throw Error(m);},blob=s=>URL.createObjectURL(new Blob([s],{type:'text/javascript'}));
+async function hash(s){const bytes=new TextEncoder().encode(s),header=new TextEncoder().encode('blob '+bytes.length+'\0'),n=header.length+bytes.length,total=Math.ceil((n+9)/64)*64,data=new Uint8Array(total);data.set(header);data.set(bytes,header.length);data[n]=128;const view=new DataView(data.buffer);view.setUint32(total-8,Math.floor(n/536870912));view.setUint32(total-4,(n*8)>>>0);const h=[0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0],rol=(v,k)=>(v<<k)|(v>>>(32-k));for(let off=0;off<total;off+=64){const w=new Int32Array(80);for(let i=0;i<16;i++)w[i]=view.getInt32(off+i*4);for(let i=16;i<80;i++)w[i]=rol(w[i-3]^w[i-8]^w[i-14]^w[i-16],1);let[a,b,c,d,e]=h;for(let i=0;i<80;i++){const g=i<20?(b&c)|(~b&d):i<40?b^c^d:i<60?(b&c)|(b&d)|(c&d):b^c^d,k=i<20?0x5a827999:i<40?0x6ed9eba1:i<60?0x8f1bbcdc:0xca62c1d6,t=(rol(a,5)+g+e+k+w[i])|0;e=d;d=c;c=rol(b,30);b=a;a=t;}[a,b,c,d,e].forEach((v,i)=>h[i]=(h[i]+v)|0);}return h.map(v=>(v>>>0).toString(16).padStart(8,'0')).join('');}
+const manifest={
+ 'server/seo-handler.mjs':'1fc8f622adc105526abf1cd2e008cccbc5e9fec5',
+ 'server/canonical-domain-redirect.mjs':'28b03539e837f23d7016a441ea04271d0d882cb3',
+ 'server/legal-pages.mjs':'ff486fa4792d7a746c7408d29fddd472a3003889',
+ 'server/drafts/domain-transfer-redirect-lookup.mjs':'9e75e80810d102c2a29658565e44dca5099601e2',
+ 'server/drafts/domain-transfer-redirect-pipeline.mjs':'91f15c34b50c5fbbe5027d3df89450aba172bbde',
+ 'server/drafts/domain-transfer-fresh-only-test-resolver.mjs':'90ed0fb464894e62cb1445431dcc62712d4aab51',
+ 'cloudflare/worker.mjs':'4c0d63809ec5ebdf8cb0b9d0c8344891ee6fcc04',
+ 'cloudflare/worker-v22.mjs':'a9a69080398726c4405a4ffff8c302364ef095fc',
+ 'cloudflare/worker-v35.mjs':'7d3411899dbfc8dd28db6c485fb366962945a277',
+ 'cloudflare/worker-v37.mjs':'81e7882333ebb44cc5f2de19f4506a87edc8c293',
+ 'cloudflare/worker-v41.mjs':'cc2896346eade9315e27fa8c7366ba1875791bab',
+ 'cloudflare/worker-v67.mjs':'cfbbbec545c2d1e77a054144adca1e6050cd15f3',
+ 'cloudflare/worker-v69.mjs':'24ce9bb64931333f6329565b20dd2508c1490249',
+ 'cloudflare/worker-v70.mjs':'2932ebb9f9680e314f9c4efc2fecb64a447ac6e0'
+};
+const json=(rows,status=200)=>new Response(JSON.stringify(rows),{status,headers:{'content-type':'application/json'}});
+async function backend(input,init={}){
+ const url=new URL(input);assert(f&&url.origin==='https://storage.test'&&url.pathname.startsWith('/rest/v1/'),'Unexpected backend request');assert((init.method||'GET')==='GET','Unexpected backend mutation');const table=url.pathname.split('/').at(-1),q=url.searchParams;
+ if(table==='site_domain_redirects'){f.rules++;if(f.ruleError)return json({code:'fixture unavailable'},503);return json(f.visible&&f.ruleExists?[{target_url:'https://approved-target.test/base',permanent:false,preserve_path:true}]:[]);}
+ if(table==='contents'){f.content++;return json([]);}
+ if(table==='site_domains'){
+  if(q.get('select')==='hostname,status,is_primary'){f.canonical++;if(f.canonicalThrow)throw Error('fixture canonical transport failure');return json(f.canonicalExists?[{hostname:'example.test',status:'active',is_primary:true}]:[]);}
+  if(q.get('select')?.includes('provider_status')){f.canonical++;return json(f.visible?[{id:'domain-fixture',hostname:'example.test',status:'active',is_primary:true,provider_status:'active',ssl_status:'active'}]:[]);}
+  f.meta++;if(f.metaError)return json({},503);assert(q.get('status')==='eq.active','Domain active filter');return json(f.visible?[{site_id:'site-fixture'}]:[]);
+ }
+ if(table==='sites'){
+  const canonical=q.get('select')==='id,slug,custom_domain,status,is_public';if(canonical)f.canonical++;else f.meta++;if(f.metaError)return json({},503);assert(q.get('status')==='eq.active'&&q.get('is_public')==='eq.true','Site public filters');return json(f.visible?[{id:'site-fixture',name:'Fixture Target',slug:'source',custom_domain:'example.test',status:'active',is_public:true,description:'Public fixture',locale:'id-ID',settings:{},updated_at:'2026-10-30T00:00:00Z'}]:[]);
+ }
+ throw Error('Unrecognized fixture table');
+}
+function fixture(options={}){
+ f={visible:true,ruleExists:true,ruleError:false,metaError:false,canonicalExists:false,canonicalThrow:false,rules:0,meta:0,canonical:0,content:0,assets:0,cacheGets:0,cacheSets:0,assetType:'text/html',...options};
+ const cache={async get(){f.cacheGets++;throw Error('Fresh cache read');},async set(){f.cacheSets++;throw Error('Fresh cache write');}};
+ f.resolve=createFresh({enabled:true,environment:'isolated-test',origin:'https://storage.test',fetchImpl:backend,cache,namespace:'chain-check',timeoutMs:5000});
+ return {CUSTOM_DOMAIN_PROVIDER:'cloudflare-full-zone',SUPABASE_URL:'https://storage.test',SUPABASE_PUBLISHABLE_KEY:'fixture-public-key',REVERSIBLE_FREE_DOMAIN_REDIRECTS:options.reversible?'true':'false',ASSETS:{fetch:async request=>{f.assets++;return new Response(request.method==='HEAD'?null:f.assetType==='text/html'?'<!doctype html><html><head><title>Fixture Shell</title></head><body>FIXTURE_UNATTRIBUTED_SHELL</body></html>':'export const fixture=true;',{headers:{'content-type':f.assetType,'cache-control':'no-store'}});}}};
+}
+function evidence(){assert(f.cacheGets===0&&f.cacheSets===0,'Fresh cache touched');return {ruleReads:f.rules,metadataReads:f.meta,canonicalReads:f.canonical,assetReads:f.assets,cacheGets:f.cacheGets,cacheSets:f.cacheSets};}
+async function check(name,kind,fn){try{const detail=await fn();report.tests.push({name,kind,passed:true,evidence:detail});}catch(e){report.tests.push({name,kind,passed:false,error:e.message});}}
+async function call(env,url='https://go.example.test/',method='GET'){return entry.fetch(new Request(url,{method}),env,{});}
+try{
+ if(typeof crypto.randomUUID!=='function'){Object.defineProperty(crypto,'randomUUID',{value:()=>`00000000-0000-4000-8000-${String(++id).padStart(12,'0')}`});report.requestIdShim=true;}else report.requestIdShim=false;
+ const sources={},urls={};await Promise.all(Object.entries(manifest).map(async([path,expected])=>{const r=await nativeFetch('https://raw.githubusercontent.com/triapriyogibahari7-pixel/ngeblogging/'+report.sourceCommit+'/'+path);assert(r.ok,'Source HTTP '+r.status);const source=await r.text(),actual=await hash(source);assert(actual===expected,'Blob mismatch '+path);sources[path]=source;report.verifiedBlobs[path]=actual;}));
+ const common='const unexpected=()=>{throw Error("Unexpected fixture feature call");};';
+ const stubs={
+ 'server/nara-runtime.mjs':'export const handleRequest=unexpected;',
+ 'server/billing-handler.mjs':'export const handleBillingRequest=unexpected;',
+ 'server/paypal-webhook-handler.mjs':'export const handlePayPalWebhook=unexpected;',
+ 'server/nara-image-handler.mjs':'export const handleNaraImage=unexpected;export const imageGenerationReady=()=>false;',
+ 'server/domain-handler-v112.mjs':'export const handleDomainRequest=unexpected;',
+ 'server/domain-redirect-handler.mjs':'export const handleDomainRedirectRequest=unexpected;export const resolveDomainRedirect=request=>globalThis.__routingChain.resolve(request);',
+ 'server/workers-ai-nara.mjs':'export const handleWorkersAiNara=unexpected;export const workersAiReady=()=>false;export const workersVisionReady=()=>false;',
+ 'server/nara-model-contract-v227.mjs':'export const NARA_FALLBACK_RELEASE_V227="fixture";export const naraIntelligenceProfileV227=unexpected;export const workersAiProviderModelV227=unexpected;',
+ 'server/analytics-handler.mjs':'export const analyticsReady=()=>false;export const handleAnalyticsRequest=unexpected;',
+ 'server/member-invite-handler.mjs':'export const memberInvitesReady=()=>false;export const handleMemberInviteRequest=unexpected;',
+ 'server/free-domain-handler.mjs':'export const freeDomainReadiness=()=>({enabled:false});export const handleFreeDomainRequest=unexpected;',
+ 'server/quick-domain-detach-handler.mjs':'export const handleQuickDomainDetach=unexpected;',
+ 'server/pending-full-zone-registration.mjs':'export const recoverPendingFullZoneRegistration=unexpected;',
+ 'server/domain-dns-v67-handler.mjs':'export const domainDnsV67Readiness=()=>({ready:false});export const handleDomainDnsV67Request=unexpected;',
+ 'server/comments-handler-v93.mjs':'export const commentsReady=()=>false;export const handleCommentsRequest=unexpected;export const injectPublicComments=async(request,response)=>response;',
+ 'server/auth-gateway-v108.mjs':'export const AUTH_GATEWAY_RELEASE="fixture",AUTH_GATEWAY_PUBLIC_FALLBACK_RELEASE="fixture";export const handleAuthGatewayRequest=unexpected;export const isAuthGatewayRequest=()=>false;export const resolveAuthGatewayConfig=()=>({ready:false});',
+ 'server/data-gateway-v110.mjs':'export const DATA_GATEWAY_RELEASE="fixture";export const handleDataGatewayRequest=unexpected;export const isDataGatewayRequest=()=>false;export const resolveAuthGatewayConfig=()=>({ready:false});',
+ 'server/payment-diagnostic-page.mjs':'export const paymentDiagnosticPage=async()=>null;',
+ 'server/midtrans-catalog-api.mjs':'export const paths=new Set();export const handleMidtrans=unexpected;'
+ };
+ report.fixtureModules=Object.keys(stubs);for(const[path,source]of Object.entries(stubs))urls[path]=blob(common+source);
+ globalThis.__routingChain={resolve:request=>f.resolve(request)};
+ for(const path of Object.keys(manifest)){
+  let source=sources[path];const imports=[...source.matchAll(/\bfrom\s*["']([^"']+)["']/g)].map(m=>m[1]);for(const spec of new Set(imports)){const dep=new URL(spec,'https://source.test/'+path).pathname.slice(1);assert(urls[dep],'Unresolved module '+dep);source=source.replaceAll(spec,urls[dep]);}urls[path]=blob(source);
+ }
+ createFresh=(await import(urls['server/drafts/domain-transfer-fresh-only-test-resolver.mjs'])).createFreshOnlyTestResolver;entry=(await import(urls['cloudflare/worker-v70.mjs'])).default;globalThis.fetch=backend;
+ for(const method of ['GET','HEAD'])await check('complete wrapper chain preserves fresh 503 for '+method,'control-flow',async()=>{const env=fixture({ruleError:true}),r=await call(env,'https://go.example.test/',method);assert(r.status===503&&r.headers.get('cache-control')==='no-store','503 changed');assert(f.rules===1&&f.assets===0&&f.meta===0,'503 fell through');if(method==='HEAD')assert(await r.text()==='','HEAD body');return evidence();});
+ await check('complete chain preserves approved external redirect','control-flow',async()=>{const env=fixture(),r=await call(env,'https://go.example.test/path?q=1');assert(r.status===307&&r.headers.get('location')==='https://approved-target.test/base/path?q=1','Redirect changed');assert(f.assets===0&&f.meta===0,'Redirect fell through');return evidence();});
+ await check('successful empty rule uses original SEO and analytics injection','routing-characterization',async()=>{const env=fixture({ruleExists:false}),r=await call(env),body=await r.text();assert(r.status===200&&body.includes('<title>Fixture Target</title>')&&body.includes('data-ngeblogging-analytics-v37'),'Original SEO or tracker missing');assert(r.headers.get('cache-control')==='public, max-age=60, s-maxage=300','Analytics cache behavior');return evidence();});
+ await check('invisible metadata still permits supplied shell through original SEO','boundary-characterization',async()=>{const env=fixture({visible:false}),r=await call(env),body=await r.text();assert(r.status===200&&body.includes('FIXTURE_UNATTRIBUTED_SHELL')&&!body.includes('Fixture Target')&&!body.includes('data-ngeblogging-analytics-v37'),'Fallback characterization');return {...evidence(),meaning:'Fixture metadata visibility and shell only; not a real private-data leak or proof of client-side isolation'};});
+ await check('static custom-host JavaScript bypasses fresh resolver and wrapper chain','routing-order',async()=>{const env=fixture({visible:false,ruleError:true,assetType:'application/javascript'}),r=await call(env,'https://go.example.test/assets/app-12345678.js');assert(r.status===200&&f.rules===0&&f.meta===0&&f.assets===1,'Static routing order');return evidence();});
+ await check('static SPA HTML fallback remains blocked before resolver','control-flow',async()=>{const env=fixture(),r=await call(env,'https://go.example.test/assets/missing.js');assert(r.status===404&&r.headers.get('cache-control')==='no-store'&&f.rules===0,'Static fallback');return evidence();});
+ await check('original www canonical redirect precedes fresh resolver','routing-order',async()=>{const env=fixture({canonicalExists:true,ruleError:true}),r=await call(env,'https://www.example.test/path?q=1');assert(r.status===308&&r.headers.get('location')==='https://example.test/path?q=1','Canonical target');assert(r.headers.get('cache-control')==='public, max-age=300, s-maxage=3600'&&f.rules===0&&f.assets===0,'Canonical policy/order');return evidence();});
+ await check('original reversible free-host canonical policy survives outer wrappers','control-flow',async()=>{const env=fixture({reversible:true}),r=await call(env,'https://source.ngeblogging.com/path?q=1');assert(r.status===307&&r.headers.get('location')==='https://example.test/path?q=1'&&r.headers.get('cache-control')==='no-store, max-age=0','Free-host policy');assert(f.rules===0&&f.assets===0,'Free-host bypass');return evidence();});
+ await check('canonical exception is swallowed before fresh redirect continuation','failure-characterization',async()=>{const env=fixture({canonicalThrow:true}),r=await call(env,'https://www.example.test/path');assert(r.status===307&&r.headers.get('location')==='https://approved-target.test/base/path'&&f.canonical===1&&f.rules===1,'Canonical exception path');return evidence();});
+ await check('SEO backend HTTP failure can still result in supplied shell','failure-characterization',async()=>{const env=fixture({ruleExists:false,metaError:true}),r=await call(env),body=await r.text();assert(r.status===200&&body.includes('FIXTURE_UNATTRIBUTED_SHELL')&&!body.includes('Fixture Target'),'Metadata failure fallback');return {...evidence(),meaning:'Existing metadata path maps HTTP error to no site; no remediation claimed'};});
+ report.passedCount=report.tests.filter(t=>t.passed).length;report.failedCount=report.tests.filter(t=>!t.passed).length;report.passed=report.failedCount===0;report.limits=['All eight Worker wrapper modules executed, but listed feature modules including comments are fixtures','Backend visibility and errors are injected responses, not real SQL/RLS/Auth/PostgREST','ASSETS is a supplied shell/static fixture, not built client app or real tenant content','Browser module linking changes import URLs and substitutes fresh resolver at legacy import only in harness; repository and active handler unchanged','No native Worker/HTMLRewriter execution, real edge cache, canonical cache eviction, provider/DNS/TLS or concurrency proof','No deployed end-to-end isolation or remediation acceptance'];report.stage4='OPEN';report.stage5='OPEN';
+}catch(e){report.passed=false;report.error={message:e.message,stack:e.stack};}finally{globalThis.fetch=nativeFetch;delete globalThis.__routingChain;document.querySelectorAll('script').forEach(s=>s.remove());out.textContent=JSON.stringify(report,null,2);out.dataset.done='true';}
+</script></body></html>

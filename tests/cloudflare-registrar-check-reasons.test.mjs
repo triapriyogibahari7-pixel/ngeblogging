@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {checkCloudflareRegistrar} from '../server/cloudflare-registrar-check.mjs';
+const reasons=['extension_not_supported_via_api','extension_not_supported','extension_disallows_registration','domain_premium','domain_unavailable'];
+const domain='example.com';
+const run=row=>checkCloudflareRegistrar({CLOUDFLARE_REGISTRAR_API_TOKEN:'fixture-not-real'},{domain},{clock:()=>1000,fetchImpl:async()=>new Response(JSON.stringify({success:true,result:{domains:[{name:domain,...row}]}}),{status:200})});
+for(const reason of reasons)test('preserves allowed reason '+reason,async()=>{const r=await run({registrable:false,reason});assert.equal(r.status,'not_registrable');assert.equal(r.reason,reason);assert.equal(r.availability,reason==='domain_unavailable'?'unavailable':'not_confirmed');assert.equal(r.quote,null);assert.equal(r.purchaseAllowed,false);});
+for(const reason of [undefined,'new_future_reason','private-secret-value'])test('unknown restriction sanitized '+String(reason),async()=>{const r=await run({registrable:false,reason});assert.equal(r.reason,'unknown_restriction');assert.equal(r.availability,'not_confirmed');assert.ok(!JSON.stringify(r).includes('private-secret-value'));});
+test('premium restriction retains only allowlisted tier',async()=>{const r=await run({registrable:false,reason:'domain_premium',tier:'premium'});assert.equal(r.tier,'premium');assert.equal(r.purchaseAllowed,false);});
+test('unknown tier not exposed',async()=>{const r=await run({registrable:false,reason:'domain_unavailable',tier:'private-secret-value'});assert.equal(r.tier,undefined);assert.ok(!JSON.stringify(r).includes('private-secret-value'));});
+test('contradictory registrable result rejected',async()=>{const r=await run({registrable:true,reason:'domain_unavailable',tier:'standard',pricing:{currency:'USD',registration_cost:'8.57',renewal_cost:'9.00'}});assert.equal(r.status,'invalid_response');assert.equal(r.purchaseAllowed,false);});

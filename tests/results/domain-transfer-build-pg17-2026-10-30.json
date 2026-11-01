@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-30",
+  "sourceCommit": "fc2cfea6d9a4c305f7e61f9b5d1c56d207017439",
+  "productionConnection": false,
+  "deploymentPerformed": false,
+  "newSupabaseResource": false,
+  "build": {
+    "scope": "Browser-local esbuild WASM bundle, not Wrangler CLI/workerd/Cloudflare build or full application build",
+    "esbuildVersion": "0.28.2",
+    "format": "esm",
+    "target": "es2022",
+    "bytes": 19973,
+    "warnings": [],
+    "externalImports": [],
+    "inputs": ["server/domain-transfer-handler.mjs", "server/domain-transfer-state-handler.mjs", "server/domain-transfer-supabase-adapter.mjs", "server/domain-transfer-isolated-runtime.mjs", "cloudflare/worker-domain-stage5-isolated.mjs"],
+    "passed": true
+  },
+  "configuration": {"wranglerSchemaVersion": "4.113.0", "ajvVersion": "8.20.0", "schemaPassed": true, "schemaErrors": [], "formatsValidated": false, "separateName": true, "dedicatedEntry": true, "routesEmpty": true, "defaultDisabled": true, "noSharedVariables": true, "noDataBindings": true, "dateShapeChecked": true},
+  "bundleSmoke": {"passed": 6, "failed": 0, "backendNetworkAttempts": 0, "cases": ["Default disabled", "Unknown path not forwarded", "Shared production bindings ignored", "Missing test configuration rejected", "Production allowed origin rejected", "Production database rejected"]},
+  "pg17": {
+    "scope": "Actual SQL on PostgreSQL WASM with representative schema and synthetic fixtures, not native server or full production schema",
+    "pgliteVersion": "0.3.16",
+    "postgresVersion": "17.5",
+    "serverVersionNum": 170005,
+    "ephemeralDatabase": "template1",
+    "passed": 11,
+    "failed": 0,
+    "negativeSqlstates": ["22023", "22023", "42501", "42501", "22023", "23503", "23503", "23514"],
+    "negativeRollbackUnchanged": true,
+    "positiveCases": ["Original authenticated RPC smoke plus immediate deferred-constraint evaluation and rollback", "Pending transfer retains free target routing", "Verifying transfer retains free target routing"],
+    "databaseClosed": true,
+    "includedMigrationSqlChanged": false,
+    "runnerAdaptation": "Initial PG17 attempt assumed the ephemeral database was postgres and the fixture guard rejected it; final runner reads current_database() and preserves that guard for template1"
+  },
+  "limits": ["No Wrangler CLI dry-run or workerd execution", "No native PostgreSQL server, full production schema, historical-data migration or concurrent-session verification", "No live Supabase Auth/PostgREST or provider/DNS/HTTPS/cache verification", "No active panel binding, merge, deployment or production activation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

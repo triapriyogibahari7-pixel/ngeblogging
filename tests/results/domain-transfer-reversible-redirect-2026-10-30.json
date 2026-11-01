@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "a218b8c778397b9968b78b448d5b1130849dc35d",
+  "baseSourceBlobVerified": "2ddb77a5979302c1ea99eefacee129d3ec941ffb",
+  "scope": "Actual canonical-domain-redirect module executed in Node.js with stateful mocked REST responses; no live database, browser cache, Cloudflare cache or provider verification",
+  "flag": "REVERSIBLE_FREE_DOMAIN_REDIRECTS",
+  "activationValue": "true (string only)",
+  "defaultBehavior": "Unchanged 308 free-host redirect and legacy cache headers",
+  "enabledBehavior": "Free-host redirect becomes 307 with Cache-Control no-store, max-age=0; www-to-apex behavior unchanged",
+  "passed": 15,
+  "failed": 0,
+  "negativeControl": {"oldSourceExit": 1, "newPolicyExpectationsFailed": 3, "purpose": "Shows tests detect missing opt-in policy, not three production regressions"},
+  "preserved": ["GET/HEAD behavior", "Path and query values", "Direct free-preview bypass", "API and Studio exclusions", "Reserved platform hosts", "Pending/provider/SSL readiness checks", "www-to-apex canonical response"],
+  "statefulCase": "After fixture domain moves from source to target, source free hostname stops producing a fresh custom redirect and target free hostname redirects under enabled policy",
+  "productionConnection": false,
+  "flagEnabledExternally": false,
+  "purgePerformed": false,
+  "limits": ["Does not invalidate previously issued cached redirects", "No global cache or multi-PoP purge guarantee", "No live provider/DNS/HTTPS or full application verification", "Rollout of flag and handling existing caches require separate approval/verification before real transfers", "No merge, deployment or production activation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

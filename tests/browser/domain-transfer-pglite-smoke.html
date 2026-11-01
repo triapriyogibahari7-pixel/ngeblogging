@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><pre id="result">Running separate setup and transaction batches</pre><script type="module">
+const out=document.getElementById('result');const report={scope:'PostgreSQL WASM in memory; representative schema, not PG17 server/full production/concurrency/browser E2E',productionConnection:false,newDatabaseResource:false,commit:'df84652fb2665bcbca6d9e51cd46d9120df696cc',pgliteVersion:'0.5.13',phase:'load'};let db;
+try{
+ const base='https://raw.githubusercontent.com/triapriyogibahari7-pixel/ngeblogging/'+report.commit+'/';
+ const paths=['tests/sql/domain-transfer-v2-smoke.sql','docs/drafts/domain-redirect-rls-v2-prerequisite.sql','docs/drafts/domain-site-transfer-v2.sql'];
+ const texts=await Promise.all(paths.map(async path=>{const r=await fetch(base+path);if(!r.ok)throw Error('Source HTTP '+r.status);return r.text();}));
+ const {PGlite}=await import('https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.13/dist/index.js');db=new PGlite();report.engine=(await db.query('SELECT version() AS version,current_database() AS database,current_user AS role')).rows[0];
+ let fixture=texts[0].replace(/^\\set ON_ERROR_STOP on\r?\n/m,'');const guard="current_database() <> 'domain_transfer_test'";if(!fixture.includes(guard))throw Error('Fixture guard changed');fixture=fixture.replace(guard,"current_database() <> '"+report.engine.database.replaceAll("'","''")+"'");
+ const include1='\\ir ../../'+paths[1],include2='\\ir ../../'+paths[2];
+ const i1=fixture.indexOf(include1),i2=fixture.indexOf(include2);if(i1<0||i2<=i1)throw Error('Include layout changed');
+ const setup=fixture.slice(0,i1),remaining=fixture.slice(i2+include2.length);const txMarker='\nBEGIN;\nSET LOCAL ROLE authenticated;';const ti=remaining.indexOf(txMarker);if(ti<0)throw Error('Test transaction marker changed');
+ const seed=remaining.slice(0,ti),transaction=remaining.slice(ti);const ri=transaction.lastIndexOf('\nROLLBACK;');if(ri<0)throw Error('Rollback marker changed');
+ report.adaptations=['Expanded two psql includes without editing included SQL','Adjusted fixture database-name guard to ephemeral engine database','Separated schema, migrations, seed and explicit test transaction into distinct exec calls to preserve psql commit boundaries','Read-only before/after observations; assertion block unchanged'];
+ report.phase='schema';await db.exec(setup);
+ report.phase='rls-migration';await db.exec(texts[1]);
+ report.phase='transfer-migration';await db.exec(texts[2]);
+ report.phase='seed';await db.exec(seed);
+ const observe="SELECT current_user AS role,(SELECT count(*) FROM public.site_domains) AS domain_rows,(SELECT count(*) FROM public.site_domain_redirects) AS redirect_rows,(SELECT site_id::text FROM public.site_domains WHERE hostname='example.test') AS domain_site,(SELECT custom_domain FROM public.sites WHERE slug='source') AS source_mapping,(SELECT custom_domain FROM public.sites WHERE slug='target') AS target_mapping,(SELECT site_id::text FROM public.site_domain_redirects LIMIT 1) AS redirect_site";
+ report.baseline=(await db.query(observe)).rows[0];
+ report.phase='assertions';await db.exec(transaction.slice(0,ri));report.assertionBlockCompleted=true;
+ report.beforeRollback=(await db.query(observe)).rows[0];await db.exec('ROLLBACK;');report.afterRollback=(await db.query(observe)).rows[0];
+ const before=report.beforeRollback,after=report.afterRollback;const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
+ report.checks={assertionBlockCompleted:report.assertionBlockCompleted,executedAsAuthenticated:before.role==='authenticated',domainMoved:before.domain_site===b,redirectMoved:before.redirect_site===b,sourceFallback:before.source_mapping==='source.ngeblogging.com',targetMapping:before.target_mapping==='example.test',rollbackRestoresDomain:after.domain_site===a,rollbackRestoresRedirect:after.redirect_site===a,rollbackRestoresSource:after.source_mapping==='example.test',rollbackRestoresTarget:after.target_mapping==='target.ngeblogging.com',rowCountsPreserved:Number(after.domain_rows)===3&&Number(after.redirect_rows)===1};
+ report.passed=Object.values(report.checks).every(Boolean);report.phase='completed';
+}catch(e){report.error={message:e.message,code:e.code,detail:e.detail,where:e.where};}
+finally{if(db){try{await db.close();report.closed=true;}catch(e){report.closeError=e.message;}}out.textContent=JSON.stringify(report,null,2);out.dataset.done='true';}
+</script></body></html>

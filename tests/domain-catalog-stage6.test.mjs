@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DOMAIN_CATALOG as catalog,DOMAIN_CATALOG_CATEGORIES as categories,domainCatalogPage as page,prepareCatalogDomain as prepare} from '../src/lib/domain-catalog-stage6.mjs';
+test('200 unique editorial entries with com first',()=>{assert.equal(catalog.length,200);assert.equal(new Set(catalog.map(x=>x.extension)).size,200);assert.equal(catalog[0].extension,'com');});
+test('catalog never fabricates IDR prices, support or permission to buy',()=>{for(const item of catalog){assert.equal(item.registrationIdr,null);assert.equal(item.renewalIdr,null);assert.equal(item.providerSupport,'not_verified');assert.equal(item.purchaseAllowed,false);assert.equal(Object.isFrozen(item),true);}});
+test('six categories represented including Indonesian compound suffixes',()=>{assert.equal(categories.length,7);for(const name of categories.slice(1))assert.ok(catalog.some(item=>item.category===name));for(const suffix of ['co.id','my.id','web.id'])assert.ok(catalog.some(item=>item.extension===suffix&&item.canPrepareCheck));});
+test('normalizer limitation cannot create a broken prepare-check action',()=>{assert.equal(catalog.find(x=>x.extension==='com.au').canPrepareCheck,false);assert.equal(catalog.find(x=>x.extension==='co.uk').canPrepareCheck,true);});
+test('default view loads 20 not 200 cards',()=>{const p=page();assert.equal(p.items.length,20);assert.equal(p.pages,10);assert.equal(p.total,200);});
+test('ten pages contain all entries exactly once',()=>{const names=[];for(let n=1;n<=10;n++)names.push(...page({page:n}).items.map(x=>x.extension));assert.equal(new Set(names).size,200);assert.equal(names.length,200);});
+test('category and search filters compose',()=>{const p=page({category:'Indonesia',query:'co.id'});assert.equal(p.total,1);assert.equal(p.items[0].extension,'co.id');});
+test('dot-prefixed case-insensitive extension search',()=>assert.ok(page({query:'.COM'}).items.some(x=>x.extension==='com')));
+test('no result returns honest empty array',()=>assert.deepEqual(page({query:'no-such-extension-12345'}).items,[]));
+test('out-of-range page clamped to last page',()=>assert.equal(page({page:999}).page,10));
+test('invalid filter configuration rejected',()=>{for(const options of [{page:0},{pageSize:100},{category:'fake'},{query:'a'.repeat(101)}])assert.throws(()=>page(options));});
+test('selection prepares exact domain without a lookup or purchase',()=>{assert.equal(prepare('nama.co.id','com'),'nama.com');assert.equal(prepare('nama','co.id'),'nama.co.id');});
+test('selection rejects unsupported compound checks and does not invent a brand',()=>{assert.throws(()=>prepare('nama','com.au'));assert.equal(prepare('','com'),null);assert.equal(prepare('nama blog','com'),null);});

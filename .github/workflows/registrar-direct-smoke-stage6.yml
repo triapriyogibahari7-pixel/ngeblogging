@@ -1,0 +1,43 @@
+name: Stage 6 Direct Registrar Smoke
+on:
+  push:
+    branches: [feature/domain-stages5-10-integration-20261030]
+    paths:
+      - '.github/workflows/registrar-direct-smoke-stage6.yml'
+      - 'scripts/registrar-direct-smoke-stage6.mjs'
+      - 'server/registrar-token-diagnostic.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: registrar-direct-smoke-stage6
+  cancel-in-progress: false
+jobs:
+  smoke:
+    if: github.ref == 'refs/heads/feature/domain-stages5-10-integration-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline syntax and denial checks
+        run: |
+          node --check server/registrar-token-diagnostic.mjs
+          node --check server/registrar-diagnostic-handler.mjs
+          node --check cloudflare/worker-v70.mjs
+          node --check scripts/registrar-direct-smoke-stage6.mjs
+          node --test tests/registrar-diagnostic-denial.test.mjs
+      - name: Direct read-only Registrar smoke
+        env:
+          CLOUDFLARE_REGISTRAR_API_TOKEN: ${{ secrets.CLOUDFLARE_REGISTRAR_API_TOKEN }}
+        run: node scripts/registrar-direct-smoke-stage6.mjs
+      - name: Save sanitized report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registrar-direct-smoke-report
+          path: registrar-direct-smoke-report.json
+          if-no-files-found: ignore
+          retention-days: 3

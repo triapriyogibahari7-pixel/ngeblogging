@@ -1,0 +1,113 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><pre id="result">Running catalog-aligned SQL matrix</pre><script type="module">import {PGlite} from 'https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.3.16/dist/index.js';
+const report={sourceCommit:'323fce910fa37599f97aa3176acff85edfed5190',scope:'Catalog-aligned transfer slice in PostgreSQL WASM; not full production schema, Supabase Auth or concurrent sessions',tests:[],productionConnection:false,newSupabaseResource:false},out=document.getElementById('result');let db;
+const assert=(v,m)=>{if(!v)throw Error(m);};
+const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002',d='00000000-0000-0000-0000-000000000103',u='00000000-0000-0000-0000-000000000010';
+const enums={member_role:['owner','admin','editor','author','contributor','viewer'],site_status:['draft','active','suspended','archived'],domain_status:['pending','verifying','active','failed','pending_deletion']};
+const extras=String.raw`
+ALTER TABLE public.sites ADD COLUMN is_public boolean NOT NULL DEFAULT true, ADD COLUMN settings jsonb NOT NULL DEFAULT '{}', ADD COLUMN theme_key text NOT NULL DEFAULT 'editorial', ADD COLUMN published_at timestamptz;
+ALTER TABLE public.site_members ADD COLUMN updated_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE public.site_domains ADD COLUMN verified_at timestamptz;
+ALTER TABLE public.site_domain_redirects ADD COLUMN enabled boolean NOT NULL DEFAULT true, ADD COLUMN locked boolean NOT NULL DEFAULT false, ADD COLUMN permanent boolean NOT NULL DEFAULT true, ADD COLUMN preserve_path boolean NOT NULL DEFAULT true;
+CREATE FUNCTION private.is_site_member(target_site uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$ SELECT (SELECT auth.uid()) IS NOT NULL AND EXISTS(SELECT 1 FROM public.site_members sm WHERE sm.site_id=target_site AND sm.user_id=(SELECT auth.uid())); $$;
+`;
+const sitesPolicies=String.raw`
+CREATE POLICY sites_read_authenticated ON public.sites FOR SELECT TO authenticated USING(owner_id=(SELECT auth.uid()) OR private.is_site_member(id) OR (status='active' AND is_public));
+CREATE POLICY sites_read_public ON public.sites FOR SELECT TO anon USING(status='active' AND is_public);
+CREATE POLICY sites_update_managers ON public.sites FOR UPDATE TO authenticated USING(private.has_site_role(id,ARRAY['owner','admin']::public.member_role[])) WITH CHECK(private.has_site_role(id,ARRAY['owner','admin']::public.member_role[]));
+CREATE POLICY sites_create_owner ON public.sites FOR INSERT TO authenticated WITH CHECK((SELECT auth.uid())=owner_id);
+CREATE POLICY sites_delete_owner ON public.sites FOR DELETE TO authenticated USING(private.has_site_role(id,ARRAY['owner']::public.member_role[]));
+`;
+const domainPolicies=String.raw`
+CREATE POLICY domains_read_members ON public.site_domains FOR SELECT TO authenticated USING(private.is_site_member(site_id));
+CREATE POLICY domains_read_public_active ON public.site_domains FOR SELECT TO anon USING(status='active' AND EXISTS(SELECT 1 FROM public.sites s WHERE s.id=site_domains.site_id AND s.status='active' AND s.is_public));
+CREATE POLICY domains_insert_admins ON public.site_domains FOR INSERT TO authenticated WITH CHECK(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]));
+CREATE POLICY domains_update_admins ON public.site_domains FOR UPDATE TO authenticated USING(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[])) WITH CHECK(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]));
+CREATE POLICY domains_delete_admins ON public.site_domains FOR DELETE TO authenticated USING(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]));
+`;
+const redirectPolicies=String.raw`
+CREATE POLICY redirects_read_members ON public.site_domain_redirects FOR SELECT TO authenticated USING(private.is_site_member(site_id));
+CREATE POLICY redirects_read_public_active ON public.site_domain_redirects FOR SELECT TO anon USING(enabled AND EXISTS(SELECT 1 FROM public.site_domains d JOIN public.sites s ON s.id=d.site_id WHERE d.id=site_domain_redirects.domain_id AND d.site_id=site_domain_redirects.site_id AND d.status='active' AND s.status='active' AND s.is_public));
+CREATE POLICY redirects_insert_admins ON public.site_domain_redirects FOR INSERT TO authenticated WITH CHECK(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]) AND EXISTS(SELECT 1 FROM public.site_domains d WHERE d.id=site_domain_redirects.domain_id AND d.site_id=d.site_id));
+CREATE POLICY redirects_update_admins ON public.site_domain_redirects FOR UPDATE TO authenticated USING(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[])) WITH CHECK(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]) AND EXISTS(SELECT 1 FROM public.site_domains d WHERE d.id=site_domain_redirects.domain_id AND d.site_id=d.site_id));
+CREATE POLICY redirects_delete_admins ON public.site_domain_redirects FOR DELETE TO authenticated USING(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]));
+`;
+const sync=String.raw`
+CREATE FUNCTION private.set_updated_at() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$ BEGIN NEW.updated_at=now(); RETURN NEW; END; $$;
+CREATE FUNCTION private.touch_site_domain_redirect_updated_at() RETURNS trigger LANGUAGE plpgsql SET search_path='public','pg_temp' AS $$ BEGIN NEW.updated_at=now(); RETURN NEW; END; $$;
+CREATE FUNCTION private.sync_site_custom_domain_from_domains() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path='public','private','pg_temp' AS $function$
+DECLARE target_site_id uuid; previous_hostname text; next_hostname text;
+BEGIN
+ target_site_id:=coalesce(NEW.site_id,OLD.site_id);
+ previous_hostname:=CASE WHEN TG_OP='INSERT' THEN NULL ELSE OLD.hostname END;
+ IF TG_OP<>'DELETE' AND NEW.status='active'::domain_status AND NEW.is_primary IS TRUE THEN
+  UPDATE public.sites SET custom_domain=NEW.hostname,updated_at=now() WHERE id=NEW.site_id AND custom_domain IS DISTINCT FROM NEW.hostname;
+  RETURN NEW;
+ END IF;
+ IF TG_OP='DELETE' OR previous_hostname IS DISTINCT FROM coalesce(NEW.hostname,previous_hostname) OR (TG_OP='UPDATE' AND (NEW.status<>'active'::domain_status OR NEW.is_primary IS NOT TRUE)) THEN
+  SELECT d.hostname INTO next_hostname FROM public.site_domains d WHERE d.site_id=target_site_id AND d.status='active'::domain_status AND d.is_primary IS TRUE AND (TG_OP<>'DELETE' OR d.id<>OLD.id) ORDER BY d.verified_at DESC NULLS LAST,d.updated_at DESC LIMIT 1;
+  UPDATE public.sites SET custom_domain=next_hostname,updated_at=now() WHERE id=target_site_id AND (custom_domain=previous_hostname OR custom_domain IS NULL OR NOT EXISTS(SELECT 1 FROM public.site_domains active_domain WHERE active_domain.site_id=target_site_id AND active_domain.hostname=public.sites.custom_domain AND active_domain.status='active'::domain_status AND active_domain.is_primary IS TRUE));
+ END IF;
+ RETURN coalesce(NEW,OLD);
+END;
+$function$;
+CREATE TRIGGER sites_set_updated_at BEFORE UPDATE ON public.sites FOR EACH ROW EXECUTE FUNCTION private.set_updated_at();
+CREATE TRIGGER site_members_set_updated_at BEFORE UPDATE ON public.site_members FOR EACH ROW EXECUTE FUNCTION private.set_updated_at();
+CREATE TRIGGER site_domains_set_updated_at BEFORE UPDATE ON public.site_domains FOR EACH ROW EXECUTE FUNCTION private.set_updated_at();
+CREATE TRIGGER site_domain_redirects_touch_updated_at BEFORE UPDATE ON public.site_domain_redirects FOR EACH ROW EXECUTE FUNCTION private.touch_site_domain_redirect_updated_at();
+CREATE TRIGGER sync_site_custom_domain_from_domains AFTER INSERT OR DELETE OR UPDATE OF status,is_primary,hostname ON public.site_domains FOR EACH ROW EXECUTE FUNCTION private.sync_site_custom_domain_from_domains();
+GRANT USAGE ON SCHEMA public,private,auth TO anon;
+GRANT SELECT ON public.sites,public.site_domains,public.site_domain_redirects TO anon;
+GRANT SELECT ON public.site_members TO authenticated;
+ALTER TABLE public.site_members ENABLE ROW LEVEL SECURITY;
+CREATE POLICY members_read_site_team ON public.site_members FOR SELECT TO authenticated USING(private.is_site_member(site_id));
+`;
+const state=async()=>JSON.stringify((await db.query("SELECT jsonb_build_object('sites',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM public.sites t),'members',(SELECT jsonb_agg(to_jsonb(t) ORDER BY site_id,user_id) FROM public.site_members t),'domains',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM public.site_domains t),'redirects',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM public.site_domain_redirects t)) AS data")).rows[0].data);
+async function identity(role='authenticated',uid=u){await db.exec('SET LOCAL ROLE '+role+';');await db.query("SELECT set_config('request.jwt.claim.sub',$1,true)",[uid]);}
+async function check(name,fn){try{await fn();report.tests.push({name,passed:true});}catch(e){report.tests.push({name,passed:false,error:e.message,code:e.code});}}
+let baseline;
+async function negative(name,setup,action,expected,{role='authenticated',uid=u}={}){await check(name,async()=>{let error;try{await db.exec('BEGIN;');if(setup)await db.exec(setup);await identity(role,uid);await db.exec(action);}catch(e){error=e;}finally{await db.exec('ROLLBACK;');}assert(error?.code===expected,'Expected '+expected+', got '+(error?.code||'no rejection'));assert(await state()===baseline,'Rollback differs from baseline');});}
+const move=`SELECT public.move_site_domain_v2('${d}','${a}','${b}','example.test');`;
+const nonprimary=status=>`UPDATE public.site_domains SET status='${status}',is_primary=false WHERE id='${d}'; UPDATE public.site_domains SET is_primary=true WHERE hostname='source.ngeblogging.com';`;
+const strip=row=>{const copy={...row};delete copy.site_id;delete copy.updated_at;return JSON.stringify(copy);};
+async function positive(status,primary=true,publicTarget=true){await check(`${status} primary=${primary} publicTarget=${publicTarget}`,async()=>{try{
+ await db.exec('BEGIN;');if(status!=='active'||!primary)await db.exec(nonprimary(status));if(!publicTarget)await db.exec(`UPDATE public.sites SET is_public=false WHERE id='${b}';`);
+ const beforeDomain=(await db.query('SELECT to_jsonb(d) AS data FROM public.site_domains d WHERE id=$1::uuid',[d])).rows[0].data,beforeRedirect=(await db.query('SELECT to_jsonb(r) AS data FROM public.site_domain_redirects r LIMIT 1')).rows[0].data;
+ await identity();const receipt=(await db.query(`SELECT public.move_site_domain_v2($1::uuid,$2::uuid,$3::uuid,$4::text) AS data`,[d,a,b,'example.test'])).rows[0].data;await db.exec('SET CONSTRAINTS ALL IMMEDIATE;');
+ const domain=(await db.query('SELECT to_jsonb(d) AS data FROM public.site_domains d WHERE id=$1::uuid',[d])).rows[0].data,redirect=(await db.query('SELECT to_jsonb(r) AS data FROM public.site_domain_redirects r LIMIT 1')).rows[0].data,sites=(await db.query('SELECT id,custom_domain,is_public,settings,theme_key,published_at FROM public.sites ORDER BY id')).rows;
+ assert(receipt.status==='moved'&&receipt.redirectsMoved===1&&receipt.providerCacheVerified===false,'Receipt mismatch');assert(domain.site_id===b&&redirect.site_id===b,'Parent mismatch');assert(strip(domain)===strip(beforeDomain)&&strip(redirect)===strip(beforeRedirect),'Metadata changed');assert(sites[0].custom_domain==='source.ngeblogging.com'&&sites[1].custom_domain===(primary&&status==='active'?'example.test':'target.ngeblogging.com'),'Mapping mismatch');assert(sites[1].is_public===publicTarget&&sites.every(s=>s.settings.preserve===true&&s.theme_key==='editorial'),'Site fields changed');
+ await identity('anon','');const visibleDomain=(await db.query("SELECT count(*)::int AS n FROM public.site_domains WHERE hostname='example.test'")).rows[0].n,visibleRedirect=(await db.query("SELECT count(*)::int AS n FROM public.site_domain_redirects WHERE source_hostname='go.example.test'")).rows[0].n;
+ const expected=publicTarget&&status==='active'?1:0;assert(visibleDomain===expected&&visibleRedirect===expected,'Anonymous visibility mismatch');
+ }finally{await db.exec('ROLLBACK;');}assert(await state()===baseline,'Positive rollback differs');});}
+try{
+ db=new PGlite();report.engine=(await db.query("SELECT version() AS version,current_database() AS name,current_setting('server_version_num') AS num")).rows[0];assert(Number(report.engine.num)>=170000&&Number(report.engine.num)<180000,'PG17 required');
+ const paths=['tests/sql/domain-transfer-v2-smoke.sql','docs/drafts/domain-redirect-rls-v2-prerequisite.sql','docs/drafts/domain-site-transfer-v2.sql','docs/drafts/domain-site-transfer-integrity-v2.sql'],files=await Promise.all(paths.map(async p=>{const r=await fetch('https://raw.githubusercontent.com/triapriyogibahari7-pixel/ngeblogging/'+report.sourceCommit+'/'+p);assert(r.ok,'Source HTTP '+r.status);return r.text();}));
+ let fixture=files[0];const patch=(from,to)=>{assert(fixture.split(from).length===2,'Patch anchor missing/nonunique: '+from.slice(0,60));fixture=fixture.replace(from,()=>to);};
+ patch("CREATE TYPE public.member_role AS ENUM ('owner','admin','editor','viewer');","CREATE TYPE public.member_role AS ENUM ('owner','admin','editor','author','contributor','viewer');");patch("CREATE TYPE public.site_status AS ENUM ('active','inactive');","CREATE TYPE public.site_status AS ENUM ('draft','active','suspended','archived');");patch("CREATE TYPE public.domain_status AS ENUM ('pending','verifying','active','failed');","CREATE TYPE public.domain_status AS ENUM ('pending','verifying','active','failed','pending_deletion');");
+ patch('CREATE FUNCTION private.has_site_role(p_site uuid,p_roles public.member_role[])',extras+'\nCREATE FUNCTION private.has_site_role(p_site uuid,p_roles public.member_role[])');
+ patch('$$ SELECT EXISTS(SELECT 1 FROM public.site_members m WHERE m.site_id=p_site AND m.user_id=auth.uid() AND m.role=ANY(p_roles)) $$;','$$ SELECT (SELECT auth.uid()) IS NOT NULL AND EXISTS(SELECT 1 FROM public.site_members sm WHERE sm.site_id=p_site AND sm.user_id=(SELECT auth.uid()) AND sm.role=ANY(p_roles)) $$;');
+ patch("CREATE POLICY sites_manager ON public.sites FOR ALL TO authenticated USING(private.has_site_role(id,ARRAY['owner','admin']::public.member_role[])) WITH CHECK(private.has_site_role(id,ARRAY['owner','admin']::public.member_role[]));",sitesPolicies);
+ patch("CREATE POLICY domains_manager ON public.site_domains FOR ALL TO authenticated USING(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[])) WITH CHECK(private.has_site_role(site_id,ARRAY['owner','admin']::public.member_role[]));",domainPolicies);
+ const start=fixture.indexOf('CREATE POLICY redirects_read_members'),end=fixture.indexOf('GRANT USAGE ON SCHEMA public,private,auth TO authenticated;');assert(start>=0&&end>start,'Redirect policy anchors');fixture=fixture.slice(0,start)+redirectPolicies+'\n'+fixture.slice(end);
+ const syncStart=fixture.indexOf('-- Representative status/primary synchronization;'),syncEnd=fixture.indexOf('\\ir ../../'+paths[1]);assert(syncStart>=0&&syncEnd>syncStart,'Sync anchors');fixture=fixture.slice(0,syncStart)+sync+'\n'+fixture.slice(syncEnd);
+ patch('INSERT INTO public.sites VALUES','INSERT INTO public.sites(id,owner_id,slug,status,custom_domain,updated_at) VALUES');patch('INSERT INTO public.site_members VALUES','INSERT INTO public.site_members(site_id,user_id,role) VALUES');patch('INSERT INTO public.site_domain_redirects VALUES','INSERT INTO public.site_domain_redirects(id,site_id,domain_id,source_hostname,target_url,updated_at) VALUES');
+ patch("current_database() <> 'domain_transfer_test'","current_database() <> '"+report.engine.name.replaceAll("'","''")+"'");fixture=fixture.replace(/^\\set ON_ERROR_STOP on\r?\n/m,'');
+ const inc1='\\ir ../../'+paths[1],inc2='\\ir ../../'+paths[2],i1=fixture.indexOf(inc1),i2=fixture.indexOf(inc2),rest=fixture.slice(i2+inc2.length),ti=rest.indexOf('\nBEGIN;\nSET LOCAL ROLE authenticated;');assert(i1>=0&&i2>i1&&ti>=0,'Fixture layout');
+ await db.exec(fixture.slice(0,i1));await db.exec(files[1]);await db.exec(files[2]);await db.exec(rest.slice(0,ti));await db.exec(files[3]);await db.exec("UPDATE public.sites SET settings='{\"preserve\":true}',theme_key='editorial'; UPDATE public.site_domains SET verified_at='2026-01-01T00:00:00Z'; UPDATE public.site_domain_redirects SET locked=true,permanent=false,preserve_path=false;");baseline=await state();
+ await check('audited enum labels exactly match the catalog lists',async()=>{for(const [type,expected]of Object.entries(enums)){const values=(await db.query('SELECT e.enumlabel FROM pg_enum e JOIN pg_type t ON t.oid=e.enumtypid JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname=$1 AND t.typname=$2 ORDER BY e.enumsortorder',['public',type])).rows.map(r=>r.enumlabel);assert(JSON.stringify(values)===JSON.stringify(expected),'Enum mismatch '+type);}});
+ for(const role of ['admin','editor','author','contributor','viewer'])for(const site of [a,b])await negative(role+' membership at '+(site===a?'source':'target'),`UPDATE public.site_members SET role='${role}' WHERE site_id='${site}';`,move,'42501');
+ for(const status of ['draft','suspended','archived'])await negative('target '+status,`UPDATE public.sites SET status='${status}' WHERE id='${b}';`,move,'22023');
+ for(const site of [a,b])await negative('different owner at '+(site===a?'source':'target'),`UPDATE public.sites SET owner_id='00000000-0000-0000-0000-000000000099' WHERE id='${site}';`,move,'42501');
+ await negative('no authenticated actor','',move,'42501',{uid:''});await negative('unrelated actor','',move,'42501',{uid:'00000000-0000-0000-0000-000000000099'});
+ for(const status of ['failed','pending_deletion'])await negative('domain '+status,nonprimary(status),move,'22023');
+ await negative('hostname confirmation mismatch','',`SELECT public.move_site_domain_v2('${d}','${a}','${b}','wrong.test');`,'22023');
+ await negative('managed subdomain cannot move','',`UPDATE public.site_domains SET site_id='${b}' WHERE hostname='source.ngeblogging.com';`,'22023');
+ await negative('verified_at cannot change during reparenting','',`UPDATE public.site_domains SET site_id='${b}',verified_at=NULL WHERE id='${d}';`,'22023');
+ await negative('redirect RLS requires correlated site/domain','',`UPDATE public.site_domain_redirects SET site_id='${b}';`,'42501');
+ await negative('composite FK protects postgres writes','',`UPDATE public.site_domain_redirects SET site_id='${b}'; SET CONSTRAINTS ALL IMMEDIATE;`,'23503',{role:'postgres'});
+ await negative('legacy inactive enum is rejected','',`UPDATE public.sites SET status='inactive' WHERE id='${b}';`,'22P02',{role:'postgres'});
+ await negative('forced redirect failure rolls back all modeled fields',"SELECT set_config('smoke.fail_redirect','on',true);",move,'P0001');
+ await negative('second move in same transaction requires reload','',move+move,'40001');
+ await positive('active');await positive('active',false);await positive('pending',false);await positive('verifying',false);await positive('active',true,false);
+ report.passedCount=report.tests.filter(t=>t.passed).length;report.failedCount=report.tests.filter(t=>!t.passed).length;report.passed=report.failedCount===0;report.auditAlignment=['Exact audited enum labels','Audited role-helper behavior with original parameter names retained','Audited sync and timestamp behavior; verified_at added','Relevant catalog read/write RLS behavior followed by draft correlation correction','is_public and selected metadata/redirect flags modeled'];report.limits=['Not complete production tables, profile/auth foreign keys, signup or account-limit triggers','Test-only role grants and auth.uid claim injection; no Supabase Auth/signature verification','SQL-only run; previous browser passes do not automatically apply to this slice','No native concurrency, deployed PostgREST, provider/cache or production verification'];
+}catch(e){report.passed=false;report.error={message:e.message,code:e.code,stack:e.stack};}finally{if(db){await db.close();report.databaseClosed=true;}document.querySelectorAll('script').forEach(s=>s.remove());out.textContent=JSON.stringify(report,null,2);out.dataset.done='true';}
+</script></body></html>

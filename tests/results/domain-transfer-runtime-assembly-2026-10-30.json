@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-30",
+  "sourceModulesCommit": "504789da175bf68eaf2cc8bbe604c023405239e6",
+  "productionConnection": false,
+  "newSupabaseResource": false,
+  "localIntegratedReconciliation": {
+    "scope": "Persisted React flow/dialog/controller/classifier, move/read handlers, GET client and Supabase adapter with actual PostgreSQL WASM SQL; HTTP/Auth fixtures, not live Supabase",
+    "engine": "PostgreSQL 18.6 / PGlite 0.5.13 / wasm32",
+    "react": "19.2.7",
+    "babel": "8.0.10",
+    "passed": 3,
+    "failed": 0,
+    "scenarios": ["Lost SQL commit response: one RPC and one GET read update parent observer once with at_target and providerCacheVerified false", "Forced SQL failure: complete row rollback, one GET observes source without claiming rollback or restoring mutation form", "Invalid reread session: GET returns 401, committed data remains, parent observer not called"],
+    "databasesClosed": true,
+    "browserErrors": []
+  },
+  "candidateRuntimeChecks": {
+    "scope": "Candidate runtime/Worker Web API checks with synthetic Auth/storage; not SQL or deployed Worker tests",
+    "passed": 11,
+    "failed": 0,
+    "requestIdFixture": true,
+    "scenarios": ["Default and production modes fail closed", "Unknown paths are not forwarded", "State endpoint performs reads only", "Move then read share adapters without replay", "Wrong host/Origin blocked before storage", "Production allowed origin rejected", "Known production database rejected even if configured as approved", "Admin-only membership cannot read or move", "Worker ignores shared production bindings", "Enabled Worker with missing isolated config fails closed", "Wrong HTTP method never reaches adapters"],
+    "harnessIssue": "Initial browser run lacked crypto.randomUUID; final candidate accepts a requestId factory and tests inject a fixture ID. Default UUID generation not exercised by this harness"
+  },
+  "configuration": {"separateWorkerName": "ngeblogging-stage5-isolated", "transferEnabled": false, "productionRoutes": [], "databaseConfigured": false, "deploymentPerformed": false},
+  "limits": ["No live Supabase Auth/PostgREST verification", "No PostgreSQL 17 server/full production schema/concurrency validation", "No active DomainPanel binding", "No provider/DNS/HTTPS/cache verification", "Wrangler build/deploy configuration has not been exercised", "No deployment or production activation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

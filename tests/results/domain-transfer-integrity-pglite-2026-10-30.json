@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-30",
+  "baseSourceCommit": "df84652fb2665bcbca6d9e51cd46d9120df696cc",
+  "candidateSql": "docs/drafts/domain-site-transfer-integrity-v2.sql",
+  "engine": "PostgreSQL 18.6 / PGlite 0.5.13 / wasm32",
+  "scope": "Executed candidate guard SQL with existing representative fixture, qualified redirect RLS patch and V2 RPC in an in-memory browser PostgreSQL engine",
+  "productionConnection": false,
+  "newSupabaseResource": false,
+  "passed": true,
+  "passedCount": 11,
+  "negativeTests": [
+    {"name": "Platform subdomain move", "sqlstate": "22023", "rollbackUnchanged": true},
+    {"name": "Hostname changed during move", "sqlstate": "22023", "rollbackUnchanged": true},
+    {"name": "Admin without owner membership", "sqlstate": "42501", "rollbackUnchanged": true},
+    {"name": "Different target owner", "sqlstate": "42501", "rollbackUnchanged": true},
+    {"name": "Inactive target", "sqlstate": "22023", "rollbackUnchanged": true},
+    {"name": "Redirect/domain mismatch even as postgres", "sqlstate": "23503", "rollbackUnchanged": true},
+    {"name": "Direct pending move leaves redirect behind", "sqlstate": "23503", "rollbackUnchanged": true},
+    {"name": "Direct active move leaves canonical target mapping stale", "sqlstate": "23514", "rollbackUnchanged": true}
+  ],
+  "positiveTests": [
+    "Original V2 smoke assertions complete under authenticated role; SET CONSTRAINTS ALL IMMEDIATE succeeds",
+    "Pending RPC transfer preserves target free routing and nonprimary status",
+    "Verifying RPC transfer preserves target free routing and nonprimary status"
+  ],
+  "rollbackComparison": "Complete representative sites/domains/redirects/membership rows compared to baseline after each negative test and successful test transaction",
+  "databaseClosed": true,
+  "limits": ["Not PostgreSQL 17 compatibility evidence", "Not full production schema or historical-data migration validation", "No concurrent sessions or lock benchmark", "No RPC-only guarantee", "No guarantee for arbitrary later mapping/metadata edits after commit", "No provider/cache or React E2E verification"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

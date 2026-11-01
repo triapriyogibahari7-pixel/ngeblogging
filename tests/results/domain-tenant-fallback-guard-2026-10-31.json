@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-31",
+  "contractCommit": "d7109b35d44043e65dc3a7cdb36c01b8082621cf",
+  "recordType": "Checkpoint summary of observed local Node runs; saving is not another execution",
+  "candidate": "server/drafts/domain-tenant-fallback-guard.mjs",
+  "runner": "tests/tenant-fallback-guard.test.mjs",
+  "scope": "Offline unit fixtures of tenant-HTML guard only, not adapter, wrapper chain or deployment",
+  "baselineExit": 0,
+  "passedCount": 21,
+  "failedCount": 0,
+  "passed": true,
+  "networkAttempts": 0,
+  "negativeControlsRejected": 3,
+  "negativeControls": [
+    {
+      "mutation": "HTTP_failure_as_absence",
+      "replaceOnce": "if(!response?.ok)return terminal(request,503);",
+      "with": "if(!response?.ok)return terminal(request,404);",
+      "exit": 1,
+      "failedCount": 2,
+      "failedTests": ["backend HTTP failure is unavailable rather than absence", "unavailable HEAD has no body"]
+    },
+    {
+      "mutation": "hidden_result_reaches_renderer",
+      "replaceOnce": "if(rows.length===0)return terminal(request,404);",
+      "with": "if(rows.length===0)rows.push({site_id:'00000000-0000-0000-0000-000000000001',hostname:host,site_status:'active',domain_status:'active',is_public:true});",
+      "exit": 1,
+      "failedCount": 3,
+      "failedTests": ["empty anonymous result yields generic 404 with zero rendering", "empty anonymous HEAD yields bodyless 404 with zero rendering", "explicit private row and empty result have identical generic output"]
+    },
+    {
+      "mutation": "renderer_identity_check_removed",
+      "replaceOnce": "result.siteId!==context.siteId||result.hostname!==context.hostname||",
+      "with": "",
+      "exit": 1,
+      "failedCount": 2,
+      "failedTests": ["renderer tenant identity mismatch is not released", "renderer hostname mismatch is not released"]
+    }
+  ],
+  "controlReproduction": "The saved unit runner does not mutate source automatically. For each control, use an independent temporary copy of the baseline module and unit runner, require exactly one replacement anchor, apply the specified single replacement, then execute the unit runner. Original source was restored after observed controls. Do not apply mutations to an active handler or the repository baseline.",
+  "limits": [
+    "Injected flattened metadata and trusted renderer callbacks, not real adapter/SQL/RLS/Auth/PostgREST",
+    "Identity validation is cooperative metadata, not attestation of HTML or side effects inside callbacks",
+    "No-store is an adapter hint, not upstream freshness or atomic/concurrent visibility proof",
+    "No static/system/API classification, canonical or external-redirect integration",
+    "No native Worker, timeout/body-size bound, provider/DNS/TLS, cache purge or deployment acceptance"
+  ],
+  "productionConnection": false,
+  "activeHandlerChanged": false,
+  "stage4": "OPEN",
+  "stage5": "OPEN",
+  "releaseHold": "No merge to main or production activation before stage 10 completion, verification and separate owner release approval. This record does not modify CI or branch protection."
+}

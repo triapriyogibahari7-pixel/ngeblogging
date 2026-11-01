@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-30",
+  "baseFlowCommit": "cf2cdd1b789e073404ffe534852d34294e415455",
+  "scope": "Node.js tests of new state handler and GET reader using in-process HTTP objects and mocked Auth/snapshot adapters; not live Supabase, deployed Worker or React E2E",
+  "testsPassed": 15,
+  "testsFailed": 0,
+  "productionConnection": false,
+  "mutationsInvoked": 0,
+  "behavior": ["GET-only state handler, default disabled and isolated-test gated", "Caller token and current ownership/membership checks", "Read context remains usable after domain moves from source to target", "Whitelisted fields, no-store responses and non-atomic snapshot disclosure", "Same-origin GET does not require a manually fabricated Origin header", "Client uses fresh token in header, never in query, and no automatic retry", "Response context validation, normalization and bounded body-read timeout", "Known production origins blocked by client factory"],
+  "limits": ["No Worker route registration", "No active panel binding", "Auth and snapshot adapters mocked in these tests", "No live database, provider, cache or deployment verification"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

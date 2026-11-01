@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-30",
+  "sourceCommit": "5783a4e398ded9849889acf1c552de7474070dca",
+  "scope": "Actual React DOM, controller, handler, adapter and SQL execution in one local browser test; HTTP transport and Auth identity are fixtures, not a live Supabase service",
+  "reactVersion": "19.2.7",
+  "babelVersion": "8.0.10",
+  "engine": "PostgreSQL 18.6 / PGlite 0.5.13 / wasm32",
+  "productionConnection": false,
+  "newSupabaseResource": false,
+  "fixtureExtension": "tests/sql/domain-transfer-adapter-fixture.sql",
+  "requestFacade": "Server-received Origin header supplied by local harness because browser Request forbids setting Origin manually; production handler Origin check unchanged",
+  "fixtureAuth": "Synthetic token maps to a fixture user; SQL ran with authenticated role and fixture auth.uid claim, not production JWT verification",
+  "passed": true,
+  "passedCount": 3,
+  "tests": [
+    {"name": "Same-tick double submit commits one SQL move", "passed": true, "rpcCalls": 1, "httpStatus": 200, "sqlRole": "authenticated", "domainSite": "target", "redirectSite": "target", "sourceMapping": "source.ngeblogging.com", "targetMapping": "example.test", "managedRowsRetained": 2, "uiSuccess": true, "providerCacheVerified": false, "databaseClosed": true},
+    {"name": "Injected SQL failure rolls back rows without replay", "passed": true, "rpcCalls": 1, "sqlFailure": "P0001: SMOKE_FORCED_FAILURE", "handlerHttpStatus": 503, "rollbackAllRowsUnchanged": true, "uiUnknown": true, "retryAutomatically": false, "databaseClosed": true},
+    {"name": "Response lost after SQL commit is found by reread", "passed": true, "rpcCalls": 1, "handlerHttpStatus": 200, "domainSite": "target", "redirectSite": "target", "uiUnknown": true, "rereadFoundCommittedMove": true, "retryAutomatically": false, "databaseClosed": true}
+  ],
+  "browserErrors": [],
+  "harnessIssuesResolved": ["Browser-created Request omitted manually supplied Origin; server-request facade added", "Larger multi-scenario run timed out and was reduced", "Minimal SQL fixture lacked site_members SELECT grant; self-only membership read policy and grant added in test fixture only"],
+  "limits": ["Not live Supabase Auth or PostgREST HTTP verification", "Not PostgreSQL 17 server or full production schema", "No cross-session concurrency or lock benchmark", "No active DomainPanel integration", "Reread callback found state; complete parent UI reconciliation is not established", "No provider, DNS, HTTPS or hostname cache verification", "No deployment or production activation"],
+  "stage4": "OPEN",
+  "stage5": "OPEN"
+}

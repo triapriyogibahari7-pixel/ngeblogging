@@ -120,16 +120,20 @@ export async function canonicalDomainRedirect(request, env) {
   target.port = "";
   target.searchParams.delete("ngeblogging-free-preview");
 
+  // Default-off policy for movable custom domains; does not invalidate old redirects.
+  const reversible = env.REVERSIBLE_FREE_DOMAIN_REDIRECTS === "true";
   const headers = new Headers({
     location: target.toString(),
-    "cache-control": "public, max-age=60, s-maxage=300",
+    "cache-control": reversible ? "no-store, max-age=0" : "public, max-age=60, s-maxage=300",
     "x-ngeblogging-canonical-domain": customHostname,
     "x-ngeblogging-free-domain-fallback": "available-with-preview-parameter",
     "x-content-type-options": "nosniff",
   });
 
+  if (reversible) headers.set("x-ngeblogging-canonical-redirect-policy", "reversible-free-domain");
+
   return new Response(null, {
-    status: 308,
+    status: reversible ? 307 : 308,
     headers,
   });
 }
