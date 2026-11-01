@@ -43,8 +43,8 @@ export function createRegistrarQuoteRouter({providers=[],timeoutMs=5000,maxAgeMs
  const ids=new Set();
  const configured=providers.map(p=>{
   if(!p||typeof p.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,39}$/.test(p.id)||ids.has(p.id)||!Array.isArray(p.extensions)
-   ||(p.enabled!==undefined&&typeof p.enabled!=='boolean')||(p.enabled===true&&typeof p.lookup!=='function'))throw issue('INVALID_PROVIDER_CONFIG');
-  ids.add(p.id);return {id:p.id,enabled:p.enabled===true,extensions:[...new Set(p.extensions.map(suffix))],lookup:p.lookup};
+   ||(p.quoteEnvironment!==undefined&&!['test','live'].includes(p.quoteEnvironment))||(p.enabled!==undefined&&typeof p.enabled!=='boolean')||(p.enabled===true&&typeof p.lookup!=='function'))throw issue('INVALID_PROVIDER_CONFIG');
+  ids.add(p.id);return {id:p.id,enabled:p.enabled===true,extensions:[...new Set(p.extensions.map(suffix))],quoteEnvironment:p.quoteEnvironment,lookup:p.lookup};
  });
  const known=configured.flatMap(p=>p.extensions);
  return Object.freeze({
@@ -76,11 +76,11 @@ export function createRegistrarQuoteRouter({providers=[],timeoutMs=5000,maxAgeMs
      observedAvailability=response.availability;
      const prices=Object.fromEntries(OPS.map(op=>[op,price(response.prices?.[op],op,years)]));
      const offered=OPS.map(op=>prices[op]).filter(x=>x.supported);
-     if(!offered.length||new Set(offered.map(x=>x.currency)).size!==1)throw issue('INVALID_PROVIDER_QUOTE');
+     if((response.availability==='available'&&!offered.length)||new Set(offered.map(x=>x.currency)).size>1)throw issue('INVALID_PROVIDER_QUOTE');
      const now=clock(),quoteId=makeId();
      if(!Number.isFinite(now)||typeof quoteId!=='string'||!/^[A-Za-z0-9_-]{8,100}$/.test(quoteId))throw issue('INVALID_ROUTER_CONFIG');
      return {status:'quoted',domain:domain.domain,extension:domain.extension,diagnostics,lookupOnly:true,purchaseAllowed:false,
-      offer:Object.freeze({quoteId,providerId:p.id,domain:domain.domain,years,availability:response.availability,prices:Object.freeze(prices),
+      offer:Object.freeze({quoteId,providerId:p.id,...(p.quoteEnvironment===undefined?{}:{providerEnvironment:p.quoteEnvironment}),domain:domain.domain,years,availability:response.availability,prices:Object.freeze(prices),
        checkedAt:new Date(now).toISOString(),expiresAt:new Date(now+maxAgeMs).toISOString(),indicative:true,mustRecheckBeforePurchase:true,transferEligibility:'not_checked',registrantEligibility:'not_checked'})};
     }catch(error){
      if(error?.code==='INVALID_ROUTER_CONFIG')throw error;
