@@ -6,7 +6,17 @@ import './domain-customer-search.css';
 const h=React.createElement,HOSTS=new Set(['https://ngeblogging.com','https://www.ngeblogging.com']);
 const money=value=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);
 const labels={available:'Tersedia saat diperiksa',unavailable:'Tidak tersedia',unverified:'Belum terverifikasi',not_checked:'Belum diperiksa',expired:'Harga kedaluwarsa'};
-function message(error){if(error?.status===401)return 'Sesi tidak valid. Masuk kembali dengan akun yang sama.';if(error?.status===403)return 'Pencarian hanya tersedia untuk pemilik situs yang sedang dikelola.';if(error?.status===429)return 'Batas pencarian tercapai atau pencarian lain masih berjalan. Coba kembali nanti.';if(error?.code==='DOMAIN_SEARCH_DISABLED'||error?.code==='DOMAIN_SERVICE_UNAVAILABLE')return 'Layanan pencarian domain belum dibuka untuk akun ini. Tidak ada pembayaran dilakukan.';return 'Pencarian atau harga belum dapat diverifikasi. Tidak ada pesanan atau pembayaran dibuat.';}
+function message(error){
+ const code=typeof error?.code==='string'?error.code:'';
+ const local=code||(error?.message==='INVALID_SESSION'||error?.message==='SESSION_CHANGED'?error.message:'');
+ if(error?.status===401||['AUTH_REQUIRED','INVALID_SESSION','SESSION_CHANGED'].includes(local))return 'Sesi akun belum dapat diverifikasi atau sudah berubah. Masuk kembali dengan akun yang sama, lalu cari ulang. Tidak ada pesanan atau pembayaran dibuat.';
+ if(local==='ORIGIN_NOT_ALLOWED')return 'Alamat asal permintaan tidak diterima. Buka pencarian dari https://ngeblogging.com lalu coba kembali. Tidak ada pesanan atau pembayaran dibuat.';
+ if(error?.status===403||local==='SITE_OWNER_REQUIRED')return 'Pencarian hanya tersedia untuk pemilik situs yang sedang dikelola. Tidak ada pesanan atau pembayaran dibuat.';
+ if(error?.status===429||['LOOKUP_RATE_LIMITED','LOOKUP_BUSY'].includes(local))return 'Batas pemeriksaan tercapai atau pencarian lain masih berjalan. Tunggu sebentar sebelum mencoba kembali. Tidak ada pesanan atau pembayaran dibuat.';
+ const known={DOMAIN_SEARCH_DISABLED:'Layanan pencarian domain belum diaktifkan.',DOMAIN_SERVICE_UNAVAILABLE:'Layanan registrar belum siap digunakan.',DOMAIN_SEARCH_CONFIGURATION_UNAVAILABLE:'Konfigurasi batas pemeriksaan pencarian belum siap.',DOMAIN_PRICE_UNAVAILABLE:'Backend belum dapat memastikan ketersediaan atau harga. Koneksi registrar dan dasar harga perlu diperiksa.',AUTH_UNAVAILABLE:'Layanan verifikasi akun atau situs belum dapat dihubungi.',INVALID_SEARCH_QUERY:'Nama domain atau kata kunci belum didukung. Gunakan nama lengkap tanpa protokol atau path.',INVALID_SITE_ID:'Situs aktif belum valid. Pilih kembali situs yang Anda kelola.',CUSTOMER_SEARCH_UNVERIFIED:'Respons pencarian belum lolos validasi atau permintaan melewati batas waktu. Cari ulang untuk memeriksa hasil terbaru.'};
+ const detail=Object.hasOwn(known,local)?known[local]:error?.status===404?'Endpoint pencarian tidak ditemukan pada server yang merespons. Versi aplikasi dan backend perlu diperiksa.':'Pencarian belum berhasil. Periksa koneksi lalu coba kembali; penyebabnya belum dapat dipastikan.';
+ return detail+' Tidak ada pesanan atau pembayaran dibuat.'+(Object.hasOwn(known,local)?' Kode: '+local+'.':'');
+}
 export default function DomainCustomerSearch({user,siteId,siteName,onSelect}){
  const [input,setInput]=useState(''),[busy,setBusy]=useState(false),[result,setResult]=useState(null),[notice,setNotice]=useState(''),[selectedDomain,setSelectedDomain]=useState(''),[filter,setFilter]=useState('all'),[sort,setSort]=useState('recommended'),[tick,setTick]=useState(0);
  const active=useRef(null),scope=JSON.stringify([user?.id,siteId]);
