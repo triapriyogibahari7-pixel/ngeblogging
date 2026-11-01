@@ -2,6 +2,8 @@ import React,{useEffect,useRef,useState} from 'react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {fetchCustomerDomainSearch,currentCustomerSearchView,normalizeCustomerSearchQuery} from './lib/domain-customer-search.mjs';
 import DomainCustomerReview from './DomainCustomerReview.jsx';
+import DomainCatalogStage6 from './DomainCatalogStage6.jsx';
+import {prepareCatalogDomain} from './lib/domain-catalog-stage6.mjs';
 import './domain-customer-search.css';
 const h=React.createElement,HOSTS=new Set(['https://ngeblogging.com','https://www.ngeblogging.com']);
 const money=value=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);
@@ -18,9 +20,9 @@ function message(error){
  return detail+' Tidak ada pesanan atau pembayaran dibuat.'+(Object.hasOwn(known,local)?' Kode: '+local+'.':'');
 }
 export default function DomainCustomerSearch({user,siteId,siteName,onSelect}){
- const [input,setInput]=useState(''),[busy,setBusy]=useState(false),[result,setResult]=useState(null),[notice,setNotice]=useState(''),[selectedDomain,setSelectedDomain]=useState(''),[filter,setFilter]=useState('all'),[sort,setSort]=useState('recommended'),[tick,setTick]=useState(0);
+ const [input,setInput]=useState(''),[busy,setBusy]=useState(false),[result,setResult]=useState(null),[notice,setNotice]=useState(''),[selectedDomain,setSelectedDomain]=useState(''),[preferredExtension,setPreferredExtension]=useState(''),[filter,setFilter]=useState('all'),[sort,setSort]=useState('recommended'),[tick,setTick]=useState(0);
  const active=useRef(null),scope=JSON.stringify([user?.id,siteId]);
- useEffect(()=>{setInput('');setBusy(false);setResult(null);setSelectedDomain('');setNotice('');setFilter('all');setSort('recommended');return ()=>{active.current?.abort();active.current=null;};},[scope]);
+ useEffect(()=>{setInput('');setBusy(false);setResult(null);setSelectedDomain('');setPreferredExtension('');setNotice('');setFilter('all');setSort('recommended');return ()=>{active.current?.abort();active.current=null;};},[scope]);
  useEffect(()=>{if(!result)return;const timer=setInterval(()=>setTick(performance.now()),1000);return ()=>clearInterval(timer);},[result]);
  useEffect(()=>{if(typeof document==='undefined')return;const suspend=()=>{if(document.visibilityState!=='hidden')return;active.current?.abort();active.current=null;setBusy(false);setResult(null);setSelectedDomain('');setNotice('Pencarian perlu diperbarui setelah berpindah tab atau aplikasi. Cari ulang untuk harga terbaru.');};document.addEventListener('visibilitychange',suspend);return ()=>document.removeEventListener('visibilitychange',suspend);},[scope]);
  if(typeof window==='undefined'||!HOSTS.has(window.location.origin))return null;
@@ -28,7 +30,7 @@ export default function DomainCustomerSearch({user,siteId,siteName,onSelect}){
  const cancel=()=>{active.current?.abort();active.current=null;setBusy(false);setResult(null);setSelectedDomain('');setNotice('Pencarian dibatalkan. Tidak ada pesanan atau pembayaran dibuat.');};
  async function submit(event){
   event.preventDefault();if(active.current)return;let query;
-  try{query=normalizeCustomerSearchQuery(input);}catch{setNotice('Masukkan nama domain atau kata kunci tanpa protokol, path, atau karakter khusus.');return;}
+  try{const prepared=preferredExtension&&!input.includes('.')?prepareCatalogDomain(input,preferredExtension):input;if(!prepared)throw Error();query=normalizeCustomerSearchQuery(prepared);}catch{setNotice('Masukkan nama domain atau kata kunci tanpa protokol, path, atau karakter khusus.');return;}
   const c=new AbortController();active.current=c;setBusy(true);setNotice('');setResult(null);setSelectedDomain('');const current=()=>active.current===c&&!c.signal.aborted;
   const timer=setTimeout(()=>{if(current()){c.abort();active.current=null;setBusy(false);setNotice('Pencarian melewati batas waktu. Hasil belum terkonfirmasi; tidak ada pembayaran dibuat.');}},30000);
   try{
@@ -42,12 +44,21 @@ export default function DomainCustomerSearch({user,siteId,siteName,onSelect}){
   finally{clearTimeout(timer);if(active.current===c){active.current=null;setBusy(false);}}
  }
  function choose(domain){if(!result||result.scope!==scope||busy)return;const view=currentCustomerSearchView(result.view,performance.now()),row=view.rows.find(item=>item.domain===domain&&item.status==='available');if(!row){setTick(performance.now());setNotice('Harga sudah kedaluwarsa atau belum terverifikasi. Cari ulang sebelum memilih.');return;}setSelectedDomain(domain);setNotice('Domain dipilih untuk ditinjau. Belum ada pesanan atau pembayaran dibuat.');onSelect?.({domain,siteId});}
+ function selectExtension(extension){
+  if(busy||active.current)return;
+  if(!input.trim()){setPreferredExtension(extension);setResult(null);setSelectedDomain('');setNotice('Ekstensi .'+extension+' dipilih. Masukkan nama, lalu tekan Cari domain dan harga.');return;}
+  let prepared;try{prepared=prepareCatalogDomain(input,extension);}catch{}
+  if(!prepared){setNotice('Nama belum dapat digabung dengan ekstensi ini. Gunakan nama utama tanpa subdomain, protokol, atau path.');return;}
+  setPreferredExtension(extension);setInput(prepared);setResult(null);setSelectedDomain('');setNotice('Nama disiapkan dengan .'+extension+'. Tekan Cari domain dan harga untuk memeriksa dukungan, ketersediaan, dan harga.');
+ }
  const rows=visible?visible.rows.filter(row=>filter==='all'||(filter==='available'?row.status==='available':filter==='unavailable'?row.status==='unavailable':['unverified','not_checked','expired'].includes(row.status))):[];
  if(sort==='price')rows.sort((a,b)=>(a.price?.amountIdr??Infinity)-(b.price?.amountIdr??Infinity)||a.domain.localeCompare(b.domain));
  const selected=visible?.rows.find(row=>row.domain===selectedDomain);
  return h('section',{className:'sv124-card dcs-panel','aria-label':'Cari domain untuk situs aktif','data-domain-commerce-search':'batch'},
   h('header',{className:'dcs-heading'},h('span',{className:'dcs-eyebrow'},'NGEBLOGGING DOMAINS'),h('h2',null,'Temukan domain untuk situs Anda'),h('p',null,'Situs yang dikelola: ',h('strong',null,siteName||'Situs aktif'),'. Pilihan dan hasil pencarian mengikuti situs ini.')),
-  h('form',{className:'dcs-form',onSubmit:submit},h('label',null,'Nama domain atau kata kunci',h('input',{value:input,onChange:event=>{setInput(event.target.value);setResult(null);setSelectedDomain('');setNotice('');},maxLength:253,placeholder:'nama-domain.com atau nama brand',autoComplete:'off',spellCheck:false,disabled:busy,required:true})),h('button',{type:'submit',className:'sv124-primary',disabled:busy},busy?'Memeriksa domain dan harga…':'Cari domain dan harga'),busy?h('button',{type:'button',className:'sv124-secondary',onClick:cancel},'Batalkan'):null),
+  h('form',{className:'dcs-form',onSubmit:submit},h('label',null,'Nama domain atau kata kunci',h('input',{value:input,onChange:event=>{setInput(event.target.value);setResult(null);setSelectedDomain('');setNotice('');},maxLength:253,placeholder:'nama-domain.'+(preferredExtension||'com')+' atau nama brand',autoComplete:'off',spellCheck:false,disabled:busy,required:true})),h('button',{type:'submit',className:'sv124-primary',disabled:busy},busy?'Memeriksa domain dan harga…':'Cari domain dan harga'),busy?h('button',{type:'button',className:'sv124-secondary',onClick:cancel},'Batalkan'):null),
+  h(DomainCatalogStage6,{disabled:busy,onSelect:selectExtension}),
+  preferredExtension?h('p',{className:'dcs-muted'},'Ekstensi pilihan: .',preferredExtension,' · dukungan dan harga mengikuti pemeriksaan backend.'):null,
   h('div',{role:'status','aria-live':'polite','aria-busy':busy},busy?h('p',{className:'dcs-note'},'Menyiapkan 50 saran dan memeriksa ketersediaan serta harga. Hasil yang belum terkonfirmasi tidak akan diberi harga buatan.'):null,notice?h('p',{className:'dcs-note'},notice):null,visible?h('p',{className:'dcs-live-summary'},visible.checkedCount,' dari ',visible.candidateCount,' nama telah diperiksa.'):null),
   visible?h(React.Fragment,null,
    h('div',{className:'dcs-summary'},h('p',null,visible.suggestionCount,' saran · ',visible.checkedCount,' dari ',visible.candidateCount,' nama telah diperiksa.'),!visible.complete?h('p',{className:'dcs-warning'},'Sebagian hasil belum terverifikasi. ',visible.budgetExhausted?'Batas pemeriksaan untuk pencarian ini tercapai. ':visible.timedOut?'Batas waktu pemeriksaan tercapai. ':'','Harga hanya ditampilkan untuk hasil yang terverifikasi dan belum kedaluwarsa.'):null,visible.requestedExtensionSupported===false?h('p',{className:'dcs-warning'},'Ekstensi domain yang diminta belum didukung pada pencarian ini. Berikut alternatif dari katalog layanan.'):null,visible.clockUnverified?h('p',{className:'dcs-warning'},'Masa berlaku harga belum dapat diverifikasi. Cari ulang sebelum memilih.'):null),
