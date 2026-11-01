@@ -17,9 +17,10 @@ function validate(value,now){
  if(value.currency!=='IDR'||value.years!==1||!Number.isSafeInteger(value.amountIdr)||value.amountIdr<1||value.amountIdr>1000000000000||value.issuedAt>now||value.expiresAt<=now||value.expiresAt<=value.issuedAt||value.expiresAt-value.issuedAt>MAX_AGE)bad();
  return value;
 }
-// Server-only review receipt. Never use this as consent, payment proof, or a replay ledger.
+// Server-only legacy OpenSRS receipt, never consent or payment authorization.
 export function issueDomainReviewReceipt(check,{key,userId,siteId,now=Date.now(),makeId=randomUUID}={}){
  const signingKey=secret(key),owner=id(userId),site=id(siteId);clock(now);
+ if(check?.legacyReviewReceiptCompatible!==true)bad();
  if(check?.code!=='DOMAIN_CUSTOMER_PRICE_CHECK'||check.environment!=='production'||check.siteId!==site||check.availability!=='available'||check.indicative!==true||check.purchaseAllowed!==false||check.checkoutAvailable!==false||typeof makeId!=='function')bad();
  const checkedAt=stamp(check.checkedAt),upstreamExpiry=stamp(check.expiresAt),p=check.price;
  if(checkedAt>now||now-checkedAt>30000||upstreamExpiry<=now||upstreamExpiry<=checkedAt||upstreamExpiry-checkedAt>300000||p?.currency!=='IDR'||p.termYears!==1||p.indicative!==true||p.purchaseAllowed!==false||p.expiresAt!==check.expiresAt)bad();
