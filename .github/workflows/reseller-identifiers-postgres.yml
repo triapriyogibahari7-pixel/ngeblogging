@@ -1,0 +1,107 @@
+name: Reseller identifier PostgreSQL regression
+on:
+  push:
+    branches: [feature/studio-domain-lifecycle-complete-20261101]
+    paths:
+      - '.github/workflows/reseller-identifiers-postgres.yml'
+      - 'docs/sql/domain-customer-reseller-payment-hardening.sql'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: reseller_test
+          POSTGRES_PASSWORD: isolated-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: '127.0.0.1'
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGDATABASE: reseller_test
+      PGPASSWORD: isolated-ci-only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run actual proposal against disposable fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v psql
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          SELECT version(), current_database();
+          CREATE TABLE public.domain_customer_purchase_orders (
+            environment text NOT NULL DEFAULT 'production',
+            payment_state text NOT NULL,
+            midtrans_transaction_id text CHECK(length(midtrans_transaction_id)<=128),
+            CHECK((payment_state='paid')=(midtrans_transaction_id IS NOT NULL))
+          );
+          CREATE TABLE public.domain_customer_order_events (
+            order_id integer NOT NULL, event_kind text NOT NULL,
+            actor_kind text NOT NULL,
+            source_event_id text CHECK(source_event_id IS NULL OR length(source_event_id) BETWEEN 1 AND 200),
+            UNIQUE(order_id,event_kind,source_event_id)
+          );
+          \i docs/sql/domain-customer-reseller-payment-hardening.sql
+          BEGIN;
+          DO $test$
+          DECLARE s text; v text; rejected boolean; checks integer := 0;
+          BEGIN
+            FOREACH s IN ARRAY ARRAY['pending','paid','failed','expired','cancelled','review_required','refund_pending','refunded'] LOOP
+              INSERT INTO public.domain_customer_purchase_orders(payment_state,midtrans_transaction_id) VALUES(s,'tx-'||s);
+              checks := checks+1;
+            END LOOP;
+            BEGIN
+              INSERT INTO public.domain_customer_purchase_orders(payment_state) VALUES('paid');
+              RAISE EXCEPTION 'ASSERT: paid NULL accepted';
+            EXCEPTION WHEN check_violation THEN checks := checks+1;
+            END;
+            FOREACH v IN ARRAY ARRAY['',' ',' tx','tx ',E'\t',E'\n',E'tx\t1',E'tx\n1','tx'||chr(127),'tx/1',repeat('a',129)] LOOP
+              rejected := false;
+              BEGIN
+                INSERT INTO public.domain_customer_purchase_orders(payment_state,midtrans_transaction_id) VALUES('pending',v);
+              EXCEPTION WHEN check_violation THEN rejected := true;
+              END;
+              IF NOT rejected THEN RAISE EXCEPTION 'ASSERT: invalid transaction accepted: %',quote_literal(v); END IF;
+              checks := checks+1;
+            END LOOP;
+            INSERT INTO public.domain_customer_purchase_orders(payment_state,midtrans_transaction_id) VALUES('pending','A'),('pending',repeat('a',128)),('pending',NULL),('refunded',NULL);
+            BEGIN
+              INSERT INTO public.domain_customer_purchase_orders(payment_state,midtrans_transaction_id) VALUES('refunded','tx-paid');
+              RAISE EXCEPTION 'ASSERT: duplicate transaction accepted';
+            EXCEPTION WHEN unique_violation THEN checks := checks+1;
+            END;
+            INSERT INTO public.domain_customer_order_events VALUES(1,'payment_paid','midtrans_webhook','event-1'),(1,'payment_review','operator',NULL),(1,'payment_paid','midtrans_webhook',repeat('e',200));
+            FOREACH v IN ARRAY ARRAY[NULL::text,'',' ',E'\t',E'\n',' event','event ',E'ev\tent','ev'||chr(127),repeat('e',201)] LOOP
+              rejected := false;
+              BEGIN
+                INSERT INTO public.domain_customer_order_events VALUES(2,'payment_paid','midtrans_webhook',v);
+              EXCEPTION WHEN check_violation THEN rejected := true;
+              END;
+              IF NOT rejected THEN RAISE EXCEPTION 'ASSERT: invalid webhook ID accepted: %',quote_nullable(v); END IF;
+              checks := checks+1;
+            END LOOP;
+            BEGIN
+              INSERT INTO public.domain_customer_order_events VALUES(1,'payment_paid','midtrans_webhook','event-1');
+              RAISE EXCEPTION 'ASSERT: duplicate event accepted';
+            EXCEPTION WHEN unique_violation THEN checks := checks+1;
+            END;
+            RAISE NOTICE '% checks passed plus positive boundary fixtures',checks;
+          END;
+          $test$;
+          ROLLBACK;
+          SQL
+      - name: Scope of evidence
+        run: |
+          echo 'Tests actual hardening proposal and catalog guard on minimal disposable fixtures.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Does not test full original migration, RLS, concurrent RPCs, cross-ledger reservations or provider behavior.' >> "$GITHUB_STEP_SUMMARY"
