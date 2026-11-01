@@ -4,6 +4,7 @@ import {createRegistrarQuoteRouter,normalizeRegistrarDomain} from './domain-regi
 import {parseDomainPricingSnapshot} from './domain-pricing-snapshot.mjs';
 import {registrarCostInRupiah} from './drafts/domain-money-conversion.mjs';
 import {createCustomerRegistrationQuoteRuntime} from './domain-customer-quote-runtime.mjs';
+import {createCustomerCurrencyContext} from '../shared/domain-currency-display.mjs';
 const BASE='https://polvmlrhqoiflumibfqs.supabase.co/',PREFIX='/api/domains/commerce/';
 const UUID=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const fail=()=>{throw Error('DOMAIN_PRICE_UNAVAILABLE');};
@@ -48,15 +49,16 @@ export function createDomainCustomerPriceCheck({fetchImpl=globalThis.fetch,clock
    const providerFetch=async(target,init)=>{if(b.signal.aborted||!Object.hasOwn(TARGETS,selected)||String(target)!==TARGETS[selected]||init?.method!=='POST')fail();if(requestsUsed>=requestLimit){exhausted=true;fail();}requestsUsed++;return b.wait(fetchImpl(target,init));};
    phase='runtime';const runtime=await b.wait(Promise.resolve().then(()=>build(env,{providerFetch})));if(runtime?.status!=='configured'||!Object.hasOwn(TARGETS,runtime.provider?.id)||runtime.provider.enabled!==true||runtime.provider.quoteEnvironment!=='live')return reply(503,'DOMAIN_SERVICE_UNAVAILABLE',{reason:runtime?.status==='disabled'?'provider_disabled':'provider_configuration_invalid'});selected=runtime.provider.id;
    if(searching){try{buildCustomerDomainSuggestions(query,runtime.provider.extensions);}catch{return reply(400,'INVALID_SEARCH_QUERY');}}else{try{domain=normalizeRegistrarDomain(domain,runtime.provider.extensions).domain;}catch{return reply(400,'INVALID_DOMAIN');}}
-   phase='pricing';const snapshotText=env.DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT;try{parseDomainPricingSnapshot(snapshotText,{now:clock(),environment:'production'});}catch(error){const reason=error?.code==='FX_SNAPSHOT_EXPIRED'?'fx_snapshot_expired':error?.code==='COST_POLICY_EXPIRED'?'cost_policy_expired':'pricing_configuration_invalid';return reply(503,'DOMAIN_PRICE_UNAVAILABLE',{reason});}
+   phase='pricing';const snapshotText=env.DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT;let currencyContext;
+   try{const snapshot=parseDomainPricingSnapshot(snapshotText,{now:clock(),environment:'production'});currencyContext=createCustomerCurrencyContext(snapshot,{now:clock()});}catch(error){const reason=error?.code==='FX_SNAPSHOT_EXPIRED'?'fx_snapshot_expired':error?.code==='COST_POLICY_EXPIRED'?'cost_policy_expired':'pricing_configuration_invalid';return reply(503,'DOMAIN_PRICE_UNAVAILABLE',{reason});}
    const evaluate=async(name,{signal}={})=>{
     if(b.signal.aborted||signal?.aborted)fail();if(requestsUsed>=requestLimit){exhausted=true;fail();}parseDomainPricingSnapshot(snapshotText,{now:clock(),environment:'production'});
     const provider={...runtime.provider,lookup:input=>runtime.provider.lookup({...input,signal:AbortSignal.any([input.signal,b.signal,...(signal?[signal]:[])])})};const router=createRegistrarQuoteRouter({providers:[provider],clock,makeId,timeoutMs:15000});
     const result=await b.wait(router.lookup({domain:name,years:1,providerId:selected})),offer=result?.offer;if(result?.status!=='quoted'||offer?.domain!==name||offer.providerId!==selected||offer.providerEnvironment!=='live')fail();
-    const value={code:'DOMAIN_CUSTOMER_PRICE_CHECK',environment:'production',siteId,domain:name,indicative:true,purchaseAllowed:false,checkoutAvailable:false,legacyReviewReceiptCompatible:selected==='opensrs'};if(offer.availability==='unavailable')return {...value,availability:'unavailable',price:null};
+    const value={code:'DOMAIN_CUSTOMER_PRICE_CHECK',environment:'production',siteId,domain:name,currencyContext,indicative:true,purchaseAllowed:false,checkoutAvailable:false,legacyReviewReceiptCompatible:selected==='opensrs'};if(offer.availability==='unavailable')return {...value,availability:'unavailable',price:null};
     const price=customerRegistrationPrice(offer,snapshotText,{now:clock(),providerId:selected});return {...value,availability:'available',price,checkedAt:offer.checkedAt,expiresAt:price.expiresAt};
    };
-   phase=searching?'batch':'lookup';if(searching){const remaining=Math.floor(timeoutMs-(performance.now()-started)-25);if(remaining<1)fail();const result=await b.wait(checkCustomerDomainSuggestions(query,{extensions:runtime.provider.extensions,siteId,check:evaluate,signal:b.signal,clock,concurrency:3,timeoutMs:Math.min(15000,remaining)}));return reply(200,'DOMAIN_CUSTOMER_SEARCH',{environment:'production',...result,limits:{requestsUsed,requestBudget:requestLimit,exhausted}});}
+   phase=searching?'batch':'lookup';if(searching){const remaining=Math.floor(timeoutMs-(performance.now()-started)-25);if(remaining<1)fail();const result=await b.wait(checkCustomerDomainSuggestions(query,{extensions:runtime.provider.extensions,siteId,check:evaluate,signal:b.signal,clock,concurrency:3,timeoutMs:Math.min(15000,remaining)}));return reply(200,'DOMAIN_CUSTOMER_SEARCH',{environment:'production',...result,currencyContext,limits:{requestsUsed,requestBudget:requestLimit,exhausted}});}
    const result=await evaluate(domain);return reply(200,result.code,result);
   }catch{return reply(503,phase==='session'||phase==='site'?'AUTH_UNAVAILABLE':'DOMAIN_PRICE_UNAVAILABLE',{reason:b.signal.aborted?'request_deadline':phase==='runtime'?'provider_configuration_invalid':phase==='pricing'?'pricing_configuration_invalid':'provider_or_response_unavailable'});}
   finally{if(held)pending.delete(owner);b.close();}
