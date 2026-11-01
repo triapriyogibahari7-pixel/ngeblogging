@@ -24,30 +24,43 @@ BEGIN
 END;
 $guard$;
 
--- One-way implication: preserve transaction identity in pending/failure/refund states.
+-- Preserve transaction identity in pending/failure/refund states.
+-- Match the existing payment handler's ID alphabet; never trim or rewrite IDs.
 ALTER TABLE public.domain_customer_purchase_orders
  ADD CONSTRAINT reseller_paid_requires_transaction
  CHECK (payment_state <> 'paid' OR midtrans_transaction_id IS NOT NULL),
- ADD CONSTRAINT reseller_transaction_id_nonempty
- CHECK (midtrans_transaction_id IS NULL OR length(btrim(midtrans_transaction_id)) BETWEEN 1 AND 128),
+ ADD CONSTRAINT reseller_transaction_id_format
+ CHECK (midtrans_transaction_id IS NULL OR
+        (length(midtrans_transaction_id) BETWEEN 1 AND 128
+         AND midtrans_transaction_id ~ '^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$'
+         AND midtrans_transaction_id !~ '[[:space:][:cntrl:]]')),
  ADD CONSTRAINT reseller_transaction_identity_unique
  UNIQUE (environment, midtrans_transaction_id);
 
--- Existing UNIQUE(order_id,event_kind,source_event_id) cannot deduplicate NULL IDs.
+-- Source IDs are opaque. Preserve exact case/value; reject whitespace/controls.
+-- PostgreSQL locale behavior and provider ID compatibility require integration tests.
 ALTER TABLE public.domain_customer_order_events
+ ADD CONSTRAINT reseller_source_event_id_format
+ CHECK (source_event_id IS NULL OR
+        (length(source_event_id) BETWEEN 1 AND 200
+         AND source_event_id !~ '[[:space:][:cntrl:]]')),
  ADD CONSTRAINT reseller_webhook_requires_event_identity
- CHECK (actor_kind <> 'midtrans_webhook' OR
-        (source_event_id IS NOT NULL AND length(btrim(source_event_id)) BETWEEN 1 AND 200));
+ CHECK (actor_kind <> 'midtrans_webhook' OR source_event_id IS NOT NULL);
 
 COMMIT;
 
--- REQUIRED TEST CASES BEFORE APPROVAL:
+-- REQUIRED POSTGRESQL TESTS BEFORE APPROVAL:
 -- paid + NULL transaction: reject; paid + valid transaction: accept.
 -- pending/failed/refund_pending/refunded + retained transaction: accept.
--- blank transaction: reject; duplicate transaction within environment: reject.
--- webhook + NULL/blank source event: reject; identical event retry: conflict/no-op.
+-- Empty, whitespace-padded, tab/newline/control-containing IDs: reject.
+-- Transaction IDs of lengths 1/128: accept when alphabet matches; 129: reject.
+-- Non-NULL event IDs of lengths 1/200: accept without whitespace/controls; 201: reject.
+-- NULL event ID: reject for midtrans_webhook, allowed for other actors.
+-- Duplicate transaction within environment: reject.
+-- Identical order/event-kind/source-ID retry: unique conflict, not automatic no-op.
+-- Handler/RPC must explicitly turn only a verified identical retry into a no-op.
 -- This does not deduplicate across the legacy Cloudflare and reseller tables.
--- A shared reservation/payment binding strategy remains a production blocker.
--- Registration transitions, refund reconciliation, pricing/consent snapshots,
--- transactional RPCs and PII retention remain outside this limited proposal.
+-- Shared reservation/payment binding remains a production blocker.
+-- Registration transitions, refunds, pricing/consent snapshots, transactional RPCs
+-- and PII retention remain outside this limited proposal.
 -- Not database-tested; exact catalog definition guard intentionally fails closed.
