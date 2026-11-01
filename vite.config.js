@@ -1,4 +1,5 @@
 import {defineConfig} from 'vite';
+import {resolve} from 'node:path';
 import {transformBrandingHtml} from './scripts/branding-v415.mjs';
 import {transformThemeCustomizer} from './scripts/theme-customizer-desktop.mjs';
 import {brandPng} from './scripts/brand-icons-v415.mjs';
@@ -19,5 +20,7 @@ export default defineConfig(async({command})=>{
       return {code:source.replace(from,'import DomainPanelV124 from "./DomainPanelStage5Entry.jsx";').replace(entry,'<DomainPanelV124 user={user} site={site} sites={sites} onSiteUpdate={setSite} setToast={setToast}/>'),map:null};
     }});
   }
-  return {...diagnostic,plugins:[...diagnostic.plugins,{name:'ngeblogging-account-names-v422',enforce:'pre',transform:transformThemeCustomizer,transformIndexHtml:transformBrandingHtml,generateBundle(){for(const size of [180,192,512])this.emitFile({type:'asset',fileName:`brand/icon-${size}-v415.png`,source:brandPng(size)});}},...integration]};
+  if(diagnostic.build?.rollupOptions?.input!==undefined)throw Error('DOMAIN_STATUS_BUILD_INPUT_CONFLICT');
+  const build={...diagnostic.build,rollupOptions:{...diagnostic.build?.rollupOptions,input:{index:resolve('index.html'),domainOrderStatus:resolve('domain-order-status.html')}}};
+  return {...diagnostic,build,plugins:[...diagnostic.plugins,{name:'ngeblogging-account-names-v422',enforce:'pre',transform:transformThemeCustomizer,transformIndexHtml(html,context){if(context?.filename?.replace(/\\/g,'/').endsWith('/domain-order-status.html'))return html;return transformBrandingHtml(html);},generateBundle(){for(const size of [180,192,512])this.emitFile({type:'asset',fileName:`brand/icon-${size}-v415.png`,source:brandPng(size)});}},...integration]};
 });
