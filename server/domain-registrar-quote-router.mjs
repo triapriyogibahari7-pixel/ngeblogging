@@ -53,8 +53,12 @@ export function createRegistrarQuoteRouter({providers=[],timeoutMs=5000,maxAgeMs
    if(!Number.isInteger(years)||years<1||years>10)throw issue('INVALID_REGISTRATION_PERIOD');
    const domain=normalizeRegistrarDomain(input?.domain,known),diagnostics=[];
    const empty=status=>({status,domain:domain.domain,extension:domain.extension,offer:null,diagnostics,lookupOnly:true,purchaseAllowed:false});
-   if(!configured.some(p=>p.enabled))return empty('provider_unconfigured');
-   const candidates=configured.filter(p=>p.extensions.includes(domain.extension));
+   const selected=input?.providerId;
+   if(selected!==undefined&&(typeof selected!=='string'||!/^[a-z0-9][a-z0-9-]{0,39}$/.test(selected)))throw issue('INVALID_PROVIDER_SELECTION');
+   const eligible=selected===undefined?configured:configured.filter(p=>p.id===selected);
+   if(selected!==undefined&&!eligible.length)return empty('provider_not_found');
+   if(!eligible.some(p=>p.enabled))return empty('provider_unconfigured');
+   const candidates=eligible.filter(p=>p.extensions.includes(domain.extension));
    if(!candidates.length)return empty('unsupported_extension');
    const active=candidates.filter(p=>p.enabled);
    if(!active.length)return empty('provider_unconfigured');
