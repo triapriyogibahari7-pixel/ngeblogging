@@ -7,6 +7,7 @@ on:
       - 'server/drafts/domain-customer-purchase-intent*'
       - 'shared/domain-currency-display.mjs'
       - 'src/DomainCustomer*.jsx'
+      - 'src/domain-customer-search.css'
       - 'src/lib/domain-customer-*.mjs'
       - 'tests/domain-customer-*'
       - 'tests/domain-worker-fetch*'
@@ -20,6 +21,7 @@ on:
       - 'server/drafts/domain-customer-purchase-intent*'
       - 'shared/domain-currency-display.mjs'
       - 'src/DomainCustomer*.jsx'
+      - 'src/domain-customer-search.css'
       - 'src/lib/domain-customer-*.mjs'
       - 'tests/domain-customer-*'
       - 'tests/domain-worker-fetch*'
@@ -45,8 +47,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - name: Offline auth, redirect, currency, receipt and intent contracts
-        run: node --test tests/domain-worker-fetch.test.mjs tests/domain-customer-auth.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
+      - name: Offline auth, heading, redirect, currency, receipt and intent contracts
+        run: node --test tests/domain-worker-fetch.test.mjs tests/domain-customer-auth.test.mjs tests/domain-customer-heading.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
       - name: Build application without deployment
         run: npm run build
   native-worker-regression:
