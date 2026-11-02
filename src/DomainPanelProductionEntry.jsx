@@ -18,8 +18,8 @@ function OwnedDomainCommerce({user,site}){
    <h2>Pembelian domain</h2>
    <p>Formulir ini terpisah dari peninjauan hasil pencarian. Masukkan kembali nama domain pilihan untuk meminta quote final dari backend. Harga pencarian tidak diteruskan sebagai tagihan atau persetujuan pembayaran.</p>
    <button type="button" className="sv124-secondary" aria-expanded={purchaseOpen} onClick={()=>setPurchaseOpen(value=>!value)}>{purchaseOpen?'Tutup formulir pembelian':'Buka formulir pembelian'}</button>
-   {purchaseOpen&&<PurchaseBoundary><DomainPurchasePage embedded/></PurchaseBoundary>}
-   <p>Pembelian mengikuti akun yang masuk. Setelah pendaftaran dikonfirmasi pada status pesanan, hubungkan domain ke situs melalui panel pengelolaan. Membuka formulir tidak membuat pesanan atau pembayaran.</p>
+   {purchaseOpen&&<PurchaseBoundary><DomainPurchasePage embedded siteId={site.id} siteName={site.name} expectedOwnerId={user.id}/></PurchaseBoundary>}
+   <p>Tujuan pesanan mengikuti situs yang ditampilkan pada formulir. Pengikatan order bukan bukti DNS, HTTPS, atau pemasangan domain sudah aktif. Membuka formulir tidak membuat pesanan atau pembayaran.</p>
   </section>
  </>;
 }
