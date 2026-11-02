@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import * as wrangler from 'wrangler';
 import {verifyProviderDomainReviewReceipt} from '../server/domain-provider-review-receipt.mjs';
 assert.equal(typeof wrangler.createTestHarness,'function','PINNED_WRANGLER_TEST_HARNESS_UNAVAILABLE');
-const server=wrangler.createTestHarness({workers:[{config:{name:'domain-auth-native-fixture',main:fileURLToPath(new URL('./fixtures/domain-auth-native.worker.mjs',import.meta.url)),compatibility_date:'2026-07-30',compatibility_flags:['nodejs_compat'],workers_dev:false,routes:[]}}]});
+const server=wrangler.createTestHarness({workers:[{config:{name:'domain-auth-native-fixture',main:fileURLToPath(new URL('./fixtures/domain-auth-native.worker.mjs',import.meta.url)),compatibility_date:'2026-07-28',compatibility_flags:['nodejs_compat'],workers_dev:false,routes:[]}}]});
 before(async()=>{await server.listen();},{timeout:60000});
 after(async()=>{await server.close();},{timeout:30000});
 async function run(mode){
