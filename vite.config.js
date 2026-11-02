@@ -10,6 +10,11 @@ import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.m
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
+  let previewQuality=null;
+  if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='fix/domain-commerce-midtrans-20261102'){
+    const {runCloudflarePreviewGate}=await import('./scripts/domain-quality/cloudflare-preview-gate.mjs');
+    previewQuality=runCloudflarePreviewGate();
+  }
   if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='feat/domain-commerce-cloudflare-prod-20261102'&&JSON.parse(readFileSync(resolve('package.json'),'utf8')).devDependencies?.wrangler==='4.113.0'){
     const repair=spawnSync(process.execPath,[resolve('scripts/domain-commerce-repair-toolchain.mjs')],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:900000});
     throw Error(repair.status===78?'DOMAIN_TOOLCHAIN_REPAIR_BUNDLE_READY_NO_DEPLOY':'DOMAIN_TOOLCHAIN_REPAIR_FAILED_NO_DEPLOY');
@@ -18,6 +23,7 @@ export default defineConfig(async({command})=>{
   const native=command==='build'?await runStage5BuildDiagnostics(async()=>{await runStage5NativeBuild();await runStage5AuthTransferBuild();}):null;
   const diagnostic=command==='build'?makeStage5PreviewOnlyConfig(native):{build:{},plugins:[]};
   const integration=[];
+  if(previewQuality)integration.push(previewQuality);
   if(command==='build'){
     integration.push({name:'worker-free-variable-limit-prepare',closeBundle(){
       const prepared=spawnSync(process.execPath,[resolve('scripts/deploy-worker-free-limit.mjs'),'--prepare'],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:60000});
