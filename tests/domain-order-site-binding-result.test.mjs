@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseOrderSiteBinding as parse} from '../server/domain-order-site-binding-result.mjs';
+const expected={orderId:'DOM-'+'a'.repeat(40),userId:'11111111-1111-1111-1111-111111111111',siteId:'22222222-2222-2222-2222-222222222222'};
+const ack=()=>({ok:true,order_id:expected.orderId,user_id:expected.userId,site_id:expected.siteId,environment:'production',site_bound:true,binding_reused:false,checkout_created:false,registration_action_taken:false});
+test('valid binding is immutable and does not authorize commerce actions',()=>{const value=parse(ack(),expected);assert.ok(Object.isFrozen(value));assert.equal(value.siteId,expected.siteId);assert.equal(value.checkoutCreated,false);assert.equal(value.registrationActionTaken,false);});
+test('idempotent binding reuse is explicit',()=>assert.equal(parse({...ack(),binding_reused:true},expected).bindingReused,true));
+test('different user site or order is rejected',()=>{for(const patch of [{user_id:'33333333-3333-3333-3333-333333333333'},{site_id:'33333333-3333-3333-3333-333333333333'},{order_id:'DOM-'+'b'.repeat(40)}])assert.throws(()=>parse({...ack(),...patch},expected));});
+test('sandbox response cannot satisfy production binding',()=>assert.throws(()=>parse({...ack(),environment:'sandbox'},expected)));
+test('unexpected checkout or registration action is rejected',()=>{for(const patch of [{checkout_created:true},{registration_action_taken:true}])assert.throws(()=>parse({...ack(),...patch},expected));});
+test('missing or malformed acknowledgement flags are rejected',()=>{for(const patch of [{ok:false},{site_bound:false},{binding_reused:'true'}])assert.throws(()=>parse({...ack(),...patch},expected));const missing=ack();delete missing.binding_reused;assert.throws(()=>parse(missing,expected));});
+test('malformed expected identity is rejected',()=>{for(const field of ['orderId','userId','siteId'])assert.throws(()=>parse(ack(),{...expected,[field]:'invalid'}));});
+test('empty responses cannot create an inferred binding',()=>{for(const value of [null,undefined,{},[]])assert.throws(()=>parse(value,expected));});
