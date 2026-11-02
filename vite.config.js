@@ -6,7 +6,9 @@ import {brandPng} from './scripts/brand-icons-v415.mjs';
 import {runStage5NativeBuild} from './scripts/stage5-cloudflare-native-build.mjs';
 import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.mjs';
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
+import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
+  const commerce=command==='build'?await runDomainCommerceBuildGate():null;
   const native=command==='build'?await runStage5BuildDiagnostics(async()=>{await runStage5NativeBuild();await runStage5AuthTransferBuild();}):null;
   const diagnostic=command==='build'?makeStage5PreviewOnlyConfig(native):{build:{},plugins:[]};
   const integration=[];
@@ -22,5 +24,5 @@ export default defineConfig(async({command})=>{
   }});
   if(diagnostic.build?.rollupOptions?.input!==undefined)throw Error('DOMAIN_STATUS_BUILD_INPUT_CONFLICT');
   const build={...diagnostic.build,rollupOptions:{...diagnostic.build?.rollupOptions,input:{index:resolve('index.html'),domainOrderStatus:resolve('domain-order-status.html')}}};
-  return {...diagnostic,build,plugins:[...diagnostic.plugins,{name:'ngeblogging-account-names-v422',enforce:'pre',transform:transformThemeCustomizer,transformIndexHtml(html,context){if(context?.filename?.replace(/\\/g,'/').endsWith('/domain-order-status.html'))return html;return transformBrandingHtml(html);},generateBundle(){for(const size of [180,192,512])this.emitFile({type:'asset',fileName:`brand/icon-${size}-v415.png`,source:brandPng(size)});}},...integration]};
+  return {...diagnostic,build,plugins:[...diagnostic.plugins,...(commerce?.selected?[domainCommerceBuildProofPlugin(commerce)]:[]),{name:'ngeblogging-account-names-v422',enforce:'pre',transform:transformThemeCustomizer,transformIndexHtml(html,context){if(context?.filename?.replace(/\\/g,'/').endsWith('/domain-order-status.html'))return html;return transformBrandingHtml(html);},generateBundle(){for(const size of [180,192,512])this.emitFile({type:'asset',fileName:`brand/icon-${size}-v415.png`,source:brandPng(size)});}},...integration]};
 });
