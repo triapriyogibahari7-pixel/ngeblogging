@@ -1,0 +1,51 @@
+name: Domain commerce repair validation
+on:
+  push:
+    branches: [fix/domain-commerce-end-to-end-20261102]
+permissions:
+  contents: read
+concurrency:
+  group: domain-commerce-repair-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Record exact revision
+        run: git rev-parse HEAD
+      - name: Install locked dependencies without production credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 npm ci --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Run configuration and domain regression tests with a clean environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true NODE_ENV=test LANG=C.UTF-8 WRANGLER_SEND_METRICS=false node --test --test-reporter=tap tests/domain-search-configuration-preflight.test.mjs tests/domain-search-wrangler-config.test.mjs tests/domain-worker-fetch.test.mjs tests/domain-customer-auth.test.mjs tests/domain-customer-heading.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
+      - name: Build application without production credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 npm run build
+      - name: Bundle both Wrangler configurations without deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 WRANGLER_SEND_METRICS=false ./node_modules/.bin/wrangler deploy --config wrangler.jsonc --dry-run --outdir "$work/default-bundle"
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 WRANGLER_SEND_METRICS=false ./node_modules/.bin/wrangler deploy --config wrangler.production.jsonc --dry-run --outdir "$work/production-bundle"
