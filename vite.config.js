@@ -18,6 +18,12 @@ export default defineConfig(async({command})=>{
   const native=command==='build'?await runStage5BuildDiagnostics(async()=>{await runStage5NativeBuild();await runStage5AuthTransferBuild();}):null;
   const diagnostic=command==='build'?makeStage5PreviewOnlyConfig(native):{build:{},plugins:[]};
   const integration=[];
+  if(command==='build'){
+    integration.push({name:'worker-free-variable-limit-prepare',closeBundle(){
+      const prepared=spawnSync(process.execPath,[resolve('scripts/deploy-worker-free-limit.mjs'),'--prepare'],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:60000});
+      if(prepared.error||prepared.status!==0) throw Error('WORKER_VARIABLE_PREPARE_FAILED_NO_DEPLOY');
+    }});
+  }
   if(command==='build'&&native?.proof?.cloudflareBuild?.branch==='feature/domain-stages5-10-integration-20261030'){
     const {buildStage5TransferPackage}=await import('./scripts/build-stage5-transfer-package.mjs');
     await buildStage5TransferPackage({commit:native.proof.cloudflareBuild.commit});

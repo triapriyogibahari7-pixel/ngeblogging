@@ -70,10 +70,13 @@ async function main(){
   if(process.argv.includes('--self-test')){
     console.log('[worker-vars] SELF_TEST_PASS');return;
   }
-  if(process.argv.slice(2).some(a=>a!=='--check')) throw Error('UNSUPPORTED_ARGUMENT');
-  if(process.env.WORKERS_CI!=='1'||process.env.WORKERS_CI_BRANCH!=='main'){
-    throw Error('PRODUCTION_WORKERS_BUILD_ONLY');
+  const args=process.argv.slice(2);
+  if(args.length>1||args.some(a=>!['--check','--prepare'].includes(a))) throw Error('UNSUPPORTED_ARGUMENT');
+  const production=process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='main';
+  if(args.includes('--prepare')&&!production){
+    console.log('[worker-vars] PREPARE_SKIPPED_NON_PRODUCTION');return;
   }
+  if(!production) throw Error('PRODUCTION_WORKERS_BUILD_ONLY');
   if(process.env.WRANGLER_CI_OVERRIDE_NAME&&process.env.WRANGLER_CI_OVERRIDE_NAME!==WORKER){
     throw Error('WORKER_OVERRIDE_MISMATCH');
   }
@@ -91,17 +94,23 @@ async function main(){
   if(payload.success!==true) throw Error('INVENTORY_REJECTED');
   const plan=planVariables(config,payload.result?.bindings);
   console.log('[worker-vars] PLAN '+JSON.stringify({worker:WORKER,variablesAfter:plan.count,removed:plan.removed}));
-  if(process.argv.includes('--check')) return;
+  if(args.includes('--check')) return;
+  if(args.includes('--prepare')){
+    await writeFile(resolve('wrangler.jsonc'),JSON.stringify(plan.config,null,2)+'\n',{mode:0o600});
+    console.log('[worker-vars] PREPARED_DEFAULT_CONFIG');return;
+  }
   const tmp=resolve(`.wrangler-free-limit-${process.pid}.json`);
+  let created=false;
   try{
     await writeFile(tmp,JSON.stringify(plan.config,null,2)+'\n',{mode:0o600,flag:'wx'});
+    created=true;
     const result=spawnSync('npx',['--no-install','wrangler','deploy','--config',tmp],{
       cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:600000
     });
     if(result.error||result.status!==0) throw Error('WRANGLER_DEPLOY_FAILED');
     console.log('[worker-vars] DEPLOY_COMMAND_SUCCEEDED');
   }finally{
-    await unlink(tmp).catch(()=>{});
+    if(created) await unlink(tmp).catch(()=>{});
   }
 }
 main().catch(error=>{
