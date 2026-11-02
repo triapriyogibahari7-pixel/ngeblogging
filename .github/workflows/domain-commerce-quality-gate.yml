@@ -1,0 +1,68 @@
+name: Domain commerce quality gate
+on:
+  push:
+    branches: [fix/domain-commerce-midtrans-20261102]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: domain-commerce-quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    name: Domain regression (${{ matrix.group }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [search, quotes, checkout, payments, registration, dns, transfer, isolation]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run isolated regression group
+        env:
+          TEST_GROUP: ${{ matrix.group }}
+        run: node "scripts/domain-quality/${TEST_GROUP}.mjs"
+  bundle:
+    name: Domain build and Worker dry-run
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build and bundle without deployment credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 npm run build
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 WRANGLER_SEND_METRICS=false ./node_modules/.bin/wrangler deploy --config wrangler.production.jsonc --dry-run --outdir "$work/bundle"
+  gate:
+    name: Domain commerce aggregate gate
+    if: always()
+    needs: [regression, bundle]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Reject failed, cancelled or skipped prerequisite jobs
+        env:
+          REGRESSION: ${{ needs.regression.result }}
+          BUNDLE: ${{ needs.bundle.result }}
+        run: |
+          test "$REGRESSION" = success
+          test "$BUNDLE" = success
