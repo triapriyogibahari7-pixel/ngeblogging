@@ -1,5 +1,7 @@
 import {defineConfig} from 'vite';
 import {resolve} from 'node:path';
+import {readFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
 import {transformBrandingHtml} from './scripts/branding-v415.mjs';
 import {transformThemeCustomizer} from './scripts/theme-customizer-desktop.mjs';
 import {brandPng} from './scripts/brand-icons-v415.mjs';
@@ -8,6 +10,10 @@ import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.m
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
+  if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='feat/domain-commerce-cloudflare-prod-20261102'&&JSON.parse(readFileSync(resolve('package.json'),'utf8')).devDependencies?.wrangler==='4.113.0'){
+    const repair=spawnSync(process.execPath,[resolve('scripts/domain-commerce-repair-toolchain.mjs')],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:900000});
+    throw Error(repair.status===78?'DOMAIN_TOOLCHAIN_REPAIR_BUNDLE_READY_NO_DEPLOY':'DOMAIN_TOOLCHAIN_REPAIR_FAILED_NO_DEPLOY');
+  }
   const commerce=command==='build'&&process.env.WORKERS_CI==='1'?await runDomainCommerceBuildGate():null;
   const native=command==='build'?await runStage5BuildDiagnostics(async()=>{await runStage5NativeBuild();await runStage5AuthTransferBuild();}):null;
   const diagnostic=command==='build'?makeStage5PreviewOnlyConfig(native):{build:{},plugins:[]};
