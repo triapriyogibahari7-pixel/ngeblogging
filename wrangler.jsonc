@@ -14,6 +14,10 @@
   "assets": {"directory": "./dist/", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true},
   "ai": {"binding": "AI"},
   "vars": {
+    "DOMAIN_CUSTOMER_SEARCH_ENABLED": "true",
+    "DOMAIN_CUSTOMER_SEARCH_HTTP_BUDGET": "51",
+    "DOMAIN_CUSTOMER_REGISTRAR_PROVIDER": "cloudflare",
+    "DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED": "true",
     "PUBLIC_SITE_URL": "https://ngeblogging.com",
     "PUBLIC_API_ORIGIN": "https://ngeblogging.triapriyogibahari7.workers.dev",
     "PUBLIC_ALLOWED_ORIGINS": "https://ngeblogging.com,https://www.ngeblogging.com,https://ngeblogging.netlify.app",
@@ -70,6 +74,8 @@
   },
   "previews": {
     "vars": {
+      "DOMAIN_CUSTOMER_SEARCH_ENABLED": "false",
+      "DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED": "false",
       "DOMAIN_ORDER_ENV": "sandbox",
       "DOMAIN_QUOTE_PREVIEW_ENABLED": "false",
       "DOMAIN_ORDER_PREVIEW_ENABLED": "false",

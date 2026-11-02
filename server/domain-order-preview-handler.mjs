@@ -1,3 +1,4 @@
+import {parseOrderSiteBinding} from './domain-order-site-binding-result.mjs';
 const PREVIEW='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const PATH='/api/commerce/domains/order';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -38,6 +39,10 @@ export async function domainOrderPreviewResponse(request,env,{fetchImpl=globalTh
  if(!/^application\/json(?:\s*;.*)?$/i.test(request.headers.get('content-type')||''))return reply(415,'JSON_REQUIRED');
  let base;try{base=new URL(env.SUPABASE_URL);if(base.protocol!=='https:'||base.hostname!=='polvmlrhqoiflumibfqs.supabase.co'||base.port||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw Error();}catch{return reply(503,'DOMAIN_ORDER_CONFIGURATION_UNAVAILABLE');}
  if(typeof env.SUPABASE_PUBLISHABLE_KEY!=='string'||!env.SUPABASE_PUBLISHABLE_KEY||typeof env.SUPABASE_SERVICE_ROLE_KEY!=='string'||!env.SUPABASE_SERVICE_ROLE_KEY)return reply(503,'DOMAIN_ORDER_CONFIGURATION_UNAVAILABLE');
+ const bindingRequired=production&&env.DOMAIN_ORDER_SITE_BINDING_ENABLED==='true',rawSite=request.headers.get('x-site-id');
+ if(rawSite!==null&&!bindingRequired)return reply(503,'DOMAIN_ORDER_SITE_BINDING_DISABLED');
+ if(bindingRequired&&(typeof rawSite!=='string'||!UUID.test(rawSite)))return reply(400,'INVALID_SITE_ID');
+ const siteId=bindingRequired?rawSite.toLowerCase():null;
  const controller=new AbortController(),abort=()=>controller.abort(),timer=setTimeout(abort,10000);if(request.signal.aborted)abort();else request.signal.addEventListener('abort',abort,{once:true});
  try{
   let body;try{body=await readBody(request,controller.signal);}catch(error){if(controller.signal.aborted)throw error;return reply(error.message==='BODY_TOO_LARGE'?413:400,error.message==='BODY_TOO_LARGE'?'BODY_TOO_LARGE':'INVALID_BODY');}
@@ -48,12 +53,30 @@ export async function domainOrderPreviewResponse(request,env,{fetchImpl=globalTh
   if(!verified.ok||verified.status>=300)return reply(503,'AUTH_UNAVAILABLE');
   const user=await readBody(verified,controller.signal,32768);if(typeof user?.id!=='string'||!UUID.test(user.id))return reply(401,'INVALID_SESSION');
   const userId=user.id.toLowerCase(),expectedId=await bounded(orderId(userId,key,environment),controller.signal);
+  if(siteId){
+   const target=new URL('/rest/v1/sites',base);target.search=new URLSearchParams({id:'eq.'+siteId,select:'id,owner_id',limit:'1'}).toString();
+   const sr=await bounded(fetchImpl(target.href,{method:'GET',redirect:'manual',headers:{authorization:auth,apikey:env.SUPABASE_PUBLISHABLE_KEY},signal:controller.signal}),controller.signal);
+   if([401,403].includes(sr.status))return reply(403,'SITE_OWNER_REQUIRED');
+   if(!sr.ok||sr.status>=300)return reply(503,'DOMAIN_ORDER_SITE_BINDING_UNAVAILABLE');
+   const rows=await readBody(sr,controller.signal,32768);if(!Array.isArray(rows)||rows.length>1)return reply(503,'DOMAIN_ORDER_SITE_BINDING_UNAVAILABLE');
+   if(rows.length===0||rows[0]?.id!==siteId||rows[0]?.owner_id!==userId)return reply(403,'SITE_OWNER_REQUIRED');
+  }
   const response=await bounded(fetchImpl(new URL('/rest/v1/rpc/domain_create_purchase_order',base).href,{method:'POST',redirect:'manual',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},body:JSON.stringify({p_user_id:userId,p_quote_id:quoteId,p_idempotency_key:key,p_environment:environment}),signal:controller.signal}),controller.signal);
   if(!response.ok||response.status>=300)return reply(503,'DOMAIN_ORDER_STORAGE_UNAVAILABLE',{retryWithSameKey:true});
   const result=await readBody(response,controller.signal,32768);
   if(result?.ok===false){const errors={QUOTE_NOT_FOUND:404,QUOTE_EXPIRED:409,IDEMPOTENCY_CONFLICT:409,QUOTE_ALREADY_ORDERED:409,ORDER_ALREADY_PROCESSED:409,INVALID_DOMAIN_ORDER_REQUEST:400};const known=typeof result.error==='string'&&Object.hasOwn(errors,result.error);return reply(known?errors[result.error]:503,known?result.error:'DOMAIN_ORDER_STORAGE_UNAVAILABLE');}
   let order;try{order=orderView(result,{quoteId,expectedId,environment});}catch{return reply(503,'DOMAIN_ORDER_RESPONSE_UNVERIFIED',{retryWithSameKey:true});}
-  return reply(order.reused?200:201,production?'DOMAIN_ORDER_PRODUCTION':'DOMAIN_ORDER_PREVIEW',{order});
+  let siteBinding=null;
+  if(siteId){
+   try{
+    const saved=await bounded(fetchImpl(new URL('/rest/v1/rpc/domain_bind_production_order_site',base).href,{method:'POST',redirect:'manual',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},body:JSON.stringify({p_user_id:userId,p_order_id:order.orderId,p_site_id:siteId}),signal:controller.signal}),controller.signal);
+    if(!saved.ok||saved.status>=300)return reply(503,'DOMAIN_ORDER_SITE_BINDING_UNAVAILABLE',{retryWithSameKey:true});
+    const bound=await readBody(saved,controller.signal,32768);
+    if(bound?.ok===false){const errors={SITE_OWNER_REQUIRED:403,DOMAIN_ORDER_NOT_FOUND:404,ORDER_SITE_BINDING_CONFLICT:409,ORDER_SITE_BINDING_LOCKED:409,INVALID_ORDER_SITE_BINDING:400};const known=typeof bound.error==='string'&&Object.hasOwn(errors,bound.error);return reply(known?errors[bound.error]:503,known?bound.error:'DOMAIN_ORDER_SITE_BINDING_UNAVAILABLE',{retryWithSameKey:true});}
+    siteBinding=parseOrderSiteBinding(bound,{orderId:order.orderId,userId,siteId});
+   }catch{return reply(503,'DOMAIN_ORDER_SITE_BINDING_UNVERIFIED',{retryWithSameKey:true});}
+  }
+  return reply(order.reused?200:201,production?'DOMAIN_ORDER_PRODUCTION':'DOMAIN_ORDER_PREVIEW',{order,...(siteBinding?{siteBinding}:{})});
  }catch{return reply(503,'DOMAIN_ORDER_RETRY_REQUIRED',{retryWithSameKey:true});}
  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);}
 }

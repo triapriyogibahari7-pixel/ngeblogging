@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {isIgnoredRegistrationObservation as ignored} from '../server/domain-registration-stale-observation.mjs';
+const orderId='DOM-'+'a'.repeat(40);
+const reply=()=>({ok:true,order_id:orderId,state:'processing',stale_ignored:true,registration_action_taken:false});
+test('ordinary acknowledgements stay on the existing validation path',()=>{for(const value of [null,{}, {ok:true,environment:'production',observation_recorded:true}])assert.equal(ignored(value,orderId),false);});
+test('exact production short stale acknowledgement is recognized',()=>assert.equal(ignored(reply(),orderId),true));
+test('recognized stale ledger states do not imply success',()=>{for(const state of ['processing','blocked','action_required','failed','review_required','conflict'])assert.equal(ignored({...reply(),state},orderId),true);});
+test('mismatched or invalid order cannot be ignored',()=>{assert.throws(()=>ignored(reply(),'DOM-'+'b'.repeat(40)));assert.throws(()=>ignored(reply(),'invalid'));});
+test('stale acknowledgement cannot claim succeeded or unrecognized states',()=>{for(const state of ['succeeded','prepared','submitted','unknown'])assert.throws(()=>ignored({...reply(),state},orderId));});
+test('action or success fields are rejected',()=>{assert.throws(()=>ignored({...reply(),registration_action_taken:true},orderId));for(const key of ['registration_confirmed','new_registration_allowed','observation_recorded'])assert.throws(()=>ignored({...reply(),[key]:true},orderId));});
+test('wrong environment or arbitrary additional fields are rejected',()=>{assert.throws(()=>ignored({...reply(),environment:'sandbox'},orderId));assert.throws(()=>ignored({...reply(),extra:'unexpected'},orderId));});
+test('malformed flags are rejected',()=>{for(const patch of [{ok:false},{stale_ignored:'true'},{stale_ignored:false},{registration_action_taken:null}])assert.throws(()=>ignored({...reply(),...patch},orderId));});
+test('missing acknowledgement fields are rejected',()=>{for(const key of ['ok','order_id','state','registration_action_taken']){const value=reply();delete value[key];assert.throws(()=>ignored(value,orderId));}});

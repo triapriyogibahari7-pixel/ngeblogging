@@ -1,0 +1,9 @@
+# Internal read-only installation evidence reader
+
+inspectPaidDomainInstallation uses the committed installation planner and fixed project REST origin to read selected evidence columns. It has no public route and is not called by the runtime/dispatcher in this commit. DOMAIN_INSTALLATION_PREFLIGHT_ENABLED must be exactly true and DOMAIN_ORDER_ENV production before any read; no flag is enabled here. Only trusted backend callers may use the function. It does not authenticate browser callers; do not expose it as an unauthenticated endpoint.
+
+All requests are GET with no-store, manual redirect rejection, bounded row counts, a 32 KiB response cap and an overall abort/deadline. Tokens, raw upstream errors and registrant contacts/payload are not returned. Successful inspection takes seven evidence reads and three final order/binding/site checks. Detected changes reject the plan. These checks are best-effort: they do not create an atomic snapshot, prevent changes after the reads, or reserve an installation.
+
+Results always identify snapshotAtomic=false and evidenceReadOnly=true. An eligible plan still has installationStarted=false, installationConfirmed=false, purchaseAllowed=false and fresh-check/reservation requirements. It is not write authorization. No database RPC/mutation, registrar request, zone creation, DNS change, Worker attachment or billing action occurs here.
+
+Thirteen candidate reader tests passed locally on Node v20.20.1 using mocked database responses and the SHA-matched committed planner. This is not validation of live column availability, service-role privileges, deployed configuration, PostgreSQL concurrency, supported Node >=22.12.0 build or a complete installation flow. Before any dispatcher activation, validate the schema/permissions and implement a durable claim with fresh payment/registration/ownership/conflict checks. Then verify zone account, routing and HTTPS separately.

@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {purchaseDestinationContext as context} from '../src/domain-purchase-ui-context.mjs';
+const owner='11111111-1111-1111-1111-111111111111',site='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',other='22222222-2222-2222-2222-222222222222';
+const valid={embedded:true,siteId:site,expectedOwnerId:owner,sessionOwnerId:owner};
+test('owned site context is normalized and immutable',()=>{const value=context({...valid,siteId:site.toUpperCase()});assert.equal(value.siteId,site);assert.equal(value.blocked,false);assert.ok(Object.isFrozen(value));});
+test('missing or malformed embedded target is blocked',()=>{for(const siteId of [null,'','invalid'])assert.equal(context({...valid,siteId}).code,'INVALID_SITE_ID');});
+test('session from a different owner is blocked',()=>assert.equal(context({...valid,sessionOwnerId:other}).code,'SESSION_CHANGED'));
+test('missing expected owner is blocked',()=>assert.equal(context({...valid,expectedOwnerId:null}).blocked,true));
+test('unresolved session cannot authorize UI actions',()=>assert.equal(context({...valid,sessionOwnerId:null}).blocked,true));
+test('same-site attempt remains usable',()=>assert.equal(context({...valid,attempt:{siteId:site}}).blocked,false));
+test('different-site attempt is blocked without modification',()=>{const attempt={siteId:other};assert.equal(context({...valid,attempt}).code,'ATTEMPT_SITE_MISMATCH');assert.equal(attempt.siteId,other);});
+test('legacy attempt cannot be adopted into embedded destination',()=>assert.equal(context({...valid,attempt:{}}).code,'ATTEMPT_SITE_MISMATCH'));
+test('legacy unscoped UI context remains available',()=>{assert.equal(context().blocked,false);assert.equal(context({attempt:{}}).blocked,false);});
+test('unscoped UI cannot drop a saved destination',()=>assert.equal(context({attempt:{siteId:site}}).code,'ATTEMPT_SITE_MISMATCH'));
