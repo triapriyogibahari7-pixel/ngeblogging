@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseInstallationClaim as parse} from '../server/domain-installation-claim-result.mjs';
+const expected={orderId:'DOM-'+'a'.repeat(40),userId:'11111111-1111-1111-1111-111111111111',siteId:'22222222-2222-2222-2222-222222222222',domain:'example.com'},other='33333333-3333-3333-3333-333333333333';
+const ack=()=>({ok:true,order_id:expected.orderId,user_id:expected.userId,site_id:expected.siteId,domain:expected.domain,environment:'production',claim_id:other,registration_attempt_id:'44444444-4444-4444-4444-444444444444',registration_evidence_sha256:'b'.repeat(64),claim_recorded:true,new_claim:true,reconciliation_only:false,state:'claimed',provider_mutation_allowed:false,installation_action_taken:false,installation_confirmed:false});
+test('new claim is immutable and not provider authorization',()=>{const value=parse(ack(),expected);assert.ok(Object.isFrozen(value));assert.equal(value.newClaim,true);assert.equal(value.providerMutationAllowed,false);assert.equal(value.installationConfirmed,false);});
+test('reused claims are reconciliation-only regardless of ledger state',()=>{for(const state of ['claimed','review_required','installed']){const value=parse({...ack(),new_claim:false,reconciliation_only:true,state},expected);assert.equal(value.reconciliationOnly,true);assert.equal(value.installationConfirmed,false);}});
+test('different order user site or domain is rejected',()=>{for(const patch of [{order_id:'DOM-'+'c'.repeat(40)},{user_id:other},{site_id:other},{domain:'other.com'}])assert.throws(()=>parse({...ack(),...patch},expected));});
+test('sandbox claim is rejected',()=>assert.throws(()=>parse({...ack(),environment:'sandbox'},expected)));
+test('missing recorded claim is rejected',()=>assert.throws(()=>parse({...ack(),claim_recorded:false},expected)));
+test('new claim cannot masquerade as installed',()=>assert.throws(()=>parse({...ack(),state:'installed'},expected)));
+test('inconsistent reconciliation flags are rejected',()=>{assert.throws(()=>parse({...ack(),reconciliation_only:true},expected));assert.throws(()=>parse({...ack(),new_claim:'true'},expected));});
+test('provider mutation or installation success flags are rejected',()=>{for(const key of ['provider_mutation_allowed','installation_action_taken','installation_confirmed'])assert.throws(()=>parse({...ack(),[key]:true},expected));});
+test('malformed claim or registration evidence is rejected',()=>{for(const patch of [{claim_id:'invalid'},{registration_attempt_id:'invalid'},{registration_evidence_sha256:'invalid'},{state:'unknown'}])assert.throws(()=>parse({...ack(),...patch},expected));});
+test('invalid caller expectations and empty responses fail closed',()=>{assert.throws(()=>parse(ack(),{...expected,domain:'ngeblogging.com'}));assert.throws(()=>parse(ack(),{...expected,siteId:'invalid'}));assert.throws(()=>parse(null,expected));});
