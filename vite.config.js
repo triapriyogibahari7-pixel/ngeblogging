@@ -8,7 +8,7 @@ import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.m
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
-  const commerce=command==='build'?await runDomainCommerceBuildGate():null;
+  const commerce=command==='build'&&process.env.WORKERS_CI==='1'?await runDomainCommerceBuildGate():null;
   const native=command==='build'?await runStage5BuildDiagnostics(async()=>{await runStage5NativeBuild();await runStage5AuthTransferBuild();}):null;
   const diagnostic=command==='build'?makeStage5PreviewOnlyConfig(native):{build:{},plugins:[]};
   const integration=[];
