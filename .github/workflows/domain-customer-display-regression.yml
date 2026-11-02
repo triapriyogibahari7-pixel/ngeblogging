@@ -39,8 +39,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - name: Offline currency, receipt and purchase intent contracts
-        run: node --test tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
+      - name: Offline auth, currency, receipt and purchase intent contracts
+        run: node --test tests/domain-customer-auth.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
       - name: Build application without deployment
         run: npm run build
   postgres-regression:
