@@ -1,0 +1,50 @@
+name: Domain commerce toolchain trial
+on:
+  push:
+    branches: [feat/domain-commerce-cloudflare-prod-20261102]
+    paths: [.github/workflows/domain-commerce-toolchain-trial.yml]
+permissions:
+  contents: read
+jobs:
+  trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify candidate exists in npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(npm view wrangler@4.156.0 version --registry=https://registry.npmjs.org)" = '4.156.0'
+          npm view wrangler@4.156.0 dependencies --json --registry=https://registry.npmjs.org
+      - name: Generate candidate manifests using npm
+        run: npm install --save-dev --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund wrangler@4.156.0 --registry=https://registry.npmjs.org
+      - name: Install candidate from lockfile
+        run: npm ci --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Verify harness and record dependency tree
+        run: |
+          node --input-type=module -e "import * as w from 'wrangler'; if(typeof w.createTestHarness!=='function') throw Error('TEST_HARNESS_UNAVAILABLE');"
+          npm ls wrangler miniflare workerd
+          git rev-parse HEAD
+      - name: Run isolated offline and native tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true NODE_ENV=test WRANGLER_SEND_METRICS=false LANG=C.UTF-8 node --test --test-reporter=tap tests/domain-commerce-build-gate.test.mjs tests/domain-worker-fetch.test.mjs tests/domain-customer-auth.test.mjs tests/domain-customer-heading.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true NODE_ENV=test WRANGLER_SEND_METRICS=false LANG=C.UTF-8 node --test --test-reporter=tap tests/domain-auth-native-runtime.test.mjs
+      - name: Upload candidate manifests after successful tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: commerce-toolchain-candidate-${{ github.sha }}
+          path: |
+            package.json
+            package-lock.json
+          retention-days: 3
+          if-no-files-found: error
