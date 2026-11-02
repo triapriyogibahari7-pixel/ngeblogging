@@ -1,14 +1,18 @@
 name: Domain customer display regression
 on:
   push:
-    branches: [fix/domain-search-backend-complete-20261101]
+    branches: [fix/domain-search-backend-complete-20261101, fix/domain-auth-fetch-rootcause-20261102]
     paths:
       - 'server/domain-*.mjs'
       - 'server/drafts/domain-customer-purchase-intent*'
       - 'shared/domain-currency-display.mjs'
       - 'src/DomainCustomer*.jsx'
+      - 'src/domain-customer-search.css'
       - 'src/lib/domain-customer-*.mjs'
       - 'tests/domain-customer-*'
+      - 'tests/domain-worker-fetch*'
+      - 'tests/domain-auth-*'
+      - 'tests/fixtures/domain-auth-*'
       - '.github/workflows/domain-customer-display-regression.yml'
       - 'package*.json'
   pull_request:
@@ -17,8 +21,12 @@ on:
       - 'server/drafts/domain-customer-purchase-intent*'
       - 'shared/domain-currency-display.mjs'
       - 'src/DomainCustomer*.jsx'
+      - 'src/domain-customer-search.css'
       - 'src/lib/domain-customer-*.mjs'
       - 'tests/domain-customer-*'
+      - 'tests/domain-worker-fetch*'
+      - 'tests/domain-auth-*'
+      - 'tests/fixtures/domain-auth-*'
       - '.github/workflows/domain-customer-display-regression.yml'
       - 'package*.json'
 permissions:
@@ -39,10 +47,37 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - name: Offline auth, currency, receipt and purchase intent contracts
-        run: node --test tests/domain-customer-auth.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
+      - name: Offline auth, heading, redirect, currency, receipt and intent contracts
+        run: node --test tests/domain-worker-fetch.test.mjs tests/domain-customer-auth.test.mjs tests/domain-customer-heading.test.mjs tests/domain-customer-display-regression.test.mjs tests/domain-customer-purchase-intent.test.mjs
       - name: Build application without deployment
         run: npm run build
+  native-worker-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Native Worker auth, search and review regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/domain-auth-native-runtime.test.mjs 2>&1 | tee domain-auth-native-runtime.log
+      - name: Preserve native runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-auth-native-${{ github.sha }}
+          path: domain-auth-native-runtime.log
+          if-no-files-found: ignore
+          retention-days: 7
   postgres-regression:
     runs-on: ubuntu-latest
     timeout-minutes: 10

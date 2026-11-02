@@ -8,7 +8,7 @@ const fail=()=>{throw Error('DOMAIN_REVIEW_UNAVAILABLE');};
 function keyReady(key){if(typeof key!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(key))return false;const bytes=Buffer.from(key,'base64url');return bytes.length===32&&bytes.toString('base64url')===key;}
 async function readJson(response,wait){const reader=response.body?.getReader();if(!reader)fail();try{if(response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')fail();let size=0;const chunks=[];for(;;){const p=await wait(reader.read());if(p.done)break;if(!(p.value instanceof Uint8Array))fail();size+=p.value.byteLength;if(size>32768)fail();chunks.push(p.value);}const bytes=new Uint8Array(size);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.byteLength;}return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}finally{try{Promise.resolve(reader.cancel()).catch(()=>{});}catch{}try{reader.releaseLock();}catch{}}}
 async function empty(request,wait){if(request.body===null)return true;const reader=request.body.getReader();try{return (await wait(reader.read())).done===true;}finally{try{Promise.resolve(reader.cancel()).catch(()=>{});}catch{}try{reader.releaseLock();}catch{}}}
-export function createDomainCustomerReview({fetchImpl=globalThis.fetch,priceCheck,clock=Date.now,timeoutMs=25000}={}){
+export function createDomainCustomerReview({fetchImpl=(...args)=>globalThis.fetch(...args),priceCheck,clock=Date.now,timeoutMs=25000}={}){
  if(typeof fetchImpl!=='function'||typeof clock!=='function'||!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>30000||(priceCheck!==undefined&&typeof priceCheck!=='function'))throw Error('INVALID_REVIEW_HANDLER_CONFIG');
  const check=priceCheck||(async(request,env)=>{const m=await import('./domain-customer-price-check.mjs');return m.domainCustomerPriceCheckResponse(request,env);});
  return async function(request,env){
@@ -32,12 +32,12 @@ export function createDomainCustomerReview({fetchImpl=globalThis.fetch,priceChec
   const abort=()=>controller.abort(),timer=setTimeout(abort,timeoutMs),wait=p=>Promise.race([p,ended]);request.signal.addEventListener('abort',abort,{once:true});
   try{
    if(!await empty(request,wait))return reply(400,'EMPTY_REQUEST_REQUIRED');
-   const response=await wait(fetchImpl(BASE+'auth/v1/user',{method:'GET',redirect:'error',cache:'no-store',headers:{authorization:auth,apikey:env.SUPABASE_PUBLISHABLE_KEY,accept:'application/json'},signal:controller.signal}));
+   const response=await wait(fetchImpl(BASE+'auth/v1/user',{method:'GET',redirect:'manual',cache:'no-store',headers:{authorization:auth,apikey:env.SUPABASE_PUBLISHABLE_KEY,accept:'application/json'},signal:controller.signal}));
    if(response.status!==200){try{Promise.resolve(response.body?.cancel()).catch(()=>{});}catch{}return reply([401,403].includes(response.status)?401:503,[401,403].includes(response.status)?'INVALID_SESSION':'AUTH_UNAVAILABLE');}
    const user=await readJson(response,wait);if(typeof user?.id!=='string'||!UUID.test(user.id))return reply(503,'AUTH_UNAVAILABLE');
    const headers=new Headers(request.headers);headers.set('x-site-id',siteId);headers.delete('content-length');headers.delete('content-type');
    const target=new URL('/api/domains/commerce/check/'+encodeURIComponent(domain),url.origin);
-   const delegated=await wait(check(new Request(target,{method:'POST',headers,signal:controller.signal,cache:'no-store',credentials:'omit',redirect:'error'}),env));
+   const delegated=await wait(check(new Request(target,{method:'POST',headers,signal:controller.signal,cache:'no-store',credentials:'omit',redirect:'manual'}),env));
    if(delegated?.status!==200){try{Promise.resolve(delegated?.body?.cancel()).catch(()=>{});}catch{}const status=[400,401,403,409,429].includes(delegated?.status)?delegated.status:503;return reply(status,status===401?'INVALID_SESSION':status===403?'SITE_OWNER_REQUIRED':status===429?'LOOKUP_RATE_LIMITED':'DOMAIN_REVIEW_UNAVAILABLE');}
    const result=await readJson(delegated,wait);
    if(result?.code!=='DOMAIN_CUSTOMER_PRICE_CHECK'||result.siteId!==siteId||result.domain!==domain||result.legacyReviewReceiptCompatible!==(context.providerId==='opensrs'))return reply(503,'DOMAIN_REVIEW_UNAVAILABLE');

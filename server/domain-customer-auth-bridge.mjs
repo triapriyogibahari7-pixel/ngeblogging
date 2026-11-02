@@ -1,6 +1,7 @@
 import {AsyncLocalStorage} from 'node:async_hooks';
 import {createDomainCustomerPriceCheck} from './domain-customer-price-check.mjs';
 import {createDomainCustomerReview} from './domain-customer-review.mjs';
+import {createWorkerRedirectSafeFetch,WorkerRedirectRejectedError} from './domain-worker-fetch.mjs';
 const BASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 function authEnvironment(env){
  let url=env?.SUPABASE_URL,key=env?.SUPABASE_PUBLISHABLE_KEY,reason=null;
@@ -27,13 +28,13 @@ async function rejectedApiKey(response){
 // The original handlers still perform authentication, ownership, limits and pricing checks.
 export function createCustomerDomainAuthBridge({fetchImpl=(...args)=>globalThis.fetch(...args),log=entry=>console.warn(JSON.stringify(entry)),priceTimeoutMs=20000,reviewTimeoutMs=25000}={}){
  if(typeof fetchImpl!=='function'||typeof log!=='function')throw Error('INVALID_AUTH_BRIDGE_CONFIGURATION');
- const scopes=new AsyncLocalStorage();
+ const scopes=new AsyncLocalStorage(),send=createWorkerRedirectSafeFetch(fetchImpl);
  const transport=async(target,init)=>{
   const state=scopes.getStore();let stage=null;
   try{const u=new URL(target instanceof Request?target.url:String(target));if(u.origin===BASE.slice(0,-1)&&init?.method==='GET')stage=u.pathname==='/auth/v1/user'?'session':u.pathname==='/rest/v1/sites'?'site':null;}catch{}
   if(state&&stage){state.stage=stage;state.status=null;state.failure=null;}
   try{
-   const response=await fetchImpl(target,init);
+   const response=await send(target,init);
    if(state&&stage){
     state.status=response.status;
     if([401,403].includes(response.status)&&await rejectedApiKey(response))state.failure='AUTH_API_KEY_REJECTED';
@@ -43,7 +44,13 @@ export function createCustomerDomainAuthBridge({fetchImpl=(...args)=>globalThis.
     else if(response.status!==200&&![401,403].includes(response.status))state.failure=stage==='session'?'AUTH_SESSION_UPSTREAM_UNAVAILABLE':'AUTH_SITE_UPSTREAM_UNAVAILABLE';
    }
    return response;
-  }catch(error){if(state&&stage)state.failure=init?.signal?.aborted?'AUTH_REQUEST_TIMEOUT':stage==='session'?'AUTH_SESSION_FETCH_FAILED':'AUTH_SITE_FETCH_FAILED';throw error;}
+  }catch(error){
+   if(state&&stage){
+    if(error instanceof WorkerRedirectRejectedError){state.status=error.status;state.failure=stage==='session'?'AUTH_SESSION_UPSTREAM_UNAVAILABLE':'AUTH_SITE_UPSTREAM_UNAVAILABLE';}
+    else state.failure=init?.signal?.aborted?'AUTH_REQUEST_TIMEOUT':stage==='session'?'AUTH_SESSION_FETCH_FAILED':'AUTH_SITE_FETCH_FAILED';
+   }
+   throw error;
+  }
  };
  // Keep handler instances stable so admission/rate-limit state is not reset per request.
  const price=createDomainCustomerPriceCheck({fetchImpl:transport,timeoutMs:priceTimeoutMs});
