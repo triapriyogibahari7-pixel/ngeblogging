@@ -14,7 +14,9 @@ export async function domainQuotePreviewResponse(request,env,{fetchImpl=globalTh
  if(url.protocol!=='https:'||(!production&&url.hostname!==HOST)||url.port)return reply(404,'NOT_FOUND');
  if(request.method!=='POST')return reply(405,'METHOD_NOT_ALLOWED');
  if(request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
- if(production?env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED!=='true':env?.DOMAIN_QUOTE_PREVIEW_ENABLED!=='true')return reply(503,production?'DOMAIN_PRODUCTION_QUOTE_DISABLED':'DOMAIN_QUOTE_PREVIEW_DISABLED');
+ // Quote-only activation does not enable the separate order, payment or registration gates.
+ const quoteEnabled=production?(env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'||env?.DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED==='true'):env?.DOMAIN_QUOTE_PREVIEW_ENABLED==='true';
+ if(!quoteEnabled)return reply(503,production?'DOMAIN_PRODUCTION_QUOTE_DISABLED':'DOMAIN_QUOTE_PREVIEW_DISABLED');
  if(env.DOMAIN_ORDER_ENV!==environment)return reply(503,production?'DOMAIN_QUOTE_PRODUCTION_REQUIRED':'DOMAIN_QUOTE_SANDBOX_REQUIRED');
  if(url.search||(request.headers.get('content-length')&&request.headers.get('content-length')!=='0')||!(await empty(request)))return reply(400,'EMPTY_REQUEST_REQUIRED');
  let domain;try{const raw=url.pathname.slice(PREFIX.length);if(raw.length>1200)throw Error();domain=normalizeRegistrarDomain(decodeURIComponent(raw)).domain;}catch{return reply(400,'INVALID_DOMAIN');}
