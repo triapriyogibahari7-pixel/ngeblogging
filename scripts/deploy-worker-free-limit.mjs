@@ -5,7 +5,7 @@ import {spawnSync} from 'node:child_process';
 
 const ACCOUNT='095e57b46e7ba7f6b188480d9e4e5fe7';
 const WORKER='ngeblogging';
-const REMOVE=new Set(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT']);
+const REMOVE=new Set(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT']);
 
 export function planVariables(config,bindings){
   if(config.name!==WORKER||!Array.isArray(bindings)) throw Error('INVALID_TARGET_OR_INVENTORY');
@@ -35,7 +35,7 @@ export function planVariables(config,bindings){
     vars[name]=value;
   }
   const count=Object.keys(vars).length+secrets.size;
-  if(count>64) throw Error('VARIABLE_LIMIT_STILL_EXCEEDED');
+  if(count>64) throw Object.assign(Error('VARIABLE_LIMIT_STILL_EXCEEDED'),{variableCount:count,limit:64});
   const removed=bindings.filter(b=>REMOVE.has(b.name)).map(b=>b.name);
   return {config:{...config,account_id:ACCOUNT,vars,keep_vars:false},count,removed};
 }
@@ -47,6 +47,7 @@ function selfTest(){
   const bindings=[{name:'DASHBOARD_ONLY',type:'plain_text',text:'preserved'},secret,
     {name:'UI_V37_WORKER_COMPAT',type:'plain_text',text:'legacy'},
     {name:'UI_V35_RELEASE_COMPAT',type:'plain_text',text:'legacy'},
+    {name:'UI_V35_WORKER_COMPAT',type:'plain_text',text:'worker-v35.mjs'},
     {name:'AI',type:'ai'}];
   const plan=planVariables(config,bindings);
   assert.equal(plan.config.vars.DASHBOARD_ONLY,'preserved');
@@ -55,14 +56,22 @@ function selfTest(){
   assert.equal(plan.config.keep_vars,false);
   assert.equal(config.keep_vars,true);
   assert.equal(Object.hasOwn(plan.config.vars,'TOKEN'),false);
-  assert.equal(plan.removed.length,2);
+  assert.equal(plan.removed.length,3);
   assert.throws(()=>planVariables(config,[{name:'X',type:'plain_text'}]));
-  assert.throws(()=>planVariables(config,[{name:'UI_V37_WORKER_COMPAT',type:'secret_text'}]));
+  for(const name of REMOVE)assert.throws(()=>planVariables(config,[{name,type:'secret_text'}]));
   assert.throws(()=>planVariables({name:WORKER,vars:{TOKEN:'bad'}},[secret]));
   assert.throws(()=>planVariables(config,[secret,secret]));
   assert.throws(()=>planVariables(config,Array.from({length:65},(_,i)=>({name:'V'+i,type:'plain_text',text:'x'}))));
   const json=planVariables({name:WORKER,vars:{}},[{name:'SETTINGS',type:'json',json:'{"enabled":true}'}]);
   assert.deepEqual(json.config.vars.SETTINGS,{enabled:true});
+  const boundaryConfig={name:WORKER,vars:{DOMAIN_ORDER_ENV:'production',UI_V35_WORKER_COMPAT:'worker-v35.mjs'},keep_vars:true};
+  const boundaryBindings=[...Array.from({length:62},(_,i)=>({name:'V'+i,type:'plain_text',text:'x'})),secret,...bindings.filter(b=>REMOVE.has(b.name))];
+  const boundary=planVariables(boundaryConfig,boundaryBindings);
+  assert.equal(boundary.count,64);
+  assert.equal(boundary.config.vars.DOMAIN_ORDER_ENV,'production');
+  assert.equal(Object.hasOwn(boundary.config.vars,'UI_V35_WORKER_COMPAT'),false);
+  assert.equal(boundary.removed.length,3);
+  assert.throws(()=>planVariables(boundaryConfig,[...boundaryBindings,{name:'EXTRA',type:'plain_text',text:'x'}]),error=>error.message==='VARIABLE_LIMIT_STILL_EXCEEDED'&&error.variableCount===65&&error.limit===64);
 }
 
 async function main(){
@@ -115,6 +124,9 @@ async function main(){
 }
 main().catch(error=>{
   const message=String(error?.message||'');
+  if(message==='VARIABLE_LIMIT_STILL_EXCEEDED'&&Number.isSafeInteger(error.variableCount)){
+    console.error('[worker-vars] LIMIT '+JSON.stringify({variablesAfter:error.variableCount,limit:64}));
+  }
   console.error('[worker-vars] STOP '+(/^[A-Z][A-Z0-9_]+$/.test(message)?message:'UNEXPECTED_FAILURE'));
   process.exitCode=1;
 });
