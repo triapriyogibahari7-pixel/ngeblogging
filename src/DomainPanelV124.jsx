@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Check, Clipboard, ExternalLink, Globe2, Link2, LoaderCircle, Plus,
-  RefreshCw, Send, ShieldCheck, Trash2, Unlink, Zap,
+  RefreshCw, Send, ShieldCheck, Trash2, Unlink,
 } from "lucide-react";
 import { getVerifiedSession, isSessionReauthError } from "./lib/auth-session-v76.js";
 import { setSitePublication } from "./lib/studio-data.js";
 import { supabase } from "./lib/supabase.js";
 import { assignedNameservers, applyDomainInstructions, domainRowsForSite } from "./lib/domain-panel-result.mjs";
+import DomainPublicAudit from "./DomainPublicAudit.jsx";
+import "./domain-public-audit.css";
 
 const REQUEST_TIMEOUT = 45000;
 
@@ -118,7 +120,6 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [hostname, setHostname] = useState("");
-  const [audit, setAudit] = useState({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
 
   const sortedDomains = useMemo(() => [...domains].sort((a, b) => Number(activeDomain(b)) - Number(activeDomain(a)) || String(a.hostname).localeCompare(String(b.hostname))), [domains]);
   const connected = sortedDomains.filter((item) => item.status !== "pending_deletion" && !isManagedFreeDomain(item.hostname));
@@ -261,7 +262,6 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       is_primary: true, ownership_verification: {}, ssl_validation: [], error_message: null,
       created_at: site.updated_at || null, updated_at: site.updated_at || null,
     }] : []);
-    setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
     setHostname("");
     load();
     return () => {
@@ -371,36 +371,6 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
     }
   };
 
-  const runAudit = async () => {
-    const task = beginOperation("audit");
-    if (!task) return;
-    setAudit({ results: [], passed: 0, total: 0, allReachable: false, checkedAt: "" });
-    try {
-      const activeToken = token || await accessToken();
-      if (!task.current()) return;
-      setToken(activeToken);
-      const primary = sortedDomains[0];
-      if (primary?.id) {
-        try { await domainApi("/api/domains/refresh", activeToken, { domainId: primary.id }); } catch { /* audit menjelaskan hasil */ }
-        if (!task.current()) return;
-      }
-      const payload = await domainApi("/api/domains/audit", activeToken, { siteId: site.id });
-      if (!task.current()) return;
-      setAudit({
-        results: Array.isArray(payload.results) ? payload.results : [],
-        passed: Number(payload.passed || 0),
-        total: Number(payload.total || 0),
-        allReachable: payload.allReachable === true,
-        checkedAt: payload.checkedAt || "",
-      });
-      await load({ quiet: true });
-    } catch (nextError) {
-      if (task.current()) setError(nextError.message || "Audit alamat belum dapat dijalankan.");
-    } finally {
-      task.finish();
-    }
-  };
-
   const published = site?.status === "active" && site?.is_public;
 
   return <div className="sv124-page sv124-domain-page">
@@ -449,11 +419,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
         })}
       </section>
 
-      <section className="sv124-card sv124-domain-audit">
-        <header><div><small>AUDIT PUBLIK SERVER-SIDE</small><h2>Periksa alamat situs aktif</h2><p>Menguji HTTPS, status HTTP, HTML publik, redirect, dan waktu respons.</p></div><button className="sv124-secondary" onClick={runAudit} disabled={Boolean(busy)}><Zap/>{busy === "audit" ? "Memeriksa…" : "Audit alamat"}</button></header>
-        {audit.total ? <div className={`sv124-audit-summary ${audit.allReachable ? "ok" : "warn"}`}><b>{audit.passed}/{audit.total} alamat lolos audit HTTPS</b><span>{audit.allReachable ? "Semua alamat situs aktif dapat dibuka." : "Periksa rincian alamat yang belum lolos."}</span></div> : null}
-        {audit.results.length ? <div className="sv124-audit-results">{audit.results.map((item, index) => <article key={`${item.address}:${index}`}><span className={item.reachable ? "ok" : "warn"}>{item.reachable ? <Check/> : <ShieldCheck/>}</span><div><b>{item.label || item.address}</b><small>{item.address} · {item.httpStatus ? `HTTP ${item.httpStatus}` : "tanpa respons"} · {Number(item.latencyMs || 0)} ms</small><p>{item.check || ""}</p></div><i>{item.reachable ? "Lolos" : "Perlu diperiksa"}</i></article>)}</div> : null}
-      </section>
+      <DomainPublicAudit key={site?.id || "no-site"} site={site} domains={sortedDomains} disabled={Boolean(busy)}/>
     </>}
   </div>;
 }
