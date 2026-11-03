@@ -2,10 +2,24 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,unlink} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {parseDomainPricingSnapshot} from '../server/domain-pricing-snapshot.mjs';
 
 const ACCOUNT='095e57b46e7ba7f6b188480d9e4e5fe7';
 const WORKER='ngeblogging';
 const REMOVE=new Set(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT']);
+
+export function pricingSnapshotReport(bindings,{now=Date.now()}={}){
+  if(!Array.isArray(bindings))return {status:'unavailable',reason:'INVALID_BINDING_INVENTORY'};
+  const matches=bindings.filter(binding=>binding?.name==='DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON');
+  if(matches.length===0)return {status:'missing',reason:'PRICING_SNAPSHOT_MISSING'};
+  if(matches.length!==1)return {status:'unavailable',reason:'DUPLICATE_SNAPSHOT_BINDING'};
+  const binding=matches[0];
+  if(binding.type==='secret_text')return {status:'not_inspectable',reason:'PRICING_SNAPSHOT_IS_SECRET'};
+  if(binding.type!=='plain_text')return {status:'invalid',reason:'PRICING_SNAPSHOT_REQUIRES_STRING_BINDING'};
+  if(typeof binding.text!=='string')return {status:'invalid',reason:'PRICING_SNAPSHOT_VALUE_UNAVAILABLE'};
+  try{parseDomainPricingSnapshot(binding.text,{now,environment:'production'});return {status:'schema_valid',reason:'PRICING_SNAPSHOT_VALID_AT_BUILD_TIME'};}
+  catch(error){const reason=typeof error?.code==='string'&&/^[A-Z][A-Z0-9_]{0,79}$/.test(error.code)?error.code:'PRICING_SNAPSHOT_VALIDATION_FAILED';return {status:'invalid',reason};}
+}
 
 export function planVariables(config,bindings){
   if(config.name!==WORKER||!Array.isArray(bindings)) throw Error('INVALID_TARGET_OR_INVENTORY');
@@ -72,6 +86,13 @@ function selfTest(){
   assert.equal(Object.hasOwn(boundary.config.vars,'UI_V35_WORKER_COMPAT'),false);
   assert.equal(boundary.removed.length,3);
   assert.throws(()=>planVariables(boundaryConfig,[...boundaryBindings,{name:'EXTRA',type:'plain_text',text:'x'}]),error=>error.message==='VARIABLE_LIMIT_STILL_EXCEEDED'&&error.variableCount===65&&error.limit===64);
+  assert.deepEqual(pricingSnapshotReport([]),{status:'missing',reason:'PRICING_SNAPSHOT_MISSING'});
+  const snapshotSecret={name:'DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON',type:'secret_text'};
+  Object.defineProperty(snapshotSecret,'text',{get(){throw Error('SECRET_VALUE_ACCESSED');}});
+  assert.deepEqual(pricingSnapshotReport([snapshotSecret]),{status:'not_inspectable',reason:'PRICING_SNAPSHOT_IS_SECRET'});
+  assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'plain_text',text:'not-json'}]),{status:'invalid',reason:'INVALID_PRICING_JSON'});
+  assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'json',json:{}}]),{status:'invalid',reason:'PRICING_SNAPSHOT_REQUIRES_STRING_BINDING'});
+  assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'plain_text',text:'{}'}]),{status:'invalid',reason:'INVALID_PRICING_SNAPSHOT_SHAPE'});
 }
 
 async function main(){
@@ -101,6 +122,7 @@ async function main(){
   if(!response.ok) throw Error(`INVENTORY_HTTP_${response.status}`);
   const payload=await response.json();
   if(payload.success!==true) throw Error('INVENTORY_REJECTED');
+  console.log('[domain-pricing] WORKER_SNAPSHOT '+JSON.stringify(pricingSnapshotReport(payload.result?.bindings)));
   const plan=planVariables(config,payload.result?.bindings);
   console.log('[worker-vars] PLAN '+JSON.stringify({worker:WORKER,variablesAfter:plan.count,removed:plan.removed}));
   if(args.includes('--check')) return;
