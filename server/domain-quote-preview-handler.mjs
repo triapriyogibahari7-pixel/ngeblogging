@@ -2,9 +2,12 @@ import {buildDomainSaleQuoteDraft} from './domain-sale-quote-draft.mjs';
 import {parseDomainPricingSnapshot} from './domain-pricing-snapshot.mjs';
 import {checkCloudflareRegistrar} from './cloudflare-registrar-check.mjs';
 import {normalizeRegistrarDomain} from './domain-registrar-quote-router.mjs';
+import {fetchAutomaticDomainEstimate} from './domain-automatic-price-estimate.mjs';
 const HOST='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const PREFIX='/api/commerce/domains/quote/';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+const estimateAttempts=new Map();
+const ESTIMATE_REASONS=new Set(['ESTIMATE_INVALID_CLOCK','ESTIMATE_REGISTRAR_UNAVAILABLE','ESTIMATE_REGISTRAR_EXPIRED','ESTIMATE_UNSUPPORTED_CURRENCY','ESTIMATE_FX_UNAVAILABLE','INVALID_REFERENCE_FX','ESTIMATE_POLICY_INVALID','ESTIMATE_INVALID_AMOUNT','ESTIMATE_OUT_OF_RANGE','ESTIMATE_MARGIN_NOT_MET','ESTIMATE_ABORTED']);
 const PRICING_REASONS=new Set(['PRICING_SNAPSHOT_MISSING','PRICING_SNAPSHOT_TOO_LARGE','INVALID_PRICING_JSON','INVALID_PRICING_SNAPSHOT_SHAPE','INVALID_PRICING_REFERENCE','INVALID_PRICING_TIME','INVALID_PRICING_CLOCK','INVALID_PRICING_ENVIRONMENT','SANDBOX_REQUIRED','PRODUCTION_REQUIRED','INVALID_FX_PAIR','INVALID_FX_RATE','FX_COST_BASIS_UNVERIFIED','FX_SNAPSHOT_EXPIRED','COST_POLICY_UNVERIFIED','INVALID_PRICING_VERSION','COST_POLICY_EXPIRED','INVALID_IDR_COST','MINIMUM_MARGIN_BELOW_REQUIRED','INVALID_PAYMENT_FEE','PRODUCTION_REGISTRAR_INPUT_UNVERIFIED','REGISTRAR_CHECK_NOT_ELIGIBLE','INVALID_QUOTE_DOMAIN','REGISTRAR_CHECK_EXPIRED','UNSUPPORTED_REGISTRAR_PRICE','INVALID_DECIMAL_AMOUNT','INVALID_SNAPSHOT_TIME','INVALID_SOURCE_REFERENCE','INVALID_MARGIN_OR_PAYMENT_FEE','PRICE_OUT_OF_RANGE','MINIMUM_MARGIN_NOT_MET','SNAPSHOT_REFRESH_REQUIRED']);
 export function readQuotePricingInputs(env,{now=Date.now(),environment}={}){
  const primary=environment==='production'?'DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON':'DOMAIN_PRICING_SNAPSHOT_JSON';
@@ -22,7 +25,9 @@ export async function domainQuotePreviewResponse(request,env,{fetchImpl=globalTh
  if(url.protocol!=='https:'||(!production&&url.hostname!==HOST)||url.port)return reply(404,'NOT_FOUND');
  if(request.method!=='POST')return reply(405,'METHOD_NOT_ALLOWED');
  if(request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
- // Quote-only activation does not enable the separate order, payment or registration gates.
+ const mode=request.headers.get('x-domain-pricing-mode'),estimateMode=mode==='estimate';
+ if(mode!==null&&(!production||!estimateMode))return reply(400,'INVALID_PRICING_MODE');
+ // Estimate mode never enables order, checkout, payment or registration gates.
  const quoteEnabled=production?(env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'||env?.DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED==='true'):env?.DOMAIN_QUOTE_PREVIEW_ENABLED==='true';
  if(!quoteEnabled)return reply(503,production?'DOMAIN_PRODUCTION_QUOTE_DISABLED':'DOMAIN_QUOTE_PREVIEW_DISABLED');
  if(env.DOMAIN_ORDER_ENV!==environment)return reply(503,production?'DOMAIN_QUOTE_PRODUCTION_REQUIRED':'DOMAIN_QUOTE_SANDBOX_REQUIRED');
@@ -31,7 +36,7 @@ export async function domainQuotePreviewResponse(request,env,{fetchImpl=globalTh
  const auth=request.headers.get('authorization')||'';if(!/^Bearer [^\s]{1,8192}$/.test(auth))return reply(401,'AUTH_REQUIRED');
  if(!production&&(typeof env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID!=='string'||!UUID.test(env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID)))return reply(503,'DOMAIN_QUOTE_ADMIN_UNCONFIGURED');
  let base;try{base=new URL(env.SUPABASE_URL);if(base.protocol!=='https:'||base.hostname!=='polvmlrhqoiflumibfqs.supabase.co'||base.port||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw Error();}catch{return reply(503,'DOMAIN_QUOTE_CONFIGURATION_UNAVAILABLE');}
- if(typeof env.SUPABASE_PUBLISHABLE_KEY!=='string'||!env.SUPABASE_PUBLISHABLE_KEY||typeof env.SUPABASE_SERVICE_ROLE_KEY!=='string'||!env.SUPABASE_SERVICE_ROLE_KEY)return reply(503,'DOMAIN_QUOTE_CONFIGURATION_UNAVAILABLE');
+ if(typeof env.SUPABASE_PUBLISHABLE_KEY!=='string'||!env.SUPABASE_PUBLISHABLE_KEY||(!estimateMode&&(typeof env.SUPABASE_SERVICE_ROLE_KEY!=='string'||!env.SUPABASE_SERVICE_ROLE_KEY)))return reply(503,'DOMAIN_QUOTE_CONFIGURATION_UNAVAILABLE');
  if(request.signal.aborted)return reply(503,'DOMAIN_QUOTE_UNAVAILABLE');
  const controller=new AbortController(),abort=()=>controller.abort();let stop;
  const stopped=new Promise((_,reject)=>{stop=()=>reject(Error('QUOTE_TIMEOUT'));controller.signal.addEventListener('abort',stop,{once:true});});
@@ -41,6 +46,23 @@ export async function domainQuotePreviewResponse(request,env,{fetchImpl=globalTh
   if([401,403].includes(verified.status))return reply(401,'INVALID_SESSION');if(!verified.ok||verified.status>=300)return reply(503,'AUTH_UNAVAILABLE');
   const user=await jsonBody(verified.body,wait);if(typeof user?.id!=='string'||!UUID.test(user.id))return reply(401,'INVALID_SESSION');
   if(!production&&user.id.toLowerCase()!==env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID.toLowerCase())return reply(403,'ADMIN_REQUIRED');
+  if(estimateMode){
+   const now=clock(),owner=user.id.toLowerCase();if(!Number.isSafeInteger(now)||Math.abs(now)>8640000000000000)return reply(503,'DOMAIN_ESTIMATE_UNAVAILABLE');
+   // Per-isolate protection, not a globally distributed quota.
+   for(const [key,value] of estimateAttempts)if(!value.pending&&now-value.at>=60000)estimateAttempts.delete(key);
+   let attempt=estimateAttempts.get(owner);
+   if(attempt?.pending)return reply(429,'DOMAIN_ESTIMATE_BUSY');
+   if(attempt&&(now<attempt.at||attempt.count>=10))return reply(429,'DOMAIN_ESTIMATE_RATE_LIMITED');
+   if(!attempt){if(estimateAttempts.size>=1024)return reply(429,'DOMAIN_ESTIMATE_BUSY');attempt={at:now,count:0,pending:false};estimateAttempts.set(owner,attempt);}
+   attempt.count++;attempt.pending=true;
+   try{
+    let policy=null;const raw=env.DOMAIN_ESTIMATE_COST_POLICY_JSON;
+    if(raw!==undefined){if(typeof raw!=='string'||new TextEncoder().encode(raw).length>4096)throw Object.assign(Error(),{code:'ESTIMATE_POLICY_INVALID'});try{policy=JSON.parse(raw);}catch{throw Object.assign(Error(),{code:'ESTIMATE_POLICY_INVALID'});}if(policy===null)throw Object.assign(Error(),{code:'ESTIMATE_POLICY_INVALID'});}
+    const estimate=await wait(fetchAutomaticDomainEstimate(env,{domain},{fetchImpl,clock,signal:controller.signal,policy,checkImpl}));
+    return reply(200,'DOMAIN_AUTOMATIC_PRICE_ESTIMATE',{estimate});
+   }catch(error){return reply(503,'DOMAIN_ESTIMATE_UNAVAILABLE',{reason:ESTIMATE_REASONS.has(error?.code)?error.code:'ESTIMATE_PROVIDER_OR_RESPONSE_UNAVAILABLE'});}
+   finally{attempt.pending=false;}
+  }
   let inputs;try{inputs=readQuotePricingInputs(env,{now:clock(),environment});}catch(error){return reply(503,'DOMAIN_PRICING_INPUTS_UNAVAILABLE',quotePricingFailure(error,'snapshot'));}
   const check=await wait(checkImpl(env,{domain},{fetchImpl,clock}));
   if(check?.status==='not_registrable'&&['extension_not_supported_via_api','extension_not_supported','extension_disallows_registration'].includes(check.reason))return reply(422,'UNSUPPORTED_EXTENSION');
