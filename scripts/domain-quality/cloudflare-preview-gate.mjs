@@ -19,8 +19,19 @@ export function runCloudflarePreviewGate(){
       const result=spawnSync(process.execPath,['scripts/domain-quality/'+group+'.mjs'],{env,stdio:'inherit',shell:false,timeout:620000});
       if(result.error||result.signal||result.status!==0)throw Error('DOMAIN_PREVIEW_GROUP_FAILED: '+group);
     }
+    let runtimeAudit=null;
+    if(branch==='agent/fix-domain-search-pricing-20261103'){
+      const audit=spawnSync(process.execPath,['scripts/domain-quality/runtime-audit.mjs'],{env:{...env,...(process.env.CLOUDFLARE_API_TOKEN?{CLOUDFLARE_API_TOKEN:process.env.CLOUDFLARE_API_TOKEN}:{})},encoding:'utf8',stdio:['ignore','pipe','pipe'],shell:false,timeout:35000,maxBuffer:1048576});
+      if(audit.error||audit.signal||audit.status!==0)throw Error('DOMAIN_RUNTIME_AUDIT_PROCESS_FAILED');
+      try{runtimeAudit=JSON.parse(audit.stdout);}catch{throw Error('DOMAIN_RUNTIME_AUDIT_REPORT_INVALID');}
+      if(runtimeAudit?.schemaVersion!==1||runtimeAudit.releaseAuthorized!==false)throw Error('DOMAIN_RUNTIME_AUDIT_REPORT_INVALID');
+      console.log('[domain-runtime-audit] '+JSON.stringify(runtimeAudit));
+    }
     const proof={commit,branch,runner:'cloudflare-workers-builds',completedGroups:groups,completedAt:new Date().toISOString(),scope:'Existing regression groups only; not live registrar or payment verification'};
     console.log('[domain-preview-gate] PASS '+JSON.stringify(proof));
-    return {name:'domain-preview-regression-proof',apply:'build',generateBundle(){this.emitFile({type:'asset',fileName:'assets/domain-quality-'+commit+'.json',source:JSON.stringify(proof,null,2)+'\n'});}};
+    return {name:'domain-preview-regression-proof',apply:'build',generateBundle(){
+      this.emitFile({type:'asset',fileName:'assets/domain-quality-'+commit+'.json',source:JSON.stringify(proof,null,2)+'\n'});
+      if(runtimeAudit)this.emitFile({type:'asset',fileName:'assets/domain-runtime-audit-'+commit+'.json',source:JSON.stringify({commit,...runtimeAudit},null,2)+'\n'});
+    }};
   }finally{rmSync(work,{recursive:true,force:true});}
 }
