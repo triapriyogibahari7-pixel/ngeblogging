@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {readCloudflareQuoteSettings} from '../server/cloudflare-quote-settings.mjs';
+import {discoverRegistrarHistory,inspectHistoricalRegistrarBindings} from './registrar-history-discovery.mjs';
 const BRANCH='agent/sync-registrar-runtime-20261103',ACCOUNT='095e57b46e7ba7f6b188480d9e4e5fe7';
 const PROVIDER='DOMAIN_CUSTOMER_REGISTRAR_PROVIDER',ENABLED='DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED',TOKEN='CLOUDFLARE_REGISTRAR_API_TOKEN',EXT='CLOUDFLARE_REGISTRAR_QUOTE_EXTENSIONS_JSON',TAX='CLOUDFLARE_REGISTRAR_QUOTES_TAX_INCLUDED';
 const NAMES=[PROVIDER,ENABLED,TOKEN,EXT,TAX];
@@ -55,6 +56,10 @@ function selfTest(){
  assert.throws(()=>planRegistrarRuntimeSync(env,Array.from({length:64},(_,i)=>({name:'EXISTING_'+i,type:'plain_text',text:'x'}))));
  const fallback=planRegistrarRuntimeSync({[TOKEN]:'fixture-token'},[{name:EXT,type:'plain_text',text:'["com"]'},{name:TAX,type:'plain_text',text:'false'}]);
  assert.equal(fallback.summary.planned.find(b=>b.name===EXT).source,'runtime');
+ const historical=[{name:EXT,type:'plain_text',text:'["com"]'},{name:TAX,type:'plain_text',text:'false'},secret];
+ assert.equal(inspectHistoricalRegistrarBindings(historical).taxIncluded,false);
+ assert.equal(inspectHistoricalRegistrarBindings([secret]),null);
+ assert.equal(inspectHistoricalRegistrarBindings([...historical,historical[0]]),null);
 }
 export async function runRegistrarRuntimeSyncPreflight(){
  if(process.env.WORKERS_CI!=='1'||process.env.WORKERS_CI_BRANCH!==BRANCH)return null;
@@ -70,7 +75,11 @@ export async function runRegistrarRuntimeSyncPreflight(){
   const text=await response.text();if(new TextEncoder().encode(text).length>1048576)fail('SYNC_INVENTORY_TOO_LARGE');
   let data;try{data=JSON.parse(text);}catch{fail('SYNC_INVENTORY_INVALID_JSON');}
   if(data?.success!==true)fail('SYNC_INVENTORY_REJECTED');
-  const {summary}=planRegistrarRuntimeSync(process.env,data.result?.bindings);report={...report,...summary};
+  try{const {summary}=planRegistrarRuntimeSync(process.env,data.result?.bindings);report={...report,...summary};}
+  catch(error){
+   report.reason=/^[A-Z0-9_]{1,160}$/.test(error?.code||'')?error.code:'SYNC_PREFLIGHT_UNAVAILABLE';
+   if(report.reason==='SOURCE_UNAVAILABLE_'+EXT||report.reason==='SOURCE_UNAVAILABLE_'+TAX)report.historicalSourceDiscovery=await discoverRegistrarHistory(token);
+  }
  }catch(error){report.reason=/^[A-Z0-9_]{1,160}$/.test(error?.code||'')?error.code:'SYNC_PREFLIGHT_UNAVAILABLE';}
  console.log('[registrar-runtime-sync-plan] '+JSON.stringify(report));
  return {name:'registrar-runtime-sync-plan',apply:'build',generateBundle(){this.emitFile({type:'asset',fileName:'assets/registrar-runtime-sync-plan-'+commit+'.json',source:JSON.stringify(report,null,2)+'\n'});}};
