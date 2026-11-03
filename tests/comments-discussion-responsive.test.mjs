@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const component=readFileSync(new URL('../src/CommentsPanelV124.jsx',import.meta.url),'utf8');
-const css=readFileSync(new URL('../src/comments-discussion-responsive.css',import.meta.url),'utf8');
+const rawCss=readFileSync(new URL('../src/comments-discussion-responsive.css',import.meta.url),'utf8');
+const layoutImport='@import "./comments-discussion-layout-metrics.css";\n';
+const css=rawCss.replace(layoutImport,'');
 const styleImport='import "./comments-discussion-responsive.css";\n';
 const scope='.sv124-comments-page .sv124-card.sv124-comment-workspace';
 test('the comment component imports its dedicated stylesheet exactly once',()=>assert.equal(component.split(styleImport).length-1,1));
@@ -43,4 +45,22 @@ test('presentation has no external assets, global UI overrides, or hidden contro
  assert.doesNotMatch(css,/@import|url\s*\(|display\s*:\s*none|visibility\s*:\s*hidden/);
  assert.doesNotMatch(css,/sv124-settings-card|sv124-toggle|sv124-page-title|sv124-site-strip/);
  assert.match(css,/prefers-reduced-motion/);
+});
+test('the only added CSS import is the fixed local page-layout stylesheet',()=>{
+ assert.ok(rawCss.startsWith(layoutImport));assert.equal(rawCss.split(layoutImport).length-1,1);
+});
+test('all existing moderation and workspace CSS remains byte-identical',()=>{
+ const data=Buffer.from(css);const hash=createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex');
+ assert.equal(hash,'91add031340d8a17bde901779352b3df3d86c9e4');
+});
+test('new page-layout rules stay scoped and do not target moderation controls',()=>{
+ const layout=readFileSync(new URL('../src/comments-discussion-layout-metrics.css',import.meta.url),'utf8');
+ assert.doesNotMatch(layout,/sv124-moderation-actions/);
+ const plain=layout.replace(/\/\*[\s\S]*?\*\//g,'');let count=0;
+ for(const match of plain.matchAll(/(?:^|(?<=[{}]))\s*([^{}]+)\{/g)){
+  const header=match[1].trim();if(header.startsWith('@'))continue;
+  for(const selector of header.split(',')){assert.ok(selector.trim().startsWith('.sv124-comments-page'),selector);count++;}
+ }
+ assert.ok(count>20);
+ for(const n of [1,2,3,4])assert.ok(layout.includes('nth-child('+n+')::before'));
 });

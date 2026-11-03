@@ -1,3 +1,4 @@
+@import "./comments-discussion-layout-metrics.css";
 /* Only the comment workspace; no settings, navigation, backend, or global theme changes. */
 .sv124-comments-page .sv124-card.sv124-comment-workspace{container:comments-discussion / inline-size;box-sizing:border-box;width:100%!important;min-width:0!important;padding:clamp(12px,2vw,24px)!important;border:1px solid #e2e8f0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 8px 28px #0f172a0a;color:#334155;font:400 14px/1.55 system-ui,sans-serif}
 .sv124-comments-page .sv124-card.sv124-comment-workspace *{box-sizing:border-box}
