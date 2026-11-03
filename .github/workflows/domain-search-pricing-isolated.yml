@@ -1,0 +1,52 @@
+name: Isolated domain search and pricing validation
+on:
+  push:
+    branches: [agent/fix-domain-search-pricing-20261103]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/DomainCustomerSearch.jsx'
+      - 'src/lib/domain-customer-search.mjs'
+      - 'server/domain-*.mjs'
+      - 'server/cloudflare-registrar-search.mjs'
+      - 'shared/domain-*.mjs'
+      - 'tests/domain-*.test.mjs'
+      - '.github/workflows/domain-search-pricing-isolated.yml'
+permissions:
+  contents: read
+concurrency:
+  group: domain-search-pricing-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Record tested revision
+        run: git rev-parse HEAD
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test search, suggestions, configuration and display
+        env:
+          NODE_ENV: test
+        run: >-
+          node --test
+          tests/domain-search-configuration-preflight.test.mjs
+          tests/domain-search-wrangler-config.test.mjs
+          tests/domain-customer-search-endpoint.test.mjs
+          tests/domain-customer-suggestions.test.mjs
+          tests/registrar-search-keyword.test.mjs
+          tests/domain-worker-fetch.test.mjs
+          tests/domain-customer-auth.test.mjs
+          tests/domain-customer-heading.test.mjs
+          tests/domain-customer-display-regression.test.mjs
+          tests/domain-customer-purchase-intent.test.mjs
+          tests/domain-purchase-route-retirement.test.mjs
+      - name: Build without deployment
+        run: npm run build
