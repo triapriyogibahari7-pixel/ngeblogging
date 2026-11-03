@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {runCloudflareDomainRepair,REPAIR_BRANCH} from '../scripts/run-cloudflare-domain-repair.mjs';
+const env={WORKERS_CI:'1',WORKERS_CI_BRANCH:REPAIR_BRANCH,WRANGLER_COMMAND:'versions upload',WORKERS_CI_COMMIT_SHA:'a'.repeat(40),CLOUDFLARE_API_TOKEN:'fixture-token'};
+function fixture(override={}){const calls=[];let loads=0;const manifest={approved:'fixture'};return {calls,loads:()=>loads,run:()=>runCloudflareDomainRepair({env:{...env,...override},loadManifest:async()=>{loads++;return manifest;},repair:async options=>{calls.push(options);return {mode:'applied',publicDnsVerified:false};}})};}
+test('skips outside Cloudflare Builds without credentials or manifest access',async()=>{const f=fixture({WORKERS_CI:undefined});assert.equal((await f.run()).reason,'NOT_CLOUDFLARE_BUILDS');assert.equal(f.calls.length,0);assert.equal(f.loads(),0);});
+for(const branch of ['main','other-feature'])test('skips branch '+branch,async()=>{const f=fixture({WORKERS_CI_BRANCH:branch});assert.equal((await f.run()).reason,'OTHER_BRANCH');assert.equal(f.calls.length,0);assert.equal(f.loads(),0);});
+for(const command of ['dev','types',undefined])test('skips nondeployment command '+command,async()=>{const f=fixture({WRANGLER_COMMAND:command});assert.equal((await f.run()).reason,'NOT_A_DEPLOY_BUILD');assert.equal(f.calls.length,0);});
+test('invalid commit is refused before operation',async()=>{const f=fixture({WORKERS_CI_COMMIT_SHA:'invalid'});await assert.rejects(f.run(),/BUILD_COMMIT_UNVERIFIED/);assert.equal(f.calls.length,0);});
+test('missing build-time credentials are refused, not borrowed from runtime',async()=>{const f=fixture({CLOUDFLARE_API_TOKEN:undefined});await assert.rejects(f.run(),/BUILD_DOMAIN_API_TOKEN_REQUIRED/);assert.equal(f.calls.length,0);assert.equal(f.loads(),0);});
+test('approved Cloudflare build invokes exactly one guarded repair',async()=>{const f=fixture();const r=await f.run();assert.equal(f.calls.length,1);assert.equal(f.calls[0].apply,true);assert.equal(f.calls[0].token,'fixture-token');assert.equal(r.publicDnsVerified,false);assert.equal(r.commit,env.WORKERS_CI_COMMIT_SHA);assert.equal(JSON.stringify(r).includes('fixture-token'),false);});
+test('dedicated domain token takes precedence',async()=>{const f=fixture({CLOUDFLARE_DOMAIN_API_TOKEN:'dedicated-token'});await f.run();assert.equal(f.calls[0].token,'dedicated-token');});
+test('repair rejection propagates without retry',async()=>{let calls=0;await assert.rejects(runCloudflareDomainRepair({env,loadManifest:async()=>({}),repair:async()=>{calls++;throw Error('ZONE_NOT_ACTIVE');}}),/ZONE_NOT_ACTIVE/);assert.equal(calls,1);});

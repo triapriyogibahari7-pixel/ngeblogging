@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ngeblogging",
+  "build": {"command": "node scripts/run-cloudflare-domain-repair.mjs"},
   "main": "./cloudflare/worker-v70.mjs",
   "compatibility_date": "2026-07-30",
   "compatibility_flags": ["nodejs_compat"],

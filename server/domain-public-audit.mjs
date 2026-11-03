@@ -1,4 +1,18 @@
 export const PUBLIC_AUDIT_RELEASE = 'public-audit-status-v1-20261103';
+export const PUBLIC_AUDIT_TRANSPORT_RELEASE='public-audit-worker-fetch-v2-20261103';
+export function auditFailureDiagnostic(error,{aborted=false,phase='request'}={}){
+ const code=String(error?.code||error?.cause?.code||'').toUpperCase().slice(0,120);
+ const message=(String(error?.message||'')+' '+String(error?.cause?.message||'')).slice(0,4096);
+ let errorCode='AUDIT_NETWORK_UNCLASSIFIED',detail='Jaringan audit belum mendapat respons yang dapat dipastikan.';
+ if(aborted||error?.name==='TimeoutError'){errorCode='AUDIT_TIMEOUT';detail='Audit melewati batas waktu; belum dapat disimpulkan bahwa domain terputus.';}
+ else if(/(?:credentials|cache|redirect|RequestInitializerDict).*(?:not implemented|unsupported)|unsupported.*(?:credentials|cache|redirect)/i.test(message)){errorCode='AUDIT_FETCH_OPTION_UNSUPPORTED';detail='Runtime auditor menolak opsi permintaan. Ini bukan bukti koneksi domain terputus.';}
+ else if(code==='1019'||/\b1019\b|loop limit|recursive worker/i.test(message)){errorCode='AUDIT_WORKER_LOOP_DETECTED';detail='Auditor mencapai batas loop Worker. Jalur audit perlu diperbaiki tanpa mengubah DNS domain.';}
+ else if(code==='1042'||/\b1042\b|same.zone.*worker|worker.*same.zone/i.test(message)){errorCode='AUDIT_WORKER_ROUTING_BLOCKED';detail='Permintaan auditor ditolak oleh routing antar-Worker. Status koneksi domain tidak diubah.';}
+ else if(['ENOTFOUND','EAI_AGAIN','EAI_NONAME'].includes(code)||/dns.*(?:lookup|resolution).*(?:fail|error)/i.test(message)){errorCode='AUDIT_DNS_LOOKUP_FAILED';detail='Resolver jaringan audit belum berhasil menemukan alamat tujuan; koneksi domain belum dapat disimpulkan.';}
+ else if(/CERT_|ERR_TLS_|UNABLE_TO_VERIFY|DEPTH_ZERO_/.test(code)||/certificate|tls handshake|ssl handshake/i.test(message)){errorCode='AUDIT_TLS_FAILED';detail='Negosiasi TLS dari auditor belum berhasil. Tidak ada pengecualian sertifikat atau fallback HTTP yang digunakan.';}
+ else if(phase==='response'){errorCode='AUDIT_RESPONSE_READ_FAILED';detail='Server sudah merespons, tetapi auditor belum berhasil membaca halaman publik.';}
+ return {auditStatus:errorCode==='AUDIT_TIMEOUT'?'timeout':'network_error',errorCode,check:detail+' Kode: '+errorCode+'.'};
+}
 const REDIRECTS=new Set([301,302,303,307,308]);
 const INCONCLUSIVE=new Set(['timeout','network_error','redirect_external','audit_budget_exhausted']);
 function hostname(value){
@@ -10,9 +24,9 @@ function hostname(value){
 function cancel(body){try{Promise.resolve(body?.cancel?.()).catch(()=>{});}catch{}}
 export async function auditPublicTarget(target,{fetchImpl=globalThis.fetch,timeoutMs=6000,allowedHostnames=[],published=true,now=Date.now}={}){
  const started=now(),name=hostname(target?.hostname),controller=new AbortController();
- let timer,reader,lastStatus=0,lastType='',lastUrl='',https=null;
+ let timer,reader,phase='request',lastStatus=0,lastType='',lastUrl='',https=null;
  const base={...target,address:name||String(target?.hostname||''),url:name?'https://'+name:''};
- const finish=(auditStatus,check)=>({...base,auditStatus,reachable:auditStatus==='passed',https,httpStatus:lastStatus,contentType:lastType,finalUrl:lastUrl,latencyMs:Math.max(0,now()-started),check});
+ const finish=(auditStatus,check)=>({...base,transportRelease:PUBLIC_AUDIT_TRANSPORT_RELEASE,auditStatus,reachable:auditStatus==='passed',https,httpStatus:lastStatus,contentType:lastType,finalUrl:lastUrl,latencyMs:Math.max(0,now()-started),check});
  if(!name)return finish('invalid_target','Alamat audit tidak valid; konfigurasi domain tidak diubah.');
  if(!published)return finish('not_published','Situs masih draf atau belum dipublikasikan. Ini bukan kegagalan koneksi domain.');
  if(!Number.isFinite(timeoutMs)||timeoutMs<=0)return finish('audit_budget_exhausted','Anggaran waktu audit habis. Status koneksi domain tidak diubah.');
@@ -24,8 +38,10 @@ export async function auditPublicTarget(target,{fetchImpl=globalThis.fetch,timeo
    if(controller.signal.aborted)throw Object.assign(Error(),{name:'TimeoutError'});
    if(visited.has(url.href))return finish('redirect_loop','Redirect berulang; periksa aturan redirect, bukan nameserver secara otomatis.');
    visited.add(url.href);lastUrl=url.href;
-   const result=await fetchImpl(url,{method:'GET',redirect:'manual',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{accept:'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1','cache-control':'no-cache'},cf:{cacheTtl:0,cacheEverything:false}});
+   phase='request';
+   const result=await fetchImpl(url,{method:'GET',redirect:'manual',cache:'no-store',signal:controller.signal,headers:{accept:'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1','cache-control':'no-cache'},cf:{cacheTtl:0,cacheEverything:false}});
    if(controller.signal.aborted){cancel(result.body);throw Object.assign(Error(),{name:'TimeoutError'});}
+   phase='response';
    lastStatus=result.status;lastType=String(result.headers.get('content-type')||'').toLowerCase();https=true;
    if(REDIRECTS.has(result.status)){
     const location=result.headers.get('location');cancel(result.body);
@@ -46,7 +62,7 @@ export async function auditPublicTarget(target,{fetchImpl=globalThis.fetch,timeo
   }
  };
  try{return await Promise.race([inspect(),deadline]);}
- catch(error){return finish(controller.signal.aborted||error?.name==='TimeoutError'?'timeout':'network_error',controller.signal.aborted||error?.name==='TimeoutError'?'Audit melewati batas waktu; belum dapat disimpulkan bahwa domain terputus.':'Jaringan audit belum mendapat respons. Status koneksi domain tidak diubah.');}
+ catch(error){const diagnostic=auditFailureDiagnostic(error,{aborted:controller.signal.aborted,phase});return {...finish(diagnostic.auditStatus,diagnostic.check),errorCode:diagnostic.errorCode};}
  finally{clearTimeout(timer);controller.abort();if(reader){try{Promise.resolve(reader.cancel()).catch(()=>{});}catch{}try{reader.releaseLock();}catch{}}}
 }
 export async function auditPublicTargets(targets,{fetchImpl=globalThis.fetch,published=true,timeoutMs=6000,budgetMs=18000,concurrency=4,now=Date.now}={}){

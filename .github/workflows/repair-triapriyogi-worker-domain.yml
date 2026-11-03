@@ -1,0 +1,31 @@
+name: Repair triapriyogi Worker domain binding
+on:
+  push:
+    branches: [fix/connected-domain-audit-network-20261103]
+    paths: [ops/repair-triapriyogi-worker-domain-20261103.json]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: repair-triapriyogi-worker-domain-20261103
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: github.ref == 'refs/heads/fix/connected-domain-audit-network-20261103'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cloudflare-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated operation tests
+        run: node --test tests/repair-triapriyogi-worker-domain.test.mjs
+      - name: Reconcile only approved Worker domain bindings
+        env:
+          CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/repair-triapriyogi-worker-domain.mjs --apply
