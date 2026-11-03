@@ -1,0 +1,35 @@
+name: Domain reference quote API schema audit
+on:
+  push:
+    branches: [fix/domain-final-quote-config-20261103]
+    paths:
+      - '.github/workflows/domain-reference-api-schema-audit.yml'
+      - 'scripts/audit-domain-reference-api-schema.mjs'
+      - 'tests/domain-reference-api-schema-audit.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  metadata-audit:
+    if: github.ref == 'refs/heads/fix/domain-final-quote-config-20261103'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test metadata filtering with synthetic credentials
+        run: node --test tests/domain-reference-api-schema-audit.test.mjs
+      - name: Read Supabase API schema only
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/audit-domain-reference-api-schema.mjs > "$RUNNER_TEMP/reference-api-schema-audit.json"
+      - name: Preserve filtered metadata evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reference-api-schema-audit-${{ github.sha }}
+          path: ${{ runner.temp }}/reference-api-schema-audit.json
+          if-no-files-found: ignore
+          retention-days: 3
