@@ -16,6 +16,8 @@
   "ai": {"binding": "AI"},
   "vars": {
     "DOMAIN_ORDER_ENV": "production",
+    "DOMAIN_CUSTOMER_PRODUCTION_ENABLED": "true",
+    "DOMAIN_REGISTRATION_TERMS_VERSION": "cloudflare-domain-registration-2026-08-20",
     "DOMAIN_CUSTOMER_SEARCH_ENABLED": "true",
     "DOMAIN_CUSTOMER_SEARCH_HTTP_BUDGET": "51",
     "DOMAIN_CUSTOMER_REGISTRAR_PROVIDER": "cloudflare",
@@ -76,6 +78,7 @@
     "vars": {
       "DOMAIN_CUSTOMER_SEARCH_ENABLED": "false",
       "DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED": "false",
+      "DOMAIN_CUSTOMER_PRODUCTION_ENABLED": "false",
       "DOMAIN_ORDER_ENV": "sandbox",
       "DOMAIN_QUOTE_PREVIEW_ENABLED": "false",
       "DOMAIN_ORDER_PREVIEW_ENABLED": "false",
