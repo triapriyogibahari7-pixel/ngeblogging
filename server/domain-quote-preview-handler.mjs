@@ -1,3 +1,4 @@
+import {issueDomainReferenceSaleQuote} from './domain-reference-quote-handler.mjs';
 import {buildDomainSaleQuoteDraft} from './domain-sale-quote-draft.mjs';
 import {parseDomainPricingSnapshot} from './domain-pricing-snapshot.mjs';
 import {checkCloudflareRegistrar} from './cloudflare-registrar-check.mjs';
@@ -63,6 +64,7 @@ export async function domainQuotePreviewResponse(request,env,{fetchImpl=globalTh
    }catch(error){return reply(503,'DOMAIN_ESTIMATE_UNAVAILABLE',{reason:ESTIMATE_REASONS.has(error?.code)?error.code:'ESTIMATE_PROVIDER_OR_RESPONSE_UNAVAILABLE'});}
    finally{attempt.pending=false;}
   }
+  if(production)return await issueDomainReferenceSaleQuote(env,{domain,userId:user.id,fetchImpl,checkImpl,clock,makeId,wait,signal:controller.signal,base,reply});
   let inputs;try{inputs=readQuotePricingInputs(env,{now:clock(),environment});}catch(error){return reply(503,'DOMAIN_PRICING_INPUTS_UNAVAILABLE',quotePricingFailure(error,'snapshot'));}
   const check=await wait(checkImpl(env,{domain},{fetchImpl,clock}));
   if(check?.status==='not_registrable'&&['extension_not_supported_via_api','extension_not_supported','extension_disallows_registration'].includes(check.reason))return reply(422,'UNSUPPORTED_EXTENSION');
