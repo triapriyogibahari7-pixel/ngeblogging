@@ -37,7 +37,6 @@
     "STUDIO_THEME_CATALOG_RELEASE": "studio-theme-catalog-100-v296-20260805",
     "AUTH_STUDIO_HANDOFF_RELEASE": "auth-session-handoff-v292-20260805",
     "STUDIO_STARTUP_RELEASE": "studio-startup-direct-data-v292-20260805",
-    "UI_V35_WORKER_COMPAT": "worker-v35.mjs",
     "SUPABASE_URL": "https://polvmlrhqoiflumibfqs.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-",
     "CUSTOM_DOMAIN_PROVIDER": "cloudflare-worker-custom-domain-v172",
