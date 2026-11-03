@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readQuotePricingInputs,quotePricingFailure} from '../server/domain-quote-preview-handler.mjs';
+const now=Date.parse('2026-11-03T09:00:00Z');
+const options={now,environment:'production'};
+// Synthetic fixtures only: these values must never be installed as production configuration.
+function fixture(){return {environment:'production',fx:{base:'USD',quote:'IDR',rate:'15000',observedAt:new Date(now-1000).toISOString(),expiresAt:new Date(now+60000).toISOString(),source:'synthetic-test-only',costBasisVerified:true},policy:{taxStatus:'verified',costScope:'registration_year_1',paymentFeeMode:'conservative_ceiling',sourceRef:'synthetic-test-only',taxSourceRef:'synthetic-test-only',paymentFeeSourceRef:'synthetic-test-only',version:'test-only',verifiedAt:new Date(now-1000).toISOString(),expiresAt:new Date(now+60000).toISOString(),otherDirectCostsIdr:0,paymentFixedCostIdr:0,minimumMarginIdr:25000,paymentFeeBasisPoints:0}};}
+test('production alias is accepted only when primary binding is absent',()=>{const value=fixture();assert.deepEqual(readQuotePricingInputs({DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT:JSON.stringify(value)},options),value);});
+test('missing both bindings produces a precise missing reason',()=>{assert.throws(()=>readQuotePricingInputs({},options),{code:'PRICING_SNAPSHOT_MISSING'});});
+test('invalid primary is never bypassed by valid alias',()=>{assert.throws(()=>readQuotePricingInputs({DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON:'invalid',DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT:JSON.stringify(fixture())},options),{code:'INVALID_PRICING_JSON'});});
+test('expired primary is never bypassed by valid alias',()=>{const expired=fixture();expired.fx.expiresAt=new Date(now-1).toISOString();assert.throws(()=>readQuotePricingInputs({DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON:JSON.stringify(expired),DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT:JSON.stringify(fixture())},options),{code:'FX_SNAPSHOT_EXPIRED'});});
+test('production rejects sandbox data in alias',()=>{const value=fixture();value.environment='sandbox';assert.throws(()=>readQuotePricingInputs({DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT:JSON.stringify(value)},options),{code:'PRODUCTION_REQUIRED'});});
+test('sandbox never consumes production aliases',()=>{assert.throws(()=>readQuotePricingInputs({DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT:JSON.stringify(fixture())},{now,environment:'sandbox'}),{code:'PRICING_SNAPSHOT_MISSING'});});
+test('unknown errors and arbitrary stages cannot leak configuration',()=>{assert.deepEqual(quotePricingFailure({code:'secret-value',message:'secret-value'},'secret-value'),{reason:'PRICING_VALIDATION_FAILED',stage:'pricing'});assert.deepEqual(quotePricingFailure({code:'FX_SNAPSHOT_EXPIRED'},'snapshot'),{reason:'FX_SNAPSHOT_EXPIRED',stage:'snapshot'});});
