@@ -10,6 +10,10 @@ import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.m
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
+  if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='agent/fix-live-registrar-search-20261103'){
+    const checked=spawnSync(process.execPath,['--test','tests/live-registrar-search.test.mjs','tests/registrar-search-view.test.mjs'],{env:{PATH:process.env.PATH||'',CI:'true',NODE_ENV:'test',LANG:'C.UTF-8'},stdio:'inherit',shell:false,timeout:120000});
+    if(checked.error||checked.signal||checked.status!==0)throw Error('LIVE_REGISTRAR_SEARCH_TESTS_FAILED');
+  }
   let registrarSyncPlan=null;
   if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='agent/sync-registrar-runtime-20261103'){
     const {runRegistrarRuntimeSyncPreflight}=await import('./scripts/registrar-runtime-sync-preflight.mjs');
