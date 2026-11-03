@@ -38,11 +38,14 @@ export async function domainQuotePreviewResponse(request,env,{fetchImpl=globalTh
   if(check?.status==='premium_not_supported')return reply(422,'PREMIUM_NOT_SUPPORTED');
   if(check?.status!=='checked'||check.domain!==domain)return reply(502,'REGISTRAR_QUOTE_UNAVAILABLE');
   let row;try{row=buildDomainSaleQuoteDraft(check,{userId:user.id,environment,fx:inputs.fx,policy:inputs.policy,now:clock(),makeId}).row;if(row.environment!==environment||row.user_id!==user.id.toLowerCase()||row.domain!==domain)throw Error();}catch{return reply(503,'DOMAIN_PRICING_INPUTS_UNAVAILABLE');}
+  const pricingBreakdown={version:1,currency:'IDR',registrarCostIdr:row.registrar_cost_idr,taxAndOtherDirectCostsIdr:row.other_direct_costs_idr,paymentCostIdr:row.payment_cost_idr,serviceMarginIdr:row.cost_basis.computed_margin_idr,totalIdr:row.sale_price_idr,minimumMarginIdr:row.cost_basis.minimum_margin_idr,fxRateUsdIdr:row.fx_rate_usd_idr,taxStatus:row.cost_basis.tax_status,paymentFeeMode:row.cost_basis.payment_fee_mode};
+  const parts=[pricingBreakdown.registrarCostIdr,pricingBreakdown.taxAndOtherDirectCostsIdr,pricingBreakdown.paymentCostIdr,pricingBreakdown.serviceMarginIdr];
+  if(parts.some(value=>!Number.isSafeInteger(value)||value<0)||!Number.isSafeInteger(pricingBreakdown.totalIdr)||!Number.isSafeInteger(pricingBreakdown.minimumMarginIdr)||pricingBreakdown.minimumMarginIdr<25000||pricingBreakdown.serviceMarginIdr<pricingBreakdown.minimumMarginIdr||parts.reduce((sum,value)=>sum+value,0)!==pricingBreakdown.totalIdr)return reply(503,'DOMAIN_PRICING_INPUTS_UNAVAILABLE');
   if(controller.signal.aborted||Date.parse(row.expires_at)-clock()<5000)return reply(503,'SNAPSHOT_REFRESH_REQUIRED');
   const stored=await wait(fetchImpl(new Request(new URL('/rest/v1/domain_sale_quotes',base),{method:'POST',redirect:'manual',headers:{authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,apikey:env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json',prefer:'return=minimal'},body:JSON.stringify(row),signal:controller.signal})));
   if(![201,204].includes(stored.status))return reply(503,'DOMAIN_QUOTE_STORAGE_UNAVAILABLE');
   if(Date.parse(row.expires_at)<=clock())return reply(409,'QUOTE_EXPIRED');
-  return reply(201,production?'DOMAIN_QUOTE_PRODUCTION':'DOMAIN_QUOTE_PREVIEW',{quote:{quoteId:row.id,domain:row.domain,years:1,displayCurrency:'USD',salePriceUsd:row.sale_price_usd,currency:'IDR',amountIdr:row.sale_price_idr,expiresAt:row.expires_at,indicative:!production}});
+  return reply(201,production?'DOMAIN_QUOTE_PRODUCTION':'DOMAIN_QUOTE_PREVIEW',{quote:{quoteId:row.id,domain:row.domain,years:1,displayCurrency:'USD',salePriceUsd:row.sale_price_usd,currency:'IDR',amountIdr:row.sale_price_idr,expiresAt:row.expires_at,indicative:!production,pricingBreakdown}});
  }catch{return reply(503,'DOMAIN_QUOTE_UNAVAILABLE');}
  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);controller.signal.removeEventListener('abort',stop);}
 }
