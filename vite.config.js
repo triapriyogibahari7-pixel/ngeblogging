@@ -9,7 +9,9 @@ import {runStage5NativeBuild} from './scripts/stage5-cloudflare-native-build.mjs
 import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.mjs';
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
+import {runLifecycleDiagnostic} from './scripts/domain-quality/lifecycle-diagnostic.mjs';
 export default defineConfig(async({command})=>{
+  if(command==='build')await runLifecycleDiagnostic();
   let previewQuality=null;
   if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='fix/domain-commerce-midtrans-20261102'){
     const {runCloudflarePreviewGate}=await import('./scripts/domain-quality/cloudflare-preview-gate.mjs');
