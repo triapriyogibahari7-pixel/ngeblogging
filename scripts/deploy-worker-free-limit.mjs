@@ -37,7 +37,8 @@ export function variableInventoryReport(config,bindings){
 
 export function pricingSnapshotReport(bindings,{now=Date.now()}={}){
   if(!Array.isArray(bindings))return {status:'unavailable',reason:'INVALID_BINDING_INVENTORY'};
-  const matches=bindings.filter(binding=>binding?.name==='DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON');
+  const primary=bindings.filter(binding=>binding?.name==='DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON');
+  const matches=primary.length?primary:bindings.filter(binding=>binding?.name==='DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT');
   if(matches.length===0)return {status:'missing',reason:'PRICING_SNAPSHOT_MISSING'};
   if(matches.length!==1)return {status:'unavailable',reason:'DUPLICATE_SNAPSHOT_BINDING'};
   const binding=matches[0];
@@ -151,6 +152,15 @@ function selfTest(){
   assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'plain_text',text:'not-json'}]),{status:'invalid',reason:'INVALID_PRICING_JSON'});
   assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'json',json:{}}]),{status:'invalid',reason:'PRICING_SNAPSHOT_REQUIRES_STRING_BINDING'});
   assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'plain_text',text:'{}'}]),{status:'invalid',reason:'INVALID_PRICING_SNAPSHOT_SHAPE'});
+  const sharedSnapshotSecret={name:'DOMAIN_CUSTOMER_REGISTRATION_PRICING_SNAPSHOT',type:'secret_text'};
+  Object.defineProperty(sharedSnapshotSecret,'text',{get(){throw Error('SECRET_VALUE_ACCESSED');}});
+  assert.deepEqual(pricingSnapshotReport([sharedSnapshotSecret]),{status:'not_inspectable',reason:'PRICING_SNAPSHOT_IS_SECRET'});
+  const invalidShared={name:sharedSnapshotSecret.name,type:'plain_text',text:'not-json'};
+  assert.deepEqual(pricingSnapshotReport([invalidShared]),{status:'invalid',reason:'INVALID_PRICING_JSON'});
+  assert.deepEqual(pricingSnapshotReport([sharedSnapshotSecret,sharedSnapshotSecret]),{status:'unavailable',reason:'DUPLICATE_SNAPSHOT_BINDING'});
+  assert.deepEqual(pricingSnapshotReport([{name:snapshotSecret.name,type:'plain_text',text:'not-json'},sharedSnapshotSecret]),{status:'invalid',reason:'INVALID_PRICING_JSON'});
+  assert.deepEqual(pricingSnapshotReport([snapshotSecret,snapshotSecret,sharedSnapshotSecret]),{status:'unavailable',reason:'DUPLICATE_SNAPSHOT_BINDING'});
+  assert.deepEqual(pricingSnapshotReport([snapshotSecret,invalidShared]),{status:'not_inspectable',reason:'PRICING_SNAPSHOT_IS_SECRET'});
 }
 
 async function main(){
