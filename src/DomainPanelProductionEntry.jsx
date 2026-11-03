@@ -1,7 +1,6 @@
 import React,{useRef,useState} from 'react';
 import DomainPanelV124 from './DomainPanelV124.jsx';
 import DomainPanelStage5Entry from './DomainPanelStage5Entry.jsx';
-import DomainCustomerSearch from './DomainCustomerSearch.jsx';
 import LiveRegistrarSearch from './LiveRegistrarSearch.jsx';
 import DomainPurchasePage from './DomainPurchasePage.jsx';
 import {domainPanelSurface} from './lib/domain-panel-surface.mjs';
@@ -29,7 +28,6 @@ function OwnedDomainCommerce({user,site}){
  }
  return <>
   <LiveRegistrarSearch user={user} siteId={site.id} siteName={site.name} onSelect={selectDomain}/>
-  <details className="sv124-card"><summary>Harga jual dan peninjauan domain</summary><p>Jalur ini tetap memerlukan konfigurasi quote dan biaya yang valid. Kegagalan quote tidak mematikan pencarian langsung di atas.</p><DomainCustomerSearch user={user} siteId={site.id} siteName={site.name} onSelect={selectDomain}/></details>
   <section ref={purchaseSection} tabIndex={-1} className="sv124-card" aria-label="Formulir pembelian domain">
    <h2>Pembelian domain</h2>
    <p>Formulir pembelian meminta quote final tersendiri dari backend. Harga pencarian dan peninjauan bukan tagihan atau persetujuan pembayaran.</p>
