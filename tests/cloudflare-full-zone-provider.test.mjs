@@ -227,24 +227,37 @@ test("attachDefaultWorkerDomains menolak zone yang belum aktif", async () => {
 
 test("attachDefaultWorkerDomains memasang apex dan www", async () => {
   const requests = [];
+  const verifications = [];
+  const attached = new Map();
+  const sequence = [];
 
   await withMockFetch(
     async (url, options = {}) => {
+      const parsed = new URL(String(url));
+      assert.equal(parsed.origin, "https://api.cloudflare.com");
+      assert.equal(parsed.pathname, `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`);
+      const method = options.method ?? "GET";
+      sequence.push(method);
+      if (method === "GET") {
+        assert.equal(options.body, undefined);
+        const hostname = parsed.searchParams.get("hostname");
+        assert.ok(attached.has(hostname), "Verification must follow attachment");
+        verifications.push(hostname);
+        return cloudflareResponse([attached.get(hostname)]);
+      }
+      assert.equal(method, "PUT");
+      assert.equal(parsed.search, "");
       const body = JSON.parse(options.body);
-
-      requests.push({
-        url: String(url),
-        method: options.method,
-        body,
-      });
-
-      return cloudflareResponse({
-        id: crypto.randomUUID(),
+      requests.push({url: String(url), method, body});
+      const domain = {
+        id: `fixture-domain-${attached.size + 1}`,
         hostname: body.hostname,
         service: body.service,
         zone_id: body.zone_id,
         zone_name: body.zone_name,
-      });
+      };
+      attached.set(body.hostname, domain);
+      return cloudflareResponse(domain);
     },
     async () => {
       const result = await attachDefaultWorkerDomains(
@@ -256,19 +269,16 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
         },
       );
 
-      assert.equal(
-        result.apex.hostname,
-        "example.com",
-      );
-
-      assert.equal(
-        result.www.hostname,
-        "www.example.com",
-      );
+      assert.equal(result.apex.hostname, "example.com");
+      assert.equal(result.www.hostname, "www.example.com");
+      assert.equal(result.apex.id, attached.get("example.com").id);
+      assert.equal(result.www.id, attached.get("www.example.com").id);
     },
   );
 
   assert.equal(requests.length, 2);
+  assert.deepEqual(sequence, ["PUT", "GET", "PUT", "GET"]);
+  assert.deepEqual(verifications, ["example.com", "www.example.com"]);
 
   assert.deepEqual(
     requests.map((request) => request.body.hostname),
