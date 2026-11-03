@@ -43,7 +43,22 @@ for(const patch of [{providerEnvironment:'test'},{years:2},{availability:'unavai
 test('pricing scope must be registration year one',()=>{const s=snapshot();s.policy.costScope='renewal';assert.throws(()=>price(offer(),JSON.stringify(s),{now}));});
 test('no invented exchange rate',()=>assert.throws(()=>price(offer(),undefined,{now})));
 test('deadline interrupts auth that ignores signal',async()=>{const h=create({timeoutMs:10,clock:()=>now,fetchImpl:()=>new Promise(()=>{})});assert.equal((await h(request(),env())).status,503);});
-test('active entry dispatches new handler before legacy without removing it',async()=>{const text=await readFile(new URL('../server/domain-production-registrar-lookup.mjs',import.meta.url),'utf8');assert.ok(text.includes("import {domainCustomerPriceCheckResponse} from './domain-customer-price-check.mjs'"));assert.ok(text.includes('customerPrice??legacyProductionRegistrarLookupResponse(request,env)'));assert.ok(text.includes('export function createProductionRegistrarLookup'));});
+test('active entry dispatches auth bridge before legacy without removing it',async()=>{
+ const text=await readFile(new URL('../server/domain-production-registrar-lookup.mjs',import.meta.url),'utf8');
+ const bridge=await readFile(new URL('../server/domain-customer-auth-bridge.mjs',import.meta.url),'utf8');
+ assert.ok(text.includes("import {customerDomainAuthBridge} from './domain-customer-auth-bridge.mjs'"));
+ assert.match(text,/const customer=await customerDomainAuthBridge\(request,env\);\s*return customer\?\?legacyProductionRegistrarLookupResponse\(request,env\);/);
+ assert.ok(text.includes('export function createProductionRegistrarLookup'));
+ assert.ok(bridge.includes("import {createDomainCustomerPriceCheck} from './domain-customer-price-check.mjs'"));
+ assert.ok(bridge.includes('createDomainCustomerPriceCheck({fetchImpl:transport,timeoutMs:priceTimeoutMs})'));
+ const {domainProductionRegistrarLookupResponse:dispatch}=await import('../server/domain-production-registrar-lookup.mjs');
+ for(const path of ['/api/domains/commerce/check/example.com','/api/domains/commerce/search/example','/api/domains/registrar/check/example.com']){
+  const response=await dispatch(request(path,{token:''}),env());
+  assert.equal(response.status,401,path);
+  assert.equal((await response.json()).code,'AUTH_REQUIRED',path);
+ }
+ assert.equal(await dispatch(request('/unrelated',{token:''}),env()),null);
+});
 test('malformed auth project value fails closed',async()=>{const f=fixture();assert.equal((await f.handler(request(),{...env(),SUPABASE_URL:{}})).status,503);assert.equal(f.calls.length,0);});
 test('subdomain is rejected after verified extension context',async()=>{const f=fixture();assert.equal((await f.handler(request('/api/domains/commerce/check/sub.example.com'),env())).status,400);assert.equal(f.lookups(),0);});
 for(const field of ['taxStatus','costScope','paymentFeeMode'])test('unverified cost field '+field+' cannot yield a price',()=>{const s=snapshot();s.policy[field]='unverified';assert.throws(()=>price(offer(),JSON.stringify(s),{now}));});
