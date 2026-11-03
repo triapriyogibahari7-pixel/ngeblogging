@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../src/DomainPanelV124.jsx',import.meta.url),'utf8');
+const css=await readFile(new URL('../src/domain-public-audit.css',import.meta.url),'utf8');
+test('Domain panel mounts exactly one new audit component',()=>{assert.match(source,/import DomainPublicAudit from "\.\/DomainPublicAudit\.jsx"/);assert.equal((source.match(/<DomainPublicAudit\b/g)||[]).length,1);assert.match(source,/domains=\{sortedDomains\} disabled=\{Boolean\(busy\)\}/);});
+test('legacy audit state and refresh-before-audit controller are removed',()=>{assert.doesNotMatch(source,/const runAudit|setAudit\(|const \[audit,/);assert.doesNotMatch(source,/Perlu diperiksa|sv124-domain-audit/);});
+test('audit instance is keyed by active site',()=>assert.match(source,/<DomainPublicAudit key=\{site\?\.id \|\| "no-site"\}/));
+test('explicit domain configuration operations remain available',()=>{for(const path of ['/api/domains/register','/api/domains/refresh','/api/domains/remove','/api/domains/address'])assert.ok(source.includes(path));const match=source.match(/function activeDomain\(domain\) \{([\s\S]*?)\n\}/);assert.ok(match);const active=new Function('domain',match[1]);assert.equal(active({status:'active',provider_status:'active',ssl_status:'active'}),true);assert.equal(active({status:'active',provider_status:'pending',ssl_status:'active'}),false);assert.equal(active({status:'active',provider_status:'active',ssl_status:'pending'}),false);});
+test('neutral audit styling overrides warning defaults only inside the new audit component',()=>{assert.match(css,/\[data-public-audit-view\] \.sv124-audit-summary\.muted/);assert.match(css,/article>span\.muted\{background:#f1f5f9;color:#475569\}/);assert.doesNotMatch(css,/\.ce-|\.nara-|\.tn-/);});
+test('audit stylesheet is imported and contains a narrow-screen layout',()=>{assert.match(source,/import "\.\/domain-public-audit\.css"/);assert.match(css,/@media\(max-width:600px\)/);assert.match(css,/grid-column:2/);});
