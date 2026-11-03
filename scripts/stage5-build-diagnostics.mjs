@@ -11,6 +11,10 @@ function scrub(value){
   return value;
 }
 export async function runStage5BuildDiagnostics(task,{env=process.env,cwd=process.cwd()}={}){
+  if(env.WORKERS_CI==='1'&&env.WORKERS_CI_BRANCH==='fix/registrar-workers-build-diagnostics-20261103'){
+    const {runRegistrarBuildInventory}=await import('./registrar-build-inventory.mjs');
+    await runRegistrarBuildInventory({env});
+  }
   if(env.WORKERS_CI!=='1'||env.WORKERS_CI_BRANCH!==BRANCH)return;
   const sha=env.WORKERS_CI_COMMIT_SHA;assert.match(sha||'',/^[0-9a-f]{40}$/,'DIAGNOSTIC_COMMIT_REQUIRED');
   const evidence=resolve(cwd,'public/stage5-native',sha+'.json'),started=Date.now();let nativeReport=null;
