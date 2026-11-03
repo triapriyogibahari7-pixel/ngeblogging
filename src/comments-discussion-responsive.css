@@ -1,0 +1,88 @@
+/* Only the comment workspace; no settings, navigation, backend, or global theme changes. */
+.sv124-comments-page .sv124-card.sv124-comment-workspace{container:comments-discussion / inline-size;box-sizing:border-box;width:100%!important;min-width:0!important;padding:clamp(12px,2vw,24px)!important;border:1px solid #e2e8f0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 8px 28px #0f172a0a;color:#334155;font:400 14px/1.55 system-ui,sans-serif}
+.sv124-comments-page .sv124-card.sv124-comment-workspace *{box-sizing:border-box}
+.sv124-comments-page .sv124-card.sv124-comment-workspace button,
+.sv124-comments-page .sv124-card.sv124-comment-workspace input,
+.sv124-comments-page .sv124-card.sv124-comment-workspace textarea{font-family:inherit!important;letter-spacing:normal!important;text-transform:none!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace button{appearance:none;cursor:pointer;transition:background-color .15s,border-color .15s}
+.sv124-comments-page .sv124-card.sv124-comment-workspace button:disabled{cursor:not-allowed;opacity:.55}
+.sv124-comments-page .sv124-card.sv124-comment-workspace button:focus-visible{outline:3px solid #3b82f6!important;outline-offset:2px!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace svg{width:19px;height:19px;flex:0 0 auto}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools{display:grid!important;grid-template-columns:minmax(0, 1fr)!important;gap:14px!important;width:100%!important;min-width:0!important;margin:0 0 20px}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>label,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form>label{display:flex!important;align-items:flex-start;gap:10px;width:100%!important;min-width:0!important;margin:0;padding:14px;border:1px solid #dbe3ef;border-radius:13px;background:#f8fafc;color:#64748b}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>label{align-items:center;min-height:48px}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools input,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form textarea{display:block!important;flex:1 1 0;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#0f172a;font-size:16px !important;line-height:1.65;outline:none}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form textarea{min-height:112px;resize:vertical}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>label:focus-within,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form>label:focus-within{border-color:#3b82f6!important;box-shadow:0 0 0 3px #3b82f626!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>div{display:flex!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important;min-width:0!important;overflow:visible!important;padding:3px!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>div>button,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-moderation-actions>button{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;min-width:0;max-width:100%;min-height:44px;padding:9px 11px!important;border:1px solid #dbe3ef;border-radius:11px;background:#fff;color:#475569;font-size:13px;font-weight:600;line-height:1.5;white-space:normal!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>div>button{flex:0 1 auto!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>div>button>span{display:inline-grid;place-items:center;min-width:22px;padding:2px 5px;border-radius:7px;background:#f1f5f9;color:#475569;font-size:11px;font-variant-numeric:tabular-nums}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>div>button.active,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list>button.active{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8;box-shadow:inset 3px 0 0 #3b82f6}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-columns{display:grid!important;grid-template-columns:minmax(0, 1fr)!important;align-items:start;gap:18px!important;width:100%!important;min-width:0!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list{display:grid!important;grid-template-columns:minmax(0, 1fr)!important;align-content:start;gap:10px!important;width:100%!important;min-width:0!important;max-height:24rem;overflow-y:auto;padding:4px!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list>button{position:relative;display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;align-items:start;gap:6px 11px;width:100%!important;min-width:0!important;padding:14px!important;border:1px solid #e2e8f0;border-radius:14px;background:#fff;color:#334155;font:inherit;text-align:left!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-avatar{display:grid!important;place-items:center;width:38px!important;height:38px!important;border-radius:12px;background:#dbeafe;color:#1d4ed8;font-size:12px;font-style:normal;font-weight:700}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list>button>div,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail>header>div{min-width:0;overflow-wrap:anywhere}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list b{display:block;padding-right:8px;font-size:14px;color:#0f172a}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list small,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list time,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail>header small,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail>header p,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-replies time{display:block;margin:3px 0;color:#64748b;font-size:12px;line-height:1.6;letter-spacing:normal;overflow-wrap:anywhere}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list p,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-replies p{margin:6px 0;font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list i,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail>header>i{grid-column:2;justify-self:start}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list em{position:absolute;top:12px;right:12px;width:7px;height:7px;border-radius:50%;background:#2563eb}
+.sv124-comments-page .sv124-card.sv124-comment-workspace i[class^="status-"]{display:inline-flex;align-items:center;width:fit-content;max-width:100%;padding:4px 9px;border-radius:999px;background:#f1f5f9;color:#475569;font:600 11px/1.5 system-ui,sans-serif;overflow-wrap:anywhere}
+.sv124-comments-page .sv124-card.sv124-comment-workspace i.status-pending{background:#fff7ed;color:#9a3412}
+.sv124-comments-page .sv124-card.sv124-comment-workspace i.status-approved{background:#ecfdf5;color:#047857}
+.sv124-comments-page .sv124-card.sv124-comment-workspace i.status-spam{background:#fff1f2;color:#be123c}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail{display:grid;gap:20px;width:100%!important;min-width:0!important;padding:18px!important;border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow-wrap:anywhere}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail>header{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px 12px;align-items:start;min-width:0}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-detail h2{margin:4px 0;color:#0f172a;font:700 19px/1.35 system-ui,sans-serif;letter-spacing:-.02em}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-message{min-width:0;padding:16px;border-radius:13px;background:#f8fafc}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-message>p{margin:0;color:#334155;font-size:14px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-message>span{display:inline-block;margin-top:12px;font-size:24px;line-height:1.4}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-message footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;margin-top:18px;padding-top:12px;border-top:1px solid #e2e8f0;color:#64748b;font-size:11px}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-message footer small{font-size:inherit;letter-spacing:normal}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-moderation-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,128px),1fr));gap:8px!important;min-width:0}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-moderation-actions>button{width:100%!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-moderation-actions>button:first-child{border-color:#a7f3d0;background:#ecfdf5;color:#047857}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-moderation-actions>button.danger{border-color:#fecdd3;background:#fff1f2;color:#be123c}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-replies{display:grid;gap:10px;min-width:0}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-replies h3{margin:0;color:#475569;font-size:13px}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-replies>article{display:grid;grid-template-columns:19px minmax(0,1fr);gap:10px;padding:14px;border:1px solid #dbeafe;border-radius:12px;background:#f8fbff}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form{display:grid!important;grid-template-columns:minmax(0, 1fr)!important;gap:12px;width:100%;min-width:0;margin:0}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form>label>svg{margin-top:4px}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form>button{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;justify-self:stretch;min-height:46px;padding:11px 20px!important;border:1px solid #2563eb;border-radius:12px;background:#2563eb;color:#fff;font-size:14px;font-weight:650;line-height:1.5}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-panel-loading,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-unified-empty,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-list-empty,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-detail-empty{display:grid;justify-items:center;align-content:center;gap:10px;min-width:0;min-height:160px;padding:24px;color:#64748b;text-align:center}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-unified-empty h2,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-detail-empty h2{margin:0;color:#334155;font:650 18px/1.5 system-ui,sans-serif}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-unified-empty p,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-list-empty p{margin:0;max-width:44ch;font-size:13px}
+@container comments-discussion (min-width: 880px){
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-columns{grid-template-columns:minmax(240px, .85fr) minmax(0, 1.6fr)!important;gap:22px!important}
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-list{max-height:40rem}
+}
+@container comments-discussion (min-width: 600px){
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form>button{justify-self:end;min-width:132px}
+}
+@media (any-pointer: coarse){
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-comment-tools>div>button,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-moderation-actions>button,
+.sv124-comments-page .sv124-card.sv124-comment-workspace .sv124-reply-form>button{min-height:48px !important}
+}
+@media (prefers-reduced-motion: reduce){
+.sv124-comments-page .sv124-card.sv124-comment-workspace button{transition:none}
+}
