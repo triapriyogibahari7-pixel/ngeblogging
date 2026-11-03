@@ -1,0 +1,14 @@
+{
+  "intent": "Request another production build via a main-branch push",
+  "application_commit": "05f55a111e5eb95d272a91476fca8fb350221e1f",
+  "merged_pull_request": 780,
+  "worker": "ngeblogging",
+  "site": "https://ngeblogging.com",
+  "scope": "Deployment retry record only; no application code changes",
+  "database_migration": "domain_reference_pricing_contract_v1",
+  "database_migration_action": "Already applied; do not reapply",
+  "previous_github_run": "41674968439",
+  "previous_github_run_blocker": "Job was not started because the account was locked due to a billing issue",
+  "reported_cloudflare_build_error": "Build failed to initialize and was timed out",
+  "deployment_status": "Retry requested; deployment success not verified"
+}
