@@ -4,6 +4,7 @@ import {
   RefreshCw, Reply, Save, Search, ShieldCheck, Trash2, XCircle,
 } from "lucide-react";
 import { supabase } from "./lib/supabase.js";
+import "./comments-discussion-responsive.css";
 
 // Deployment anchor: comment settings stay below the comment workspace.
 // Production build is intentionally independent from the historical test and patch gates.
