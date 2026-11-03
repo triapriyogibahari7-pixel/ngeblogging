@@ -26,7 +26,8 @@ test('owned site gets sale price rather than wholesale cost',async()=>{const f=f
 test('taken domain has no fabricated sale price',async()=>{const f=fixture({available:false}),r=await f.handler(request(),env());assert.equal(r.status,200);assert.equal((await r.json()).price,null);});
 test('missing login never reaches provider',async()=>{const f=fixture();assert.equal((await f.handler(request(undefined,{token:''}),env())).status,401);assert.equal(f.calls.length,0);assert.equal(f.builds(),0);});
 test('expired session never reaches provider',async()=>{const f=fixture({authStatus:401});assert.equal((await f.handler(request(),env())).status,401);assert.equal(f.builds(),0);});
-for(const rows of [[],[{id:site,owner_id:'33333333-3333-4333-8333-333333333333'}],[{id:owner,owner_id:owner}],[{id:site,owner_id:owner},{id:site,owner_id:owner}]])test('site ownership mismatch is rejected '+JSON.stringify(rows),async()=>{const f=fixture({rows});assert.equal((await f.handler(request(),env())).status,403);assert.equal(f.builds(),0);});
+for(const rows of [[],[{id:site,owner_id:'33333333-3333-4333-8333-333333333333'}],[{id:owner,owner_id:owner}]])test('site ownership mismatch is rejected '+JSON.stringify(rows),async()=>{const f=fixture({rows}),r=await f.handler(request(),env());assert.equal(r.status,403);assert.equal((await r.json()).code,'SITE_OWNER_REQUIRED');assert.equal(f.builds(),0);assert.equal(f.lookups(),0);});
+test('duplicate site rows fail closed as an invalid upstream response',async()=>{const f=fixture({rows:[{id:site,owner_id:owner},{id:site,owner_id:owner}]}),r=await f.handler(request(),env());assert.equal(r.status,503);assert.equal((await r.json()).code,'AUTH_UNAVAILABLE');assert.equal(f.builds(),0);assert.equal(f.lookups(),0);});
 for(const options of [{method:'GET'},{origin:'https://example.com'},{siteId:'bad'},{host:'https://example.com'}])test('reject invalid request '+JSON.stringify(options),async()=>{const f=fixture();const r=await f.handler(request(undefined,options),env());assert.ok([400,403,404,405].includes(r.status));assert.equal(f.builds(),0);});
 test('client cannot submit its own price',async()=>{const f=fixture();assert.equal((await f.handler(request(undefined,{body:'{"amountIdr":1}'}),env())).status,400);assert.equal(f.calls.length,0);});
 test('query parameters cannot override provider or price',async()=>{const f=fixture();assert.equal((await f.handler(request('/api/domains/commerce/check/example.com?amount=1'),env())).status,400);assert.equal(f.calls.length,0);});
@@ -42,7 +43,22 @@ for(const patch of [{providerEnvironment:'test'},{years:2},{availability:'unavai
 test('pricing scope must be registration year one',()=>{const s=snapshot();s.policy.costScope='renewal';assert.throws(()=>price(offer(),JSON.stringify(s),{now}));});
 test('no invented exchange rate',()=>assert.throws(()=>price(offer(),undefined,{now})));
 test('deadline interrupts auth that ignores signal',async()=>{const h=create({timeoutMs:10,clock:()=>now,fetchImpl:()=>new Promise(()=>{})});assert.equal((await h(request(),env())).status,503);});
-test('active entry dispatches new handler before legacy without removing it',async()=>{const text=await readFile(new URL('../server/domain-production-registrar-lookup.mjs',import.meta.url),'utf8');assert.ok(text.includes("import {domainCustomerPriceCheckResponse} from './domain-customer-price-check.mjs'"));assert.ok(text.includes('customerPrice??legacyProductionRegistrarLookupResponse(request,env)'));assert.ok(text.includes('export function createProductionRegistrarLookup'));});
+test('active entry dispatches auth bridge before legacy without removing it',async()=>{
+ const text=await readFile(new URL('../server/domain-production-registrar-lookup.mjs',import.meta.url),'utf8');
+ const bridge=await readFile(new URL('../server/domain-customer-auth-bridge.mjs',import.meta.url),'utf8');
+ assert.ok(text.includes("import {customerDomainAuthBridge} from './domain-customer-auth-bridge.mjs'"));
+ assert.match(text,/const customer=await customerDomainAuthBridge\(request,env\);\s*return customer\?\?legacyProductionRegistrarLookupResponse\(request,env\);/);
+ assert.ok(text.includes('export function createProductionRegistrarLookup'));
+ assert.ok(bridge.includes("import {createDomainCustomerPriceCheck} from './domain-customer-price-check.mjs'"));
+ assert.ok(bridge.includes('createDomainCustomerPriceCheck({fetchImpl:transport,timeoutMs:priceTimeoutMs})'));
+ const {domainProductionRegistrarLookupResponse:dispatch}=await import('../server/domain-production-registrar-lookup.mjs');
+ for(const path of ['/api/domains/commerce/check/example.com','/api/domains/commerce/search/example','/api/domains/registrar/check/example.com']){
+  const response=await dispatch(request(path,{token:''}),env());
+  assert.equal(response.status,401,path);
+  assert.equal((await response.json()).code,'AUTH_REQUIRED',path);
+ }
+ assert.equal(await dispatch(request('/unrelated',{token:''}),env()),null);
+});
 test('malformed auth project value fails closed',async()=>{const f=fixture();assert.equal((await f.handler(request(),{...env(),SUPABASE_URL:{}})).status,503);assert.equal(f.calls.length,0);});
 test('subdomain is rejected after verified extension context',async()=>{const f=fixture();assert.equal((await f.handler(request('/api/domains/commerce/check/sub.example.com'),env())).status,400);assert.equal(f.lookups(),0);});
 for(const field of ['taxStatus','costScope','paymentFeeMode'])test('unverified cost field '+field+' cannot yield a price',()=>{const s=snapshot();s.policy[field]='unverified';assert.throws(()=>price(offer(),JSON.stringify(s),{now}));});
