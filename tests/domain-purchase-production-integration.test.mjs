@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {normalizePurchaseDomain,parsePurchaseQuote,fetchPurchaseQuote,purchaseDomain} from '../src/domain-purchase-model.mjs';
+import {purchaseSelectionError} from '../src/domain-purchase-selection.mjs';
+globalThis.fetch=()=>{throw Error('LIVE_NETWORK_FORBIDDEN');};
+const now=Date.parse('2026-11-03T02:00:00Z');
+const q={quoteId:'33333333-3333-3333-3333-333333333333',domain:'example.com',years:1,displayCurrency:'USD',salePriceUsd:'20.00',currency:'IDR',amountIdr:350000,expiresAt:new Date(now+60000).toISOString(),indicative:false};
+const check=(input,quote=q)=>purchaseSelectionError({quote,input,normalizeDomain:normalizePurchaseDomain,now});
+test('guard accepts canonicalization from actual production normalizer',()=>assert.equal(check(' EXAMPLE.COM. '),null));
+test('actual normalizer rejects protocols paths and IP addresses',()=>{for(const input of ['https://example.com','example.com/path','127.0.0.1','example.com?x=1'])assert.equal(check(input),'INVALID_DOMAIN');});
+test('guard rejects another valid production domain',()=>assert.equal(check('other.com'),'QUOTE_SELECTION_CHANGED'));
+test('production quote parser rejects price and amount tampering',()=>{for(const changed of [{amountIdr:0},{currency:'USD'},{years:2},{indicative:true},{salePriceUsd:'0.00'}])assert.throws(()=>parsePurchaseQuote({...q,...changed},{domain:'example.com',now}),{code:'QUOTE_UNVERIFIED'});});
+test('production quote parser rejects a different target domain',()=>assert.throws(()=>parsePurchaseQuote(q,{domain:'other.com',now}),{code:'QUOTE_UNVERIFIED'}));
+test('production quote parser rejects expired quote',()=>assert.throws(()=>parsePurchaseQuote(q,{domain:q.domain,now:Date.parse(q.expiresAt)}),{code:'QUOTE_UNVERIFIED'}));
+test('invalid name makes no quote HTTP calls',async()=>{let calls=0;await assert.rejects(fetchPurchaseQuote('https://example.com','fixture-session',{fetchImpl:async()=>{calls++;throw Error();}}),{code:'INVALID_DOMAIN'});assert.equal(calls,0);});
+test('quote endpoint normalizes name and verifies final server quote',async()=>{const fresh={...q,expiresAt:new Date(Date.now()+60000).toISOString()};let calls=0;const result=await fetchPurchaseQuote(' EXAMPLE.COM. ','fixture-session',{fetchImpl:async(path,init)=>{calls++;assert.equal(path,'/api/commerce/domains/quote/example.com');assert.equal(init.headers.authorization,'Bearer fixture-session');return Response.json({code:'DOMAIN_QUOTE_PRODUCTION',environment:'production',quote:fresh});}});assert.equal(result.domain,q.domain);assert.equal(result.amountIdr,350000);assert.equal(calls,1);});
+test('quote endpoint rejects another domain returned by server',async()=>{await assert.rejects(fetchPurchaseQuote('example.com','fixture-session',{fetchImpl:async()=>Response.json({code:'DOMAIN_QUOTE_PRODUCTION',environment:'production',quote:{...q,domain:'other.com',expiresAt:new Date(Date.now()+60000).toISOString()}})}),{code:'QUOTE_UNVERIFIED'});});
+test('purchase without registration consent makes no order or checkout HTTP calls',async()=>{let calls=0;await assert.rejects(purchaseDomain(q,{owner:'11111111-1111-1111-1111-111111111111',token:'fixture-session',fetchImpl:async()=>{calls++;throw Error();}}),{code:'REGISTRANT_CONSENT_REQUIRED'});assert.equal(calls,0);});

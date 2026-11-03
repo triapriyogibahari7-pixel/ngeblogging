@@ -1,7 +1,7 @@
 name: Domain commerce quality gate
 on:
   push:
-    branches: [fix/domain-commerce-midtrans-20261102]
+    branches: [fix/domain-commerce-midtrans-20261102, fix/domain-page-functional-20261103]
   pull_request:
     branches: [main]
   workflow_dispatch:

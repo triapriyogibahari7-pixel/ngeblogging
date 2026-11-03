@@ -4,5 +4,7 @@ runGroup("checkout",[
   "tests/domain-checkout-payment-contract.test.mjs",
   "tests/domain-checkout-site-guard.test.mjs",
   "tests/domain-customer-purchase-intent.test.mjs",
-  "tests/domain-purchase-site-context.test.mjs"
+  "tests/domain-purchase-site-context.test.mjs",
+  "tests/domain-purchase-selection.test.mjs",
+  "tests/domain-purchase-production-integration.test.mjs"
 ]);
