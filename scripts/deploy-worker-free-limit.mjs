@@ -3,10 +3,11 @@ import {readFile,writeFile,unlink} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {parseDomainPricingSnapshot} from '../server/domain-pricing-snapshot.mjs';
+import {RETIRED_COMPAT_VALUES,LEGACY_VARIABLE_REMOVALS,assertLegacyVariableRemoval} from './worker-variable-retirement-policy.mjs';
 
 const ACCOUNT='095e57b46e7ba7f6b188480d9e4e5fe7';
 const WORKER='ngeblogging';
-const REMOVE=new Set(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT']);
+const REMOVE=new Set(LEGACY_VARIABLE_REMOVALS);
 
 export function variableInventoryReport(config,bindings){
   if(config?.name!==WORKER||!Array.isArray(bindings))throw Error('INVALID_TARGET_OR_INVENTORY');
@@ -54,10 +55,7 @@ export function planVariables(config,bindings){
   for(const b of bindings){
     if(typeof b.name!=='string'||seen.has(b.name)) throw Error('INVALID_OR_DUPLICATE_BINDING');
     seen.add(b.name);
-    if(REMOVE.has(b.name)){
-      if(b.type!=='plain_text') throw Error('REMOVAL_TARGET_IS_NOT_PLAIN_TEXT');
-      continue;
-    }
+    if(REMOVE.has(b.name)){assertLegacyVariableRemoval(b);continue;}
     if(b.type==='secret_text'){secrets.add(b.name);continue;}
     if(b.type==='plain_text'){
       if(typeof b.text!=='string') throw Error('INCOMPLETE_PLAIN_TEXT_INVENTORY');
@@ -65,12 +63,10 @@ export function planVariables(config,bindings){
     }else if(b.type==='json'){
       if(!Object.hasOwn(b,'json')) throw Error('INCOMPLETE_JSON_INVENTORY');
       vars[b.name]=typeof b.json==='string'?JSON.parse(b.json):b.json;
-    }else if(/secret|text|json/i.test(b.type||'')){
-      throw Error('UNSUPPORTED_VARIABLE_BINDING_TYPE');
-    }
+    }else if(/secret|text|json/i.test(b.type||'')){throw Error('UNSUPPORTED_VARIABLE_BINDING_TYPE');}
   }
   for(const [name,value] of Object.entries(config.vars||{})){
-    if(REMOVE.has(name)) continue;
+    if(REMOVE.has(name)){assertLegacyVariableRemoval({name,type:'plain_text',text:value});continue;}
     if(secrets.has(name)) throw Error('CONFIG_WOULD_OVERWRITE_SECRET');
     vars[name]=value;
   }
@@ -132,6 +128,22 @@ function selfTest(){
   assert.throws(()=>variableInventoryReport({name:WORKER,vars:{TOKEN:'bad'}},[secret]),/CONFIG_WOULD_OVERWRITE_SECRET/);
   for(const name of REMOVE)assert.throws(()=>variableInventoryReport(config,[{name,type:'secret_text'}]),/REMOVAL_TARGET_IS_NOT_PLAIN_TEXT/);
   assert.throws(()=>variableInventoryReport({name:'other'},[]),/INVALID_TARGET_OR_INVENTORY/);
+  const retiredBindings=Object.entries(RETIRED_COMPAT_VALUES).map(([name,text])=>({name,type:'plain_text',text}));
+  const secretNames=['CLOUDFLARE_ACCOUNT_ID','CLOUDFLARE_API_TOKEN','CLOUDFLARE_DOMAIN_API_TOKEN','CLOUDFLARE_REGISTRAR_API_TOKEN','CLOUDFLARE_ZONE_ID','MIDTRANS_CLIENT_KEY','MIDTRANS_SERVER_KEY','SUPABASE_SERVICE_ROLE_KEY'];
+  const productionSecrets=secretNames.map(name=>{const b={name,type:'secret_text'};Object.defineProperty(b,'text',{get(){throw Error('SECRET_VALUE_ACCESSED');}});return b;});
+  const productionBindings=[...Array.from({length:51},(_,i)=>({name:'PUBLIC_'+i,type:'plain_text',text:'mock'})),...productionSecrets,...retiredBindings];
+  const productionConfig={name:WORKER,vars:{...RETIRED_COMPAT_VALUES,DOMAIN_CUSTOMER_PRODUCTION_ENABLED:'true',DOMAIN_REGISTRATION_TERMS_VERSION:'cloudflare-domain-registration-2026-08-20'}};
+  const productionPlan=planVariables(productionConfig,productionBindings);
+  assert.equal(productionBindings.length,64);assert.equal(productionPlan.count,61);assert.equal(productionPlan.removed.length,5);
+  assert.equal(variableInventoryReport(productionConfig,productionBindings).variablesAfter,61);
+  for(const name of secretNames)assert.equal(Object.hasOwn(productionPlan.config.vars,name),false);
+  for(const name of Object.keys(RETIRED_COMPAT_VALUES))assert.equal(Object.hasOwn(productionPlan.config.vars,name),false);
+  assert.equal(productionPlan.config.vars.DOMAIN_CUSTOMER_PRODUCTION_ENABLED,'true');
+  assert.equal(productionPlan.config.vars.DOMAIN_REGISTRATION_TERMS_VERSION,'cloudflare-domain-registration-2026-08-20');
+  assert.throws(()=>planVariables(productionConfig,productionBindings.map(b=>b.name==='NARA_FALLBACK_WORKER_COMPAT'?{...b,text:'changed'}:b)),/RETIREMENT_VALUE_CHANGED/);
+  assert.throws(()=>planVariables({...productionConfig,vars:{...productionConfig.vars,NARA_FALLBACK_WORKER_COMPAT:'changed'}},productionBindings),/RETIREMENT_VALUE_CHANGED/);
+  assert.throws(()=>assertLegacyVariableRemoval({name:'MIDTRANS_SERVER_KEY',type:'plain_text',text:'mock'}),/UNKNOWN_RETIREMENT_TARGET/);
+  assert.throws(()=>planVariables(productionConfig,[...productionBindings,...Array.from({length:4},(_,i)=>({name:'EXTRA_'+i,type:'plain_text',text:'mock'}))]),error=>error.message==='VARIABLE_LIMIT_STILL_EXCEEDED'&&error.variableCount===65);
   assert.deepEqual(pricingSnapshotReport([]),{status:'missing',reason:'PRICING_SNAPSHOT_MISSING'});
   const snapshotSecret={name:'DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON',type:'secret_text'};
   Object.defineProperty(snapshotSecret,'text',{get(){throw Error('SECRET_VALUE_ACCESSED');}});
