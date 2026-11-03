@@ -8,6 +8,32 @@ const ACCOUNT='095e57b46e7ba7f6b188480d9e4e5fe7';
 const WORKER='ngeblogging';
 const REMOVE=new Set(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT']);
 
+export function variableInventoryReport(config,bindings){
+  if(config?.name!==WORKER||!Array.isArray(bindings))throw Error('INVALID_TARGET_OR_INVENTORY');
+  if(config.account_id&&config.account_id!==ACCOUNT)throw Error('ACCOUNT_MISMATCH');
+  if(config.vars!==undefined&&(!config.vars||typeof config.vars!=='object'||Array.isArray(config.vars)))throw Error('INVALID_CONFIG_VARIABLES');
+  const rows=new Map(),seen=new Set();let workerVariableCount=0;
+  for(const b of bindings){
+    if(typeof b?.name!=='string'||seen.has(b.name))throw Error('INVALID_OR_DUPLICATE_BINDING');
+    seen.add(b.name);
+    if(REMOVE.has(b.name)&&b.type!=='plain_text')throw Error('REMOVAL_TARGET_IS_NOT_PLAIN_TEXT');
+    if(['plain_text','json','secret_text'].includes(b.type)){
+      workerVariableCount++;
+      rows.set(b.name,{name:b.name,workerType:b.type,sources:['worker'],excluded:REMOVE.has(b.name)});
+    }else if(/secret|text|json/i.test(b.type||''))throw Error('UNSUPPORTED_VARIABLE_BINDING_TYPE');
+  }
+  const configNames=Object.keys(config.vars||{});
+  for(const name of configNames){
+    const row=rows.get(name);
+    if(!REMOVE.has(name)&&row?.workerType==='secret_text')throw Error('CONFIG_WOULD_OVERWRITE_SECRET');
+    if(row)row.sources.push('config');
+    else rows.set(name,{name,workerType:null,sources:['config'],excluded:REMOVE.has(name)});
+  }
+  const inventory=[...rows.values()].filter(row=>!row.excluded).map(({name,workerType,sources})=>({name,workerType,sources})).sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0);
+  const variablesAfter=inventory.length;
+  return {worker:WORKER,limit:64,target:55,workerVariableCount,configurationVariableCount:configNames.length,uniqueBeforeRemoval:rows.size,variablesAfter,overLimitBy:Math.max(0,variablesAfter-64),reductionToTarget:Math.max(0,variablesAfter-55),removedFromWorker:[...rows.values()].filter(row=>row.excluded&&row.sources.includes('worker')).map(row=>row.name).sort(),ignoredConfigDeclarations:configNames.filter(name=>REMOVE.has(name)).sort(),addedByConfig:inventory.filter(row=>row.sources.length===1&&row.sources[0]==='config').map(row=>row.name),inventory};
+}
+
 export function pricingSnapshotReport(bindings,{now=Date.now()}={}){
   if(!Array.isArray(bindings))return {status:'unavailable',reason:'INVALID_BINDING_INVENTORY'};
   const matches=bindings.filter(binding=>binding?.name==='DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON');
@@ -86,6 +112,26 @@ function selfTest(){
   assert.equal(Object.hasOwn(boundary.config.vars,'UI_V35_WORKER_COMPAT'),false);
   assert.equal(boundary.removed.length,3);
   assert.throws(()=>planVariables(boundaryConfig,[...boundaryBindings,{name:'EXTRA',type:'plain_text',text:'x'}]),error=>error.message==='VARIABLE_LIMIT_STILL_EXCEEDED'&&error.variableCount===65&&error.limit===64);
+  const report=variableInventoryReport(config,bindings);
+  assert.equal(report.variablesAfter,plan.count);
+  assert.equal(report.uniqueBeforeRemoval,6);
+  assert.equal(report.workerVariableCount,5);
+  assert.equal(report.removedFromWorker.length,3);
+  assert.deepEqual(report.addedByConfig,['FEATURE']);
+  assert.equal(JSON.stringify(report).includes('preserved'),false);
+  assert.equal(JSON.stringify(report).includes('worker-v35.mjs'),false);
+  const shared=variableInventoryReport({name:WORKER,vars:{DASHBOARD_ONLY:'PRIVATE_CONFIG_VALUE'}},bindings);
+  assert.deepEqual(shared.inventory.find(row=>row.name==='DASHBOARD_ONLY').sources,['worker','config']);
+  assert.equal(JSON.stringify(shared).includes('PRIVATE_CONFIG_VALUE'),false);
+  const hiddenVars={};Object.defineProperty(hiddenVars,'FEATURE',{enumerable:true,get(){throw Error('CONFIG_VALUE_ACCESSED');}});
+  const hiddenBinding={name:'RUNTIME',type:'plain_text'};Object.defineProperty(hiddenBinding,'text',{get(){throw Error('VALUE_ACCESSED');}});
+  assert.equal(variableInventoryReport({name:WORKER,vars:hiddenVars},[hiddenBinding,secret]).variablesAfter,3);
+  const oversized=variableInventoryReport({name:WORKER,vars:Object.fromEntries(Array.from({length:65},(_,i)=>['V'+i,'x']))},[]);
+  assert.equal(oversized.variablesAfter,65);assert.equal(oversized.overLimitBy,1);assert.equal(oversized.reductionToTarget,10);
+  assert.throws(()=>variableInventoryReport(config,[secret,secret]),/INVALID_OR_DUPLICATE_BINDING/);
+  assert.throws(()=>variableInventoryReport({name:WORKER,vars:{TOKEN:'bad'}},[secret]),/CONFIG_WOULD_OVERWRITE_SECRET/);
+  for(const name of REMOVE)assert.throws(()=>variableInventoryReport(config,[{name,type:'secret_text'}]),/REMOVAL_TARGET_IS_NOT_PLAIN_TEXT/);
+  assert.throws(()=>variableInventoryReport({name:'other'},[]),/INVALID_TARGET_OR_INVENTORY/);
   assert.deepEqual(pricingSnapshotReport([]),{status:'missing',reason:'PRICING_SNAPSHOT_MISSING'});
   const snapshotSecret={name:'DOMAIN_PRODUCTION_PRICING_SNAPSHOT_JSON',type:'secret_text'};
   Object.defineProperty(snapshotSecret,'text',{get(){throw Error('SECRET_VALUE_ACCESSED');}});
@@ -122,6 +168,7 @@ async function main(){
   if(!response.ok) throw Error(`INVENTORY_HTTP_${response.status}`);
   const payload=await response.json();
   if(payload.success!==true) throw Error('INVENTORY_REJECTED');
+  console.log('[worker-vars] INVENTORY '+JSON.stringify(variableInventoryReport(config,payload.result?.bindings)));
   console.log('[domain-pricing] WORKER_SNAPSHOT '+JSON.stringify(pricingSnapshotReport(payload.result?.bindings)));
   const plan=planVariables(config,payload.result?.bindings);
   console.log('[worker-vars] PLAN '+JSON.stringify({worker:WORKER,variablesAfter:plan.count,removed:plan.removed}));
