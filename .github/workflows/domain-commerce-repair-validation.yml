@@ -1,6 +1,23 @@
 name: Domain commerce repair validation
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - agent/domain-pricing-runtime-config-20261103
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/domain-commerce-repair-validation.yml'
+      - 'server/domain-*.mjs'
+      - 'server/cloudflare-registrar-check.mjs'
+      - 'server/drafts/**'
+      - 'src/DomainLiveSalePrice.jsx'
+      - 'src/domain-*.mjs'
+      - 'tests/domain-*.test.mjs'
+      - 'wrangler*.jsonc'
+      - 'package.json'
+      - 'package-lock.json'
 permissions:
   contents: read
 concurrency:
@@ -26,6 +43,13 @@ jobs:
           work="$(mktemp -d)"
           trap 'rm -rf "$work"' EXIT
           env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 npm ci --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Run automatic estimate and pricing safety tests with a clean environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true NODE_ENV=test LANG=C.UTF-8 WRANGLER_SEND_METRICS=false node --test --test-reporter=tap tests/domain-automatic-price-estimate.test.mjs tests/domain-automatic-estimate-route.test.mjs tests/domain-quote-pricing-resolution.test.mjs tests/domain-pricing-client-diagnostic.test.mjs tests/domain-purchase-uuid-regression.test.mjs
       - name: Run configuration and domain regression tests with a clean environment
         shell: bash
         run: |
