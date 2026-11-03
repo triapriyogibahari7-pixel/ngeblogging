@@ -77,6 +77,8 @@ function pendingInstructions(zoneState) {
 }
 
 export async function recoverPendingFullZoneRegistration(request, env, failureResponse = null) {
+  // Never turn an authentication/authorization failure into accepted recovery.
+  if ([401, 403].includes(failureResponse?.status)) return null;
   const requestId = failureResponse?.headers.get("x-request-id") || crypto.randomUUID();
   const body = await request.clone().json().catch(() => ({}));
   const siteId = String(body.siteId || "").trim();
@@ -108,6 +110,36 @@ export async function recoverPendingFullZoneRegistration(request, env, failureRe
 
   const existing = existingResult.data?.[0] || null;
   if (existing && existing.site_id !== siteId) return null;
+
+  // Recovery is not a new registration. Preserve a matching previously active
+  // row without changing primary status, TLS evidence, or verification time.
+  // This reuses stored verification; it does not claim a new routing audit.
+  if (
+    existing?.provider === "cloudflare-full-zone"
+    && existing.provider_hostname_id === zoneState.id
+    && existing.status === "active"
+    && existing.provider_status === "active"
+    && existing.ssl_status === "active"
+    && zoneState.active
+  ) {
+    return response(200, {
+      domain: existing,
+      provider: "cloudflare-full-zone",
+      reused: true,
+      accepted: true,
+      pending: false,
+      verificationSource: "stored-active-domain",
+      requiresRefresh: true,
+      zone: zoneState,
+      instructions: {
+        ...pendingInstructions(zoneState),
+        action: "zone-active",
+        message: "Domain sudah terhubung. Status aktif sebelumnya dipertahankan; gunakan Periksa koneksi untuk audit terbaru.",
+      },
+      cnameTarget: null,
+      requestId,
+    }, requestId);
+  }
 
   const now = new Date().toISOString();
   const ownership = {
