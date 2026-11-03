@@ -11,7 +11,7 @@ import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/s
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
   let previewQuality=null;
-  if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='fix/domain-commerce-midtrans-20261102'){
+  if(command==='build'&&process.env.WORKERS_CI==='1'&&['fix/domain-commerce-midtrans-20261102','agent/fix-domain-search-pricing-20261103'].includes(process.env.WORKERS_CI_BRANCH)){
     const {runCloudflarePreviewGate}=await import('./scripts/domain-quality/cloudflare-preview-gate.mjs');
     previewQuality=runCloudflarePreviewGate();
   }

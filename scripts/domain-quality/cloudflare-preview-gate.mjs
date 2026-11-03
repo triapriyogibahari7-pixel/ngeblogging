@@ -3,8 +3,9 @@ import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 export function runCloudflarePreviewGate(){
-  const branch='fix/domain-commerce-midtrans-20261102';
-  if(process.env.WORKERS_CI!=='1'||process.env.WORKERS_CI_BRANCH!==branch)return null;
+  const branch=process.env.WORKERS_CI_BRANCH;
+  const branches=new Set(['fix/domain-commerce-midtrans-20261102','agent/fix-domain-search-pricing-20261103']);
+  if(process.env.WORKERS_CI!=='1'||!branches.has(branch))return null;
   const expected=process.env.WORKERS_CI_COMMIT_SHA;
   if(!/^[a-f0-9]{40}$/i.test(expected||''))throw Error('DOMAIN_PREVIEW_COMMIT_REQUIRED');
   const work=mkdtempSync(join(tmpdir(),'domain-preview-gate-'));
