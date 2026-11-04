@@ -20,10 +20,22 @@ export async function domainCheckoutPreviewResponse(request,env,{fetchImpl=globa
  if(env.DOMAIN_ORDER_ENV!==environment||(production?env.DOMAIN_PAYMENT_PRODUCTION_ENABLED!=='true':env.DOMAIN_PAYMENT_NOTIFICATION_PREVIEW_ENABLED!=='true'))return reply(503,production?'DOMAIN_PRODUCTION_CHECKOUT_NOT_READY':'DOMAIN_CHECKOUT_SANDBOX_NOT_READY');
  const auth=request.headers.get('authorization')||'';if(!/^Bearer [^\s]{1,8192}$/.test(auth))return reply(401,'AUTH_REQUIRED');
  if(!/^application\/json(?:\s*;.*)?$/i.test(request.headers.get('content-type')||''))return reply(415,'JSON_REQUIRED');
- let base;try{base=new URL(env.SUPABASE_URL);if(base.protocol!=='https:'||base.hostname!=='polvmlrhqoiflumibfqs.supabase.co'||base.port||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw Error();}catch{return reply(503,'CHECKOUT_CONFIGURATION_UNAVAILABLE');}
+ const configFailure=code=>reply(503,code,{configurationUnavailable:true});
+ let base;try{base=new URL(env.SUPABASE_URL);if(base.protocol!=='https:'||base.hostname!=='polvmlrhqoiflumibfqs.supabase.co'||base.port||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw Error();}catch{return configFailure('CHECKOUT_SUPABASE_URL_INVALID');}
  const key=production?env.DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY:env.DOMAIN_MIDTRANS_SANDBOX_SERVER_KEY;
- if((!production&&!UUID.test(env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID||''))||!env.SUPABASE_PUBLISHABLE_KEY||!env.SUPABASE_SERVICE_ROLE_KEY||typeof key!=='string'||!(production?/^Mid-server-[A-Za-z0-9_-]{10,200}$/:/^SB-Mid-server-[A-Za-z0-9_-]{10,200}$/).test(key))return reply(503,'CHECKOUT_CONFIGURATION_UNAVAILABLE');
- let methods;if(production){try{methods=JSON.parse(env.DOMAIN_MIDTRANS_PRODUCTION_PAYMENT_METHODS_JSON);const allowed=['qris','bca_va','bni_va','bri_va','permata_va','other_va','echannel'];if(!Array.isArray(methods)||methods.length<1||methods.length>allowed.length||new Set(methods).size!==methods.length||methods.some(x=>!allowed.includes(x))||typeof env.DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(env.DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID))throw Error();}catch{return reply(503,'CHECKOUT_CONFIGURATION_UNAVAILABLE');}}
+ if(!production&&!UUID.test(env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID||''))return configFailure('CHECKOUT_ADMIN_CONFIGURATION_INVALID');
+ if(!env.SUPABASE_PUBLISHABLE_KEY)return configFailure('CHECKOUT_SUPABASE_PUBLIC_KEY_MISSING');
+ if(!env.SUPABASE_SERVICE_ROLE_KEY)return configFailure('CHECKOUT_SUPABASE_SERVICE_KEY_MISSING');
+ if(key===undefined||key===null||key==='')return configFailure('CHECKOUT_MIDTRANS_SERVER_KEY_MISSING');
+ if(typeof key!=='string'||!(production?/^Mid-server-[A-Za-z0-9_-]{10,200}$/:/^SB-Mid-server-[A-Za-z0-9_-]{10,200}$/).test(key))return configFailure('CHECKOUT_MIDTRANS_SERVER_KEY_INVALID');
+ let methods;if(production){
+  const raw=env.DOMAIN_MIDTRANS_PRODUCTION_PAYMENT_METHODS_JSON;
+  if(raw===undefined||raw===null||raw==='')return configFailure('CHECKOUT_PAYMENT_METHODS_MISSING');
+  try{methods=JSON.parse(raw);const allowed=['qris','bca_va','bni_va','bri_va','permata_va','other_va','echannel'];if(!Array.isArray(methods)||methods.length<1||methods.length>allowed.length||new Set(methods).size!==methods.length||methods.some(x=>!allowed.includes(x)))throw Error();}catch{return configFailure('CHECKOUT_PAYMENT_METHODS_INVALID');}
+  const merchant=env.DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID;
+  if(merchant===undefined||merchant===null||merchant==='')return configFailure('CHECKOUT_MERCHANT_ID_MISSING');
+  if(typeof merchant!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(merchant))return configFailure('CHECKOUT_MERCHANT_ID_INVALID');
+ }
  const c=new AbortController(),abort=()=>c.abort(),timer=setTimeout(abort,18000);if(request.signal.aborted)abort();else request.signal.addEventListener('abort',abort,{once:true});
  let userId=null,id=null,attempt=null;
  const rpc=async(name,args,signal=c.signal)=>{const r=await bounded(fetchImpl(new URL('/rest/v1/rpc/'+name,base).href,{method:'POST',redirect:'manual',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},body:JSON.stringify(args),signal}),signal);if(!r.ok||r.status>=300)throw Error('STORAGE_UNAVAILABLE');return jsonBody(r.body,signal,32768);};
