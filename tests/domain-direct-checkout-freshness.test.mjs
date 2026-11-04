@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+// Unit tests: import dependencies are doubled; no HTTP, storage writes or payments.
+const raw=readFileSync(new URL('../src/domain-direct-checkout-model.mjs',import.meta.url),'utf8');
+const doubles=`
+const normalizePurchaseDomain=value=>value.trim().toLowerCase();
+const readPurchaseAttempt=(owner,storage)=>storage.getItem(owner);
+const fetchRegistrantPolicy=()=>{throw Error('Unexpected default policy call');};
+const getFinalDomainQuote=()=>{throw Error('Unexpected default quote call');};
+const parsePurchaseQuote=(q,{domain})=>{if(!q||q.domain!==domain||!Number.isFinite(Date.parse(q.expiresAt)))throw Object.assign(Error(),{code:'QUOTE_UNVERIFIED'});return {...q};};
+`;
+const body=raw.split('\n').filter(line=>!line.startsWith('import ')).join('\n');
+const {prepareDirectDomainCheckout:prepare,assertCheckoutQuoteFresh:validate}=await import('data:text/javascript,'+encodeURIComponent(doubles+body));
+const owner='11111111-1111-4111-8111-111111111111',siteId='22222222-2222-4222-8222-222222222222',domain='example.com';
+const epoch=Date.parse('2026-11-04T00:00:00Z');
+const quote=ms=>({domain,quoteId:'33333333-3333-4333-8333-333333333333',amountIdr:232000,expiresAt:new Date(epoch+ms).toISOString()});
+const options=extra=>({owner,siteId,storage:{getItem:()=>null},clock:()=>epoch,quoteSource:async()=>quote(60000),policySource:async()=>({termsVersion:'test'}),...extra});
+test('opening and reloading checkout always force a new quote',async()=>{const calls=[];const opts=options({quoteSource:async(d,t,o)=>{calls.push(o.force);return quote(60000);}});await prepare(domain,'token',opts);await prepare(domain,'token',opts);assert.deepEqual(calls,[true,true]);});
+test('policy delay expires first quote; refresh once',async()=>{let now=epoch,calls=0;const result=await prepare(domain,'token',options({clock:()=>now,quoteSource:async()=>quote(++calls===1?60000:121000),policySource:async()=>{now=epoch+61000;return {termsVersion:'test'};}}));assert.equal(calls,2);assert.equal(result.quote.expiresAt,quote(121000).expiresAt);});
+test('near-expiry quote is refreshed before display',async()=>{let calls=0;await prepare(domain,'token',options({quoteSource:async()=>quote(++calls===1?14999:60000)}));assert.equal(calls,2);});
+test('second near-expiry quote fails without an infinite retry',async()=>{let calls=0;await assert.rejects(prepare(domain,'token',options({quoteSource:async()=>{calls++;return quote(1000);}})),{code:'QUOTE_REFRESH_REQUIRED'});assert.equal(calls,2);});
+test('exact 15 second preparation threshold is allowed',()=>assert.equal(validate(quote(15000),{domain,now:epoch}).expiresAt,quote(15000).expiresAt));
+test('expired quote after final session check is rejected',()=>assert.throws(()=>validate(quote(60000),{domain,now:epoch+60000}),{code:'QUOTE_EXPIRED'}));
+test('near-expiry quote after session check is rejected',()=>assert.throws(()=>validate(quote(60000),{domain,now:epoch+50001}),{code:'QUOTE_REFRESH_REQUIRED'}));
+test('invalid clock is rejected',()=>assert.throws(()=>validate(quote(60000),{domain,now:NaN}),{code:'QUOTE_UNVERIFIED'}));
+test('wrong domain is not retried',async()=>{let calls=0;await assert.rejects(prepare(domain,'token',options({quoteSource:async()=>{calls++;return {...quote(60000),domain:'other.com'};}})),{code:'QUOTE_UNVERIFIED'});assert.equal(calls,1);});
+test('aborted request never fetches a quote',async()=>{let calls=0;const c=new AbortController();c.abort();await assert.rejects(prepare(domain,'token',options({signal:c.signal,quoteSource:async()=>{calls++;return quote(60000);}})),{code:'REQUEST_ABORTED'});assert.equal(calls,0);});
+test('abort while policy loads stops return and retry',async()=>{let calls=0;const c=new AbortController();await assert.rejects(prepare(domain,'token',options({signal:c.signal,quoteSource:async()=>{calls++;return quote(60000);},policySource:async()=>{c.abort();return {};}})),{code:'REQUEST_ABORTED'});assert.equal(calls,1);});
+test('held order before preparation is protected',async()=>{let calls=0;await assert.rejects(prepare(domain,'token',options({storage:{getItem:()=>({orderId:'held'})},quoteSource:async()=>{calls++;return quote(60000);}})),{code:'ATTEMPT_HELD'});assert.equal(calls,0);});
+test('held order appearing while loading is protected',async()=>{let held=null;await assert.rejects(prepare(domain,'token',options({storage:{getItem:()=>held},policySource:async()=>{held={orderId:'held'};return {};}})),{code:'ATTEMPT_HELD'});});
+test('provider error is not silently retried',async()=>{let calls=0;await assert.rejects(prepare(domain,'token',options({quoteSource:async()=>{calls++;throw Object.assign(Error(),{code:'PROVIDER_UNAVAILABLE'});}})),{code:'PROVIDER_UNAVAILABLE'});assert.equal(calls,1);});
