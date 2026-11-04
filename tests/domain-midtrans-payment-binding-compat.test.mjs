@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseDomainMidtransPaymentMethods as parse,DOMAIN_MIDTRANS_PAYMENT_METHODS as allowed} from '../server/domain-midtrans-payment-methods.mjs';
+const selected=['other_qris','danamon_va','seabank_va','bsi_va','cimb_va','bni_va','bri_va','echannel','permata_va'];
+test('text and array bindings return the same ordered methods',()=>{assert.deepEqual(parse(JSON.stringify(selected)),selected);assert.deepEqual(parse(selected),selected);});
+test('parser returns a copy without mutating the binding',()=>{const input=Object.freeze([...selected]),result=parse(input);assert.notEqual(result,input);result.pop();assert.deepEqual(input,selected);});
+test('all previously allowed methods remain accepted in both forms',()=>{assert.deepEqual(parse(allowed),allowed);assert.deepEqual(parse(JSON.stringify(allowed)),allowed);});
+test('missing bindings retain the missing error code',()=>{for(const raw of [undefined,null,''])assert.throws(()=>parse(raw),{code:'CHECKOUT_PAYMENT_METHODS_MISSING'});});
+test('malformed and ambiguous bindings fail closed',()=>{for(const raw of [{},true,123,'{}','null','not-json',JSON.stringify(JSON.stringify(selected)),[],['bni_va','bni_va'],['BNI_VA'],[' bni_va'],['bni_va',null],new Array(1),' '.repeat(4097),Array(13).fill('bni_va')])assert.throws(()=>parse(raw),{code:'CHECKOUT_PAYMENT_METHODS_INVALID'});});
+test('unsupported channels fail in text and array forms without filtering',()=>{for(const method of ['shopeepay','other-unknown','gopay','ovo','dana','credit_card','akulaku','google_pay']){const input=['bni_va',method];for(const raw of [input,JSON.stringify(input)])assert.throws(()=>parse(raw),{code:'CHECKOUT_PAYMENT_METHODS_INVALID'});assert.deepEqual(input,['bni_va',method]);}});
+test('configuration is never echoed by validation errors',()=>{const marker='private-fixture-value';for(const raw of [[marker],JSON.stringify([marker])]){try{parse(raw);assert.fail('must reject');}catch(error){assert.equal(error.code,'CHECKOUT_PAYMENT_METHODS_INVALID');assert(!String(error).includes(marker));assert(!JSON.stringify(error).includes(marker));}}});
