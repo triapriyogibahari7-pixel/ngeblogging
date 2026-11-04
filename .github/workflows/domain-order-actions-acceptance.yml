@@ -1,0 +1,70 @@
+name: Domain order actions isolated acceptance
+on:
+  push:
+    branches: [fix/domain-order-payment-cancellation-20261104]
+    paths:
+      - 'docs/drafts/domain-order-cancel-before-checkout-v1.sql'
+      - 'scripts/domain-order-cancellation-native.mjs'
+      - 'tests/sql/domain-order-cancellation-*.sql'
+      - 'tests/domain-order-actions.test.mjs'
+      - 'tests/domain-order-cancellation-handler.test.mjs'
+      - 'src/DomainOrder*.mjs'
+      - 'src/DomainOrder*.jsx'
+      - 'src/DomainSavedOrderPanel.jsx'
+      - 'src/domain-order-actions.mjs'
+      - 'server/domain-order-cancellation-handler.mjs'
+      - 'cloudflare/worker-v70.mjs'
+      - '.github/workflows/domain-order-actions-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: domain_order_cancel_test
+          POSTGRES_PASSWORD: isolated-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install locked frontend dependencies
+        run: npm ci --ignore-scripts
+      - name: Test client and cancellation HTTP contracts with mocked upstream
+        run: node --test tests/domain-order-actions.test.mjs tests/domain-order-cancellation-handler.test.mjs
+      - name: Install isolated PostgreSQL driver
+        run: npm install --prefix "$RUNNER_TEMP/domain-cancel-deps" --no-package-lock --ignore-scripts pg@8.13.1
+      - name: Native PostgreSQL matrix and concurrent sessions
+        env:
+          NODE_PATH: ${{ runner.temp }}/domain-cancel-deps/node_modules
+          DOMAIN_CANCEL_DISPOSABLE: 'true'
+          PGHOST: '127.0.0.1'
+          PGPORT: '5432'
+          PGDATABASE: domain_order_cancel_test
+          PGUSER: postgres
+          PGPASSWORD: isolated-ci-only
+        run: node scripts/domain-order-cancellation-native.mjs
+      - name: Build frontend including JSX integrations
+        run: ./node_modules/.bin/vite build
+      - name: Preserve PostgreSQL acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-order-cancel-native-${{ github.sha }}
+          path: output/domain-order-cancel-native/result.json
+          if-no-files-found: warn
+          retention-days: 7
