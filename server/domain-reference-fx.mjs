@@ -17,11 +17,19 @@ export async function fetchDomainReferenceFx({fetchImpl=globalThis.fetch,clock=D
  const stopped=new Promise((_,reject)=>{stop=()=>reject(Error('REFERENCE_TIMEOUT'));controller.signal.addEventListener('abort',stop,{once:true});});
  const timer=setTimeout(abort,timeoutMs),wait=p=>Promise.race([p,stopped]);signal?.addEventListener('abort',abort,{once:true});
  try{
-  const response=await wait(fetchImpl(new Request(ENDPOINT,{method:'GET',redirect:'manual',credentials:'omit',headers:{accept:'application/json'},signal:controller.signal})));
+  let response;
+  for(let attempt=0;attempt<2;attempt++){
+   if(controller.signal.aborted||signal?.aborted)return unavailable();
+   try{response=await wait(fetchImpl(new Request(ENDPOINT,{method:'GET',redirect:'manual',credentials:'omit',headers:{accept:'application/json'},signal:controller.signal})));}
+   catch{if(attempt===0&&!controller.signal.aborted&&!signal?.aborted)continue;return unavailable();}
+   if(response.status<500||response.status>599||attempt===1)break;
+   response.body?.cancel().catch(()=>{});
+  }
   if(response.status!==200||!/^application\/json(?:\s*;.*)?$/i.test(response.headers.get('content-type')||''))return unavailable();
   reader=response.body?.getReader();if(!reader)return unavailable();
   let size=0;const chunks=[];for(;;){const x=await wait(reader.read());if(x.done)break;size+=x.value.length;if(size>8192)return unavailable();chunks.push(x.value);}
   const bytes=new Uint8Array(size);let offset=0;for(const part of chunks){bytes.set(part,offset);offset+=part.length;}
+  if(controller.signal.aborted||signal?.aborted)return unavailable();
   return normalizeDomainReferenceFx(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)),{now:clock()});
  }catch{return unavailable();}
  finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);controller.signal.removeEventListener('abort',stop);if(reader){reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}}

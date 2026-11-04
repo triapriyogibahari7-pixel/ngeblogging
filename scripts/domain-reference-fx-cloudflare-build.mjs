@@ -1,8 +1,10 @@
 import {spawnSync} from 'node:child_process';
 export function runReferenceFxCloudflareBuild(){
- if(process.env.WORKERS_CI!=='1'||process.env.WORKERS_CI_BRANCH!=='fix/domain-reference-fx-recovery-20261104')return null;
+ const branch=process.env.WORKERS_CI_BRANCH;
+ if(process.env.WORKERS_CI!=='1'||!['fix/domain-reference-fx-recovery-20261104','fix/domain-reference-fx-runtime-20261104'].includes(branch))return null;
  const env={PATH:process.env.PATH||'',CI:'true',NODE_ENV:'test',LANG:'C.UTF-8'};
- const tests=spawnSync(process.execPath,['--test','tests/domain-reference-fx.test.mjs'],{env,stdio:'inherit',shell:false,timeout:120000});
+ const files=['tests/domain-reference-fx.test.mjs',...(branch==='fix/domain-reference-fx-runtime-20261104'?['tests/domain-reference-fx-retry.test.mjs']:[])];
+ const tests=spawnSync(process.execPath,['--test',...files],{env,stdio:'inherit',shell:false,timeout:120000});
  if(tests.error||tests.signal||tests.status!==0)throw Error('REFERENCE_FX_TESTS_FAILED_NO_DEPLOY');
  const probe=spawnSync(process.execPath,['scripts/probe-domain-reference-fx.mjs'],{env,encoding:'utf8',shell:false,timeout:12000,maxBuffer:32768});
  let result={failure:'PROBE_OUTPUT_UNAVAILABLE'};
@@ -21,7 +23,7 @@ export function runReferenceFxCloudflareBuild(){
   result=safe;
  }catch{}
  const commit=process.env.WORKERS_CI_COMMIT_SHA;
- const proof={version:1,environment:'cloudflare-build-preview',branch:'fix/domain-reference-fx-recovery-20261104',commit:typeof commit==='string'&&/^[a-f0-9]{40}$/i.test(commit)?commit:null,tests:'passed',probe:result,runtimeVerified:false,productionChanged:false,quoteCreated:false,orderCreated:false,paymentCreated:false};
+ const proof={version:1,environment:'cloudflare-build-preview',branch,commit:typeof commit==='string'&&/^[a-f0-9]{40}$/i.test(commit)?commit:null,tests:'passed',probe:result,runtimeVerified:false,productionChanged:false,quoteCreated:false,orderCreated:false,paymentCreated:false};
  console.log('REFERENCE_FX_BUILD_PROOF '+JSON.stringify(proof));
  return {name:'reference-fx-preview-proof',generateBundle(){this.emitFile({type:'asset',fileName:'diagnostics/domain-reference-fx-build.json',source:JSON.stringify(proof)});}};
 }
