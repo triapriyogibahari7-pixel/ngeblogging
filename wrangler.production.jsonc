@@ -15,6 +15,7 @@
   "ai": {"binding": "AI"},
   "vars": {
     "DOMAIN_ORDER_ENV": "production",
+    "DOMAIN_ORDER_SITE_BINDING_ENABLED": "true",
     "DOMAIN_CUSTOMER_PRODUCTION_ENABLED": "true",
     "DOMAIN_REGISTRATION_TERMS_VERSION": "cloudflare-domain-registration-2026-08-20",
     "DOMAIN_CUSTOMER_SEARCH_ENABLED": "true",
@@ -101,6 +102,6 @@
     "NARA_PRODUCTION_PROBE": "passed",
     "NARA_RUNTIME": "cloudflare-worker-production-v160"
   },
-  "previews": {"vars": {"DOMAIN_CUSTOMER_SEARCH_ENABLED": "false", "DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED": "false", "DOMAIN_CUSTOMER_PRODUCTION_ENABLED": "false", "DOMAIN_ORDER_ENV": "sandbox"}},
+  "previews": {"vars": {"DOMAIN_ORDER_SITE_BINDING_ENABLED": "false", "DOMAIN_CUSTOMER_SEARCH_ENABLED": "false", "DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED": "false", "DOMAIN_CUSTOMER_PRODUCTION_ENABLED": "false", "DOMAIN_ORDER_ENV": "sandbox"}},
   "observability": {"enabled": true,"head_sampling_rate": 0.1}
 }
