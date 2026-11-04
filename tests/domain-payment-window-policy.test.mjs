@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DOMAIN_PAYMENT_WINDOW_VERSION as version,createDomainPaymentWindow as create,reuseDomainPaymentWindow as reuse} from '../server/domain-payment-window-policy.mjs';
+const now=Date.parse('2026-11-04T15:00:00Z'),order={orderId:'DOM-'+'a'.repeat(40),quoteId:'11111111-1111-4111-8111-111111111111',environment:'production',currency:'IDR',amountIdr:285000,paymentState:'pending',registrationState:'not_started',paymentWindowVersion:version};
+const quote={quoteId:order.quoteId,currency:'IDR',amountIdr:285000,indicative:false,expiresAt:new Date(now+30000).toISOString()};
+const options=()=>({order:{...order},quote:{...quote},now});
+test('new window lasts exactly two hours from server anchor',()=>{const w=create(options());assert.equal(w.anchorAt,new Date(now).toISOString());assert.equal(Date.parse(w.expiresAt)-now,7200000);assert.equal(w.durationMinutes,120);assert.equal(w.amountIdr,285000);});
+test('reopen after one hour preserves original deadline and amount',()=>{const w=create(options());assert.deepEqual(reuse(w,{order,now:now+3600000}),w);});
+test('reuse does not revalidate an expired historical quote',()=>{const w=create(options());assert.deepEqual(reuse(w,{order,now:now+60000}),w);});
+test('expired window is not renewed',()=>{const w=create(options());assert.throws(()=>reuse(w,{order,now:now+7200000}),{code:'PAYMENT_WINDOW_EXPIRED'});});
+for(const delta of [0,-1])test('expired quote blocks new window '+delta,()=>{const o=options();o.quote.expiresAt=new Date(now+delta).toISOString();assert.throws(()=>create(o),{code:'PAYMENT_QUOTE_EXPIRED'});});
+test('legacy order cannot silently acquire a two-hour policy',()=>{const o=options();delete o.order.paymentWindowVersion;assert.throws(()=>create(o),{code:'PAYMENT_WINDOW_POLICY_NOT_ENABLED'});});
+for(const state of ['paid','cancelled','expired'])test('processed order blocked '+state,()=>{const o=options();o.order.paymentState=state;assert.throws(()=>create(o),{code:'PAYMENT_ORDER_NOT_PENDING'});});
+for(const patch of [{amountIdr:285001},{currency:'USD'},{indicative:true},{quoteId:'22222222-2222-4222-8222-222222222222'}])test('quote mismatch blocked '+JSON.stringify(patch),()=>{const o=options();Object.assign(o.quote,patch);assert.throws(()=>create(o),{code:'PAYMENT_QUOTE_MISMATCH'});});
+for(const patch of [{amountIdr:1},{durationMinutes:121},{expiresAt:new Date(now+7201000).toISOString()},{orderId:'DOM-'+'b'.repeat(40)}])test('tampered window blocked '+JSON.stringify(patch),()=>{assert.throws(()=>reuse({...create(options()),...patch},{order,now}),{code:'PAYMENT_WINDOW_INVALID'});});
+test('invalid server clock is rejected',()=>{assert.throws(()=>create({...options(),now:NaN}),{code:'PAYMENT_CLOCK_INVALID'});});
+test('returned window is frozen and input is unchanged',()=>{const o=options(),before=JSON.stringify(o),w=create(o);assert.equal(Object.isFrozen(w),true);assert.equal(JSON.stringify(o),before);});
