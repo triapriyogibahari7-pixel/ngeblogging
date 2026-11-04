@@ -1,3 +1,4 @@
+import DomainOrderActions from './DomainOrderActions.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {loadOrderStatus,paymentLabels,registrationLabels} from './domain-order-status-model.mjs';
@@ -55,9 +56,10 @@ export default function DomainSavedOrderPanel({attempt,unreadable,owner,siteId})
   h('div',{role:'status','aria-live':'polite','aria-busy':busy},busy?h('p',null,'Memeriksa pesanan atau pemulihan catatan...'):null,order?h(React.Fragment,null,h('p',null,'Domain dari server: ',order.domain),h('p',null,'Pembayaran: ',paymentLabels[order.paymentState],'. Pendaftaran: ',registrationLabels[order.registrationState],'.'),h('p',null,order.message),order.domain!==attempt.quote.domain?h('p',null,'Domain server berbeda dari catatan lokal; diperlukan pemeriksaan sebelum melanjutkan.'):null):h('p',null,visible?.message||'Status server belum terverifikasi. Catatan browser bukan bukti tagihan atau pembayaran.')),
   h('button',{type:'button',className:'sv124-secondary',disabled:busy||Boolean(review)||recovered===scope,onClick:()=>{if(!operation.current)setRevision(value=>value+1);}},busy?'Memeriksa...':'Periksa status pesanan yang sama'),
   h('p',null,h('a',{href:'/domains/orders/'+id},'Lihat detail pesanan')),
+  order&&order.domain===attempt.quote.domain&&attempt.siteId===siteId&&!busy&&!review?h(DomainOrderActions,{key:scope,order,owner,onRefresh:()=>setRevision(value=>value+1)}):null,
   eligible&&!order?h('button',{type:'button',className:'sv124-secondary',disabled:busy||Boolean(review),onClick:requestRecovery},'Periksa dan pulihkan catatan persiapan'):null,
   attempt.phase!=='order'?h('p',null,'Catatan mungkin sudah mencapai proses pembayaran. Pemulihan otomatis tidak diizinkan meskipun status merespons HTTP 404.'):null,
   review?.scope===scope&&eligible?h('section',{'aria-label':'Konfirmasi pemulihan catatan'},h('h4',null,'Periksa ulang dan arsipkan catatan persiapan?'),h('p',null,'Target: ',id,' untuk ',attempt.quote.domain,'. Server akan diperiksa ulang menggunakan akun pemilik di bawah pengunci browser. Catatan hanya dilepas jika tetap identik, tahapnya order, dan respons JSON produksi menyatakan DOMAIN_ORDER_NOT_FOUND. Arsip disimpan sebelum pelepasan. Ini bukan pembatalan transaksi dan tidak membuat pesanan baru.'),h('button',{type:'button',disabled:busy,onClick:()=>setReview(null)},'Kembali'),h('button',{type:'button',disabled:busy,onClick:()=>void confirmRecovery()},'Ya, periksa ulang dan pulihkan catatan')):null,
   notice?h('p',{role:'status','aria-live':'polite'},notice):null,
-  h('p',null,'Panel ini mengikuti catatan browser akun ini, bukan daftar seluruh pesanan lintas perangkat. Pembatalan transaksi server belum tersedia dari panel ini.'));
+  h('p',null,'Panel ini mengikuti catatan browser akun ini, bukan daftar seluruh pesanan lintas perangkat. Aksi pesanan mengikuti status server. Pembatalan sebelum checkout saja; tagihan Midtrans yang sudah terbit memerlukan penanganan gateway.'));
 }

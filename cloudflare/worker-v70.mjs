@@ -1,3 +1,4 @@
+import { domainOrderCancellationResponse } from "../server/domain-order-cancellation-handler.mjs";
 import { domainProductionRegistrarLookupResponse } from "../server/domain-production-registrar-lookup.mjs";
 import { domainOrderStatusPageResponse } from "../server/domain-order-status-page.mjs";
 import { domainProductionOrderStatusResponse } from "../server/domain-production-order-status-handler.mjs";
@@ -73,6 +74,8 @@ export default {
     if (domainRegistrant) return domainRegistrant;
     const domainStatusPage = await domainOrderStatusPageResponse(request, env);
     if (domainStatusPage) return domainStatusPage;
+    const domainCancellation = await domainOrderCancellationResponse(request, env);
+    if (domainCancellation) return domainCancellation;
     const domainOrderStatus = await domainProductionOrderStatusResponse(request, env);
     if (domainOrderStatus) return domainOrderStatus;
     const domainProductionPayment = await domainRegistrationPaymentResponse(request, env, context);
