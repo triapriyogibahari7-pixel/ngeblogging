@@ -1,3 +1,4 @@
+import {MIDTRANS_KEY_DIAGNOSTIC_VERSION,diagnoseDomainMidtransKey} from './domain-midtrans-key-diagnostic.mjs';
 import {normalizeDomainMidtransServerKey} from './domain-midtrans-server-key.mjs';
 import {domainMidtransPopupClientKey} from './domain-midtrans-presentation.mjs';
 const HOST='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
@@ -12,7 +13,7 @@ const errors={DOMAIN_ORDER_NOT_FOUND:404,ORDER_ALREADY_PROCESSED:409,CHECKOUT_IN
 export async function domainCheckoutPreviewResponse(request,env,{fetchImpl=globalThis.fetch,now=()=>Date.now()}={}){
  const url=new URL(request.url);if(url.pathname!==PATH)return null;
  const production=url.hostname==='ngeblogging.com',environment=production?'production':'sandbox';
- const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment,purchaseAllowed:false,registrationStarted:false,...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...(status===405?{allow:'POST'}:{})}});
+ const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment,diagnosticVersion:MIDTRANS_KEY_DIAGNOSTIC_VERSION,purchaseAllowed:false,registrationStarted:false,...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...(status===405?{allow:'POST'}:{})}});
  if(url.protocol!=='https:'||(!production&&url.hostname!==HOST)||url.port)return reply(404,'NOT_FOUND');
  if(request.method!=='POST')return reply(405,'METHOD_NOT_ALLOWED');
  if(request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
@@ -27,7 +28,7 @@ export async function domainCheckoutPreviewResponse(request,env,{fetchImpl=globa
  if(!production&&!UUID.test(env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID||''))return configFailure('CHECKOUT_ADMIN_CONFIGURATION_INVALID');
  if(!env.SUPABASE_PUBLISHABLE_KEY)return configFailure('CHECKOUT_SUPABASE_PUBLIC_KEY_MISSING');
  if(!env.SUPABASE_SERVICE_ROLE_KEY)return configFailure('CHECKOUT_SUPABASE_SERVICE_KEY_MISSING');
- let key;try{key=normalizeDomainMidtransServerKey(rawKey,{environment});}catch(error){return configFailure(error?.code==='MIDTRANS_SERVER_KEY_MISSING'?'CHECKOUT_MIDTRANS_SERVER_KEY_MISSING':'CHECKOUT_MIDTRANS_SERVER_KEY_INVALID');}
+ let key;try{key=normalizeDomainMidtransServerKey(rawKey,{environment});}catch(error){return reply(503,error?.code==='MIDTRANS_SERVER_KEY_MISSING'?'CHECKOUT_MIDTRANS_SERVER_KEY_MISSING':'CHECKOUT_MIDTRANS_SERVER_KEY_INVALID',{configurationUnavailable:true,keyDiagnostic:diagnoseDomainMidtransKey(rawKey,{environment})});}
  let methods;if(production){
   const raw=env.DOMAIN_MIDTRANS_PRODUCTION_PAYMENT_METHODS_JSON;
   if(raw===undefined||raw===null||raw==='')return configFailure('CHECKOUT_PAYMENT_METHODS_MISSING');
