@@ -8,7 +8,9 @@ export const RETIRED_COMPAT_VALUES=Object.freeze({
 export const RETIRED_RELEASE_VALUES=Object.freeze({
   STUDIO_STABILITY_RELEASE:Object.freeze(['studio-theme-code-editor-v344-20260807','studio-shell-authority-v298-20260805']),
   STUDIO_THEME_CODE_EDITOR_PREVIOUS_RELEASE:Object.freeze(['studio-theme-code-editor-v343-20260807']),
-  STUDIO_THEME_CODE_EDITOR_BASE_RELEASE:Object.freeze(['studio-theme-code-editor-v342-20260807'])
+  STUDIO_THEME_CODE_EDITOR_BASE_RELEASE:Object.freeze(['studio-theme-code-editor-v342-20260807']),
+  STUDIO_PRODUCTION_POLISH_RELEASE:Object.freeze(['studio-production-polish-v323-20260806']),
+  STUDIO_SCREENSHOT_HOTFIX_RELEASE:Object.freeze(['studio-screenshot-hotfix-v318-20260806'])
 });
 export const LEGACY_VARIABLE_REMOVALS=Object.freeze(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT',...Object.keys(RETIRED_COMPAT_VALUES),...Object.keys(RETIRED_RELEASE_VALUES)]);
 export function assertLegacyVariableRemoval(binding){
