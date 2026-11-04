@@ -9,7 +9,9 @@ import {runStage5NativeBuild} from './scripts/stage5-cloudflare-native-build.mjs
 import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.mjs';
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
+import {runReferenceFxCloudflareBuild} from './scripts/domain-reference-fx-cloudflare-build.mjs';
 export default defineConfig(async({command})=>{
+  const referenceFxProof=command==='build'?runReferenceFxCloudflareBuild():null;
   if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='agent/fix-live-registrar-search-20261103'){
     const checked=spawnSync(process.execPath,['--test','tests/live-registrar-search.test.mjs','tests/registrar-search-view.test.mjs'],{env:{PATH:process.env.PATH||'',CI:'true',NODE_ENV:'test',LANG:'C.UTF-8'},stdio:'inherit',shell:false,timeout:120000});
     if(checked.error||checked.signal||checked.status!==0)throw Error('LIVE_REGISTRAR_SEARCH_TESTS_FAILED');
@@ -32,6 +34,7 @@ export default defineConfig(async({command})=>{
   const native=command==='build'?await runStage5BuildDiagnostics(async()=>{await runStage5NativeBuild();await runStage5AuthTransferBuild();}):null;
   const diagnostic=command==='build'?makeStage5PreviewOnlyConfig(native):{build:{},plugins:[]};
   const integration=[];
+  if(referenceFxProof)integration.push(referenceFxProof);
   if(registrarSyncPlan)integration.push(registrarSyncPlan);
   if(previewQuality)integration.push(previewQuality);
   if(command==='build'){
