@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {RETIRED_COMPAT_VALUES,RETIRED_RELEASE_VALUES,LEGACY_VARIABLE_REMOVALS,assertLegacyVariableRemoval} from '../scripts/worker-variable-retirement-policy.mjs';
 
-test('five release bindings are explicitly allowlisted with known values',()=>{
-  assert.deepEqual(Object.keys(RETIRED_RELEASE_VALUES),['STUDIO_STABILITY_RELEASE','STUDIO_THEME_CODE_EDITOR_PREVIOUS_RELEASE','STUDIO_THEME_CODE_EDITOR_BASE_RELEASE','STUDIO_PRODUCTION_POLISH_RELEASE','STUDIO_SCREENSHOT_HOTFIX_RELEASE']);
+test('six release bindings are explicitly allowlisted with known values',()=>{
+  assert.deepEqual(Object.keys(RETIRED_RELEASE_VALUES),['STUDIO_STABILITY_RELEASE','STUDIO_THEME_CODE_EDITOR_PREVIOUS_RELEASE','STUDIO_THEME_CODE_EDITOR_BASE_RELEASE','STUDIO_PRODUCTION_POLISH_RELEASE','STUDIO_SCREENSHOT_HOTFIX_RELEASE','STUDIO_CONTENT_EDITOR_DESKTOP_SITE_COMPAT']);
   assert.equal(new Set(LEGACY_VARIABLE_REMOVALS).size,LEGACY_VARIABLE_REMOVALS.length);
   for(const [name,values] of Object.entries(RETIRED_RELEASE_VALUES)){
     assert.ok(LEGACY_VARIABLE_REMOVALS.includes(name));
