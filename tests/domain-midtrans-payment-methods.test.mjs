@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseDomainMidtransPaymentMethods as parse,DOMAIN_MIDTRANS_PAYMENT_METHODS as allowed} from '../server/domain-midtrans-payment-methods.mjs';
+const selected=['other_qris','danamon_va','seabank_va','bsi_va','cimb_va','bni_va','bri_va','echannel','permata_va'];
+test('accepts the selected nine methods and preserves order',()=>assert.deepEqual(parse(JSON.stringify(selected)),selected));
+test('retains legacy methods and permits the full restricted allowlist',()=>{assert.deepEqual(parse(JSON.stringify(allowed)),allowed);for(const method of allowed)assert.deepEqual(parse(JSON.stringify([method])),[method]);});
+test('missing configuration keeps the missing error code',()=>{for(const raw of [undefined,null,''])assert.throws(()=>parse(raw),{code:'CHECKOUT_PAYMENT_METHODS_MISSING'});});
+test('rejects malformed JSON, shapes, types, duplicates and oversized input',()=>{for(const raw of ['not-json','null','{}','[]','true','123','[1]','[null]','["qris","qris"]','["QRIS"]','[" qris"]',' '.repeat(4097),[],{}])assert.throws(()=>parse(raw),{code:'CHECKOUT_PAYMENT_METHODS_INVALID'});});
+test('unimplemented channels are rejected rather than silently removed',()=>{for(const method of ['shopeepay','gopay','ovo','dana','credit_card','akulaku','google_pay','unknown'])assert.throws(()=>parse(JSON.stringify(['bni_va',method])),{code:'CHECKOUT_PAYMENT_METHODS_INVALID'});});
+test('errors never echo configuration values',()=>{const marker='private-fixture-input';try{parse(JSON.stringify([marker]));assert.fail('must reject');}catch(error){assert.equal(error.code,'CHECKOUT_PAYMENT_METHODS_INVALID');assert(!String(error).includes(marker));}});
