@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {domainMidtransPopupClientKey as client} from '../server/domain-midtrans-presentation.mjs';
+import {verifyDomainMidtransTarget as verify,reserveDomainPaymentTab as reserve} from '../src/domain-midtrans-payment-target.mjs';
+const now=Date.parse('2026-11-04T00:00:00Z'),id='DOM-'+'a'.repeat(40),amount=285000;
+const server='Mid-server-unit_test_1234567890',key='Mid-client-unit_test_1234567890',token='12345678-1234-4123-8123-123456789abc';
+const payment=()=>({orderId:id,amountIdr:amount,currency:'IDR',environment:'production',url:'https://app.midtrans.com/snap/v4/redirection/'+token,snapToken:token,clientKey:key,expiresAt:new Date(now+60000).toISOString()});
+const expected=()=>({orderId:id,amountIdr:amount,now});
+const shared=()=>({DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY:server,MIDTRANS_SERVER_KEY:server,MIDTRANS_ENV:'production',MIDTRANS_CLIENT_KEY:key});
+function browser(){let closed=false;const paths=[],nodes=[];const child={opener:{},document:{head:{appendChild:x=>nodes.push(x)},body:{textContent:''},createElement:()=>({})},location:{replace:x=>paths.push(x)},focus(){},close(){closed=true;},get closed(){return closed;}};return {child,paths,nodes,win:{open:()=>child,focus(){}}};}
+test('explicit production public client key',()=>assert.equal(client({DOMAIN_MIDTRANS_PRODUCTION_CLIENT_KEY:key}),key));
+test('shared Nara key requires matching server key and production environment',()=>assert.equal(client(shared()),key));
+test('different merchant server key does not reuse Nara client',()=>assert.equal(client({...shared(),MIDTRANS_SERVER_KEY:server+'other'}),null));
+test('sandbox Nara environment cannot supply production popup key',()=>assert.equal(client({...shared(),MIDTRANS_ENV:'sandbox'}),null));
+test('missing keys do not match accidentally',()=>assert.equal(client({MIDTRANS_ENV:'production',MIDTRANS_CLIENT_KEY:key}),null));
+test('invalid explicit key does not silently fall back',()=>assert.equal(client({...shared(),DOMAIN_MIDTRANS_PRODUCTION_CLIENT_KEY:'SB-'+key}),null));
+test('server key is never returned as client key',()=>assert.equal(client({DOMAIN_MIDTRANS_PRODUCTION_CLIENT_KEY:server}),null));
+test('valid production target retains order and exact amount',()=>{const r=verify(payment(),expected());assert.equal(r.url,payment().url);assert.equal(r.orderId,id);assert.equal(r.amountIdr,amount);assert(Object.isFrozen(r));});
+test('reject wrong URL origins, credentials, query, hash, port and path',()=>{for(const url of ['https://evil.example/'+token,'https://app.sandbox.midtrans.com/snap/v4/redirection/'+token,'https://user:pass@app.midtrans.com/snap/v4/redirection/'+token,payment().url+'?other=1',payment().url+'#x','https://app.midtrans.com:8443/snap/v4/redirection/'+token,'https://app.midtrans.com/other/'+token])assert.throws(()=>verify({...payment(),url},expected()),{code:'DOMAIN_PAYMENT_TARGET_UNVERIFIED'});});
+test('reject amount, order, currency, environment, expiry and token mismatch',()=>{for(const change of [{amountIdr:amount+1},{orderId:'NARA-'+'a'.repeat(40)},{currency:'USD'},{environment:'sandbox'},{expiresAt:new Date(now).toISOString()},{snapToken:token+'x'}])assert.throws(()=>verify({...payment(),...change},expected()),{code:'DOMAIN_PAYMENT_TARGET_UNVERIFIED'});});
+test('missing client key still permits official hosted fallback',()=>assert.equal(verify({...payment(),clientKey:null},expected()).clientKey,null));
+test('reserve safe blank tab, remove opener and suppress referrer',()=>{const b=browser(),r=reserve(b.win);assert.equal(r.available,true);assert.equal(b.child.opener,null);assert.equal(b.nodes[0].content,'no-referrer');assert.equal(b.paths.length,0);r.closeUnused();assert.equal(b.child.closed,true);});
+test('navigate only once to verified same-order checkout and do not close payer tab',()=>{const b=browser(),r=reserve(b.win);assert.equal(r.navigate(payment(),expected()),true);assert.deepEqual(b.paths,[payment().url]);assert.equal(r.navigate(payment(),expected()),false);r.closeUnused();assert.equal(b.child.closed,false);});
+test('blocked tab leaves manual fallback possible without exception',()=>{const r=reserve({open:()=>null});assert.equal(r.available,false);assert.equal(r.navigate(payment(),expected()),false);r.closeUnused();});
+test('reject invalid target before changing reserved tab location',()=>{const b=browser(),r=reserve(b.win);assert.throws(()=>r.navigate({...payment(),url:'https://evil.example/'},expected()));assert.equal(b.paths.length,0);r.closeUnused();});
+test('user-closed reserved tab does not create replacement tab',()=>{const b=browser(),r=reserve(b.win);b.child.close();assert.equal(r.navigate(payment(),expected()),false);assert.equal(b.paths.length,0);});
+test('popup key unavailable is not evidence of payment success',()=>{const r=verify({...payment(),clientKey:server},expected());assert.equal(r.clientKey,null);assert.equal(Object.hasOwn(r,'paid'),false);});

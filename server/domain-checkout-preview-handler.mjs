@@ -1,3 +1,4 @@
+import {domainMidtransPopupClientKey} from './domain-midtrans-presentation.mjs';
 const HOST='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const PATH='/api/commerce/domains/checkout';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -47,7 +48,7 @@ export async function domainCheckoutPreviewResponse(request,env,{fetchImpl=globa
   if(saved?.ok!==true||saved.order_id!==id||saved.environment!==environment||saved.currency!=='IDR'||saved.amount_idr!==s.amount_idr||saved.attempt_id!==s.attempt_id||saved.state!=='ready'||saved.registration_action_taken!==false||typeof saved.reused!=='boolean'||Date.parse(saved.expires_at)!==Date.parse(s.expires_at))throw Error('CHECKOUT_SAVE_UNVERIFIED');
   if(saved.checkout_available===false){attempt=null;return reply(409,'CHECKOUT_NOT_AVAILABLE');}
   if(saved.checkout_available!==true||saved.payment_state!=='pending'||saved.snap_token!==token||saved.checkout_url!==checkoutUrl||Date.parse(saved.expires_at)<=now())throw Error('CHECKOUT_SAVE_UNVERIFIED');
-  attempt=null;return reply(s.action==='reuse'?200:201,production?'DOMAIN_CHECKOUT_PRODUCTION':'DOMAIN_CHECKOUT_SANDBOX',{purchaseAllowed:production,checkoutCreated:true,reused:s.action==='reuse',checkout:{orderId:id,currency:'IDR',amountIdr:saved.amount_idr,expiresAt:saved.expires_at,url:saved.checkout_url}});
+  attempt=null;return reply(s.action==='reuse'?200:201,production?'DOMAIN_CHECKOUT_PRODUCTION':'DOMAIN_CHECKOUT_SANDBOX',{purchaseAllowed:production,checkoutCreated:true,reused:s.action==='reuse',checkout:{orderId:id,currency:'IDR',amountIdr:saved.amount_idr,expiresAt:saved.expires_at,url:saved.checkout_url,...(production?{snapToken:saved.snap_token,clientKey:domainMidtransPopupClientKey(env,true)}:{})}});
  }catch{const marked=await review();return reply(503,'CHECKOUT_RECONCILIATION_REQUIRED',{newAttemptAllowed:false,reviewRecorded:marked});}
  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);}
 }
