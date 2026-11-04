@@ -2,6 +2,7 @@ import {normalizePurchaseDomain,readPurchaseAttempt,fetchRegistrantPolicy,parseP
 import {getFinalDomainQuote} from './domain-final-quote-source.mjs';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const fail=code=>{throw Object.assign(new Error(code),{code});};
+const held=heldReason=>{throw Object.assign(new Error('ATTEMPT_HELD'),{code:'ATTEMPT_HELD',heldReason});};
 export function assertCheckoutQuoteFresh(quote,{domain,now=Date.now()}={}){
  if(!Number.isSafeInteger(now)||Math.abs(now)>8640000000000000)fail('QUOTE_UNVERIFIED');
  const verified=parsePurchaseQuote(quote,{domain,now,allowExpired:true});
@@ -20,14 +21,15 @@ async function missingOrderOnServer(id,token,{signal,fetchImpl}){
  try{
   if(signal?.aborted)fail('REQUEST_ABORTED');
   const response=await wait(fetchImpl('/api/commerce/domains/orders/'+id,{method:'GET',redirect:'error',cache:'no-store',credentials:'same-origin',headers:{authorization:'Bearer '+token,accept:'application/json'},signal:controller.signal}));
-  if(response.status!==404||!/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type')||''))fail('ATTEMPT_HELD');
-  reader=response.body?.getReader();if(!reader)fail('ATTEMPT_HELD');let size=0;const chunks=[];
-  for(;;){const part=await wait(reader.read());if(part.done)break;size+=part.value.length;if(size>4096)fail('ATTEMPT_HELD');chunks.push(part.value);}
+  if(response.status!==404)held(response.status===200?'ORDER_EXISTS':response.status===401||response.status===403?'STATUS_AUTH_REJECTED':'STATUS_RESPONSE_UNEXPECTED');
+  if(!/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type')||''))held('STATUS_CONTENT_TYPE_UNVERIFIED');
+  reader=response.body?.getReader();if(!reader)held('STATUS_BODY_UNAVAILABLE');let size=0;const chunks=[];
+  for(;;){const part=await wait(reader.read());if(part.done)break;size+=part.value.length;if(size>4096)held('STATUS_BODY_TOO_LARGE');chunks.push(part.value);}
   const bytes=new Uint8Array(size);let offset=0;for(const part of chunks){bytes.set(part,offset);offset+=part.length;}
   const result=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
   if(signal?.aborted||controller.signal.aborted)fail('REQUEST_ABORTED');
   return result?.code==='DOMAIN_ORDER_NOT_FOUND'&&result.environment==='production';
- }catch(error){if(signal?.aborted)fail('REQUEST_ABORTED');if(error?.code==='INVALID_SESSION')throw error;fail('ATTEMPT_HELD');}
+ }catch(error){if(signal?.aborted)fail('REQUEST_ABORTED');if(error?.code==='INVALID_SESSION'||error?.heldReason)throw error;held(controller.signal.aborted?'STATUS_TIMEOUT':'STATUS_CHECK_UNVERIFIED');}
  finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);controller.signal.removeEventListener('abort',stop);if(reader){reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}}
 }
 export async function recoverMissingOrderAttempt(domain,token,{owner,siteId,storage,signal,fetchImpl=globalThis.fetch,locks=globalThis.navigator?.locks}={}){
@@ -41,14 +43,16 @@ export async function recoverMissingOrderAttempt(domain,token,{owner,siteId,stor
   if(!lock)fail('CHECKOUT_IN_PROGRESS');if(signal?.aborted)fail('REQUEST_ABORTED');
   const original=storage.getItem(storageKey),attempt=readPurchaseAttempt(owner,storage);
   if(!attempt)return false;
-  if(attempt.phase!=='order'||attempt.quote.domain!==domain||(attempt.siteId??null)!==siteId.toLowerCase())fail('ATTEMPT_HELD');
-  if(!await missingOrderOnServer(attempt.orderId,token,{signal,fetchImpl}))fail('ATTEMPT_HELD');
+  if(attempt.phase!=='order')held('ATTEMPT_PHASE_NOT_RECOVERABLE');
+  if(attempt.quote.domain!==domain)held('ATTEMPT_DOMAIN_MISMATCH');
+  if((attempt.siteId??null)!==siteId.toLowerCase())held('ATTEMPT_SITE_MISMATCH');
+  if(!await missingOrderOnServer(attempt.orderId,token,{signal,fetchImpl}))held('ORDER_ABSENCE_UNVERIFIED');
   if(signal?.aborted)fail('REQUEST_ABORTED');
-  if(storage.getItem(storageKey)!==original)fail('ATTEMPT_HELD');
+  if(storage.getItem(storageKey)!==original)held('ATTEMPT_CHANGED');
   const current=readPurchaseAttempt(owner,storage);
-  if(!current||current.key!==attempt.key||current.orderId!==attempt.orderId||current.phase!=='order')fail('ATTEMPT_HELD');
+  if(!current||current.key!==attempt.key||current.orderId!==attempt.orderId||current.phase!=='order')held('ATTEMPT_CHANGED');
   storage.setItem(storageKey+':missing-order-recovery:v1',JSON.stringify({reason:'AUTHENTICATED_ORDER_NOT_FOUND',attempt}));
-  if(storage.getItem(storageKey)!==original)fail('ATTEMPT_HELD');
+  if(storage.getItem(storageKey)!==original)held('ATTEMPT_CHANGED');
   storage.removeItem(storageKey);
   if(storage.getItem(storageKey)!==null)fail('ATTEMPT_UNREADABLE');
   return true;
@@ -66,7 +70,7 @@ export async function prepareDirectDomainCheckout(domain,token,{owner,siteId,sto
  let quote=initial;
  for(let attempt=0;attempt<2;attempt++){
   if(signal?.aborted)fail('REQUEST_ABORTED');
-  if(readPurchaseAttempt(owner,storage))fail('ATTEMPT_HELD');
+  if(readPurchaseAttempt(owner,storage))held('ATTEMPT_APPEARED_DURING_PREPARATION');
   try{return {domain,quote:assertCheckoutQuoteFresh(quote,{domain,now:clock()}),policy};}
   catch(error){
    if(attempt!==0||!['QUOTE_EXPIRED','QUOTE_REFRESH_REQUIRED'].includes(error?.code))throw error;
