@@ -1,3 +1,5 @@
+import {validateReferenceOrderQuote} from './domain-reference-order-quote.mjs';
+import {DOMAIN_REFERENCE_SALE_POLICY} from './domain-reference-sale-price.mjs';
 import {parseOrderSiteBinding} from './domain-order-site-binding-result.mjs';
 const PREVIEW='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const PATH='/api/commerce/domains/order';
@@ -8,12 +10,21 @@ function scaled(value,digits){
  const [whole,fraction='']=value.split('.');const n=BigInt(whole)*10n**BigInt(digits)+BigInt(fraction.padEnd(digits,'0'));if(n<=0n)throw invalid();return n;
 }
 async function orderId(user,key,environment){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(environment+':'+user+':'+key));return 'DOM-'+Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,'0')).join('').slice(0,40);}
-function orderView(r,{quoteId,expectedId,environment}){
+async function orderView(r,{quoteId,expectedId,environment,userId,loadQuote}){
  if(r?.ok!==true||typeof r.reused!=='boolean'||r.order_id!==expectedId||r.quote_id!==quoteId||r.environment!==environment||r.operation!=='registration'||r.years!==1||r.payment_state!=='pending'||r.registration_state!=='not_started'||r.display_currency!=='USD'||r.currency!=='IDR'||r.checkout_created!==false||r.registration_started!==false)throw invalid();
  if(typeof r.domain!=='string'||r.domain.length>253||r.domain!==r.domain.toLowerCase()||!r.domain.includes('.')||/^\d+(?:\.\d+){3}$/.test(r.domain)||r.domain.split('.').some(x=>!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(x))||typeof r.provider_id!=='string'||!/^[a-z0-9][a-z0-9-]{0,39}$/.test(r.provider_id)||(environment==='production'&&r.provider_id!=='cloudflare'))throw invalid();
  if(!Number.isSafeInteger(r.amount_idr)||r.amount_idr<=0||r.amount_idr>1000000000000)throw invalid();
  const cents=scaled(r.sale_price_usd,2),rate=scaled(r.fx?.rate_usd_idr,6);
- if(rate>1000000000000n||(cents*rate+99999999n)/100000000n!==BigInt(r.amount_idr))throw invalid();
+ if(rate>1000000000000n)throw invalid();
+ let reference=false;
+ if(environment==='production'){
+  const q=await loadQuote();
+  if(!q||q.id!==quoteId||q.user_id!==userId||q.environment!==environment||q.domain!==r.domain||q.provider_id!==r.provider_id||q.operation!==r.operation||q.years!==r.years||q.currency!==r.currency||q.display_currency!==r.display_currency||q.sale_price_idr!==r.amount_idr||scaled(String(q.sale_price_usd),2)!==cents||scaled(String(q.fx_rate_usd_idr),6)!==rate||q.fx_source!==r.fx?.source||Date.parse(q.expires_at)!==Date.parse(r.quote_expires_at)||Date.parse(q.fx_observed_at)!==Date.parse(r.fx?.observed_at)||Date.parse(q.fx_expires_at)!==Date.parse(r.fx?.expires_at)||!(Date.parse(q.checked_at)<=Date.parse(r.price_locked_at)))throw invalid();
+  reference=q.cost_basis?.pricing_mode===DOMAIN_REFERENCE_SALE_POLICY.mode;
+  if(reference)validateReferenceOrderQuote(q,{userId,quoteId,domain:r.domain,amountIdr:r.amount_idr,lockedAt:r.price_locked_at});
+  else if(q.cost_basis?.pricing_mode!==undefined||q.pricing_version===DOMAIN_REFERENCE_SALE_POLICY.version)throw invalid();
+ }
+ if(!reference&&(cents*rate+99999999n)/100000000n!==BigInt(r.amount_idr))throw invalid();
  const dates=[r.price_locked_at,r.quote_expires_at,r.fx?.observed_at,r.fx?.expires_at];if(dates.some(x=>typeof x!=='string'||!Number.isFinite(Date.parse(x))))throw invalid();
  const [locked,expires,observed,fxExpires]=dates.map(Date.parse);
  if(observed>locked||locked>=expires||expires>fxExpires||fxExpires<=observed||fxExpires-observed>86400000||typeof r.fx.source!=='string'||!r.fx.source.trim()||r.fx.source.length>200||/[\u0000-\u001f\u007f]/.test(r.fx.source))throw invalid();
@@ -65,7 +76,11 @@ export async function domainOrderPreviewResponse(request,env,{fetchImpl=globalTh
   if(!response.ok||response.status>=300)return reply(503,'DOMAIN_ORDER_STORAGE_UNAVAILABLE',{retryWithSameKey:true});
   const result=await readBody(response,controller.signal,32768);
   if(result?.ok===false){const errors={QUOTE_NOT_FOUND:404,QUOTE_EXPIRED:409,IDEMPOTENCY_CONFLICT:409,QUOTE_ALREADY_ORDERED:409,ORDER_ALREADY_PROCESSED:409,INVALID_DOMAIN_ORDER_REQUEST:400};const known=typeof result.error==='string'&&Object.hasOwn(errors,result.error);return reply(known?errors[result.error]:503,known?result.error:'DOMAIN_ORDER_STORAGE_UNAVAILABLE');}
-  let order;try{order=orderView(result,{quoteId,expectedId,environment});}catch{return reply(503,'DOMAIN_ORDER_RESPONSE_UNVERIFIED',{retryWithSameKey:true});}
+  let order;try{order=await orderView(result,{quoteId,expectedId,environment,userId,loadQuote:async()=>{
+   const target=new URL('/rest/v1/domain_sale_quotes',base);target.search=new URLSearchParams({id:'eq.'+quoteId,user_id:'eq.'+userId,environment:'eq.'+environment,select:'id,user_id,environment,domain,provider_id,operation,years,currency,display_currency,sale_price_idr,sale_price_usd,fx_rate_usd_idr,fx_source,fx_observed_at,fx_expires_at,checked_at,expires_at,pricing_version,cost_basis,registrar_cost_idr,other_direct_costs_idr,payment_cost_idr',limit:'2'}).toString();
+   const qr=await bounded(fetchImpl(target.href,{method:'GET',redirect:'manual',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY},signal:controller.signal}),controller.signal);
+   if(!qr.ok||qr.status>=300)throw invalid();const rows=await readBody(qr,controller.signal,32768);if(!Array.isArray(rows)||rows.length!==1)throw invalid();return rows[0];
+  }});}catch{return reply(503,'DOMAIN_ORDER_RESPONSE_UNVERIFIED',{retryWithSameKey:true});}
   let siteBinding=null;
   if(siteId){
    try{
