@@ -2,7 +2,7 @@ import {DOMAIN_REFERENCE_SALE_POLICY as policy,buildDomainReferenceSalePrice} fr
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const fail=()=>{throw Object.assign(Error('REFERENCE_ORDER_QUOTE_UNVERIFIED'),{code:'REFERENCE_ORDER_QUOTE_UNVERIFIED'});};
 const ceil=(n,d)=>(n+d-1n)/d;
-function decimal(value,digits){const text=typeof value==='number'&&Number.isFinite(value)?String(value):value;if(typeof text!=='string'||!new RegExp('^(?:0|[1-9]\d{0,11})(?:\.\d{1,'+digits+'})?$').test(text))fail();const [a,b='']=text.split('.');const n=BigInt(a)*10n**BigInt(digits)+BigInt(b.padEnd(digits,'0'));if(n<=0n)fail();return n;}
+function decimal(value,digits){const text=typeof value==='number'&&Number.isFinite(value)?String(value):value;if(typeof text!=='string'||!/^(?:0|[1-9]\d{0,11})(?:\.\d{1,6})?$/.test(text))fail();const [a,b='']=text.split('.');if(b.length>digits)fail();const n=BigInt(a)*10n**BigInt(digits)+BigInt(b.padEnd(digits,'0'));if(n<=0n)fail();return n;}
 function time(value){if(typeof value!=='string'||value.length>64)fail();const n=Date.parse(value);if(!Number.isSafeInteger(n))fail();return n;}
 // Internal quote validation only; does not authorize checkout or mutate any record.
 // Identity and lockedAt must come from authenticated server context and verified order identity.
