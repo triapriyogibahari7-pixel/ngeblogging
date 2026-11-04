@@ -1,3 +1,4 @@
+import {parseDomainMidtransPaymentMethods} from './domain-midtrans-payment-methods.mjs';
 import {MIDTRANS_KEY_DIAGNOSTIC_VERSION,diagnoseDomainMidtransKey} from './domain-midtrans-key-diagnostic.mjs';
 import {normalizeDomainMidtransServerKey} from './domain-midtrans-server-key.mjs';
 import {domainMidtransPopupClientKey} from './domain-midtrans-presentation.mjs';
@@ -30,9 +31,7 @@ export async function domainCheckoutPreviewResponse(request,env,{fetchImpl=globa
  if(!env.SUPABASE_SERVICE_ROLE_KEY)return configFailure('CHECKOUT_SUPABASE_SERVICE_KEY_MISSING');
  let key;try{key=normalizeDomainMidtransServerKey(rawKey,{environment});}catch(error){return reply(503,error?.code==='MIDTRANS_SERVER_KEY_MISSING'?'CHECKOUT_MIDTRANS_SERVER_KEY_MISSING':'CHECKOUT_MIDTRANS_SERVER_KEY_INVALID',{configurationUnavailable:true,keyDiagnostic:diagnoseDomainMidtransKey(rawKey,{environment})});}
  let methods;if(production){
-  const raw=env.DOMAIN_MIDTRANS_PRODUCTION_PAYMENT_METHODS_JSON;
-  if(raw===undefined||raw===null||raw==='')return configFailure('CHECKOUT_PAYMENT_METHODS_MISSING');
-  try{methods=JSON.parse(raw);const allowed=['qris','bca_va','bni_va','bri_va','permata_va','other_va','echannel'];if(!Array.isArray(methods)||methods.length<1||methods.length>allowed.length||new Set(methods).size!==methods.length||methods.some(x=>!allowed.includes(x)))throw Error();}catch{return configFailure('CHECKOUT_PAYMENT_METHODS_INVALID');}
+  try{methods=parseDomainMidtransPaymentMethods(env.DOMAIN_MIDTRANS_PRODUCTION_PAYMENT_METHODS_JSON);}catch(error){return configFailure(error?.code==='CHECKOUT_PAYMENT_METHODS_MISSING'?'CHECKOUT_PAYMENT_METHODS_MISSING':'CHECKOUT_PAYMENT_METHODS_INVALID');}
   const merchant=env.DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID;
   if(merchant===undefined||merchant===null||merchant==='')return configFailure('CHECKOUT_MERCHANT_ID_MISSING');
   if(typeof merchant!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(merchant))return configFailure('CHECKOUT_MERCHANT_ID_INVALID');
