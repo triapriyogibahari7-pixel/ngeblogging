@@ -1,3 +1,4 @@
+import {normalizeDomainMidtransServerKey} from './domain-midtrans-server-key.mjs';
 import {domainMidtransPopupClientKey} from './domain-midtrans-presentation.mjs';
 const HOST='feature-domain-stages5-10-integration-20261030-ngeblogging.triapriyogibahari7.workers.dev';
 const PATH='/api/commerce/domains/checkout';
@@ -22,12 +23,11 @@ export async function domainCheckoutPreviewResponse(request,env,{fetchImpl=globa
  if(!/^application\/json(?:\s*;.*)?$/i.test(request.headers.get('content-type')||''))return reply(415,'JSON_REQUIRED');
  const configFailure=code=>reply(503,code,{configurationUnavailable:true});
  let base;try{base=new URL(env.SUPABASE_URL);if(base.protocol!=='https:'||base.hostname!=='polvmlrhqoiflumibfqs.supabase.co'||base.port||base.username||base.password||base.pathname!=='/'||base.search||base.hash)throw Error();}catch{return configFailure('CHECKOUT_SUPABASE_URL_INVALID');}
- const key=production?env.DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY:env.DOMAIN_MIDTRANS_SANDBOX_SERVER_KEY;
+ const rawKey=production?env.DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY:env.DOMAIN_MIDTRANS_SANDBOX_SERVER_KEY;
  if(!production&&!UUID.test(env.REGISTRAR_DIAGNOSTIC_ADMIN_USER_ID||''))return configFailure('CHECKOUT_ADMIN_CONFIGURATION_INVALID');
  if(!env.SUPABASE_PUBLISHABLE_KEY)return configFailure('CHECKOUT_SUPABASE_PUBLIC_KEY_MISSING');
  if(!env.SUPABASE_SERVICE_ROLE_KEY)return configFailure('CHECKOUT_SUPABASE_SERVICE_KEY_MISSING');
- if(key===undefined||key===null||key==='')return configFailure('CHECKOUT_MIDTRANS_SERVER_KEY_MISSING');
- if(typeof key!=='string'||!(production?/^Mid-server-[A-Za-z0-9_-]{10,200}$/:/^SB-Mid-server-[A-Za-z0-9_-]{10,200}$/).test(key))return configFailure('CHECKOUT_MIDTRANS_SERVER_KEY_INVALID');
+ let key;try{key=normalizeDomainMidtransServerKey(rawKey,{environment});}catch(error){return configFailure(error?.code==='MIDTRANS_SERVER_KEY_MISSING'?'CHECKOUT_MIDTRANS_SERVER_KEY_MISSING':'CHECKOUT_MIDTRANS_SERVER_KEY_INVALID');}
  let methods;if(production){
   const raw=env.DOMAIN_MIDTRANS_PRODUCTION_PAYMENT_METHODS_JSON;
   if(raw===undefined||raw===null||raw==='')return configFailure('CHECKOUT_PAYMENT_METHODS_MISSING');

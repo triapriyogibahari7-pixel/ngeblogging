@@ -1,3 +1,4 @@
+import {normalizeDomainMidtransServerKey} from './domain-midtrans-server-key.mjs';
 const PATH='/api/commerce/domains/midtrans/production-notification';
 const ORDER=/^DOM-[a-f0-9]{40}$/;
 const STATES=['pending','paid','failed','expired','cancelled','review_required','refund_pending','refunded'];
@@ -12,8 +13,9 @@ export async function domainProductionPaymentNotificationResponse(request,env,{f
  if(url.search)return reply(400,'QUERY_NOT_ALLOWED');
  if(env?.DOMAIN_PAYMENT_PRODUCTION_ENABLED!=='true'||env.DOMAIN_ORDER_ENV!=='production')return reply(503,'DOMAIN_PRODUCTION_PAYMENT_DISABLED');
  if(!/^application\/json(?:\s*;.*)?$/i.test(request.headers.get('content-type')||''))return reply(415,'JSON_REQUIRED');
- const key=env.DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY,merchant=env.DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID;
- if(typeof key!=='string'||!/^Mid-server-[A-Za-z0-9_-]{10,200}$/.test(key)||typeof merchant!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(merchant)||typeof env.SUPABASE_SERVICE_ROLE_KEY!=='string'||!env.SUPABASE_SERVICE_ROLE_KEY)return reply(503,'DOMAIN_PRODUCTION_PAYMENT_CONFIGURATION_UNAVAILABLE');
+ let key;try{key=normalizeDomainMidtransServerKey(env.DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY,{environment:'production'});}catch{return reply(503,'DOMAIN_PRODUCTION_PAYMENT_CONFIGURATION_UNAVAILABLE');}
+ const merchant=env.DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID;
+ if(typeof merchant!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(merchant)||typeof env.SUPABASE_SERVICE_ROLE_KEY!=='string'||!env.SUPABASE_SERVICE_ROLE_KEY)return reply(503,'DOMAIN_PRODUCTION_PAYMENT_CONFIGURATION_UNAVAILABLE');
  let base;try{base=new URL(env.SUPABASE_URL);if(base.href!=='https://polvmlrhqoiflumibfqs.supabase.co/')throw Error();}catch{return reply(503,'DOMAIN_PRODUCTION_PAYMENT_CONFIGURATION_UNAVAILABLE');}
  if(request.signal.aborted)return reply(503,'DOMAIN_PAYMENT_UNAVAILABLE');
  const budget=deadline(10000),abort=()=>budget.abort();let phase='body',orderId,signed=false,paidAmount,orderVerified=false;

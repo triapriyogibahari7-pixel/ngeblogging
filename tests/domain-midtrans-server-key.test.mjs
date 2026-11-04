@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {normalizeDomainMidtransServerKey as normalize} from '../server/domain-midtrans-server-key.mjs';
+const production='Mid-server-fixture_1234567890',sandbox='SB-Mid-server-fixture_1234567890';
+test('preserves valid key content and normalizes only surrounding whitespace',()=>{for(const key of [production,' '+production+' ','\r\n'+production+'\n','\t'+production+'\t'])assert.equal(normalize(key),production);assert.equal(normalize(sandbox,{environment:'sandbox'}),sandbox);});
+test('environments cannot share keys',()=>{assert.throws(()=>normalize(sandbox),{code:'MIDTRANS_SERVER_KEY_INVALID'});assert.throws(()=>normalize(production,{environment:'sandbox'}),{code:'MIDTRANS_SERVER_KEY_INVALID'});assert.throws(()=>normalize(production,{environment:'other'}),{code:'MIDTRANS_KEY_ENVIRONMENT_INVALID'});});
+test('rejects client keys, quoted values, Basic headers and altered internal content',()=>{for(const value of ['Mid-client-fixture_1234567890','"'+production+'"',"'"+production+"'",'Basic '+production,production+':',production.slice(0,15)+' '+production.slice(15),production+'\nextra',production+'=',production+'\u0000'])assert.throws(()=>normalize(value),{code:'MIDTRANS_SERVER_KEY_INVALID'});});
+test('missing values and invalid types fail closed',()=>{for(const value of [undefined,null,'',' \n '])assert.throws(()=>normalize(value),{code:'MIDTRANS_SERVER_KEY_MISSING'});for(const value of [1,{},[],true,'x'.repeat(513)])assert.throws(()=>normalize(value),{code:'MIDTRANS_SERVER_KEY_INVALID'});});
+test('validation errors never include supplied credential text',()=>{const secret='private-fixture-credential-value';try{normalize(secret);assert.fail('must reject');}catch(error){assert.equal(error.code,'MIDTRANS_SERVER_KEY_INVALID');assert(!String(error).includes(secret));assert(!JSON.stringify(error).includes(secret));}});
