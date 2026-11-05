@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import DomainManagementCard from './DomainManagementCard.jsx';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {clearCompletedPurchase} from './domain-purchase-model.mjs';
 import {orderActionAvailability,performExistingOrderAction,orderActionErrors} from './domain-order-actions.mjs';
@@ -28,7 +29,7 @@ export default function DomainOrderActions({order,owner,token,onRefresh}){
   finally{if(active.current===c){active.current=null;if(!c.signal.aborted)setBusy(false);}}
  }
  let payment=null;try{if(target&&allowed.pay)payment=verifyDomainMidtransTarget(target,{orderId:order.orderId,amountIdr:order.amountIdr,now:clock});}catch{}
- return h('section',{'aria-label':'Aksi pesanan domain','aria-busy':busy},h('p',null,allowed.reason),
+ return h('section',{'aria-label':'Aksi pesanan domain','aria-busy':busy},order.registrar?h(DomainManagementCard,{order}):null,h('p',null,allowed.reason),
   h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},payment?h('a',{className:'sv124-primary',href:payment.url,target:'_blank',rel:'noopener noreferrer',referrerPolicy:'no-referrer',onClick:event=>{try{if(busy||review)throw Error();verifyDomainMidtransTarget(target,{orderId:order.orderId,amountIdr:order.amountIdr});}catch{event.preventDefault();setTarget(null);setNotice('Tautan tidak lagi tersedia. Periksa status order yang sama.');}}},'Bayar Midtrans'):h('button',{type:'button',className:'sv124-primary',disabled:busy||review||!allowed.pay,onClick:()=>void run('pay')},busy?'Memproses...':'Lanjutkan pembayaran'),
   h('button',{type:'button',className:'sv124-secondary',disabled:busy||!allowed.cancel,onClick:()=>{if(!active.current){setTarget(null);setReview(true);setNotice('');}}},'Batalkan pesanan')),
   review?h('section',{'aria-label':'Konfirmasi pembatalan pesanan'},h('h4',null,'Batalkan pesanan ini?'),h('p',null,order.domain,' — ',order.orderId,' — IDR ',String(order.amountIdr),'. Pembatalan sebelum checkout saja; ini bukan refund atau pembatalan tagihan Midtrans yang sudah terbit.'),h('button',{type:'button',disabled:busy,onClick:()=>setReview(false)},'Kembali'),h('button',{type:'button',disabled:busy,onClick:()=>void run('cancel')},'Ya, batalkan pesanan')):null,

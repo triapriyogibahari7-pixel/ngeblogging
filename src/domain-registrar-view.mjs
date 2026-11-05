@@ -1,0 +1,7 @@
+const host=x=>typeof x==='string'&&x.length<=253&&x.includes('.')&&x===x.toLowerCase()&&x.split('.').every(p=>/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(p));
+const time=x=>typeof x==='string'&&x.length<=64&&Number.isFinite(Date.parse(x));
+export function parseDomainRegistrarView(value,order,now=Date.now()){
+ const unknown=()=>({status:'unavailable',nameservers:[],registeredAt:null,expiresAt:null,autoRenew:null,checkedAt:null,providerActionTaken:false});
+ if(!Number.isSafeInteger(now)||!order?.paymentConfirmed||!order?.registrationConfirmed||order.paymentState!=='paid'||order.registrationState!=='registered'||order.resolution!=='none'||value?.status!=='observed'||value.source!=='registrar_api'||value.providerActionTaken!==false||!['active','expired'].includes(value.registrarStatus)||!time(value.registeredAt)||!time(value.expiresAt)||!time(value.checkedAt)||Date.parse(value.registeredAt)>=Date.parse(value.expiresAt)||Date.parse(value.registeredAt)>Date.parse(value.checkedAt)+300000||Date.parse(value.checkedAt)>now+300000||typeof value.autoRenew!=='boolean'||!Array.isArray(value.nameservers)||value.nameservers.length<2||value.nameservers.length>13||value.nameservers.some(x=>!host(x))||new Set(value.nameservers).size!==value.nameservers.length)return unknown();
+ return {status:'observed',source:'registrar_api',registrarStatus:value.registrarStatus,nameservers:[...value.nameservers],registeredAt:value.registeredAt,expiresAt:value.expiresAt,autoRenew:value.autoRenew,checkedAt:value.checkedAt,providerActionTaken:false};
+}

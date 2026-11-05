@@ -1,0 +1,11 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {parseDomainRegistrarView as parse} from '../src/domain-registrar-view.mjs';
+const now=Date.parse('2026-11-05T07:00:00Z');
+const order={paymentConfirmed:true,registrationConfirmed:true,paymentState:'paid',registrationState:'registered',resolution:'none'};
+const data=()=>({status:'observed',source:'registrar_api',registrarStatus:'active',nameservers:['alice.ns.cloudflare.com','bob.ns.cloudflare.com'],registeredAt:'2026-11-05T06:00:00Z',expiresAt:'2027-11-05T06:00:00Z',autoRenew:false,checkedAt:'2026-11-05T07:00:00Z',providerActionTaken:false});
+test('valid metadata survives sanitization without carrying unexpected fields',()=>{const v=parse({...data(),secret:'must-not-leak'},order,now);assert.equal(v.status,'observed');assert(!Object.hasOwn(v,'secret'));assert.deepEqual(v.nameservers,data().nameservers);});
+for(const [name,patch] of Object.entries({unpaid:{paymentConfirmed:false},unregistered:{registrationConfirmed:false},review:{resolution:'review_required'},refund:{paymentState:'refunded'}}))test('no metadata for '+name,()=>assert.equal(parse(data(),{...order,...patch},now).status,'unavailable'));
+for(const [name,patch] of Object.entries({unknown_source:{source:'browser'},bad_expiry:{expiresAt:null},duplicate_nameserver:{nameservers:['alice.ns.cloudflare.com','alice.ns.cloudflare.com']},script_nameserver:{nameservers:['<script>alert(1)</script>','bob.ns.cloudflare.com']},bad_renew:{autoRenew:'true'},future_observation:{checkedAt:'2028-01-01T00:00:00Z'}}))test('reject '+name,()=>assert.equal(parse({...data(),...patch},order,now).status,'unavailable'));
+test('missing metadata preserves an explicit unknown state',()=>{const v=parse(undefined,order,now);assert.equal(v.expiresAt,null);assert.deepEqual(v.nameservers,[]);});
+test('expired dates are retained for warning, never replaced by a new year',()=>{const d=data();d.registeredAt='2024-01-01T00:00:00Z';d.expiresAt='2025-01-01T00:00:00Z';d.registrarStatus='expired';assert.equal(parse(d,order,now).expiresAt,d.expiresAt);});
