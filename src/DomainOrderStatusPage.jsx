@@ -1,15 +1,16 @@
 import DomainOrderActions from './DomainOrderActions.mjs';
 import React,{useEffect,useRef,useState} from 'react';
 import {supabase,supabaseConfigured} from './lib/supabase';
-import {loadOrderStatus,orderIdFromPath,paymentLabels,registrationLabels} from './domain-order-status-model.mjs';
+import {loadOrderStatus,orderIdFromPath} from './domain-order-status-model.mjs';
 import './domain-order-status.css';
+import './domain-premium-ui.css';
 const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n);
 const date=x=>x?new Date(x).toLocaleString('id-ID'):'Belum dikonfirmasi';
 export default function DomainOrderStatusPage(){
  const id=orderIdFromPath(window.location.pathname),epoch=useRef(0);
  const [session,setSession]=useState(null),[authReady,setAuthReady]=useState(false),[authError,setAuthError]=useState(''),[retry,setRetry]=useState(0),[state,setState]=useState({kind:'loading'});
  useEffect(()=>{
-  document.title='Status pesanan domain — Ngeblogging';
+  document.title='Detail pesanan domain — Ngeblogging';
   if(!supabaseConfigured||!supabase){setAuthError('Koneksi akun belum tersedia. Status pesanan belum dapat diperiksa.');setAuthReady(true);return;}
   let active=true,version=0;
   const {data}=supabase.auth.onAuthStateChange((_event,next)=>{if(!active)return;version++;epoch.current++;setState({kind:'loading'});setSession(next);setAuthReady(true);setAuthError('');setRetry(x=>x+1);});
@@ -32,7 +33,7 @@ export default function DomainOrderStatusPage(){
  else if(state.kind==='error')content=<section role="alert"><h2>Status belum dapat ditampilkan</h2><p>{state.status===404?'Pesanan tidak ditemukan untuk akun ini. Pastikan Anda memakai akun checkout yang benar.':state.status===401?'Sesi belum diterima backend. Masuk kembali dengan akun yang sama.':'Status belum dapat dipastikan karena layanan belum tersedia atau koneksi bermasalah.'}</p><p>Jangan melakukan pembayaran ulang hanya karena halaman ini gagal dimuat.</p>{state.status===401&&<a href="/?auth=signin" target="_blank" rel="noopener noreferrer">Buka halaman masuk</a>}</section>;
  else if(state.kind==='ready'){
   const o=state.order;
-  content=<><h2>{o.domain}</h2><p className="dosp-note" role="status">{o.message}</p><dl className="dosp-details"><div><dt>Total pesanan</dt><dd>{money(o.amountIdr)}</dd></div><div><dt>Masa pendaftaran</dt><dd>{o.years} tahun</dd></div><div><dt>Pembayaran</dt><dd>{paymentLabels[o.paymentState]}</dd></div><div><dt>Pendaftaran domain</dt><dd>{registrationLabels[o.registrationState]}</dd></div><div><dt>Waktu pembayaran terverifikasi</dt><dd>{date(o.paidAt)}</dd></div><div><dt>Waktu domain terdaftar</dt><dd>{date(o.registeredAt)}</dd></div><div><dt>Pembaruan catatan pesanan</dt><dd>{date(o.updatedAt)}</dd></div></dl><DomainOrderActions order={o} owner={session?.user?.id} onRefresh={refresh}/>{o.resolution!=='none'&&<section className="dosp-warning"><h3>Pesanan perlu penyelesaian</h3><p>Simpan ID pesanan untuk penanganan. Halaman ini tidak menjalankan pembelian ulang atau pengembalian dana.</p><p>Pengembalian dana belum dianggap selesai hanya karena pendaftaran domain gagal atau pesanan memerlukan peninjauan.</p></section>}</>;
+  content=<><header className="nd-order-heading"><p className="nd-eyebrow">RINGKASAN PESANAN</p><h2>{o.domain}</h2><p className="dosp-note" role="status">{o.message}</p><p className="dosp-hint">Dibuat {date(o.createdAt)}. Pembaruan terakhir {date(o.updatedAt)}.</p></header><section className="nd-order-total" aria-label="Total pesanan"><span>Total pesanan</span><strong>{money(o.amountIdr)}</strong><small>Masa pendaftaran {o.years} tahun — IDR</small></section><DomainOrderActions order={o} owner={session?.user?.id} onRefresh={refresh} detail/>{o.resolution!=='none'&&<section className="dosp-warning"><h3>Pesanan perlu penyelesaian</h3><p>Simpan ID pesanan untuk penanganan. Halaman ini tidak menjalankan pembelian ulang atau pengembalian dana.</p><p>Pengembalian dana belum dianggap selesai hanya karena pendaftaran domain gagal atau pesanan memerlukan peninjauan.</p></section>}</>;
  }
- return <div className="domain-order-status-page"><div className="dosp-shell"><a className="dosp-brand" href="/">ngeblogging.</a><main className="dosp-card"><h1>Status pesanan domain</h1>{id&&<p className="dosp-id">ID pesanan: <code>{id}</code></p>}<p className="dosp-hint">Status diambil dari backend. Kembali dari halaman pembayaran bukan bukti pembayaran lunas atau domain terdaftar.</p><div aria-live="polite" aria-busy={authReady&&session?.access_token&&state.kind==='loading'}>{content}</div>{id&&authReady&&<button className="dosp-refresh" type="button" onClick={refresh} disabled={!supabase||(!authError&&session?.access_token&&state.kind==='loading')}>Perbarui status</button>}</main></div></div>;
+ return <div className="domain-order-status-page nd-order-screen"><div className="dosp-shell"><nav className="nd-topbar" aria-label="Navigasi detail pesanan"><a className="dosp-brand" href="/">ngeblogging.</a><a className="nd-back" href="/">Kembali ke Ngeblogging</a></nav><main className="dosp-card nd-page-card"><h1>Detail pesanan domain</h1>{id&&<details className="nd-order-id"><summary>Lihat ID pesanan</summary><code>{id}</code></details>}<p className="dosp-hint">Status diambil dari backend. Kembali dari halaman pembayaran bukan bukti pembayaran lunas atau domain terdaftar.</p><div aria-live="polite" aria-busy={authReady&&session?.access_token&&state.kind==='loading'}>{content}</div>{id&&authReady&&<button className="dosp-refresh" type="button" onClick={refresh} disabled={!supabase||(!authError&&session?.access_token&&state.kind==='loading')}>Perbarui status</button>}</main></div></div>;
 }
