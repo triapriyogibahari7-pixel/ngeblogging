@@ -7,12 +7,17 @@ on:
     paths:
       - 'server/domain-registered-metadata.mjs'
       - 'server/domain-production-order-status-handler.mjs'
+      - 'server/domain-notifications-handler.mjs'
       - 'src/DomainManagementCard.jsx'
+      - 'src/DomainNotificationInbox.jsx'
       - 'src/DomainOrderActions.mjs'
       - 'src/domain-order-status-model.mjs'
       - 'src/domain-registrar-view.mjs'
+      - 'src/domain-notifications-client.mjs'
       - 'tests/domain-registered-metadata.test.mjs'
       - 'tests/domain-registrar-view.test.mjs'
+      - 'tests/domain-notifications-handler.test.mjs'
+      - 'tests/domain-notifications-client.test.mjs'
       - '.github/workflows/domain-post-payment-management.yml'
   workflow_dispatch:
 permissions:
@@ -39,7 +44,7 @@ jobs:
           node --input-type=module <<'NODE'
           import {readdirSync} from 'node:fs';
           import {spawnSync} from 'node:child_process';
-          const required=['domain-registered-metadata.test.mjs','domain-registrar-view.test.mjs','domain-recovery-entry.test.mjs','domain-order-actions.test.mjs'];
+          const required=['domain-registered-metadata.test.mjs','domain-registrar-view.test.mjs','domain-notifications-handler.test.mjs','domain-notifications-client.test.mjs','domain-recovery-entry.test.mjs','domain-order-actions.test.mjs'];
           const available=readdirSync('tests');
           for(const name of required)if(!available.includes(name))throw Error('Required test missing: '+name);
           const status=available.filter(name=>/^domain.*order.*status.*[.]test[.]mjs$/.test(name));
