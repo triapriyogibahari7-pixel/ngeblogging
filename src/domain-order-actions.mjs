@@ -1,13 +1,15 @@
 import {readKeyDiagnosticUiCode,keyDiagnosticMessages} from './domain-key-diagnostic-ui.mjs';
 import {loadOrderStatus} from './domain-order-status-model.mjs';
 import {verifyDomainMidtransTarget} from './domain-midtrans-payment-target.mjs';
+import {standardOrderPaymentDeadline} from '../shared/domain-standard-checkout-window.mjs';
 const ORDER=/^DOM-[a-f0-9]{40}$/;
 const fail=code=>{throw Object.assign(Error(code),{code});};
 export function orderActionAvailability(o,now=Date.now()){
  if(!o||!ORDER.test(o.orderId)||o.currency!=='IDR'||!Number.isSafeInteger(o.amountIdr)||o.amountIdr<1||o.amountIdr>1000000000000||typeof o.domain!=='string'||!Number.isSafeInteger(now)||!Number.isFinite(Date.parse(o.createdAt)))return {pay:false,cancel:false,reason:'Status pesanan belum terverifikasi.'};
  if(o.paymentState!=='pending'||o.registrationState!=='not_started'||o.resolution!=='none')return {pay:false,cancel:false,reason:'Pesanan bukan pembayaran tertunda yang dapat diproses. Periksa status terbaru.'};
- const created=Date.parse(o.createdAt),pay=created<=now&&now<created+900000;
- const reason=now<created?'Waktu perangkat berada sebelum waktu pembuatan pesanan. Pembayaran ditahan; periksa waktu perangkat dan status pesanan yang sama.':pay?'Server akan memeriksa registran, masa berlaku, dan checkout pesanan yang sama.':'Tombol pembayaran dinonaktifkan karena batas 15 menit sejak pesanan dibuat sudah terlewati. Kebijakan 2 jam belum berlaku pada jalur ini. Pemulihan pesanan yang sama memerlukan pemeriksaan server atas harga final, kurs, dan riwayat gateway; menghapus catatan browser tidak memperpanjang masa berlaku. Pembatalan tetap harus diverifikasi server dan tidak membatalkan tagihan gateway.';
+ let deadline;try{deadline=standardOrderPaymentDeadline(o.createdAt);}catch{return {pay:false,cancel:false,reason:'Status pesanan belum terverifikasi.'};}
+ const created=Date.parse(o.createdAt),pay=created<=now&&now<deadline;
+ const reason=now<created?'Waktu perangkat berada sebelum waktu pembuatan pesanan. Pembayaran ditahan; periksa waktu perangkat dan status pesanan yang sama.':pay?'Pembayaran memiliki batas 2 jam sejak pesanan dibuat. Server tetap memeriksa registran, harga terkunci, dan checkout pesanan yang sama.':'Batas pembayaran 2 jam sejak pesanan dibuat sudah berakhir. Memuat ulang halaman tidak memperpanjang tenggat. Periksa status pesanan yang sama; jangan membuat tagihan pengganti. Pembatalan tetap harus diverifikasi server dan tidak membatalkan tagihan gateway.';
  return {pay,cancel:true,reason};
 }
 async function post(path,body,token,{fetchImpl,signal}){
