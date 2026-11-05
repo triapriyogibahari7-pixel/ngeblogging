@@ -1,0 +1,43 @@
+name: Recovery v2 candidate build - not production readiness
+on:
+  push:
+    branches: [fix/domain-order-recovery-flow-20261105]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'shared/domain-recovery-policy-v2.mjs'
+      - 'server/domain-order-recovery-*'
+      - 'src/DomainOrderRecoveryPanelV2.jsx'
+      - 'scripts/prepare-domain-recovery-v2.mjs'
+      - 'cloudflare/domain-recovery-worker-v2.mjs'
+      - '.github/workflows/domain-recovery-v2-candidate.yml'
+permissions:
+  contents: read
+concurrency:
+  group: recovery-v2-candidate-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  candidate-build:
+    if: github.event_name == 'push' || github.head_ref == 'fix/domain-order-recovery-flow-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Prepare candidate integration with strict source anchors
+        run: node scripts/prepare-domain-recovery-v2.mjs
+      - name: Test recovery HTTP contracts and gateway handling using fixtures
+        run: node --test tests/domain-order-recovery-v2.integration.test.mjs tests/domain-order-recovery-gateway.test.mjs tests/domain-order-recovery-quote-handler.test.mjs
+      - name: Build integrated UI candidate
+        run: npx vite build
+      - name: Bundle Worker candidate without deployment
+        run: npx wrangler deploy --dry-run --config wrangler.recovery-candidate.jsonc --outdir .recovery-worker-dry-run
+      - name: Document verification boundary
+        run: echo 'Candidate build only. PostgreSQL migration, transaction tests, browser verification, independent Snap reconciliation and production activation are not performed by this workflow.' >> "$GITHUB_STEP_SUMMARY"
