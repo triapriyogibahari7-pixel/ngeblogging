@@ -1,3 +1,4 @@
+import {domainOrderHistoryResponse} from './domain-order-history-handler.mjs';
 import {readRegisteredDomainMetadata} from './domain-registered-metadata.mjs';
 import {domainNotificationsResponse} from './domain-notifications-handler.mjs';
 const PREFIX='/api/commerce/domains/orders/';
@@ -23,6 +24,7 @@ function view(o,q){
  return {orderId:o.order_id,domain:q.domain,years:q.years,currency:'IDR',amountIdr:o.amount_idr,paymentState:o.payment_state,registrationState:o.registration_state,paymentConfirmed:paid,registrationConfirmed:registered,paidAt:paid?o.paid_at:null,registeredAt:registered?o.registered_at:null,createdAt:o.created_at,updatedAt:o.updated_at,resolution,message};
 }
 export async function domainProductionOrderStatusResponse(request,env,{fetchImpl=globalThis.fetch}={}){
+ const history=await domainOrderHistoryResponse(request,env,{fetchImpl,toView:view});if(history)return history;
  const notifications=await domainNotificationsResponse(request,env,{fetchImpl});if(notifications)return notifications;
  const url=new URL(request.url);if(!url.pathname.startsWith(PREFIX))return null;
  const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store','vary':'Authorization','x-content-type-options':'nosniff',...(status===405?{allow:'GET'}:{})}});
