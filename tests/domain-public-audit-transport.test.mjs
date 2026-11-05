@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {publicAuditRequest,createPublicAuditFetch} from '../server/domain-public-audit-transport.mjs';
+test('public requests strip credentials and retain manual redirects',()=>{const r=publicAuditRequest('https://site.example/',{method:'GET',headers:{authorization:'Bearer private',cookie:'session=private'}});assert.equal(r.headers.get('authorization'),null);assert.equal(r.headers.get('cookie'),null);assert.equal(r.redirect,'manual');});
+test('rejects non-public and credential-bearing URLs and writes',()=>{for(const url of ['http://site.example','https://127.0.0.1','https://[::1]','https://host.internal','https://user:secret@site.example','https://site.example:8080'])assert.throws(()=>publicAuditRequest(url),/AUDIT_TARGET_REJECTED/);assert.throws(()=>publicAuditRequest('https://site.example',{method:'POST'}),/AUDIT_TARGET_REJECTED/);});
+test('binding used without origin or browser fallback',async()=>{let calls=0;const fetch=createPublicAuditFetch({PUBLIC_AUDITOR:{fetch:async r=>{calls++;assert.equal(r.url,'https://site.example/');return new Response('<html></html>');}}},{fetchImpl:()=>assert.fail('No fallback')});assert.equal((await fetch('https://site.example/')).status,200);assert.equal(calls,1);});
+test('transport errors remain errors',async()=>{const fetch=createPublicAuditFetch({PUBLIC_AUDITOR:{fetch:async()=>{throw Error('transport unavailable');}}},{fetchImpl:()=>assert.fail('No fallback')});await assert.rejects(fetch('https://site.example/'),/transport unavailable/);});
+test('unconfigured binding preserves existing transport',()=>{const fetch=()=>{};assert.equal(createPublicAuditFetch({}, {fetchImpl:fetch}),fetch);});

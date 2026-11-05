@@ -1,5 +1,6 @@
 import { handleDomainRequest as handleDomainRequestBase } from "./domain-handler.mjs";
 import { PUBLIC_AUDIT_RELEASE, auditPublicTargets, summarizePublicAudit } from "./domain-public-audit.mjs";
+import {createPublicAuditFetch} from './domain-public-audit-transport.mjs';
 const RELEASE = "domain-single-site-audit-v112-20260728";
 function response(status, body, requestId = "") {
  return new Response(JSON.stringify(body), {status, headers: {
@@ -53,7 +54,7 @@ async function handleAudit(request,env,requestId) {
   targets.push({label:"Domain utama",kind:"root",hostname:domain.hostname,connectionStatus});
   targets.push(...additionalAddresses(domain).map(target=>({...target,connectionStatus})));
  }
- const results=await auditPublicTargets(targets,{published});
+ const results=await auditPublicTargets(targets,{published,fetchImpl:createPublicAuditFetch(env)});
  return response(200,{
   release:RELEASE,auditRelease:PUBLIC_AUDIT_RELEASE,
   site:{id:site.id,name:site.name,slug:site.slug,status:site.status,isPublic:site.is_public},
