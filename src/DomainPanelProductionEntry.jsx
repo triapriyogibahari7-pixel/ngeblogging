@@ -2,6 +2,7 @@ import React,{useRef,useState} from 'react';
 import DomainPanelV124 from './DomainPanelV124.jsx';
 import DomainPanelStage5Entry from './DomainPanelStage5Entry.jsx';
 import DomainConnectEntry from './DomainConnectEntry.jsx';
+import DomainConnectSlot from './DomainConnectSlot.jsx';
 import LiveRegistrarSearch from './LiveRegistrarSearch.jsx';
 import DomainPurchasePage from './DomainPurchasePage.jsx';
 import {domainPanelSurface} from './lib/domain-panel-surface.mjs';
@@ -42,9 +43,10 @@ function OwnedDomainCommerce({user,site}){
 }
 export default function DomainPanelProductionEntry({user,...props}){
  const [revision,setRevision]=useState(0);
+ const panelRoot=useRef(null);
  const surface=domainPanelSurface(typeof window==='undefined'?'':window.location.origin);
  if(surface==='preview')return <DomainPanelStage5Entry {...props} user={user}/>;
  if(surface!=='production')return <DomainPanelV124 {...props}/>;
  const owned=Boolean(user?.id&&props.site?.id&&props.site.owner_id===user.id),scope=JSON.stringify([user?.id,props.site?.id,props.site?.owner_id]);
- return <section className="sv124-page sv124-domain-page" data-domain-stage6-layout="compact" aria-label="Domain dan publikasi"><DomainConnectEntry key={scope} siteId={props.site?.id} expectedUserId={user?.id} onRefresh={()=>setRevision(value=>value+1)}/><div className="nd-connected-domain-manager"><DomainPanelV124 key={scope+':'+revision} {...props}/></div>{owned&&<OwnedDomainCommerce key={scope} user={user} site={props.site}/>}</section>;
+ return <section className="sv124-page sv124-domain-page" data-domain-stage6-layout="compact" aria-label="Domain dan publikasi"><div ref={panelRoot} className="nd-connected-domain-manager"><DomainPanelV124 key={scope+':'+revision} {...props}/></div><DomainConnectSlot key={scope} rootRef={panelRoot}><DomainConnectEntry key={scope} siteId={props.site?.id} expectedUserId={user?.id} onRefresh={()=>setRevision(value=>value+1)}/></DomainConnectSlot>{owned&&<OwnedDomainCommerce key={scope} user={user} site={props.site}/>}</section>;
 }

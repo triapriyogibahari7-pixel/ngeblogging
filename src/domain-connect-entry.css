@@ -5,4 +5,5 @@
 .nd-connect-entry input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font:inherit;padding:10px}
 .nd-connect-entry button{min-height:44px;white-space:normal;writing-mode:horizontal-tb}
 .nd-connect-entry code{user-select:all;overflow-wrap:anywhere}
+.nd-connected-domain-manager [data-domain-connect-slot] .nd-connect-entry{border:0;box-shadow:none;margin:0;padding:12px 0}
 @media(max-width:600px){.nd-connect-entry button{width:100%;margin-top:8px}.nd-connect-entry input{font-size:16px}}
