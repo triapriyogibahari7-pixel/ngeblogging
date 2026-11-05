@@ -5,6 +5,7 @@ import DomainConnectEntry from './DomainConnectEntry.jsx';
 import DomainConnectSlot from './DomainConnectSlot.jsx';
 import LiveRegistrarSearch from './LiveRegistrarSearch.jsx';
 import DomainPurchasePage from './DomainPurchasePage.jsx';
+import DomainQuoteLookup from './DomainQuoteLookup.mjs';
 import {domainPanelSurface} from './lib/domain-panel-surface.mjs';
 import './domain-registrar-check-stage6.css';
 class PurchaseBoundary extends React.Component{
@@ -31,11 +32,12 @@ function OwnedDomainCommerce({user,site}){
  return <>
   <LiveRegistrarSearch user={user} siteId={site.id} siteName={site.name} onSelect={selectDomain}/>
   <section ref={purchaseSection} tabIndex={-1} className="sv124-card" aria-label="Formulir pembelian domain">
-   <h2>Pembelian domain</h2>
+   <h2>Pemeriksaan dan pembelian domain</h2>
    <p>Formulir pembelian meminta quote final tersendiri dari backend. Harga pencarian dan peninjauan bukan tagihan atau persetujuan pembayaran.</p>
-   {selectedDomain&&<div><p>Domain terakhir yang dipilih: <code style={{overflowWrap:'anywhere'}}>{selectedDomain}</code></p><p>Salin nama ini ke formulir pembelian. Ketersediaan dan harga harus diperiksa kembali; pilihan ini tidak membuat reservasi atau pesanan.</p><button type="button" className="sv124-secondary" onClick={copyDomain}>Salin nama domain</button>{!purchaseOpen&&<button type="button" className="sv124-secondary" onClick={openPurchase}>Lanjut ke formulir pembelian</button>}</div>}
+   {selectedDomain&&<div><p>Domain terakhir yang dipilih: <code style={{overflowWrap:'anywhere'}}>{selectedDomain}</code></p><p>Nama pilihan diisikan ke pemeriksaan di bawah. Ketersediaan dan harga harus diperiksa kembali; pilihan ini tidak membuat reservasi atau pesanan.</p><button type="button" className="sv124-secondary" onClick={copyDomain}>Salin nama domain</button>{!purchaseOpen&&<button type="button" className="sv124-secondary" onClick={openPurchase}>Lanjut ke formulir pembelian</button>}</div>}
    <p role="status" aria-live="polite">{copyNotice}</p>
-   <button type="button" className="sv124-secondary" aria-expanded={purchaseOpen} aria-controls="domain-purchase-form-region" onClick={()=>setPurchaseOpen(value=>!value)}>{purchaseOpen?'Tutup formulir pembelian':'Buka formulir pembelian'}</button>
+   <PurchaseBoundary><DomainQuoteLookup userId={user.id} siteId={site.id} initialDomain={selectedDomain}/></PurchaseBoundary>
+   <button type="button" className="sv124-secondary" aria-expanded={purchaseOpen} aria-controls="domain-purchase-form-region" onClick={()=>setPurchaseOpen(value=>!value)}>{purchaseOpen?'Tutup formulir pembelian':'Buka checkout dan pesanan tersimpan'}</button>
    <div id="domain-purchase-form-region">{purchaseOpen&&<PurchaseBoundary><DomainPurchasePage embedded siteId={site.id} siteName={site.name} expectedOwnerId={user.id}/></PurchaseBoundary>}</div>
    <p>Tujuan pesanan mengikuti situs yang ditampilkan pada formulir. Pengikatan order bukan bukti DNS, HTTPS, atau pemasangan domain sudah aktif. Membuka formulir tidak membuat pesanan atau pembayaran.</p>
   </section>
