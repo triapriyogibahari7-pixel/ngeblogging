@@ -1,3 +1,4 @@
+import { domainRecoveryResponse } from "../server/domain-recovery-router.mjs";
 import { domainOrderCancellationResponse } from "../server/domain-order-cancellation-handler.mjs";
 import { domainProductionRegistrarLookupResponse } from "../server/domain-production-registrar-lookup.mjs";
 import { domainOrderStatusPageResponse } from "../server/domain-order-status-page.mjs";
@@ -68,6 +69,8 @@ export default {
   },
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const domainRecovery = await domainRecoveryResponse(request, env);
+    if (domainRecovery) return domainRecovery;
     const domainLookup = await domainProductionRegistrarLookupResponse(request, env);
     if (domainLookup) return domainLookup;
     const domainRegistrant = await domainRegistrantResponse(request, env);
