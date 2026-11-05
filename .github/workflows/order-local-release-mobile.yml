@@ -1,0 +1,30 @@
+name: Order local release and mobile patch checks
+on:
+  push:
+    branches: [fix/order-local-release-domain-mobile]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/DomainOrderActions.mjs'
+      - 'src/domain-order-summary-flow.css'
+      - 'src/domain-scoped-purchase-storage.mjs'
+      - '.github/workflows/order-local-release-mobile.yml'
+permissions:
+  contents: read
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify order action and scoped checkout contracts
+        run: node --test tests/domain-order-actions.test.mjs tests/domain-recovery-entry.test.mjs tests/domain-scoped-direct-checkout.test.mjs
+      - name: Build frontend
+        run: ./node_modules/.bin/vite build

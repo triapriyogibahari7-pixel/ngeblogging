@@ -4,6 +4,7 @@ import DomainNotificationInbox from './DomainNotificationInbox.jsx';
 import DomainOrderSummaryCard from './DomainOrderSummaryCard.mjs';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {clearCompletedPurchase} from './domain-purchase-model.mjs';
+import {scopedPurchaseStorage} from './domain-scoped-purchase-storage.mjs';
 import {orderActionAvailability,performExistingOrderAction,orderActionErrors} from './domain-order-actions.mjs';
 import {verifyDomainMidtransTarget} from './domain-midtrans-payment-target.mjs';
 const h=React.createElement;
@@ -14,8 +15,9 @@ export default function DomainOrderActions({order,owner,token,onRefresh,detail=f
  const allowed=orderActionAvailability(order,clock);
  async function session(expected){const a=await getVerifiedSession({force:true});if(a?.verification!=='verified'||!a.user?.id||!a.session?.access_token)throw Object.assign(Error(),{code:'INVALID_SESSION'});if((owner&&a.user.id!==owner)||(expected&&a.user.id!==expected)||(token&&a.session.access_token!==token))throw Object.assign(Error(),{code:'SESSION_CHANGED'});return a;}
  async function release(auth,signal){
-  const key='ngeblogging:domain-purchase:v1:'+auth.user.id.toLowerCase();let snapshot;
-  const guarded={getItem(name){if(name!==key)throw Error();const raw=localStorage.getItem(name);if(snapshot!==undefined&&snapshot!==raw)throw Error();snapshot=raw;if(raw!==null&&JSON.parse(raw)?.orderId!==order.orderId)throw Object.assign(Error(),{code:'LOCAL_ORDER_MISMATCH'});return raw;},removeItem(name){if(signal.aborted||name!==key||typeof snapshot!=='string'||localStorage.getItem(name)!==snapshot)throw Error();const archive=key+':terminal-archive:'+order.orderId,prior=localStorage.getItem(archive);if(prior!==null&&prior!==snapshot)throw Error();localStorage.setItem(archive,snapshot);if(signal.aborted||localStorage.getItem(archive)!==snapshot||localStorage.getItem(name)!==snapshot)throw Error();localStorage.removeItem(name);}};
+  const key='ngeblogging:domain-purchase:v1:'+auth.user.id.toLowerCase(),storage=scopedPurchaseStorage(auth.user.id,order.domain,localStorage,{signal});let snapshot;
+  const fail=code=>{throw Object.assign(Error(),{code});};
+  const guarded={getItem(name){if(name!==key)fail('ATTEMPT_STORAGE_KEY_REJECTED');const raw=storage.getItem(name);if(snapshot!==undefined&&snapshot!==raw)fail('ATTEMPT_CHANGED');snapshot=raw;if(raw!==null&&JSON.parse(raw)?.orderId!==order.orderId)fail('LOCAL_ORDER_MISMATCH');return raw;},removeItem(name){if(signal.aborted)fail('REQUEST_ABORTED');if(name!==key||typeof snapshot!=='string'||storage.getItem(name)!==snapshot)fail('ATTEMPT_CHANGED');storage.removeItem(name);}};
   await clearCompletedPurchase({owner:auth.user.id,token:auth.session.access_token,storage:guarded,locks:navigator.locks,signal});
  }
  async function run(action){
@@ -27,7 +29,7 @@ export default function DomainOrderActions({order,owner,token,onRefresh,detail=f
    if(c.signal.aborted)return;await session(auth.user.id);if(c.signal.aborted)return;
    if(result.kind==='payment'){setTarget(result.target);setNotice('Tautan resmi untuk order yang sama siap. Membuka tautan bukan bukti pembayaran lunas.');}
    else{setReview(false);try{await release(auth,c.signal);}catch{}if(!c.signal.aborted){setNotice('Pembatalan dikonfirmasi server. Perbarui status; catatan lokal dapat dilepas dengan tombol arsip jika masih tertahan.');onRefresh?.();}}
-  }catch(error){if(!c.signal.aborted){const code=typeof error?.code==='string'&&/^[A-Z][A-Z0-9_]{0,79}$/.test(error.code)?error.code:'ORDER_ACTION_UNCONFIRMED';const localErrors={ATTEMPT_HELD:'Catatan lokal dipertahankan karena status server belum mengizinkan pelepasan. Perbarui status pesanan yang sama; jangan membuat pembayaran pengganti.',LOCAL_ORDER_MISMATCH:'Catatan lokal milik pesanan lain. Tidak ada catatan yang dihapus.',CHECKOUT_LOCK_UNAVAILABLE:'Penguncian antar-tab tidak tersedia pada browser ini. Catatan lokal tidak dihapus.',CHECKOUT_IN_PROGRESS:'Pesanan sedang diproses di tab lain. Catatan lokal tidak dihapus.'};setNotice((localErrors[code]||orderActionErrors[code]||orderActionErrors.ORDER_ACTION_UNCONFIRMED)+' Kode: '+code+'.');setTarget(null);setReview(false);}}
+  }catch(error){if(!c.signal.aborted){const code=typeof error?.code==='string'&&/^[A-Z][A-Z0-9_]{0,79}$/.test(error.code)?error.code:'ORDER_ACTION_UNCONFIRMED';const localErrors={ATTEMPT_HELD:'Catatan lokal dipertahankan karena status server belum mengizinkan pelepasan. Perbarui status pesanan yang sama; jangan membuat pembayaran pengganti.',LOCAL_ORDER_MISMATCH:'Catatan lokal milik pesanan lain. Tidak ada catatan yang dihapus.',ATTEMPT_CHANGED:'Catatan berubah selama pemeriksaan. Periksa pesanan yang sama sebelum mencoba kembali.',ATTEMPT_DOMAIN_CONFLICT:'Ada catatan lama dan catatan per-domain yang bertentangan. Tidak ada catatan yang dihapus.',CHECKOUT_LOCK_UNAVAILABLE:'Penguncian antar-tab tidak tersedia pada browser ini. Catatan lokal tidak dihapus.',CHECKOUT_IN_PROGRESS:'Pesanan sedang diproses di tab lain. Catatan lokal tidak dihapus.'};setNotice((localErrors[code]||orderActionErrors[code]||orderActionErrors.ORDER_ACTION_UNCONFIRMED)+' Kode: '+code+'.');setTarget(null);setReview(false);}}
   finally{if(active.current===c){active.current=null;if(!c.signal.aborted)setBusy(false);}}
  }
  let payment=null;try{if(target&&allowed.pay)payment=verifyDomainMidtransTarget(target,{orderId:order.orderId,amountIdr:order.amountIdr,now:clock});}catch{}
