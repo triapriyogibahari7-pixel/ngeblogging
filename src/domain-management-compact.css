@@ -1,0 +1,28 @@
+/* Compact domain details only; no Studio/editor layout changes. */
+.nd-management-compact[data-domain-management]{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important;padding:14px!important;margin:12px 0!important;min-width:0;max-width:100%;border-radius:14px!important;font:13px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
+.nd-management-compact[data-domain-management]>:is(h3,h4,p,dl){grid-column:1/-1;min-width:0;margin:0!important;overflow-wrap:anywhere}
+.nd-management-compact[data-domain-management]>h3{font-size:12px!important;line-height:1.4;color:#607089}
+.nd-management-compact[data-domain-management]>h4{display:block!important;position:static!important;inset:auto!important;font-size:18px!important;line-height:1.3!important;overflow-wrap:anywhere}
+.nd-management-compact[data-domain-management]>p{font-size:13px!important}
+.nd-management-compact[data-domain-management]>.nd-management-core,.nd-management-compact[data-domain-management] .nd-management-facts{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin:0!important}
+.nd-management-compact[data-domain-management] :is(.nd-management-core,.nd-management-facts)>div{display:block!important;min-width:0;padding:9px!important;border:1px solid #e3eaf4;border-radius:9px;background:#f8faff}
+.nd-management-compact[data-domain-management] dt{font-size:11px!important;line-height:1.4!important;color:#607089}
+.nd-management-compact[data-domain-management] dd{margin:4px 0 0!important;font-size:13px!important;line-height:1.5!important;overflow-wrap:anywhere;white-space:normal}
+.nd-management-compact[data-domain-management]>.nd-management-fold{align-self:start;min-width:0;max-width:100%;border:1px solid #e3eaf4;border-radius:10px;background:#fff;padding:0 10px}
+.nd-management-compact[data-domain-management]>.nd-management-fold[open]{grid-column:1/-1;padding-bottom:10px}
+.nd-management-compact[data-domain-management]>.nd-management-fold>summary{min-height:44px;padding:11px 0;font-size:13px;line-height:1.6;font-weight:600;cursor:pointer;overflow-wrap:anywhere}
+.nd-management-compact[data-domain-management] :is(p,label,li,code){max-width:100%;min-width:0;font-size:13px!important;line-height:1.55!important;overflow-wrap:anywhere;white-space:normal}
+.nd-management-compact[data-domain-management] ul{padding-left:18px;margin:8px 0}
+.nd-management-compact[data-domain-management] select{width:100%!important;max-width:100%;min-height:44px;font-size:16px!important}
+.nd-management-compact[data-domain-management] button{min-height:44px;font-size:13px!important;padding:8px 10px!important}
+.nd-management-compact[data-domain-management] :is(summary,button,select):focus-visible{outline:3px solid #8eb8ff;outline-offset:2px}
+.nd-order-screen:has(.nd-management-compact) :is(.nd-page-card,[aria-label="Kotak masuk notifikasi domain"]){min-width:0;max-width:100%;padding:14px!important;border-radius:14px!important}
+.nd-order-screen:has(.nd-management-compact) :is(.nd-order-heading h2,.nd-order-total strong){font-size:20px!important}
+.nd-order-screen:has(.nd-management-compact) .nd-order-total{padding:12px!important;margin:12px 0!important;gap:5px 12px}
+.nd-order-screen:has(.nd-management-compact) [aria-label="Aksi pesanan domain"]>p,.nd-order-screen:has(.nd-management-compact) [aria-label="Kotak masuk notifikasi domain"] p{font-size:13px!important;line-height:1.55;overflow-wrap:anywhere;white-space:normal}
+.nd-order-screen:has(.nd-management-compact) [aria-label="Kotak masuk notifikasi domain"] h3{font-size:15px!important;margin:0 0 8px!important}
+.nd-order-screen:has(.nd-management-compact) [aria-label="Konfirmasi pembatalan pesanan"]{min-width:0;max-width:100%;margin-top:10px;padding:12px;border:1px solid #efd9b7;border-radius:10px;background:#fffaf1;overflow-wrap:anywhere}
+.nd-order-screen:has(.nd-management-compact) [aria-label="Konfirmasi pembatalan pesanan"] :is(h4,p){font-size:13px!important;line-height:1.55;white-space:normal;overflow-wrap:anywhere}
+.nd-order-screen:has(.nd-management-compact) [aria-label="Aksi pesanan domain"] button{min-height:44px;font-size:13px!important;padding:8px 10px!important;max-width:100%;white-space:normal}
+@media(max-width:600px){.nd-management-compact[data-domain-management]{grid-template-columns:minmax(0,1fr)}.nd-management-compact[data-domain-management]>.nd-management-core,.nd-management-compact[data-domain-management] .nd-management-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:340px){.nd-management-compact[data-domain-management]>.nd-management-core,.nd-management-compact[data-domain-management] .nd-management-facts{grid-template-columns:minmax(0,1fr)!important}}

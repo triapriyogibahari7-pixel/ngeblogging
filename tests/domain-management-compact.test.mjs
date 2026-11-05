@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile(new URL('../src/DomainManagementCard.jsx',import.meta.url),'utf8');
+const css=await readFile(new URL('../src/domain-management-compact.css',import.meta.url),'utf8');
+// Source/CSS contract tests only: no JSX runtime, browser layout or gateway calls.
+test('compact card has no generic header or footer',()=>{assert.ok(source.includes('dosp-card nd-management-compact'));assert.doesNotMatch(source,/<\/?(?:header|footer)\b/);});
+test('essential status grid keeps payment registration and expiry',()=>{const core=source.match(/<dl className="dosp-details nd-management-core">([\s\S]*?)<\/dl>/)?.[1]||'';for(const text of ['paymentLabels[order.paymentState]','registrationLabels[order.registrationState]','date(known?m.expiresAt:null)'])assert.ok(core.includes(text));assert.equal((core.match(/<dt>/g)||[]).length,3);});
+test('advanced details start collapsed and remain available',()=>{assert.equal((source.match(/<details\b/g)||[]).length,4);assert.doesNotMatch(source,/<details\b[^>]*\bopen(?:\s|=|>)/);for(const label of ['Tanggal pembayaran','Tanggal registrasi penyedia','Perpanjangan otomatis','DNS / SSL','Situs tujuan','Terakhir diperiksa di penyedia'])assert.ok(source.includes(label));});
+test('copy and guide controls retain their handlers',()=>{for(const text of ['await navigator.clipboard.writeText(value)','onClick={()=>void copy(ns)}','onChange={e=>setGuide(e.target.value)}',"setCopied('');setGuide('ngeblogging');",'[order.orderId]'])assert.ok(source.includes(text));});
+test('unknown provider dates stay unknown',()=>{const declaration=source.match(/^const date=.+;$/m)?.[0];assert.ok(declaration);const date=new vm.Script(declaration+';date;').runInNewContext({Date,Number});for(const value of [null,undefined,'invalid'])assert.equal(date(value),'Belum tersedia dari penyedia');assert.ok(source.includes('Belum diverifikasi oleh panel ini'));assert.ok(source.includes('Belum dimuat oleh panel ini'));});
+test('layout uses three desktop and two mobile columns without clipping',()=>{assert.ok(css.includes('repeat(3,minmax(0,1fr))'));assert.ok(css.includes('@media(max-width:600px)'));assert.ok(css.includes('repeat(2,minmax(0,1fr))'));assert.ok(css.includes('overflow-wrap:anywhere'));assert.doesNotMatch(css,/overflow\s*:\s*hidden|text-overflow\s*:\s*ellipsis|position\s*:\s*(?:fixed|sticky|absolute)/);});
+test('all styling is scoped to the compact domain card or its order screen',()=>{const clean=css.replace(/\/\*[\s\S]*?\*\//g,'');for(const m of clean.matchAll(/([^{}]+)\{/g)){const selector=m[1].trim();if(selector.startsWith('@media'))continue;assert.ok(selector.includes('.nd-management-compact'),selector);}assert.ok(css.includes('min-height:44px'));});
