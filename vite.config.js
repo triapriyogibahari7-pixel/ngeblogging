@@ -10,6 +10,7 @@ import {runStage5AuthTransferBuild} from './scripts/stage5-auth-transfer-build.m
 import {runStage5BuildDiagnostics,makeStage5PreviewOnlyConfig} from './scripts/stage5-build-diagnostics.mjs';
 import {runDomainCommerceBuildGate,domainCommerceBuildProofPlugin} from './scripts/domain-commerce-cloudflare-build.mjs';
 import {runReferenceFxCloudflareBuild} from './scripts/domain-reference-fx-cloudflare-build.mjs';
+import {provisionPublicAuditorPreview} from './scripts/provision-public-auditor-preview.mjs';
 export default defineConfig(async({command})=>{
   const referenceFxProof=command==='build'?runReferenceFxCloudflareBuild():null;
   if(command==='build'&&process.env.WORKERS_CI==='1'&&process.env.WORKERS_CI_BRANCH==='agent/fix-live-registrar-search-20261103'){
@@ -42,6 +43,7 @@ export default defineConfig(async({command})=>{
       const prepared=spawnSync(process.execPath,[resolve('scripts/deploy-worker-free-limit.mjs'),'--prepare'],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:60000});
       if(prepared.error||prepared.status!==0) throw Error('WORKER_VARIABLE_PREPARE_FAILED_NO_DEPLOY');
     }});
+    integration.push({name:'public-auditor-preview-provision',closeBundle:provisionPublicAuditorPreview});
   }
   if(command==='build'&&native?.proof?.cloudflareBuild?.branch==='feature/domain-stages5-10-integration-20261030'){
     const {buildStage5TransferPackage}=await import('./scripts/build-stage5-transfer-package.mjs');
