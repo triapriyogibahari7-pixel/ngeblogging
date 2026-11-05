@@ -7,7 +7,8 @@ export function orderActionAvailability(o,now=Date.now()){
  if(!o||!ORDER.test(o.orderId)||o.currency!=='IDR'||!Number.isSafeInteger(o.amountIdr)||o.amountIdr<1||o.amountIdr>1000000000000||typeof o.domain!=='string'||!Number.isSafeInteger(now)||!Number.isFinite(Date.parse(o.createdAt)))return {pay:false,cancel:false,reason:'Status pesanan belum terverifikasi.'};
  if(o.paymentState!=='pending'||o.registrationState!=='not_started'||o.resolution!=='none')return {pay:false,cancel:false,reason:'Pesanan bukan pembayaran tertunda yang dapat diproses. Periksa status terbaru.'};
  const created=Date.parse(o.createdAt),pay=created<=now&&now<created+900000;
- return {pay,cancel:true,reason:pay?'Server akan memeriksa registran, masa berlaku, dan checkout pesanan yang sama.':'Jendela pembayaran order ini sudah berakhir atau waktunya belum valid. Tidak dibuatkan tagihan pengganti.'};
+ const reason=now<created?'Waktu perangkat berada sebelum waktu pembuatan pesanan. Pembayaran ditahan; periksa waktu perangkat dan status pesanan yang sama.':pay?'Server akan memeriksa registran, masa berlaku, dan checkout pesanan yang sama.':'Tombol pembayaran dinonaktifkan karena batas 15 menit sejak pesanan dibuat sudah terlewati. Kebijakan 2 jam belum berlaku pada jalur ini. Pemulihan pesanan yang sama memerlukan pemeriksaan server atas harga final, kurs, dan riwayat gateway; menghapus catatan browser tidak memperpanjang masa berlaku. Pembatalan tetap harus diverifikasi server dan tidak membatalkan tagihan gateway.';
+ return {pay,cancel:true,reason};
 }
 async function post(path,body,token,{fetchImpl,signal}){
  if(typeof token!=='string'||!/^\S{1,8192}$/.test(token))fail('INVALID_SESSION');if(signal?.aborted)fail('REQUEST_ABORTED');
