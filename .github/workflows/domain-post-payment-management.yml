@@ -1,0 +1,65 @@
+name: Domain post-payment management checks
+on:
+  push:
+    branches: [feat/domain-post-payment-management-20261105]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'server/domain-registered-metadata.mjs'
+      - 'server/domain-production-order-status-handler.mjs'
+      - 'server/domain-notifications-handler.mjs'
+      - 'src/DomainManagementCard.jsx'
+      - 'src/DomainNotificationInbox.jsx'
+      - 'src/DomainOrderActions.mjs'
+      - 'src/domain-order-status-model.mjs'
+      - 'src/domain-registrar-view.mjs'
+      - 'src/domain-notifications-client.mjs'
+      - 'tests/domain-registered-metadata.test.mjs'
+      - 'tests/domain-registrar-view.test.mjs'
+      - 'tests/domain-notifications-handler.test.mjs'
+      - 'tests/domain-notifications-client.test.mjs'
+      - '.github/workflows/domain-post-payment-management.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: domain-post-payment-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Metadata and existing status/action regressions
+        run: |
+          node --input-type=module <<'NODE'
+          import {readdirSync} from 'node:fs';
+          import {spawnSync} from 'node:child_process';
+          const required=['domain-registered-metadata.test.mjs','domain-registrar-view.test.mjs','domain-notifications-handler.test.mjs','domain-notifications-client.test.mjs','domain-recovery-entry.test.mjs','domain-order-actions.test.mjs'];
+          const available=readdirSync('tests');
+          for(const name of required)if(!available.includes(name))throw Error('Required test missing: '+name);
+          const status=available.filter(name=>/^domain.*order.*status.*[.]test[.]mjs$/.test(name));
+          const files=[...new Set([...required,...status])].sort().map(name=>'tests/'+name);
+          console.log('Running test files:',files);
+          const result=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});
+          if(result.error)throw result.error;
+          process.exit(result.status??1);
+          NODE
+      - name: Production frontend build without deployment
+        run: npm run build
+      - name: Worker bundle dry-run without deployment credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          env -i PATH="$PATH" HOME="$work" TMPDIR="$work" CI=true LANG=C.UTF-8 WRANGLER_SEND_METRICS=false ./node_modules/.bin/wrangler deploy --config wrangler.production.jsonc --dry-run --outdir "$work/bundle"

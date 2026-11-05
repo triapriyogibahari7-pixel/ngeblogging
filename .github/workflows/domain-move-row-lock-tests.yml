@@ -1,0 +1,52 @@
+name: Domain move row-lock candidate tests
+on:
+  push:
+    branches: [feat/domain-post-payment-management-20261105]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261105080000_domain_move_row_locks_v3.sql'
+      - 'docs/drafts/domain-site-transfer-v2.sql'
+      - 'docs/drafts/domain-redirect-rls-v2-prerequisite.sql'
+      - 'tests/sql/domain-transfer-v2-smoke.sql'
+      - 'scripts/domain-move-row-lock-acceptance.mjs'
+      - '.github/workflows/domain-move-row-lock-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: domain-move-row-lock-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: domain_transfer_test
+          POSTGRES_PASSWORD: isolated-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Install isolated database test driver
+        run: npm install --prefix "$RUNNER_TEMP/domain-move-v3-deps" --no-package-lock --ignore-scripts --no-audit --no-fund pg@8.13.1
+      - name: Representative rollback, ownership and concurrent-session checks
+        env:
+          NODE_PATH: ${{ runner.temp }}/domain-move-v3-deps/node_modules
+          DOMAIN_TRANSFER_DISPOSABLE: 'true'
+          PGHOST: '127.0.0.1'
+          PGDATABASE: domain_transfer_test
+          PGPASSWORD: isolated-ci-only
+        run: node scripts/domain-move-row-lock-acceptance.mjs

@@ -1,0 +1,13 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {parseDomainNotifications as parse,requestDomainNotifications as request} from '../src/domain-notifications-client.mjs';
+const id='DOM-'+'a'.repeat(40),nid='11111111-1111-4111-8111-111111111111';
+const item=()=>({id:nid,kind:'payment_verified',occurredAt:'2026-11-05T07:00:00Z',readAt:null});
+const data=()=>({code:'DOMAIN_NOTIFICATIONS',environment:'production',orderId:id,notifications:[item()]});
+test('only validated notification fields reach the UI',()=>{const d=data();d.notifications[0].secret='private';assert.deepEqual(parse(d,id),[item()]);});
+for(const [name,patch] of Object.entries({wrong_order:{orderId:'DOM-'+'b'.repeat(40)},wrong_environment:{environment:'sandbox'},wrong_code:{code:'UNKNOWN'},missing_array:{notifications:null}}))test('reject '+name,()=>assert.throws(()=>parse({...data(),...patch},id)));
+test('duplicate IDs and unrecognized kinds cannot be rendered',()=>{const d=data();d.notifications.push(item());assert.throws(()=>parse(d,id));d.notifications=[{...item(),kind:'<script>'}];assert.throws(()=>parse(d,id));});
+test('GET carries session but no mutation body',async()=>{let n=0;const rows=await request(id,'fixture-token',{fetchImpl:async(url,o)=>{n++;assert.equal(o.method,'GET');assert.equal(o.body,undefined);assert.equal(o.headers.authorization,'Bearer fixture-token');return Response.json(data());}});assert.equal(rows.length,1);assert.equal(n,1);});
+test('mark-read is accepted only with exact persisted receipt',async()=>{const v=await request(id,'fixture-token',{notificationId:nid,fetchImpl:async(url,o)=>{assert.equal(o.method,'POST');assert.deepEqual(JSON.parse(o.body),{notificationId:nid});return Response.json({code:'DOMAIN_NOTIFICATION_READ',environment:'production',orderId:id,notificationId:nid,readAt:'2026-11-05T07:01:00Z'});}});assert.equal(v.id,nid);});
+test('unconfirmed write is never retried automatically',async()=>{let n=0;await assert.rejects(request(id,'fixture-token',{notificationId:nid,fetchImpl:async()=>{n++;throw Error('unclear');}}));assert.equal(n,1);});
+test('pre-aborted reads make no network request',async()=>{const c=new AbortController();c.abort();await assert.rejects(request(id,'fixture-token',{signal:c.signal,fetchImpl:()=>assert.fail()}));});

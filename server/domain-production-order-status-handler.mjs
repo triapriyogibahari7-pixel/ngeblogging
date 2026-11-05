@@ -1,3 +1,5 @@
+import {readRegisteredDomainMetadata} from './domain-registered-metadata.mjs';
+import {domainNotificationsResponse} from './domain-notifications-handler.mjs';
 const PREFIX='/api/commerce/domains/orders/';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const ORDER=/^DOM-[a-f0-9]{40}$/;
@@ -21,6 +23,7 @@ function view(o,q){
  return {orderId:o.order_id,domain:q.domain,years:q.years,currency:'IDR',amountIdr:o.amount_idr,paymentState:o.payment_state,registrationState:o.registration_state,paymentConfirmed:paid,registrationConfirmed:registered,paidAt:paid?o.paid_at:null,registeredAt:registered?o.registered_at:null,createdAt:o.created_at,updatedAt:o.updated_at,resolution,message};
 }
 export async function domainProductionOrderStatusResponse(request,env,{fetchImpl=globalThis.fetch}={}){
+ const notifications=await domainNotificationsResponse(request,env,{fetchImpl});if(notifications)return notifications;
  const url=new URL(request.url);if(!url.pathname.startsWith(PREFIX))return null;
  const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store','vary':'Authorization','x-content-type-options':'nosniff',...(status===405?{allow:'GET'}:{})}});
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port)return reply(404,'NOT_FOUND');
@@ -43,9 +46,11 @@ export async function domainProductionOrderStatusResponse(request,env,{fetchImpl
   const target=new URL('/rest/v1/domain_purchase_orders',base);target.searchParams.set('select','order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,midtrans_transaction_id,paid_at,registered_at,registrar_domain_ref,review_reason,created_at,updated_at');target.searchParams.set('order_id','eq.'+id);target.searchParams.set('user_id','eq.'+owner);target.searchParams.set('environment','eq.production');target.searchParams.set('limit','1');
   const rows=await fetchJson(target.href,headers);if(Array.isArray(rows)&&rows.length===0)return reply(404,'DOMAIN_ORDER_NOT_FOUND');const o=Array.isArray(rows)&&rows.length===1?rows[0]:null;
   if(o?.order_id!==id||o.user_id!==owner||o.environment!=='production'||o.currency!=='IDR'||typeof o.quote_id!=='string'||!UUID.test(o.quote_id))return reply(503,'DOMAIN_STATUS_UNVERIFIED');
-  const quote=new URL('/rest/v1/domain_sale_quotes',base);quote.searchParams.set('select','id,user_id,environment,domain,currency,sale_price_idr,years,operation');quote.searchParams.set('id','eq.'+o.quote_id);quote.searchParams.set('user_id','eq.'+owner);quote.searchParams.set('environment','eq.production');quote.searchParams.set('limit','1');
+  const quote=new URL('/rest/v1/domain_sale_quotes',base);quote.searchParams.set('select','id,user_id,environment,domain,currency,sale_price_idr,years,operation,provider_id');quote.searchParams.set('id','eq.'+o.quote_id);quote.searchParams.set('user_id','eq.'+owner);quote.searchParams.set('environment','eq.production');quote.searchParams.set('limit','1');
   const quotes=await fetchJson(quote.href,headers);const q=Array.isArray(quotes)&&quotes.length===1?quotes[0]:null;if(q?.id!==o.quote_id||q.user_id!==owner||q.environment!=='production'||q.currency!=='IDR'||q.sale_price_idr!==o.amount_idr)return reply(503,'DOMAIN_STATUS_UNVERIFIED');
-  return reply(200,'DOMAIN_ORDER_STATUS',{order:view(o,q)});
+  const order=view(o,q);
+  const registrar=await wait(readRegisteredDomainMetadata(env,o,q,{owner,fetchImpl,signal:c.signal}));
+  return reply(200,'DOMAIN_ORDER_STATUS',{order:{...order,registrar}});
  }catch{return reply(503,'DOMAIN_STATUS_UNAVAILABLE');}
  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);c.signal.removeEventListener('abort',stop);}
 }
