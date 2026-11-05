@@ -1,0 +1,20 @@
+// Isolated snapshot/dispatch unit tests. Not an HTTP, database or provider test.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import {RECOVERY_POLICY,validateRecoveryWindow} from '../shared/domain-recovery-policy-v2.mjs';
+const source=readFileSync(new URL('../server/domain-checkout-preview-handler.mjs',import.meta.url),'utf8');
+const line=name=>{const x=source.split('\n').find(x=>x.startsWith('function '+name+'('));assert(x,'Missing '+name);return x;};
+const tokenPair=runInNewContext('('+line('tokenPair')+')');
+const snapshot=runInNewContext('('+line('snapshot')+')',{RECOVERY_POLICY,validateRecoveryWindow,tokenPair,UUID:/^[a-f0-9-]{36}$/});
+const id='DOM-'+'a'.repeat(40),now=Date.parse('2026-11-05T03:31:00Z'),anchor=now-300000;
+const fixture=()=>({ok:true,action:'create',order_id:id,environment:'production',currency:'IDR',amount_idr:257000,attempt_id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',expiry_anchor_at:new Date(anchor).toISOString(),expires_at:new Date(anchor+7200000).toISOString(),duration_minutes:120,fixture_only:false,payment_window_policy:RECOVERY_POLICY});
+test('enabled production recovery accepts exactly two hours from server anchor',()=>{assert.equal(snapshot(fixture(),id,now,true,true).duration_minutes,120);});
+test('recovery marker cannot enable two hours when flag is off',()=>{assert.throws(()=>snapshot(fixture(),id,now,true,false));});
+test('ordinary production sessions remain capped at fifteen minutes',()=>{const s={...fixture(),payment_window_policy:undefined,duration_minutes:15,expiry_anchor_at:new Date(now).toISOString(),expires_at:new Date(now+900000).toISOString()};assert.equal(snapshot(s,id,now,true,true).duration_minutes,15);assert.throws(()=>snapshot({...s,duration_minutes:16,expires_at:new Date(now+960000).toISOString()},id,now,true,true));});
+test('sandbox does not inherit production recovery window',()=>{assert.throws(()=>snapshot({...fixture(),environment:'sandbox'},id,now,false,true));});
+test('inconsistent duration or extended deadline is rejected',()=>{assert.throws(()=>snapshot({...fixture(),duration_minutes:121},id,now,true,true));assert.throws(()=>snapshot({...fixture(),expires_at:new Date(anchor+7260000).toISOString()},id,now,true,true));});
+test('remaining thirty seconds is not a new payment window',()=>{const s=fixture();assert.throws(()=>snapshot(s,id,anchor+7200000-30000,true,true));});
+test('ready reuse keeps deadline and validates exact token URL',()=>{const s={...fixture(),action:'reuse',snap_token:'fixture-token-00000001',checkout_url:'https://app.midtrans.com/snap/v2/vtweb/fixture-token-00000001'};assert.equal(snapshot(s,id,now,true,true).expires_at,s.expires_at);assert.throws(()=>snapshot({...s,checkout_url:'https://other.example/pay'},id,now,true,true));});
+test('RPC dispatch changes only enabled production',async()=>{const text=source.split('\n').find(x=>x.includes('const s=await rpc('));assert(text);const start=text.indexOf('const s=await rpc('),statement=text.slice(start,text.indexOf(';',start)+1);const choose=runInNewContext('(async(env,production,environment,userId,id,rpc)=>{'+statement+'return s;})');let seen;const rpc=async(name,args)=>{seen={name,args};return {};};await choose({DOMAIN_ORDER_RECOVERY_ENABLED:'true'},true,'production','fixture-owner',id,rpc);assert.equal(seen.name,'domain_begin_recovery_checkout_v2');assert.equal(seen.args.p_order_id,id);await choose({DOMAIN_ORDER_SITE_BINDING_ENABLED:'true'},true,'production','fixture-owner',id,rpc);assert.equal(seen.name,'domain_begin_site_production_checkout');await choose({DOMAIN_ORDER_RECOVERY_ENABLED:'true'},false,'sandbox','fixture-owner',id,rpc);assert.equal(seen.name,'domain_begin_sandbox_checkout');});
