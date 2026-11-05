@@ -3,11 +3,13 @@ import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {clearCompletedPurchase} from './domain-purchase-model.mjs';
 import {orderActionAvailability,performExistingOrderAction,orderActionErrors} from './domain-order-actions.mjs';
 import {verifyDomainMidtransTarget} from './domain-midtrans-payment-target.mjs';
+import {prepareExistingOrderRecovery} from './domain-recovery-entry.mjs';
+const RecoveryPanel=React.lazy(()=>import('./DomainOrderRecoveryPanelV2.jsx'));
 const h=React.createElement;
 export default function DomainOrderActions({order,owner,token,onRefresh}){
- const [busy,setBusy]=useState(false),[review,setReview]=useState(false),[notice,setNotice]=useState(''),[target,setTarget]=useState(null),[clock,setClock]=useState(Date.now());
- const active=useRef(null),scope=JSON.stringify([order.orderId,owner,token]);
- useEffect(()=>{setBusy(false);setReview(false);setNotice('');setTarget(null);const timer=setInterval(()=>setClock(Date.now()),1000);return()=>{clearInterval(timer);active.current?.abort();active.current=null;};},[scope]);
+ const [busy,setBusy]=useState(false),[review,setReview]=useState(false),[notice,setNotice]=useState(''),[target,setTarget]=useState(null),[clock,setClock]=useState(Date.now()),[recovery,setRecovery]=useState(null);
+ const active=useRef(null),scope=JSON.stringify([order.orderId,owner,token,order.amountIdr,order.domain,order.paymentState,order.registrationState,order.resolution]);
+ useEffect(()=>{setBusy(false);setReview(false);setNotice('');setTarget(null);setRecovery(null);const timer=setInterval(()=>setClock(Date.now()),1000);return()=>{clearInterval(timer);active.current?.abort();active.current=null;};},[scope]);
  const allowed=orderActionAvailability(order,clock);
  async function session(expected){const a=await getVerifiedSession({force:true});if(a?.verification!=='verified'||!a.user?.id||!a.session?.access_token)throw Object.assign(Error(),{code:'INVALID_SESSION'});if((owner&&a.user.id!==owner)||(expected&&a.user.id!==expected)||(token&&a.session.access_token!==token))throw Object.assign(Error(),{code:'SESSION_CHANGED'});return a;}
  async function release(auth,signal){
@@ -16,9 +18,10 @@ export default function DomainOrderActions({order,owner,token,onRefresh}){
   await clearCompletedPurchase({owner:auth.user.id,token:auth.session.access_token,storage:guarded,locks:navigator.locks,signal});
  }
  async function run(action){
-  if(active.current||busy||(action==='cancel'&&!review))return;
+  if(active.current||busy||(action==='cancel'&&!review)||(recovery&&action!=='archive'))return;
   const c=new AbortController();active.current=c;setBusy(true);setNotice('');
   try{const auth=await session();if(c.signal.aborted)return;
+   if(action==='recover'){const entry=await prepareExistingOrderRecovery(order,{getSession:()=>session(auth.user.id),owner:auth.user.id,token:auth.session.access_token,signal:c.signal});if(!c.signal.aborted){setTarget(null);setReview(false);setRecovery(entry);setNotice('Pemulihan belum disetujui. Server tetap harus memeriksa harga, registrant dan riwayat gateway.');}return;}
    if(action==='archive'){await release(auth,c.signal);await session(auth.user.id);if(!c.signal.aborted)setNotice('Catatan lokal pesanan yang sama sudah dilepas atau memang tidak ada. Arsip disimpan sebelum penghapusan.');return;}
    const result=await performExistingOrderAction(action,order,auth.session.access_token,{confirmed:action==='cancel',signal:c.signal});
    if(c.signal.aborted)return;await session(auth.user.id);if(c.signal.aborted)return;
@@ -28,9 +31,11 @@ export default function DomainOrderActions({order,owner,token,onRefresh}){
   finally{if(active.current===c){active.current=null;if(!c.signal.aborted)setBusy(false);}}
  }
  let payment=null;try{if(target&&allowed.pay)payment=verifyDomainMidtransTarget(target,{orderId:order.orderId,amountIdr:order.amountIdr,now:clock});}catch{}
- return h('section',{'aria-label':'Aksi pesanan domain','aria-busy':busy},h('p',null,allowed.reason),
-  h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},payment?h('a',{className:'sv124-primary',href:payment.url,target:'_blank',rel:'noopener noreferrer',referrerPolicy:'no-referrer',onClick:event=>{try{if(busy||review)throw Error();verifyDomainMidtransTarget(target,{orderId:order.orderId,amountIdr:order.amountIdr});}catch{event.preventDefault();setTarget(null);setNotice('Tautan tidak lagi tersedia. Periksa status order yang sama.');}}},'Bayar Midtrans'):h('button',{type:'button',className:'sv124-primary',disabled:busy||review||!allowed.pay,onClick:()=>void run('pay')},busy?'Memproses...':'Lanjutkan pembayaran'),
-  h('button',{type:'button',className:'sv124-secondary',disabled:busy||!allowed.cancel,onClick:()=>{if(!active.current){setTarget(null);setReview(true);setNotice('');}}},'Batalkan pesanan')),
+ return h('section',{'aria-label':'Aksi pesanan domain','aria-busy':busy},h('p',null,recovery?'Jalur pemulihan pesanan yang sama dibuka. Ini belum merupakan persetujuan pembayaran atau perpanjangan waktu.':allowed.reason),
+  h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},recovery?null:payment?h('a',{className:'sv124-primary',href:payment.url,target:'_blank',rel:'noopener noreferrer',referrerPolicy:'no-referrer',onClick:event=>{try{if(busy||review)throw Error();verifyDomainMidtransTarget(target,{orderId:order.orderId,amountIdr:order.amountIdr});}catch{event.preventDefault();setTarget(null);setNotice('Tautan tidak lagi tersedia. Periksa status order yang sama.');}}},'Bayar Midtrans'):h('button',{type:'button',className:'sv124-primary',disabled:busy||review||!allowed.pay,onClick:()=>void run('pay')},busy?'Memproses...':'Lanjutkan pembayaran'),
+  h('button',{type:'button',className:'sv124-secondary',disabled:busy||Boolean(recovery)||!allowed.cancel,onClick:()=>{if(!active.current){setTarget(null);setReview(true);setNotice('');}}},'Batalkan pesanan')),
+  !recovery&&!allowed.pay&&allowed.cancel?h('button',{type:'button',className:'sv124-primary',disabled:busy||review,onClick:()=>void run('recover')},'Tinjau pemulihan 2 jam'):null,
+  recovery?h(React.Suspense,{fallback:h('p',{role:'status'},'Memuat formulir pemulihan...')},h(RecoveryPanel,{key:scope,orderId:recovery.order.orderId,token:recovery.token,onRefresh})):null,
   review?h('section',{'aria-label':'Konfirmasi pembatalan pesanan'},h('h4',null,'Batalkan pesanan ini?'),h('p',null,order.domain,' — ',order.orderId,' — IDR ',String(order.amountIdr),'. Pembatalan sebelum checkout saja; ini bukan refund atau pembatalan tagihan Midtrans yang sudah terbit.'),h('button',{type:'button',disabled:busy,onClick:()=>setReview(false)},'Kembali'),h('button',{type:'button',disabled:busy,onClick:()=>void run('cancel')},'Ya, batalkan pesanan')):null,
   order.paymentState==='cancelled'&&order.resolution==='none'?h('button',{type:'button',disabled:busy,onClick:()=>void run('archive')},'Arsipkan dan lepas catatan lokal pesanan ini'):null,
   h('p',{role:'status','aria-live':'polite'},notice),h('p',null,'Server memutuskan kelayakan terakhir. Aksi ini tidak membuat order pengganti.'));

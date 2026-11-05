@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {prepareExistingOrderRecovery as prepare} from '../src/domain-recovery-entry.mjs';
+const owner='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',other='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const order={orderId:'DOM-'+'a'.repeat(40),domain:'example.com',currency:'IDR',amountIdr:257000,paymentState:'pending',registrationState:'not_started',resolution:'none',createdAt:'2026-11-04T00:00:00Z'};
+const auth=(id=owner,token='fixture-session')=>({verification:'verified',user:{id},session:{access_token:token}});
+const opts=()=>({owner,token:'fixture-session',getSession:async()=>auth(),loadStatus:async()=>({...order})});
+test('expired browser note can open read-only recovery after fresh owner status',async()=>{let sessions=0,reads=0;const result=await prepare(order,{...opts(),getSession:async()=>{sessions++;return auth();},loadStatus:async(id,token)=>{reads++;assert.equal(id,order.orderId);assert.equal(token,'fixture-session');return {...order};}});assert.equal(result.order.orderId,order.orderId);assert.equal(result.owner,owner);assert.equal(sessions,2);assert.equal(reads,1);});
+test('wrong account prevents the status request',async()=>{await assert.rejects(prepare(order,{...opts(),getSession:async()=>auth(other),loadStatus:()=>assert.fail('No status read')}),e=>e.code==='SESSION_CHANGED');});
+test('account change after status prevents handoff',async()=>{let n=0;await assert.rejects(prepare(order,{...opts(),getSession:async()=>auth(n++?other:owner)}),e=>e.code==='SESSION_CHANGED');});
+test('token change after status prevents handoff',async()=>{let n=0;await assert.rejects(prepare(order,{...opts(),getSession:async()=>auth(owner,n++?'different-token':'fixture-session')}),e=>e.code==='SESSION_CHANGED');});
+test('changed price is not silently accepted',async()=>{await assert.rejects(prepare(order,{...opts(),loadStatus:async()=>({...order,amountIdr:258000})}),e=>e.code==='ORDER_ACTION_UNCONFIRMED');});
+test('processed or reviewed order cannot enter recovery',async()=>{for(const state of [{paymentState:'paid'},{registrationState:'processing'},{resolution:'review_required'}])await assert.rejects(prepare(order,{...opts(),loadStatus:async()=>({...order,...state})}),e=>e.code==='ORDER_ALREADY_PROCESSED');});
+test('abort after read prevents second session read and handoff',async()=>{const c=new AbortController();let n=0;await assert.rejects(prepare(order,{...opts(),signal:c.signal,getSession:async()=>{n++;return auth();},loadStatus:async()=>{c.abort();return {...order};}}),e=>e.code==='REQUEST_ABORTED');assert.equal(n,1);});
+test('invalid session cannot open recovery',async()=>{await assert.rejects(prepare(order,{...opts(),getSession:async()=>({...auth(),verification:'unverified'})}),e=>e.code==='INVALID_SESSION');});
+test('component has a distinct recovery entry and does not replace legacy duration',()=>{const s=readFileSync(new URL('../src/DomainOrderActions.mjs',import.meta.url),'utf8');assert(s.includes('Tinjau pemulihan 2 jam'));assert(s.includes('prepareExistingOrderRecovery(order,'));assert(s.includes("import('./DomainOrderRecoveryPanelV2.jsx')"));assert(s.includes('orderActionAvailability(order,clock)'));assert(s.includes('Boolean(recovery)||!allowed.cancel'));assert(!s.includes('7200000'));});
