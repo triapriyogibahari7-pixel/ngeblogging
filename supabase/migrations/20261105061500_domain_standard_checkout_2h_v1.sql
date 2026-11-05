@@ -43,7 +43,7 @@ BEGIN
  END IF;
  EXECUTE 'ALTER TABLE public.domain_checkout_sessions DROP CONSTRAINT checkout_recovery_window_v2';
  EXECUTE 'ALTER TABLE public.domain_checkout_sessions ADD CONSTRAINT checkout_recovery_window_v2 CHECK ('
- ||substring(prior from 7 for char_length(prior)-7)
+ ||substring(prior from 7)
  ||' OR (payment_window_policy=''standard-2h-v1'' AND environment=''production'' AND recovery_order_id IS NULL AND order_created_at IS NOT NULL AND payment_window_expires_at IS NOT NULL AND expiry_anchor_at=order_created_at AND expiry_anchor_at<=created_at AND created_at<expires_at AND expires_at=payment_window_expires_at AND expires_at=expiry_anchor_at+interval ''2 hours''))';
 END $migration$;
 
