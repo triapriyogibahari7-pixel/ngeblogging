@@ -1,15 +1,16 @@
-/* Checkout order titles stay inside each card, never in Studio header chrome. */
-.nd-order-summary>.nd-summary-heading{
- display:block!important;position:static!important;inset:auto!important;
- float:none!important;transform:none!important;z-index:auto!important;
- width:100%!important;max-width:100%!important;min-width:0;
- margin:0!important;padding:0!important;border:0!important;
- background:none!important;box-shadow:none!important;
-}
-.nd-order-summary>.nd-summary-heading>.nd-summary-domain{
- display:block!important;position:static!important;inset:auto!important;
- float:none!important;transform:none!important;z-index:auto!important;
- width:auto!important;max-width:100%!important;min-width:0;
- margin:0 0 14px!important;text-align:left!important;
- white-space:normal!important;overflow-wrap:anywhere;word-break:normal;
-}
+.nd-order-summary.nd-order-sheet{padding:0!important;border-radius:8px!important;box-shadow:none!important;background:#fff!important;min-width:0;max-width:100%;overflow:visible}
+.nd-order-sheet .nd-sheet-hint{margin:0;padding:8px 10px;font-size:12px;color:#52617a}
+.nd-order-sheet .nd-sheet-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain}
+.nd-order-sheet .nd-sheet-table{display:table!important;width:max-content!important;min-width:2500px;table-layout:auto;border-collapse:collapse!important;margin:0;font:13px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;color:#17243b}
+.nd-order-sheet .nd-sheet-table caption{text-align:left;font-weight:650;padding:9px 10px}
+.nd-order-sheet .nd-sheet-table :is(th,td){position:static!important;inset:auto!important;float:none!important;transform:none!important;vertical-align:top;border:1px solid #dbe3ef!important;padding:8px 10px!important;min-width:130px;max-width:260px;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;background:#fff}
+.nd-order-sheet .nd-sheet-table thead th{background:#eef3fa;font-weight:650;white-space:nowrap!important}
+.nd-order-sheet .nd-sheet-table tbody>tr:nth-child(even)>*{background:#f8faff}
+.nd-order-sheet .nd-sheet-table :is(th,td):first-child{min-width:46px;max-width:60px}
+.nd-order-sheet .nd-sheet-table td.nd-sheet-actions{min-width:460px;max-width:560px}
+.nd-order-sheet .nd-sheet-links{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.nd-order-sheet :is(button,a.nd-primary){min-height:44px;padding:8px 10px!important;font-size:12px!important;border-radius:7px!important;white-space:normal}
+.nd-order-sheet [aria-label="Aksi pesanan domain"]{margin:0!important;padding:0!important;border:0!important;min-width:0;max-width:100%;background:transparent}
+.nd-order-sheet [aria-label="Aksi pesanan domain"] :is(p,h4,summary){font-size:12px!important;line-height:1.5;overflow-wrap:anywhere}
+.nd-order-sheet .nd-sheet-policy>summary{min-height:44px;padding:9px 0;cursor:pointer}
+.nd-order-sheet :focus-visible{outline:3px solid #8eb8ff;outline-offset:2px}
