@@ -1,0 +1,51 @@
+name: Recovery v2 isolated PostgreSQL
+on:
+  push:
+    branches: [fix/domain-order-recovery-flow-20261105]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/drafts/domain-order-recovery*'
+      - 'tests/sql/domain-recovery-v2-*'
+      - 'tests/sql/domain-order-recovery-v2.catalog.sql'
+      - 'scripts/test-domain-recovery-v2-postgres.mjs'
+      - '.github/workflows/domain-recovery-v2-postgres.yml'
+permissions:
+  contents: read
+jobs:
+  postgres-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fixture-only-not-a-secret
+          POSTGRES_DB: domain_recovery_v2_fixture
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d domain_recovery_v2_fixture"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Test migrations, rollback, retry and concurrent claims in local PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/test-domain-recovery-v2-postgres.mjs 2>&1 | tee recovery-postgres.log
+      - name: Preserve isolated test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-postgres-${{ github.sha }}
+          path: recovery-postgres.log
+          if-no-files-found: ignore
+          retention-days: 7

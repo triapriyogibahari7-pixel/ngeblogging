@@ -1,0 +1,36 @@
+// Destructive fixture setup: only a fresh local CI service, never Supabase.
+import {readFile} from 'node:fs/promises';
+import {execFileSync,spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+if(process.env.CI!=='true'||process.env.DATABASE_URL||process.env.SUPABASE_SERVICE_ROLE_KEY)throw Error('ISOLATED_CI_ONLY');
+const env={...process.env,PGHOST:'127.0.0.1',PGHOSTADDR:'127.0.0.1',PGPORT:'5432',PGDATABASE:'domain_recovery_v2_fixture',PGUSER:'postgres',PGPASSWORD:'fixture-only-not-a-secret',PGSSLMODE:'disable',PGCONNECT_TIMEOUT:'5',PGSERVICE:'',PGOPTIONS:''};
+const args=['-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-p','5432','-U','postgres','-d','domain_recovery_v2_fixture'];
+const sql=q=>execFileSync('psql',args,{env,input:q,encoding:'utf8',maxBuffer:8*1024*1024});
+const file=p=>readFile(p,'utf8');
+function extract(source,name){const start=source.indexOf('CREATE FUNCTION public.'+name+'(');if(start<0)throw Error('FUNCTION_SOURCE_MISSING: '+name);const tail=source.slice(start),m=/\bAS\s+(\$[A-Za-z0-9_]*\$)/i.exec(tail);if(!m)throw Error('FUNCTION_BODY_MISSING');const end=tail.indexOf(m[1],m.index+m[0].length);if(end<0||tail[end+m[1].length]!==';')throw Error('FUNCTION_DELIMITER_DIFFERS');return tail.slice(0,end+m[1].length+1);}
+assert.equal(sql('SELECT current_database();').trim(),'domain_recovery_v2_fixture');
+assert.equal(sql("SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p');").trim(),'0','Fixture DB must be empty');
+sql(await file('tests/sql/domain-order-cancellation-fixture.sql'));
+sql('DROP TABLE public.domain_registration_jobs; ALTER TABLE public.domain_sale_quotes ADD COLUMN operation text NOT NULL DEFAULT \'registration\';');
+const ledger=await file('supabase/migrations/20261101060741_domain_production_registration_ledger_v1.sql'),start=ledger.indexOf('CREATE TABLE public.domain_registration_jobs('),end=ledger.indexOf('CREATE FUNCTION public.domain_save_production_registration_details(',start);
+if(start<0||end<start)throw Error('LEDGER_DDL_ANCHOR_DIFFERS');sql(ledger.slice(start,end));
+sql(`CREATE TABLE public.sites(id uuid PRIMARY KEY,owner_id uuid NOT NULL REFERENCES auth.users(id));
+CREATE TABLE public.domain_order_site_bindings(order_id text PRIMARY KEY REFERENCES public.domain_purchase_orders(order_id),user_id uuid NOT NULL REFERENCES auth.users(id),environment text NOT NULL,site_id uuid NOT NULL REFERENCES public.sites(id));
+CREATE TABLE public.domain_order_cancellations_v1(order_id text PRIMARY KEY REFERENCES public.domain_purchase_orders(order_id));
+GRANT SELECT,INSERT,UPDATE ON public.sites,public.domain_order_site_bindings,public.domain_order_cancellations_v1 TO service_role;`);
+sql(extract(await file('docs/drafts/domain-reference-budget-quote-v1.sql'),'domain_reference_budget_quote_valid_v1'));
+sql(await file('tests/sql/domain-recovery-v2-reference-adapter.sql'));
+sql(await file('tests/sql/domain-order-cancellation-audited-rpcs.sql'));
+sql(extract(ledger,'domain_save_production_registration_details'));
+sql(extract(await file('supabase/migrations/20261102073300_domain_site_checkout_guard_v1.sql'),'domain_begin_site_production_checkout'));
+sql(`REVOKE ALL ON FUNCTION public.domain_save_production_registration_details(uuid,text,jsonb,text,text,boolean),public.domain_begin_site_production_checkout(uuid,text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.domain_save_production_registration_details(uuid,text,jsonb,text,text,boolean),public.domain_begin_site_production_checkout(uuid,text) TO service_role;`);
+for(const p of ['docs/drafts/domain-order-recovery-preflight-v1.sql','docs/drafts/domain-order-recovery-accept-v1.sql','docs/drafts/domain-order-recovery-integration-v2.sql','docs/drafts/domain-order-recovery-v2-column-grants.sql','tests/sql/domain-order-recovery-v2.catalog.sql','tests/sql/domain-recovery-v2-cases.sql','tests/sql/domain-recovery-v2-regression.sql'])sql(await file(p));
+const claim=`BEGIN;SET LOCAL ROLE service_role;SELECT jsonb_build_object('backend_pid',pg_backend_pid(),'result',public.domain_begin_recovery_checkout_v2('00000000-0000-4000-8000-000000000001','DOM-'||lpad(to_hex(12),40,'0')));COMMIT;`;
+const concurrent=q=>new Promise((resolve,reject)=>{const p=spawn('psql',args,{env});let out='',err='';p.stdout.on('data',x=>out+=x);p.stderr.on('data',x=>err+=x);p.on('error',reject);p.on('close',code=>{if(code!==0)return reject(Error(err||'CONCURRENT_QUERY_FAILED'));try{const rows=out.split('\n').filter(x=>x.trim().startsWith('{')).map(x=>JSON.parse(x));assert.equal(rows.length,1);resolve(rows[0]);}catch(e){reject(e);}});p.stdin.end(q);});
+const results=await Promise.all([concurrent(claim),concurrent(claim)]);
+assert.notEqual(results[0].backend_pid,results[1].backend_pid);
+assert.equal(results.filter(x=>x.result.ok===true&&x.result.action==='create').length,1);
+assert.equal(results.filter(x=>x.result.ok===false&&x.result.error==='CHECKOUT_RECONCILIATION_REQUIRED').length,1);
+assert.equal(sql("SELECT count(*) FROM public.domain_checkout_sessions WHERE order_id='DOM-'||lpad(to_hex(12),40,'0');").trim(),'1');
+console.log(JSON.stringify({migrationCatalogAndFunctionalAssertions:'passed',concurrentBackends:results.map(x=>x.backend_pid),checkoutClaimsCreated:results.filter(x=>x.result.action==='create').length,realProviderCalls:0,productionTouched:false}));

@@ -1,0 +1,36 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {webcrypto} from 'node:crypto';
+import {validateRecoveryWindow,validateRecoveryInput,RECOVERY_POLICY,TERMS_VERSION} from '../shared/domain-recovery-policy-v2.mjs';
+import {domainOrderRecoveryAcceptResponse as handler} from '../server/domain-order-recovery-accept-handler-v2.mjs';
+if(!globalThis.crypto)globalThis.crypto=webcrypto;
+const id='DOM-'+'a'.repeat(40),owner='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',old='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',fresh='cccccccc-cccc-4ccc-8ccc-cccccccccccc',requestId='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+const now=Date.parse('2026-11-05T02:15:00Z'),anchor=new Date(now).toISOString(),end=new Date(now+7200000).toISOString();
+const env={DOMAIN_MIDTRANS_PRODUCTION_MERCHANT_ID:'M190228985',DOMAIN_ORDER_RECOVERY_ENABLED:'true',DOMAIN_CUSTOMER_PRODUCTION_ENABLED:'true',DOMAIN_ORDER_ENV:'production',SUPABASE_URL:'https://polvmlrhqoiflumibfqs.supabase.co',SUPABASE_PUBLISHABLE_KEY:'fixture-public',SUPABASE_SERVICE_ROLE_KEY:'fixture-private',CLOUDFLARE_REGISTRAR_API_TOKEN:'fixture-registrar',DOMAIN_REGISTRATION_TERMS_VERSION:TERMS_VERSION};
+const input=()=>({orderId:id,requestId,previousQuoteId:old,expectedOrderUpdatedAt:'2026-11-04T02:00:00Z',quoteId:fresh,amountIdr:285000,acceptedPrice:true,consentVersion:RECOVERY_POLICY,registrant:{name:'Fixture Person'},acceptedTerms:true,termsVersion:TERMS_VERSION});
+const accepted=()=>({ok:true,reused:false,order_id:id,quote_id:fresh,amount_idr:285000,currency:'IDR',environment:'production',payment_window_policy:RECOVERY_POLICY,expiry_anchor_at:anchor,expires_at:end,registrant_revalidated:true,checkout_created:false,registration_action_taken:false});
+const gateway=async()=>({ok:false,code:'GATEWAY_SNAP_ABSENCE_UNPROVEN',gatewayStatus:'unknown',recoveryAllowed:false,checkedAt:anchor});
+function request(value=input(),options={}){return new Request('https://ngeblogging.com/api/commerce/domains/order-recovery-accept',{method:'POST',headers:{origin:'https://ngeblogging.com',authorization:'Bearer fixture-customer','content-type':'application/json'},body:JSON.stringify(value),...options});}
+function dependencies({authStatus=200,result=accepted(),orders=true,validateRegistrant=async()=>({payload:{domain_name:'example.com'},schemaSha256:'a'.repeat(64)}),observeGateway=gateway}={}){
+ const calls=[];const fetchImpl=async(target,init)=>{const u=new URL(target);calls.push({url:u.href,method:init.method,body:init.body});assert.equal(init.redirect,'manual');
+  if(u.pathname==='/auth/v1/user')return Response.json({id:owner},{status:authStatus});
+  if(u.pathname==='/rest/v1/domain_purchase_orders')return Response.json(orders?[{order_id:id,user_id:owner,quote_id:old,environment:'production',currency:'IDR',amount_idr:280000,payment_state:'pending',registration_state:'not_started'}]:[]);
+  if(u.pathname==='/rest/v1/domain_sale_quotes')return Response.json([{id:old,user_id:owner,domain:'example.com',environment:'production'}]);
+  if(u.hostname==='api.cloudflare.com'){assert.equal(init.method,'GET');return Response.json({success:true,result:{registration_schema:{type:'object'}}});}
+  if(u.pathname==='/rest/v1/rpc/domain_accept_order_recovery_v2'){const b=JSON.parse(init.body);assert.equal(b.p_user_id,owner);assert.equal(b.p_schema_sha256,'a'.repeat(64));assert(!Object.hasOwn(b,'p_gateway_not_found'));return Response.json(result);}
+  assert.fail('Unexpected call '+u.href);
+ };return {calls,options:{fetchImpl,clock:()=>now,observeGateway,validateRegistrant}};
+}
+test('window exactly two hours and never extended on validation',()=>{const s={payment_window_policy:RECOVERY_POLICY,expiry_anchor_at:anchor,expires_at:end};assert.equal(validateRecoveryWindow(s,now+3600000).expiresAt,now+7200000);assert.throws(()=>validateRecoveryWindow({...s,expires_at:new Date(now+7201000).toISOString()},now));assert.throws(()=>validateRecoveryWindow(s,now+7200000));});
+test('missing or forged browser consent rejected',()=>{assert.throws(()=>validateRecoveryInput({...input(),acceptedTerms:false}));assert.throws(()=>validateRecoveryInput({...input(),gatewayNotFound:true}));});
+test('HTTP acceptance verifies owner, validates registrant and commits through one RPC',async()=>{const d=dependencies();const r=await handler(request(),env,d.options),x=await r.json();assert.equal(r.status,200);assert.equal(x.code,'DOMAIN_ORDER_RECOVERY_ACCEPTED');assert.equal(x.checkoutCreated,false);assert.equal(x.paymentWindowExpiresAt,end);assert.equal(d.calls.filter(x=>x.url.includes('/rpc/')).length,1);assert(!d.calls.some(x=>x.url.includes('midtrans.com/snap')));});
+test('invalid consent performs no network calls',async()=>{const d=dependencies();const r=await handler(request({...input(),acceptedPrice:false}),env,d.options);assert.equal(r.status,400);assert.equal(d.calls.length,0);});
+test('cross-origin requests perform no network calls',async()=>{const d=dependencies();const r=await handler(request(input(),{headers:{origin:'https://other.example','content-type':'application/json',authorization:'Bearer fixture'}}),env,d.options);assert.equal(r.status,403);assert.equal(d.calls.length,0);});
+test('revoked session never reaches orders or RPC',async()=>{const d=dependencies({authStatus:401});const r=await handler(request(),env,d.options);assert.equal(r.status,401);assert.equal(d.calls.length,1);});
+test('missing owner order is private 404',async()=>{const d=dependencies({orders:false});const r=await handler(request(),env,d.options);assert.equal(r.status,404);assert(!d.calls.some(x=>x.url.includes('/rpc/')));});
+test('registrant validation failure prevents acceptance RPC',async()=>{const d=dependencies({validateRegistrant:async()=>{throw Error('SCHEMA_MISMATCH');}});const r=await handler(request(),env,d.options);assert.equal(r.status,422);assert(!d.calls.some(x=>x.url.includes('/rpc/')));});
+test('found gateway transaction blocks repricing',async()=>{const d=dependencies({observeGateway:async()=>({code:'GATEWAY_EXISTING_TRANSACTION',recoveryAllowed:false})});const r=await handler(request(),env,d.options);assert.equal(r.status,409);assert(!d.calls.some(x=>x.url.includes('/rpc/')));});
+test('Core 404 still requires independent SQL reconciliation evidence',async()=>{const d=dependencies({result:{ok:false,error:'GATEWAY_RECONCILIATION_REQUIRED'}});const r=await handler(request(),env,d.options);assert.equal(r.status,409);assert.equal((await r.json()).code,'GATEWAY_RECONCILIATION_REQUIRED');});
+test('tampered success snapshot is not exposed as acceptance',async()=>{const d=dependencies({result:{...accepted(),amount_idr:1}});const r=await handler(request(),env,d.options);assert.equal(r.status,503);assert.equal((await r.json()).checkoutCreated,false);});
+test('retry response preserves the server deadline',async()=>{const d=dependencies({result:{...accepted(),reused:true}});for(let i=0;i<2;i++){const r=await handler(request(),env,d.options),x=await r.json();assert.equal(r.status,200);assert.equal(x.reused,true);assert.equal(x.paymentWindowExpiresAt,end);}});
+test('disabled recovery performs no network calls',async()=>{const d=dependencies();const r=await handler(request(),{...env,DOMAIN_ORDER_RECOVERY_ENABLED:'false'},d.options);assert.equal(r.status,503);assert.equal(d.calls.length,0);});
