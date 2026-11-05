@@ -1,5 +1,6 @@
 import React from 'react';
 import './domain-premium-ui.css';
+import './domain-order-summary-flow.css';
 const ORDER=/^DOM-[a-f0-9]{40}$/;
 const domain=x=>typeof x==='string'&&x.length<=253&&x.includes('.')&&x.split('.').every(p=>/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(p));
 export function domainOrderSummary(o){
@@ -15,7 +16,7 @@ const h=React.createElement;
 export default function DomainOrderSummaryCard({order,onRefresh}){
  const v=domainOrderSummary(order);if(!v)return null;
  return h('article',{className:'nd-order-summary','aria-label':'Ringkasan pesanan domain','data-domain-order-summary':'v1'},
-  h('header',null,h('p',{className:'nd-eyebrow'},'DOMAIN & PUBLIKASI'),h('h3',null,v.domain)),
+  h('div',{className:'nd-summary-heading'},h('h3',{className:'nd-summary-domain'},v.domain)),
   h('div',{className:'nd-badges'},h('span',{className:'nd-badge','data-tone':v.tone},v.payment),h('span',{className:'nd-badge'},v.registration)),
   h('dl',{className:'nd-summary-metrics'},h('div',null,h('dt',null,'Total pesanan'),h('dd',null,v.amount)),h('div',null,h('dt',null,'Tanggal kedaluwarsa'),h('dd',null,v.expiry))),
   h('p',{className:'nd-connection'},'Koneksi situs',h('span',null,v.connection)),
