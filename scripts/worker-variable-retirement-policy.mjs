@@ -6,6 +6,7 @@ export const RETIRED_COMPAT_VALUES=Object.freeze({
   AUTH_STUDIO_HANDOFF_RELEASE:'auth-session-handoff-v292-20260805'
 });
 export const RETIRED_RELEASE_VALUES=Object.freeze({
+  NARA_PRODUCTION_PROBE:Object.freeze(['passed']),
   STUDIO_STABILITY_RELEASE:Object.freeze(['studio-theme-code-editor-v344-20260807','studio-shell-authority-v298-20260805']),
   STUDIO_THEME_CODE_EDITOR_PREVIOUS_RELEASE:Object.freeze(['studio-theme-code-editor-v343-20260807']),
   STUDIO_THEME_CODE_EDITOR_BASE_RELEASE:Object.freeze(['studio-theme-code-editor-v342-20260807']),
