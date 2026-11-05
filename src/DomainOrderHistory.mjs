@@ -4,6 +4,7 @@ import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {loadOrderHistory} from './domain-order-history-client.mjs';
 import DomainOrderSummaryCard from './DomainOrderSummaryCard.mjs';
 import DomainOrderActions from './DomainOrderActions.mjs';
+import DomainGatewaySync from './DomainGatewaySync.mjs';
 const h=React.createElement;
 export default function DomainOrderHistory({owner,refreshKey='',onCoverage}){
  const [state,setState]=useState({kind:'loading'}),[retry,setRetry]=useState(0);
@@ -32,6 +33,6 @@ export default function DomainOrderHistory({owner,refreshKey='',onCoverage}){
   h('h3',null,'Pesanan saya'),
   h('button',{type:'button',className:'sv124-secondary',disabled:state.kind==='loading',onClick:()=>setRetry(n=>n+1)},state.kind==='loading'?'Memuat pesanan…':'Perbarui daftar pesanan'),
   state.kind==='loading'?h('p',{role:'status'},'Mengambil riwayat pesanan akun ini dari server…'):state.kind==='error'?h('p',{role:'alert'},state.message):null,
-  ready?h(DomainOrderSummaryCard,{orders:state.orders,onRefresh:()=>setRetry(n=>n+1),renderActions:o=>h('div',{'data-order-actions':'visible'},h('h4',null,'Aksi pesanan dan arsip lokal'),h(DomainOrderActions,{key:owner+':'+o.orderId,order:{...o,registrar:undefined},owner,onRefresh:()=>setRetry(n=>n+1)}))}):null,
+  ready?h(DomainOrderSummaryCard,{orders:state.orders,onRefresh:()=>setRetry(n=>n+1),renderActions:o=>h('div',{'data-order-actions':'visible'},h('h4',null,'Aksi pesanan dan arsip lokal'),h(DomainGatewaySync,{key:'sync:'+owner+':'+o.orderId,order:o,owner,onRefresh:()=>setRetry(n=>n+1)}),h(DomainOrderActions,{key:owner+':'+o.orderId,order:{...o,registrar:undefined},owner,onRefresh:()=>setRetry(n=>n+1)}))}):null,
   ready&&state.hasMore?h('p',{role:'status'},'Masih ada pesanan lain yang belum dimuat. Riwayat lama tidak dihapus.'):null);
 }
