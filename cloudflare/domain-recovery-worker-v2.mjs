@@ -1,8 +1,10 @@
 import worker from './worker-v70.mjs';
 import {domainRecoveryResponse} from '../server/domain-recovery-router.mjs';
 import {DOMAIN_MANAGEMENT_CRON,runDomainManagementSchedule} from '../server/domain-management-scheduler.mjs';
+import {isDomainDeadlineRequest,withDomainDeadline} from '../server/domain-api-deadline.mjs';
 
 export default {...worker,async fetch(request,env,context){
+ if(isDomainDeadlineRequest(request))return withDomainDeadline(request,env,context,()=>worker.fetch(request,env,context));
  const response=await domainRecoveryResponse(request,env);
  return response||worker.fetch(request,env,context);
 },async scheduled(event,env,context){
