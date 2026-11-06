@@ -1,0 +1,36 @@
+name: Triapriyogi Worker attachment dry-run
+on:
+  push:
+    branches: [maintenance/detach-triapriyogi-worker-20261106]
+    paths:
+      - scripts/detach-triapriyogi-worker.mjs
+      - .github/workflows/triapriyogi-worker-detach-dry-run.yml
+permissions:
+  contents: read
+concurrency:
+  group: triapriyogi-worker-detach-dry-run
+  cancel-in-progress: false
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || '095e57b46e7ba7f6b188480d9e4e5fe7' }}
+      CLOUDFLARE_DOMAIN_API_TOKEN: ${{ secrets.CLOUDFLARE_DOMAIN_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Validate script syntax
+        run: node --check scripts/detach-triapriyogi-worker.mjs
+      - name: Read attachment identities without deleting
+        run: node scripts/detach-triapriyogi-worker.mjs --plan=triapriyogi-detach-plan.json
+      - name: Preserve read-only plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: triapriyogi-worker-detach-plan-${{ github.sha }}
+          path: triapriyogi-detach-plan.json
+          retention-days: 1
+          if-no-files-found: error
