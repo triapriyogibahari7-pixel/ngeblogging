@@ -116,6 +116,29 @@ function statusMessage(status) {
   return "Layanan domain belum dapat memberikan respons yang dapat diproses.";
 }
 
+async function selectRefreshRoute(primary) {
+  const current = new URL(primary.url);
+  const origins = current.origin === API_ORIGIN ? [current.origin] : [current.origin, API_ORIGIN];
+  for (const origin of origins) {
+    if (primary.signal.aborted) throw primary.signal.reason || new DOMException("Permintaan dibatalkan.", "AbortError");
+    try {
+      const headers = new Headers({accept: "application/json", "cache-control": "no-cache"});
+      const authorization = primary.headers.get("authorization");
+      if (authorization) headers.set("authorization", authorization);
+      const probe = new Request(`${origin}/api/domains/config`, {method: "GET", headers, redirect: "error", cache: "no-store", mode: "cors", credentials: origin === current.origin ? primary.credentials : "omit", signal: primary.signal});
+      const result = await timedNativeFetch(probe, 3_000, "Pemilihan jalur Periksa koneksi");
+      const payload = await result.clone().json().catch(() => null);
+      if ([401,403].includes(result.status) && payload && typeof payload === "object" && (payload.error || payload.code)) return result;
+      if (!result.ok || payload?.provider !== "cloudflare-full-zone" || payload.enabled !== true) continue;
+      if (origin === current.origin) return new Request(primary, {redirect: "error"});
+      return new Request(new URL(current.pathname + current.search, origin), {method: primary.method, headers: new Headers(primary.headers), body: await primary.clone().arrayBuffer(), redirect: "error", cache: "no-store", mode: "cors", credentials: "omit", signal: primary.signal});
+    } catch (error) {
+      if (primary.signal.aborted) throw primary.signal.reason || error;
+    }
+  }
+  return diagnosticResponse("Jalur API Periksa koneksi belum tersedia. Pemeriksaan domain belum dikirim; domain dan subdomain gratis tidak diubah.", 503, "DOMAIN_REFRESH_ROUTE_UNAVAILABLE", {method: primary.method, path: current.pathname, mutationOutcome: "not_sent", mutationSent: false, retryAutomatically: false});
+}
+
 async function recoverRegistration(primary) {
   let body;
   try { body = await primary.clone().json(); } catch { return null; }
@@ -156,8 +179,13 @@ async function recoverRegistration(primary) {
 async function resilientDomainFetch(input, init) {
   // Only domain APIs use this policy. Publication, auth, editor and Nara pass through unchanged.
   if (!isDomainApiUrl(input)) return nativeFetch(input, init);
-  const primary = requestFor(input, init);
+  let primary = requestFor(input, init);
   if (primary.signal.aborted) throw primary.signal.reason || new DOMException("Permintaan dibatalkan.", "AbortError");
+  if (primary.method === "POST" && new URL(primary.url).pathname === "/api/domains/refresh") {
+    const selected = await selectRefreshRoute(primary);
+    if (selected instanceof Response) return selected;
+    primary = selected;
+  }
   const primaryUrl = new URL(primary.url);
   const readOnly = ["GET","HEAD"].includes(primary.method);
   const registration = primary.method === "POST" && primaryUrl.pathname === "/api/domains/register";
