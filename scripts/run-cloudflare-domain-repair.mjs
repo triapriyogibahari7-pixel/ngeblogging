@@ -5,6 +5,32 @@ import {repairTriapriyogi,safeRepairError} from './repair-triapriyogi-worker-dom
 export const REPAIR_BRANCH='fix/connected-domain-audit-network-20261103';
 export const ORDER_PATCH_BRANCH='fix/order-local-release-domain-mobile';
 export const ORDER_PATCH_TESTS=['tests/cloudflare-order-patch-runner.test.mjs','tests/domain-order-actions.test.mjs','tests/domain-recovery-entry.test.mjs','tests/domain-scoped-direct-checkout.test.mjs'];
+export async function prepareMainDomainProvider({env=process.env,run=spawnSync}={}){
+ if(env.WORKERS_CI!=='1'||env.WORKERS_CI_BRANCH!=='main')return {mode:'skipped',reason:'NOT_MAIN_WORKERS_BUILD'};
+ if(!/^[a-f0-9]{40}$/i.test(env.WORKERS_CI_COMMIT_SHA||''))throw Error('BUILD_COMMIT_UNVERIFIED');
+ if(env.WRANGLER_CI_OVERRIDE_NAME&&env.WRANGLER_CI_OVERRIDE_NAME!=='ngeblogging')throw Error('WORKER_OVERRIDE_MISMATCH');
+ if(env.CLOUDFLARE_ACCOUNT_ID&&env.CLOUDFLARE_ACCOUNT_ID!=='095e57b46e7ba7f6b188480d9e4e5fe7')throw Error('ACCOUNT_ENV_MISMATCH');
+ const configUrl=new URL('../wrangler.jsonc',import.meta.url);
+ const current=JSON.parse(await readFile(configUrl,'utf8'));
+ const production=JSON.parse(await readFile(new URL('../wrangler.production.jsonc',import.meta.url),'utf8'));
+ if(current.name!=='ngeblogging'||production.name!=='ngeblogging')throw Error('DOMAIN_BUILD_TARGET_MISMATCH');
+ if(production.main!=='./cloudflare/domain-recovery-worker-v2.mjs')throw Error('DOMAIN_PRODUCTION_ENTRY_UNEXPECTED');
+ const keys=['CUSTOM_DOMAIN_PROVIDER','CLOUDFLARE_SAAS_ENABLED','CLOUDFLARE_CUSTOM_HOSTNAMES_READY','CLOUDFLARE_CUSTOM_HOSTNAME_TARGET','CLOUDFLARE_CUSTOM_ORIGIN','CLOUDFLARE_WORKER_SERVICE','CUSTOM_DOMAIN_DNS_V67'];
+ for(const key of keys)if(typeof production.vars?.[key]!=='string')throw Error('DOMAIN_PRODUCTION_CONFIG_INCOMPLETE');
+ const provider=production.vars.CUSTOM_DOMAIN_PROVIDER;
+ if(!['cloudflare-full-zone','cloudflare-custom-hostnames'].includes(provider))throw Error('DOMAIN_PROVIDER_UNSUPPORTED');
+ const saas=provider==='cloudflare-custom-hostnames';
+ if(production.vars.CLOUDFLARE_SAAS_ENABLED!==(saas?'true':'false')||production.vars.CLOUDFLARE_CUSTOM_HOSTNAMES_READY!==(saas?'true':'false'))throw Error('DOMAIN_PROVIDER_FLAGS_INCONSISTENT');
+ if(saas){
+  if(production.vars.CLOUDFLARE_CUSTOM_HOSTNAME_TARGET!=='connect.ngeblogging.com'||production.vars.CLOUDFLARE_CUSTOM_ORIGIN!=='connect.ngeblogging.com')throw Error('SAAS_ORIGIN_CONFIG_MISMATCH');
+  const checked=run(process.execPath,[new URL('./saas-build-preflight-stage5.mjs',import.meta.url).pathname],{cwd:new URL('../',import.meta.url),env,stdio:'inherit',shell:false,timeout:60000});
+  if(checked.error||checked.signal||checked.status!==0)throw Error('SAAS_PREFLIGHT_FAILED_NO_DEPLOY');
+ }
+ const vars={...current.vars};
+ for(const key of keys)vars[key]=production.vars[key];
+ await writeFile(configUrl,JSON.stringify({...current,main:production.main,vars},null,2)+'\n',{mode:0o600});
+ return {mode:'prepared',provider,entrypoint:production.main,saasPreflight:saas?'passed':'not-required-full-zone',configurationOnly:true,migrationsPerformed:false};
+}
 async function saveOrderPatchReport(report){
  const text=JSON.stringify(report,null,2)+'\n';
  await mkdir(new URL('../public/',import.meta.url),{recursive:true});
@@ -36,6 +62,6 @@ export async function runCloudflareDomainRepair({env=process.env,repair=repairTr
  return {runner:'cloudflare-workers-builds',commit:env.WORKERS_CI_COMMIT_SHA,...report};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
- try{const checks=await runCloudflareOrderPatchChecks();console.log(JSON.stringify(checks.mode==='skipped'?await runCloudflareDomainRepair():checks,null,2));}
+ try{const main=await prepareMainDomainProvider();if(main.mode!=='skipped')console.log(JSON.stringify(main));const checks=await runCloudflareOrderPatchChecks();console.log(JSON.stringify(checks.mode==='skipped'?await runCloudflareDomainRepair():checks,null,2));}
  catch(error){console.error(safeRepairError(error));process.exitCode=1;}
 }
