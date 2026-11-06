@@ -76,6 +76,8 @@ jobs:
           set -euo pipefail
           [[ "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[a-fA-F0-9]{32}$ ]]
           test -n "${CLOUDFLARE_API_TOKEN}"
+      - name: Validate Worker bundle before production deployment
+        run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars --dry-run
       - name: Deploy Worker and assets
         run: npx wrangler deploy --config wrangler.production.jsonc --keep-vars
       - name: Verify exact live commit and Midtrans prices
