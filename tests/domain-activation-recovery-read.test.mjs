@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readDomainActivationRecovery as read} from '../server/domain-activation-recovery-read.mjs';
+const accountId='a'.repeat(32),zoneId='b'.repeat(32),env={CLOUDFLARE_ACCOUNT_ID:accountId},now=Date.parse('2026-11-06T10:00:00Z');
+const domain={hostname:'example.com',provider:'cloudflare-full-zone',provider_hostname_id:zoneId,status:'verifying'};
+const zone=()=>({id:zoneId,name:'example.com',type:'full',account:{id:accountId},status:'pending',name_servers:['first.ns.cloudflare.com','second.ns.cloudflare.com']});
+const dns=()=>({hostname:'example.com',zoneName:'example.com',checkedAt:new Date(now).toISOString(),checks:['cloudflare-dns.com','dns.google'].map(resolver=>({resolver,ns:{state:'resolved',answers:zone().name_servers}}))});
+test('verified pending zone yields proposal without issuing activation',async()=>{let calls=0;const r=await read(domain,env,{now:()=>now,readZone:async()=>zone(),readDns:async input=>{calls++;assert.equal(input.hostname,domain.hostname);return dns();}});assert.equal(calls,1);assert.equal(r.action,'offer_activation_check');assert.equal(r.productionChangeAllowed,false);});
+test('zone read failure returns safe state without DNS request',async()=>{const r=await read(domain,env,{readZone:async()=>{throw Error('secret token');},readDns:async()=>{throw Error('must not run');}});assert.equal(r.reason,'ZONE_OBSERVATION_UNAVAILABLE');assert.equal(JSON.stringify(r).includes('secret'),false);});
+test('cross-account zone is blocked before DNS',async()=>{let calls=0;const z=zone();z.account.id='c'.repeat(32);const r=await read(domain,env,{readZone:async()=>z,readDns:async()=>{calls++;}});assert.equal(r.action,'blocked');assert.equal(calls,0);});
+test('DNS errors remain inconclusive',async()=>{const r=await read(domain,env,{now:()=>now,readZone:async()=>zone(),readDns:async()=>{throw Error('network');}});assert.equal(r.reason,'DNS_OBSERVATION_UNAVAILABLE');assert.equal(r.activationCheckAllowed,false);});
+test('active zones skip DNS and require routing verification',async()=>{const z=zone();z.status='active';let calls=0;const r=await read(domain,env,{readZone:async()=>z,readDns:async()=>{calls++;}});assert.equal(r.action,'verify_worker_routing');assert.equal(calls,0);});
+test('pending deletion rejects before external reads',async()=>{let calls=0;const r=await read({...domain,status:'pending_deletion'},env,{readZone:async()=>{calls++;}});assert.equal(r.reason,'RECOVERY_INPUT_INVALID');assert.equal(calls,0);});
