@@ -17,7 +17,7 @@ async function withDeadline(ms, operation) {
  try { return await Promise.race([Promise.resolve().then(() => operation(controller.signal)), deadline]); }
  finally { clearTimeout(timer); controller.abort(); }
 }
-async function query(resolver, name, type, fetchImpl) {
+async function queryOnce(resolver, name, type, fetchImpl) {
  const url = new URL(resolver); url.searchParams.set('name', name); url.searchParams.set('type', type);
  try {
   return await withDeadline(4000, async signal => {
@@ -31,6 +31,12 @@ async function query(resolver, name, type, fetchImpl) {
    return {state: answers.length ? 'resolved' : 'no_answer', answers};
   });
  } catch { return {state: 'unavailable', answers: []}; }
+}
+async function query(resolver, name, type, fetchImpl) {
+ const first = await queryOnce(resolver, name, type, fetchImpl);
+ if (first.state !== 'unavailable') return first;
+ await new Promise(resolve => setTimeout(resolve, 150));
+ return queryOnce(resolver, name, type, fetchImpl);
 }
 export async function checkCustomDomainDns({hostname: input, zoneName, expectedNameservers = [], fetchImpl = (...args) => globalThis.fetch(...args)} = {}) {
  const name = hostname(input), zone = hostname(zoneName);
