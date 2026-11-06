@@ -1,9 +1,15 @@
 .nd-connected-domain-manager .sv124-domain-register{display:none}
 .nd-connect-entry{min-width:0;max-width:100%;overflow-wrap:anywhere}
-.nd-connect-entry form{margin-top:16px}
+.nd-connect-entry form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:end;margin-top:16px}
+.nd-connect-entry form>label{grid-column:1;grid-row:1;min-width:0}
+.nd-connect-entry form>button[type=submit]{grid-column:2;grid-row:1;align-self:end;margin:0;width:auto;max-width:100%}
+.nd-connect-entry form>p{grid-column:1/-1;grid-row:2;margin:0}
 .nd-connect-entry label{display:grid;gap:8px}
-.nd-connect-entry input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font:inherit;padding:10px}
+.nd-connect-entry input{box-sizing:border-box;width:100%;min-width:0;height:44px;font:inherit;padding:10px}
 .nd-connect-entry button{min-height:44px;white-space:normal;writing-mode:horizontal-tb}
+.nd-connect-entry form>button[type=submit]{box-sizing:border-box;height:44px;min-width:0;padding:4px 12px;line-height:1.2}
 .nd-connect-entry code{user-select:all;overflow-wrap:anywhere}
 .nd-connected-domain-manager [data-domain-connect-slot] .nd-connect-entry{border:0;box-shadow:none;margin:0;padding:12px 0}
-@media(max-width:600px){.nd-connect-entry button{width:100%;margin-top:8px}.nd-connect-entry input{font-size:16px}}
+.nd-connected-domain-manager .sv124-domain-list>header>div>p{display:none}
+.nd-connected-domain-manager .sv124-domain-list:not(:has(.sv124-domain-item))>header>div>h2{display:none}
+@media(max-width:600px){.nd-connect-entry>button{width:100%;margin-top:8px}.nd-connect-entry input{font-size:16px}.nd-connect-entry form{grid-template-columns:minmax(0,1fr) minmax(0,.8fr);column-gap:8px}.nd-connect-entry form>button[type=submit]{width:100%;margin:0;font-size:13px;padding:4px 8px}}
