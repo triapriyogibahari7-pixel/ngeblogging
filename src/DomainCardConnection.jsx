@@ -3,26 +3,35 @@ import {ExternalLink,RefreshCw} from 'lucide-react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {publicAuditContext,readPublicAuditPayload,publicAuditRowView} from './lib/domain-public-audit-view.mjs';
 import {checkCustomDomainDns} from '../server/custom-domain-dns-readiness.mjs';
-const h=React.createElement,AGE=300000,RELEASE='domain-card-dns-v3-20261106';
+const h=React.createElement,AGE=300000,RELEASE='domain-card-dns-v4-auto-20261106';
 const normalize=value=>String(value||'').trim().toLowerCase().replace(/\.$/,'');
 function publicUrl(value){try{const host=normalize(value),url=new URL('https://'+host);return url.hostname===host&&!url.port&&!url.username&&!url.password&&url.pathname==='/'&&!url.search&&!url.hash?url.href:null;}catch{return null;}}
 export default function DomainCardConnection({site,domain,domains=[],disabled=false,beginOperation,onDomain,reload}){
  const expected=Array.isArray(domain?.ownership_verification?.required_name_servers)?domain.ownership_verification.required_name_servers:[];
  const zoneName=domain?.ownership_verification?.zone_name||domain?.hostname;
  const scope=JSON.stringify([site?.id,site?.slug,site?.status,site?.is_public,domain?.id,domain?.hostname,domain?.provider,zoneName,expected]);
- const scopeRef=useRef(scope),active=useRef(null);scopeRef.current=scope;
+ const scopeRef=useRef(scope),active=useRef(null),autoScope=useRef(null);scopeRef.current=scope;
  const [busy,setBusy]=useState(false),[result,setResult]=useState(null),[notice,setNotice]=useState(''),[now,setNow]=useState(Date.now());
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),10000);return()=>clearInterval(timer);},[]);
- useEffect(()=>{active.current?.abort();active.current=null;setBusy(false);setResult(null);setNotice('');return()=>{active.current?.abort();active.current=null;};},[scope]);
- async function check(){
-  if(active.current||disabled||!site?.id||!domain?.id)return;
-  if(typeof beginOperation!=='function'){setNotice('Pengunci operasi halaman belum terhubung.');return;}
-  const task=beginOperation('connection:'+domain.id);if(!task)return;
-  const controller=new AbortController();active.current=controller;setBusy(true);setResult(null);setNotice('');
+ useEffect(()=>{active.current?.abort();active.current=null;autoScope.current=null;setBusy(false);setResult(null);setNotice('');return()=>{active.current?.abort();active.current=null;};},[scope]);
+ useEffect(()=>{
+  if(disabled||!site?.id||!domain?.id||domain?.status==='pending_deletion'||!publicUrl(domain?.hostname)||typeof beginOperation!=='function')return;
+  const timer=setInterval(()=>{if(autoScope.current===scope)return;if(check())autoScope.current=scope;},500);
+  return()=>clearInterval(timer);
+ },[scope,disabled,beginOperation,domain?.status]);
+ function check(){
+  if(active.current||disabled||!site?.id||!domain?.id||domain?.status==='pending_deletion')return false;
+  if(typeof beginOperation!=='function'){setNotice('Pengunci operasi halaman belum terhubung.');return false;}
+  const task=beginOperation('connection:'+domain.id);if(!task)return false;
+  const controller=new AbortController();active.current=controller;autoScope.current=scope;setBusy(true);setResult(null);setNotice('');
+  void run(controller,task);return true;
+ }
+ async function run(controller,task){
   const current=()=>active.current===controller&&!controller.signal.aborted&&scopeRef.current===scope&&task.current();
   const update=value=>{if(current())setResult(previous=>({...previous,scope,...value}));};
-  const timer=setTimeout(()=>{if(!current())return;setNotice('Pemeriksaan kehabisan waktu. Backend mungkin sudah berubah; hasil DNS terpisah tetap memiliki waktu pemeriksaan sendiri.');setResult(previous=>({...previous,scope,httpsReady:false,httpsState:'Pemeriksaan kehabisan waktu'}));controller.abort();active.current=null;setBusy(false);task.finish();},45000);
-  const dnsTask=checkCustomDomainDns({hostname:domain.hostname,zoneName,expectedNameservers:expected}).then(dns=>{if(current()){setNow(Date.now());update({dns});}}).catch(()=>update({dnsError:'Pemeriksaan DNS tidak dapat dijalankan; periksa hostname dan daftar nameserver.'}));
+  let finished=false;const finish=()=>{if(!finished){finished=true;task.finish();}};
+  const timer=setTimeout(()=>{if(!current())return;setNotice('Pemeriksaan kehabisan waktu. Hasil DNS memiliki waktu pemeriksaan sendiri.');update({httpsReady:false,httpsState:'Pemeriksaan kehabisan waktu'});controller.abort();active.current=null;setBusy(false);finish();},45000);
+  const dnsTask=Promise.resolve().then(()=>checkCustomDomainDns({hostname:domain.hostname,zoneName,expectedNameservers:expected})).then(dns=>{if(current()){setNow(Date.now());update({dns});}}).catch(()=>update({dnsError:'Pemeriksaan DNS tidak dapat dijalankan; periksa hostname dan daftar nameserver.'}));
   async function api(path,token,body){
    const response=await fetch(path,{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{authorization:'Bearer '+token,accept:'application/json','content-type':'application/json'},body:JSON.stringify(body)});
    if(response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')throw Error('Respons server bukan JSON terverifikasi.');
@@ -55,8 +64,8 @@ export default function DomainCardConnection({site,domain,domains=[],disabled=fa
   }catch(error){if(current()){setNotice(error?.message||'Pemeriksaan belum berhasil.');update({httpsReady:false,httpsState:'Pemeriksaan belum berhasil'});}}
   finally{
    await dnsTask;clearTimeout(timer);
-   if(current()&&accepted){onDomain?.(accepted);if(typeof reload==='function')void Promise.resolve(reload(accepted)).catch(()=>{});}
-   if(active.current===controller){active.current=null;setBusy(false);}task.finish();
+   try{if(current()&&accepted){onDomain?.(accepted);if(typeof reload==='function')void Promise.resolve(reload(accepted)).catch(()=>{});}}catch{if(current())setNotice('Pemeriksaan selesai; pemuatan ulang data gagal.');}
+   if(active.current===controller){active.current=null;setBusy(false);}finish();
   }
  }
  const shown=result?.scope===scope?result:null;
