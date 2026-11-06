@@ -404,7 +404,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
       </section>
 
       <section className="sv124-card sv124-domain-list">
-        <header><div><small>STATUS DOMAIN SITUS AKTIF</small><h2>{sortedDomains.length ? "Konfigurasi domain" : "Belum ada domain pribadi"}</h2><p>DNS, HTTPS, www, dan alamat tambahan diperiksa hanya untuk situs yang sedang aktif.</p></div></header>
+        <header><div><small>STATUS DOMAIN SITUS AKTIF</small>{!sortedDomains.length ? <h2>Belum ada domain pribadi</h2> : null}<p>DNS, HTTPS, www, dan alamat tambahan diperiksa hanya untuk situs yang sedang aktif.</p></div></header>
         {!sortedDomains.length ? <div className="sv124-unified-empty compact"><Link2/><h3>Hubungkan domain pertama</h3><p>Gunakan formulir di atas. Halaman ini tidak akan mengambil domain milik situs lain.</p></div> : sortedDomains.map((domain) => {
           const [label, tone] = domainStatus(domain);
           const ns = nameservers(domain);
