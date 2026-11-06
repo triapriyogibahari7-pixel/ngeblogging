@@ -14,8 +14,9 @@ function readHidden(owner){try{const raw=localStorage.getItem(hiddenKey(owner));
 function writeHidden(owner,ids){const clean=[...new Set(ids.filter(id=>typeof id==='string'&&ORDER.test(id)))];if(clean.length>500)throw Error('LIST_PREFERENCE_LIMIT');localStorage.setItem(hiddenKey(owner),JSON.stringify(clean));if(localStorage.getItem(hiddenKey(owner))!==JSON.stringify(clean))throw Error('LIST_PREFERENCE_UNVERIFIED');return clean;}
 export default function DomainOrderHistory({owner,refreshKey='',onCoverage}){
  const [state,setState]=useState({kind:'loading'}),[retry,setRetry]=useState(0),[hidden,setHidden]=useState(()=>readHidden(owner)),[showHidden,setShowHidden]=useState(false),[listNotice,setListNotice]=useState('');
- const active=useRef(null),coverage=useRef(onCoverage);coverage.current=onCoverage;
+ const active=useRef(null),coverage=useRef(onCoverage),feedback=useRef(null);coverage.current=onCoverage;
  useEffect(()=>{setHidden(readHidden(owner));setShowHidden(false);setListNotice('');},[owner]);
+ useEffect(()=>{if(listNotice)feedback.current?.scrollIntoView?.({block:'nearest'});},[listNotice]);
  useEffect(()=>{
   const {data}=supabase?.auth?.onAuthStateChange((_event,next)=>{
    if(next?.user?.id!==owner){active.current?.abort();coverage.current?.([]);setState({kind:'error',message:'Akun berubah atau sesi berakhir. Riwayat disembunyikan.'});}
@@ -37,17 +38,24 @@ export default function DomainOrderHistory({owner,refreshKey='',onCoverage}){
  },[owner,refreshKey,retry]);
  const ready=state.kind==='ready'&&state.owner===owner;
  const all=ready?state.orders:[],hiddenSet=new Set(hidden),hiddenOrders=all.filter(o=>hiddenSet.has(o.orderId)&&canHide(o)),visible=showHidden?all:all.filter(o=>!hiddenSet.has(o.orderId)||!canHide(o)),bulk=all.filter(o=>!hiddenSet.has(o.orderId)&&canHide(o));
- function save(next,message){if(!ready)return;try{setHidden(writeHidden(owner,next));setListNotice(message);}catch{setListNotice('Pilihan daftar tidak dapat disimpan pada browser ini. Tidak ada pesanan atau catatan checkout yang diubah. Kode: LIST_PREFERENCE_UNAVAILABLE.');}}
- function hideOrder(o){if(!canHide(o)){setListNotice('Pesanan ini perlu tetap terlihat karena statusnya memerlukan perhatian. Kode: ORDER_NOT_HIDEABLE.');return;}save([...hidden,o.orderId],'Pesanan disembunyikan dari daftar utama. Pesanan server, tagihan, dan catatan checkout tidak dihapus atau dibatalkan. Gunakan tombol tampilkan untuk melihatnya kembali.');}
+ function save(next,message,returnToMain=false){
+  if(!ready)return;const clean=[...new Set(next.filter(id=>typeof id==='string'&&ORDER.test(id)))];
+  if(clean.length>500){setListNotice('Batas 500 pilihan tampilan tercapai. Tampilkan kembali beberapa pesanan sebelum menyembunyikan yang lain. Kode: LIST_PREFERENCE_LIMIT.');return;}
+  setHidden(clean);if(returnToMain)setShowHidden(false);
+  try{writeHidden(owner,clean);setListNotice(message);}
+  catch{setListNotice(message+' Pilihan tampilan berlaku selama halaman ini tetap terbuka; penyimpanan untuk kunjungan berikutnya belum terverifikasi. Kode: LIST_PREFERENCE_UNAVAILABLE.');}
+ }
+ function hideOrder(o){if(!canHide(o)){setListNotice('Pesanan ini perlu tetap terlihat karena statusnya memerlukan perhatian. Kode: ORDER_NOT_HIDEABLE.');return;}save([...hidden,o.orderId],'Pesanan disembunyikan dari daftar utama. Pesanan server, tagihan, dan catatan checkout tidak dihapus atau dibatalkan. Gunakan tombol tampilkan untuk melihatnya kembali.',true);}
  function unhideOrder(o){save(hidden.filter(id=>id!==o.orderId),'Pesanan ditampilkan kembali di daftar utama.');}
- function hideBulk(){if(!bulk.length){setListNotice('Tidak ada pesanan belum selesai yang dapat disembunyikan dari daftar utama.');return;}if(typeof window!=='undefined'&&!window.confirm('Sembunyikan '+bulk.length+' pesanan yang belum dibayar/gagal/kedaluwarsa/dibatalkan dari daftar utama? Pesanan dan tagihan server tidak dihapus atau dibatalkan, dan dapat ditampilkan kembali.'))return;save([...hidden,...bulk.map(o=>o.orderId)],bulk.length+' pesanan disembunyikan dari daftar utama. Tidak ada pesanan, tagihan, atau catatan checkout yang dihapus atau dibatalkan.');}
- return h('section',{'aria-label':'Riwayat pesanan domain','data-domain-order-history':'server','aria-busy':state.kind==='loading'},
+ function hideBulk(){if(!bulk.length){setListNotice('Tidak ada pesanan belum selesai yang dapat disembunyikan dari daftar utama.');return;}if(typeof window!=='undefined'&&!window.confirm('Sembunyikan '+bulk.length+' pesanan yang belum dibayar/gagal/kedaluwarsa/dibatalkan dari daftar utama? Pesanan dan tagihan server tidak dihapus atau dibatalkan, dan dapat ditampilkan kembali.'))return;save([...hidden,...bulk.map(o=>o.orderId)],bulk.length+' pesanan disembunyikan dari daftar utama. Tidak ada pesanan, tagihan, atau catatan checkout yang dihapus atau dibatalkan.',true);}
+ return h('section',{'aria-label':'Riwayat pesanan domain','data-domain-order-history':'server','data-order-list-mode':showHidden?'all':'main','aria-busy':state.kind==='loading'},
   h('h3',null,'Pesanan saya'),
   h('button',{type:'button',className:'sv124-secondary',disabled:state.kind==='loading',onClick:()=>setRetry(n=>n+1)},state.kind==='loading'?'Memuat pesanan…':'Perbarui daftar pesanan'),
-  ready&&bulk.length?h('button',{type:'button',className:'sv124-secondary',onClick:hideBulk},'Sembunyikan '+bulk.length+' pesanan belum selesai dari daftar utama'):null,
-  ready&&hiddenOrders.length?h('button',{type:'button',className:'sv124-secondary','aria-pressed':showHidden,onClick:()=>setShowHidden(value=>!value)},showHidden?'Kembali ke daftar utama':'Tampilkan '+hiddenOrders.length+' pesanan tersembunyi'):null,
-  h('p',{role:'status','aria-live':'polite'},listNotice),
+  ready&&bulk.length?h('button',{type:'button',className:'sv124-secondary','data-order-list-action':'hide-bulk',onClick:event=>{event.stopPropagation();hideBulk();}},'Sembunyikan '+bulk.length+' pesanan belum selesai dari daftar utama'):null,
+  ready&&hiddenOrders.length?h('button',{type:'button',className:'sv124-secondary','data-order-list-action':'show-hidden','aria-pressed':showHidden,onClick:event=>{event.stopPropagation();setShowHidden(value=>!value);setListNotice('');}},showHidden?'Kembali ke daftar utama':'Tampilkan '+hiddenOrders.length+' pesanan tersembunyi'):null,
+  ready?h('p',null,showHidden?'Mode semua pesanan: pesanan tersembunyi ikut ditampilkan.':'Daftar utama: '+visible.length+' pesanan ditampilkan, '+hiddenOrders.length+' disembunyikan.'):null,
+  h('p',{ref:feedback,role:'status','aria-live':'polite','aria-atomic':true},listNotice),
   state.kind==='loading'?h('p',{role:'status'},'Mengambil riwayat pesanan akun ini dari server…'):state.kind==='error'?h('p',{role:'alert'},state.message):null,
-  ready?(visible.length?h(DomainOrderSummaryCard,{orders:visible,onRefresh:()=>setRetry(n=>n+1),renderActions:o=>h('div',{'data-order-actions':'visible'},h('h4',null,'Aksi pesanan dan arsip lokal'),hiddenSet.has(o.orderId)?h('button',{type:'button',className:'sv124-secondary',onClick:()=>unhideOrder(o)},'Tampilkan kembali di daftar utama'):canHide(o)?h('button',{type:'button',className:'sv124-secondary',onClick:()=>hideOrder(o)},'Sembunyikan dari daftar utama'):null,h(DomainGatewaySync,{key:'sync:'+owner+':'+o.orderId,order:o,owner,onRefresh:()=>setRetry(n=>n+1)}),h(DomainOrderActions,{key:owner+':'+o.orderId,order:{...o,registrar:undefined},owner,onRefresh:()=>setRetry(n=>n+1)}))}):h('p',{role:'status'},all.length?'Semua pesanan sedang disembunyikan dari daftar utama. Tidak ada yang dihapus.':'Belum ada pesanan yang ditampilkan.')):null,
+  ready?(visible.length?h(DomainOrderSummaryCard,{orders:visible,onRefresh:()=>setRetry(n=>n+1),renderActions:o=>h('div',{'data-order-actions':'visible'},h('h4',null,'Aksi pesanan dan arsip lokal'),hiddenSet.has(o.orderId)?h('button',{type:'button',className:'sv124-secondary','data-order-list-action':'restore',onClick:event=>{event.stopPropagation();unhideOrder(o);}},'Tampilkan kembali di daftar utama'):canHide(o)?h('button',{type:'button',className:'sv124-secondary','data-order-list-action':'hide',onClick:event=>{event.stopPropagation();hideOrder(o);}},'Sembunyikan dari daftar utama'):null,h(DomainGatewaySync,{key:'sync:'+owner+':'+o.orderId,order:o,owner,onRefresh:()=>setRetry(n=>n+1)}),h(DomainOrderActions,{key:owner+':'+o.orderId,order:{...o,registrar:undefined},owner,onRefresh:()=>setRetry(n=>n+1)}))}):h('p',{role:'status'},all.length?'Semua pesanan sedang disembunyikan dari daftar utama. Tidak ada yang dihapus.':'Belum ada pesanan yang ditampilkan.')):null,
   ready&&state.hasMore?h('p',{role:'status'},'Masih ada pesanan lain yang belum dimuat. Riwayat lama tidak dihapus.'):null);
 }
