@@ -1,7 +1,9 @@
-import {handleDomainRequest as handleDomainRequestBase} from './domain-handler.mjs';
+import {handleDomainRequest as handleDomainRequestOriginal} from './domain-handler.mjs';
+import {guardSaasRequest,saasReadiness} from './domain-saas-readiness-stage5.mjs';
 import {PUBLIC_AUDIT_RELEASE,auditPublicTargets,summarizePublicAudit} from './domain-public-audit.mjs';
 import {createPublicAuditFetch} from './domain-public-audit-transport.mjs';
 const RELEASE='domain-all-site-addresses-20261106';
+async function handleDomainRequestBase(request,env,requestId){return guardSaasRequest(request,env,requestId)||handleDomainRequestOriginal(request,env,requestId);}
 function response(status,body,requestId=''){return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-ngeblogging-domain-authority':RELEASE,...(requestId?{'x-request-id':requestId}:{})}});}
 function bearer(request){const value=request.headers.get('authorization')||'';return value.startsWith('Bearer ')?value.slice(7).trim():'';}
 function supabaseConfig(env){return {url:String(env.SUPABASE_URL||env.VITE_SUPABASE_URL||'').replace(/\/$/,''),key:String(env.SUPABASE_PUBLISHABLE_KEY||env.VITE_SUPABASE_PUBLISHABLE_KEY||env.VITE_SUPABASE_ANON_KEY||'')};}
@@ -16,7 +18,7 @@ async function readSite(request,env,siteId){
  const deadline=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(Error('SITE_LOOKUP_TIMEOUT'));},5000);});
  try{return await Promise.race([(async()=>{const result=await fetch(config.url+'/rest/v1/sites?id=eq.'+encodeURIComponent(siteId)+'&select=id,name,slug,status,is_public&limit=1',{headers:{apikey:config.key,authorization:'Bearer '+token,accept:'application/json','cache-control':'no-cache'},cache:'no-store',signal:controller.signal});if(!result.ok)return null;const rows=await result.json().catch(()=>[]);return rows?.[0]||null;})(),deadline]);}finally{clearTimeout(timer);controller.abort();}
 }
-function additionalAddresses(domain){const rows=domain?.ownership_verification?.additional_hostnames;return (Array.isArray(rows)?rows:[]).filter(item=>item?.hostname&&item.enabled!==false).map(item=>({label:item.host==='www'?'Alamat www':'Alamat tambahan',kind:item.host==='www'?'www':'additional',hostname:String(item.hostname).trim().toLowerCase().replace(/\.$/,''')}));}
+function additionalAddresses(domain){const rows=domain?.ownership_verification?.additional_hostnames;return (Array.isArray(rows)?rows:[]).filter(item=>item?.hostname&&item.enabled!==false).map(item=>({label:item.host==='www'?'Alamat www':'Alamat tambahan',kind:item.host==='www'?'www':'additional',hostname:String(item.hostname).trim().toLowerCase().replace(/\.$/,'' )}));}
 async function handleAudit(request,env,requestId){
  const body=await request.clone().json().catch(()=>({})),siteId=String(body.siteId||'');
  const listResponse=await baseList(request,env,requestId,siteId);if(!listResponse.ok)return listResponse;
@@ -41,6 +43,6 @@ export async function handleDomainRequest(request,env,requestId=crypto.randomUUI
  const url=new URL(request.url);
  if(request.method==='POST'&&url.pathname==='/api/domains/audit')return handleAudit(request,env,requestId);
  const result=await handleDomainRequestBase(request,env,requestId);
- if(request.method==='GET'&&url.pathname==='/api/domains/list'&&result.ok){const payload=await result.clone().json().catch(()=>({})),siteId=url.searchParams.get('siteId')||'';return response(result.status,{...payload,domains:canonicalDomains(payload.domains,siteId),release:RELEASE},requestId);}
+ if(request.method==='GET'&&url.pathname==='/api/domains/list'&&result.ok){const payload=await result.clone().json().catch(()=>({})),siteId=url.searchParams.get('siteId')||'';return response(result.status,{...payload,domains:canonicalDomains(payload.domains,siteId),release:RELEASE,saasReadiness:saasReadiness(env)},requestId);}
  return result;
 }
