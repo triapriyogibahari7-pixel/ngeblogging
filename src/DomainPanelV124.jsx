@@ -123,6 +123,7 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
 
   const sortedDomains = useMemo(() => [...domains].sort((a, b) => Number(activeDomain(b)) - Number(activeDomain(a)) || String(a.hostname).localeCompare(String(b.hostname))), [domains]);
   const connected = sortedDomains.filter((item) => item.status !== "pending_deletion" && !isManagedFreeDomain(item.hostname));
+  const hasCustomDomain = Boolean(initialExternalCustomDomain) || sortedDomains.some((domain) => Boolean(site?.id) && domain.site_id === site.id && Boolean(normalizeDomainName(domain.hostname)) && !isManagedFreeDomain(domain.hostname));
   const routed = sortedDomains.reduce((total, domain) => total + (activeDomain(domain) ? 1 : 0) + addresses(domain).filter((item) => item.enabled).length, 0);
 
   const load = async ({ quiet = false, acceptedDomain = null } = {}) => {
@@ -397,11 +398,11 @@ export default function DomainPanelV124({ site, sites = [], onSiteUpdate, setToa
         <span><Globe2/></span><div><small>SUBDOMAIN GRATIS · TETAP ADA</small><h2>{site?.slug ? `${site.slug}.ngeblogging.com` : "Menunggu situs"}</h2><p>{published ? "Alamat gratis aktif permanen. Domain pribadi tidak menghapus URL ini." : "Alamat gratis sudah dicadangkan. Terbitkan ketika situs siap."}</p></div><aside><i className={published ? "active" : "draft"}>{published ? "Aktif" : "Draf"}</i>{site?.slug ? <a href={`https://${site.slug}.ngeblogging.com?ngeblogging-free-preview=1`} target="_blank" rel="noreferrer"><ExternalLink/>Lihat situs</a> : null}<button className="sv124-primary" onClick={togglePublication} disabled={Boolean(busy)}><Send/>{busy === "publication" ? "Memproses…" : published ? "Jadikan draf" : "Terbitkan"}</button></aside>
       </section>
 
-      <section className="sv124-card sv124-domain-register">
+      {!hasCustomDomain ? <section className="sv124-card sv124-domain-register">
         <header><span><Plus/></span><div><small>DOMAIN UTAMA SITUS</small><h2>{connected.length ? "Domain pribadi sudah terdaftar" : "Hubungkan domain pribadi"}</h2><p>{connected.length ? "Status dan nameserver domain situs ini ada pada kartu di bawah. Ganti situs melalui Workspace untuk mengelola situs lain." : "Masukkan domain milik situs aktif. Sistem meminta nameserver dari provider; DNS dan HTTPS diperiksa secara terpisah."}</p></div></header>
         <form onSubmit={register}><label><b>Nama domain</b><input value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="domainanda.com" inputMode="url" autoComplete="off"/><small>Tanpa https://, tanpa www, dan tanpa path.</small></label><button className="sv124-primary" disabled={!hostname.trim() || Boolean(busy)}><Plus/>{busy === "register" ? "Menghubungkan…" : "Hubungkan domain"}</button></form>
         <div className="sv124-provider-note"><ShieldCheck/>Ngeblogging menampilkan nameserver asli untuk domain Anda dari Cloudflare. Gunakan hanya nilai pada kartu domain; nameserver bermerek Ngeblogging belum diaktifkan. Subdomain gratis tetap tersedia.</div>
-      </section>
+      </section> : null}
 
       <section className="sv124-card sv124-domain-list">
         <header><div><small>STATUS DOMAIN SITUS AKTIF</small>{!sortedDomains.length ? <h2>Belum ada domain pribadi</h2> : null}<p>DNS, HTTPS, www, dan alamat tambahan diperiksa hanya untuk situs yang sedang aktif.</p></div></header>
