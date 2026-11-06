@@ -1,0 +1,26 @@
+name: Domain DNS retry regression
+on:
+  pull_request:
+    paths:
+      - 'server/custom-domain-dns-readiness.mjs'
+      - 'tests/custom-domain-dns-retry-20261106.test.mjs'
+      - '.github/workflows/domain-dns-retry-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/custom-domain-dns-readiness.mjs'
+      - 'tests/custom-domain-dns-retry-20261106.test.mjs'
+      - '.github/workflows/domain-dns-retry-regression.yml'
+permissions:
+  contents: read
+jobs:
+  resolver-retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Verify resolver retry and fail-closed readiness
+        run: node --test tests/custom-domain-dns-retry-20261106.test.mjs
