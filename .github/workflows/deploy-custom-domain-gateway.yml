@@ -1,0 +1,33 @@
+name: Deploy isolated custom domain gateway
+on:
+  push:
+    branches: [main]
+    paths:
+      - cloudflare/custom-domain-gateway.mjs
+      - wrangler.custom-domains.jsonc
+      - .github/workflows/deploy-custom-domain-gateway.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ngeblogging-custom-domain-gateway-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: 095e57b46e7ba7f6b188480d9e4e5fe7
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Deploy dedicated gateway without modifying domain attachments
+        run: npx wrangler deploy --config wrangler.custom-domains.jsonc

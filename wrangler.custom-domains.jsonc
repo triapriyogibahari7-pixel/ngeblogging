@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ngeblogging-custom-domains",
+  "main": "./cloudflare/custom-domain-gateway.mjs",
+  "account_id": "095e57b46e7ba7f6b188480d9e4e5fe7",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": false,
+  "routes": [],
+  "services": [{"binding": "SITE_RUNTIME", "service": "ngeblogging"}],
+  "observability": {"enabled": true}
+}
