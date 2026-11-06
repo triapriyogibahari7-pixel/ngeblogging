@@ -1,5 +1,6 @@
 import {handleDomainRequest as domainRequest} from './domain-handler.mjs';
 import {saasReadiness} from './domain-saas-readiness-stage5.mjs';
+import {readDomainActivationRecovery} from './domain-activation-recovery-read.mjs';
 const PATH='/api/domains/reconcile';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const SKIP=new Set(['pending_deletion','deleted','blocked','test_blocked','test_failed']);
@@ -38,6 +39,11 @@ export async function domainReconciliationResponse(request,env){
   const result=await refreshed.json().catch(()=>null);
   if(!refreshed.ok)return json(refreshed.status,{siteId,domainId,hostname:domain.hostname,outcome:'needs_attention',code:typeof result?.code==='string'?result.code:'DOMAIN_REFRESH_FAILED',error:typeof result?.error==='string'?result.error:'Rekonsiliasi belum berhasil.',checkedAt:new Date().toISOString(),mayHaveChangedProvider:true,publicSiteVerified:false});
   if(result?.domain?.id!==domainId||result.domain.site_id!==siteId||result.domain.hostname!==domain.hostname||result.domain.provider!==domain.provider)return json(502,{code:'DOMAIN_RESULT_MISMATCH',error:'Hasil tidak cocok dengan domain, situs, atau provider tersimpan. Perubahan backend mungkin telah terjadi; ini bukan rollback.'});
-  return json(200,{siteId,domainId,hostname:domain.hostname,outcome:'refresh_completed',domain:result.domain,workerDomains:result.workerDomains||null,instructions:result.instructions||null,checkedAt:new Date().toISOString(),mayHaveChangedProvider:true,publicSiteVerified:false,note:'Refresh mengikuti provider tersimpan, bukan migrasi. Audit publik terpisah tetap diperlukan.'});
+  let recovery=null;
+  if(provider==='cloudflare-full-zone'){
+   try{recovery=await readDomainActivationRecovery(result.domain,runtimeEnv);}
+   catch{recovery={action:'check_provider',reason:'RECOVERY_OBSERVATION_UNAVAILABLE',activationCheckAllowed:false,productionChangeAllowed:false,publicSiteVerified:false};}
+  }
+  return json(200,{siteId,domainId,hostname:domain.hostname,outcome:'refresh_completed',domain:result.domain,workerDomains:result.workerDomains||null,instructions:result.instructions||null,recovery,checkedAt:new Date().toISOString(),mayHaveChangedProvider:true,publicSiteVerified:false,note:'Refresh mengikuti provider tersimpan, bukan migrasi. Audit publik terpisah tetap diperlukan.'});
  }catch{return json(503,{siteId,domainId,hostname:domain.hostname,outcome:'unknown',code:'RECONCILIATION_OUTCOME_UNKNOWN',error:'Hasil belum dapat dipastikan. Periksa status sebelum mengulangi; provider mungkin sudah berubah.',mayHaveChangedProvider:true,publicSiteVerified:false});}
 }
