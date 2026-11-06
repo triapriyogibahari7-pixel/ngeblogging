@@ -6,7 +6,7 @@ export function transformBrandingModule(source,id){
  if(path.endsWith('/src/pages/ProfilePage.jsx'))return {code:"import ProfilePhotoControls from '../components/account/ProfilePhotoControls';\n"+once(source,'<h2>Identitas</h2>','<h2>Identitas</h2><ProfilePhotoControls user={user} profile={p} onUpdated={next=>{setP(next);onProfileSaved?.(next);}}/>'),map:null};
  if(path.endsWith('/src/pages/SiteSettingsPage.jsx')){
   let code="import SiteFaviconPanel from '../components/account/SiteFaviconPanel';\nimport RewardsSettingsCard from '../components/account/RewardsSettingsCard';\n"+source;
-  code=once(code,'{ready&&<><nav','{ready&&<><SiteFaviconPanel key={site.id} site={site}/><RewardsSettingsCard value={config.monetization} busy={busy} onSave={save} onChange={v=>{setConfig({...config,monetization:v});setDirty(true);}}/><nav');
+  code=once(code,'{ready&&<><nav','{ready&&<><SiteFaviconPanel key={site.id} site={site}/><RewardsSettingsCard key={site.id} siteId={site.id} value={config.monetization} busy={busy} onSave={save} onChange={v=>{setConfig({...config,monetization:v});setDirty(true);}}/><nav');
   code=once(code,"['rewardsEnabled','Ngeblogging Rewards aktif','checkbox'],['rewardsPublisherId','ID penerbit Rewards'],['rewardsPlacementId','ID penempatan Rewards'],",'');
   return {code,map:null};
  }
