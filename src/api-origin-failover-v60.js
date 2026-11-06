@@ -116,6 +116,43 @@ function statusMessage(status) {
   return "Layanan domain belum dapat memberikan respons yang dapat diproses.";
 }
 
+async function recoverRegistration(primary) {
+  let body;
+  try { body = await primary.clone().json(); } catch { return null; }
+  if (typeof body?.siteId !== "string" || !/^[0-9a-f-]{36}$/i.test(body.siteId) || typeof body.hostname !== "string") return null;
+  let hostname;
+  try {
+    const value = body.hostname.trim();
+    const url = new URL(value.includes("://") ? value : `https://${value}`);
+    if (url.pathname !== "/" || url.search || url.hash || url.port || url.username || url.password) return null;
+    hostname = url.hostname.toLowerCase().replace(/\.$/, "");
+  } catch { return null; }
+  const origin = new URL(primary.url).origin;
+  for (const target of origin === API_ORIGIN ? [origin] : [origin, API_ORIGIN]) {
+    if (primary.signal.aborted) throw primary.signal.reason || new DOMException("Permintaan dibatalkan.", "AbortError");
+    try {
+      const headers = new Headers({ accept: "application/json", "cache-control": "no-cache" });
+      const authorization = primary.headers.get("authorization");
+      if (authorization) headers.set("authorization", authorization);
+      const request = new Request(`${target}/api/domains/list?siteId=${encodeURIComponent(body.siteId)}`, { method: "GET", headers, cache: "no-store", mode: "cors", credentials: target === origin ? primary.credentials : "omit", signal: primary.signal });
+      const result = await timedNativeFetch(request, 4_000, "Pemulihan status domain");
+      if (!result.ok) continue;
+      const payload = await result.json();
+      const matches = (Array.isArray(payload?.domains) ? payload.domains : []).filter(domain =>
+        typeof domain?.id === "string" && domain.id.trim()
+        && domain.site_id === body.siteId && domain.hostname === hostname
+        && domain.provider === "cloudflare-full-zone" && domain.status !== "pending_deletion"
+        && Array.isArray(domain.ownership_verification?.required_name_servers)
+        && new Set(domain.ownership_verification.required_name_servers.filter(ns => typeof ns === "string" && /^[a-z0-9-]+(?:\.[a-z0-9-]+)+\.?$/i.test(ns))).size >= 2);
+      if (matches.length !== 1) continue;
+      return new Response(JSON.stringify({ domain: matches[0], recovered: true, mutationOutcome: "persisted_domain_found", retryAutomatically: false }), { status: 200, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-ngeblogging-domain-recovery": "read-only-v1", ...(result.headers.get("x-request-id") ? { "x-request-id": result.headers.get("x-request-id") } : {}) } });
+    } catch (error) {
+      if (primary.signal.aborted) throw primary.signal.reason || error;
+    }
+  }
+  return null;
+}
+
 async function resilientDomainFetch(input, init) {
   // Only domain APIs use this policy. Publication, auth, editor and Nara pass through unchanged.
   if (!isDomainApiUrl(input)) return nativeFetch(input, init);
@@ -138,6 +175,10 @@ async function resilientDomainFetch(input, init) {
   }
 
   if (!readOnly) {
+    if (registration) {
+      const recovered = await recoverRegistration(primary);
+      if (recovered) return recovered;
+    }
     const status = primaryFailure?.name === "TimeoutError" ? 408 : primaryResponse?.status >= 400 ? primaryResponse.status : 502;
     return diagnosticResponse(
       "Hasil perubahan domain belum dapat dipastikan. Permintaan tidak dikirim ulang otomatis. Periksa status domain sebelum mencoba menghubungkan kembali; subdomain gratis tetap tersedia.",
