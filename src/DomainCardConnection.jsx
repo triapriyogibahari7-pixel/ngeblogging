@@ -71,14 +71,16 @@ export default function DomainCardConnection({site,domain,domains=[],disabled=fa
  const shown=result?.scope===scope?result:null;
  const fresh=value=>{const age=now-(typeof value==='number'?value:Date.parse(value));return Number.isFinite(age)&&age>=-60000&&age<=AGE;};
  const dns=shown?.dns,checks=Array.isArray(dns?.checks)?dns.checks:[],dnsFresh=fresh(dns?.checkedAt);
+ const diagnostics=(Array.isArray(dns?.diagnostics)?dns.diagnostics:[]).filter(row=>row&&['cloudflare-dns.com','dns.google'].includes(row.resolver)&&['A','AAAA','NS'].includes(row.type)).slice(0,24);
+ const diagnosticText=value=>typeof value==='string'?value.replace(/[^a-zA-Z0-9_.-]/g,'').slice(0,80):'';
  const addressesReady=dnsFresh&&checks.length===2&&checks.every(row=>row.addressReady===true);
  const fullZone=domain?.provider==='cloudflare-full-zone',saas=domain?.provider==='cloudflare';
  const nsReady=dnsFresh&&checks.length===2&&checks.every(row=>row.nameserversMatch===true);
  const dnsUnavailable=checks.some(row=>row.a?.state==='unavailable'||row.aaaa?.state==='unavailable');
  const nxdomain=checks.some(row=>row.a?.state==='nxdomain'||row.aaaa?.state==='nxdomain');
  const pending=busy?'Sedang diperiksa':'Belum diperiksa';
- const dnsText=dns&&!dnsFresh?'Hasil kedaluwarsa':!dns?pending:addressesReady?'A/AAAA terjawab pada dua resolver':dnsUnavailable?'Resolver belum dapat dijangkau':nxdomain?'NXDOMAIN teramati; periksa detail':'Alamat A/AAAA belum konsisten atau belum tersedia';
- const nsText=!fullZone?(saas?'Tidak diwajibkan untuk provider SaaS':'Provider belum dikenali'):expected.length<2?'Daftar nameserver resmi belum lengkap':dns&&!dnsFresh?'Hasil kedaluwarsa':!dns?pending:nsReady?'Cocok pada dua resolver':checks.some(row=>row.ns?.state==='unavailable')?'Resolver NS belum dapat dijangkau':'Nameserver belum cocok atau belum konsisten';
+ const dnsText=dns&&!dnsFresh?'Hasil kedaluwarsa':!dns?pending:addressesReady?'A/AAAA terjawab pada dua resolver':dnsUnavailable?'Pemeriksaan resolver server belum berhasil':nxdomain?'NXDOMAIN teramati; periksa detail':'Alamat A/AAAA belum konsisten atau belum tersedia';
+ const nsText=!fullZone?(saas?'Tidak diwajibkan untuk provider SaaS':'Provider belum dikenali'):expected.length<2?'Daftar nameserver resmi belum lengkap':dns&&!dnsFresh?'Hasil kedaluwarsa':!dns?pending:nsReady?'Cocok pada dua resolver':checks.some(row=>row.ns?.state==='unavailable')?'Pemeriksaan NS di server belum berhasil':'Nameserver belum cocok atau belum konsisten';
  const href=publicUrl(domain?.hostname),published=site?.status==='active'&&site?.is_public===true;
  const httpsFresh=fresh(shown?.checkedAt),providerFresh=fresh(shown?.providerCheckedAt);
  const ready=Boolean(href&&addressesReady&&(fullZone?nsReady:saas)&&httpsFresh&&shown?.httpsReady&&providerFresh&&shown?.providerReady&&shown?.published&&published);
@@ -86,8 +88,7 @@ export default function DomainCardConnection({site,domain,domains=[],disabled=fa
  return h('section',{'data-domain-card-connection':RELEASE,'aria-busy':busy},
   h('div',{style:{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'8px'}},item('Provider',providerFresh&&shown?.providerReady,shown?.providerCheckedAt&&!providerFresh?'Hasil kedaluwarsa':shown?.providerState||pending),item('Nameserver',fullZone&&nsReady,nsText),item('DNS',addressesReady,dnsText),item('HTTPS',httpsFresh&&shown?.httpsReady,shown?.checkedAt&&!httpsFresh?'Hasil kedaluwarsa':shown?.httpsState||pending),item('Publikasi',published,published?'Diterbitkan':'Draf')),
   h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},h('button',{type:'button',onClick:check,disabled:disabled||busy||!href||domain?.status==='pending_deletion'},h(RefreshCw,{className:busy?'spin':''}),busy?'Memeriksa koneksi…':'Periksa koneksi'),ready?h('a',{href,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'12px'}},h(ExternalLink,{size:14}),'Lihat situs'):h('span',{'aria-disabled':'true',style:{fontSize:'12px',opacity:0.6}},'Lihat situs — belum siap')),
-  dns?h('details',null,h('summary',null,'Bukti DNS publik'),h('p',null,'Diperiksa '+new Date(dns.checkedAt).toLocaleString('id-ID')+'; hasil berlaku 5 menit. Ini bukan bukti HTTPS atau identitas konten.'),...checks.map(row=>h('p',{key:row.resolver},row.resolver+' · NS ['+row.ns.state+']: '+row.ns.answers.join(', ')+' · A ['+row.a.state+']: '+row.a.answers.join(', ')+' · AAAA ['+row.aaaa.state+']: '+row.aaaa.answers.join(', ')))):null,
+  dns?h('details',null,h('summary',null,'Bukti DNS publik'),h('p',null,'Diperiksa '+new Date(dns.checkedAt).toLocaleString('id-ID')+'; hasil berlaku 5 menit. Ini bukan bukti HTTPS atau identitas konten.'),...checks.map(row=>h('p',{key:row.resolver},row.resolver+' · NS ['+row.ns.state+']: '+row.ns.answers.join(', ')+' · A ['+row.a.state+']: '+row.a.answers.join(', ')+' · AAAA ['+row.aaaa.state+']: '+row.aaaa.answers.join(', '))),diagnostics.length?h('div',{'data-dns-server-diagnostics':true},h('p',null,'Diagnostik pemeriksaan server'),...diagnostics.map((row,index)=>h('p',{key:index},row.resolver+' · '+row.type+' · '+(diagnosticText(row.reason)||'UNKNOWN')+(diagnosticText(row.phase)?' · fase '+diagnosticText(row.phase):'')+(Number.isInteger(row.httpStatus)&&row.httpStatus>0&&row.httpStatus<=599?' · HTTP '+row.httpStatus:'')+(Number.isInteger(row.dnsStatus)&&row.dnsStatus>=0&&row.dnsStatus<=65535?' · DNS '+row.dnsStatus:'')+(diagnosticText(row.code)?' · kode '+diagnosticText(row.code):'')))):null):null,
   shown?.dnsError?h('p',{role:'status'},shown.dnsError):null,
-  notice?h('p',{role:'status','aria-live':'polite'},notice):null,
-  h('small',null,'Versi kartu: '+RELEASE+' · DNS diperiksa dari browser melalui dua resolver publik; kegagalan akses resolver bukan bukti domain rusak.'));
+  notice?h('p',{role:'status','aria-live':'polite'},notice):null);
 }
