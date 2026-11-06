@@ -2,6 +2,7 @@ import worker from './worker-v70.mjs';
 import {domainRecoveryResponse} from '../server/domain-recovery-router.mjs';
 import {DOMAIN_MANAGEMENT_CRON,runDomainManagementSchedule} from '../server/domain-management-scheduler.mjs';
 import {isDomainDeadlineRequest,withDomainDeadline} from '../server/domain-api-deadline.mjs';
+import {domainReconciliationResponse} from '../server/domain-reconciliation-stage3.mjs';
 
 function domainEnvironment(env) {
  return {...env, CLOUDFLARE_WORKER_SERVICE: 'ngeblogging-custom-domains'};
@@ -9,6 +10,8 @@ function domainEnvironment(env) {
 
 export default {...worker,async fetch(request,env,context){
  const runtimeEnv=domainEnvironment(env);
+ const reconciliation=await domainReconciliationResponse(request,runtimeEnv);
+ if(reconciliation)return reconciliation;
  if(isDomainDeadlineRequest(request))return withDomainDeadline(request,runtimeEnv,context,()=>worker.fetch(request,runtimeEnv,context));
  const response=await domainRecoveryResponse(request,runtimeEnv);
  return response||worker.fetch(request,runtimeEnv,context);
