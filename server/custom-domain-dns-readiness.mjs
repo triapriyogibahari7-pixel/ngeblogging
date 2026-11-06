@@ -22,6 +22,19 @@ export async function checkCustomDomainDns({hostname: input, zoneName, expectedN
  const name = hostname(input), zone = hostname(zoneName);
  if (name !== zone && !name.endsWith('.' + zone)) throw Error('HOSTNAME_ZONE_MISMATCH');
  const expected = [...new Set(expectedNameservers.map(hostname))].sort();
+ if(typeof window!=='undefined'){
+  const params=new URLSearchParams({hostname:name,zoneName:zone});for(const ns of expected)params.append('ns',ns);
+  const response=await fetchImpl('/api/domains/dns-public?'+params.toString(),{method:'GET',redirect:'error',cache:'no-store',credentials:'omit',headers:{accept:'application/json'},signal:AbortSignal.timeout(12000)});
+  if(!response.ok||response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')throw Error('DNS_BACKEND_UNAVAILABLE');
+  const data=await response.json();
+  if(data.release!=='public-dns-relay-v1-20261106'||data.hostname!==name||data.zoneName!==zone||!Number.isFinite(Date.parse(data.checkedAt))||!Array.isArray(data.checks)||data.checks.length!==2)throw Error('DNS_BACKEND_RESULT_UNVERIFIED');
+  const allowed=new Set(['cloudflare-dns.com','dns.google']);
+  for(const row of data.checks){
+   if(!allowed.delete(row?.resolver)||typeof row.addressReady!=='boolean'||typeof row.nameserversMatch!=='boolean')throw Error('DNS_BACKEND_RESULT_UNVERIFIED');
+   for(const type of ['a','aaaa','ns'])if(!['resolved','no_answer','nxdomain','unavailable'].includes(row[type]?.state)||!Array.isArray(row[type]?.answers)||row[type].answers.some(value=>typeof value!=='string'))throw Error('DNS_BACKEND_RESULT_UNVERIFIED');
+  }
+  return data;
+ }
  const checks = await Promise.all(RESOLVERS.map(async resolver => {
   const [a, aaaa, ns] = await Promise.all(['A', 'AAAA', 'NS'].map(type => query(resolver, type === 'NS' ? zone : name, type, fetchImpl)));
   const observed = [...new Set(ns.answers.map(value => value.toLowerCase().replace(/\.$/, '')))].sort();
