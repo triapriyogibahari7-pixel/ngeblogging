@@ -2,28 +2,31 @@ import React,{useEffect,useRef,useState} from 'react';
 import {ExternalLink,RefreshCw} from 'lucide-react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {publicAuditContext,readPublicAuditPayload,publicAuditRowView} from './lib/domain-public-audit-view.mjs';
-const h=React.createElement,AGE=300000;
-function normalize(value){return String(value||'').trim().toLowerCase().replace(/\.$/,'');}
+import {checkCustomDomainDns} from '../server/custom-domain-dns-readiness.mjs';
+const h=React.createElement,AGE=300000,RELEASE='domain-card-dns-v3-20261106';
+const normalize=value=>String(value||'').trim().toLowerCase().replace(/\.$/,'');
 function publicUrl(value){try{const host=normalize(value),url=new URL('https://'+host);return url.hostname===host&&!url.port&&!url.username&&!url.password&&url.pathname==='/'&&!url.search&&!url.hash?url.href:null;}catch{return null;}}
 export default function DomainCardConnection({site,domain,domains=[],disabled=false,beginOperation,onDomain,reload}){
- const scope=JSON.stringify([site?.id,site?.slug,site?.status,site?.is_public,domain?.id,domain?.hostname]);
+ const expected=Array.isArray(domain?.ownership_verification?.required_name_servers)?domain.ownership_verification.required_name_servers:[];
+ const zoneName=domain?.ownership_verification?.zone_name||domain?.hostname;
+ const scope=JSON.stringify([site?.id,site?.slug,site?.status,site?.is_public,domain?.id,domain?.hostname,domain?.provider,zoneName,expected]);
  const scopeRef=useRef(scope),active=useRef(null);scopeRef.current=scope;
  const [busy,setBusy]=useState(false),[result,setResult]=useState(null),[notice,setNotice]=useState(''),[now,setNow]=useState(Date.now());
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),10000);return()=>clearInterval(timer);},[]);
  useEffect(()=>{active.current?.abort();active.current=null;setBusy(false);setResult(null);setNotice('');return()=>{active.current?.abort();active.current=null;};},[scope]);
  async function check(){
   if(active.current||disabled||!site?.id||!domain?.id)return;
-  if(typeof beginOperation!=='function'){setNotice('Pengunci operasi halaman belum terhubung. Pemeriksaan tidak dijalankan.');return;}
+  if(typeof beginOperation!=='function'){setNotice('Pengunci operasi halaman belum terhubung.');return;}
   const task=beginOperation('connection:'+domain.id);if(!task)return;
   const controller=new AbortController();active.current=controller;setBusy(true);setResult(null);setNotice('');
   const current=()=>active.current===controller&&!controller.signal.aborted&&scopeRef.current===scope&&task.current();
-  const timer=setTimeout(()=>{if(!current())return;controller.abort();active.current=null;setBusy(false);setNotice('Batas waktu tercapai. Backend mungkin sudah berubah; muat ulang sebelum mengulangi.');setResult(previous=>({...previous,scope,httpsState:'Pemeriksaan kehabisan waktu'}));task.finish();},45000);
+  const update=value=>{if(current())setResult(previous=>({...previous,scope,...value}));};
+  const timer=setTimeout(()=>{if(!current())return;setNotice('Pemeriksaan kehabisan waktu. Backend mungkin sudah berubah; hasil DNS terpisah tetap memiliki waktu pemeriksaan sendiri.');setResult(previous=>({...previous,scope,httpsReady:false,httpsState:'Pemeriksaan kehabisan waktu'}));controller.abort();active.current=null;setBusy(false);task.finish();},45000);
+  const dnsTask=checkCustomDomainDns({hostname:domain.hostname,zoneName,expectedNameservers:expected}).then(dns=>{if(current()){setNow(Date.now());update({dns});}}).catch(()=>update({dnsError:'Pemeriksaan DNS tidak dapat dijalankan; periksa hostname dan daftar nameserver.'}));
   async function api(path,token,body){
    const response=await fetch(path,{method:'POST',redirect:'error',cache:'no-store',credentials:'omit',signal:controller.signal,headers:{authorization:'Bearer '+token,accept:'application/json','content-type':'application/json'},body:JSON.stringify(body)});
-   if(response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')throw Error('Respons server bukan hasil JSON yang terverifikasi.');
-   const payload=await response.json();
-   if(!response.ok)throw Error((typeof payload?.error==='string'?payload.error:'Permintaan belum berhasil.')+(payload?.code?' ('+String(payload.code).slice(0,100)+')':''));
-   return payload;
+   if(response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')throw Error('Respons server bukan JSON terverifikasi.');
+   const payload=await response.json();if(!response.ok)throw Error((typeof payload?.error==='string'?payload.error:'Permintaan gagal.')+(payload?.code?' ('+String(payload.code).slice(0,100)+')':''));return payload;
   }
   let accepted=null,reconcileError='';
   try{
@@ -35,48 +38,47 @@ export default function DomainCardConnection({site,domain,domains=[],disabled=fa
     accepted=connected.domain;
    }catch(error){if(!current())return;reconcileError=error?.message||'Rekonsiliasi belum berhasil.';}
    const providerReady=Boolean(accepted&&accepted.status==='active'&&accepted.provider_status==='active'&&accepted.ssl_status==='active');
-   const providerCheckedAt=Date.now();
-   setResult({scope,providerCheckedAt,providerReady,providerState:accepted?(providerReady?'Aktif menurut provider':'Provider masih menunggu'): 'Rekonsiliasi belum berhasil',httpsReady:false,httpsState:'Sedang diaudit'});
-   setNotice(reconcileError?reconcileError+' Audit HTTPS tetap dicoba secara terpisah.':'');
+   update({providerCheckedAt:Date.now(),providerReady,providerState:accepted?(providerReady?'Aktif menurut provider':'Provider masih menunggu'):'Rekonsiliasi gagal',httpsState:'Sedang diaudit'});
+   setNotice(reconcileError);
    const payload=await api('/api/domains/audit',auth.session.access_token,{siteId:site.id});if(!current())return;
    const authAfter=await getVerifiedSession({force:true});if(!current())return;
-   if(authAfter?.verification!=='verified'||authAfter?.user?.id!==auth.user.id){accepted=null;setResult(null);throw Error('Akun berubah; hasil pemeriksaan dibatalkan.');}
-   if(payload.site?.slug!==site.slug)throw Error('Hasil audit tidak cocok dengan alamat situs aktif.');
+   if(authAfter?.verification!=='verified'||authAfter?.user?.id!==auth.user.id){accepted=null;setResult(null);throw Error('Akun berubah; hasil dibatalkan.');}
+   if(payload.site?.slug!==site.slug)throw Error('Audit tidak cocok dengan alamat situs aktif.');
    const rows=domains.some(row=>row.id===domain.id)?domains:[...domains,domain];
    const context=publicAuditContext(site,rows.map(row=>accepted&&row.id===accepted.id?accepted:row));
    const audit=readPublicAuditPayload(payload,context),age=Date.now()-Date.parse(audit.checkedAt);
-   if(age < -60000||age>AGE)throw Error('Hasil audit sudah kedaluwarsa atau waktu tidak valid.');
-   const row=audit.results.find(item=>normalize(item.address)===normalize(domain.hostname));
-   if(!row)throw Error('Audit belum mencakup hostname domain ini.');
-   const published=payload.site.status==='active'&&payload.site.isPublic===true;
+   if(age < -60000||age>AGE)throw Error('Waktu audit tidak valid atau kedaluwarsa.');
+   const row=audit.results.find(item=>normalize(item.address)===normalize(domain.hostname));if(!row)throw Error('Hostname ini belum tercakup audit.');
    const httpsReady=row.auditStatus==='passed'&&row.https===true&&row.reachable===true;
-   setNow(Date.now());setResult({scope,providerCheckedAt,providerReady,providerState:accepted?(providerReady?'Aktif menurut provider':'Provider masih menunggu'):'Rekonsiliasi belum berhasil',httpsReady,httpsState:publicAuditRowView(row).label,published,checkedAt:audit.checkedAt});
-   setNotice([reconcileError,httpsReady?'HTTPS merespons halaman publik; identitas konten dan nameserver belum diverifikasi.':row.check||'Audit HTTPS belum berhasil.'].filter(Boolean).join(' '));
-  }catch(error){if(current()){setNotice(error?.message||'Koneksi belum dapat dipastikan.');setResult(previous=>({...previous,scope,httpsReady:false,httpsState:'Pemeriksaan belum berhasil'}));}}
+   setNow(Date.now());update({httpsReady,httpsState:publicAuditRowView(row).label,published:payload.site.status==='active'&&payload.site.isPublic===true,checkedAt:audit.checkedAt});
+   setNotice([reconcileError,httpsReady?'Halaman publik merespons HTTPS; identitas konten belum diverifikasi.':row.check].filter(Boolean).join(' '));
+  }catch(error){if(current()){setNotice(error?.message||'Pemeriksaan belum berhasil.');update({httpsReady:false,httpsState:'Pemeriksaan belum berhasil'});}}
   finally{
-   clearTimeout(timer);
+   await dnsTask;clearTimeout(timer);
    if(current()&&accepted){onDomain?.(accepted);if(typeof reload==='function')void Promise.resolve(reload(accepted)).catch(()=>{});}
    if(active.current===controller){active.current=null;setBusy(false);}task.finish();
   }
  }
  const shown=result?.scope===scope?result:null;
- const providerAge=shown?.providerCheckedAt?now-shown.providerCheckedAt:Infinity;
- const providerFresh=providerAge>=-60000&&providerAge<=AGE;
- const auditAge=shown?.checkedAt?now-Date.parse(shown.checkedAt):Infinity;
- const fresh=auditAge>=-60000&&auditAge<=AGE;
- const href=publicUrl(domain?.hostname);
- const published=site?.status==='active'&&site?.is_public===true;
- const ready=Boolean(href&&fresh&&providerFresh&&shown?.providerReady&&shown?.httpsReady&&shown?.published&&published);
+ const fresh=value=>{const age=now-(typeof value==='number'?value:Date.parse(value));return Number.isFinite(age)&&age>=-60000&&age<=AGE;};
+ const dns=shown?.dns,checks=Array.isArray(dns?.checks)?dns.checks:[],dnsFresh=fresh(dns?.checkedAt);
+ const addressesReady=dnsFresh&&checks.length===2&&checks.every(row=>row.addressReady===true);
+ const fullZone=domain?.provider==='cloudflare-full-zone',saas=domain?.provider==='cloudflare';
+ const nsReady=dnsFresh&&checks.length===2&&checks.every(row=>row.nameserversMatch===true);
+ const dnsUnavailable=checks.some(row=>row.a?.state==='unavailable'||row.aaaa?.state==='unavailable');
+ const nxdomain=checks.some(row=>row.a?.state==='nxdomain'||row.aaaa?.state==='nxdomain');
+ const pending=busy?'Sedang diperiksa':'Belum diperiksa';
+ const dnsText=dns&&!dnsFresh?'Hasil kedaluwarsa':!dns?pending:addressesReady?'A/AAAA terjawab pada dua resolver':dnsUnavailable?'Resolver belum dapat dijangkau':nxdomain?'NXDOMAIN teramati; periksa detail':'Alamat A/AAAA belum konsisten atau belum tersedia';
+ const nsText=!fullZone?(saas?'Tidak diwajibkan untuk provider SaaS':'Provider belum dikenali'):expected.length<2?'Daftar nameserver resmi belum lengkap':dns&&!dnsFresh?'Hasil kedaluwarsa':!dns?pending:nsReady?'Cocok pada dua resolver':checks.some(row=>row.ns?.state==='unavailable')?'Resolver NS belum dapat dijangkau':'Nameserver belum cocok atau belum konsisten';
+ const href=publicUrl(domain?.hostname),published=site?.status==='active'&&site?.is_public===true;
+ const httpsFresh=fresh(shown?.checkedAt),providerFresh=fresh(shown?.providerCheckedAt);
+ const ready=Boolean(href&&addressesReady&&(fullZone?nsReady:saas)&&httpsFresh&&shown?.httpsReady&&providerFresh&&shown?.providerReady&&shown?.published&&published);
  function item(label,ok,text){return h('span',{className:ok?'active':'pending',style:{display:'inline-block',padding:'4px 8px',borderRadius:'6px',background:ok?'#e8f7ee':'#fff5d6',color:ok?'#176438':'#725600'}},label+': '+text);}
- const initial=busy?'Sedang diperiksa':'Belum diperiksa';
- const httpsText=shown?.checkedAt&&!fresh?'Hasil kedaluwarsa — periksa ulang':shown?.httpsState||initial;
- const providerText=shown?.providerCheckedAt&&!providerFresh?'Hasil kedaluwarsa — periksa ulang':shown?.providerState||initial;
- return h('section',{'data-domain-card-connection':'status-v2','aria-busy':busy},
-  h('div',{style:{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'8px'}},item('Provider',providerFresh&&shown?.providerReady,providerText),item('Nameserver',false,'Belum diuji langsung'),item('DNS',false,'Belum diuji langsung'),item('HTTPS',fresh&&shown?.httpsReady,httpsText),item('Publikasi',published,published?'Diterbitkan':'Draf')),
-  h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},
-   h('button',{type:'button',onClick:check,disabled:disabled||busy||!href||domain?.status==='pending_deletion'},h(RefreshCw,{className:busy?'spin':''}),busy?'Memeriksa koneksi…':'Periksa koneksi'),
-   ready?h('a',{href,target:'_blank',rel:'noopener noreferrer',title:'Provider aktif dan audit HTTPS lolos; bukan bukti nameserver atau identitas konten.',style:{display:'inline-flex',alignItems:'center',gap:'4px',fontSize:'12px',padding:'6px 10px'}},h(ExternalLink,{size:14}),'Lihat situs'):h('span',{'aria-disabled':'true',title:'Menunggu provider aktif, audit HTTPS terbaru, dan situs diterbitkan',style:{fontSize:'12px',opacity:0.6}},'Lihat situs — belum siap')),
-  h('small',null,'Status provider tidak membuktikan nameserver atau DNS cocok. Pemeriksaan tidak berjalan otomatis saat halaman dibuka; hasil berlaku 5 menit.'),
+ return h('section',{'data-domain-card-connection':RELEASE,'aria-busy':busy},
+  h('div',{style:{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'8px'}},item('Provider',providerFresh&&shown?.providerReady,shown?.providerCheckedAt&&!providerFresh?'Hasil kedaluwarsa':shown?.providerState||pending),item('Nameserver',fullZone&&nsReady,nsText),item('DNS',addressesReady,dnsText),item('HTTPS',httpsFresh&&shown?.httpsReady,shown?.checkedAt&&!httpsFresh?'Hasil kedaluwarsa':shown?.httpsState||pending),item('Publikasi',published,published?'Diterbitkan':'Draf')),
+  h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},h('button',{type:'button',onClick:check,disabled:disabled||busy||!href||domain?.status==='pending_deletion'},h(RefreshCw,{className:busy?'spin':''}),busy?'Memeriksa koneksi…':'Periksa koneksi'),ready?h('a',{href,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'12px'}},h(ExternalLink,{size:14}),'Lihat situs'):h('span',{'aria-disabled':'true',style:{fontSize:'12px',opacity:0.6}},'Lihat situs — belum siap')),
+  dns?h('details',null,h('summary',null,'Bukti DNS publik'),h('p',null,'Diperiksa '+new Date(dns.checkedAt).toLocaleString('id-ID')+'; hasil berlaku 5 menit. Ini bukan bukti HTTPS atau identitas konten.'),...checks.map(row=>h('p',{key:row.resolver},row.resolver+' · NS ['+row.ns.state+']: '+row.ns.answers.join(', ')+' · A ['+row.a.state+']: '+row.a.answers.join(', ')+' · AAAA ['+row.aaaa.state+']: '+row.aaaa.answers.join(', ')))):null,
+  shown?.dnsError?h('p',{role:'status'},shown.dnsError):null,
   notice?h('p',{role:'status','aria-live':'polite'},notice):null,
-  shown?.checkedAt?h('small',null,'Diperiksa '+new Date(shown.checkedAt).toLocaleString('id-ID')+' · berlaku 5 menit'):null);
+  h('small',null,'Versi kartu: '+RELEASE+' · DNS diperiksa dari browser melalui dua resolver publik; kegagalan akses resolver bukan bukti domain rusak.'));
 }
