@@ -8,16 +8,15 @@ export function publicAuditRequest(input,init={}){
  if((init.method||(input instanceof Request?input.method:'GET')).toUpperCase()!=='GET')fail();
  return new Request(url,{method:'GET',redirect:'manual',signal:init.signal,headers:{accept:'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1','cache-control':'no-cache'}});
 }
-export function createPublicAuditFetch(env,{fetchImpl=(...args)=>globalThis.fetch(...args)}={}){
- const service=Boolean(env?.PUBLIC_AUDITOR?.fetch);
+export function createPublicAuditFetch(_env,{fetchImpl=(...args)=>globalThis.fetch(...args)}={}){
  return async(input,init={})=>{
   try{
    const request=publicAuditRequest(input,init);
-   const result=service?await env.PUBLIC_AUDITOR.fetch(request):await fetchImpl(request);
-   if(!result.ok&&!(result.status>=300&&result.status<400))console.warn('[domain-audit-diagnostic]',JSON.stringify({transport:service?'service-binding':'direct-fetch',...networkDiagnostic(null,{phase:'response',httpStatus:result.status})}));
+   const result=await fetchImpl(request);
+   if(!result.ok&&!(result.status>=300&&result.status<400))console.warn('[domain-audit-diagnostic]',JSON.stringify({transport:'direct-fetch',...networkDiagnostic(null,{phase:'response',httpStatus:result.status})}));
    return result;
   }catch(error){
-   console.warn('[domain-audit-diagnostic]',JSON.stringify({transport:service?'service-binding':'direct-fetch',...networkDiagnostic(error)}));
+   console.warn('[domain-audit-diagnostic]',JSON.stringify({transport:'direct-fetch',...networkDiagnostic(error)}));
    throw error;
   }
  };
