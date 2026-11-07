@@ -20,12 +20,12 @@ export async function domainPublicDnsResponse(request){
   try{result=await safeFetch(input,init);}catch(error){const diagnostic={resolver,type,...networkDiagnostic(error,{httpStatus:error?.status||0})};diagnostics.push(diagnostic);console.warn('[domain-dns-diagnostic]',JSON.stringify(diagnostic));throw error;}
   if(!result.ok){const diagnostic={resolver,type,...networkDiagnostic(null,{phase:'response',httpStatus:result.status})};diagnostics.push(diagnostic);console.warn('[domain-dns-diagnostic]',JSON.stringify(diagnostic));}
   return {ok:result.ok,status:result.status,json:async()=>{
-   try{const data=await result.json();const dnsStatus=Number.isInteger(data?.Status)&&data.Status>=0&&data.Status<=65535?data.Status:null;diagnostics.push({resolver,type,phase:'complete',httpStatus:result.status,dnsStatus,reason:data?.TC===true?'DNS_TRUNCATED':dnsStatus===null?'DNS_RESPONSE_INVALID':'DNS_RESPONSE_RECEIVED'});return data;}
+   try{const data=await result.json();const dnsStatus=Number.isInteger(data?.Status)&&data.Status>=0&&data.Status<=65535?data.Status:null;const reason=data?.TC===true?'DNS_TRUNCATED':dnsStatus===null?'DNS_RESPONSE_INVALID':dnsStatus===2?'DNS_SERVFAIL':dnsStatus===3?'DNS_NXDOMAIN':dnsStatus===5?'DNS_REFUSED':dnsStatus!==0?'DNS_RCODE_ERROR':'DNS_RESPONSE_RECEIVED';diagnostics.push({resolver,type,phase:'complete',httpStatus:result.status,dnsStatus,reason});return data;}
    catch(error){const diagnostic={resolver,type,...networkDiagnostic(error,{phase:'response-json',httpStatus:result.status})};diagnostics.push(diagnostic);console.warn('[domain-dns-diagnostic]',JSON.stringify(diagnostic));throw error;}
   }};
  };
  try{
   const dns=await checkCustomDomainDns({hostname,zoneName,expectedNameservers,fetchImpl:diagnosticFetch});
-  return json(200,{release:RELEASE,diagnosticRelease:'domain-network-diagnostic-v1-20261106',diagnostics,scope:'public-recursive-dns-observation',ownershipVerified:false,...dns});
+  return json(200,{release:RELEASE,diagnosticRelease:'domain-dns-rcode-v2-20261107',diagnostics,scope:'public-recursive-dns-observation',ownershipVerified:false,...dns});
  }catch{return json(400,{code:'DNS_QUERY_INVALID_OR_UNAVAILABLE',diagnostics,error:'Pemeriksaan DNS belum menghasilkan bukti. Ini bukan konfirmasi domain rusak.'});}
 }
