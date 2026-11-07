@@ -1,0 +1,2 @@
+import {readFile,writeFile} from 'node:fs/promises';import {readPolicy,assertContext,stampMetadata,report} from './lib.mjs';
+const p=await readPolicy(),sha=assertContext(process.env,p);if(p.releaseFile!=='dist/release-v344.json')throw Error('RELEASE_OUTPUT_PATH_INVALID');const metadata=stampMetadata(JSON.parse(await readFile(p.releaseFile,'utf8')),sha);await writeFile(p.releaseFile,JSON.stringify(metadata));await report('stamp.json',{sha,releaseFile:p.releaseFile,stamped:true});console.log('RELEASE_COMMIT_STAMPED');

@@ -1,0 +1,74 @@
+name: Cloudflare release engine
+on:
+  workflow_call:
+    secrets:
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      VITE_SUPABASE_PUBLISHABLE_KEY:
+        required: false
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: cloudflare-production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://polvmlrhqoiflumibfqs.supabase.co' }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Jqz6qDzX4IKSunPoDT5zyQ_sk6EK4W-' }}
+      VITE_PUBLIC_SITE_URL: https://ngeblogging.com
+    steps:
+      - uses: actions/checkout@v4
+      - id: toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Validate release context, credentials shape and existing layout guard
+        run: node ops/cloudflare-release/validate-release.mjs
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Release input tests
+        run: node --test ops/cloudflare-release/tests/release.test.mjs
+      - name: Domain input and mocked processor regression
+        run: node --test tests/domain-runtime-environment-20261107.test.mjs tests/domain-connection-plan.test.mjs tests/custom-domain-sync-processor.test.mjs tests/custom-domain-tenant-proof.test.mjs ops/domain-dns/tests/dns-plan.test.mjs
+      - name: Test approved catalog
+        run: node --test tests/billing-catalog.test.mjs
+      - name: Preserve existing theme and widget regression gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/theme-widget-stage5-v431.test.mjs tests/theme-layout-stage7-v433.test.mjs 2>&1 | tee theme-widget-v431.log
+      - name: Version application caches
+        run: node scripts/version-service-worker.mjs
+      - name: Build production bundle
+        run: npx --no-install vite build
+      - name: Stamp exact deployment commit
+        run: node ops/cloudflare-release/stamp-release.mjs
+      - name: Worker dry-run before deployment
+        run: npx --no-install wrangler deploy --config wrangler.production.jsonc --keep-vars --dry-run
+      - name: Deploy Worker and assets
+        run: npx --no-install wrangler deploy --config wrangler.production.jsonc --keep-vars
+      - name: Verify exact live commit on application origins
+        run: node ops/cloudflare-release/verify-live-release.mjs
+      - name: Preserve existing Midtrans and live-release gate
+        run: node scripts/verify-midtrans-deployment.mjs
+      - name: Observe customer DNS and HTTP without changing settings
+        if: always() && steps.toolchain.outcome == 'success'
+        continue-on-error: true
+        run: node ops/cloudflare-release/observe-custom-domains.mjs
+      - name: Preserve release evidence even when a gate fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-release-evidence-${{ github.sha }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ops/cloudflare-release/out/*.json
+            theme-widget-v431.log
