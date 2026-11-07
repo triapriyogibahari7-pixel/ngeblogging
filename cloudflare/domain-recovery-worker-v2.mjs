@@ -7,20 +7,22 @@ import {domainRuntimeEnvironment} from '../server/domain-runtime-environment.mjs
 import {domainPendingRecheckResponse} from '../server/domain-pending-recheck-handler.mjs';
 import {handleDomainRequest} from '../server/domain-handler.mjs';
 import {createCustomerDomainRouter} from '../server/customer-domain-connection-router.mjs';
+import {normalizeDomainManagementResponse} from '../shared/customer-domain-management-view.mjs';
 
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
 
 export default {...worker,async fetch(request,env,context){
  const runtimeEnv=domainRuntimeEnvironment(env);
+ const finalize=response=>normalizeDomainManagementResponse(request,response);
  const customerConnection=await customerDomainRouter(request,runtimeEnv);
- if(customerConnection)return customerConnection;
+ if(customerConnection)return finalize(customerConnection);
  const pendingRecheck=await domainPendingRecheckResponse(request,runtimeEnv);
- if(pendingRecheck)return pendingRecheck;
+ if(pendingRecheck)return finalize(pendingRecheck);
  const reconciliation=await domainReconciliationResponse(request,runtimeEnv);
- if(reconciliation)return reconciliation;
- if(isDomainDeadlineRequest(request))return withDomainDeadline(request,runtimeEnv,context,()=>worker.fetch(request,runtimeEnv,context));
+ if(reconciliation)return finalize(reconciliation);
+ if(isDomainDeadlineRequest(request))return finalize(await withDomainDeadline(request,runtimeEnv,context,()=>worker.fetch(request,runtimeEnv,context)));
  const response=await domainRecoveryResponse(request,runtimeEnv);
- return response||worker.fetch(request,runtimeEnv,context);
+ return finalize(response||await worker.fetch(request,runtimeEnv,context));
 },async scheduled(event,env,context){
  const runtimeEnv=domainRuntimeEnvironment(env);
  // This dedicated cron must not dispatch registration or purchasing jobs.
