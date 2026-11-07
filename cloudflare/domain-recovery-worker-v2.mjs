@@ -4,9 +4,12 @@ import {DOMAIN_MANAGEMENT_CRON,runDomainManagementSchedule} from '../server/doma
 import {isDomainDeadlineRequest,withDomainDeadline} from '../server/domain-api-deadline.mjs';
 import {domainReconciliationResponse} from '../server/domain-reconciliation-stage3.mjs';
 import {domainRuntimeEnvironment} from '../server/domain-runtime-environment.mjs';
+import {domainPendingRecheckResponse} from '../server/domain-pending-recheck-handler.mjs';
 
 export default {...worker,async fetch(request,env,context){
  const runtimeEnv=domainRuntimeEnvironment(env);
+ const pendingRecheck=await domainPendingRecheckResponse(request,runtimeEnv);
+ if(pendingRecheck)return pendingRecheck;
  const reconciliation=await domainReconciliationResponse(request,runtimeEnv);
  if(reconciliation)return reconciliation;
  if(isDomainDeadlineRequest(request))return withDomainDeadline(request,runtimeEnv,context,()=>worker.fetch(request,runtimeEnv,context));
