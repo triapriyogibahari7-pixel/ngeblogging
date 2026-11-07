@@ -1,0 +1,9 @@
+# Checkpoint callbacks connected at adapter layer
+
+createMigrationDatabase now exposes cloudflareClient({token,zoneId,fetchImpl}), which constructs the real Custom Hostnames client with beforeWrite and afterWrite callbacks connected to public.domain_migration_provider_checkpoint. Obtain a held journal lock from the SAME per-execution database instance first. Each mutation reserves its request before Cloudflare and settles its result afterward. No tokens/authorization headers are stored in the intent.
+
+Seven tests passed on Node with the copied stored Cloudflare client, proposed database adapter, and simulated database/provider transport. They cover order, missing lock, lost reserve/provider/settlement responses, scope mismatch, blocked bypass retries and a sequential second acquire. These are NOT live SQL, concurrent multi-process, native Worker or actual Cloudflare tests.
+
+A pending operation prevents further provider mutations and journal.release in the same adapter instance. Crash-safe release blocking must STILL be enforced in SQL against persisted unsettled provider_operations; the current unapplied main SQL needs that hardening. The factory must never be shared across executions or used concurrently. Lost acquisition responses require operator reconciliation. No automatic timeout or retry is added. Keep mutation endpoint blocked.
+
+The provider-checkpoint RPC is already applied, but the main domain_migration_rpc is not. Thus creating this factory does not make live lock acquisition work yet. The public runtime still returns MIGRATION_PROVIDER_ADAPTER_NOT_READY for prepare/cutover/rollback and does NOT construct or activate the full provider adapter. Authoritative DNS collection, trusted content pins, source inventory and DNS/Worker/certificate restoration are not implemented by this patch. No deployment, SQL application, DNS edits or domain migration occurs by saving it.
