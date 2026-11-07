@@ -8,12 +8,15 @@ import {domainPendingRecheckResponse} from '../server/domain-pending-recheck-han
 import {handleDomainRequest} from '../server/domain-handler.mjs';
 import {createCustomerDomainRouter} from '../server/customer-domain-connection-router.mjs';
 import {normalizeDomainManagementResponse} from '../shared/customer-domain-management-view.mjs';
+import {domainMigrationResponse} from '../server/customer-domain-migration-runtime.mjs';
 
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
 
 export default {...worker,async fetch(request,env,context){
  const runtimeEnv=domainRuntimeEnvironment(env);
  const finalize=response=>normalizeDomainManagementResponse(request,response);
+ const migration=await domainMigrationResponse(request,runtimeEnv);
+ if(migration)return migration;
  const customerConnection=await customerDomainRouter(request,runtimeEnv);
  if(customerConnection)return finalize(customerConnection);
  const pendingRecheck=await domainPendingRecheckResponse(request,runtimeEnv);
