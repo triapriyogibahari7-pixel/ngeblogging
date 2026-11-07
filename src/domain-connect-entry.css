@@ -16,3 +16,4 @@
 .nd-connect-entry code{user-select:all;overflow-wrap:anywhere}
 .nd-connected-domain-manager [data-domain-connect-slot] .nd-connect-entry{border:0;box-shadow:none;margin:0;padding:12px 0}
 @media(max-width:600px){.nd-connect-entry .nd-connect-form{grid-template-columns:minmax(0,1fr) 116px;gap:8px}.nd-connect-entry .nd-connect-form>.nd-connect-submit{font-size:13px;padding:6px 8px}.nd-connect-entry .nd-connect-field>input{padding:0 10px;font-size:16px}.nd-connect-entry .nd-connect-description{font-size:13px;margin-bottom:14px}}
+.nd-connected-domain-manager .sv124-domain-list>header>div>h2,.nd-connected-domain-manager .sv124-domain-list>header>div>p{display:none}
