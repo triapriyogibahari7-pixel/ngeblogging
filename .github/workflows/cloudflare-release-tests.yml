@@ -1,0 +1,21 @@
+name: Cloudflare release source tests
+on:
+  pull_request:
+    paths:
+      - 'ops/cloudflare-release/**'
+      - '.github/workflows/cloudflare-release-*.yml'
+      - '.github/workflows/cloudflare-production-main.yml'
+      - 'docs/cloudflare-push-release.md'
+permissions:
+  contents: read
+jobs:
+  release-input-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - run: node --test ops/cloudflare-release/tests/release.test.mjs
+      - run: node --check ops/cloudflare-release/validate-release.mjs && node --check ops/cloudflare-release/stamp-release.mjs && node --check ops/cloudflare-release/verify-live-release.mjs && node --check ops/cloudflare-release/observe-custom-domains.mjs

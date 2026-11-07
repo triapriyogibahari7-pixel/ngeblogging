@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {assertContext,stampMetadata,verifyMetadata,fetchMetadata} from '../lib.mjs';
+const p=JSON.parse(await readFile(new URL('../policy.json',import.meta.url),'utf8')),sha='a'.repeat(40),env={GITHUB_REPOSITORY:p.repository,GITHUB_REF:p.ref,GITHUB_SHA:sha,GITHUB_EVENT_NAME:'push',CLOUDFLARE_ACCOUNT_ID:'b'.repeat(32),CLOUDFLARE_API_TOKEN:'test-only'};
+test('main push context is accepted',()=>assert.equal(assertContext(env,p,{credentials:true}),sha));
+test('pull request cannot deploy production',()=>assert.throws(()=>assertContext({...env,GITHUB_EVENT_NAME:'pull_request'},p)));
+test('non-main branch cannot deploy production',()=>assert.throws(()=>assertContext({...env,GITHUB_REF:'refs/heads/feature'},p)));
+test('wrong repository cannot deploy production',()=>assert.throws(()=>assertContext({...env,GITHUB_REPOSITORY:'other/repo'},p)));
+test('missing credentials fail preflight',()=>assert.throws(()=>assertContext({...env,CLOUDFLARE_API_TOKEN:''},p,{credentials:true})));
+test('stamp preserves release fields without altering input',()=>{const x={release:'existing'};const y=stampMetadata(x,sha);assert.equal(y.release,x.release);assert.equal(y.deployment_commit,sha);assert.equal(x.deployment_commit,undefined);});
+test('only exact commit verifies',()=>{assert.equal(verifyMetadata({deployment_commit:sha},sha),true);assert.equal(verifyMetadata({deployment_commit:'c'.repeat(40)},sha),false);});
+test('HTML cannot impersonate release JSON',async()=>await assert.rejects(()=>fetchMetadata('https://ngeblogging.com/release-v344.json',{fetchImpl:async()=>new Response('<html/>',{headers:{'content-type':'text/html'}})})));
+test('redirect cannot impersonate live commit',async()=>await assert.rejects(()=>fetchMetadata('https://ngeblogging.com/release-v344.json',{fetchImpl:async()=>new Response(null,{status:302})})));
+test('public metadata request sends no authorization',async()=>{let init;await fetchMetadata('https://ngeblogging.com/release-v344.json',{fetchImpl:async(u,o)=>{init=o;return Response.json({deployment_commit:sha});}});assert.equal(init.headers.authorization,undefined);assert.equal(init.redirect,'manual');});

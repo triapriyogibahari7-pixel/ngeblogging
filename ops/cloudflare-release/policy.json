@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "repository": "triapriyogibahari7-pixel/ngeblogging",
+  "ref": "refs/heads/main",
+  "workerConfig": "wrangler.production.jsonc",
+  "workerMain": "./cloudflare/domain-recovery-worker-v2.mjs",
+  "releaseFile": "dist/release-v344.json",
+  "releasePath": "/release-v344.json",
+  "productionOrigins": [
+    "https://ngeblogging.com",
+    "https://www.ngeblogging.com"
+  ],
+  "customerHosts": [
+    "triapriyoginotes.my.id",
+    "www.triapriyoginotes.my.id"
+  ]
+}
