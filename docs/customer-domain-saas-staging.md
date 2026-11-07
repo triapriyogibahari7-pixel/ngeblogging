@@ -1,0 +1,9 @@
+# Customer SaaS staging — not ready for merge or production activation
+
+This commit stages the contract, guarded gateway and mocked tests only. The gateway factory is not imported into the production Worker yet and the customer form is not switched yet. Do not merge this staging commit as a completed BYOD feature. The four existing-file integration edits, customer form/instructions and optional custom_metadata payload handling from the prepared patch still need to be applied and reviewed.
+
+BYOD uses independent CUSTOM_DOMAIN_BYOD_ENABLED and CUSTOM_DOMAIN_BYOD_SAAS_READY flags, default disabled. This avoids changing the global full-zone flags checked by scripts/run-cloudflare-domain-repair.mjs. The gateway forces SaaS flags only on a derived request environment, after platform/manager/provider preflight, without altering managed/paid source configuration. No flags or secrets are configured by committing these files.
+
+The earlier ZIP used global SaaS readiness flags. This staged revision isolates them; run the updated tests and full integration/build again. Earlier offline test results are not proof this revised branch has completed CI or production validation.
+
+Before enabling: verify platform SaaS provisioning, exact zone/account, active fallback origin, proxied routing target, credentials, legacy registration/custom metadata capability, database authorization and provider-state persistence. This is not a replacement of the legacy backend, a durable global provisioning queue or atomic ownership cutover. Unknown registration outcomes may finish after timeout; inspect state before retrying. Existing full-zone domains/aliases require separate migration. No DNS, delegation, DS/DNSKEY, publication, database migration or provider mutation occurs from this source-only commit. No 100-million-hostname capacity or HTTP 530 recovery is certified.
