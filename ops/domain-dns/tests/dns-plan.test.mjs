@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {buildPlan,summarize,fqdn} from '../lib/plan.mjs';import {queryDns} from '../lib/doh.mjs';
+const fixture=JSON.parse(await readFile(new URL('../config/domain.example.json',import.meta.url),'utf8'));const clone=()=>structuredClone(fixture);
+test('plan stays non-deployable with placeholders',()=>{const p=buildPlan(clone());assert.equal(p.deployable,false);assert.equal(p.providerProvisioningVerified,false);assert.equal(p.blockers.length,5);});
+test('IP placeholders cannot be fabricated as hostnames',()=>assert.throws(()=>fqdn('1.2.3.4')));
+test('URL is not a nameserver',()=>assert.throws(()=>fqdn('https://ns1.example.com')));
+test('duplicate authoritative names are rejected',()=>{const c=clone();c.brandedNameservers[1].name=c.brandedNameservers[0].name;assert.throws(()=>buildPlan(c));});
+test('CNAME on nameserver owner is rejected',()=>{const c=clone();c.cnameDrafts[0].name=c.brandedNameservers[0].name;assert.throws(()=>buildPlan(c));});
+test('CNAME is never ownership proof',()=>assert.equal(buildPlan(clone()).cnameDrafts[1].ownershipProof,false));
+test('HTTP 200 can still report DNS SERVFAIL',async()=>{const r=await queryDns({resolver:'dns.google',name:fixture.domain,type:'NS'},{fetchImpl:async()=>Response.json({Status:2})});assert.equal(r.httpStatus,200);assert.equal(r.status,2);});
+test('transport failure is not automatically SERVFAIL',async()=>{const r=await queryDns({resolver:'dns.google',name:fixture.domain,type:'NS'},{fetchImpl:async()=>{throw Error();}});assert.equal(r.status,undefined);assert.equal(summarize([r]).servfailCount,0);});
+test('DNSSEC suspicion requires comparison',()=>{const base={resolver:'dns.google',name:fixture.domain,type:'NS'};assert.equal(summarize([{...base,status:2,checkingDisabled:false},{...base,status:0,checkingDisabled:true}]).dnssecValidationSuspected,true);assert.equal(summarize([{...base,status:2,checkingDisabled:false}]).dnssecValidationSuspected,false);});
+test('resolver allowlist rejects unexpected targets',async()=>await assert.rejects(()=>queryDns({resolver:'localhost',name:fixture.domain,type:'NS'})));
