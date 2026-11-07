@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import StudioOnboardingGate from "./StudioOnboardingGate.jsx";
 import StudioSecure from "./StudioSecure.jsx";
 import { ACTIVE_SITE_STORAGE_KEY } from "./lib/studio-data.js";
+import { startDashboardInstaller } from "./dashboard-app-install.mjs";
 
 const RELEASE = "studio-fast-entry-v311-20260806";
 const SNAPSHOT_KEYS = [
@@ -61,6 +62,11 @@ function hasKnownSite(userId) {
 }
 
 export default function StudioFastGate(props) {
+  useEffect(() => {
+    if (!props.user?.id) return undefined;
+    return startDashboardInstaller();
+  }, [props.user?.id]);
+
   const canResumeImmediately = useMemo(
     () => Boolean(props.user?.id && hasKnownSite(props.user.id)),
     [props.user?.id],
