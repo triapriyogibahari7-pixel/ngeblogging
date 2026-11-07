@@ -22,19 +22,21 @@ async function queryOnce(resolver, name, type, fetchImpl) {
  try {
   return await withDeadline(4000, async signal => {
    const response = await fetchImpl(url.toString(), {redirect: 'manual', headers: {accept: 'application/dns-json'}, signal});
-   if (!response.ok) { try { await response.body?.cancel?.(); } catch {} return {state: 'unavailable', answers: []}; }
+   if (!response.ok) { try { await response.body?.cancel?.(); } catch {} return {state: 'unavailable', answers: [], reason: 'DNS_HTTP_ERROR'}; }
    const data = await response.json();
-   if (data?.TC === true || !Number.isInteger(data?.Status)) return {state: 'unavailable', answers: []};
-   if (data.Status === 3) return {state: 'nxdomain', answers: []};
-   if (data.Status !== 0) return {state: 'unavailable', answers: []};
+   if (data?.TC === true) return {state: 'unavailable', answers: [], reason: 'DNS_TRUNCATED'};
+   if (!Number.isInteger(data?.Status) || data.Status < 0 || data.Status > 65535) return {state: 'unavailable', answers: [], reason: 'DNS_RESPONSE_INVALID'};
+   const dnsStatus = data.Status;
+   if (dnsStatus === 3) return {state: 'nxdomain', answers: [], dnsStatus, reason: 'DNS_NXDOMAIN'};
+   if (dnsStatus !== 0) return {state: 'unavailable', answers: [], dnsStatus, reason: dnsStatus === 2 ? 'DNS_SERVFAIL' : dnsStatus === 5 ? 'DNS_REFUSED' : 'DNS_RCODE_ERROR'};
    const answers = (Array.isArray(data.Answer) ? data.Answer : []).filter(row => row?.type === TYPES[type] && typeof row.data === 'string').map(row => row.data);
-   return {state: answers.length ? 'resolved' : 'no_answer', answers};
+   return {state: answers.length ? 'resolved' : 'no_answer', answers, dnsStatus, reason: answers.length ? 'DNS_ANSWER' : 'DNS_NO_ANSWER'};
   });
- } catch { return {state: 'unavailable', answers: []}; }
+ } catch { return {state: 'unavailable', answers: [], reason: 'DNS_TRANSPORT_OR_RESPONSE_ERROR'}; }
 }
 async function query(resolver, name, type, fetchImpl) {
  const first = await queryOnce(resolver, name, type, fetchImpl);
- if (first.state !== 'unavailable') return first;
+ if (first.state !== 'unavailable' || Number.isInteger(first.dnsStatus)) return first;
  await new Promise(resolve => setTimeout(resolve, 150));
  return queryOnce(resolver, name, type, fetchImpl);
 }
@@ -66,5 +68,6 @@ export async function checkCustomDomainDns({hostname: input, zoneName, expectedN
  }));
  const ready = checks.every(check => check.addressReady && check.nameserversMatch);
  const state = ready ? 'dns_ready' : checks.some(check => check.a.state === 'nxdomain' || check.aaaa.state === 'nxdomain') ? 'nxdomain' : checks.some(check => check.a.state === 'unavailable' || check.aaaa.state === 'unavailable' || check.ns.state === 'unavailable') ? 'inconclusive' : checks.some(check => !check.nameserversMatch) ? 'nameserver_mismatch' : 'address_missing';
- return {hostname: name, zoneName: zone, checkedAt: new Date().toISOString(), ready, state, checks, httpsVerified: false, siteContentVerified: false};
+ const failureReasons = [...new Set(checks.flatMap(check => [check.a, check.aaaa, check.ns]).filter(row => row.state === 'unavailable').map(row => row.reason))];
+ return {hostname: name, zoneName: zone, checkedAt: new Date().toISOString(), ready, state, checks, failureReasons, httpsVerified: false, siteContentVerified: false};
 }
