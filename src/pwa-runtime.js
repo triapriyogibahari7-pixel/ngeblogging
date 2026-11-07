@@ -1,8 +1,9 @@
+import {startSmartphoneInstaller} from './mobile-app-install.mjs';
+
 const RELEASE = "ngeblogging-pwa-v153-20260730";
 const LEGACY_RELEASE = "ngeblogging-pwa-v151-20260729";
 const UI_RELEASE = "auth-production-v153";
 const LEGACY_UI_RELEASE = "studio-completion-v151";
-const ROOT = document.getElementById("root") || document.documentElement;
 const CONTROLLER_GUARD = "ngeblogging-pwa-controller-v153";
 const LEGACY_CONTROLLER_GUARD = "ngeblogging-pwa-controller-v151";
 const RECOVERY_QUERY = "ngeblogging_recovery";
@@ -12,9 +13,6 @@ const COMPACT_MAX = 760;
 const TABLET_MAX = 1180;
 const PHONE_MAX = 430;
 const HANDHELD_MAX = 600;
-let installPrompt = null;
-let installButton = null;
-let scanFrame = 0;
 let controllerRecoveryStarted = false;
 
 function mediaMatches(query) {
@@ -169,45 +167,6 @@ function reloadForNewController(reason = "controllerchange") {
   window.location.replace(url.href);
 }
 
-function removeInstallButton() {
-  installButton?.remove();
-  installButton = null;
-}
-
-function ensureInstallButton() {
-  if (!installPrompt || standalone()) {
-    removeInstallButton();
-    return;
-  }
-  const actions = document.querySelector(".sn-top-actions");
-  if (!actions || actions.querySelector(".sn-install-app")) return;
-
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "sn-install-app";
-  button.setAttribute("aria-label", "Pasang aplikasi Ngeblogging");
-  button.setAttribute("title", "Pasang aplikasi Ngeblogging");
-  button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><rect width="18" height="5" x="3" y="17" rx="2"/></svg><span>Pasang aplikasi</span>';
-  button.addEventListener("click", async () => {
-    const prompt = installPrompt;
-    if (!prompt) return;
-    button.disabled = true;
-    await prompt.prompt();
-    await prompt.userChoice.catch(() => null);
-    installPrompt = null;
-    removeInstallButton();
-  }, { once: true });
-
-  const avatar = actions.querySelector(".sn-avatar");
-  actions.insertBefore(button, avatar || null);
-  installButton = button;
-}
-
-function scheduleInstallButton() {
-  if (scanFrame) cancelAnimationFrame(scanFrame);
-  scanFrame = requestAnimationFrame(ensureInstallButton);
-}
-
 async function registerServiceWorker() {
   if (!productionHost() || !("serviceWorker" in navigator)) return;
   if (location.protocol !== "https:" && location.hostname !== "localhost") return;
@@ -240,21 +199,11 @@ async function registerServiceWorker() {
   }
 }
 
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  installPrompt = event;
-  ensureInstallButton();
-});
-window.addEventListener("appinstalled", () => {
-  installPrompt = null;
-  document.documentElement.dataset.installed = String(standalone());
-  removeInstallButton();
-});
+startSmartphoneInstaller();
 window.addEventListener("resize", syncDeviceMode, { passive: true });
 window.addEventListener("orientationchange", syncDeviceMode, { passive: true });
 window.addEventListener("pageshow", syncDeviceMode, { passive: true });
 window.visualViewport?.addEventListener("resize", syncDeviceMode, { passive: true });
-new MutationObserver(scheduleInstallButton).observe(ROOT, { childList: true, subtree: true });
 
 syncDeviceMode();
 document.documentElement.dataset.installed = String(standalone());
