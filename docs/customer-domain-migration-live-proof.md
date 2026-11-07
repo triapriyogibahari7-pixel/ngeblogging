@@ -1,0 +1,11 @@
+# Live verification primitives - not an activated migration adapter
+
+Custom Hostnames IDs are UUIDs (36 chars); zone IDs remain 32 hex chars. The client now validates them separately, requires migration/site metadata on creates, supports an owned PATCH to bind provider_id for native route proof, and refuses incomplete hostname-list pagination. Each mutation still requires durable beforeWrite/afterWrite checkpoints. No automatic retry or timeout unlock is added.
+
+The new route proof responder authenticates fresh nonce-bound HMAC requests and verifies native request.cf.hostMetadata site_id/migration_id/provider_id. It never trusts client HTTP headers as native metadata. It is deliberately NOT imported in the Worker yet and requires a separate >=32-character MIGRATION_ROUTE_PROOF_SECRET and MIGRATION_ROUTE_PROOF_ENABLED=true. Custom Metadata availability must be verified with Cloudflare; missing metadata fails closed.
+
+verifyMigrationTarget checks active provider/TLS input, requires fresh authoritative DNS evidence from a trusted server adapter, checks recursive A/AAAA answers independently at Cloudflare and Google, obtains a signed native SaaS-route proof over normal certificate-validating HTTPS, and compares actual HTML bytes against a server-trusted SHA-256 content pin for that site. Pins must originate in a reviewed site publication snapshot, never a client request. Dynamic pages/redirects/canonical redirects will fail unless a stable same-host published HTML path is selected. It does not claim certificate expiry/SAN inspection beyond fetch TLS validation.
+
+This patch is NOT the complete source-inventory/stage/switchTraffic/restoreSource provider adapter. The authoritative DNS adapter, content-pin generation, durable provider-operation RPCs, source certificate/Worker/DNS restoration and native source-route rollback proof remain missing. Existing full-zone tenant proof explicitly reports siteContentVerified:false and cannot substitute for them. No verifier output should be manufactured to enable the executor.
+
+No tests/build/live verification have run. No SQL, Worker deployment, route-proof enablement, DNS changes or customer-domain migration occurs by committing these files. Mutation endpoint remains blocked. The prior database transaction SQL is still unapplied and requires review/tests.
