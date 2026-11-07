@@ -5,9 +5,15 @@ import {isDomainDeadlineRequest,withDomainDeadline} from '../server/domain-api-d
 import {domainReconciliationResponse} from '../server/domain-reconciliation-stage3.mjs';
 import {domainRuntimeEnvironment} from '../server/domain-runtime-environment.mjs';
 import {domainPendingRecheckResponse} from '../server/domain-pending-recheck-handler.mjs';
+import {handleDomainRequest} from '../server/domain-handler.mjs';
+import {createCustomerDomainRouter} from '../server/customer-domain-connection-router.mjs';
+
+const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
 
 export default {...worker,async fetch(request,env,context){
  const runtimeEnv=domainRuntimeEnvironment(env);
+ const customerConnection=await customerDomainRouter(request,runtimeEnv);
+ if(customerConnection)return customerConnection;
  const pendingRecheck=await domainPendingRecheckResponse(request,runtimeEnv);
  if(pendingRecheck)return pendingRecheck;
  const reconciliation=await domainReconciliationResponse(request,runtimeEnv);
