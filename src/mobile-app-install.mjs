@@ -28,7 +28,7 @@ export function startSmartphoneInstaller(win=window,doc=document){
  if(win[key])return win[key];
  if(!smartphoneInstallContext({navigator:win.navigator,screen:win.screen,matchMedia:q=>win.matchMedia(q)}))return null;
  const host=String(win.location.hostname).toLowerCase();
- if(host!=='ngeblogging.com'&&host!=='www.ngeblogging.com'&&!host.endsWith('.ngeblogging.com')&&!['localhost','127.0.0.1'].includes(host))return null;
+ if(!['ngeblogging.com','www.ngeblogging.com','localhost','127.0.0.1'].includes(host))return null;
  let button=null,frame=0,last={installed:false,busy:false};
  const standalone=()=>{try{return win.matchMedia('(display-mode: standalone)').matches||win.navigator.standalone===true;}catch{return false;}};
  function guide(message){
