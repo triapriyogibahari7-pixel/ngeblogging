@@ -1,0 +1,13 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {dnsHost,planNameservers,parsePlanRecords,buildDomainConnectionPlan} from '../src/lib/domain-connection-plan.mjs';
+test('nameserver normalization and deduplication',()=>assert.deepEqual(planNameservers('NS1.Example.net.\nns1.example.net\nns2.example.net'),['ns1.example.net','ns2.example.net']));
+test('nameservers reject URL',()=>assert.throws(()=>planNameservers('https://ns1.example.net')));
+test('nameservers reject IPv4',()=>assert.throws(()=>dnsHost('1.2.3.4')));
+test('Blogger uses CNAME records not nameservers',()=>assert.equal(parsePlanRecords('CNAME | www | ghs.google.com','example.com')[0].host,'www.example.com'));
+test('cross-domain owner record is rejected',()=>assert.throws(()=>parsePlanRecords('TXT | other.example.net | verify','example.com')));
+test('TXT permits public verification value',()=>assert.equal(parsePlanRecords('TXT | @ | public-verification','example.com')[0].type,'TXT'));
+test('invalid IPv4 is rejected',()=>assert.throws(()=>parsePlanRecords('A | @ | 999.1.2.3','example.com')));
+test('MX requires bounded priority',()=>assert.throws(()=>parsePlanRecords('MX | @ | mail.example.net | 99999','example.com')));
+test('CNAME and A cannot share owner',()=>assert.throws(()=>parsePlanRecords('CNAME | www | ghs.google.com\nA | www | 1.2.3.4','example.com')));
+test('draft cannot fabricate activation or nameservers assigned by provider',()=>{const p=buildDomainConnectionPlan({registrar:'Any registrar',dnsProvider:'other',destination:'external',nameservers:'ns1.example.net',records:''},'example.com');assert.equal(p.verified,undefined);assert.equal(p.required_name_servers,undefined);});
+test('nameserver list is bounded',()=>assert.throws(()=>planNameservers(Array.from({length:14},(_,i)=>'ns'+i+'.example.net').join('\n'))));
+test('record list is bounded',()=>assert.throws(()=>parsePlanRecords(Array.from({length:25},()=> 'TXT | @ | value').join('\n'),'example.com')));

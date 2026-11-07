@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import DomainConnectionMenu from './DomainConnectionMenu.jsx';
 import {ExternalLink,RefreshCw} from 'lucide-react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {publicAuditContext,readPublicAuditPayload,publicAuditRowView} from './lib/domain-public-audit-view.mjs';
@@ -85,10 +86,10 @@ export default function DomainCardConnection({site,domain,domains=[],disabled=fa
  const httpsFresh=fresh(shown?.checkedAt),providerFresh=fresh(shown?.providerCheckedAt);
  const ready=Boolean(href&&addressesReady&&(fullZone?nsReady:saas)&&httpsFresh&&shown?.httpsReady&&providerFresh&&shown?.providerReady&&shown?.published&&published);
  function item(label,ok,text){return h('span',{className:ok?'active':'pending',style:{display:'inline-block',padding:'4px 8px',borderRadius:'6px',background:ok?'#e8f7ee':'#fff5d6',color:ok?'#176438':'#725600'}},label+': '+text);}
- return h('section',{'data-domain-card-connection':RELEASE,'aria-busy':busy},
+ return h(React.Fragment,null,h(DomainConnectionMenu,{site,domain,disabled:disabled||busy,beginOperation}),h('section',{'data-domain-card-connection':RELEASE,'aria-busy':busy},
   h('div',{style:{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'8px'}},item('Provider',providerFresh&&shown?.providerReady,shown?.providerCheckedAt&&!providerFresh?'Hasil kedaluwarsa':shown?.providerState||pending),item('Nameserver',fullZone&&nsReady,nsText),item('DNS',addressesReady,dnsText),item('HTTPS',httpsFresh&&shown?.httpsReady,shown?.checkedAt&&!httpsFresh?'Hasil kedaluwarsa':shown?.httpsState||pending),item('Publikasi',published,published?'Diterbitkan':'Draf')),
   h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},h('button',{type:'button',onClick:check,disabled:disabled||busy||!href||domain?.status==='pending_deletion'},h(RefreshCw,{className:busy?'spin':''}),busy?'Memeriksa koneksi…':'Periksa koneksi'),ready?h('a',{href,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'12px'}},h(ExternalLink,{size:14}),'Lihat situs'):h('span',{'aria-disabled':'true',style:{fontSize:'12px',opacity:0.6}},'Lihat situs — belum siap')),
   dns?h('details',null,h('summary',null,'Bukti DNS publik'),h('p',null,'Diperiksa '+new Date(dns.checkedAt).toLocaleString('id-ID')+'; hasil berlaku 5 menit. Ini bukan bukti HTTPS atau identitas konten.'),...checks.map(row=>h('p',{key:row.resolver},row.resolver+' · NS ['+row.ns.state+']: '+row.ns.answers.join(', ')+' · A ['+row.a.state+']: '+row.a.answers.join(', ')+' · AAAA ['+row.aaaa.state+']: '+row.aaaa.answers.join(', '))),diagnostics.length?h('div',{'data-dns-server-diagnostics':true},h('p',null,'Diagnostik pemeriksaan server'),...diagnostics.map((row,index)=>h('p',{key:index},row.resolver+' · '+row.type+' · '+(diagnosticText(row.reason)||'UNKNOWN')+(diagnosticText(row.phase)?' · fase '+diagnosticText(row.phase):'')+(Number.isInteger(row.httpStatus)&&row.httpStatus>0&&row.httpStatus<=599?' · HTTP '+row.httpStatus:'')+(Number.isInteger(row.dnsStatus)&&row.dnsStatus>=0&&row.dnsStatus<=65535?' · DNS '+row.dnsStatus:'')+(diagnosticText(row.code)?' · kode '+diagnosticText(row.code):'')))):null):null,
   shown?.dnsError?h('p',{role:'status'},shown.dnsError):null,
-  notice?h('p',{role:'status','aria-live':'polite'},notice):null);
+  notice?h('p',{role:'status','aria-live':'polite'},notice):null));
 }
