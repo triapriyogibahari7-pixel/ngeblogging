@@ -1,15 +1,18 @@
 .nd-connected-domain-manager .sv124-domain-register{display:none}
-.nd-connect-entry{min-width:0;max-width:100%;overflow-wrap:anywhere}
-.nd-connect-entry form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:end;margin-top:16px}
-.nd-connect-entry form>label{grid-column:1;grid-row:1;min-width:0}
-.nd-connect-entry form>button[type=submit]{grid-column:2;grid-row:1;align-self:end;margin:0;width:auto;max-width:100%}
-.nd-connect-entry form>p{grid-column:1/-1;grid-row:2;margin:0}
-.nd-connect-entry label{display:grid;gap:8px}
-.nd-connect-entry input{box-sizing:border-box;width:100%;min-width:0;height:44px;font:inherit;padding:10px}
-.nd-connect-entry button{min-height:44px;white-space:normal;writing-mode:horizontal-tb}
-.nd-connect-entry form>button[type=submit]{box-sizing:border-box;height:44px;min-width:0;padding:4px 12px;line-height:1.2}
+.nd-connect-entry{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.nd-connect-entry .nd-connect-description{margin:8px 0 18px;line-height:1.6}
+.nd-connect-entry .nd-connect-form{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:12px;align-items:end;margin:0;padding:0;min-width:0}
+.nd-connect-entry .nd-connect-form>.nd-connect-field{display:flex;flex-direction:column;gap:8px;grid-column:1;grid-row:1;position:static;inset:auto;transform:none;min-width:0;width:auto;margin:0}
+.nd-connect-entry .nd-connect-field>span{display:block;position:static;inset:auto;transform:none;font-size:14px;line-height:1.4;margin:0}
+.nd-connect-entry .nd-connect-field>input{box-sizing:border-box;display:block;position:static;transform:none;width:100%;min-width:0;height:48px;margin:0;padding:0 14px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#0f172a;font:inherit;font-size:16px;line-height:1.4;outline-offset:3px}
+.nd-connect-entry .nd-connect-field>input:focus-visible{outline:2px solid #2563eb;border-color:#2563eb}
+.nd-connect-entry .nd-connect-form>.nd-connect-submit{box-sizing:border-box;grid-column:2;grid-row:1;align-self:end;position:static;inset:auto;transform:none;width:100%;min-width:0;height:48px;min-height:48px;margin:0;padding:6px 12px;border-radius:12px;white-space:normal;writing-mode:horizontal-tb;font:inherit;font-size:14px;line-height:1.3}
+.nd-connect-entry .nd-connect-submit:disabled{cursor:not-allowed;opacity:.65}
+.nd-connect-entry .nd-connect-feedback:empty{display:none}
+.nd-connect-entry .nd-connect-feedback p{margin:10px 0 0;font-size:13px;line-height:1.6}
+.nd-connect-entry .nd-connect-retry{display:inline-block;width:auto;min-height:44px;margin:8px 0 0;padding:8px 0;border:0;background:none;color:#1d4ed8;font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
+.nd-connect-entry .nd-connect-result{margin-top:20px;padding:16px;border:1px solid #dbeafe;border-radius:12px;background:#f8fbff;min-width:0}
+.nd-connect-entry .nd-connect-result pre{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 .nd-connect-entry code{user-select:all;overflow-wrap:anywhere}
 .nd-connected-domain-manager [data-domain-connect-slot] .nd-connect-entry{border:0;box-shadow:none;margin:0;padding:12px 0}
-.nd-connected-domain-manager .sv124-domain-list>header>div>p{display:none}
-.nd-connected-domain-manager .sv124-domain-list:not(:has(.sv124-domain-item))>header>div>h2{display:none}
-@media(max-width:600px){.nd-connect-entry>button{width:100%;margin-top:8px}.nd-connect-entry input{font-size:16px}.nd-connect-entry form{grid-template-columns:minmax(0,1fr) minmax(0,.8fr);column-gap:8px}.nd-connect-entry form>button[type=submit]{width:100%;margin:0;font-size:13px;padding:4px 8px}}
+@media(max-width:600px){.nd-connect-entry .nd-connect-form{grid-template-columns:minmax(0,1fr) 116px;gap:8px}.nd-connect-entry .nd-connect-form>.nd-connect-submit{font-size:13px;padding:6px 8px}.nd-connect-entry .nd-connect-field>input{padding:0 10px;font-size:16px}.nd-connect-entry .nd-connect-description{font-size:13px;margin-bottom:14px}}
