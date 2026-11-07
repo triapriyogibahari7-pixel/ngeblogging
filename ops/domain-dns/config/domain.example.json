@@ -1,0 +1,15 @@
+{
+  "domain": "triapriyoginotes.my.id",
+  "www": "www.triapriyoginotes.my.id",
+  "brandDomain": "ngeblogging.com",
+  "provider": "cloudflare_vanity",
+  "providerAssignedNameservers": [],
+  "brandedNameservers": [
+    {"name": "ns1.ngeblogging.com", "ipv4": [], "ipv6": []},
+    {"name": "ns2.ngeblogging.com", "ipv4": [], "ipv6": []}
+  ],
+  "cnameDrafts": [
+    {"name": "connect.ngeblogging.com", "target": "", "purpose": "routing_hint"},
+    {"name": "verify.ngeblogging.com", "target": "", "purpose": "verification_hint_only"}
+  ]
+}

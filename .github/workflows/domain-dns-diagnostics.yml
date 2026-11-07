@@ -1,0 +1,56 @@
+name: Domain DNS diagnostics (read-only)
+on:
+  pull_request:
+    paths:
+      - 'ops/domain-dns/**'
+      - '.github/workflows/domain-dns-diagnostics.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ops/domain-dns/**'
+      - '.github/workflows/domain-dns-diagnostics.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  input-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Offline DNS-plan tests
+        run: node --test ops/domain-dns/tests/dns-plan.test.mjs
+  public-dns-observations:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: input-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+      - name: Gather recursive DNS observations without changing DNS
+        working-directory: ops/domain-dns
+        run: node scripts/diagnose-domain.mjs config/domain.example.json dns-report.json
+      - name: Generate non-deployable planning report
+        working-directory: ops/domain-dns
+        run: node scripts/make-dns-plan.mjs config/domain.example.json proposed-dns-plan.json
+      - name: Gather delegation trace if dig is available
+        continue-on-error: true
+        working-directory: ops/domain-dns
+        run: bash scripts/trace-delegation.sh > delegation-trace.txt 2>&1
+      - name: Preserve public diagnostic evidence, not a health certificate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-dns-observations-${{ github.sha }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ops/domain-dns/dns-report.json
+            ops/domain-dns/proposed-dns-plan.json
+            ops/domain-dns/delegation-trace.txt
