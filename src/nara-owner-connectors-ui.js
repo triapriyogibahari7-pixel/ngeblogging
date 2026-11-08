@@ -1,12 +1,13 @@
 import { supabase, supabaseConfigured } from './lib/supabase.js';
 import { CONNECTOR_CATALOG } from '../shared/nara-connector-registry.mjs';
+import { applyNaraOwnerChatCopy, restoreNaraOwnerChatCopy } from './nara-owner-chat-copy.mjs';
 import './nara-flexible-connectors.css';
 const OWNER_ID='91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3';
 const OWNER_EMAIL='triapriyogibahari7@gmail.com';
 let visible=false,allowed=false,revision=0,scheduled=false;
 let status='Memeriksa izin konektor...';
 const controllers=new Set();
-function clear(){for(const c of controllers)c.abort();controllers.clear();document.querySelectorAll('.nara-owner-connectors,.nara-flexible-connectors').forEach(n=>n.remove());document.querySelectorAll('[data-nara-owner-upgrade-hidden]').forEach(n=>{n.hidden=false;n.removeAttribute('data-nara-owner-upgrade-hidden');});}
+function clear(){restoreNaraOwnerChatCopy();for(const c of controllers)c.abort();controllers.clear();document.querySelectorAll('.nara-owner-connectors,.nara-flexible-connectors').forEach(n=>n.remove());document.querySelectorAll('[data-nara-owner-upgrade-hidden]').forEach(n=>{n.hidden=false;n.removeAttribute('data-nara-owner-upgrade-hidden');});}
 function revoke(){visible=false;allowed=false;revision++;clear();}
 function el(tag,text){const node=document.createElement(tag);if(text)node.textContent=text;return node;}
 function owner(user){return user?.id===OWNER_ID&&typeof user.email==='string'&&user.email.trim().toLowerCase()===OWNER_EMAIL&&typeof user.email_confirmed_at==='string'&&Number.isFinite(Date.parse(user.email_confirmed_at))&&user.is_anonymous!==true;}
@@ -39,6 +40,7 @@ async function renderList(list,output){
 function mount(){
  if(!visible)return;
  document.querySelectorAll('.nara-assistant-shell').forEach(shell=>{
+  applyNaraOwnerChatCopy(shell);
   const header=shell.querySelector('.nara-assistant-header');if(!header||shell.querySelector('.nara-flexible-connectors'))return;
   const menu=el('details');menu.className='nara-flexible-connectors';const summary=el('summary','Konektor'),panel=el('div');panel.className='nara-connector-popover';
   menu.append(summary,panel);header.after(menu);
