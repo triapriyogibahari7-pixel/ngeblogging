@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "projectRef": "polvmlrhqoiflumibfqs",
+  "appliedMigration": {
+    "version": "20261108054157",
+    "name": "nara_spend_approval_foundation_v1"
+  },
+  "sqlSourceIncludedInRepository": false,
+  "implementedInThisPatch": [
+    "read-existing-server-quote",
+    "authenticated-owner-approve-or-cancel",
+    "no-provider-execution-from-approval-API"
+  ],
+  "notImplemented": [
+    "automatic-quote-creation",
+    "trusted-provider-price-catalog",
+    "free-provider-usage-reservations",
+    "mandatory-gate-on-all-AI-paths",
+    "paid-provider-execution",
+    "real-cost-settlement",
+    "production-dialog-integration"
+  ],
+  "defaultPaidActivation": false,
+  "warning": "This patch does not certify zero spending, full billing protection, or permission to upgrade provider plans. A UI event is never proof of payment authorization."
+}
