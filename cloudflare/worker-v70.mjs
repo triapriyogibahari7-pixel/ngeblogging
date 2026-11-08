@@ -1,3 +1,4 @@
+import { naraFlexibleConnectorsResponse } from '../server/nara-flexible-connectors.mjs';
 import { domainRecoveryResponse } from "../server/domain-recovery-router.mjs";
 import { domainOrderCancellationResponse } from "../server/domain-order-cancellation-handler.mjs";
 import { domainProductionRegistrarLookupResponse } from "../server/domain-production-registrar-lookup.mjs";
@@ -69,6 +70,11 @@ export default {
   },
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const connector = await naraFlexibleConnectorsResponse(request, env);
+    if (connector) return connector;
+    if (url.pathname === '/api/nara/owner-connectors' || url.pathname.startsWith('/api/nara/owner-connectors/')) {
+      return new Response(JSON.stringify({code:'CONNECTOR_ENDPOINT_RETIRED'}), {status:410,headers:{'content-type':'application/json','cache-control':'no-store'}});
+    }
     const domainRecovery = await domainRecoveryResponse(request, env);
     if (domainRecovery) return domainRecovery;
     const domainLookup = await domainProductionRegistrarLookupResponse(request, env);
