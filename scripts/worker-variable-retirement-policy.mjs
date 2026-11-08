@@ -13,7 +13,11 @@ export const RETIRED_RELEASE_VALUES=Object.freeze({
   STUDIO_PRODUCTION_POLISH_RELEASE:Object.freeze(['studio-production-polish-v323-20260806']),
   STUDIO_SCREENSHOT_HOTFIX_RELEASE:Object.freeze(['studio-screenshot-hotfix-v318-20260806']),
   STUDIO_CONTENT_EDITOR_DESKTOP_SITE_COMPAT:Object.freeze(['studio-content-editor-desktop-site-v310-20260806']),
-  STUDIO_SIDEBAR_DIRECT_RELEASE:Object.freeze(['studio-sidebar-direct-v300-20260805'])
+  STUDIO_SIDEBAR_DIRECT_RELEASE:Object.freeze(['studio-sidebar-direct-v300-20260805']),
+  AUTH_GATEWAY_RELEASE:Object.freeze(['2026.07.30-auth-gateway-v153']),
+  AUTH_ENTRY_RELEASE:Object.freeze(['2026.07.30-auth-entry-v158']),
+  STUDIO_ROUTE_RELEASE:Object.freeze(['2026.07.30-studio-route-v160']),
+  AUTH_EDITOR_RELEASE:Object.freeze(['2026.07.30-auth-editor-v162'])
 });
 export const LEGACY_VARIABLE_REMOVALS=Object.freeze(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT',...Object.keys(RETIRED_COMPAT_VALUES),...Object.keys(RETIRED_RELEASE_VALUES)]);
 export function assertLegacyVariableRemoval(binding){
