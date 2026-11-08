@@ -32,3 +32,6 @@ document.documentElement.dataset.naraConnectorsV29 = RELEASE;
    restored pre-API-Keys shell, sidebar geometry, Domain, Comments, or Nara. */
 import("./api-keys-studio-bridge.jsx")
   .catch((error) => console.error("API Keys Studio bridge failed", error));
+
+// Separate owner-only UI does not reactivate the archived public plugin catalog.
+import('./nara-owner-connectors-ui.js').catch(() => console.error('Nara owner connector panel unavailable'));
