@@ -1,5 +1,6 @@
 import { handleRequest as handleCoreRequest } from "./nara-handler.mjs";
 import { enrichNaraConnectorContext } from './nara-chat-connector-context.mjs';
+import { filterOwnerInputEvent } from './nara-owner-input-context.mjs';
 
 export const config = {
   path: "/api/nara",
@@ -94,5 +95,6 @@ export async function handleRequest(event, env = process.env) {
     const status = [400,401,403,404,409,429,502,503].includes(error?.status) ? error.status : 503;
     return json(status, { code: 'CONNECTOR_CONTEXT_UNAVAILABLE', error: 'Konteks konektor belum dapat dibaca. Periksa koneksi admin, pilihan konektor, dan izin provider.' }, env);
   }
-  return handleCoreRequest(enriched, runtimeEnv);
+  const filtered = await filterOwnerInputEvent(enriched, runtimeEnv);
+  return handleCoreRequest(filtered, runtimeEnv);
 }
