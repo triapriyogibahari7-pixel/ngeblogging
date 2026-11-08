@@ -1,6 +1,7 @@
 import { resolvePrivateNaraRoute } from './nara-private-execution-policy.mjs';
 import { collectNaraConnectorContext, normalizeNaraConnectorReads, publicNaraConnectorEvidence } from './nara-inference-connectors.mjs';
 import { researchNaraSources } from './nara-owner-research-bridge.mjs';
+import { prepareOwnerGeneralMessages } from './nara-owner-general-messages.mjs';
 const BASE='https://polvmlrhqoiflumibfqs.supabase.co';
 function answerText(result){
  const candidates=[result?.response,result?.result?.response,result?.result,result?.text,result?.output_text,result?.choices?.[0]?.message?.content];
@@ -35,6 +36,7 @@ export async function runNaraOwnerInference({env,user,authProject,selection,mode
  const check=actor=>activeAdmin(env,actor,authProject,fetcher,deadline);
  const route=await resolvePrivateNaraRoute(user,selection,check);
  if(reads.length&&!route.enhanced)throw Error('NARA_CONNECTOR_ACCESS_REVOKED');
+ if(route.enhanced)messages=prepareOwnerGeneralMessages(user,selection,messages);
  const originalUser=messages.filter(m=>m.role==='user').at(-1)?.content;
  const question=(typeof originalUser==='string'?originalUser:Array.isArray(originalUser)?originalUser.filter(p=>p.type==='text').map(p=>p.text||'').join('\n'):'').slice(0,8000);
  let connectorContext=null,research=null;
