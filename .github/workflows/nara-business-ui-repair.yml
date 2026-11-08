@@ -1,0 +1,47 @@
+name: Repair Nara Business entitlement UI
+on:
+  push:
+    branches: [fix/nara-business-upgrade-20261108]
+    paths: [.github/workflows/nara-business-ui-repair.yml]
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/nara-business-upgrade-20261108
+      - name: Apply guarded component patch
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync, writeFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const path = 'src/NaraAssistant.jsx';
+          let source = readFileSync(path, 'utf8');
+          function once(before, after) {
+            assert.equal(source.split(before).length, 2, 'Expected exactly one patch anchor: ' + before);
+            source = source.replace(before, after);
+          }
+          once('const valid = data.plan === "pro" &&', 'const valid = ["pro", "business"].includes(data.plan) &&');
+          once('    supabase.from("profiles").select("plan, plan_expires_at")', '    setPlan("free");\n    setShowUpgrade(false);\n    supabase.from("profiles").select("plan, plan_expires_at")');
+          once('<button onClick={() => setShowUpgrade(true)}>{plan === "pro" ? <><Crown /> Pro aktif</> : <><Zap /> Upgrade Pro</>}</button>', '{plan === "pro" ? <span><Crown /> Akses premium aktif</span> : <button onClick={() => setShowUpgrade(true)}><Zap /> Upgrade Pro</button>}');
+          once('{selectedModel?.pro && <LockKeyhole />}', '{selectedModel?.pro && plan !== "pro" && <LockKeyhole />}');
+          once('{showUpgrade && <div className="nara-upgrade-card"', '{showUpgrade && plan !== "pro" && <div className="nara-upgrade-card"');
+          assert(source.includes('["pro", "business"].includes(data.plan)'));
+          assert(source.includes('new Date(data.plan_expires_at) > new Date()'));
+          assert(source.includes('if (option?.pro && plan !== "pro")'));
+          assert(source.includes('if ((modelOption?.pro || intelligenceOption?.pro) && plan !== "pro")'));
+          assert(!source.includes('triapriyogibahari7@gmail.com'));
+          writeFileSync(path, source);
+          NODE
+      - name: Commit only the reviewed component patch
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/NaraAssistant.jsx
+          git commit -m 'fix(nara): recognize Business premium access and remove upgrade prompt'
+          git push origin HEAD:fix/nara-business-upgrade-20261108
