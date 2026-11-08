@@ -35,3 +35,5 @@ import("./api-keys-studio-bridge.jsx")
 
 // Separate owner-only UI does not reactivate the archived public plugin catalog.
 import('./nara-owner-connectors-ui.js').catch(() => console.error('Nara owner connector panel unavailable'));
+
+import('./nara-owner-image-prompt.js').catch(() => console.error('Nara owner quick prompt adjustment unavailable'));
