@@ -1,4 +1,4 @@
-import worker from './worker-v70.mjs';
+import worker from './worker-nara-owner-connectors.mjs';
 import {domainRecoveryResponse} from '../server/domain-recovery-router.mjs';
 import {DOMAIN_MANAGEMENT_CRON,runDomainManagementSchedule} from '../server/domain-management-scheduler.mjs';
 import {isDomainDeadlineRequest,withDomainDeadline} from '../server/domain-api-deadline.mjs';
