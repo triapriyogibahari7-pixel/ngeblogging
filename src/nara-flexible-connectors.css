@@ -1,0 +1,9 @@
+.nara-flexible-connectors{position:relative;display:inline-block;margin-inline-start:auto;font-size:12px}
+.nara-flexible-connectors>summary{cursor:pointer;list-style:none;padding:4px 8px;border:1px solid #64748b55;border-radius:8px;font-weight:500}
+.nara-connector-popover{position:absolute;inset-inline-end:0;top:calc(100% + 6px);z-index:1000;width:min(320px,calc(100vw - 40px));max-height:60vh;overflow:auto;padding:12px;border:1px solid #64748b55;border-radius:12px;background:var(--surface,#fff);color:var(--text,#172033);box-shadow:0 8px 30px #0002;text-align:start;white-space:normal}
+.nara-connector-popover p,.nara-connector-popover small{font-size:11px;display:block}
+.nara-connector-popover section{padding-block:8px;border-bottom:1px solid #64748b33}
+.nara-connector-popover input,.nara-connector-popover select{display:block;width:100%;box-sizing:border-box;margin-block:6px;padding:7px;border:1px solid #64748b66;border-radius:6px;background:inherit;color:inherit;font-size:12px}
+.nara-connector-popover button{font-size:11px;padding:5px 8px;margin:4px 4px 4px 0;border:1px solid #64748b66;border-radius:6px;background:inherit;color:inherit;cursor:pointer}
+.nara-connector-popover button:disabled{opacity:.5;cursor:default}
+.nara-connector-popover pre{font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto}
