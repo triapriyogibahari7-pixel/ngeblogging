@@ -14,6 +14,7 @@ concurrency:
 jobs:
   integrate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,16 +22,58 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: node scripts/apply-nara-owner-chat.mjs
-      - run: node --check server/nara-handler.mjs && node --check server/nara-image-handler.mjs
-      - run: node --test tests/nara-owner-multimodal.test.mjs tests/nara-owner-chat-image.test.mjs tests/nara.test.mjs
-      - run: npm run build
-      - name: Commit verified source integration to isolated branch
+      - name: Install dependencies
+        id: install
+        continue-on-error: true
+        run: npm ci > /tmp/nara-install.log 2>&1
+      - name: Apply guarded integration patch
+        id: patch
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/apply-nara-owner-chat.mjs > /tmp/nara-patch.log 2>&1
+      - name: Check backend syntax
+        id: syntax
+        if: steps.patch.outcome == 'success'
+        continue-on-error: true
+        run: (node --check server/nara-handler.mjs && node --check server/nara-image-handler.mjs) > /tmp/nara-syntax.log 2>&1
+      - name: Test owner isolation, chat image and existing Nara behavior
+        id: tests
+        if: steps.syntax.outcome == 'success'
+        continue-on-error: true
+        run: node --test tests/nara-owner-multimodal.test.mjs tests/nara-owner-chat-image.test.mjs tests/nara.test.mjs > /tmp/nara-tests.log 2>&1
+      - name: Build frontend
+        id: build
+        if: steps.tests.outcome == 'success'
+        continue-on-error: true
+        run: npm run build > /tmp/nara-build.log 2>&1
+      - name: Persist diagnostic report and verified source
+        if: always()
+        env:
+          STEP_INSTALL: ${{ steps.install.outcome }}
+          STEP_PATCH: ${{ steps.patch.outcome }}
+          STEP_SYNTAX: ${{ steps.syntax.outcome }}
+          STEP_TESTS: ${{ steps.tests.outcome }}
+          STEP_BUILD: ${{ steps.build.outcome }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          mkdir -p reports
+          node --input-type=module <<'NODE'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const names = ['install','patch','syntax','tests','build'];
+          const stages = Object.fromEntries(names.map(name => {
+            let log = '';
+            try { log = readFileSync('/tmp/nara-'+name+'.log','utf8').slice(-12000).replace(/sk-[A-Za-z0-9_-]+/g,'[redacted]').replace(/Bearer\s+[^\s]+/gi,'Bearer [redacted]'); } catch {}
+            return [name,{outcome:process.env['STEP_'+name.toUpperCase()] || 'unknown',log}];
+          }));
+          const passed = names.every(name => stages[name].outcome === 'success');
+          writeFileSync('reports/nara-owner-chat-status.json',JSON.stringify({runUrl:process.env.RUN_URL,passed,productionVerified:false,providerGenerationVerified:false,stages},null,2)+'\n');
+          NODE
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add src/NaraAssistant.jsx server/nara-handler.mjs server/nara-image-handler.mjs
-          git diff --cached --quiet || git commit -m 'feat(nara): integrate owner image history and chat generation'
+          git add reports/nara-owner-chat-status.json
+          if [ "$STEP_BUILD" = success ]; then
+            git add src/NaraAssistant.jsx server/nara-handler.mjs server/nara-image-handler.mjs
+          fi
+          git diff --cached --quiet || git commit -m 'fix(nara): record chat integration verification result'
           git push origin HEAD:agent/nara-admin-multimodal-20261108
+          test "$STEP_BUILD" = success
