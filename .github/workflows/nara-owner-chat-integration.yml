@@ -1,0 +1,36 @@
+name: Integrate owner Nara multimodal chat
+on:
+  push:
+    branches: [agent/nara-admin-multimodal-20261108]
+    paths:
+      - scripts/apply-nara-owner-chat.mjs
+      - tests/nara-owner-chat-image.test.mjs
+      - .github/workflows/nara-owner-chat-integration.yml
+permissions:
+  contents: write
+concurrency:
+  group: nara-owner-chat-integration
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/nara-admin-multimodal-20261108
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/apply-nara-owner-chat.mjs
+      - run: node --check server/nara-handler.mjs && node --check server/nara-image-handler.mjs
+      - run: node --test tests/nara-owner-multimodal.test.mjs tests/nara-owner-chat-image.test.mjs tests/nara.test.mjs
+      - run: npm run build
+      - name: Commit verified source integration to isolated branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/NaraAssistant.jsx server/nara-handler.mjs server/nara-image-handler.mjs
+          git diff --cached --quiet || git commit -m 'feat(nara): integrate owner image history and chat generation'
+          git push origin HEAD:agent/nara-admin-multimodal-20261108
