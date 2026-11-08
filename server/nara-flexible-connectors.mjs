@@ -3,6 +3,7 @@ import { requireConnectorAdminIdentity } from './nara-connector-admin-identity.m
 import { normalizeConnection } from '../shared/nara-connector-registry.mjs';
 import { sealCredential, openCredential } from './nara-connector-credentials.mjs';
 import { readConnectorMetadata } from './nara-connector-providers.mjs';
+import { naraSpendApprovalResponse } from './nara-spend-approval-endpoint.mjs';
 const BASE='https://polvmlrhqoiflumibfqs.supabase.co';
 async function json(fetcher,url,options){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
@@ -17,6 +18,7 @@ async function json(fetcher,url,options){
  }finally{clearTimeout(timer);}
 }
 export async function naraFlexibleConnectorsResponse(request,env,fetcher=fetch){
+ const spend=await naraSpendApprovalResponse(request,env,fetcher);if(spend)return spend;
  if(new URL(request.url).pathname!=='/api/nara/connectors'&&!new URL(request.url).pathname.startsWith('/api/nara/connectors/'))return null;
  const endpoint=createConnectorEndpoint({
   authenticate:async req=>{
