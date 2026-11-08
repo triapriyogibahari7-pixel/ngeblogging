@@ -1,4 +1,4 @@
-import { readGitHubRepositoryTool } from './nara-github-repository-tool.mjs';
+import { readConnectorTool, isConnectorToolInput } from './nara-connector-read-tools.mjs';
 const PREFIX = '/api/nara/connectors';
 const HOSTS = new Set(['ngeblogging.com','www.ngeblogging.com','ngeblogging.triapriyogibahari7.workers.dev']);
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
@@ -11,7 +11,7 @@ async function body(request) {
  let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{throw Error('CONNECTOR_INVALID_REQUEST');}
  if(!data||typeof data!=='object'||Array.isArray(data))throw Error('CONNECTOR_INVALID_REQUEST');return data;
 }
-export function createConnectorEndpoint({ authenticate, storage, normalize, seal, open, readMetadata, key, newId, readRepository = readGitHubRepositoryTool }) {
+export function createConnectorEndpoint({ authenticate, storage, normalize, seal, open, readMetadata, key, newId, readRepository = readConnectorTool }) {
  function view(row){const config=normalize(row.config);if(!uuid(row.id)||!['disconnected','checking','connected','error'].includes(row.status))throw Error('CONNECTOR_STORAGE_UNAVAILABLE');return {id:row.id,...config,status:row.status,enabled:row.enabled===true,checkedAt:row.checkedAt||row.checked_at||null};}
  function checked(row,actor,id){if(row?.id!==id||row?.owner_id!==actor||row.key_version!=='v1')throw Error('CONNECTOR_NOT_FOUND');return row;}
  return async function(request){
@@ -41,7 +41,7 @@ export function createConnectorEndpoint({ authenticate, storage, normalize, seal
    if(parts.length!==2||request.method!=='POST'||!['connect','disconnect','read'].includes(parts[1]))return reply(404,{code:'NOT_FOUND'});
    const data=await body(request);
    if(parts[1]!=='read' && Object.keys(data).length)throw Error('CONNECTOR_INVALID_REQUEST');
-   if(parts[1]==='read' && Object.keys(data).length && (!['github.file','github.directory'].includes(data.operation) || Object.keys(data).some(name=>!['operation','path','ref'].includes(name))))throw Error('CONNECTOR_INVALID_REQUEST');
+   if(parts[1]==='read' && Object.keys(data).length && !isConnectorToolInput(data))throw Error('CONNECTOR_INVALID_REQUEST');
    if(parts[1]==='disconnect')return reply(200,{connection:view(await storage(actor,'disconnect',id))});
    const checking=parts[1]==='connect';
    const row=checked(await storage(actor,checking?'begin_check':'authorize_tool',id),actor,id);
