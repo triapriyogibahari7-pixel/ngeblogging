@@ -40,7 +40,7 @@ export default defineConfig(async({command})=>{
   if(previewQuality)integration.push(previewQuality);
   if(command==='build'){
     integration.push({name:'worker-free-variable-limit-prepare',closeBundle(){
-      const prepared=spawnSync(process.execPath,[resolve('scripts/deploy-worker-free-limit.mjs'),'--prepare'],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:60000});
+      const prepared=spawnSync(process.execPath,[resolve('scripts/prepare-worker-connector-capacity.mjs')],{cwd:process.cwd(),env:process.env,stdio:'inherit',timeout:90000});
       if(prepared.error||prepared.status!==0) throw Error('WORKER_VARIABLE_PREPARE_FAILED_NO_DEPLOY');
     }});
     integration.push({name:'public-auditor-preview-provision',closeBundle:provisionPublicAuditorPreview});
