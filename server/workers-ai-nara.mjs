@@ -3,6 +3,7 @@ import {
   naraIntelligenceProfileV227,
   workersAiProviderModelV227,
 } from "./nara-model-contract-v227.mjs";
+import { runNaraOwnerInference } from "./nara-owner-inference.mjs";
 
 const MAX_MESSAGE_LENGTH = 8_000;
 const MAX_HISTORY_ITEMS = 12;
@@ -129,6 +130,7 @@ export async function handleWorkersAiNara(request, env, requestId, corsOrigin = 
   let input;
   try { input = await request.json(); }
   catch { return json(400, { code: "INVALID_JSON", error: "Payload JSON tidak valid." }, requestId, corsOrigin); }
+  if (!input || typeof input !== "object" || Array.isArray(input)) return json(400, { code: "INVALID_JSON", error: "Payload JSON harus berupa objek." }, requestId, corsOrigin);
   const message = String(input.message || "").trim();
   const attachments = safeAttachments(input.attachments);
   if ((!message && !attachments.length) || message.length > MAX_MESSAGE_LENGTH) return json(400, { code: "INVALID_MESSAGE", error: "Pesan atau lampiran wajib diisi dan teks maksimal 8.000 karakter." }, requestId, corsOrigin);
@@ -158,9 +160,12 @@ export async function handleWorkersAiNara(request, env, requestId, corsOrigin = 
   const model = modelSelection.model;
 
   try {
-    const inference = env.AI.run(model, { messages, ...(image ? { image: image.dataUrl } : {}), max_tokens: intelligence.maxTokens, temperature: intelligence.temperature });
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("Workers AI timeout"), { timeout: true })), image ? 58_000 : 50_000));
-    const result = await Promise.race([inference, timeout]);
+    const result = await runNaraOwnerInference({
+      env, user: session.user, authProject: session.url,
+      selection: { model: modelSelection.profile.id, intelligence: intelligence.id, hasImage: Boolean(image) },
+      model, messages, image: image?.dataUrl || null,
+      maxTokens: intelligence.maxTokens, temperature: intelligence.temperature,
+    });
     const answer = outputText(result);
     if (!answer) throw new Error("Workers AI returned an empty answer");
     return json(200, {
