@@ -1,4 +1,5 @@
 import { createConnectorEndpoint } from './nara-connector-endpoint.mjs';
+import { requireConnectorAdminIdentity } from './nara-connector-admin-identity.mjs';
 import { normalizeConnection } from '../shared/nara-connector-registry.mjs';
 import { sealCredential, openCredential } from './nara-connector-credentials.mjs';
 import { readConnectorMetadata } from './nara-connector-providers.mjs';
@@ -23,7 +24,7 @@ export async function naraFlexibleConnectorsResponse(request,env,fetcher=fetch){
    if(!/^Bearer [^\s]{1,8192}$/.test(authorization))throw Error('CONNECTOR_AUTH_REQUIRED');
    if(String(env.SUPABASE_URL||'').replace(/\/$/,'')!==BASE||!env.SUPABASE_PUBLISHABLE_KEY)throw Error('CONNECTOR_UNAVAILABLE');
    let checked;try{checked=await json(fetcher,BASE+'/auth/v1/user',{method:'GET',headers:{authorization,apikey:env.SUPABASE_PUBLISHABLE_KEY}});}catch{throw Error('CONNECTOR_AUTH_REQUIRED');}
-   if(!checked.ok)throw Error('CONNECTOR_AUTH_REQUIRED');return checked.data;
+   if(!checked.ok)throw Error('CONNECTOR_AUTH_REQUIRED');return requireConnectorAdminIdentity(checked.data);
   },
   storage:async(actor,action,id=null,data={})=>{
    const token=env.SUPABASE_SERVICE_ROLE_KEY;if(!token)throw Error('CONNECTOR_STORAGE_UNAVAILABLE');
