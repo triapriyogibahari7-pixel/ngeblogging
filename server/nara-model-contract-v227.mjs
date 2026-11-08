@@ -32,12 +32,12 @@ export const NARA_INTELLIGENCE_PROFILES_V227 = Object.freeze({
 
 export function normalizeNaraModelV227(value) {
   const key = String(value || "nara-mini").trim().toLowerCase();
-  return NARA_MODEL_PROFILES_V227[key] ? key : "nara-mini";
+  return Object.hasOwn(NARA_MODEL_PROFILES_V227, key) ? key : "nara-mini";
 }
 
 export function normalizeNaraIntelligenceV227(value) {
   const key = String(value || "standard").trim().toLowerCase();
-  return NARA_INTELLIGENCE_PROFILES_V227[key] ? key : "standard";
+  return Object.hasOwn(NARA_INTELLIGENCE_PROFILES_V227, key) ? key : "standard";
 }
 
 export function naraModelProfileV227(value) {
@@ -51,7 +51,7 @@ export function naraIntelligenceProfileV227(value) {
 export function workersAiProviderModelV227(env, requestedModel, hasImage = false) {
   const profile = naraModelProfileV227(requestedModel);
   if (hasImage && !profile.vision) return { profile, model: "", capability: "vision", supported: false };
-  const configured = (name) => String(name ? env?.[name] || "" : "").trim();
+  const configured = (name) => typeof (name ? env?.[name] : undefined) === "string" ? env[name].trim() : "";
   if (hasImage) {
     const model = configured(profile.visionEnv) || configured("CF_AI_VISION_MODEL") || "@cf/google/gemma-4-26b-a4b-it";
     return { profile, model, capability: "vision", supported: true };
