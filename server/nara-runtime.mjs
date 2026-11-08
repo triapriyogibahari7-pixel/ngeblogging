@@ -1,4 +1,5 @@
 import { handleRequest as handleCoreRequest } from "./nara-handler.mjs";
+import { enrichNaraConnectorContext } from './nara-chat-connector-context.mjs';
 
 export const config = {
   path: "/api/nara",
@@ -86,5 +87,12 @@ export async function handleRequest(event, env = process.env) {
   const clientIp = headers["x-client-ip"] || headers["cf-connecting-ip"] || headers["x-forwarded-for"]?.split(",")[0]?.trim();
   if (clientIp) headers["x-forwarded-for"] = String(clientIp).slice(0, 80);
 
-  return handleCoreRequest({ ...event, headers }, runtimeEnvironment(env, origin));
+  const runtimeEnv = runtimeEnvironment(env, origin);
+  let enriched;
+  try { enriched = await enrichNaraConnectorContext({ ...event, headers }, runtimeEnv); }
+  catch (error) {
+    const status = [400,401,403,404,409,429,502,503].includes(error?.status) ? error.status : 503;
+    return json(status, { code: 'CONNECTOR_CONTEXT_UNAVAILABLE', error: 'Konteks konektor belum dapat dibaca. Periksa koneksi admin, pilihan konektor, dan izin provider.' }, env);
+  }
+  return handleCoreRequest(enriched, runtimeEnv);
 }
