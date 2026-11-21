@@ -13,12 +13,17 @@ test("custom-domain repair uses an active Cloudflare zone and explicit zone_id",
   assert.match(script, /HTTPS publik belum menyajikan situs Ngeblogging/);
 });
 
-test("custom-domain workflow is manually runnable and invokes the repair script", () => {
+test("retired custom-domain repair workflow is manual and audit-only", () => {
   const workflow = read(".github/workflows/custom-domain-repair.yml");
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /repair-custom-domain-v350\.mjs/);
-  assert.match(workflow, /TARGET_DOMAIN/);
-  assert.match(workflow, /Public smoke test passed/);
+  const executable = workflow.split("\n").filter((line) => !/^\s*#/.test(line)).join("\n");
+  assert.match(executable, /^on:\s*\n  workflow_dispatch:\s*\npermissions:/m);
+  assert.match(executable, /^permissions:\s*\n  contents: read\s*\njobs:/m);
+  assert.match(executable, /run: node --test tests\/platform-domain-deployment\.test\.mjs/);
+  assert.match(executable, /Configuration audit only/);
+  assert.match(executable, /Customer domains must use the authenticated Domain and Publication flow/);
+  assert.match(executable, /no domain was attached or verified by this workflow/);
+  assert.doesNotMatch(executable, /repair-custom-domain-v350\.mjs|TARGET_DOMAIN|Public smoke test passed/);
+  assert.doesNotMatch(executable, /secrets\.|wrangler\s+(?:deploy|publish)|curl\s|cloudflare:attach-domains|workers\/domains/);
 });
 
 test("analytics final authority is imported after historical analytics CSS", () => {
