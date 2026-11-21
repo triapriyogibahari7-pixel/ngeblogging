@@ -2,6 +2,11 @@ import { getBillingProduct } from './billing-catalog.mjs';
 import { handleMidtrans as baseHandler, paths } from './midtrans-api.mjs';
 export { paths };
 const validToken = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{10,200}$/.test(value);
+export function withGoPayMethods(payload) {
+  const banks = ['echannel', 'bca_va', 'bni_va', 'bri_va', 'permata_va', 'cimb_va', 'other_va'];
+  const existing = Array.isArray(payload.enabled_payments) ? payload.enabled_payments : [];
+  return { ...payload, enabled_payments: [...new Set([...banks, ...existing, 'gopay'])] };
+}
 export function recoverStoredCheckoutToken(value, environment) {
   if (!['production', 'sandbox'].includes(environment) || typeof value !== 'string') return null;
   try {
@@ -26,14 +31,14 @@ export async function handleMidtrans(request, env, options = {}) {
   let snapToken;
   const upstream = options.fetchImpl || fetch;
   const response = await baseHandler(request, catalogEnvironment(env), { ...options, fetchImpl: async (url, init) => {
-    const result = await upstream(url, init);
-    if (isCreate && init?.method === 'POST') {
-      const target = new URL(String(url));
-      const origin = env.MIDTRANS_ENV === 'production' ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
-      if (target.origin === origin && target.pathname === '/snap/v1/transactions' && result.ok) {
-        const data = await result.clone().json().catch(() => null);
-        if (validToken(data?.token)) snapToken = data.token;
-      }
+    const target = new URL(String(url));
+    const origin = env.MIDTRANS_ENV === 'production' ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
+    const snapRequest = isCreate && init?.method === 'POST' && target.origin === origin && target.pathname === '/snap/v1/transactions';
+    const outgoing = snapRequest ? { ...init, body: JSON.stringify(withGoPayMethods(JSON.parse(init.body))) } : init;
+    const result = await upstream(url, outgoing);
+    if (snapRequest && result.ok) {
+      const data = await result.clone().json().catch(() => null);
+      if (validToken(data?.token)) snapToken = data.token;
     }
     return result;
   }});
