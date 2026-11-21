@@ -6,6 +6,8 @@ const css = await readFile(new URL("../src/studio-mobile-final-v369.css", import
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const sw = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+const comments = await readFile(new URL("../src/CommentsPanelV124.jsx", import.meta.url), "utf8");
+const globalCss = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
 
 test("v369 mobile authority is loaded after existing editor/studio CSS", () => {
   assert.match(editor, /content-editor-mobile-v324\.css/);
@@ -23,26 +25,24 @@ test("v369 only targets the small device family", () => {
 });
 
 test("v369 covers every requested Studio surface without changing semantics", () => {
-  for (const marker of [
-    ".sn-view-pad",
-    ".sn-content-card",
-    ".sn-settings-grid",
-    ".sn-members",
-    ".sn-api-page",
-    ".sv124-comments-page",
-    ".sv124-domain-page",
-    ".tn-studio",
-    ".sn-analytics-data-host",
-    ".ce-app",
-    ".ce-paper",
-    ".ce-sidebar",
-    ".ce-preview-layer",
-    ".ce-source-layer",
-  ]) assert.match(css, new RegExp(marker.replaceAll(".", "\\.")));
+  for (const marker of [".sn-view-pad", ".sn-content-card", ".sn-settings-grid", ".sn-members", ".sn-api-page", ".sv124-comment-workspace", ".sv124-domain-page", ".tn-studio", ".sn-analytics-data-host", ".ce-app", ".ce-paper", ".ce-sidebar", ".ce-preview-layer", ".ce-source-layer"]) {
+    assert.match(css, new RegExp(marker.replaceAll(".", "\\.")));
+  }
   assert.match(css, /overflow-wrap:anywhere/);
   assert.match(css, /min-height:44px/);
   assert.match(css, /font-size:16px/);
-  assert.match(css, /display-mode: standalone/);
+  assert.match(css, /@media\s*\(\s*display-mode\s*:\s*standalone\s*\)/);
+});
+
+test("comment mobile selectors match markup and preserve the global page layout", () => {
+  assert.match(comments, /className="sv124-card sv124-comment-workspace"/);
+  for (const name of ['sv124-comment-workspace','sv124-comment-tools','sv124-comment-columns','sv124-comment-list','sv124-comment-detail']) {
+    assert.ok(comments.includes(name), `missing comment markup: ${name}`);
+    assert.ok(css.includes('.' + name), `missing mobile comment selector: ${name}`);
+  }
+  assert.match(globalCss, /\.sv124-comments-page\s*\{[^}]*flex-direction\s*:\s*column/);
+  assert.match(css, /\.sv124-comment-columns\s*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(css, /\.sv124-comment-list\s*\{[^}]*overflow:auto!important/);
 });
 
 test("v369 keeps editor SEO/content implementation unchanged", () => {
@@ -53,10 +53,19 @@ test("v369 keeps editor SEO/content implementation unchanged", () => {
   assert.match(editor, /schemaType/);
 });
 
-test("v369 bumps the service-worker cache so stale mobile CSS is not retained", () => {
-  assert.match(sw, /ngeblogging-app-v369-mobile-final-20261001/);
-  assert.match(sw, /studio-mobile-final-cache-v369/);
-  assert.match(sw, /mobile-final-v369/);
+test("mobile cache uses a post-v369 active release and deletes obsolete caches", () => {
+  const version = sw.match(/const VERSION = "(ngeblogging-app-v(\d+)-[^"]+)";/);
+  const release = sw.match(/const CACHE_RELEASE = "([^"]+)";/);
+  assert.ok(version, "active version must be explicit");
+  assert.ok(release, "active cache release must be explicit");
+  assert.ok(Number(version[2]) > 369, "do not roll back to the historical v369 cache");
+  assert.notEqual(release[1], "studio-mobile-final-cache-v369");
+  assert.ok(sw.includes('const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;'));
+  assert.ok(sw.includes('const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;'));
+  assert.match(sw, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)/);
+  assert.match(sw, /caches\.delete\(key\)/);
+  assert.match(sw, /self\.clients\.claim\(\)/);
+  assert.doesNotMatch(sw, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|location\.(?:reload|replace)\s*\(/);
 });
 
 test("v369 editor uses natural mobile flow and never changes large layout", () => {

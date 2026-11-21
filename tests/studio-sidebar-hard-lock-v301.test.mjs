@@ -1,17 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-
-const runtime = await readFile(new URL("../src/studio-sidebar-hard-lock-v301.js", import.meta.url), "utf8");
-const css = await readFile(new URL("../src/studio-sidebar-hard-lock-v301.css", import.meta.url), "utf8");
-const v300 = await readFile(new URL("../src/studio-sidebar-direct-v300.js", import.meta.url), "utf8");
-const release = await readFile(new URL("../public/release-v301.json", import.meta.url), "utf8");
-const addSiteV303 = await readFile(new URL("../src/studio-add-site-v303.js", import.meta.url), "utf8");
-const addSiteCssV303 = await readFile(new URL("../src/studio-add-site-v303.css", import.meta.url), "utf8");
-const nativeV290 = await readFile(new URL("../src/studio-native-controls-v290.js", import.meta.url), "utf8");
-const swV303 = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
-const releaseV303 = JSON.parse(await readFile(new URL("../public/release-v303.json", import.meta.url), "utf8"));
-
+const read = path => readFile(new URL('../' + path, import.meta.url), 'utf8');
+const runtime = await read('src/studio-sidebar-hard-lock-v301.js');
+const css = await read('src/studio-sidebar-hard-lock-v301.css');
+const v300 = await read('src/studio-sidebar-direct-v300.js');
+const release = await read('public/release-v301.json');
+const addSiteV303 = await read('src/studio-add-site-v303.js');
+const addSiteCssV303 = await read('src/studio-add-site-v303.css');
+const nativeV290 = await read('src/studio-native-controls-v290.js');
+const swV303 = await read('public/sw.js');
+const releaseV303 = JSON.parse(await read('public/release-v303.json'));
 const requiredMenus = ["Buat Post","Ringkasan","Posts","Pages","Tema","Media","Analitik","Anggota","Komentar","Domain","API Keys","Pengaturan","Keluar"];
 
 test("v301 hard-locks the physical mobile shell with no desktop rail", () => {
@@ -26,7 +25,6 @@ test("v301 hard-locks the physical mobile shell with no desktop rail", () => {
   assert.match(css, /data-studio-responsive-mode="compact"/);
   assert.match(css, /#ngeblogging-studio-sidebar\.mobile-open/);
 });
-
 test("v301 preserves one direct n owner and only adds geometry authority", () => {
   assert.match(v300, /mark\.addEventListener\("click", directToggle/);
   assert.match(v300, /import\("\.\/studio-sidebar-hard-lock-v301\.js"\)/);
@@ -38,7 +36,6 @@ test("v301 preserves one direct n owner and only adds geometry authority", () =>
   assert.doesNotMatch(runtime, /sessionStorage\.clear\s*\(/);
   assert.doesNotMatch(runtime, /location\.(?:reload|replace)\s*\(/);
 });
-
 test("v301 keeps desktop 220/70 geometry, profile and Nara fixed", () => {
   assert.match(runtime, /collapsed \? "70px" : "220px"/);
   assert.match(runtime, /\.sn-top \.sn-avatar/);
@@ -47,7 +44,6 @@ test("v301 keeps desktop 220/70 geometry, profile and Nara fixed", () => {
   assert.match(css, /--v301-open:220px/);
   assert.match(css, /--v301-rail:70px/);
 });
-
 test("release preserves the complete sidebar contract and does not claim unrun scale tests", () => {
   const parsed = JSON.parse(release);
   assert.equal(parsed.release, "studio-sidebar-hard-lock-v301-20260805");
@@ -58,7 +54,6 @@ test("release preserves the complete sidebar contract and does not claim unrun s
   assert.equal(parsed.validation.capacity900MillionClaimed, false);
   assert.equal(parsed.validation.productionDeploymentClaimed, false);
 });
-
 test("v303 loads a dedicated free-site creation authority after the active shell", () => {
   assert.match(nativeV290, /studio-add-site-free-subdomain-v303-20260805/);
   assert.match(nativeV290, /import\("\.\/studio-shell-authority-v298\.js"\)[\s\S]*import\("\.\/studio-add-site-v303\.js"\)/);
@@ -69,11 +64,8 @@ test("v303 loads a dedicated free-site creation authority after the active shell
   assert.match(addSiteV303, /ngeblogging:site-created-v303/);
   assert.doesNotMatch(addSiteV303, /\.sn-workspace[^\n]*click\(/);
 });
-
 test("v303 Add site clearly creates a free ngeblogging.com subdomain without a content fallback", () => {
-  for (const marker of ["Tambah situs gratis","Subdomain gratis","ALAMAT SITUS GRATIS","Buat situs gratis","free_subdomain: true"]) {
-    assert.ok(addSiteV303.includes(marker), `missing v303 marker: ${marker}`);
-  }
+  for (const marker of ["Tambah situs gratis","Subdomain gratis","ALAMAT SITUS GRATIS","Buat situs gratis","free_subdomain: true"]) assert.ok(addSiteV303.includes(marker), `missing v303 marker: ${marker}`);
   assert.match(addSiteV303, /\.sn-add-site-v298/);
   assert.match(addSiteV303, /data-profile-action='add-site'/);
   assert.doesNotMatch(addSiteV303, /Maksimal\s+25|25\s+situs|slot tersisa/i);
@@ -81,7 +73,6 @@ test("v303 Add site clearly creates a free ngeblogging.com subdomain without a c
   assert.doesNotMatch(addSiteV303, /localStorage\.clear\s*\(|sessionStorage\.clear\s*\(|signOut\s*\(/);
   assert.doesNotMatch(addSiteV303, /MutationObserver|setInterval|stopImmediatePropagation/);
 });
-
 test("v303 Add site dialog stays contained across desktop and mobile", () => {
   assert.match(addSiteCssV303, /place-items:center/);
   assert.match(addSiteCssV303, /width:min\(760px,calc\(100vw - 28px\)\)/);
@@ -90,26 +81,21 @@ test("v303 Add site dialog stays contained across desktop and mobile", () => {
   assert.match(addSiteCssV303, /grid-template-columns:1fr/);
   assert.match(addSiteCssV303, /safe-area-inset-bottom/);
 });
-
-test("PWA worker preserves the v303 add-site contract while allowing the current v305 cache rotation", () => {
-  const generatedV305 = swV303.includes("STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305")
-    || swV303.includes("ngeblogging-app-v305-site-switch-first-site-20260805");
-
+test("PWA worker preserves add-site and switch-site contracts with the active cache", () => {
   assert.match(swV303, /studio-add-site-free-subdomain-v303-20260805/);
+  assert.match(swV303, /STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305/);
+  assert.match(swV303, /studio-site-switch-first-site-v305-20260805/);
+  const version = swV303.match(/const VERSION = "(ngeblogging-app-v(\d+)-[^"]+)";/);
+  assert.ok(version, 'active version must be explicit');
+  assert.ok(Number(version[2]) >= 427, 'do not regress the active v427 cache');
+  assert.match(swV303, /const CACHE_RELEASE = "[^"]+";/);
+  assert.ok(swV303.includes('const SHELL_CACHE = `${VERSION}-${CACHE_RELEASE}-shell`;'));
+  assert.ok(swV303.includes('const ASSET_CACHE = `${VERSION}-${CACHE_RELEASE}-assets`;'));
   assert.match(swV303, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)/);
+  assert.match(swV303, /caches\.delete\(key\)/);
+  assert.match(swV303, /client\.postMessage\(/);
+  assert.match(swV303, /reloadRequired: false/);
   assert.doesNotMatch(swV303, /localStorage\.clear|sessionStorage\.clear|location\.(?:reload|replace)/);
-
-  if (generatedV305) {
-    assert.match(swV303, /ngeblogging-app-v305-site-switch-first-site-20260805/);
-    assert.match(swV303, /studio-site-switch-first-site-cache-v305/);
-    assert.match(swV303, /studio-site-switch-first-site-v305-20260805/);
-    assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V305/);
-  } else {
-    assert.match(swV303, /ngeblogging-app-v303-add-site-20260805/);
-    assert.match(swV303, /studio-add-site-cache-v303/);
-    assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
-  }
-
   assert.equal(releaseV303.release, "studio-add-site-free-subdomain-v303-20260805");
   assert.equal(releaseV303.fixes.addSiteNoLongerProxiesWorkspaceClick, true);
   assert.equal(releaseV303.fixes.freeNgebloggingSubdomainExplicit, true);
