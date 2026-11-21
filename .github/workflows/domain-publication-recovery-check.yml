@@ -1,0 +1,39 @@
+name: Domain publication recovery checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - server/pending-full-zone-registration.mjs
+      - server/cloudflare-full-zone-provider.mjs
+      - tests/domain-registration-recovery-preserve-active.test.mjs
+      - tests/domain-handler-full-zone.test.mjs
+      - .github/workflows/domain-publication-recovery-check.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: domain-recovery-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  domain-recovery-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Test active-domain registration recovery
+        run: node --test tests/domain-registration-recovery-preserve-active.test.mjs
+      - name: Test existing full-zone domain handler
+        run: node --test tests/domain-handler-full-zone.test.mjs
+      - name: Build application without deployment
+        run: npm run build
