@@ -6,6 +6,8 @@ const css = await readFile(new URL("../src/studio-mobile-final-v369.css", import
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
 const sw = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+const comments = await readFile(new URL("../src/CommentsPanelV124.jsx", import.meta.url), "utf8");
+const globalCss = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
 
 test("v369 mobile authority is loaded after existing editor/studio CSS", () => {
   assert.match(editor, /content-editor-mobile-v324\.css/);
@@ -23,13 +25,24 @@ test("v369 only targets the small device family", () => {
 });
 
 test("v369 covers every requested Studio surface without changing semantics", () => {
-  for (const marker of [".sn-view-pad", ".sn-content-card", ".sn-settings-grid", ".sn-members", ".sn-api-page", ".sv124-comments-page", ".sv124-domain-page", ".tn-studio", ".sn-analytics-data-host", ".ce-app", ".ce-paper", ".ce-sidebar", ".ce-preview-layer", ".ce-source-layer"]) {
+  for (const marker of [".sn-view-pad", ".sn-content-card", ".sn-settings-grid", ".sn-members", ".sn-api-page", ".sv124-comment-workspace", ".sv124-domain-page", ".tn-studio", ".sn-analytics-data-host", ".ce-app", ".ce-paper", ".ce-sidebar", ".ce-preview-layer", ".ce-source-layer"]) {
     assert.match(css, new RegExp(marker.replaceAll(".", "\\.")));
   }
   assert.match(css, /overflow-wrap:anywhere/);
   assert.match(css, /min-height:44px/);
   assert.match(css, /font-size:16px/);
   assert.match(css, /@media\s*\(\s*display-mode\s*:\s*standalone\s*\)/);
+});
+
+test("comment mobile selectors match markup and preserve the global page layout", () => {
+  assert.match(comments, /className="sv124-card sv124-comment-workspace"/);
+  for (const name of ['sv124-comment-workspace','sv124-comment-tools','sv124-comment-columns','sv124-comment-list','sv124-comment-detail']) {
+    assert.ok(comments.includes(name), `missing comment markup: ${name}`);
+    assert.ok(css.includes('.' + name), `missing mobile comment selector: ${name}`);
+  }
+  assert.match(globalCss, /\.sv124-comments-page\s*\{[^}]*flex-direction\s*:\s*column/);
+  assert.match(css, /\.sv124-comment-columns\s*\{[^}]*grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(css, /\.sv124-comment-list\s*\{[^}]*overflow:auto!important/);
 });
 
 test("v369 keeps editor SEO/content implementation unchanged", () => {
