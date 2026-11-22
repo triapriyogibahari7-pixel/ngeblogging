@@ -1,4 +1,5 @@
 name: Domain activation reconciliation tests
+# CI-only trigger after candidate Preview auto-build was verified disabled.
 
 on:
   push:
