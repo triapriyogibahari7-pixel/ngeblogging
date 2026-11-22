@@ -34,7 +34,7 @@ function FullZoneForm({siteId,expectedUserId,onRefresh}){
   <p className="nd-connect-description">Hubungkan domain milik Anda ke situs aktif melalui Cloudflare for SaaS. Alamat gratis tetap tersedia.</p>
   <form className="nd-connect-form" onSubmit={submit} noValidate>
    <label className="nd-connect-field" htmlFor={fieldId}><span>Nama domain utama</span><input id={fieldId} name="custom-domain" type="text" inputMode="url" value={domain} onChange={event=>setDomain(event.target.value)} disabled={busy} placeholder="domainanda.com" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={253}/></label>
-   <p>{DOMAIN_CONNECTION_ANNUAL_LABEL}, mencakup domain utama dan www. Dibayar untuk 12 bulan; tidak diperpanjang otomatis. Tidak termasuk pembelian atau perpanjangan nama domain.</p>
+   <p>{DOMAIN_CONNECTION_ANNUAL_LABEL}, mencakup domain utama dan www. Dibayar untuk 12 bulan; tidak diperpanjang otomatis. Tidak termasuk pembelian atau perpanjangan nama domain. Pembayaran melalui Midtrans; checkout belum tersedia.</p>
    <button type="submit" className="sv124-primary nd-connect-submit" disabled={busy||!siteId||!expectedUserId||!domain.trim()}>{busy?'Menghubungkan…':'Hubungkan domain'}</button>
   </form>
   <div className="nd-connect-feedback" role="status" aria-live="polite">{notice&&<p>{notice}</p>}</div>

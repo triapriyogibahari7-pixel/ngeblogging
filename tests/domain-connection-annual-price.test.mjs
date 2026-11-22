@@ -4,9 +4,9 @@ import {readFileSync} from 'node:fs';
 import {DOMAIN_CONNECTION_ANNUAL_PRICE as price} from '../shared/domain-connection-annual-price.mjs';
 import {domainConnectionAnnualPriceResponse as route} from '../server/domain-connection-annual-price.mjs';
 const url='https://ngeblogging.com/api/domains/';
-test('annual bundled price is USD 5.49 in exact minor units',()=>{
- assert.equal(price.amount,'5.49');assert.equal(price.amountMinor,549);
- assert.equal(price.currency,'USD');assert.equal(price.periodMonths,12);
+test('annual bundled price is IDR 99000 in Midtrans whole rupiah',()=>{
+ assert.equal(price.amount,'99000');assert.equal(price.amountIdr,99000);assert.equal(price.amountMinor,undefined);
+ assert.equal(price.currency,'IDR');assert.equal(price.periodMonths,12);
  assert.equal(price.includedHostnameCount,2);assert.equal(price.includesApex,true);
  assert.equal(price.includesWww,true);assert.equal(price.autoRenew,false);assert.equal(Object.isFrozen(price),true);
 });
@@ -66,4 +66,22 @@ test('actual worker returns price and unavailable checkout before legacy routes'
   assert.deepEqual(calls,[]);
   assert.equal(await (await worker.fetch(new Request('https://ngeblogging.com/'),{},{})).text(),'base');
  }finally{delete globalThis.__annualPriceWiring;}
+});
+test('payment purpose and provider cannot become a domain purchase or PayPal checkout',async()=>{
+ const r=route(new Request(url+'connection-price?provider=paypal&amountIdr=1&purpose=domain-purchase'));
+ const d=await r.json();assert.equal(d.paymentProvider,'midtrans');assert.equal(d.paymentCurrency,'IDR');
+ assert.equal(d.billingPurpose,'custom-domain-connection');assert.equal(d.price.amountIdr,99000);
+ assert.equal(d.price.paymentProvider,'midtrans');assert.equal(d.domainPurchaseIncluded,false);
+});
+test('commerce checkout and unrelated routes are never intercepted',()=>{
+ for(const path of ['/api/commerce/domains/checkout','/api/commerce/domains','/api/domains/connection-checkout/','/api/domains/connection-price/'])assert.equal(route(new Request('https://ngeblogging.com'+path)),null);
+});
+test('connection offer and blocked checkout make no external payment requests',async()=>{
+ const saved=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;throw Error('UNEXPECTED_EXTERNAL_REQUEST');};
+ try{
+  await route(new Request(url+'connection-price')).json();
+  const r=route(new Request(url+'connection-checkout',{method:'POST',body:JSON.stringify({amountIdr:1,paid:true,purpose:'domain-purchase'})}));
+  const d=await r.json();assert.equal(r.status,503);assert.equal(d.code,'DOMAIN_CONNECTION_MIDTRANS_NOT_READY');
+  assert.equal(d.price.amountIdr,99000);assert.equal(d.charged,false);assert.equal(calls,0);
+ }finally{globalThis.fetch=saved;}
 });
