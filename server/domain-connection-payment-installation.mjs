@@ -17,9 +17,15 @@ async function readJson(response){
 export function domainConnectionPaymentInstallationResponse(request,env={},context){
  const url=new URL(request.url),canonical=url.protocol==='https:'&&url.hostname==='ngeblogging.com'&&!url.port&&!url.search;
  if(canonical&&request.method==='POST'&&url.pathname===ROOT+'connection-checkout'){
-  // Release interlock: remove only when serving enforcement is actually wired.
-  // Existing environment flags alone must not open this incomplete feature.
-  return reply(503,{code:'DOMAIN_CONNECTION_FULFILLMENT_NOT_READY',checkoutReady:false,charged:false,newAttemptAllowed:false,error:'Checkout koneksi domain belum dibuka. Pemasangan dan penegakan masa layanan harus siap lebih dahulu.'});
+  // Serving enforcement is wired at the Worker entry point. Keep checkout closed
+  // until the operator has verified SQL, SaaS, installation and payment readiness.
+  const flags=['CUSTOM_DOMAIN_BYOD_ENABLED','CUSTOM_DOMAIN_BYOD_SAAS_READY','DOMAIN_CONNECTION_INSTALLER_ENABLED','DOMAIN_CONNECTION_PROOF_ENABLED','DOMAIN_CONNECTION_MIDTRANS_ENABLED','DOMAIN_CONNECTION_PROVISIONING_READY'];
+  const proofKey=env.DOMAIN_CONNECTION_PROOF_SECRET;
+  const ready=flags.every(name=>env[name]==='true')&&typeof proofKey==='string'&&proofKey.length>=32&&proofKey.length<=4096&&proofKey.trim()===proofKey;
+  if(!ready)return reply(503,{code:'DOMAIN_CONNECTION_FULFILLMENT_NOT_READY',checkoutReady:false,charged:false,newAttemptAllowed:false,error:'Checkout koneksi domain belum dibuka. Pemasangan dan penegakan masa layanan harus siap lebih dahulu.'});
+  // The existing payment handler still performs authentication, ledger and SaaS
+  // preflight before creating a checkout. Never install a domain before payment.
+  return domainConnectionAnnualPriceResponse(request,env);
  }
  const notify=url.pathname===ROOT+'connection-midtrans-notification',status=url.pathname===ROOT+'connection-payment-status';
  if(!canonical||request.method!=='POST'||(!notify&&!status)||env.DOMAIN_CONNECTION_INSTALLER_ENABLED!=='true')return domainConnectionAnnualPriceResponse(request,env);
