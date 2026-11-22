@@ -11,4 +11,4 @@ export const DOMAIN_CONNECTION_ANNUAL_PRICE = Object.freeze({
  includesWww: true,
  autoRenew: false,
 });
-export const DOMAIN_CONNECTION_ANNUAL_LABEL = 'Rp99.000 per domain per tahun';
+export const DOMAIN_CONNECTION_ANNUAL_LABEL = 'Rp99.000 per domain per tahun (domain utama memerlukan DNS dengan CNAME flattening)';
