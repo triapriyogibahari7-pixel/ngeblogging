@@ -127,6 +127,7 @@ test(
           messages: [],
           result: {
             id: ZONE_ID,
+            account: { id: ACCOUNT_ID },
             name: "example.com",
             status: "pending",
             name_servers: [
@@ -267,7 +268,9 @@ test(
       globalThis.fetch;
 
     const attachedHostnames = [];
+    const workerDomains = new Map();
     let savedDomainUpdate = null;
+    let savedSiteUpdate = null;
 
     const storedDomain = {
       id: DOMAIN_ID,
@@ -347,6 +350,7 @@ test(
           messages: [],
           result: {
             id: ZONE_ID,
+            account: { id: ACCOUNT_ID },
             name: "example.com",
             status: "active",
             name_servers: [
@@ -370,6 +374,48 @@ test(
           "api.cloudflare.com"
         && url.pathname ===
           `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`
+        && method === "GET"
+      ) {
+        const hostname = url.searchParams.get("hostname");
+        assert.ok(workerDomains.has(hostname));
+        return jsonResponse({
+          success: true,
+          errors: [],
+          messages: [],
+          result: [workerDomains.get(hostname)],
+        });
+      }
+
+      if (
+        method === "GET"
+        && (
+          url.origin === "https://cloudflare-dns.com"
+            && url.pathname === "/dns-query"
+          || url.origin === "https://dns.google"
+            && url.pathname === "/resolve"
+        )
+      ) {
+        const name = url.searchParams.get("name");
+        const type = url.searchParams.get("type");
+        assert.ok(["example.com", "www.example.com"].includes(name));
+        assert.ok(["A", "AAAA", "NS"].includes(type));
+        if (type === "NS") assert.equal(name, "example.com");
+        const records = {
+          A: [{ name, type: 1, TTL: 60, data: "192.0.2.1" }],
+          AAAA: [{ name, type: 28, TTL: 60, data: "2001:db8::1" }],
+          NS: [
+            { name, type: 2, TTL: 60, data: "alice.ns.cloudflare.com." },
+            { name, type: 2, TTL: 60, data: "bob.ns.cloudflare.com." },
+          ],
+        };
+        return jsonResponse({ Status: 0, Answer: records[type] });
+      }
+
+      if (
+        url.hostname ===
+          "api.cloudflare.com"
+        && url.pathname ===
+          `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`
         && method === "PUT"
       ) {
         const body =
@@ -379,19 +425,21 @@ test(
           body.hostname,
         );
 
+        const workerDomain = {
+          id: crypto.randomUUID(),
+          cert_id: crypto.randomUUID(),
+          hostname: body.hostname,
+          service: body.service,
+          zone_id: body.zone_id,
+          zone_name: body.zone_name,
+        };
+        workerDomains.set(body.hostname, workerDomain);
+
         return jsonResponse({
           success: true,
           errors: [],
           messages: [],
-          result: {
-            id: crypto.randomUUID(),
-            cert_id:
-              crypto.randomUUID(),
-            hostname: body.hostname,
-            service: body.service,
-            zone_id: body.zone_id,
-            zone_name: body.zone_name,
-          },
+          result: workerDomain,
         });
       }
 
@@ -425,6 +473,8 @@ test(
           "/rest/v1/sites"
         && method === "PATCH"
       ) {
+        assert.equal(options.headers.authorization, "Bearer user-session-test");
+        savedSiteUpdate = JSON.parse(options.body);
         return jsonResponse([]);
       }
 
@@ -459,6 +509,8 @@ test(
 
       const payload =
         await response.json();
+
+      assert.equal(savedSiteUpdate.custom_domain, "example.com");
 
       assert.equal(
         response.status,
@@ -889,6 +941,7 @@ test(
           messages: [],
           result: {
             id: ZONE_ID,
+            account: { id: ACCOUNT_ID },
             name: "example.com",
             status: "active",
             name_servers: [
@@ -1068,6 +1121,7 @@ test(
           messages: [],
           result: {
             id: ZONE_ID,
+            account: { id: ACCOUNT_ID },
             name: "example.com",
             status: "moved",
             name_servers: [
