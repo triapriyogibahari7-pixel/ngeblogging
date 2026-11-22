@@ -11,7 +11,7 @@ import {normalizeDomainManagementResponse} from '../shared/customer-domain-manag
 import {domainMigrationResponse} from '../server/customer-domain-migration-runtime.mjs';
 import {migrationRouteProofResponse} from '../server/customer-domain-migration-live-proof.mjs';
 
-import {domainConnectionAnnualPriceResponse} from '../server/domain-connection-annual-price.mjs';
+import {domainConnectionPaymentInstallationResponse} from '../server/domain-connection-payment-installation.mjs';
 import {domainConnectionPaidRefreshResponse,paidConnectionTenantProofResponse} from '../server/domain-connection-paid-refresh.mjs';
 
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
@@ -21,7 +21,7 @@ export default {...worker,async fetch(request,env,context){
  if(paidProof)return paidProof;
  const paidRefresh=await domainConnectionPaidRefreshResponse(request,env);
  if(paidRefresh)return paidRefresh;
- const annualConnection=await domainConnectionAnnualPriceResponse(request,env);
+ const annualConnection=await domainConnectionPaymentInstallationResponse(request,env,context);
  if(annualConnection)return annualConnection;
  const runtimeEnv=domainRuntimeEnvironment(env);
  const routeProof=await migrationRouteProofResponse(request,runtimeEnv);
