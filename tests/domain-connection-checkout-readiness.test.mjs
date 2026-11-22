@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const flags=['CUSTOM_DOMAIN_BYOD_ENABLED','CUSTOM_DOMAIN_BYOD_SAAS_READY','DOMAIN_CONNECTION_INSTALLER_ENABLED','DOMAIN_CONNECTION_PROOF_ENABLED','DOMAIN_CONNECTION_MIDTRANS_ENABLED','DOMAIN_CONNECTION_PROVISIONING_READY'];
-const complete=()=>Object.fromEntries([...flags.map(name=>[name,'true']),['DOMAIN_CONNECTION_PROOF_SECRET','test-only-proof-key-not-a-secret-123456789']]);
+const complete=()=>Object.fromEntries([...flags.map(name=>[name,'true']),['DOMAIN_CONNECTION_PROOF_SECRET','test-only-proof-key-not-a-secret-123456789'],['CLOUDFLARE_SAAS_APEX_MODE','cname-flattening']]);
 async function fixture(){
  const calls=[];
  const deny=()=>{throw Error('LIVE_NETWORK_OR_INSTALLATION_FORBIDDEN');};
@@ -27,6 +27,13 @@ for(const flag of flags)for(const value of [undefined,'false',true])test('checko
 for(const value of [undefined,'short',' '.repeat(32),'x'.repeat(4097)])test('checkout rejects invalid proof key '+String(value?.length),async()=>{
  const f=await fixture(),env={...complete(),DOMAIN_CONNECTION_PROOF_SECRET:value};
  const response=await f.route(request(),env);assert.equal(response.status,503);assert.equal(f.calls.length,0);
+});
+for(const mode of [undefined,'assigned-apex-addresses','unknown','',true])test('checkout rejects unsupported apex mode '+String(mode)+' before payment preflight',async()=>{
+ const f=await fixture(),env=complete();
+ if(mode===undefined)delete env.CLOUDFLARE_SAAS_APEX_MODE;else env.CLOUDFLARE_SAAS_APEX_MODE=mode;
+ const response=await f.route(request(),env),body=await response.json();
+ assert.equal(response.status,503);assert.equal(body.code,'DOMAIN_CONNECTION_FULFILLMENT_NOT_READY');
+ assert.equal(body.charged,false);assert.equal(body.checkoutReady,false);assert.equal(f.calls.length,0);
 });
 test('fully staged checkout reaches existing payment preflight exactly once without installation',async()=>{
  const f=await fixture(),env=Object.freeze(complete()),r=request();

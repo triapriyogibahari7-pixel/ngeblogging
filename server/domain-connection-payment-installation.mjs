@@ -21,7 +21,10 @@ export function domainConnectionPaymentInstallationResponse(request,env={},conte
   // until the operator has verified SQL, SaaS, installation and payment readiness.
   const flags=['CUSTOM_DOMAIN_BYOD_ENABLED','CUSTOM_DOMAIN_BYOD_SAAS_READY','DOMAIN_CONNECTION_INSTALLER_ENABLED','DOMAIN_CONNECTION_PROOF_ENABLED','DOMAIN_CONNECTION_MIDTRANS_ENABLED','DOMAIN_CONNECTION_PROVISIONING_READY'];
   const proofKey=env.DOMAIN_CONNECTION_PROOF_SECRET;
-  const ready=flags.every(name=>env[name]==='true')&&typeof proofKey==='string'&&proofKey.length>=32&&proofKey.length<=4096&&proofKey.trim()===proofKey;
+  // The paid pair installer currently supports apex CNAME flattening only.
+  // Reject unsupported or implicit modes before delegating to payment preflight.
+  const apexSupported=env.CLOUDFLARE_SAAS_APEX_MODE==='cname-flattening';
+  const ready=apexSupported&&flags.every(name=>env[name]==='true')&&typeof proofKey==='string'&&proofKey.length>=32&&proofKey.length<=4096&&proofKey.trim()===proofKey;
   if(!ready)return reply(503,{code:'DOMAIN_CONNECTION_FULFILLMENT_NOT_READY',checkoutReady:false,charged:false,newAttemptAllowed:false,error:'Checkout koneksi domain belum dibuka. Pemasangan dan penegakan masa layanan harus siap lebih dahulu.'});
   // The existing payment handler still performs authentication, ledger and SaaS
   // preflight before creating a checkout. Never install a domain before payment.
