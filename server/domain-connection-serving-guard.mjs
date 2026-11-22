@@ -16,8 +16,8 @@ export async function withPaidConnectionAccess(request,env,serve,{fetchImpl=glob
  try{
   if(String(env.SUPABASE_URL||env.VITE_SUPABASE_URL||'').replace(/\/$/,'')!==DB||!env.SUPABASE_SERVICE_ROLE_KEY)throw Error('SERVING_STORAGE_REQUIRED');
   async function authorize(){
-   const result=await fetchImpl(DB+'/rest/v1/rpc/domain_connection_serving_v1',{method:'POST',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(5000),headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},body:JSON.stringify({p_hostname:hostname})});
-   if(result.status!==200)throw Error('SERVING_LOOKUP_FAILED');
+   const result=await fetchImpl(DB+'/rest/v1/rpc/domain_connection_serving_v1',{method:'POST',redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(5000),headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},body:JSON.stringify({p_hostname:hostname})});
+   if(result.status!==200){try{result.body?.cancel()?.catch(()=>{});}catch{}throw Error('SERVING_LOOKUP_FAILED');}
    const row=await readJson(result);
    if(row?.version!=='connection-serving-v1'||row.hostname!==hostname||typeof row.applies!=='boolean'||typeof row.allowed!=='boolean')throw Error('SERVING_LOOKUP_UNVERIFIED');
    if(row.applies&&row.allowed&&(!UUID.test(row.siteId||'')||!UUID.test(row.domainId||'')||!PID.test(row.providerHostnameId||'')||!/^DCON-[a-f0-9]{32}$/.test(row.orderId||'')||!Number.isFinite(Date.parse(row.expiresAt))))throw Error('SERVING_IDENTITY_UNVERIFIED');

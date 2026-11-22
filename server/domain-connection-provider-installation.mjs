@@ -20,7 +20,7 @@ export async function installPaidConnectionProviderPair(input,env,{fetchImpl=glo
  if(String(env.SUPABASE_URL||'').replace(/\/$/,'')!==DB||!env.SUPABASE_SERVICE_ROLE_KEY||!options.configurationReady||!options.apexReady||options.apexDnsMode!=='cname-flattening'||!HEX.test(env.CLOUDFLARE_ZONE_ID||'')||!HEX.test(env.CLOUDFLARE_ACCOUNT_ID||'')||typeof merchant!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(merchant))fail('INSTALL_CONFIGURATION_REQUIRED');
  const admin={apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},cfHeaders={authorization:'Bearer '+token,accept:'application/json','content-type':'application/json'};
  const cf='https://api.cloudflare.com/client/v4/zones/'+env.CLOUDFLARE_ZONE_ID;
- async function call(url,headers,init={}){const response=await fetchImpl(url,{...init,headers,redirect:'error',signal:AbortSignal.timeout(8000)});if(!response.ok)fail('INSTALL_UPSTREAM_UNAVAILABLE');return boundedJson(response);}
+ async function call(url,headers,init={}){const response=await fetchImpl(url,{...init,headers,redirect:'manual',signal:AbortSignal.timeout(8000)});if(!response.ok){try{response.body?.cancel()?.catch(()=>{});}catch{}fail('INSTALL_UPSTREAM_UNAVAILABLE');}return boundedJson(response);}
  const rpc=(name,args)=>call(DB+'/rest/v1/rpc/'+name,admin,{method:'POST',body:JSON.stringify(args)});
  const cfGet=suffix=>call(cf+suffix,cfHeaders);
  const [zone,fallback,target,capability]=await Promise.all(['','/custom_hostnames/fallback_origin','/dns_records?name='+encodeURIComponent(options.cnameTarget)+'&per_page=2','/custom_hostnames?per_page=1'].map(cfGet));

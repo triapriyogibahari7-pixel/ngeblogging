@@ -14,7 +14,7 @@ export async function installAndBindPaidConnectionPair(input,env,{fetchImpl=glob
  const provisioned=await installPaidConnectionProviderPair(input,env,{fetchImpl});
  if(provisioned.orderId!==input.orderId||provisioned.siteId!==input.siteId||!Array.isArray(provisioned.jobs)||provisioned.jobs.length!==2)fail('BIND_PROVISIONING_UNVERIFIED');
  const token=String(env.CLOUDFLARE_DOMAIN_API_TOKEN||env.CLOUDFLARE_API_TOKEN||'').trim(),cf='https://api.cloudflare.com/client/v4/zones/'+env.CLOUDFLARE_ZONE_ID;
- async function call(url,headers,init={}){const response=await fetchImpl(url,{...init,headers,redirect:'error',signal:AbortSignal.timeout(8000)});if(!response.ok)fail('BIND_UPSTREAM_UNAVAILABLE');return readJson(response);}
+ async function call(url,headers,init={}){const response=await fetchImpl(url,{...init,headers,redirect:'manual',signal:AbortSignal.timeout(8000)});if(!response.ok){try{response.body?.cancel()?.catch(()=>{});}catch{}fail('BIND_UPSTREAM_UNAVAILABLE');}return readJson(response);}
  const cfHeaders={authorization:'Bearer '+token,accept:'application/json'};
  const [zone,fallback]=await Promise.all([call(cf,cfHeaders),call(cf+'/custom_hostnames/fallback_origin',cfHeaders)]);
  const origin=fallback.result?.origin;
