@@ -1,7 +1,8 @@
 import React,{useEffect,useId,useRef,useState} from 'react';
 import {getVerifiedSession} from './lib/auth-session-v76.js';
 import {customerHost} from '../shared/customer-domain-connection.mjs';
-import {applyDomainInstructions,assignedNameservers} from './lib/domain-panel-result.mjs';
+import {assignedNameservers} from './lib/domain-panel-result.mjs';
+import {DOMAIN_CONNECTION_ANNUAL_LABEL} from '../shared/domain-connection-annual-price.mjs';
 import './domain-connect-entry.css';
 export default function DomainConnectEntry(props){return <FullZoneForm key={String(props.siteId)+'/'+String(props.expectedUserId)} {...props}/>;}
 function FullZoneForm({siteId,expectedUserId,onRefresh}){
@@ -18,23 +19,22 @@ function FullZoneForm({siteId,expectedUserId,onRefresh}){
    const auth=await wait(getVerifiedSession({force:true}));
    if(auth?.verification!=='verified'||auth.user?.id!==expectedUserId||!auth.session?.access_token)throw Error('SESSION_CHANGED');
    if(c.signal.aborted)throw Error('OUTCOME_UNKNOWN');
-   sent=true;const response=await wait(fetch('/api/domains/register',{method:'POST',redirect:'error',cache:'no-store',credentials:'same-origin',signal:c.signal,headers:{accept:'application/json',authorization:'Bearer '+auth.session.access_token,'content-type':'application/json'},body:JSON.stringify({siteId,hostname})}));
+   sent=true;const response=await wait(fetch('/api/domains/connection-checkout',{method:'POST',redirect:'error',cache:'no-store',credentials:'same-origin',signal:c.signal,headers:{accept:'application/json',authorization:'Bearer '+auth.session.access_token,'content-type':'application/json'},body:JSON.stringify({siteId,hostname})}));
    if(!response.headers.get('content-type')?.includes('application/json'))throw Error('OUTCOME_UNKNOWN');
    const text=await wait(response.text());if(text.length>65536)throw Error('OUTCOME_UNKNOWN');const payload=JSON.parse(text);
    if(!response.ok)throw Object.assign(Error('SERVER_REJECTED'),{publicMessage:typeof payload.error==='string'?payload.error.slice(0,300):'Penghubungan belum berhasil. Periksa daftar domain sebelum mencoba kembali.'});
-   const data=applyDomainInstructions(payload,siteId);
-   if(!data?.domain?.id||data.domain.site_id!==siteId||data.domain.hostname!==hostname||data.domain.provider!=='cloudflare-full-zone')throw Error('OUTCOME_UNKNOWN');
-   if(mounted.current&&!c.signal.aborted){setResult(data);setNotice('Domain tercatat. DNS, routing, dan HTTPS belum dinyatakan aktif. Ikuti nameserver resmi di bawah dan jalankan Periksa koneksi pada kartu domain.');try{onRefresh?.();}catch{setNotice('Domain tercatat, tetapi daftar belum dapat diperbarui. Muat ulang daftar sebelum mengirim ulang.');}}
+   // Live checkout is deliberately unavailable until verified billing is integrated.
+   throw Object.assign(Error('CHECKOUT_NOT_READY'),{publicMessage:'Checkout tahunan belum tersedia. Tidak ada pembayaran yang diproses.'});
   }catch(error){if(mounted.current)setNotice(error.message==='SESSION_CHANGED'?'Sesi berubah. Masuk kembali sebelum menghubungkan domain.':error.publicMessage||(sent?'Hasil penghubungan belum dapat dipastikan. Muat ulang daftar domain sebelum mengulang.':'Permintaan belum dikirim. Silakan masuk dan coba kembali.'));}
   finally{clearTimeout(timer);if(active.current===c)active.current=null;if(mounted.current)setBusy(false);}
  }
  const ns=assignedNameservers(result?.domain?.ownership_verification?.required_name_servers);
  return <section className="sv124-card nd-connect-entry" aria-label="Hubungkan domain pribadi" aria-busy={busy}>
   <h2>Hubungkan domain pribadi</h2>
-  <p className="nd-connect-description">Hubungkan domain milik Anda ke situs aktif melalui Full Zone. Alamat gratis tetap tersedia. Pengelolaan DNS memerlukan penggantian nameserver di registrar.</p>
+  <p className="nd-connect-description">Hubungkan domain milik Anda ke situs aktif melalui Cloudflare for SaaS. Alamat gratis tetap tersedia.</p>
   <form className="nd-connect-form" onSubmit={submit} noValidate>
    <label className="nd-connect-field" htmlFor={fieldId}><span>Nama domain utama</span><input id={fieldId} name="custom-domain" type="text" inputMode="url" value={domain} onChange={event=>setDomain(event.target.value)} disabled={busy} placeholder="domainanda.com" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={253}/></label>
-   <p>Pastikan record email dan DNS penting sudah diperiksa sebelum mengganti nameserver. Formulir ini tidak membeli atau mentransfer domain.</p>
+   <p>{DOMAIN_CONNECTION_ANNUAL_LABEL}, mencakup domain utama dan www. Dibayar untuk 12 bulan; tidak diperpanjang otomatis. Tidak termasuk pembelian atau perpanjangan nama domain.</p>
    <button type="submit" className="sv124-primary nd-connect-submit" disabled={busy||!siteId||!expectedUserId||!domain.trim()}>{busy?'Menghubungkan…':'Hubungkan domain'}</button>
   </form>
   <div className="nd-connect-feedback" role="status" aria-live="polite">{notice&&<p>{notice}</p>}</div>

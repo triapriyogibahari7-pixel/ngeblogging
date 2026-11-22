@@ -11,9 +11,13 @@ import {normalizeDomainManagementResponse} from '../shared/customer-domain-manag
 import {domainMigrationResponse} from '../server/customer-domain-migration-runtime.mjs';
 import {migrationRouteProofResponse} from '../server/customer-domain-migration-live-proof.mjs';
 
+import {domainConnectionAnnualPriceResponse} from '../server/domain-connection-annual-price.mjs';
+
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
 
 export default {...worker,async fetch(request,env,context){
+ const annualConnection=domainConnectionAnnualPriceResponse(request);
+ if(annualConnection)return annualConnection;
  const runtimeEnv=domainRuntimeEnvironment(env);
  const routeProof=await migrationRouteProofResponse(request,runtimeEnv);
  if(routeProof)return routeProof;
