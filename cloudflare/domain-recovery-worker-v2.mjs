@@ -21,7 +21,7 @@ export default {...worker,async fetch(request,env,context){
  if(paidProof)return paidProof;
  const paidRefresh=await domainConnectionPaidRefreshResponse(request,env);
  if(paidRefresh)return paidRefresh;
- const annualConnection=domainConnectionAnnualPriceResponse(request);
+ const annualConnection=await domainConnectionAnnualPriceResponse(request,env);
  if(annualConnection)return annualConnection;
  const runtimeEnv=domainRuntimeEnvironment(env);
  const routeProof=await migrationRouteProofResponse(request,runtimeEnv);
