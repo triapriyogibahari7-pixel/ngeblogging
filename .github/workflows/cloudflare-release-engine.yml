@@ -33,6 +33,10 @@ jobs:
         run: node ops/cloudflare-release/validate-release.mjs
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
+      - name: Prepare tested domain handler and domain regression
+        run: npm run domain:connection:prepare-release
+      - name: Production regression including paid domain connection
+        run: npm run test:production
       - name: Release input tests
         run: node --test ops/cloudflare-release/tests/release.test.mjs
       - name: Domain input and mocked processor regression
