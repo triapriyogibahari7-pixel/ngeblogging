@@ -1,0 +1,32 @@
+name: Custom domain site theme parity Node 22
+
+on:
+  push:
+    branches:
+      - fix/domain-activation-reconciliation-20261122
+    paths:
+      - src/lib/public-data.js
+      - tests/custom-domain-site-theme-parity.test.mjs
+      - .github/workflows/custom-domain-site-theme-parity-node22.yml
+
+permissions:
+  contents: read
+
+jobs:
+  parity-node22:
+    if: github.ref == 'refs/heads/fix/domain-activation-reconciliation-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Node 22 runtime
+        run: |
+          node --version
+          node -e "if (process.versions.node.split('.')[0] !== '22') process.exit(1)"
+      - name: Run eight site theme parity behavior tests
+        run: node --test tests/custom-domain-site-theme-parity.test.mjs
