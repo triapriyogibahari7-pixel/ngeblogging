@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createIndependentJobStore} from '../server/independent-domain-job-store.mjs';
+const domainId='3325a5b1-73cc-44ac-83bc-0b128eb39290',siteId='605a655a-f763-4bd3-9c85-bffb6a7a3bda';
+function fixture(rows=[]){const calls=[];return {calls,store:createIndependentJobStore({query:async(sql,params)=>{calls.push({sql,params});return {rows};}})};}
+test('requires query adapter',()=>assert.throws(()=>createIndependentJobStore({}),TypeError));
+test('enqueue parameterizes values and checks existing mapping',async()=>{const f=fixture([{domain_id:domainId}]);const r=await f.store.enqueue({domainId,siteId,hostname:'example.com'});assert.equal(r.domain_id,domainId);assert.deepEqual(f.calls[0].params,[domainId,siteId,'example.com']);assert.match(f.calls[0].sql,/ON CONFLICT.*DO NOTHING/);assert.match(f.calls[0].sql,/FROM public.site_domains/);});
+test('no insert result is not reported as success',async()=>{const f=fixture();assert.equal(await f.store.enqueue({domainId,siteId,hostname:'example.com'}),null);});
+test('claim uses atomic fenced skip-locked SQL',async()=>{const f=fixture();assert.equal(await f.store.claim(),null);const s=f.calls[0].sql;assert.match(s,/SKIP LOCKED/);assert.match(s,/lease_version=j.lease_version\+1/);assert.match(s,/lease_until <= clock_timestamp/);assert.match(s,/attempts < 20/);});
+test('settlement compares lease version, expiry and domain identity',async()=>{const f=fixture();assert.equal(await f.store.settle({domainId,leaseVersion:'9007199254740993',outcome:'retry',reason:'DNS_PENDING'}),null);const c=f.calls[0];assert.equal(c.params[1],'9007199254740993');assert.match(c.sql,/lease_version=\$2::bigint/);assert.match(c.sql,/lease_until>clock_timestamp/);assert.match(c.sql,/d.site_id=j.site_id/);});
+test('invalid outcome and unbounded retry rejected before SQL',async()=>{const f=fixture();for(const patch of [{outcome:'active'},{delayMs:0},{delayMs:3600001},{leaseVersion:0},{reason:'user supplied text'}])await assert.rejects(()=>f.store.settle({domainId,leaseVersion:'1',outcome:'retry',reason:'DNS_PENDING',...patch}),TypeError);assert.equal(f.calls.length,0);});
+test('settling job completion never activates the domain or changes primary mapping',async()=>{const f=fixture([{state:'complete'}]);await f.store.settle({domainId,leaseVersion:'1',outcome:'complete',reason:'READY_FOR_PERSISTENCE'});const s=f.calls[0].sql;assert.doesNotMatch(s,/UPDATE public\.(sites|site_domains)/);assert.doesNotMatch(s,/is_primary|custom_domain/);});
+test('exhausted recovery is bounded',async()=>{const f=fixture();assert.deepEqual(await f.store.reapExhausted(),[]);assert.match(f.calls[0].sql,/LIMIT 100/);assert.match(f.calls[0].sql,/SKIP LOCKED/);});
