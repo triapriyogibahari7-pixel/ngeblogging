@@ -97,6 +97,7 @@ function zoneResponse() {
     messages: [],
     result: {
       id: ZONE_ID,
+      account: { id: ACCOUNT_ID },
       name: "example.com",
       status: "active",
       name_servers: [
