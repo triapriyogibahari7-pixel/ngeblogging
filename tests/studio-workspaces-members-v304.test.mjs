@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { assertActiveServiceWorkerContract } from "./helpers/service-worker-active-contract.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -127,25 +128,16 @@ test("v305 switcher and member manager stay contained on mobile with readable ac
   assert.match(membersCss, /safe-area-inset-bottom/);
 });
 
-test("Cloudflare build gate accepts checked-in v303 source and generated v305 worker", async () => {
+test("Cloudflare build gate preserves v303/v305 compatibility with the active service worker", async () => {
   const worker = await read("public/sw.js");
-  const generatedV305 = worker.includes("ngeblogging-app-v305-site-switch-first-site-20260805")
-    || worker.includes("STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305");
-
   assert.match(worker, /studio-add-site-free-subdomain-v303-20260805/);
   assert.doesNotMatch(worker, /localStorage\.clear|sessionStorage\.clear|location\.(?:reload|replace)/);
-
-  if (generatedV305) {
-    assert.match(worker, /ngeblogging-app-v305-site-switch-first-site-20260805/);
-    assert.match(worker, /studio-site-switch-first-site-cache-v305/);
-    assert.match(worker, /STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305/);
-    assert.match(worker, /studio-site-switch-first-site-v305-20260805/);
-    assert.match(worker, /NGE_BLOGGING_UPDATE_AVAILABLE_V305/);
-  } else {
-    assert.match(worker, /ngeblogging-app-v303-add-site-20260805/);
-    assert.match(worker, /studio-add-site-cache-v303/);
-    assert.match(worker, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
-  }
+  assert.match(worker, /STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305/);
+  assert.match(worker, /studio-site-switch-first-site-v305-20260805/);
+  assert.match(worker, /studio-real-site-switcher-v305-20260805/);
+  assert.match(worker, /studio-first-site-required-v305-20260805/);
+  assert.match(worker, /startup-membership-plus-owned-sites-v305-20260805/);
+  await assertActiveServiceWorkerContract(worker);
 });
 
 test("v306 loads after v305 actions and protects the switch-site interaction layout", async () => {
