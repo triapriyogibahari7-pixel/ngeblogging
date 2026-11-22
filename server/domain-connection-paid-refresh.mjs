@@ -25,7 +25,7 @@ async function refreshPaidDomain(request,env){
   const token=String(env.CLOUDFLARE_DOMAIN_API_TOKEN||env.CLOUDFLARE_API_TOKEN||'').trim();
   if(base!==DB||!publicKey||!env.SUPABASE_SERVICE_ROLE_KEY||!HEX.test(env.CLOUDFLARE_ZONE_ID||'')||!HEX.test(env.CLOUDFLARE_ACCOUNT_ID||'')||!token)fail('CONNECTION_CONFIG_REQUIRED');
   const userHeaders={apikey:publicKey,authorization},admin={apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY};
-  async function call(url,headers,init={}){const r=await fetch(url,{...init,headers,redirect:'error',signal:controller.signal});if(!r.ok)fail('CONNECTION_READ_OR_UPDATE_UNAVAILABLE');return json(r);}
+  async function call(url,headers,init={}){const r=await fetch(url,{...init,headers,redirect:'manual',signal:controller.signal});if(!r.ok){try{r.body?.cancel()?.catch(()=>{});}catch{}fail('CONNECTION_READ_OR_UPDATE_UNAVAILABLE');}return json(r);}
   const user=await call(DB+'/auth/v1/user',userHeaders);if(!UUID.test(user?.id||''))fail('AUTH_REQUIRED',401);
   const sites=await call(DB+'/rest/v1/sites?id=eq.'+input.siteId+'&select=id,owner_id&limit=1',userHeaders);
   if(!Array.isArray(sites)||sites.length!==1||sites[0].id!==input.siteId)fail('SITE_MANAGER_REQUIRED',403);
@@ -76,7 +76,7 @@ async function paidProof(request,env,url){
  try{
   const expected=await proofMac(env.CUSTOM_DOMAIN_PROOF_SECRET,['request',hostname,nonce,time,id]);let diff=0;for(let i=0;i<64;i++)diff|=expected.charCodeAt(i)^mac.charCodeAt(i);if(diff)return null;
   if(String(env.SUPABASE_URL||'').replace(/\/$/,'')!==DB||!env.SUPABASE_SERVICE_ROLE_KEY)return reply(503,{code:'PROOF_STORAGE_UNAVAILABLE'});
-  const get=async path=>{const r=await fetch(DB+'/rest/v1/'+path,{redirect:'error',signal:c.signal,headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,accept:'application/json'}});if(!r.ok)throw Error('READ_FAILED');return json(r);};
+  const get=async path=>{const r=await fetch(DB+'/rest/v1/'+path,{redirect:'manual',signal:c.signal,headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,accept:'application/json'}});if(!r.ok){try{r.body?.cancel()?.catch(()=>{});}catch{}throw Error('READ_FAILED');}return json(r);};
   const ds=await get('site_domains?id=eq.'+id+'&select=id,site_id,hostname,provider,status&limit=1');
   if(!Array.isArray(ds)||ds.length!==1||!PROVIDERS.has(ds[0].provider))return null;
   const d=ds[0];if(d.id!==id||!UUID.test(d.site_id||'')||d.hostname!==hostname||!['pending','verifying','active'].includes(d.status))return reply(404,{code:'PAID_PROOF_DOMAIN_UNVERIFIED'});

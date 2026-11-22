@@ -30,15 +30,15 @@ async function paymentRequest(request,env,url){
   if(typeof merchant!=='string'||!/^[A-Za-z0-9_-]{2,100}$/.test(merchant))fail('MERCHANT_NOT_READY');
   const secrets=[secret(env.DOMAIN_CONNECTION_MIDTRANS_SIGNATURE_SECRET)];if(env.DOMAIN_CONNECTION_MIDTRANS_SIGNATURE_SECRET_PREVIOUS)secrets.push(secret(env.DOMAIN_CONNECTION_MIDTRANS_SIGNATURE_SECRET_PREVIOUS));
   const admin={apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY};
-  async function call(target,init={},expected=200){const r=await fetch(target,{...init,redirect:'error',signal:c.signal});if(r.status!==expected)fail('PAYMENT_UPSTREAM_UNAVAILABLE');return json(r,c.signal);}
+  async function call(target,init={},expected=200){const r=await fetch(target,{...init,redirect:'manual',signal:c.signal});if(r.status!==expected){try{r.body?.cancel()?.catch(()=>{});}catch{}fail('PAYMENT_UPSTREAM_UNAVAILABLE');}return json(r,c.signal);}
   const rpc=(name,args)=>call(DB+'/rest/v1/rpc/'+name,{method:'POST',headers:{...admin,'content-type':'application/json'},body:JSON.stringify(args)});
   async function ready(){const readiness=await rpc('domain_connection_payment_ready_v2',{});if(readiness?.version!=='connection-midtrans-v2'||readiness.amountIdr!==PRICE.amountIdr||readiness.periodMonths!==12)fail('PAYMENT_LEDGER_NOT_READY');}
   function checked(r){if(!r||!ORDER.test(r.order_id||'')||r.environment!=='production'||r.merchant_id!==merchant||r.purpose!==PRICE.billingPurpose||r.amount_idr!==PRICE.amountIdr||r.currency!=='IDR'||r.period_months!==12||r.includes_www!==true)fail('ORDER_UNVERIFIED');return r;}
   async function stored(id,user){const rs=await call(DB+'/rest/v1/domain_connection_orders?order_id=eq.'+id+(user?'&user_id=eq.'+user:'')+'&select=*&limit=1',{headers:admin});if(!Array.isArray(rs)||rs.length!==1)fail('ORDER_NOT_FOUND',404);return checked(rs[0]);}
   async function hold(r,reason,transaction){const h=await rpc('domain_connection_payment_hold_v2',{p_order:r.order_id,p_reason:reason,p_transaction:transaction||r.transaction_id||null});if(h?.ok!==true||h.orderId!==r.order_id||h.reviewRequired!==true)fail('PAYMENT_HOLD_UNVERIFIED');}
   async function observe(r,hint=''){
-   const response=await fetch('https://api.midtrans.com/v2/'+r.order_id+'/status',{redirect:'error',signal:c.signal,headers:{authorization:'Basic '+btoa(key+':'),accept:'application/json'}});
-   if(response.status!==200&&response.status!==404)fail('PAYMENT_STATUS_UNAVAILABLE');const s=await json(response,c.signal);
+   const response=await fetch('https://api.midtrans.com/v2/'+r.order_id+'/status',{redirect:'manual',signal:c.signal,headers:{authorization:'Basic '+btoa(key+':'),accept:'application/json'}});
+   if(response.status!==200&&response.status!==404){try{response.body?.cancel()?.catch(()=>{});}catch{}fail('PAYMENT_STATUS_UNAVAILABLE');}const s=await json(response,c.signal);
    if(response.status===404||String(s.status_code)==='404'){if(r.grant_expires_at)await hold(r,'status_disappeared');return 'not_started_or_unavailable';}
    if(s.order_id!==r.order_id||s.merchant_id!==merchant||typeof s.transaction_id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(s.transaction_id)||typeof s.transaction_status!=='string'||!/^\d{3}$/.test(String(s.status_code)))fail('PAYMENT_IDENTITY_MISMATCH',409);
    if(s.currency!=='IDR'||cents(s.gross_amount)!==BigInt(r.amount_idr)*100n){await hold(r,'payment_mismatch',s.transaction_id);return s.transaction_status;}
