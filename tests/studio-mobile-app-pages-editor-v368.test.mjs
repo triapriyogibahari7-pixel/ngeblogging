@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { assertActiveServiceWorkerContract } from "./helpers/service-worker-active-contract.mjs";
 
 const css = await readFile(new URL("../src/studio-mobile-final-v369.css", import.meta.url), "utf8");
 const editor = await readFile(new URL("../src/ContentEditor.jsx", import.meta.url), "utf8");
 const studio = await readFile(new URL("../src/StudioNext.jsx", import.meta.url), "utf8");
+const comments = await readFile(new URL("../src/CommentsPanelV124.jsx", import.meta.url), "utf8");
 const sw = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
 
 test("v369 mobile authority is loaded after existing editor/studio CSS", () => {
@@ -23,13 +25,14 @@ test("v369 only targets the small device family", () => {
 });
 
 test("v369 covers every requested Studio surface without changing semantics", () => {
+  assert.match(comments, /className="[^"]*\bsv124-comment-workspace\b/);
   for (const marker of [
     ".sn-view-pad",
     ".sn-content-card",
     ".sn-settings-grid",
     ".sn-members",
     ".sn-api-page",
-    ".sv124-comments-page",
+    ".sv124-comment-workspace",
     ".sv124-domain-page",
     ".tn-studio",
     ".sn-analytics-data-host",
@@ -42,7 +45,7 @@ test("v369 covers every requested Studio surface without changing semantics", ()
   assert.match(css, /overflow-wrap:anywhere/);
   assert.match(css, /min-height:44px/);
   assert.match(css, /font-size:16px/);
-  assert.match(css, /display-mode: standalone/);
+  assert.match(css, /display-mode:\s*standalone/);
 });
 
 test("v369 keeps editor SEO/content implementation unchanged", () => {
@@ -53,10 +56,20 @@ test("v369 keeps editor SEO/content implementation unchanged", () => {
   assert.match(editor, /schemaType/);
 });
 
-test("v369 bumps the service-worker cache so stale mobile CSS is not retained", () => {
-  assert.match(sw, /ngeblogging-app-v369-mobile-final-20261001/);
-  assert.match(sw, /studio-mobile-final-cache-v369/);
-  assert.match(sw, /mobile-final-v369/);
+test("active service worker rotates caches while preserving sessions and free-site compatibility", async () => {
+  await assertActiveServiceWorkerContract(sw);
+});
+
+test("active service-worker contract rejects stale versions, active-cache deletion and forced reloads", async () => {
+  const invalid = [
+    sw.replace(/const CACHE_RELEASE = "[^"]+";/, 'const CACHE_RELEASE = "v0-invalid";'),
+    sw.replace('.filter((key) => ![SHELL_CACHE, ASSET_CACHE].includes(key))', '.filter(() => true)'),
+    sw.replace('reloadRequired: false', 'reloadRequired: true'),
+  ];
+  for (const source of invalid) {
+    assert.notEqual(source, sw, "mutation must modify the actual worker source");
+    await assert.rejects(() => assertActiveServiceWorkerContract(source));
+  }
 });
 
 test("v369 editor uses natural mobile flow and never changes large layout", () => {
