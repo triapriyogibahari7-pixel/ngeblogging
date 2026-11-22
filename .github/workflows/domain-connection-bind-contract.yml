@@ -1,0 +1,29 @@
+name: Domain connection paid binding contract
+
+on:
+  push:
+    branches:
+      - fix/domain-activation-reconciliation-20261122
+    paths:
+      - server/domain-connection-install-and-bind.mjs
+      - tests/domain-connection-bind-contract.test.mjs
+      - .github/workflows/domain-connection-bind-contract.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paid-binding-contract:
+    if: github.ref == 'refs/heads/fix/domain-activation-reconciliation-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check paid binding contract without live services
+        run: node --experimental-vm-modules --test tests/domain-connection-bind-contract.test.mjs
