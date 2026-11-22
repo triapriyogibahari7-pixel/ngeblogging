@@ -65,9 +65,10 @@ async function paymentRequest(request,env,url){
   const hostname=customerHost(b.hostname);if(hostname.startsWith('www.')||hostname.length>249)fail('INVALID_HOSTNAME',400);
   if(typeof b.returnPath!=='string'||!b.returnPath.startsWith('/')||b.returnPath.startsWith('//')||b.returnPath.includes('\\')||b.returnPath.length>2048)fail('INVALID_RETURN_PATH',400);
   const back=new URL(b.returnPath,url.origin);if(back.origin!==url.origin||back.search||back.hash||back.pathname!==b.returnPath)fail('INVALID_RETURN_PATH',400);
-  const sites=await call(DB+'/rest/v1/sites?id=eq.'+b.siteId+'&select=id,owner_id,custom_domain&limit=1',{headers});if(!Array.isArray(sites)||sites.length!==1||sites[0].id!==b.siteId)fail('SITE_MANAGER_REQUIRED',403);
+  const sites=await call(DB+'/rest/v1/sites?id=eq.'+b.siteId+'&select=id,owner_id,custom_domain,slug&limit=1',{headers});if(!Array.isArray(sites)||sites.length!==1||sites[0].id!==b.siteId)fail('SITE_MANAGER_REQUIRED',403);
   if(sites[0].owner_id!==user.id){const roles=await call(DB+'/rest/v1/site_members?site_id=eq.'+b.siteId+'&user_id=eq.'+user.id+'&role=in.(owner,admin)&select=role&limit=1',{headers});if(!Array.isArray(roles)||!roles.length)fail('SITE_MANAGER_REQUIRED',403);}
-  if(sites[0].custom_domain)fail('EXISTING_PRIMARY_REQUIRES_REVIEW',409);
+  const site=sites[0],freeAddress=typeof site.slug==='string'&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(site.slug)&&site.custom_domain===site.slug+'.ngeblogging.com';
+  if(site.custom_domain&&!freeAddress)fail('EXISTING_PRIMARY_REQUIRES_REVIEW',409);
   const rights=await call(DB+'/rest/v1/domain_connection_entitlements?hostname=eq.'+hostname+'&select=site_id,expires_at,review_required&limit=1',{headers:admin});if(!Array.isArray(rights))fail('RIGHTS_UNVERIFIED');if(rights.length){const e=rights[0];if(e.site_id!==b.siteId||e.review_required)fail('DOMAIN_REVIEW_REQUIRED',409);if(Date.parse(e.expires_at)>Date.now())return reply(200,{userId:user.id,siteId:b.siteId,hostname,paymentRequired:false,grantExpiresAt:e.expires_at});}
   const options=customerOptions(env);if(!options.configurationReady||!options.apexReady)fail('SAAS_NOT_READY');
   const existing=await call(DB+'/rest/v1/site_domains?or=(hostname.eq.'+hostname+',hostname.eq.www.'+hostname+')&select=site_id,provider&limit=3',{headers:admin});if(!Array.isArray(existing)||existing.some(d=>d.site_id!==b.siteId||!['cloudflare','cloudflare-custom-hostnames'].includes(d.provider)))fail('DOMAIN_MIGRATION_REQUIRED',409);
