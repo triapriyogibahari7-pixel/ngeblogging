@@ -1,0 +1,24 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {authorizeDomainDiagnosticOperator as authorize} from '../server/domain-connection-diagnostic-auth.mjs';
+const ID='11111111-1111-4111-8111-111111111111',OTHER='22222222-2222-4222-8222-222222222222';
+const TOKEN='fake.jwt.signature',KEY='fake-publishable-key';
+const env=()=>({DOMAIN_CONNECTION_DIAGNOSTIC_OPERATOR_IDS:ID,SUPABASE_URL:'https://polvmlrhqoiflumibfqs.supabase.co',SUPABASE_PUBLISHABLE_KEY:KEY});
+const user=()=>({id:ID,email_confirmed_at:'2020-01-01T00:00:00Z',is_anonymous:false});
+const request=(url='https://ngeblogging.com/api/internal/domain-connection-diagnostics',headers={},method='GET')=>new Request(url,{method,headers:{authorization:'Bearer '+TOKEN,...headers}});
+function fixture(reply=()=>Response.json(user())){const calls=[];return {calls,fetchImpl:async(url,init)=>{calls.push({url,init});return reply();}};}
+const denied=async(p)=>assert.rejects(p,{message:'DOMAIN_DIAGNOSTIC_ACCESS_DENIED'});
+test('operator must pass Supabase authentication and dedicated allowlist',async()=>{const f=fixture();assert.deepEqual(await authorize(request(),env(),f),{id:ID});assert.equal(f.calls.length,1);const {url,init}=f.calls[0];assert.equal(url,env().SUPABASE_URL+'/auth/v1/user');assert.equal(init.method,'GET');assert.equal(init.redirect,'error');assert.equal(init.credentials,'omit');assert.equal(init.headers.authorization,'Bearer '+TOKEN);assert.equal(init.headers.apikey,KEY);assert.equal(init.body,undefined);});
+for(const [name,value] of [['DOMAIN_CONNECTION_DIAGNOSTIC_OPERATOR_IDS',undefined],['DOMAIN_CONNECTION_DIAGNOSTIC_OPERATOR_IDS',''],['DOMAIN_CONNECTION_DIAGNOSTIC_OPERATOR_IDS','invalid'],['DOMAIN_CONNECTION_DIAGNOSTIC_OPERATOR_IDS',ID+','+ID],['DOMAIN_CONNECTION_DIAGNOSTIC_OPERATOR_IDS',ID+','],['SUPABASE_URL','https://evil.example'],['SUPABASE_PUBLISHABLE_KEY',undefined]])test('deny configuration '+name+' '+value,async()=>{const f=fixture(),e=env();e[name]=value;await denied(authorize(request(),e,f));assert.equal(f.calls.length,0);});
+for(const url of ['http://ngeblogging.com/api/internal/domain-connection-diagnostics','https://www.ngeblogging.com/api/internal/domain-connection-diagnostics','https://evil.example/api/internal/domain-connection-diagnostics','https://ngeblogging.com/api/domains/connection-checkout','https://ngeblogging.com/api/internal/domain-connection-diagnostics?operator=true'])test('deny URL '+url,async()=>{const f=fixture();await denied(authorize(request(url),env(),f));assert.equal(f.calls.length,0);});
+for(const headers of [{origin:'https://evil.example'},{'sec-fetch-site':'cross-site'},{'sec-fetch-site':'same-site'},{authorization:'Bearer forged'},{authorization:''}])test('deny headers '+JSON.stringify(headers),async()=>{const f=fixture();await denied(authorize(request(undefined,headers),env(),f));assert.equal(f.calls.length,0);});
+test('non-GET is denied before network',async()=>{const f=fixture();await denied(authorize(request(undefined,{},'POST'),env(),f));assert.equal(f.calls.length,0);});
+for(const patch of [{id:OTHER},{is_anonymous:true},{is_anonymous:undefined},{email_confirmed_at:undefined},{email_confirmed_at:'invalid'},{email_confirmed_at:'2099-01-01'},{banned_until:'2099-01-01'},{banned_until:'invalid'}])test('deny authenticated user '+JSON.stringify(patch),async()=>{const f=fixture(()=>Response.json({...user(),...patch}));await denied(authorize(request(),env(),f));assert.equal(f.calls.length,1);});
+for(const status of [301,401,403,429,500])test('deny auth response '+status,async()=>{const f=fixture(()=>new Response('',{status}));await denied(authorize(request(),env(),f));assert.equal(f.calls.length,1);});
+test('untrusted metadata cannot grant operator access',async()=>{const f=fixture(()=>Response.json({...user(),id:OTHER,user_metadata:{role:'admin',operator:true,id:ID},app_metadata:{role:'admin'}}));await denied(authorize(request(),env(),f));});
+test('oversized response denied',async()=>{const f=fixture(()=>new Response('x'.repeat(16385)));await denied(authorize(request(),env(),f));});
+test('invalid JSON denied',async()=>{const f=fixture(()=>new Response('{'));await denied(authorize(request(),env(),f));});
+test('fetch error is redacted',async()=>{const f=fixture(()=>{throw Error(TOKEN+KEY);});await denied(authorize(request(),env(),f));});
+test('stalled fetch is bounded',async()=>{const f=fixture(()=>new Promise(()=>{}));await denied(authorize(request(),env(),{...f,timeoutMs:15}));});
+test('stalled body is bounded',async()=>{const f=fixture(()=>new Response(new ReadableStream({start(){}})));await denied(authorize(request(),env(),{...f,timeoutMs:15}));});
+test('same-origin bearer request accepted',async()=>{const f=fixture();assert.deepEqual(await authorize(request(undefined,{origin:'https://ngeblogging.com','sec-fetch-site':'same-origin'}),env(),f),{id:ID});});
