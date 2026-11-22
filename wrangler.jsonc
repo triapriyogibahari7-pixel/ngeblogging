@@ -10,7 +10,8 @@
   "routes": [
     {"pattern": "ngeblogging.com", "custom_domain": true},
     {"pattern": "www.ngeblogging.com", "custom_domain": true},
-    {"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"}
+    {"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"},
+    {"pattern": "*/*", "zone_name": "ngeblogging.com"}
   ],
   "assets": {"directory": "./dist/", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true},
   "ai": {"binding": "AI"},
@@ -51,6 +52,13 @@
     "CLOUDFLARE_WORKER_SERVICE": "ngeblogging",
     "CLOUDFLARE_CUSTOM_HOSTNAME_TARGET": "connect.ngeblogging.com",
     "CLOUDFLARE_CUSTOM_ORIGIN": "connect.ngeblogging.com",
+    "CLOUDFLARE_ACCOUNT_ID": "095e57b46e7ba7f6b188480d9e4e5fe7",
+    "CLOUDFLARE_ZONE_ID": "7658e226c2f165a24f3bbb1cf31db238",
+    "CLOUDFLARE_SAAS_APEX_MODE": "cname-flattening",
+    "CUSTOM_DOMAIN_BYOD_ENABLED": "false",
+    "CUSTOM_DOMAIN_BYOD_SAAS_READY": "false",
+    "DOMAIN_CONNECTION_INSTALLER_ENABLED": "false",
+    "DOMAIN_CONNECTION_PROOF_ENABLED": "false",
     "CUSTOM_DOMAIN_DATABASE_MODE": "user-jwt-rls",
     "FREE_SUBDOMAIN_MODE": "persistent",
     "CUSTOM_DOMAIN_REDIRECT_MODE": "canonical-308",
