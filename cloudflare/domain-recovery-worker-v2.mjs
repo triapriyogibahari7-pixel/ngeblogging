@@ -12,10 +12,15 @@ import {domainMigrationResponse} from '../server/customer-domain-migration-runti
 import {migrationRouteProofResponse} from '../server/customer-domain-migration-live-proof.mjs';
 
 import {domainConnectionAnnualPriceResponse} from '../server/domain-connection-annual-price.mjs';
+import {domainConnectionPaidRefreshResponse,paidConnectionTenantProofResponse} from '../server/domain-connection-paid-refresh.mjs';
 
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
 
 export default {...worker,async fetch(request,env,context){
+ const paidProof=await paidConnectionTenantProofResponse(request,env);
+ if(paidProof)return paidProof;
+ const paidRefresh=await domainConnectionPaidRefreshResponse(request,env);
+ if(paidRefresh)return paidRefresh;
  const annualConnection=domainConnectionAnnualPriceResponse(request);
  if(annualConnection)return annualConnection;
  const runtimeEnv=domainRuntimeEnvironment(env);
