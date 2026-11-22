@@ -12,7 +12,7 @@ import {domainMigrationResponse} from '../server/customer-domain-migration-runti
 import {migrationRouteProofResponse} from '../server/customer-domain-migration-live-proof.mjs';
 
 import {domainConnectionPaymentInstallationResponse} from '../server/domain-connection-payment-installation.mjs';
-import {domainConnectionPaidRefreshResponse,paidConnectionTenantProofResponse} from '../server/domain-connection-paid-refresh.mjs';
+import {domainConnectionPaidRefreshResponse,paidConnectionTenantProofResponse} from '../server/domain-connection-proof-scope.mjs';
 import {withPaidConnectionAccess} from '../server/domain-connection-serving-guard.mjs';
 
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
