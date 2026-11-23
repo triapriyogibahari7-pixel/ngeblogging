@@ -29,7 +29,8 @@ test("v369 covers every requested Studio surface without changing semantics", ()
     ".sn-settings-grid",
     ".sn-members",
     ".sn-api-page",
-    ".sv124-comments-page",
+    ".sv124-page",
+    ".sv124-comment-workspace",
     ".sv124-domain-page",
     ".tn-studio",
     ".sn-analytics-data-host",
@@ -42,7 +43,7 @@ test("v369 covers every requested Studio surface without changing semantics", ()
   assert.match(css, /overflow-wrap:anywhere/);
   assert.match(css, /min-height:44px/);
   assert.match(css, /font-size:16px/);
-  assert.match(css, /display-mode: standalone/);
+  assert.match(css, /display-mode:\s*standalone/);
 });
 
 test("v369 keeps editor SEO/content implementation unchanged", () => {
