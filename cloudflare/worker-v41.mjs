@@ -308,6 +308,13 @@ function logRegistrationException(error) {
   }
 }
 
+function registrationCauseSuffix(...details) {
+  const parts = details
+    .filter(Boolean)
+    .map((d) => `${d.name}${d.code ? `/${d.code}` : ""}: ${d.message}`);
+  return parts.length ? ` [Penyebab: ${parts.join(" | ")}]` : "";
+}
+
 async function runRegistrationWithRecovery(request, env, context) {
   let lastResponse = null;
   let fetchErrorDetail = null;
@@ -349,7 +356,8 @@ async function runRegistrationWithRecovery(request, env, context) {
   const requestId = crypto.randomUUID();
   return new Response(JSON.stringify({
     code: "DOMAIN_REGISTRATION_UPSTREAM_ERROR",
-    error: "Layanan pendaftaran domain belum merespons. Periksa status domain sebelum mencoba menghubungkan kembali.",
+    error: "Layanan pendaftaran domain belum merespons. Periksa status domain sebelum mencoba menghubungkan kembali."
+      + registrationCauseSuffix(fetchErrorDetail, recoveryErrorDetail),
     status: 503,
     requestId,
     release: RELEASE,
