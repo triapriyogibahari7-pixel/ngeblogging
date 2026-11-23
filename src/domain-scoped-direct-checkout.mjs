@@ -1,7 +1,8 @@
 import {scopedPurchaseStorage} from './domain-scoped-purchase-storage.mjs';
-import {readPurchaseAttempt,clearCompletedPurchase} from './domain-purchase-model.mjs';
+import {readPurchaseAttempt} from './domain-purchase-model.mjs';
+import {clearReleasablePurchase} from './domain-purchase-release.mjs';
 import {prepareDirectDomainCheckout} from './domain-direct-checkout-model.mjs';
-export async function prepareScopedDirectCheckout(domain,token,options={},{clear=clearCompletedPurchase,prepare=prepareDirectDomainCheckout}={}){
+export async function prepareScopedDirectCheckout(domain,token,options={},{clear=clearReleasablePurchase,prepare=prepareDirectDomainCheckout}={}){
  const storage=scopedPurchaseStorage(options.owner,domain,options.storage,{signal:options.signal});
  const attempt=readPurchaseAttempt(options.owner,storage);
  if(attempt){
