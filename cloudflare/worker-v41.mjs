@@ -284,28 +284,34 @@ async function finalizeRegistrationResponse(response, request, env, context, rec
 }
 
 function logRegistrationException(error) {
-  // Diagnostic only: never log request bodies, headers, tokens, or full stacks.
+  // Diagnostic only: never include request bodies, headers, tokens, or full stacks.
   try {
     const status = Number(error?.status);
-    console.error(JSON.stringify({
-      event: "domain_registration_exception",
+    const safe = {
       name: String(error?.name || "Error").slice(0, 80),
       code: String(error?.code || "").slice(0, 80),
       status: Number.isFinite(status) ? status : null,
       message: String(error?.message || "")
         .replace(/Bearer\s+\S+/gi, "Bearer [redacted]")
         .replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, "[jwt]")
+        .replace(/[A-Za-z0-9_-]{32,}/g, "[redacted]")
         .slice(0, 300),
+    };
+    console.error(JSON.stringify({
+      event: "domain_registration_exception",
+      ...safe,
       release: RELEASE,
     }));
+    return safe;
   } catch {
-    // Logging must never change the registration outcome.
+    return null;
   }
 }
 
 async function runRegistrationWithRecovery(request, env, context) {
   let lastResponse = null;
-  let lastError = null;
+  let fetchErrorDetail = null;
+  let recoveryErrorDetail = null;
 
   try {
     lastResponse = await baseWorker.fetch(request.clone(), env, context);
@@ -317,8 +323,7 @@ async function runRegistrationWithRecovery(request, env, context) {
       return finalizeRegistrationResponse(lastResponse, request, env, context);
     }
   } catch (error) {
-    lastError = error;
-    logRegistrationException(error);
+    fetchErrorDetail = logRegistrationException(error);
   }
 
   // Recover the existing zone once; never replay the mutating registration.
@@ -326,7 +331,10 @@ async function runRegistrationWithRecovery(request, env, context) {
     request.clone(),
     env,
     lastResponse,
-  ).catch(() => null);
+  ).catch((error) => {
+    recoveryErrorDetail = logRegistrationException(error);
+    return null;
+  });
 
   if (accepted) {
     return withReleaseHeader(
@@ -345,6 +353,10 @@ async function runRegistrationWithRecovery(request, env, context) {
     status: 503,
     requestId,
     release: RELEASE,
+    detail: {
+      fetch: fetchErrorDetail,
+      recovery: recoveryErrorDetail,
+    },
   }), {
     status: 503,
     headers: {
