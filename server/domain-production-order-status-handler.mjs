@@ -15,7 +15,8 @@ function view(o,q){
  if(['queued','processing','registered'].includes(o.registration_state)&&!paid)throw Error('INVALID_REGISTRATION');
  if(registered&&(!validTime(o.registered_at)||typeof o.registrar_domain_ref!=='string'||!o.registrar_domain_ref.trim()||o.registrar_domain_ref.length>200))throw Error('INVALID_REGISTRATION');
  if(typeof q.domain!=='string'||q.domain.length>253||q.domain!==q.domain.toLowerCase()||!q.domain.includes('.')||q.domain.split('.').some(x=>!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(x))||q.years!==1||q.operation!=='registration')throw Error('INVALID_QUOTE');
- const needsReview=Boolean(o.review_reason)||o.payment_state==='review_required'||o.registration_state==='review_required'||(paid&&o.registration_state==='failed');
+ const verifiedAbsent=o.review_reason==='STALE_SNAP_MAX_TTL_CORE_404'&&o.payment_state==='expired'&&o.registration_state==='not_started'&&o.paid_at==null&&o.registered_at==null&&o.registrar_domain_ref==null&&o.midtrans_transaction_id==null;
+ const needsReview=(Boolean(o.review_reason)&&!verifiedAbsent)||o.payment_state==='review_required'||o.registration_state==='review_required'||(paid&&o.registration_state==='failed');
  const resolution=o.payment_state==='refund_pending'?'refund_pending':o.payment_state==='refunded'?'refunded':needsReview?'review_required':'none';
  const messages={pending:'Pembayaran belum terverifikasi.',failed:'Pembayaran tercatat gagal.',expired:'Batas waktu pembayaran sudah berakhir.',cancelled:'Pembayaran tercatat dibatalkan.',review_required:'Pesanan memerlukan peninjauan. Simpan ID pesanan untuk penyelesaian.',refund_pending:'Status pengembalian dana masih tertunda; belum dikonfirmasi selesai.',refunded:'Status pembayaran pesanan tercatat refunded.'};
  let message=messages[o.payment_state]||'Pembayaran terverifikasi; pendaftaran domain belum dimulai.';
