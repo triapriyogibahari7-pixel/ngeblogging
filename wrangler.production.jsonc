@@ -102,5 +102,5 @@
     "NARA_RUNTIME": "cloudflare-worker-production-v160"
   },
   "previews": {"vars": {"DOMAIN_ORDER_RECOVERY_ENABLED": "false", "DOMAIN_ORDER_SITE_BINDING_ENABLED": "false", "DOMAIN_CUSTOMER_SEARCH_ENABLED": "false", "DOMAIN_CUSTOMER_CLOUDFLARE_QUOTE_ENABLED": "false", "DOMAIN_CUSTOMER_PRODUCTION_ENABLED": "false", "DOMAIN_ORDER_ENV": "sandbox"}},
-  "observability": {"enabled": true,"head_sampling_rate": 0.1}
+  "observability": {"enabled": true,"head_sampling_rate": 1}
 }
