@@ -1,0 +1,25 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+if(process.argv.length!==3||process.argv[2]!=='--apply')throw Error('Explicit --apply required');
+const handler='server/domain-handler.mjs',testFile='tests/domain-handler-full-zone.test.mjs';
+const blob=text=>createHash('sha1').update(Buffer.from(`blob ${Buffer.byteLength(text)}\0`)).update(text).digest('hex');
+const original=readFileSync(handler,'utf8'),originalTest=readFileSync(testFile,'utf8');
+if(blob(original)!=='cfac31c3b05501edbddafc74ff52ae45e95c09ed'||blob(originalTest)!=='2d0400c5d9fa79310cc132a0c8ba7f26a5410f9d')throw Error('Source changed; refusing materialization');
+function once(text,before,after){const at=text.indexOf(before);if(at<0||at!==text.lastIndexOf(before))throw Error('Missing or ambiguous anchor');return text.slice(0,at)+after+text.slice(at+before.length);}
+execFileSync(process.execPath,['scripts/patch-domain-activation-reconciliation.mjs','--apply'],{stdio:'inherit'});
+let source=readFileSync(handler,'utf8');
+const start=source.indexOf('async function saveFullZoneRefreshState('),end=source.indexOf('async function refreshFullZoneDomain(',start);
+if(start<0||end<=start)throw Error('Missing refresh save boundaries');
+let section=source.slice(start,end);
+section=once(section,'    is_primary: active,','    is_primary: active && domainRow.is_primary === true,');
+section=once(section,'  if (active) {','  if (active && saved.is_primary === true) {');
+source=source.slice(0,start)+section+source.slice(end);
+let tests=once(originalTest,'      assert.equal(savedSiteUpdate.custom_domain, "example.com");','      assert.equal(savedSiteUpdate, null);');
+const a=tests.indexOf('        savedDomainUpdate.is_primary,');
+if(a<0)throw Error('Missing primary assertion');
+const before=tests.slice(0,a),after=tests.slice(a);
+tests=before+once(after,'        savedDomainUpdate.is_primary,\n        true,','        savedDomainUpdate.is_primary,\n        false,');
+execFileSync(process.execPath,['--input-type=module','--check'],{input:source});
+execFileSync(process.execPath,['--input-type=module','--check'],{input:tests});
+writeFileSync(handler,source);writeFileSync(testFile,tests);

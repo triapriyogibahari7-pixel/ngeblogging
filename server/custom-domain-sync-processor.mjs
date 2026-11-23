@@ -23,7 +23,6 @@ export async function processCustomDomainSync(job,env,ops,{signal}={}){
   if(dns.checks.some(c=>[c.a,c.aaaa,c.ns].some(x=>x?.dnsStatus===2||x?.reason==='DNS_SERVFAIL')))return outcome('retry','DNS_SERVFAIL',evidence);
   const nsMatch=dns.checks.every(c=>{if(c.ns?.state!=='resolved'||!Array.isArray(c.ns.answers))return false;const seen=[...new Set(c.ns.answers.map(hostname))].sort();return seen.length===nameservers.length&&seen.every((x,i)=>x===nameservers[i]);});
   if(!nsMatch)return outcome('retry','NAMESERVER_DELEGATION_PENDING',evidence);
-  if(dns.ready!==true||!dns.checks.every(c=>c.a?.state==='resolved'||c.aaaa?.state==='resolved'))return outcome('retry','DNS_ADDRESS_PENDING',evidence);
   const settings=Array.isArray(job.additionalHostnames)?job.additionalHostnames:[];if(settings.length>12)return outcome('blocked','ALIAS_BATCH_LIMIT',evidence);
   const hosts=[name],www=settings.find(x=>x?.host==='www');if(!www||www.enabled!==false)hosts.push('www.'+name);
   for(const x of settings){if(x?.enabled===false||x?.host==='www')continue;const h=hostname(x.hostname);if(!h.endsWith('.'+name))return outcome('blocked','ALIAS_OUTSIDE_ZONE',evidence);hosts.push(h);}
@@ -35,6 +34,7 @@ export async function processCustomDomainSync(job,env,ops,{signal}={}){
    if(env.CUSTOM_DOMAIN_ATTACH_ENABLED!=='true')return outcome('retry','DOMAIN_ATTACH_NOT_ENABLED',evidence);
    await check();if(await ops.claimWrite(job)!==true)return outcome('retry','PROVIDER_WRITE_RATE_LIMITED',evidence);await check();await ops.attach({hostname:h,zoneId,zoneName:name},{signal});return outcome('retry','ROUTING_PROPAGATING',evidence);
   }
+  if(dns.ready!==true||!dns.checks.every(c=>c.a?.state==='resolved'||c.aaaa?.state==='resolved'))return outcome('retry','DNS_ADDRESS_PENDING',evidence);
   const proofs=await Promise.all(expected.map(h=>ops.verifyTenant({...job,hostname:h},{signal})));
   for(let i=0;i<proofs.length;i++){const p=proofs[i];if(p?.verified!==true||p.hostname!==expected[i]||p.domainId!==job.domainId||p.siteId!==job.siteId||p.tenantMappingVerified!==true)return outcome('retry','TENANT_PROOF_UNVERIFIED',evidence);const delta=Date.now()-Date.parse(p.checkedAt);if(!Number.isFinite(delta)||delta< -60000||delta>60000)return outcome('retry','TENANT_PROOF_STALE',evidence);}
   await check();return outcome('complete','CONNECTION_OBSERVED',{...evidence,providerActive:true,dnsReady:true,bindingsReady:true,httpsReady:true,tenantMappingVerified:true,readinessSource:'signed-tenant-route-proof',dnsCheckedAt:dns.checkedAt,checkedAt:new Date().toISOString(),bindings,proofs:proofs.map(p=>({hostname:p.hostname,domainId:p.domainId,siteId:p.siteId,checkedAt:p.checkedAt}))});

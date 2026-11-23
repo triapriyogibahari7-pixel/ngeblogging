@@ -11,9 +11,17 @@ import {normalizeDomainManagementResponse} from '../shared/customer-domain-manag
 import {domainMigrationResponse} from '../server/customer-domain-migration-runtime.mjs';
 import {migrationRouteProofResponse} from '../server/customer-domain-migration-live-proof.mjs';
 
+import {domainConnectionPaymentInstallationResponse} from '../server/domain-connection-payment-installation.mjs';
+import {domainConnectionPaidRefreshResponse,paidConnectionTenantProofResponse} from '../server/domain-connection-proof-scope.mjs';
+import {withPaidConnectionAccess} from '../server/domain-connection-serving-guard.mjs';
+
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleDomainRequest});
 
-export default {...worker,async fetch(request,env,context){
+async function routeRequest(request,env,context){
+ const paidRefresh=await domainConnectionPaidRefreshResponse(request,env);
+ if(paidRefresh)return paidRefresh;
+ const annualConnection=await domainConnectionPaymentInstallationResponse(request,env,context);
+ if(annualConnection)return annualConnection;
  const runtimeEnv=domainRuntimeEnvironment(env);
  const routeProof=await migrationRouteProofResponse(request,runtimeEnv);
  if(routeProof)return routeProof;
@@ -29,6 +37,14 @@ export default {...worker,async fetch(request,env,context){
  if(isDomainDeadlineRequest(request))return finalize(await withDomainDeadline(request,runtimeEnv,context,()=>worker.fetch(request,runtimeEnv,context)));
  const response=await domainRecoveryResponse(request,runtimeEnv);
  return finalize(response||await worker.fetch(request,runtimeEnv,context));
+}
+
+export default {...worker,async fetch(request,env,context){
+ // Signed setup proof has its own entitlement and site checks and must work
+ // while a newly bound hostname is still verifying. Invalid proof falls through.
+ const paidProof=await paidConnectionTenantProofResponse(request,env);
+ if(paidProof)return paidProof;
+ return withPaidConnectionAccess(request,env,()=>routeRequest(request,env,context));
 },async scheduled(event,env,context){
  const runtimeEnv=domainRuntimeEnvironment(env);
  // This dedicated cron must not dispatch registration or purchasing jobs.

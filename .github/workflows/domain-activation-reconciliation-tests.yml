@@ -1,0 +1,43 @@
+name: Domain activation reconciliation tests
+# CI-only trigger after candidate Preview auto-build was verified disabled.
+
+on:
+  push:
+    branches:
+      - fix/domain-activation-reconciliation-20261122
+    paths:
+      - server/domain-handler.mjs
+      - 'server/domain-connection-*.mjs'
+      - shared/customer-domain-connection.mjs
+      - shared/domain-connection-annual-price.mjs
+      - cloudflare/domain-recovery-worker-v2.mjs
+      - src/DomainConnectEntry.jsx
+      - wrangler.jsonc
+      - wrangler.production.jsonc
+      - tests/domain-activation-reconciliation.test.mjs
+      - tests/domain-connection-proof-scope.test.mjs
+      - tests/domain-connection-release-config.test.mjs
+      - .github/workflows/domain-activation-reconciliation-tests.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  domain-unit-tests:
+    if: github.ref == 'refs/heads/fix/domain-activation-reconciliation-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated activation and staged connection tests
+        run: >-
+          node --test
+          tests/domain-activation-reconciliation.test.mjs
+          tests/domain-connection-proof-scope.test.mjs
+          tests/domain-connection-release-config.test.mjs

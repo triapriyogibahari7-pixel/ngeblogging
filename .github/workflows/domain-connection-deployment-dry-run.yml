@@ -1,0 +1,80 @@
+name: Domain connection deployment dry-run
+
+on:
+  push:
+    branches:
+      - fix/domain-activation-reconciliation-20261122
+    paths:
+      - .github/workflows/domain-connection-deployment-dry-run.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: 'true'
+  WORKERS_CI: '0'
+  WRANGLER_SEND_METRICS: 'false'
+  CLOUDFLARE_API_TOKEN: ''
+  CLOUDFLARE_API_KEY: ''
+  CLOUDFLARE_EMAIL: ''
+  SUPABASE_SERVICE_ROLE_KEY: ''
+  DOMAIN_MIDTRANS_PRODUCTION_SERVER_KEY: ''
+  MIDTRANS_SERVER_KEY: ''
+
+jobs:
+  connection-contracts:
+    if: github.ref == 'refs/heads/fix/domain-activation-reconciliation-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run staged connection contracts without live services
+        run: >-
+          node --experimental-vm-modules --test
+          tests/domain-connection-bind-contract.test.mjs
+          tests/domain-connection-proof-scope.test.mjs
+          tests/custom-domain-tenant-proof.test.mjs
+          tests/domain-connection-release-config.test.mjs
+
+  build-and-bundle:
+    if: github.ref == 'refs/heads/fix/domain-activation-reconciliation-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Remove credential files from this disposable checkout
+        shell: bash
+        run: |
+          find . -type f -not -path './.git/*' \
+            \( -name '.env' -o -name '.env.local' \
+            -o -name '.env.production' -o -name '.env.production.local' \
+            -o -name '.dev.vars' -o -name '.dev.vars.*' \) -delete
+      - name: Install locked dependencies
+        run: npm ci --include=dev --no-audit --no-fund
+      - name: Build application without Cloudflare build hooks
+        run: npm run build
+      - name: Bundle production Worker without upload or deployment
+        run: >-
+          npm exec --offline -- wrangler deploy
+          --config wrangler.production.jsonc
+          --dry-run
+          --outdir .wrangler-deployment-test
+      - name: Save generated Worker bundle for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-connection-dry-run-${{ github.sha }}
+          path: .wrangler-deployment-test/
+          if-no-files-found: warn
+          retention-days: 3

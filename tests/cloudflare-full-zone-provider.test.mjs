@@ -230,13 +230,49 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
   const verifications = [];
   const attached = new Map();
   const sequence = [];
+  const zoneReads = [];
+  const dnsQueries = [];
+  const nameservers = ["alice.ns.cloudflare.com", "bob.ns.cloudflare.com"];
+  const resolvers = ["cloudflare-dns.com", "dns.google"];
 
   await withMockFetch(
     async (url, options = {}) => {
       const parsed = new URL(String(url));
-      assert.equal(parsed.origin, "https://api.cloudflare.com");
-      assert.equal(parsed.pathname, `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`);
       const method = options.method ?? "GET";
+      if (resolvers.includes(parsed.hostname)) {
+        assert.equal(parsed.protocol, "https:");
+        assert.equal(parsed.port, "");
+        assert.equal(parsed.pathname, parsed.hostname === "cloudflare-dns.com" ? "/dns-query" : "/resolve");
+        assert.equal(method, "GET");
+        assert.equal(options.body, undefined);
+        assert.equal(options.headers?.authorization, undefined);
+        assert.equal(options.headers?.accept, "application/dns-json");
+        assert.equal(options.redirect, "manual");
+        assert.deepEqual([...parsed.searchParams.keys()].sort(), ["name", "type"]);
+        const type = parsed.searchParams.get("type");
+        const name = parsed.searchParams.get("name");
+        assert.ok(["A", "AAAA", "NS"].includes(type));
+        const verifiedHostname = verifications.at(-1);
+        assert.ok(attached.has(verifiedHostname), "DNS must follow verified attachment");
+        assert.equal(name, type === "NS" ? "example.com" : verifiedHostname);
+        dnsQueries.push(`${parsed.hostname}:${name}:${type}`);
+        const Answer = type === "NS"
+          ? nameservers.map(value => ({name, type: 2, data: value + "."}))
+          : type === "A" ? [{name, type: 1, data: "192.0.2.1"}] : [];
+        return Response.json({Status: 0, Answer});
+      }
+      assert.equal(parsed.origin, "https://api.cloudflare.com");
+      if (parsed.pathname === `/client/v4/zones/${ZONE_ID}`) {
+        assert.equal(method, "GET");
+        assert.equal(parsed.search, "");
+        assert.equal(options.body, undefined);
+        zoneReads.push(parsed.pathname);
+        return cloudflareResponse({
+          id: ZONE_ID, name: "example.com", status: "active",
+          account: {id: ACCOUNT_ID}, name_servers: nameservers,
+        });
+      }
+      assert.equal(parsed.pathname, `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`);
       sequence.push(method);
       if (method === "GET") {
         assert.equal(options.body, undefined);
@@ -247,6 +283,7 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
       }
       assert.equal(method, "PUT");
       assert.equal(parsed.search, "");
+      assert.equal(zoneReads.length, attached.size + 1, "Zone must be checked before each attachment");
       const body = JSON.parse(options.body);
       requests.push({url: String(url), method, body});
       const domain = {
@@ -273,12 +310,25 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
       assert.equal(result.www.hostname, "www.example.com");
       assert.equal(result.apex.id, attached.get("example.com").id);
       assert.equal(result.www.id, attached.get("www.example.com").id);
+      for (const domain of [result.apex, result.www]) {
+        assert.equal(domain.dns_readiness.ready, true);
+        assert.equal(domain.dns_readiness.state, "dns_ready");
+        assert.equal(domain.dns_readiness.checks.length, 2);
+        assert.equal(domain.dns_readiness.httpsVerified, false);
+        assert.equal(domain.dns_readiness.siteContentVerified, false);
+        assert.ok(domain.dns_readiness.checks.every(row => row.addressReady && row.nameserversMatch));
+      }
     },
   );
 
   assert.equal(requests.length, 2);
   assert.deepEqual(sequence, ["PUT", "GET", "PUT", "GET"]);
   assert.deepEqual(verifications, ["example.com", "www.example.com"]);
+  assert.deepEqual(zoneReads, Array(2).fill(`/client/v4/zones/${ZONE_ID}`));
+  const expectedDnsQueries = ["example.com", "www.example.com"].flatMap(name =>
+    resolvers.flatMap(resolver => ["A", "AAAA", "NS"].map(type =>
+      `${resolver}:${type === "NS" ? "example.com" : name}:${type}`)));
+  assert.deepEqual(dnsQueries.sort(), expectedDnsQueries.sort());
 
   assert.deepEqual(
     requests.map((request) => request.body.hostname),
@@ -301,6 +351,39 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
     assert.equal(request.body.zone_name, "example.com");
   }
 });
+
+for (const [label, override, expectedCode] of [
+  ["ID zona berbeda", {id: "c".repeat(32)}, "FULL_ZONE_MISMATCH"],
+  ["nama domain berbeda", {name: "example.net"}, "FULL_ZONE_MISMATCH"],
+  ["akun berbeda", {account: {id: "c".repeat(32)}}, "FULL_ZONE_MISMATCH"],
+  ["status provider belum aktif", {status: "pending"}, "ZONE_NOT_ACTIVE"],
+]) {
+  test(`attachDefaultWorkerDomains menolak ${label} sebelum PUT`, async () => {
+    const calls = [];
+    await withMockFetch(async (url, options = {}) => {
+      const parsed = new URL(String(url));
+      calls.push({url: String(url), method: options.method ?? "GET"});
+      assert.equal(parsed.origin, "https://api.cloudflare.com");
+      assert.equal(parsed.pathname, `/client/v4/zones/${ZONE_ID}`);
+      assert.equal(parsed.search, "");
+      assert.equal(options.method ?? "GET", "GET");
+      assert.equal(options.body, undefined);
+      return cloudflareResponse({
+        id: ZONE_ID, name: "example.com", status: "active",
+        account: {id: ACCOUNT_ID},
+        name_servers: ["alice.ns.cloudflare.com", "bob.ns.cloudflare.com"],
+        ...override,
+      });
+    }, async () => {
+      await assert.rejects(
+        () => attachDefaultWorkerDomains(ENV, {id: ZONE_ID, name: "example.com", status: "active"}),
+        error => error?.code === expectedCode,
+      );
+    });
+    assert.equal(calls.length, 1);
+    assert.equal(calls.some(call => call.method === "PUT"), false);
+  });
+}
 
 test("detachWorkerDomain melepaskan hostname dari Worker", async () => {
   const WORKER_DOMAIN_ID =

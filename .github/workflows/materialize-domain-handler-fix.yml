@@ -1,0 +1,41 @@
+name: Materialize candidate domain handler fix
+on:
+  push:
+    branches: [fix/domain-activation-reconciliation-20261122]
+    paths:
+      - scripts/materialize-domain-handler-fix.mjs
+      - .github/workflows/materialize-domain-handler-fix.yml
+permissions:
+  contents: write
+concurrency:
+  group: materialize-domain-handler-candidate
+  cancel-in-progress: false
+jobs:
+  materialize:
+    if: github.repository == 'triapriyogibahari7-pixel/ngeblogging' && github.ref == 'refs/heads/fix/domain-activation-reconciliation-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts
+      - name: Materialize once with exact source guards
+        run: node scripts/materialize-domain-handler-fix.mjs --apply
+      - name: Test actual candidate source without further patching
+        run: |
+          node --test tests/custom-domain-additional-address-refresh.test.mjs tests/custom-domain-canonical-trigger-contract.test.mjs tests/domain-handler-full-zone.test.mjs tests/domain-activation-reconciliation.test.mjs tests/custom-domain-sync-processor.test.mjs tests/custom-domain-sync-bootstrap.test.mjs
+          npm run test:production
+      - name: Commit only the reviewed handler and refresh test changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- server/domain-handler.mjs tests/domain-handler-full-zone.test.mjs
+          git diff --cached --quiet && exit 1
+          git commit -m 'Materialize domain fixes and preserve additional-domain mapping [skip ci]'
+          node --test tests/custom-domain-additional-address-refresh.test.mjs tests/custom-domain-canonical-trigger-contract.test.mjs tests/domain-handler-full-zone.test.mjs tests/domain-activation-reconciliation.test.mjs tests/custom-domain-sync-processor.test.mjs tests/custom-domain-sync-bootstrap.test.mjs
+          git diff --exit-code -- server/domain-handler.mjs tests/domain-handler-full-zone.test.mjs
+          git push origin HEAD:refs/heads/fix/domain-activation-reconciliation-20261122
