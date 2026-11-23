@@ -3,6 +3,22 @@ const PATHS = new Set(['/api/domains/register', '/api/domains/refresh']);
 export function isDomainDeadlineRequest(request) {
   return request.method === 'POST' && PATHS.has(new URL(request.url).pathname);
 }
+export function safeCause(error) {
+  try {
+    const name = String(error?.name || 'Error');
+    const code = error?.code ? '/' + String(error.code) : '';
+    const message = String(error?.message || error || '');
+    return (name + code + ': ' + message)
+      .replace(/eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, '[jwt]')
+      .replace(/Bearer\s+[A-Za-z0-9._~+\/=-]+/gi, 'Bearer [redacted]')
+      .replace(/[A-Za-z0-9_-]{32,}/g, '[redacted]')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 300);
+  } catch {
+    return 'Error: tidak dapat dibaca';
+  }
+}
 function errorResponse(request, env, requestId, timedOut) {
   const headers = new Headers({
     'content-type': 'application/json; charset=utf-8',
@@ -29,7 +45,10 @@ function errorResponse(request, env, requestId, timedOut) {
 export async function withDomainDeadline(request, env, context, operation, { timeoutMs = DOMAIN_BACKEND_TIMEOUT_MS } = {}) {
   const requestId = crypto.randomUUID();
   let timer;
-  const task = Promise.resolve().then(operation).catch(() => errorResponse(request, env, requestId, false));
+  const task = Promise.resolve().then(operation).catch(error => {
+    try { console.error('domain_api_backend_error', requestId, safeCause(error)); } catch {}
+    return errorResponse(request, env, requestId, false);
+  });
   // A timeout is not a rollback: let the one original operation settle, never replay it.
   if (typeof context?.waitUntil === 'function') context.waitUntil(task.then(() => undefined));
   try {
