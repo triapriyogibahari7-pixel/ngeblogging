@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {isReleasableOrder as release,isStaleUnpaidOrder as stale,PAYMENT_WINDOW_MS as WINDOW,RELEASE_GRACE_MS as GRACE} from '../src/domain-stale-attempt-policy.mjs';
+const now=Date.parse('2026-11-23T10:00:00Z'),ago=ms=>new Date(now-ms).toISOString();
+const base=(patch={})=>({paymentState:'pending',paymentConfirmed:false,paidAt:null,registrationState:'not_started',registrationConfirmed:false,resolution:'none',createdAt:ago(WINDOW+GRACE+1000),updatedAt:ago(WINDOW+GRACE+1000),...patch});
+test('unpaid pending order past window and grace is releasable',()=>assert.equal(release(base(),{now}),true));
+test('unpaid pending order inside window is held',()=>assert.equal(release(base({createdAt:ago(3600000),updatedAt:ago(3600000)}),{now}),false));
+test('order inside grace period is held',()=>assert.equal(release(base({createdAt:ago(WINDOW+1000),updatedAt:ago(WINDOW+1000)}),{now}),false));
+test('recent update keeps order held even if created long ago',()=>assert.equal(release(base({updatedAt:ago(60000)}),{now}),false));
+test('paid order that is not registered is never released by age',()=>assert.equal(release(base({paymentState:'paid',paymentConfirmed:true,paidAt:ago(WINDOW*2)}),{now}),false));
+test('registration in progress is held',()=>assert.equal(release(base({registrationState:'processing'}),{now}),false));
+test('open resolution is held',()=>assert.equal(release(base({resolution:'manual_review'}),{now}),false));
+test('registered order without open resolution is releasable',()=>assert.equal(release({paymentState:'paid',registrationConfirmed:true,resolution:'none'},{now}),true));
+test('failed expired cancelled unpaid orders remain releasable',()=>{for(const paymentState of ['failed','expired','cancelled'])assert.equal(release({paymentState,registrationState:'not_started',resolution:'none'},{now}),true);});
+test('refund requires refunded resolution',()=>{assert.equal(release({paymentState:'refunded',resolution:'refunded'},{now}),true);assert.equal(release({paymentState:'refunded',resolution:'none'},{now}),false);});
+test('invalid or future timestamps are held',()=>{assert.equal(stale(base({createdAt:'bad'}),{now}),false);assert.equal(stale(base({updatedAt:new Date(now+60000).toISOString()}),{now}),false);assert.equal(stale(base(),{now:NaN}),false);assert.equal(stale(null,{now}),false);});
+test('window and grace constants',()=>{assert.equal(WINDOW,7200000);assert.equal(GRACE,900000);});
