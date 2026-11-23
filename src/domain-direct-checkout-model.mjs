@@ -1,5 +1,6 @@
 import {normalizePurchaseDomain,readPurchaseAttempt,fetchRegistrantPolicy,parsePurchaseQuote} from './domain-purchase-model.mjs';
 import {getFinalDomainQuote} from './domain-final-quote-source.mjs';
+import {loadOrderStatus} from './domain-order-status-model.mjs';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const fail=code=>{throw Object.assign(new Error(code),{code});};
 const held=heldReason=>{throw Object.assign(new Error('ATTEMPT_HELD'),{code:'ATTEMPT_HELD',heldReason});};
@@ -43,15 +44,28 @@ export async function recoverMissingOrderAttempt(domain,token,{owner,siteId,stor
   if(!lock)fail('CHECKOUT_IN_PROGRESS');if(signal?.aborted)fail('REQUEST_ABORTED');
   const original=storage.getItem(storageKey),attempt=readPurchaseAttempt(owner,storage);
   if(!attempt)return false;
-  if(attempt.phase!=='order')held('ATTEMPT_PHASE_NOT_RECOVERABLE');
   if(attempt.quote.domain!==domain)held('ATTEMPT_DOMAIN_MISMATCH');
   if((attempt.siteId??null)!==siteId.toLowerCase())held('ATTEMPT_SITE_MISMATCH');
-  if(!await missingOrderOnServer(attempt.orderId,token,{signal,fetchImpl}))held('ORDER_ABSENCE_UNVERIFIED');
+  let reason='AUTHENTICATED_ORDER_NOT_FOUND';
+  if(attempt.phase==='order'){
+   if(!await missingOrderOnServer(attempt.orderId,token,{signal,fetchImpl}))held('ORDER_ABSENCE_UNVERIFIED');
+  }else{
+   let order;
+   try{order=await loadOrderStatus(attempt.orderId,token,{signal,fetchImpl});}
+   catch(error){if(signal?.aborted)fail('REQUEST_ABORTED');held(error?.status===401||error?.status===403?'STATUS_AUTH_REJECTED':'STATUS_CHECK_UNVERIFIED');}
+   if(order.orderId!==attempt.orderId||order.domain!==domain||order.currency!==attempt.quote.currency||order.amountIdr!==attempt.quote.amountIdr)held('STATUS_CHECK_UNVERIFIED');
+   const terminal=(order.registrationConfirmed&&order.resolution==='none')||(['failed','expired','cancelled'].includes(order.paymentState)&&order.registrationState==='not_started'&&order.resolution==='none')||(order.paymentState==='refunded'&&order.resolution==='refunded');
+   if(!terminal)held('ORDER_EXISTS');
+   reason='AUTHENTICATED_TERMINAL_ORDER';
+  }
   if(signal?.aborted)fail('REQUEST_ABORTED');
   if(storage.getItem(storageKey)!==original)held('ATTEMPT_CHANGED');
   const current=readPurchaseAttempt(owner,storage);
-  if(!current||current.key!==attempt.key||current.orderId!==attempt.orderId||current.phase!=='order')held('ATTEMPT_CHANGED');
-  storage.setItem(storageKey+':missing-order-recovery:v1',JSON.stringify({reason:'AUTHENTICATED_ORDER_NOT_FOUND',attempt}));
+  if(!current||current.key!==attempt.key||current.orderId!==attempt.orderId||current.phase!==attempt.phase)held('ATTEMPT_CHANGED');
+  const archive=JSON.stringify({reason,attempt});
+  storage.setItem(storageKey+':missing-order-recovery:v1',archive);
+  if(storage.getItem(storageKey+':missing-order-recovery:v1')!==archive)fail('ATTEMPT_UNREADABLE');
+  if(signal?.aborted)fail('REQUEST_ABORTED');
   if(storage.getItem(storageKey)!==original)held('ATTEMPT_CHANGED');
   storage.removeItem(storageKey);
   if(storage.getItem(storageKey)!==null)fail('ATTEMPT_UNREADABLE');
