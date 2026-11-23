@@ -230,13 +230,53 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
   const verifications = [];
   const attached = new Map();
   const sequence = [];
+  const dnsQueries = [];
+  const NAMESERVERS = [
+    "alice.ns.cloudflare.com",
+    "bob.ns.cloudflare.com",
+  ];
+  const zone = {
+    id: ZONE_ID,
+    name: "example.com",
+    status: "active",
+    account: {id: ACCOUNT_ID},
+    name_servers: NAMESERVERS,
+  };
 
   await withMockFetch(
     async (url, options = {}) => {
       const parsed = new URL(String(url));
-      assert.equal(parsed.origin, "https://api.cloudflare.com");
-      assert.equal(parsed.pathname, `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`);
       const method = options.method ?? "GET";
+
+      if (parsed.origin === "https://cloudflare-dns.com" || parsed.origin === "https://dns.google") {
+        assert.equal(method, "GET");
+        const type = parsed.searchParams.get("type");
+        dnsQueries.push({
+          resolver: parsed.hostname,
+          type,
+          name: parsed.searchParams.get("name"),
+        });
+        const answers = type === "A"
+          ? [{type: 1, data: "192.0.2.10"}]
+          : type === "NS"
+            ? NAMESERVERS.map((data) => ({type: 2, data: `${data}.`}))
+            : [];
+        return new Response(JSON.stringify({Status: 0, Answer: answers}), {
+          status: 200,
+          headers: {"content-type": "application/dns-json"},
+        });
+      }
+
+      assert.equal(parsed.origin, "https://api.cloudflare.com");
+
+      if (parsed.pathname === `/client/v4/zones/${ZONE_ID}`) {
+        assert.equal(method, "GET");
+        assert.equal(options.body, undefined);
+        sequence.push("ZONE");
+        return cloudflareResponse(zone);
+      }
+
+      assert.equal(parsed.pathname, `/client/v4/accounts/${ACCOUNT_ID}/workers/domains`);
       sequence.push(method);
       if (method === "GET") {
         assert.equal(options.body, undefined);
@@ -266,6 +306,7 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
           id: ZONE_ID,
           name: "example.com",
           status: "active",
+          name_servers: NAMESERVERS,
         },
       );
 
@@ -273,12 +314,30 @@ test("attachDefaultWorkerDomains memasang apex dan www", async () => {
       assert.equal(result.www.hostname, "www.example.com");
       assert.equal(result.apex.id, attached.get("example.com").id);
       assert.equal(result.www.id, attached.get("www.example.com").id);
+      assert.equal(result.apex.dns_readiness.ready, true);
+      assert.equal(result.apex.dns_readiness.state, "dns_ready");
+      assert.equal(result.www.dns_readiness.ready, true);
+      assert.equal(result.www.dns_readiness.state, "dns_ready");
     },
   );
 
   assert.equal(requests.length, 2);
-  assert.deepEqual(sequence, ["PUT", "GET", "PUT", "GET"]);
+  assert.deepEqual(sequence, ["ZONE", "PUT", "GET", "ZONE", "PUT", "GET"]);
   assert.deepEqual(verifications, ["example.com", "www.example.com"]);
+
+  assert.equal(dnsQueries.length, 12);
+  assert.deepEqual(
+    [...new Set(dnsQueries.map((query) => query.resolver))].sort(),
+    ["cloudflare-dns.com", "dns.google"],
+  );
+  assert.deepEqual(
+    dnsQueries.filter((query) => query.type === "A").map((query) => query.name).sort(),
+    ["example.com", "example.com", "www.example.com", "www.example.com"],
+  );
+  assert.equal(
+    dnsQueries.filter((query) => query.type === "NS").every((query) => query.name === "example.com"),
+    true,
+  );
 
   assert.deepEqual(
     requests.map((request) => request.body.hostname),
