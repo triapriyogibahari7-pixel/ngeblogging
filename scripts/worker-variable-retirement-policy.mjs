@@ -6,6 +6,13 @@ export const RETIRED_COMPAT_VALUES=Object.freeze({
   AUTH_STUDIO_HANDOFF_RELEASE:'auth-session-handoff-v292-20260805'
 });
 export const RETIRED_RELEASE_VALUES=Object.freeze({
+  PUBLIC_EDGE_RELEASE:Object.freeze(['public-edge-request-dedup-v282-20260805']),
+  PRODUCTION_ROUTE_AUTHORITY:Object.freeze(['cloudflare-custom-domain-authority-v172']),
+  PRODUCTION_CUSTOM_DOMAIN_RELEASE:Object.freeze(['2026.07.30-production-custom-domain-v172']),
+  PRODUCTION_UI_RELEASE:Object.freeze(['2026.08.05-studio-sidebar-hard-lock-v301']),
+  CURRENT_STUDIO_UI_RELEASE:Object.freeze(['studio-sidebar-hard-lock-v301-20260805']),
+  STUDIO_SIDEBAR_HARD_LOCK_RELEASE:Object.freeze(['studio-sidebar-hard-lock-v301-20260805']),
+  STUDIO_THEME_CATALOG_RELEASE:Object.freeze(['studio-theme-catalog-100-v296-20260805']),
   NARA_PRODUCTION_PROBE:Object.freeze(['passed']),
   STUDIO_STABILITY_RELEASE:Object.freeze(['studio-theme-code-editor-v344-20260807','studio-shell-authority-v298-20260805']),
   STUDIO_THEME_CODE_EDITOR_PREVIOUS_RELEASE:Object.freeze(['studio-theme-code-editor-v343-20260807']),
