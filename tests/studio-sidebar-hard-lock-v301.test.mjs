@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { runInNewContext } from "node:vm";
 
 const runtime = await readFile(new URL("../src/studio-sidebar-hard-lock-v301.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../src/studio-sidebar-hard-lock-v301.css", import.meta.url), "utf8");
@@ -91,20 +92,31 @@ test("v303 Add site dialog stays contained across desktop and mobile", () => {
   assert.match(addSiteCssV303, /safe-area-inset-bottom/);
 });
 
-test("PWA worker preserves the v303 add-site contract while allowing the current v305 cache rotation", () => {
-  const generatedV305 = swV303.includes("STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305")
-    || swV303.includes("ngeblogging-app-v305-site-switch-first-site-20260805");
+test("PWA worker preserves the v303 add-site contract while distinguishing active releases from compatibility markers", () => {
+  const version = /^const VERSION = ["'](ngeblogging-app-v(\d+)-[^"']+)["'];/m.exec(swV303);
+  assert.ok(version, "worker must declare an active release");
+  const major = Number(version[2]);
 
   assert.match(swV303, /studio-add-site-free-subdomain-v303-20260805/);
   assert.match(swV303, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)/);
   assert.doesNotMatch(swV303, /localStorage\.clear|sessionStorage\.clear|location\.(?:reload|replace)/);
 
-  if (generatedV305) {
+  if (major > 305) {
+    const values = runInNewContext(swV303 + "\n;({version:VERSION,cache:CACHE_RELEASE,shell:SHELL_CACHE,assets:ASSET_CACHE});", { self: { addEventListener() {} } }, { timeout: 1000 });
+    assert.equal(values.version, version[1]);
+    assert.ok(values.cache.includes("v" + major), "active cache must match active release");
+    assert.equal(values.shell, `${values.version}-${values.cache}-shell`);
+    assert.equal(values.assets, `${values.version}-${values.cache}-assets`);
+    assert.match(swV303, /STUDIO_SITE_SWITCH_FIRST_SITE_RELEASE_V305/);
+    assert.match(swV303, /studio-site-switch-first-site-v305-20260805/);
+    assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V\d+/);
+  } else if (major === 305) {
     assert.match(swV303, /ngeblogging-app-v305-site-switch-first-site-20260805/);
     assert.match(swV303, /studio-site-switch-first-site-cache-v305/);
     assert.match(swV303, /studio-site-switch-first-site-v305-20260805/);
     assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V305/);
   } else {
+    assert.equal(major, 303);
     assert.match(swV303, /ngeblogging-app-v303-add-site-20260805/);
     assert.match(swV303, /studio-add-site-cache-v303/);
     assert.match(swV303, /NGE_BLOGGING_UPDATE_AVAILABLE_V303/);
