@@ -13,12 +13,14 @@ test("custom-domain repair uses an active Cloudflare zone and explicit zone_id",
   assert.match(script, /HTTPS publik belum menyajikan situs Ngeblogging/);
 });
 
-test("custom-domain workflow is manually runnable and invokes the repair script", () => {
+test("custom-domain workflow is a manual read-only audit and no longer repairs domains", () => {
   const workflow = read(".github/workflows/custom-domain-repair.yml");
   assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /repair-custom-domain-v350\.mjs/);
-  assert.match(workflow, /TARGET_DOMAIN/);
-  assert.match(workflow, /Public smoke test passed/);
+  assert.match(workflow, /contents: read/);
+  assert.match(workflow, /platform-domain-deployment\.test\.mjs/);
+  assert.doesNotMatch(workflow, /repair-custom-domain-v350\.mjs/);
+  assert.doesNotMatch(workflow, /TARGET_DOMAIN/);
+  assert.doesNotMatch(workflow, /secrets\./);
 });
 
 test("analytics final authority is imported after historical analytics CSS", () => {
