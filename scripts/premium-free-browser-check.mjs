@@ -17,12 +17,12 @@ try {
       try {
         await page.setContent(buildThemeSrcDoc(theme.code,configFromTheme(theme),[]),{waitUntil:'load'});
         await page.evaluate(()=>document.fonts.ready);
-        await page.locator('h1').first().waitFor({state:'visible'});
+        await page.locator('.ng-hero h1').first().waitFor({state:'visible'});
         assert.equal(await page.locator('.ng-header nav').count()>0,true,theme.id+' page navigation');
         assert.equal(await page.locator('.ng-brand').count()>0,true,theme.id+' site brand');
         assert.equal(await page.locator('.ng-cards article').count(),12,theme.id+' post slots');
-        const report=await page.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth,title:document.querySelector('h1')?.textContent.trim(),externalImages:[...document.images].filter(img=>/^https?:/i.test(img.getAttribute('src')||'')).length}));
-        assert.ok(report.title,theme.id+' title');assert.ok(report.width<=report.viewport+1,theme.id+' horizontal page overflow');
+        const report=await page.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth,title:document.querySelector('.ng-hero h1')?.textContent.trim(),externalImages:[...document.images].filter(img=>/^https?:/i.test(img.getAttribute('src')||'')).length}));
+        assert.ok(report.title,theme.id+' public hero title');assert.ok(report.width<=report.viewport+1,theme.id+' horizontal page overflow');
         assert.equal(report.externalImages,0,theme.id+' remote images');assert.deepEqual(errors,[],theme.id+' page errors');
         await page.screenshot({path:`${directory}/${theme.id}-${width}.png`,fullPage:true});
         results.push({id:theme.id,width,status:'passed',checks:report});

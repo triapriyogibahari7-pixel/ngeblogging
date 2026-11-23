@@ -26,12 +26,16 @@ function appendClass(attributes, token) {
 function releaseCode(source) {
   let html = source.code.html;
   if (!/<main\b/i.test(html) || !/<h1\b/i.test(html) || /id="posts"/i.test(html)) throw new Error(`Unsupported signature structure: ${source.id}`);
-  if (source.id === 'signature-010-nama-card') {
+  if (source.id === 'signature-023-simpul-docs') {
+    html = html.replace('<header class="docs-nav">','<header class="docs-nav ng-header">').replace('<a href="#content">','<a class="ng-brand" href="#content">');
+    html = html.replace('</header>','<nav aria-label="Navigasi situs"><a href="#posts">Tulisan</a></nav></header>');
+    html = html.replace(/<h1>([\s\S]*?)<\/h1><p class="docs-lead">([\s\S]*?)<\/p>/,'<section class="ng-hero docs-site-intro"><h1>$1</h1><p class="docs-lead">$2</p></section>');
+  } else if (source.id === 'signature-010-nama-card') {
     html = html.replace('<section class="creator-card">',`<section class="creator-card ng-header"><a class="ng-brand psig-profile-brand" href="#content">${escapeHtml(source.name)}</a>`);
   } else {
     html = html.replace(/<header\b([^>]*)>([\s\S]*?)<\/header>/i,(_,attributes,inside)=>`<header${appendClass(attributes,'ng-header')}>${inside.replace(/<a\b([^>]*)>/i,(_a,attrs)=>`<a${appendClass(attrs,'ng-brand')}>`)}</header>`);
   }
-  html = html.replace(/<section\b([^>]*)>/i,(_,attrs)=>`<section${appendClass(attrs,'ng-hero')}>`);
+  if (source.id !== 'signature-023-simpul-docs') html = html.replace(/<section\b([^>]*)>/i,(_,attrs)=>`<section${appendClass(attrs,'ng-hero')}>`);
   html = html.replace(/<\/main>/i,`${feed}</main>`);
   return Object.freeze({html:`<div class="ng-theme psig-theme" data-theme="${source.id}">${html}</div>`,css:source.code.css+bridgeCss,javascript:source.code.javascript||''});
 }
