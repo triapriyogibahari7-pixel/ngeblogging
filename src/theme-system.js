@@ -1,4 +1,4 @@
-import { BUILT_IN_THEMES, THEME_COUNT, themeCodeFor } from "./theme-catalog.js";
+import { BUILT_IN_THEMES, THEME_COUNT, themeCodeFor } from "./premium-free-catalog.mjs";
 import { createDefaultWidgetState, normalizeWidgetState, widgetsMarkup } from "./widget-system.js";
 
 export { BUILT_IN_THEMES, THEME_COUNT };
