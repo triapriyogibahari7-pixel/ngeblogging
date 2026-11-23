@@ -19,7 +19,7 @@ export function safeCause(error) {
     return 'Error: tidak dapat dibaca';
   }
 }
-function errorResponse(request, env, requestId, timedOut, cause = '') {
+function errorResponse(request, env, requestId, timedOut) {
   const headers = new Headers({
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
@@ -34,12 +34,11 @@ function errorResponse(request, env, requestId, timedOut, cause = '') {
     headers.set('access-control-expose-headers', 'x-request-id, x-ngeblogging-domain-deadline');
     headers.set('vary', 'Origin');
   }
-  const suffix = !timedOut && cause ? ' [Penyebab: ' + cause + ']' : '';
   return new Response(JSON.stringify({
     code: timedOut ? 'DOMAIN_API_BACKEND_TIMEOUT' : 'DOMAIN_API_BACKEND_ERROR',
     error: timedOut
       ? 'Proses domain di server melewati batas waktu. Hasil penyambungan belum dapat dipastikan; gunakan Muat ulang untuk membaca status sebelum mencoba kembali. Permintaan tidak dikirim ulang otomatis.'
-      : 'Proses domain di server terputus. Hasil perubahan belum dapat dipastikan; baca ulang status domain sebelum mencoba kembali.' + suffix,
+      : 'Proses domain di server terputus. Hasil perubahan belum dapat dipastikan; baca ulang status domain sebelum mencoba kembali.',
     requestId, mutationOutcome: 'unknown', retryAutomatically: false, statusReadRequired: true,
   }), { status: timedOut ? 504 : 503, headers });
 }
@@ -47,9 +46,8 @@ export async function withDomainDeadline(request, env, context, operation, { tim
   const requestId = crypto.randomUUID();
   let timer;
   const task = Promise.resolve().then(operation).catch(error => {
-    const cause = safeCause(error);
-    try { console.error('domain_api_backend_error', requestId, cause); } catch {}
-    return errorResponse(request, env, requestId, false, cause);
+    try { console.error('domain_api_backend_error', requestId, safeCause(error)); } catch {}
+    return errorResponse(request, env, requestId, false);
   });
   // A timeout is not a rollback: let the one original operation settle, never replay it.
   if (typeof context?.waitUntil === 'function') context.waitUntil(task.then(() => undefined));
