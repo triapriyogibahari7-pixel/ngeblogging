@@ -54,9 +54,14 @@ test("v369 keeps editor SEO/content implementation unchanged", () => {
 });
 
 test("v369 bumps the service-worker cache so stale mobile CSS is not retained", () => {
+  const version = /^const VERSION = ["'](ngeblogging-app-v(\d+)-[^"']+)["'];/m.exec(sw);
+  assert.ok(version, "worker must declare an active release");
+  assert.ok(Number(version[2]) >= 369, "active release must not be older than v369");
   assert.match(sw, /ngeblogging-app-v369-mobile-final-20261001/);
   assert.match(sw, /studio-mobile-final-cache-v369/);
-  assert.match(sw, /mobile-final-v369/);
+  assert.match(sw, /const SHELL_CACHE = `\$\{VERSION\}-\$\{CACHE_RELEASE\}-shell`;/);
+  assert.match(sw, /const ASSET_CACHE = `\$\{VERSION\}-\$\{CACHE_RELEASE\}-assets`;/);
+  assert.match(sw, /\.filter\(\(key\) => !\[SHELL_CACHE, ASSET_CACHE\]\.includes\(key\)\)/);
 });
 
 test("v369 editor uses natural mobile flow and never changes large layout", () => {
