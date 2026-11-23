@@ -1219,7 +1219,6 @@ async function registerDomain(request, env, user, requestId) {
     body: JSON.stringify({
       hostname,
       custom_origin_server: config.originServer,
-      custom_metadata: { site_id: siteId, owner_id: user.id },
       ssl: { method: "txt", type: "dv", bundle_method: "ubiquitous", settings: { min_tls_version: "1.2", tls_1_3: "on", http2: "on" } },
     }),
   });
