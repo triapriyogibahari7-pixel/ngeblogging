@@ -283,6 +283,26 @@ async function finalizeRegistrationResponse(response, request, env, context, rec
     : normalized;
 }
 
+function logRegistrationException(error) {
+  // Diagnostic only: never log request bodies, headers, tokens, or full stacks.
+  try {
+    const status = Number(error?.status);
+    console.error(JSON.stringify({
+      event: "domain_registration_exception",
+      name: String(error?.name || "Error").slice(0, 80),
+      code: String(error?.code || "").slice(0, 80),
+      status: Number.isFinite(status) ? status : null,
+      message: String(error?.message || "")
+        .replace(/Bearer\s+\S+/gi, "Bearer [redacted]")
+        .replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, "[jwt]")
+        .slice(0, 300),
+      release: RELEASE,
+    }));
+  } catch {
+    // Logging must never change the registration outcome.
+  }
+}
+
 async function runRegistrationWithRecovery(request, env, context) {
   let lastResponse = null;
   let lastError = null;
@@ -298,6 +318,7 @@ async function runRegistrationWithRecovery(request, env, context) {
     }
   } catch (error) {
     lastError = error;
+    logRegistrationException(error);
   }
 
   // Recover the existing zone once; never replay the mutating registration.
