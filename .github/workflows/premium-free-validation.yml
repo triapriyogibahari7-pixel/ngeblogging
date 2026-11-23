@@ -1,0 +1,65 @@
+name: Premium free release validation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/premium-*.mjs'
+      - 'src/theme-system.js'
+      - 'tests/premium-free-integration.test.mjs'
+      - 'scripts/premium-free-browser-check.mjs'
+      - '.github/workflows/premium-free-validation.yml'
+  push:
+    branches: [feat/premium-themes-100-midtrans-20261123]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: premium-free-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integration-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Premium free integration contract
+        run: node --test tests/premium-free-integration.test.mjs
+      - name: Existing production regressions
+        run: npm run test:production
+      - name: Build candidate
+        run: npm run build
+      - name: Cloudflare bundle dry-run only
+        env:
+          QWEN_API_KEY: ci-dry-run-only
+          QWEN_WORKSPACE_ID: ci-dry-run
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
+        run: npm run cloudflare:dry-run
+  browser-candidates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Install isolated browser runner without changing manifests
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Check forty candidates at three widths without external requests
+        run: node scripts/premium-free-browser-check.mjs
+      - name: Upload actual browser results and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-free-browser-${{ github.sha }}
+          path: artifacts/premium-free/
+          if-no-files-found: warn
+          retention-days: 3
