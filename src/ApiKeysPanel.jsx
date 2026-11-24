@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {AlertTriangle,Archive,Check,Clipboard,Code2,KeyRound,LoaderCircle,Plus,RefreshCw,RotateCw,ShieldCheck,Trash2,X} from 'lucide-react';
 import {supabase} from './lib/supabase';
 import './api-keys-studio.css';
+import './api-key-secret-dialog.css';
 const SCOPES=[['sites:read','Baca situs','Daftar dan detail situs yang dapat diakses akun.'],['content:read','Baca konten','Daftar Posts dan Pages dari situs yang diizinkan.'],['content:write','Tulis konten','Akses endpoint tulis yang memerlukan konfirmasi.'],['media:read','Baca media','Metadata aset media tanpa membuka penyimpanan privat.'],['analytics:read','Baca analitik','Ringkasan analitik teragregasi.'],['comments:moderate','Moderasi komentar','Akses moderasi komentar untuk situs yang diizinkan.']];
 const API_BASE=String(import.meta.env?.VITE_SUPABASE_URL||'https://polvmlrhqoiflumibfqs.supabase.co').replace(/\/$/,'')+'/functions/v1/ngeblogging-api';
 function formatDate(value,empty='Belum pernah'){if(!value)return empty;try{return new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch{return empty;}}
