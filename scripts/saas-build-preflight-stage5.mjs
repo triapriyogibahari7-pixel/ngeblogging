@@ -12,7 +12,9 @@ try {
  const zone = await get('/zones/' + zoneId);
  if (zone.name !== 'ngeblogging.com' || zone.account?.id !== accountId || zone.status !== 'active') throw Error('ZONE_IDENTITY_OR_STATUS_MISMATCH');
  const fallback = await get('/zones/' + zoneId + '/custom_hostnames/fallback_origin');
- if (fallback.status !== 'active' || fallback.origin !== 'connect.ngeblogging.com') throw Error('EXPECTED_FALLBACK_ORIGIN_NOT_ACTIVE');
+ const origin = fallback?.origin;
+ const validOrigin = typeof origin === 'string' && origin.length <= 253 && origin.endsWith('.ngeblogging.com') && origin !== 'connect.ngeblogging.com' && origin.split('.').every(label => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label));
+ if (fallback?.status !== 'active' || !validOrigin) throw Error('EXPECTED_FALLBACK_ORIGIN_NOT_ACTIVE');
  const hostnames = await get('/zones/' + zoneId + '/custom_hostnames?per_page=5');
  if (!Array.isArray(hostnames)) throw Error('CUSTOM_HOSTNAMES_RESPONSE_INVALID');
  console.log(JSON.stringify({configuration: 'saas-build-preflight-stage5', zoneId, zoneActive: true, fallbackActive: true, customHostnamesReadable: true, writePermissionVerified: false, runtimeTokenVerified: false, dnsVerified: false, httpsVerified: false, siteContentVerified: false, productionActivated: false, migrationsPerformed: false}));
