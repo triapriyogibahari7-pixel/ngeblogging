@@ -9,7 +9,8 @@
   "routes": [
     {"pattern": "ngeblogging.com", "custom_domain": true},
     {"pattern": "www.ngeblogging.com", "custom_domain": true},
-    {"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"}
+    {"pattern": "*.ngeblogging.com/*", "zone_name": "ngeblogging.com"},
+    {"pattern": "*/*", "zone_name": "ngeblogging.com"}
   ],
   "assets": {"directory": "./dist/", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true},
   "ai": {"binding": "AI"},
@@ -54,7 +55,7 @@
     "STUDIO_CONTENT_EDITOR_RELEASE": "posts-pages-30000-v322-20260806",
     "STUDIO_CONTENT_EDITOR_DESKTOP_SITE_COMPAT": "studio-content-editor-desktop-site-v310-20260806",
     "STUDIO_SITE_SWITCHER_RELEASE": "studio-real-site-switcher-v305-20260805",
-    "STUDIO_FIRST_SITE_REQUIRED_RELEASE": "studio-first-site-required-v305-20260805",
+    "STUDIO_FIRST_SITE_REQUIRED_RELEASE": "first-site-required-v305-20260805",
     "STUDIO_STARTUP_SITE_UNION_RELEASE": "startup-membership-plus-owned-sites-v305-20260805",
     "STUDIO_SIDEBAR_HARD_LOCK_RELEASE": "studio-sidebar-hard-lock-v301-20260805",
     "STUDIO_SIDEBAR_DIRECT_RELEASE": "studio-sidebar-direct-v300-20260805",

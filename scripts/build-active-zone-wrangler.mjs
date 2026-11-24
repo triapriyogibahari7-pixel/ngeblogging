@@ -72,9 +72,16 @@ const exactCustomDomains = [
 const tenantWildcard = validCloudflareId(zoneId)
   ? { pattern: "*.ngeblogging.com/*", zone_id: zoneId }
   : { pattern: "*.ngeblogging.com/*", zone_name: "ngeblogging.com" };
+const saasWildcards = config.vars?.CUSTOM_DOMAIN_PROVIDER === "cloudflare-custom-hostnames"
+  && config.vars?.CLOUDFLARE_SAAS_ENABLED === "true"
+  && config.vars?.CLOUDFLARE_CUSTOM_HOSTNAMES_READY === "true"
+  ? [validCloudflareId(zoneId)
+    ? { pattern: "*/*", zone_id: zoneId }
+    : { pattern: "*/*", zone_name: "ngeblogging.com" }]
+  : [];
 
 config.account_id = accountId;
-config.routes = [...exactCustomDomains, tenantWildcard];
+config.routes = [...exactCustomDomains, tenantWildcard, ...saasWildcards];
 config.vars = {
   ...(config.vars || {}),
   APP_RELEASE: "2026.07.30-production-custom-domain-v172",
