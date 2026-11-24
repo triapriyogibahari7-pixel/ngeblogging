@@ -1,10 +1,12 @@
+import {createWorkerRedirectSafeFetch} from './domain-worker-fetch.mjs';
 import {handleDomainRequest} from './domain-handler.mjs';
 import {customerHost} from '../shared/customer-domain-connection.mjs';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const FIELDS='id,site_id,hostname,status,provider,provider_hostname_id,provider_status,ssl_status,ownership_verification,ssl_validation,is_primary,last_checked_at,error_message';
 const reply=(status,body)=>Response.json({...body,publicSiteVerified:false,siteContentVerified:false},{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 async function readJson(r,limit=65536,signal){const reader=r.body?.getReader();if(!reader)throw Error('RESPONSE_BODY_REQUIRED');const cancel=()=>{reader.cancel().catch(()=>{});};signal?.addEventListener('abort',cancel,{once:true});let size=0,text='';const decoder=new TextDecoder();try{for(;;){if(signal?.aborted)throw Error('REQUEST_ABORTED');const p=await reader.read();if(signal?.aborted)throw Error('REQUEST_ABORTED');if(p.done)break;size+=p.value.byteLength;if(size>limit)throw Error('BODY_TOO_LARGE');text+=decoder.decode(p.value,{stream:true});}return JSON.parse(text+decoder.decode());}finally{signal?.removeEventListener('abort',cancel);await reader.cancel().catch(()=>{});}}
-export function createSaasHttpRegistration({legacyHandler=handleDomainRequest,fetchImpl=globalThis.fetch}={}){
+export function createSaasHttpRegistration({legacyHandler=handleDomainRequest,fetchImpl=(...args)=>globalThis.fetch(...args)}={}){
+ const transport=createWorkerRedirectSafeFetch(fetchImpl);
  return async function(request,env){
   if(request.method!=='POST'||new URL(request.url).pathname!=='/api/domains/register'||env.CUSTOM_DOMAIN_PROVIDER!=='cloudflare-custom-hostnames')return legacyHandler(request,env);
   const authorization=request.headers.get('authorization')||'';
@@ -17,7 +19,7 @@ export function createSaasHttpRegistration({legacyHandler=handleDomainRequest,fe
   const controller=new AbortController(),abort=()=>controller.abort();let providerSent=false;
   request.signal.addEventListener('abort',abort,{once:true});if(request.signal.aborted)abort();
   const timer=setTimeout(abort,25000),dbHeaders={apikey:key,authorization,accept:'application/json','content-type':'application/json'};
-  const call=async(url,init={})=>{if(controller.signal.aborted)throw Error('REQUEST_ABORTED');const r=await fetchImpl(url,{...init,redirect:'error',signal:controller.signal});const data=await readJson(r,65536,controller.signal);if(!r.ok)throw Object.assign(Error('UPSTREAM_REJECTED'),{status:r.status,db:url.startsWith(db+'/')});return data;};
+  const call=async(url,init={})=>{if(controller.signal.aborted)throw Error('REQUEST_ABORTED');const r=await transport(url,{...init,signal:controller.signal});const data=await readJson(r,65536,controller.signal);if(!r.ok)throw Object.assign(Error('UPSTREAM_REJECTED'),{status:r.status,db:url.startsWith(db+'/')});return data;};
   const get=path=>call(db+path,{method:'GET',headers:dbHeaders});
   try{
    const body=await readJson(request,4096,controller.signal);if(!UUID.test(body.siteId||''))return reply(400,{code:'INVALID_SITE'});

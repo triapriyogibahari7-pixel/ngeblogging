@@ -1,6 +1,8 @@
+import {createWorkerRedirectSafeFetch} from './domain-worker-fetch.mjs';
 import {handleSaasHttpRegistration} from './customer-domain-http-registration.mjs';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-export function createHttpDcvHandler({handler=handleSaasHttpRegistration,fetchImpl=globalThis.fetch}={}){
+export function createHttpDcvHandler({handler=handleSaasHttpRegistration,fetchImpl=(...args)=>globalThis.fetch(...args)}={}){
+ const transport=createWorkerRedirectSafeFetch(fetchImpl);
  return async function(request,env){
   if(request.method!=='POST'||new URL(request.url).pathname!=='/api/domains/register'||env.CUSTOM_DOMAIN_PROVIDER!=='cloudflare-custom-hostnames')return handler(request,env);
   const response=await handler(request,env);
@@ -15,7 +17,7 @@ export function createHttpDcvHandler({handler=handleSaasHttpRegistration,fetchIm
   const reply=extra=>Response.json({...data,...extra,publicSiteVerified:false,siteContentVerified:false},{status:response.status,headers});
   try{
    const url='https://api.cloudflare.com/client/v4/zones/'+env.CLOUDFLARE_ZONE_ID+'/custom_hostnames/'+d.provider_hostname_id;
-   const current=await fetchImpl(url,{method:'GET',redirect:'error',headers:{authorization:'Bearer '+env.CLOUDFLARE_API_TOKEN,accept:'application/json'},signal:controller.signal});
+   const current=await transport(url,{method:'GET',headers:{authorization:'Bearer '+env.CLOUDFLARE_API_TOKEN,accept:'application/json'},signal:controller.signal});
    if(!current.ok)throw Error('CERTIFICATE_STATUS_UNAVAILABLE');
    const state=await current.json(),h=state.result;
    if(state.success!==true||h?.id!==d.provider_hostname_id||h.hostname!==d.hostname||!h.ssl||typeof h.ssl.status!=='string')throw Error('CERTIFICATE_IDENTITY_UNVERIFIED');
