@@ -1,3 +1,4 @@
+import {developerApiResponse} from '../server/developer-api-branding.mjs';
 import worker from './worker-nara-owner-connectors.mjs';
 import {domainRecoveryResponse} from '../server/domain-recovery-router.mjs';
 import {DOMAIN_MANAGEMENT_CRON,runDomainManagementSchedule} from '../server/domain-management-scheduler.mjs';
@@ -12,6 +13,8 @@ import {domainMigrationResponse} from '../server/customer-domain-migration-runti
 import {migrationRouteProofResponse} from '../server/customer-domain-migration-live-proof.mjs';
 const customerDomainRouter=createCustomerDomainRouter({legacyHandler:handleCustomerDomainWithHttpDcv});
 export default {...worker,async fetch(request,env,context){
+ const developerApi=await developerApiResponse(request,env);
+ if(developerApi)return developerApi;
  const runtimeEnv=domainRuntimeEnvironment(env);
  const routeProof=await migrationRouteProofResponse(request,runtimeEnv);
  if(routeProof)return routeProof;
