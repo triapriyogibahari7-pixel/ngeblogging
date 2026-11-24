@@ -17,3 +17,39 @@
 .nd-connected-domain-manager [data-domain-connect-slot] .nd-connect-entry{border:0;box-shadow:none;margin:0;padding:12px 0}
 @media(max-width:600px){.nd-connect-entry .nd-connect-form{grid-template-columns:minmax(0,1fr) 116px;gap:8px}.nd-connect-entry .nd-connect-form>.nd-connect-submit{font-size:13px;padding:6px 8px}.nd-connect-entry .nd-connect-field>input{padding:0 10px;font-size:16px}.nd-connect-entry .nd-connect-description{font-size:13px;margin-bottom:14px}}
 .nd-connected-domain-manager .sv124-domain-list>header>div>h2,.nd-connected-domain-manager .sv124-domain-list>header>div>p{display:none}
+
+/* DNS instructions: content-width-driven cards, including desktop-mode browsers. */
+.nd-connect-entry .nd-connect-result,.nd-connect-entry .nd-connect-result *{box-sizing:border-box}
+.nd-connect-entry .nd-connect-result{padding:clamp(12px,2vw,24px);color:#0f172a;line-height:1.65}
+.nd-connect-entry .nd-connect-result>h3{margin:0 0 12px;font-size:clamp(18px,2vw,22px);line-height:1.4;overflow-wrap:anywhere}
+.nd-connect-entry .nd-connect-result>p{margin:12px 0;color:#475569}
+.nd-connect-entry .nd-connect-result>label{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0;margin:20px 0 10px;font-size:14px;font-weight:600}
+.nd-connect-entry .nd-connect-result>label>input,.nd-connect-entry .nd-connect-result>label>select{display:block;position:static;inset:auto;transform:none;width:100%;min-width:0;max-width:100%;min-height:48px;margin:0;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;font:inherit;font-size:16px;line-height:1.5}
+.nd-connect-entry .nd-connect-result>ol{margin:16px 0;padding-inline-start:24px}
+.nd-connect-entry .nd-connect-result>ol>li{padding-inline-start:4px;margin:10px 0}
+.nd-connect-entry .nd-connect-result>div{min-width:0;max-width:100%}
+.nd-connect-entry .nd-connect-result table{display:block;position:relative;width:100%;max-width:100%;margin:24px 0;border:0;border-collapse:separate;border-spacing:0;font-size:14px;text-align:start}
+.nd-connect-entry .nd-connect-result table caption{display:block;width:100%;padding:0 0 14px;text-align:start;color:#0f172a;font-size:18px;font-weight:700;line-height:1.5}
+.nd-connect-entry .nd-connect-result table thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+.nd-connect-entry .nd-connect-result table tbody{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,25rem),1fr));gap:16px;width:100%;min-width:0;align-items:start}
+.nd-connect-entry .nd-connect-result table tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:0;width:100%;min-width:0;max-width:100%;margin:0;padding:clamp(12px,1.5vw,20px);border:1px solid #dbe3ef;border-radius:14px;background:#fff;box-shadow:0 2px 6px rgb(15 23 42 / 4%)}
+.nd-connect-entry .nd-connect-result table tbody td{display:block;width:100%;min-width:0;max-width:100%;padding:14px 0;border:0;border-bottom:1px solid #edf2f7;vertical-align:top;white-space:normal;overflow-wrap:anywhere;color:#334155;line-height:1.65;text-align:start}
+.nd-connect-entry .nd-connect-result table tbody td:first-child{padding-top:0;color:#1e40af;font-size:16px;font-weight:700;letter-spacing:.025em}
+.nd-connect-entry .nd-connect-result table tbody td:last-child{padding-bottom:0;border-bottom:0}
+.nd-connect-entry .nd-connect-result table tbody td::before{display:block;margin:0 0 8px;color:#64748b;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.02em;line-height:1.5}
+.nd-connect-entry .nd-connect-result table tbody td:nth-child(1)::before{content:'Jenis record'}
+.nd-connect-entry .nd-connect-result table tbody td:nth-child(2)::before{content:'Host Name / Nama'}
+.nd-connect-entry .nd-connect-result table tbody td:nth-child(3)::before{content:'Nama lengkap'}
+.nd-connect-entry .nd-connect-result table tbody td:nth-child(4)::before{content:'Value / Address / Target'}
+.nd-connect-entry .nd-connect-result table tbody td:nth-child(5)::before{content:'Kegunaan'}
+.nd-connect-entry .nd-connect-result table td>span{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:start;min-width:0;max-width:100%}
+.nd-connect-entry .nd-connect-result table td>span>code{display:block;min-width:0;max-width:100%;margin:0;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#0f172a;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;font-weight:400;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;user-select:all}
+.nd-connect-entry .nd-connect-result table td>span>button{display:inline-flex;position:static;inset:auto;transform:none;align-items:center;justify-content:center;align-self:start;min-width:68px;min-height:44px;width:auto;height:auto;max-width:100%;margin:0;padding:10px 12px;border:1px solid #bfdbfe;border-radius:9px;background:#eff6ff;color:#1d4ed8;font:inherit;font-size:14px;font-weight:600;line-height:1.5;white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.nd-connect-entry .nd-connect-result table td>span>button:hover{background:#dbeafe;border-color:#93c5fd}
+.nd-connect-entry .nd-connect-result table td>span>button:active{background:#bfdbfe}
+.nd-connect-entry .nd-connect-result table td>span>[role=status]{display:block;grid-column:1/-1;min-width:0;color:#166534;font-size:12px;font-weight:400;line-height:1.5;overflow-wrap:anywhere}
+.nd-connect-entry .nd-connect-result table td>span>[role=status]:empty{display:none}
+.nd-connect-entry .nd-connect-result button:focus-visible,.nd-connect-entry .nd-connect-result input:focus-visible,.nd-connect-entry .nd-connect-result select:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+.nd-connect-entry .nd-connect-result>h4{margin:24px 0 10px;padding-top:20px;border-top:1px solid #dbe3ef;font-size:17px;line-height:1.5}
+@media(max-width:380px){.nd-connect-entry .nd-connect-result table td>span{grid-template-columns:minmax(0,1fr)}.nd-connect-entry .nd-connect-result table td>span>button{justify-self:start}.nd-connect-entry .nd-connect-form{grid-template-columns:minmax(0,1fr)}.nd-connect-entry .nd-connect-form>.nd-connect-submit{grid-column:1;grid-row:2}}
+@media(forced-colors:active){.nd-connect-entry .nd-connect-result table tbody tr,.nd-connect-entry .nd-connect-result table td>span>code,.nd-connect-entry .nd-connect-result table td>span>button{border-color:CanvasText}}
