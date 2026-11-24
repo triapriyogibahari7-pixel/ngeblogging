@@ -1,6 +1,6 @@
-import {handleDomainRequest} from './domain-handler.mjs';
+import {handleSaasHttpRegistration} from './customer-domain-http-registration.mjs';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-export function createHttpDcvHandler({handler=handleDomainRequest,fetchImpl=globalThis.fetch}={}){
+export function createHttpDcvHandler({handler=handleSaasHttpRegistration,fetchImpl=globalThis.fetch}={}){
  return async function(request,env){
   if(request.method!=='POST'||new URL(request.url).pathname!=='/api/domains/register'||env.CUSTOM_DOMAIN_PROVIDER!=='cloudflare-custom-hostnames')return handler(request,env);
   const response=await handler(request,env);
