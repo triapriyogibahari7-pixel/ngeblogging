@@ -19,7 +19,7 @@ export function createHttpDcvHandler({handler=handleDomainRequest,fetchImpl=glob
    const state=await current.json(),h=state.result;
    if(state.success!==true||h?.id!==d.provider_hostname_id||h.hostname!==d.hostname||h.ssl?.status!=='pending_validation'||h.ssl.method!=='txt'||h.ssl.type!=='dv'||h.ssl.wildcard===true)return response;
    attempted=true;
-   const changed=await fetchImpl(url,{method:'PATCH',redirect:'error',headers,signal:controller.signal,body:JSON.stringify({ssl:{method:'http',type:'dv',bundle_method:h.ssl.bundle_method||'ubiquitous',...(h.ssl.settings?{settings:h.ssl.settings}:{}),...(h.ssl.certificate_authority?{certificate_authority:h.ssl.certificate_authority}:{})}})});
+   const changed=await fetchImpl(url,{method:'PATCH',redirect:'error',headers,signal:controller.signal,body:JSON.stringify({ssl:{method:'http',type:'dv'}})});
    const result=await changed.json();
    const confirmed=changed.ok&&result.success===true&&result.result?.id===h.id&&result.result?.hostname===h.hostname&&result.result?.ssl?.method==='http';
    return Response.json({...data,certificateValidation:{method:confirmed?'http':null,changeConfirmed:confirmed,statusRefreshRequired:true},publicSiteVerified:false,siteContentVerified:false},{status:response.status,headers:response.headers});
