@@ -1,4 +1,5 @@
 import {handleDomainRequest} from './domain-handler.mjs';
+const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 export function createHttpDcvHandler({handler=handleDomainRequest,fetchImpl=globalThis.fetch}={}){
  return async function(request,env){
   if(request.method!=='POST'||new URL(request.url).pathname!=='/api/domains/register'||env.CUSTOM_DOMAIN_PROVIDER!=='cloudflare-custom-hostnames')return handler(request,env);
@@ -6,25 +7,25 @@ export function createHttpDcvHandler({handler=handleDomainRequest,fetchImpl=glob
   if(!response?.ok)return response;
   let data;try{data=await response.clone().json();}catch{return response;}
   const d=data?.domain;
-  if(!d||!['cloudflare','cloudflare-custom-hostnames'].includes(d.provider)||d.ssl_status!=='pending_validation'||!/^[a-f0-9-]{36}$/i.test(d.provider_hostname_id||'')||typeof d.hostname!=='string'||d.hostname.includes('*'))return response;
+  if(!d||!['cloudflare','cloudflare-custom-hostnames'].includes(d.provider)||!UUID.test(d.provider_hostname_id||'')||typeof d.hostname!=='string'||d.hostname.includes('*'))return response;
   if(!/^[a-f0-9]{32}$/i.test(env.CLOUDFLARE_ZONE_ID||'')||!env.CLOUDFLARE_API_TOKEN)return response;
   const controller=new AbortController(),abort=()=>controller.abort(),timer=setTimeout(abort,8000);
   request.signal.addEventListener('abort',abort,{once:true});if(request.signal.aborted)abort();
-  const url='https://api.cloudflare.com/client/v4/zones/'+env.CLOUDFLARE_ZONE_ID+'/custom_hostnames/'+d.provider_hostname_id;
-  const headers={authorization:'Bearer '+env.CLOUDFLARE_API_TOKEN,accept:'application/json','content-type':'application/json'};
-  let attempted=false;
+  const headers=new Headers(response.headers);headers.delete('content-length');headers.delete('content-encoding');headers.delete('etag');headers.set('cache-control','no-store');
+  const reply=extra=>Response.json({...data,...extra,publicSiteVerified:false,siteContentVerified:false},{status:response.status,headers});
   try{
-   const current=await fetchImpl(url,{method:'GET',redirect:'error',headers,signal:controller.signal});
-   if(!current.ok)return response;
+   const url='https://api.cloudflare.com/client/v4/zones/'+env.CLOUDFLARE_ZONE_ID+'/custom_hostnames/'+d.provider_hostname_id;
+   const current=await fetchImpl(url,{method:'GET',redirect:'error',headers:{authorization:'Bearer '+env.CLOUDFLARE_API_TOKEN,accept:'application/json'},signal:controller.signal});
+   if(!current.ok)throw Error('CERTIFICATE_STATUS_UNAVAILABLE');
    const state=await current.json(),h=state.result;
-   if(state.success!==true||h?.id!==d.provider_hostname_id||h.hostname!==d.hostname||h.ssl?.status!=='pending_validation'||h.ssl.method!=='txt'||h.ssl.type!=='dv'||h.ssl.wildcard===true)return response;
-   attempted=true;
-   const changed=await fetchImpl(url,{method:'PATCH',redirect:'error',headers,signal:controller.signal,body:JSON.stringify({ssl:{method:'http',type:'dv'}})});
-   const result=await changed.json();
-   const confirmed=changed.ok&&result.success===true&&result.result?.id===h.id&&result.result?.hostname===h.hostname&&result.result?.ssl?.method==='http';
-   return Response.json({...data,certificateValidation:{method:confirmed?'http':null,changeConfirmed:confirmed,statusRefreshRequired:true},publicSiteVerified:false,siteContentVerified:false},{status:response.status,headers:response.headers});
-  }catch{return attempted?Response.json({...data,certificateValidation:{method:null,changeConfirmed:false,outcomeUnknown:true,statusRefreshRequired:true},publicSiteVerified:false,siteContentVerified:false},{status:response.status,headers:response.headers}):response;}
-  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);}
+   if(state.success!==true||h?.id!==d.provider_hostname_id||h.hostname!==d.hostname||!h.ssl||typeof h.ssl.status!=='string')throw Error('CERTIFICATE_IDENTITY_UNVERIFIED');
+   const sslValidation=Array.isArray(h.ssl.validation_records)?h.ssl.validation_records:[];
+   const within=name=>typeof name==='string'&&name.replace(/\.$/,'').toLowerCase()==='_acme-challenge.'+d.hostname.toLowerCase();
+   const delegationRecords=(Array.isArray(h.ssl.dcv_delegation_records)?h.ssl.dcv_delegation_records:[]).filter(r=>within(r?.cname)&&typeof r.cname_target==='string'&&r.cname_target.toLowerCase().replace(/\.$/,'').endsWith('.dcv.cloudflare.com')).map(r=>({type:'CNAME',name:r.cname,value:r.cname_target,purpose:'certificate',verified:false}));
+   const certificateRecords=sslValidation.filter(r=>within(r?.txt_name)&&typeof r.txt_value==='string'&&r.txt_value).map(r=>({type:'TXT',name:r.txt_name,value:r.txt_value,purpose:'certificate',verified:false}));
+   return reply({domain:{...d,provider_status:h.status||d.provider_status,ssl_status:h.ssl.status,ssl_validation:sslValidation},certificateValidation:{method:h.ssl.method||null,status:h.ssl.status,providerReadVerified:true,changeConfirmed:false,mutationAttempted:false,statusRefreshRequired:true,delegationRecords,records:certificateRecords,alternativeRecordSets:true}});
+  }catch{return reply({certificateValidation:{method:null,providerReadVerified:false,changeConfirmed:false,mutationAttempted:false,statusRefreshRequired:true,error:'CERTIFICATE_STATUS_UNAVAILABLE'}});}
+  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);controller.abort();}
  };
 }
 export const handleCustomerDomainWithHttpDcv=createHttpDcvHandler();
