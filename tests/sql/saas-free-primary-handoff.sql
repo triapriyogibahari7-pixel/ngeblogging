@@ -1,0 +1,41 @@
+\set ON_ERROR_STOP on
+-- Run ONLY in a fresh disposable PostgreSQL database named saas_primary_test.
+DO $$ BEGIN IF current_database()<>'saas_primary_test' THEN RAISE EXCEPTION 'DISPOSABLE_TEST_DATABASE_REQUIRED'; END IF; END $$;
+CREATE ROLE authenticated; CREATE ROLE anon; CREATE SCHEMA auth; CREATE SCHEMA private;
+CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+CREATE TABLE public.sites(id uuid PRIMARY KEY,owner_id uuid NOT NULL,slug text NOT NULL,status text NOT NULL,is_public boolean NOT NULL,custom_domain text);
+CREATE TABLE public.site_members(site_id uuid,user_id uuid,role text);
+CREATE TABLE public.site_domains(id uuid PRIMARY KEY,site_id uuid NOT NULL REFERENCES public.sites,hostname text NOT NULL UNIQUE,status text NOT NULL,provider text NOT NULL,provider_hostname_id text,provider_status text,ssl_status text,is_primary boolean NOT NULL DEFAULT false);
+CREATE UNIQUE INDEX site_domains_one_primary_per_site ON public.site_domains(site_id) WHERE is_primary;
+CREATE FUNCTION private.manager(s uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$ SELECT EXISTS(SELECT 1 FROM public.sites WHERE id=s AND owner_id=auth.uid()) OR EXISTS(SELECT 1 FROM public.site_members WHERE site_id=s AND user_id=auth.uid() AND role IN ('owner','admin')) $$;
+ALTER TABLE public.sites ENABLE ROW LEVEL SECURITY; ALTER TABLE public.site_domains ENABLE ROW LEVEL SECURITY;
+CREATE POLICY site_manager ON public.sites TO authenticated USING(private.manager(id)) WITH CHECK(private.manager(id));
+CREATE POLICY domain_manager ON public.site_domains TO authenticated USING(private.manager(site_id)) WITH CHECK(private.manager(site_id));
+GRANT USAGE ON SCHEMA public,private,auth TO authenticated; GRANT SELECT,UPDATE ON public.sites,public.site_domains TO authenticated; GRANT SELECT ON public.site_members TO authenticated;
+CREATE FUNCTION private.sync_fixture() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$ BEGIN UPDATE public.sites SET custom_domain=(SELECT hostname FROM public.site_domains WHERE site_id=NEW.site_id AND status='active' AND is_primary) WHERE id=NEW.site_id; RETURN NEW; END; $$;
+CREATE TRIGGER sync_site_custom_domain_from_domains AFTER UPDATE OF status,is_primary,hostname ON public.site_domains FOR EACH ROW EXECUTE FUNCTION private.sync_fixture();
+CREATE FUNCTION public.domain_connection_reject_primary_v1() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.is_primary AND current_setting('test.paid_guard',true)='on' THEN RAISE EXCEPTION 'PAID_GUARD_FIXTURE' USING ERRCODE='23514'; END IF; RETURN NEW; END; $$;
+CREATE TRIGGER domain_connection_reject_primary_v1 BEFORE UPDATE OF is_primary ON public.site_domains FOR EACH ROW EXECUTE FUNCTION public.domain_connection_reject_primary_v1();
+CREATE FUNCTION private.fail_mapping_fixture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF current_setting('test.fail_mapping',true)='on' AND NEW.custom_domain='www.example.test' THEN RAISE EXCEPTION 'FORCED_MAPPING_FAILURE'; END IF; RETURN NEW; END; $$;
+CREATE TRIGGER fail_mapping_fixture BEFORE UPDATE ON public.sites FOR EACH ROW EXECUTE FUNCTION private.fail_mapping_fixture();
+INSERT INTO public.sites VALUES('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000010','source','active',true,'source.ngeblogging.com');
+INSERT INTO public.site_members VALUES('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000011','admin'),('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000012','viewer');
+INSERT INTO public.site_domains VALUES('00000000-0000-0000-0000-000000000101','00000000-0000-0000-0000-000000000001','source.ngeblogging.com','active','cloudflare',NULL,'active','active',true),('00000000-0000-0000-0000-000000000102','00000000-0000-0000-0000-000000000001','www.example.test','verifying','cloudflare','00000000-0000-0000-0000-000000000201','pending','initializing',false);
+BEGIN; SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000010',true);
+DO $$ BEGIN BEGIN UPDATE public.site_domains SET status='active',provider_status='active',ssl_status='active',is_primary=true WHERE hostname='www.example.test'; RAISE EXCEPTION 'BASELINE_DID_NOT_REPRODUCE'; EXCEPTION WHEN unique_violation THEN NULL; END; END $$;
+ROLLBACK;
+\ir ../../server/drafts/saas-free-primary-handoff-v1.sql
+BEGIN; SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000010',true);
+UPDATE public.site_domains SET status='active',provider_status='active',ssl_status='active',is_primary=true WHERE hostname='www.example.test';
+DO $$ BEGIN IF (SELECT count(*) FROM public.site_domains WHERE is_primary)<>1 OR NOT EXISTS(SELECT 1 FROM public.site_domains WHERE hostname='source.ngeblogging.com' AND status='active' AND NOT is_primary) OR NOT EXISTS(SELECT 1 FROM public.sites WHERE custom_domain='www.example.test' AND status='active' AND is_public) THEN RAISE EXCEPTION 'ACTIVATION_ASSERTION_FAILED'; END IF; END $$;
+UPDATE public.site_domains SET status='active',provider_status='active',ssl_status='active',is_primary=true WHERE hostname='www.example.test';
+ROLLBACK;
+BEGIN; SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000011',true);
+UPDATE public.site_domains SET status='active',provider_status='active',ssl_status='active',is_primary=true WHERE hostname='www.example.test';
+DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.sites WHERE custom_domain='www.example.test') THEN RAISE EXCEPTION 'ADMIN_ACTIVATION_FAILED'; END IF; END $$; ROLLBACK;
+BEGIN; SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000012',true);
+DO $$ DECLARE n integer; BEGIN UPDATE public.site_domains SET is_primary=true WHERE hostname='www.example.test'; GET DIAGNOSTICS n=ROW_COUNT; IF n<>0 THEN RAISE EXCEPTION 'VIEWER_MUTATED_DOMAIN'; END IF; END $$; ROLLBACK;
+BEGIN; SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000010',true); SELECT set_config('test.fail_mapping','on',true);
+DO $$ BEGIN BEGIN UPDATE public.site_domains SET status='active',provider_status='active',ssl_status='active',is_primary=true WHERE hostname='www.example.test'; RAISE EXCEPTION 'EXPECTED_MAPPING_FAILURE'; EXCEPTION WHEN raise_exception THEN IF SQLERRM<>'FORCED_MAPPING_FAILURE' THEN RAISE; END IF; END; IF NOT EXISTS(SELECT 1 FROM public.site_domains WHERE hostname='source.ngeblogging.com' AND is_primary AND status='active') OR NOT EXISTS(SELECT 1 FROM public.site_domains WHERE hostname='www.example.test' AND NOT is_primary AND status='verifying') OR NOT EXISTS(SELECT 1 FROM public.sites WHERE custom_domain='source.ngeblogging.com') THEN RAISE EXCEPTION 'ROLLBACK_ASSERTION_FAILED'; END IF; END $$; ROLLBACK;
+BEGIN; SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000010',true); SELECT set_config('test.paid_guard','on',true);
+DO $$ BEGIN BEGIN UPDATE public.site_domains SET status='active',provider_status='active',ssl_status='active',is_primary=true WHERE hostname='www.example.test'; RAISE EXCEPTION 'PAID_GUARD_BYPASSED'; EXCEPTION WHEN check_violation THEN NULL; END; IF NOT EXISTS(SELECT 1 FROM public.site_domains WHERE hostname='source.ngeblogging.com' AND is_primary) THEN RAISE EXCEPTION 'PAID_REJECTION_CHANGED_PRIMARY'; END IF; END $$; ROLLBACK;
