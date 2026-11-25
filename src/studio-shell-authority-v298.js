@@ -133,6 +133,10 @@ function openSettingsSection(index) {
 
 function runProfileAction(action) {
   closeProfileMenu();
+  if (action === "domain-management") {
+    import("./account-domain-management-page.js").then(module => module.openAccountDomainManagement()).catch(() => window.alert("Pengelolaan domain belum dapat dibuka. Tidak ada data diubah."));
+    return;
+  }
   if (action === "profile") {
     if (typeof window.__ngebloggingOpenAvatarPicker === "function") window.__ngebloggingOpenAvatarPicker();
     return openSettingsSection(1);
@@ -164,6 +168,7 @@ function openProfileMenu(anchor) {
     ["profile", "Profil & avatar", "Identitas dan foto profil"],
     ["add-site", "Tambah situs", "Buat situs atau workspace baru"],
     ["switch-site", "Ganti situs", "Pilih situs yang sudah ada"],
+    ["domain-management", "Pengelolaan domain & DNS", "Domain dan pesanan milik akun"],
     ["settings", "Pengaturan", "Atur situs, bahasa dan zona waktu"],
     ["help", "Bantuan Nara", "Buka Nara tanpa menutup Studio"],
     ["logout", "Keluar", "Akhiri sesi hanya saat dipilih"],
