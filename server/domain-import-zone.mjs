@@ -51,19 +51,27 @@ export async function domainImportZoneResponse(request,env,{fetchImpl=globalThis
    if(!(await rpc('domain_import_record_zone_v1',args))&&!(await rpc('domain_import_record_zone_v1',args)))return reply(503,'IMPORT_ZONE_RECORD_FAILED');
    return reply(200,'DOMAIN_IMPORT_ZONE',{zone:{status,active:status==='active',nameServers:s.nameServers,originalNameServers:s.originalNameServers}});
   };
+  const adoptable=async z=>{
+   if(!matches(z))return false;
+   const s=provider.publicZoneState(z),st=s.status.toLowerCase(),t=Date.parse(s.createdOn||'');
+   if(!['pending','initializing'].includes(st)||!Number.isFinite(t)||Date.now()-t>7*864e5||t>Date.now()+300000)return false;
+   const u=new URL('/rest/v1/domain_import_orders',base);u.searchParams.set('select','order_id');u.searchParams.set('zone_id','eq.'+s.id);u.searchParams.set('order_id','neq.'+id);u.searchParams.set('limit','1');
+   const r=await call(u.href,{method:'GET',headers:hdr});
+   return r.status===200&&Array.isArray(r.data)&&r.data.length===0;
+  };
   if(o.zone_id){
    let z;try{z=await provider.getFullZoneStatus(env,o.zone_id);}catch{return reply(503,'IMPORT_ZONE_UNAVAILABLE');}
    if(z?.id!==o.zone_id||!matches(z)){await flag('ZONE_MISMATCH');return reply(409,'IMPORT_ZONE_MISMATCH',{needsReview:true});}
    return record(z);
   }
   let existing;try{existing=await provider.findFullZone(env,o.domain);}catch{return reply(503,'IMPORT_ZONE_UNAVAILABLE');}
-  if(existing){await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
+  if(existing){if(await adoptable(existing))return record(existing);await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
   let z;
   try{z=await provider.createFullZone(env,o.domain);}
   catch(e){
    const again=await read().catch(()=>null);if(again?.zone_id)return reply(409,'IMPORT_ZONE_IN_PROGRESS');
    let found=null;try{found=await provider.findFullZone(env,o.domain);}catch{}
-   if(found){await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
+   if(found){if(await adoptable(found))return record(found);await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
    const pc=String(e?.code||'CLOUDFLARE_ERROR').replace(/[^A-Za-z0-9_]/g,'').slice(0,64)||'CLOUDFLARE_ERROR';try{warnImpl({event:'domain_import_zone_create_failed',code:pc,status:Number(e?.providerStatus||e?.status)||null,order_id:id});}catch{}
    if(['CLOUDFLARE_ZONE_CREATE_PERMISSION_REQUIRED','CLOUDFLARE_DOMAIN_TOKEN_INVALID','CLOUDFLARE_CONFIGURATION_REQUIRED'].includes(pc))return reply(503,'IMPORT_ZONE_CREATE_UNAVAILABLE',{providerCode:pc});
    await flag('ZONE_CREATE_FAILED');return reply(503,'IMPORT_ZONE_CREATE_FAILED',{needsReview:true,providerCode:pc});
