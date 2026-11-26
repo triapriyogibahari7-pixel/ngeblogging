@@ -3,23 +3,29 @@ import {supabase} from './lib/supabase.js';
 import {loadOrderHistoryPage} from './domain-order-history-page-client.mjs';
 import {loadOrderStatus} from './domain-order-status-model.mjs';
 import {dnsApi,dnsErrorMessage} from './domain-dns-management-client.mjs';
-let opened=null;
 const node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);return e;};
-const CSS=':host{font:14px/1.6 system-ui,sans-serif;display:block;height:100%}*{box-sizing:border-box}.app{display:grid;grid-template-columns:270px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:100%}header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid #dce3ee;background:#fff}h1{font-size:20px;margin:0}h2{font-size:19px;margin:0 0 4px}h3{font-size:15px;margin:16px 0 6px}aside{border-right:1px solid #dce3ee;background:#f7f9fc;overflow:auto;padding:14px 10px}aside label{display:block;font-size:12px;font-weight:600;color:#5b6b82;margin:0 6px 4px}aside select{width:100%;margin-bottom:12px}nav{display:flex;flex-direction:column;gap:3px}nav button{text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:8px;width:100%}nav button:hover{background:#e9eef6}nav button[aria-current=page]{background:#18263d;color:#fff;font-weight:600}nav hr{border:0;border-top:1px solid #dce3ee;margin:8px 0;width:100%}section.content{overflow:auto;padding:22px 26px;min-width:0}.card{border:1px solid #dce3ee;border-radius:10px;padding:14px;margin:12px 0}button{font:inherit;padding:8px 12px;border:1px solid #ccd6e4;border-radius:8px;background:#f7f9fc;color:#18263d;cursor:pointer}button.primary{background:#18263d;color:#fff;border-color:#18263d}button:disabled{opacity:.6;cursor:default}code,p{overflow-wrap:anywhere}input,select{font:inherit;padding:7px 9px;border:1px solid #ccd6e4;border-radius:8px;max-width:100%}form.dns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}.rec{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #eef2f7;padding:8px 0}.rec code{flex:1 1 280px}.warn{color:#8a4b00}.muted{color:#5b6b82}.badge{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:#e9eef6}ol{padding-left:20px}li{margin:6px 0}@media(max-width:760px){.app{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr)}aside{border-right:0;border-bottom:1px solid #dce3ee;max-height:44dvh}nav{flex-direction:row;flex-wrap:wrap}nav button{width:auto}nav hr{display:none}section.content{padding:16px}}';
+const CSS=':host{font:14px/1.6 system-ui,sans-serif;display:block;height:100%}*{box-sizing:border-box}.app{display:grid;grid-template-columns:270px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:100%}header{grid-column:1/-1;display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #dce3ee;background:#fff}h1{font-size:20px;margin:0}h2{font-size:19px;margin:0 0 4px}h3{font-size:15px;margin:16px 0 6px}aside{border-right:1px solid #dce3ee;background:#f7f9fc;overflow:auto;padding:14px 10px}aside label{display:block;font-size:12px;font-weight:600;color:#5b6b82;margin:0 6px 4px}aside select{width:100%;margin-bottom:12px}nav{display:flex;flex-direction:column;gap:3px}nav button{text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:8px;width:100%}nav button:hover{background:#e9eef6}nav button[aria-current=page]{background:#18263d;color:#fff;font-weight:600}nav hr{border:0;border-top:1px solid #dce3ee;margin:8px 0;width:100%}section.content{overflow:auto;padding:22px 26px;min-width:0}.card{border:1px solid #dce3ee;border-radius:10px;padding:14px;margin:12px 0}button{font:inherit;padding:8px 12px;border:1px solid #ccd6e4;border-radius:8px;background:#f7f9fc;color:#18263d;cursor:pointer}button.primary{background:#18263d;color:#fff;border-color:#18263d}button:disabled{opacity:.6;cursor:default}code,p{overflow-wrap:anywhere}input,select{font:inherit;padding:7px 9px;border:1px solid #ccd6e4;border-radius:8px;max-width:100%}form.dns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}.rec{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #eef2f7;padding:8px 0}.rec code{flex:1 1 280px}.warn{color:#8a4b00}.muted{color:#5b6b82}.badge{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:#e9eef6}ol{padding-left:20px}li{margin:6px 0}@media(max-width:760px){.app{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr)}aside{border-right:0;border-bottom:1px solid #dce3ee;max-height:44dvh}nav{flex-direction:row;flex-wrap:wrap}nav button{width:auto}nav hr{display:none}section.content{padding:16px}}';
 const MENU=[['ringkasan','Ringkasan'],['dns','DNS record'],['backup','Cadangan & pemulihan'],['ns','Nameserver'],['conn','Pemeriksaan koneksi'],['dnssec','DNSSEC'],['epp','Kode EPP'],['transfer','Transfer domain'],['orders','Semua pesanan']];
-export async function openAccountDomainManagement(){
- if(opened?.isConnected){opened.focus();return;}
- const dialog=node('dialog'),host=node('div'),root=host.attachShadow({mode:'open'}),opener=document.querySelector('.sn-avatar')||document.activeElement;
- dialog.setAttribute('aria-label','Pengelolaan domain & DNS');
- for(const [key,value]of Object.entries({width:'min(1180px, calc(100vw - 24px))',height:'calc(100dvh - 24px)','max-width':'none','max-height':'none',padding:'0',border:'1px solid #dce3ee','border-radius':'16px',background:'white',color:'#18263d',overflow:'hidden'}))dialog.style.setProperty(key,value,'important');
- host.style.height='100%';
- const app=node('div'),header=node('header'),close=node('button','Tutup'),side=node('aside'),content=node('section'),nav=node('nav'),picker=node('select'),pickerLabel=node('label','Domain'),more=node('button','Muat pesanan berikutnya');
- app.className='app';content.className='content';close.type=more.type='button';close.autofocus=true;more.hidden=true;picker.setAttribute('aria-label','Pilih domain');
- header.append(node('h1','Pengelolaan domain & DNS'),close);side.append(pickerLabel,picker,nav,more);app.append(header,side,content);root.append(node('style',CSS),app);dialog.append(host);
+let inline=null;
+const INLINE_CSS='.sn-main[data-dm-open]>*:not(.sn-top):not(.dm-host){display:none!important}.dm-host{min-width:0}';
+function closeInline(){if(!inline)return;const i=inline;inline=null;i.dispose?.();i.el.remove();i.main.removeAttribute('data-dm-open');document.removeEventListener('click',i.onClick,true);}
+export function openAccountDomainManagement(){
+ const main=document.querySelector('.sn-shell .sn-main,.sn-main');if(!main)throw Error('Studio belum siap.');
+ if(inline?.main===main&&inline.el.isConnected)return;closeInline();
+ if(!document.getElementById('dm-inline-style')){const st=node('style',INLINE_CSS);st.id='dm-inline-style';document.head.append(st);}
+ const el=node('div');el.className='dm-host';main.append(el);main.setAttribute('data-dm-open','1');
+ const onClick=e=>{const t=e.target.closest?.('#ngeblogging-studio-sidebar button,.sn-workspace,.sn-site-manager button');if(t&&!t.closest('.sn-profile-menu-v298,.sn-profile-menu-v295'))setTimeout(closeInline,0);};
+ document.addEventListener('click',onClick,true);
+ inline={main,el,onClick,dispose:mountAccountDomainManagement(el)};el.scrollIntoView?.({block:'start'});
+}
+export function mountAccountDomainManagement(container){
+ const host=node('div'),root=host.attachShadow({mode:'open'});
+ host.style.cssText='display:block;height:calc(100dvh - 64px);min-height:520px;background:#fff;color:#18263d';
+ const app=node('div'),header=node('header'),side=node('aside'),content=node('section'),nav=node('nav'),picker=node('select'),pickerLabel=node('label','Domain'),more=node('button','Muat pesanan berikutnya');
+ app.className='app';content.className='content';more.type='button';more.hidden=true;picker.setAttribute('aria-label','Pilih domain');
+ header.append(node('h1','Pengelolaan domain & DNS'));side.append(pickerLabel,picker,nav,more);app.append(header,side,content);root.append(node('style',CSS),app);container.replaceChildren(host);
  let owner=null,closed=false,subscription=null,cursor='',loaded=0,loadBusy=false;const controller=new AbortController(),orders=[],seen=new Set();let sel=null,tab='ringkasan',epoch=0;
- function dispose(){if(closed)return;closed=true;controller.abort();subscription?.unsubscribe();if(dialog.open)dialog.close();dialog.remove();if(opened===dialog)opened=null;if(opener?.isConnected)opener.focus();}
- close.addEventListener('click',dispose);dialog.addEventListener('cancel',event=>{event.preventDefault();dispose();});dialog.addEventListener('close',dispose);
- document.body.append(dialog);opened=dialog;try{dialog.showModal();}catch(error){dispose();throw error;}
+ function dispose(){if(closed)return;closed=true;controller.abort();subscription?.unsubscribe();host.remove();}
  async function session(){const a=await getVerifiedSession({force:true});if(closed||a?.verification!=='verified'||!a.user?.id||!a.session?.access_token||owner&&a.user.id!==owner)throw Error('Sesi akun berubah atau belum terverifikasi.');return a;}
  async function read(fn){const a=await session();owner=a.user.id;const data=await fn(a);await session();if(closed)throw Error('Halaman ditutup.');return data;}
  const call=(path,opt)=>read(a=>dnsApi(sel.orderId,a.session.access_token,path,{...opt,signal:controller.signal}));
@@ -86,5 +92,6 @@ export async function openAccountDomainManagement(){
   }catch(error){if(!closed){if(first){renderNav();content.replaceChildren(node('p','Daftar belum dapat dibaca. Periksa sesi akun atau layanan. Tidak ada pesanan, pembayaran, atau DNS yang diubah.'));}else content.prepend(node('p','Halaman berikutnya belum dapat dibaca; '+loaded+' pesanan sebelumnya tetap ditampilkan.'));}}
   finally{clearTimeout(timer);loadBusy=false;more.disabled=false;}
  }
- more.addEventListener('click',()=>loadPage(false));renderNav();content.append(node('p','Memverifikasi sesi akun…'));await loadPage(true);
+ more.addEventListener('click',()=>loadPage(false));renderNav();content.append(node('p','Memverifikasi sesi akun…'));loadPage(true);
+ return dispose;
 }
