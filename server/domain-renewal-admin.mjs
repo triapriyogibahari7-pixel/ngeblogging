@@ -3,6 +3,7 @@ const BASE='/api/commerce/domains/manage/renewal-admin';
 const REN=/^REN-[a-f0-9]{40}$/;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
+const renewalEnabled=env=>env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'&&env.DOMAIN_PAYMENT_PRODUCTION_ENABLED==='true';
 const ADMIN_ID='91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3';
 const ADMIN_EMAIL='triapriyogibahari7@gmail.com';
 const MIN_EXTENSION_MS=300*86400000;
@@ -18,7 +19,7 @@ export async function domainRenewalAdminResponse(request,env,{fetchImpl=globalTh
  const route=routes[url.pathname.slice(BASE.length)];if(!route)return reply(404,'NOT_FOUND');
  const action=route[request.method];if(!action)return reply(405,'METHOD_NOT_ALLOWED',{},{allow:Object.keys(route).join(', ')});
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port||url.search)return reply(404,'NOT_FOUND');
- if(env?.DOMAIN_RENEWAL_ENABLED!=='true')return reply(503,'DOMAIN_RENEWAL_DISABLED');
+ if(!renewalEnabled(env))return reply(503,'DOMAIN_RENEWAL_DISABLED');
  if(request.method!=='GET'&&request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
  if(request.headers.has('origin')&&request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
  if(request.method==='POST'&&!/^application\/json(?:\s*;.*)?$/i.test(request.headers.get('content-type')||''))return reply(415,'JSON_REQUIRED');
