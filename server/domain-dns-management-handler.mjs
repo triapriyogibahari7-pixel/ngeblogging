@@ -3,6 +3,7 @@ import {normalizeRecord,publicRecord,buildBackup,planRestore,EDITABLE_TYPES} fro
 import {domainImportRouterResponse} from './domain-import-router.mjs';
 import {domainImportDnsResponse} from './domain-import-dns.mjs';
 import {domainRenewalResponse} from './domain-renewal.mjs';
+import {domainRenewalAdminResponse} from './domain-renewal-admin.mjs';
 const PREFIX='/api/commerce/domains/manage/';
 const ORDER=/^DOM-[a-f0-9]{40}$/,UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i,CFID=/^[0-9a-f]{32}$/i;
 const planHash=async plan=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(plan))))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -25,6 +26,7 @@ async function json(request,limit=262144){const text=await request.text();if(tex
 export async function domainDnsManagementResponse(request,env,{fetchImpl=globalThis.fetch,adapterFactory=createJournaledDnsAdapter}={}){
  const url=new URL(request.url);if(!url.pathname.startsWith(PREFIX))return null;
  if(url.pathname.startsWith(PREFIX+'import/'))return (await domainImportRouterResponse(request,env,{fetchImpl}))??reply(404,'NOT_FOUND');
+ if(url.pathname.startsWith(PREFIX+'renewal-admin/'))return (await domainRenewalAdminResponse(request,env,{fetchImpl}))??reply(404,'NOT_FOUND');
  if(url.pathname.startsWith(PREFIX+'renewal/'))return (await domainRenewalResponse(request,env,{fetchImpl}))??reply(404,'NOT_FOUND');
  if(/^IMP-[a-f0-9]{40}\//.test(url.pathname.slice(PREFIX.length)))return (await domainImportDnsResponse(request,env,{fetchImpl}))??reply(404,'NOT_FOUND');
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port||url.search)return reply(404,'NOT_FOUND');
