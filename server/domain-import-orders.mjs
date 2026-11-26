@@ -3,6 +3,9 @@ const ORDER=/^IMP-[a-f0-9]{40}$/;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 const PRICE_NAMESERVER_IDR=30000;
+const ADMIN_ID='91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3';
+const ADMIN_EMAIL='triapriyogibahari7@gmail.com';
+const isAdmin=u=>u?.id===ADMIN_ID&&typeof u.email==='string'&&u.email.trim().toLowerCase()===ADMIN_EMAIL&&typeof u.email_confirmed_at==='string'&&u.email_confirmed_at.length>0&&Number.isFinite(Date.parse(u.email_confirmed_at))&&u.is_anonymous!==true;
 const MAX_OPEN=5;
 const DOMAIN=/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])$/;
 const COLUMNS='order_id,domain,mode,price_idr,payment_state,import_state,zone_status,name_servers,original_name_servers,created_at,paid_at,review_reason';
@@ -54,7 +57,7 @@ export async function domainImportOrdersResponse(request,env,{fetchImpl=globalTh
   if(b.mode!=='nameserver')return reply(400,'IMPORT_MODE_INVALID');
   const open=await get({select:'order_id',user_id:'eq.'+uid,import_state:'eq.created',payment_state:'in.(unpaid,pending)',limit:'50'});
   if(open.length>=MAX_OPEN)return reply(429,'IMPORT_TOO_MANY_OPEN_ORDERS');
-  const r=await rpc('domain_import_create_v1',{p_user_id:uid,p_domain:domain,p_mode:'nameserver',p_price_idr:PRICE_NAMESERVER_IDR});
+  const r=isAdmin(user)?await rpc('domain_import_create_complimentary_v1',{p_user_id:uid,p_domain:domain,p_mode:'nameserver'}):await rpc('domain_import_create_v1',{p_user_id:uid,p_domain:domain,p_mode:'nameserver',p_price_idr:PRICE_NAMESERVER_IDR});
   if(r.status!==200||typeof r.data!=='string'||!ORDER.test(r.data)){const m=String(r.data?.message||'');if(m.includes('IMPORT_DOMAIN_ALREADY_CLAIMED'))return reply(409,'IMPORT_DOMAIN_ALREADY_CLAIMED');if(m.includes('IMPORT_DOMAIN_INVALID'))return reply(400,'IMPORT_DOMAIN_INVALID');return reply(503,'IMPORT_UNAVAILABLE');}
   const o=await one(r.data);if(!o)return reply(503,'IMPORT_UNAVAILABLE');
   return reply(201,'DOMAIN_IMPORT_ORDER_CREATED',{order:view(o)});
