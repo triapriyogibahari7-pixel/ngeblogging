@@ -1,4 +1,4 @@
-import {createDnsAdapter} from './domain-dns-cloudflare-adapter.mjs';
+import {createJournaledDnsAdapter,recordKey} from './domain-dns-journaled-adapter.mjs';
 import {normalizeRecord,publicRecord,buildBackup,planRestore,EDITABLE_TYPES} from '../shared/domain-dns-records.mjs';
 const PREFIX='/api/commerce/domains/manage/';
 const ORDER=/^DOM-[a-f0-9]{40}$/,UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i,CFID=/^[0-9a-f]{32}$/i;
@@ -15,10 +15,11 @@ async function verifyRegistration(env,domain,order,{fetchImpl,signal}){
  if(r.status>=500||r.status===429)throw deny('DNS_PROVIDER_UNAVAILABLE',502);
  const x=p?.result;
  if(r.status!==200||p?.success!==true||x?.domain_name!==domain||x.status!=='active'||Date.parse(x.created_at)!==Date.parse(order.registered_at))throw deny('DOMAIN_REGISTRATION_UNVERIFIED',403);
+ return x.created_at;
 }
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
 async function json(request,limit=262144){const text=await request.text();if(text.length>limit)throw Object.assign(new Error('BODY_TOO_LARGE'),{code:'BODY_TOO_LARGE',status:413});try{return JSON.parse(text);}catch{throw Object.assign(new Error('INVALID_JSON'),{code:'INVALID_JSON',status:400});}}
-export async function domainDnsManagementResponse(request,env,{fetchImpl=globalThis.fetch,adapterFactory=createDnsAdapter}={}){
+export async function domainDnsManagementResponse(request,env,{fetchImpl=globalThis.fetch,adapterFactory=createJournaledDnsAdapter}={}){
  const url=new URL(request.url);if(!url.pathname.startsWith(PREFIX))return null;
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port||url.search)return reply(404,'NOT_FOUND');
  const [orderId,resource,recordId,...extra]=url.pathname.slice(PREFIX.length).split('/');
@@ -49,7 +50,7 @@ export async function domainDnsManagementResponse(request,env,{fetchImpl=globalT
   const qt=new URL('/rest/v1/domain_sale_quotes',base);qt.searchParams.set('select','id,user_id,environment,domain');qt.searchParams.set('id','eq.'+o.quote_id);qt.searchParams.set('user_id','eq.'+owner);qt.searchParams.set('environment','eq.production');qt.searchParams.set('limit','2');
   const quotes=await get(qt,service),q=Array.isArray(quotes)&&quotes.length===1?quotes[0]:null;
   if(q?.id!==o.quote_id||q.user_id!==owner||typeof q.domain!=='string'||q.domain!==q.domain.toLowerCase()||!q.domain.includes('.')||q.domain==='ngeblogging.com'||q.domain.endsWith('.ngeblogging.com'))return reply(503,'DOMAIN_DNS_UNVERIFIED');
-  const domain=q.domain;await verifyRegistration(env,domain,o,{fetchImpl,signal:c.signal});const adapter=adapterFactory(env,{fetchImpl,signal:c.signal}),zone=await adapter.findZone(domain);
+  const domain=q.domain,registrationCreatedAt=await verifyRegistration(env,domain,o,{fetchImpl,signal:c.signal}),checkedAt=new Date().toISOString();const adapter=adapterFactory(env,{fetchImpl,signal:c.signal,journal:{userId:owner,orderId,domain,registrationCreatedAt,checkedAt}}),zone=await adapter.findZone(domain);
   if(action==='list')return reply(200,'DOMAIN_DNS_RECORDS',{domain,records:(await adapter.listRecords(zone.id)).filter(r=>EDITABLE_TYPES.includes(r.type)).map(publicRecord),editableTypes:EDITABLE_TYPES});
   if(action==='backup'){const b=buildBackup(domain,await adapter.listRecords(zone.id));return reply(200,'DOMAIN_DNS_BACKUP',{domain,backup:b},{'content-disposition':'attachment; filename="dns-'+domain+'.json"'});}
   if(action==='dnssec')return reply(200,'DOMAIN_DNSSEC',{domain,dnssec:await adapter.getDnssec(zone.id)});
@@ -64,7 +65,9 @@ export async function domainDnsManagementResponse(request,env,{fetchImpl=globalT
    if(bodyIn?.apply!==true)return reply(200,'DOMAIN_DNS_RESTORE_PREVIEW',{domain,applied:false,summary,plan,planHash:hash});
    if(bodyIn.planHash!==hash)return reply(409,'DOMAIN_DNS_PLAN_CHANGED',{domain,applied:false,summary,plan,planHash:hash});
    const safety=buildBackup(domain,current),done={create:0,update:0,remove:0};
-   try{for(const r of plan.create){await adapter.createRecord(zone.id,r);done.create++;}for(const u of plan.update){await adapter.updateRecord(zone.id,u.id,u.record);done.update++;}for(const r of plan.remove){await adapter.deleteRecord(zone.id,r.id);done.remove++;}}
+   const apply=async a=>{for(const r of plan.create){await a.createRecord(zone.id,r);done.create++;}for(const u of plan.update){await a.updateRecord(zone.id,u.id,u.record);done.update++;}for(const r of plan.remove){await a.deleteRecord(zone.id,r.id);done.remove++;}};
+   const check=(before,after)=>{const have=new Set(after.map(recordKey));return plan.create.every(r=>have.has(recordKey(r)))&&plan.update.every(u=>have.has(recordKey(u.record)))&&plan.remove.every(r=>!after.some(x=>x.id===r.id));};
+   try{if(summary.create+summary.update+summary.remove>0&&typeof adapter.runOperation==='function')await adapter.runOperation(zone.id,{action:'restore',create:summary.create,update:summary.update,remove:summary.remove},apply,check);else await apply(adapter);}
    catch(error){return reply(502,'DOMAIN_DNS_RESTORE_PARTIAL',{domain,applied:false,partial:true,done,summary,safetyBackup:safety,detail:String(error?.code||'ERROR')});}
    return reply(200,'DOMAIN_DNS_RESTORED',{domain,applied:true,done,summary,safetyBackup:safety});
   }
