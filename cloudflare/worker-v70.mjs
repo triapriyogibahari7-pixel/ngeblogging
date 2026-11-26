@@ -4,6 +4,7 @@ import { domainOrderCancellationResponse } from "../server/domain-order-cancella
 import { domainProductionRegistrarLookupResponse } from "../server/domain-production-registrar-lookup.mjs";
 import { domainOrderStatusPageResponse } from "../server/domain-order-status-page.mjs";
 import { domainProductionOrderStatusResponse } from "../server/domain-production-order-status-handler.mjs";
+import { domainDnsManagementResponse } from "../server/domain-dns-management-handler.mjs";
 import { domainRegistrantResponse, domainRegistrationPaymentResponse, runDomainRegistrationDueJobs } from "../server/domain-registration-runtime.mjs";
 import { isolatedSandboxPreviewResponse } from "./domain-isolated-sandbox-router.mjs";
 import { domainSandboxStatusProbeResponse } from "../server/domain-sandbox-status-probe.mjs";
@@ -85,6 +86,8 @@ export default {
     if (domainStatusPage) return domainStatusPage;
     const domainCancellation = await domainOrderCancellationResponse(request, env);
     if (domainCancellation) return domainCancellation;
+    const domainDnsManagement = await domainDnsManagementResponse(request, env);
+    if (domainDnsManagement) return domainDnsManagement;
     const domainOrderStatus = await domainProductionOrderStatusResponse(request, env);
     if (domainOrderStatus) return domainOrderStatus;
     const domainProductionPayment = await domainRegistrationPaymentResponse(request, env, context);

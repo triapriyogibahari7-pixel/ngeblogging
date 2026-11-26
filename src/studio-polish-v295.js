@@ -49,6 +49,10 @@ function openSettingsSection(sectionIndex) {
 
 function profileAction(action) {
   closeProfileMenu();
+  if (action === "domain-management") {
+    import("./account-domain-management-page.js").then(module => module.openAccountDomainManagement()).catch(() => window.alert("Pengelolaan domain belum dapat dibuka. Tidak ada data diubah."));
+    return;
+  }
   if (action === "profile") {
     openSettingsSection(1);
     return;
@@ -89,6 +93,7 @@ function buildProfileMenu(anchor) {
     ["profile", "Profil & avatar", "Identitas, biografi, situs, dan avatar"],
     ["add-site", "Tambah situs", "Buat workspace situs baru"],
     ["switch-site", "Ganti situs", "Pilih workspace yang sudah ada"],
+    ["domain-management", "Pengelolaan domain & DNS", "Domain dan pesanan milik akun"],
     ["settings", "Pengaturan", "Atur situs aktif, bahasa, dan zona waktu"],
     ["help", "Bantuan Nara", "Buka asisten tanpa menutup Studio"],
     ["logout", "Keluar", "Akhiri sesi hanya jika Anda memilih ini"],

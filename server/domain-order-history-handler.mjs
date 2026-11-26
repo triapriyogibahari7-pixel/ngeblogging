@@ -1,13 +1,15 @@
+import {parseHistoryCursor,olderHistoryCursor,rowHistoryCursor} from '../shared/domain-order-history-cursor.mjs';
 const PATH='/api/commerce/domains/orders/history';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const ORDER=/^DOM-[a-f0-9]{40}$/;
 const FIELDS='order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,midtrans_transaction_id,paid_at,registered_at,registrar_domain_ref,review_reason,created_at,updated_at';
 export async function domainOrderHistoryResponse(request,env,{fetchImpl=globalThis.fetch,toView}={}){
  const url=new URL(request.url);if(url.pathname!==PATH)return null;
- const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store','vary':'Authorization','x-content-type-options':'nosniff',...(status===405?{allow:'GET'}:{})}});
+ const reply=(status,code,extra={},nextCursor='')=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store','vary':'Authorization','x-content-type-options':'nosniff',...(status===405?{allow:'GET'}:{}),...(nextCursor?{'x-domain-history-next-cursor':nextCursor}:{})}});
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port)return reply(404,'NOT_FOUND');
  if(request.method!=='GET')return reply(405,'METHOD_NOT_ALLOWED');
- if(url.search)return reply(400,'QUERY_NOT_ALLOWED');
+ let paged=false,before=null;
+ if(url.search){try{const p=url.searchParams,keys=[...p.keys()];if(p.get('pagination')!=='1'||keys.some(k=>!['pagination','cursor'].includes(k))||new Set(keys).size!==keys.length)throw Error();paged=true;if(p.has('cursor'))before=parseHistoryCursor(p.get('cursor'));}catch{return reply(400,'QUERY_NOT_ALLOWED');}}
  if(request.headers.has('origin')&&request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
  if(env?.DOMAIN_ORDER_ENV!=='production'||typeof toView!=='function')return reply(503,'DOMAIN_HISTORY_UNAVAILABLE');
  const auth=request.headers.get('authorization')||'';if(!/^Bearer [^\s]{1,8192}$/.test(auth))return reply(401,'AUTH_REQUIRED');
@@ -29,8 +31,10 @@ export async function domainOrderHistoryResponse(request,env,{fetchImpl=globalTh
   if([401,403].includes(verified.status))return reply(401,'INVALID_SESSION');if(verified.status!==200)return reply(503,'AUTH_UNAVAILABLE');
   const user=await read(verified,32768);if(typeof user?.id!=='string'||!UUID.test(user.id))return reply(401,'INVALID_SESSION');const owner=user.id.toLowerCase();
   const target=new URL('/rest/v1/domain_purchase_orders',base);target.searchParams.set('select',FIELDS);target.searchParams.set('user_id','eq.'+owner);target.searchParams.set('environment','eq.production');target.searchParams.set('order','created_at.desc,order_id.desc');target.searchParams.set('limit','51');
+  if(before)target.searchParams.set('or','(created_at.lt.'+before.createdAt+',and(created_at.eq.'+before.createdAt+',order_id.lt.'+before.orderId+'))');
   const found=await get(target);if(!Array.isArray(found)||found.length>51)throw Error('INVALID_ORDERS');
   const seen=new Set();for(const o of found){if(!o||!ORDER.test(o.order_id||'')||o.user_id!==owner||o.environment!=='production'||o.currency!=='IDR'||typeof o.quote_id!=='string'||!UUID.test(o.quote_id)||seen.has(o.order_id))throw Error('INVALID_ORDER_SCOPE');seen.add(o.order_id);}
+  if(paged){let previous=before;for(const row of found){const key=parseHistoryCursor(rowHistoryCursor(row));if(previous&&!olderHistoryCursor(key,previous))throw Error('INVALID_PAGE_ORDER');previous=key;}}
   const page=found.slice(0,50);if(!page.length)return reply(200,'DOMAIN_ORDER_HISTORY',{ownerId:owner,orders:[],count:0,hasMore:false});
   const ids=[...new Set(page.map(o=>o.quote_id))];
   const quote=new URL('/rest/v1/domain_sale_quotes',base);quote.searchParams.set('select','id,user_id,environment,domain,currency,sale_price_idr,years,operation,provider_id');quote.searchParams.set('id','in.('+ids.join(',')+')');quote.searchParams.set('user_id','eq.'+owner);quote.searchParams.set('environment','eq.production');quote.searchParams.set('limit',String(ids.length));
@@ -38,7 +42,7 @@ export async function domainOrderHistoryResponse(request,env,{fetchImpl=globalTh
   const byId=new Map();for(const q of quotes){if(!q||!ids.includes(q.id)||q.user_id!==owner||q.environment!=='production'||q.currency!=='IDR'||byId.has(q.id))throw Error('INVALID_QUOTE_SCOPE');byId.set(q.id,q);}
   const orders=page.map(o=>{const q=byId.get(o.quote_id);if(!q||q.sale_price_idr!==o.amount_idr)throw Error('QUOTE_PRICE_MISMATCH');return toView(o,q);});
   orders.sort((a,b)=>Date.parse(a.createdAt)-Date.parse(b.createdAt)||a.orderId.localeCompare(b.orderId));
-  return reply(200,'DOMAIN_ORDER_HISTORY',{ownerId:owner,orders,count:orders.length,hasMore:found.length>50});
+  return reply(200,'DOMAIN_ORDER_HISTORY',{ownerId:owner,orders,count:orders.length,hasMore:found.length>50},paged&&found.length>50?rowHistoryCursor(page[page.length-1]):'');
  }catch{return reply(503,'DOMAIN_HISTORY_UNAVAILABLE');}
  finally{clearTimeout(timer);request.signal.removeEventListener('abort',abort);c.signal.removeEventListener('abort',stop);}
 }

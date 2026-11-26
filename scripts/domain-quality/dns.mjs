@@ -4,5 +4,6 @@ runGroup("dns",[
   "tests/cloudflare-full-zone-provider.test.mjs",
   "tests/domain-nameserver-controller.test.mjs",
   "tests/domain-nameserver-poll.test.mjs",
-  "tests/domain-handler-full-zone-rls.test.mjs"
+  "tests/domain-handler-full-zone-rls.test.mjs",
+  "tests/domain-dns-management.test.mjs"
 ]);
