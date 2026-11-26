@@ -1,5 +1,6 @@
 import {createJournaledDnsAdapter,recordKey} from './domain-dns-journaled-adapter.mjs';
 import {normalizeRecord,publicRecord,buildBackup,planRestore,EDITABLE_TYPES} from '../shared/domain-dns-records.mjs';
+import {domainImportRouterResponse} from './domain-import-router.mjs';
 const PREFIX='/api/commerce/domains/manage/';
 const ORDER=/^DOM-[a-f0-9]{40}$/,UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i,CFID=/^[0-9a-f]{32}$/i;
 const planHash=async plan=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(plan))))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -21,6 +22,7 @@ const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code
 async function json(request,limit=262144){const text=await request.text();if(text.length>limit)throw Object.assign(new Error('BODY_TOO_LARGE'),{code:'BODY_TOO_LARGE',status:413});try{return JSON.parse(text);}catch{throw Object.assign(new Error('INVALID_JSON'),{code:'INVALID_JSON',status:400});}}
 export async function domainDnsManagementResponse(request,env,{fetchImpl=globalThis.fetch,adapterFactory=createJournaledDnsAdapter}={}){
  const url=new URL(request.url);if(!url.pathname.startsWith(PREFIX))return null;
+ if(url.pathname.startsWith(PREFIX+'import/'))return (await domainImportRouterResponse(request,env,{fetchImpl}))??reply(404,'NOT_FOUND');
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port||url.search)return reply(404,'NOT_FOUND');
  const [orderId,resource,recordId,...extra]=url.pathname.slice(PREFIX.length).split('/');
  if(!ORDER.test(orderId||'')||extra.length)return reply(404,'NOT_FOUND');
