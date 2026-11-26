@@ -3,6 +3,7 @@ import {domainImportPaymentResponse} from './domain-import-payment.mjs';
 import {domainImportPaymentStatusResponse} from './domain-import-payment-status.mjs';
 import {domainImportTransferResponse} from './domain-import-transfer.mjs';
 import {domainImportZoneResponse,importZoneExists} from './domain-import-zone.mjs';
+import {autoCreateImportZones} from './domain-import-auto-zone.mjs';
 const BASE='/api/commerce/domains/manage/import';
 const ORDER=/^IMP-[a-f0-9]{40}$/;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -46,5 +47,6 @@ export async function domainImportRouterResponse(request,env,deps={}){
  if(!url.pathname.startsWith(BASE+'/'))return null;
  const d={fetchImpl:globalThis.fetch,zoneExists:domain=>importZoneExists(env,domain),orders:domainImportOrdersResponse,payment:domainImportPaymentResponse,status:domainImportPaymentStatusResponse,transfer:domainImportTransferResponse,zone:domainImportZoneResponse,...deps};
  const blocked=await guard(request,env,d);if(blocked)return blocked;
- return (await d.orders(request,env,{fetchImpl:d.fetchImpl}))??(await d.payment(request,env,{fetchImpl:d.fetchImpl,now:d.now,warnImpl:d.warnImpl}))??(await d.status(request,env,{fetchImpl:d.fetchImpl,warnImpl:d.warnImpl}))??(await d.transfer(request,env,{fetchImpl:d.fetchImpl,provider:d.transferProvider,now:d.now,warnImpl:d.warnImpl}))??(await d.zone(request,env,{fetchImpl:d.fetchImpl,provider:d.provider,warnImpl:d.warnImpl}));
+ const response=(await d.orders(request,env,{fetchImpl:d.fetchImpl}))??(await d.payment(request,env,{fetchImpl:d.fetchImpl,now:d.now,warnImpl:d.warnImpl}))??(await d.status(request,env,{fetchImpl:d.fetchImpl,warnImpl:d.warnImpl}))??(await d.transfer(request,env,{fetchImpl:d.fetchImpl,provider:d.transferProvider,now:d.now,warnImpl:d.warnImpl}))??(await d.zone(request,env,{fetchImpl:d.fetchImpl,provider:d.provider,warnImpl:d.warnImpl}));
+ return autoCreateImportZones(request,env,response,d);
 }
