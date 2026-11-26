@@ -60,11 +60,13 @@ export async function domainImportZoneResponse(request,env,{fetchImpl=globalThis
   if(existing){await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
   let z;
   try{z=await provider.createFullZone(env,o.domain);}
-  catch{
+  catch(e){
    const again=await read().catch(()=>null);if(again?.zone_id)return reply(409,'IMPORT_ZONE_IN_PROGRESS');
    let found=null;try{found=await provider.findFullZone(env,o.domain);}catch{}
    if(found){await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
-   await flag('ZONE_CREATE_FAILED');return reply(503,'IMPORT_ZONE_CREATE_FAILED',{needsReview:true});
+   const pc=String(e?.code||'CLOUDFLARE_ERROR').replace(/[^A-Za-z0-9_]/g,'').slice(0,64)||'CLOUDFLARE_ERROR';try{warnImpl({event:'domain_import_zone_create_failed',code:pc,status:Number(e?.providerStatus||e?.status)||null,order_id:id});}catch{}
+   if(['CLOUDFLARE_ZONE_CREATE_PERMISSION_REQUIRED','CLOUDFLARE_DOMAIN_TOKEN_INVALID','CLOUDFLARE_CONFIGURATION_REQUIRED'].includes(pc))return reply(503,'IMPORT_ZONE_CREATE_UNAVAILABLE',{providerCode:pc});
+   await flag('ZONE_CREATE_FAILED');return reply(503,'IMPORT_ZONE_CREATE_FAILED',{needsReview:true,providerCode:pc});
   }
   if(!matches(z)){await flag('ZONE_MISMATCH');return reply(409,'IMPORT_ZONE_MISMATCH',{needsReview:true});}
   return record(z);
