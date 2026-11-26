@@ -14,7 +14,7 @@ function orderIds(path,reqBody,body){
 }
 export async function autoCreateImportZones(request,env,response,d={}){
  try{
-  if(!response||request.method!=='POST'||env?.DOMAIN_IMPORT_ENABLED!=='true'||env.DOMAIN_IMPORT_AUTO_ZONE==='false'||response.status<200||response.status>=300)return response;
+  if(!response||!['GET','POST'].includes(request.method)||env?.DOMAIN_IMPORT_ENABLED!=='true'||env.DOMAIN_IMPORT_AUTO_ZONE==='false'||response.status<200||response.status>=300)return response;
   const url=new URL(request.url),path=url.pathname;
   if(path===BASE+'/zone'||path===BASE+'/checkout'||path.startsWith(BASE+'/transfer/'))return response;
   const auth=request.headers.get('authorization')||'';if(!auth)return response;
