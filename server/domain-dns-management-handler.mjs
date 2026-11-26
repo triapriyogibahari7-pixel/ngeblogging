@@ -2,6 +2,7 @@ import {createDnsAdapter} from './domain-dns-cloudflare-adapter.mjs';
 import {normalizeRecord,publicRecord,buildBackup,planRestore,EDITABLE_TYPES} from '../shared/domain-dns-records.mjs';
 const PREFIX='/api/commerce/domains/manage/';
 const ORDER=/^DOM-[a-f0-9]{40}$/,UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i,CFID=/^[0-9a-f]{32}$/i;
+const planHash=async plan=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(plan))))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
 async function json(request,limit=262144){const text=await request.text();if(text.length>limit)throw Object.assign(new Error('BODY_TOO_LARGE'),{code:'BODY_TOO_LARGE',status:413});try{return JSON.parse(text);}catch{throw Object.assign(new Error('INVALID_JSON'),{code:'INVALID_JSON',status:400});}}
@@ -47,7 +48,9 @@ export async function domainDnsManagementResponse(request,env,{fetchImpl=globalT
   if(action==='restore'){
    const current=await adapter.listRecords(zone.id),plan=planRestore(domain,current,bodyIn?.backup,{removeExtra:bodyIn?.removeExtra===true});
    const summary={create:plan.create.length,update:plan.update.length,remove:plan.remove.length,unchanged:plan.unchanged};
-   if(bodyIn?.apply!==true)return reply(200,'DOMAIN_DNS_RESTORE_PREVIEW',{domain,applied:false,summary,plan});
+   const hash=await planHash(plan);
+   if(bodyIn?.apply!==true)return reply(200,'DOMAIN_DNS_RESTORE_PREVIEW',{domain,applied:false,summary,plan,planHash:hash});
+   if(bodyIn.planHash!==hash)return reply(409,'DOMAIN_DNS_PLAN_CHANGED',{domain,applied:false,summary,plan,planHash:hash});
    const safety=buildBackup(domain,current),done={create:0,update:0,remove:0};
    try{for(const r of plan.create){await adapter.createRecord(zone.id,r);done.create++;}for(const u of plan.update){await adapter.updateRecord(zone.id,u.id,u.record);done.update++;}for(const r of plan.remove){await adapter.deleteRecord(zone.id,r.id);done.remove++;}}
    catch(error){return reply(502,'DOMAIN_DNS_RESTORE_PARTIAL',{domain,applied:false,partial:true,done,summary,safetyBackup:safety,detail:String(error?.code||'ERROR')});}
