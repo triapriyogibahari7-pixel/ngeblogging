@@ -41,11 +41,6 @@ export function importStep(o){
  if(o.importState==='awaiting_nameservers')return 'ns';
  return 'zone_create';
 }
-const IMPORT_ID=/^IMP-[A-Za-z0-9_-]{1,120}$/;
-const hiddenKey=owner=>'ngeblogging:domain-import-list-hidden:v1:'+String(owner||'').toLowerCase();
-export const importCanHide=o=>['pay','wait','failed'].includes(importStep(o));
-function readHidden(owner){try{const raw=localStorage.getItem(hiddenKey(owner));if(raw===null)return [];const value=JSON.parse(raw);return Array.isArray(value)?[...new Set(value.filter(id=>typeof id==='string'&&IMPORT_ID.test(id)))].slice(0,500):[];}catch{return [];}}
-function writeHidden(owner,ids){const clean=[...new Set(ids.filter(id=>typeof id==='string'&&IMPORT_ID.test(id)))];localStorage.setItem(hiddenKey(owner),JSON.stringify(clean));if(localStorage.getItem(hiddenKey(owner))!==JSON.stringify(clean))throw Error('LIST_PREFERENCE_UNVERIFIED');return clean;}
 const CSS=':host{font:14px/1.6 system-ui,sans-serif;display:block}*{box-sizing:border-box}h1{font-size:20px;margin:0 0 4px}h2{font-size:17px;margin:0 0 6px}h3{font-size:15px;margin:14px 0 6px}.wrap{padding:20px 24px;max-width:860px}.card{border:1px solid #dce3ee;border-radius:10px;padding:14px;margin:12px 0}.muted{color:#5b6b82}.warn{color:#8a4b00}.ok{color:#116329}.err{color:#a40e26}button{font:inherit;padding:8px 12px;border:1px solid #ccd6e4;border-radius:8px;background:#f7f9fc;color:#18263d;cursor:pointer;margin:2px 4px 2px 0}button.primary{background:#18263d;color:#fff;border-color:#18263d}button:disabled{opacity:.6;cursor:default}input,select{font:inherit;padding:7px 9px;border:1px solid #ccd6e4;border-radius:8px;max-width:100%;width:100%}label{display:block;font-size:13px;margin:8px 0 2px}label.inline{display:flex;gap:6px;align-items:center}label.inline input{width:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}code{overflow-wrap:anywhere}.badge{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:#e9eef6}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}ul,ol{padding-left:20px}li{margin:4px 0}';
 const INLINE_CSS='.sn-main[data-di-open]>*:not(.sn-top):not(.di-host){display:none!important}.di-host{min-width:0}';
 let inline=null;
@@ -62,18 +57,13 @@ export function openAccountDomainImport(){
 }
 export function mountAccountDomainImport(container,{api=importApi,session=()=>getVerifiedSession({force:true}),open=(u)=>window.open(u,'_blank','noopener,noreferrer'),ask=t=>confirm(t)}={}){
  const host=node('div'),root=host.attachShadow({mode:'open'}),wrap=node('div');wrap.className='wrap';root.append(node('style',CSS),wrap);container.replaceChildren(host);
- const controller=new AbortController();let closed=false,owner=null,orders=[],sel=null,msg=node('p'),busy=false,hidden=null,showHidden=false;
+ const controller=new AbortController();let closed=false,owner=null,orders=[],sel=null,msg=node('p'),busy=false;
  const dispose=()=>{if(closed)return;closed=true;controller.abort();host.remove();};
  async function call(path,opt={}){const a=await session();if(closed||a?.verification!=='verified'||!a.user?.id||!a.session?.access_token||owner&&a.user.id!==owner)throw Object.assign(Error('INVALID_SESSION'),{code:'INVALID_SESSION'});owner=a.user.id;return api(path,a.session.access_token,{...opt,signal:controller.signal});}
  const card=(...k)=>{const c=node('div');c.className='card';c.append(...k);return c;};
  const say=(t,cls)=>{msg.textContent=t;msg.className=cls||'muted';};
- const loadHidden=()=>{if(hidden===null&&owner)hidden=readHidden(owner);return hidden||[];};
- function saveHidden(next,message){const clean=[...new Set(next.filter(id=>typeof id==='string'&&IMPORT_ID.test(id)))];if(clean.length>500){say('Batas 500 pilihan tampilan tercapai. Tampilkan kembali beberapa pesanan lebih dulu.','warn');return;}hidden=clean;try{writeHidden(owner,clean);say(message,'ok');}catch{say(message+' Pilihan hanya berlaku selama halaman ini terbuka; penyimpanan untuk kunjungan berikutnya belum terverifikasi.','warn');}render();}
- function hideOrder(o){if(!importCanHide(o)||!IMPORT_ID.test(String(o.orderId))){say('Pesanan ini perlu tetap terlihat karena statusnya memerlukan perhatian.','warn');return;}if(sel?.orderId===o.orderId)sel=null;saveHidden([...loadHidden(),o.orderId],'Pesanan disembunyikan dari daftar. Pesanan, tagihan, dan pembayaran di server tidak dihapus atau dibatalkan. Gunakan tombol tampilkan untuk melihatnya kembali.');}
- function unhideOrder(o){saveHidden(loadHidden().filter(id=>id!==o.orderId),'Pesanan ditampilkan kembali di daftar.');}
- function hideBulk(){const h=new Set(loadHidden()),list=orders.filter(o=>o.importState!=='cancelled'&&!h.has(o.orderId)&&importCanHide(o)&&IMPORT_ID.test(String(o.orderId)));if(!list.length){say('Tidak ada pesanan belum dibayar yang dapat disembunyikan.','muted');return;}if(!ask('Sembunyikan '+list.length+' pesanan yang belum dibayar dari daftar? Pesanan dan tagihan di server tidak dihapus atau dibatalkan, dan dapat ditampilkan kembali.'))return;if(sel&&list.some(o=>o.orderId===sel.orderId))sel=null;saveHidden([...loadHidden(),...list.map(o=>o.orderId)],list.length+' pesanan disembunyikan dari daftar. Tidak ada pesanan atau tagihan yang dihapus atau dibatalkan.');}
  async function act(fn,done){if(busy||closed)return;busy=true;say('Memproses…');render();try{const r=await fn();if(done)say(done(r),'ok');else say('');await reload(false);}catch(e){say(importErrorMessage(e),'err');await reload(false).catch(()=>{});}finally{busy=false;if(!closed)render();}}
- async function reload(first){const d=await call('orders',{method:'GET'});if(closed)return;orders=d.orders||[];if(sel)sel=orders.find(o=>o.orderId===sel.orderId)||null;if(first&&!sel){const h=new Set(loadHidden());sel=orders.find(o=>importStep(o)!=='cancelled'&&!(h.has(o.orderId)&&importCanHide(o)))||null;}render();}
+ async function reload(first){const d=await call('orders',{method:'GET'});if(closed)return;orders=d.orders||[];if(sel)sel=orders.find(o=>o.orderId===sel.orderId)||null;if(first&&!sel)sel=orders.find(o=>importStep(o)!=='cancelled')||null;render();}
  const btn=(label,fn,{primary=false}={})=>{const b=node('button',label);b.type='button';b.disabled=busy;if(primary)b.className='primary';b.addEventListener('click',fn);return b;};
  function createForm(){
   const domain=node('input'),mode=node('select');domain.placeholder='contoh: namadomain.com';domain.setAttribute('aria-label','Nama domain');domain.autocomplete='off';
@@ -121,13 +111,10 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
  }
  function render(){
   if(closed)return;wrap.replaceChildren();wrap.append(node('h1','Impor domain'),(()=>{const p=node('p','Pindahkan domain dari registrar lain. Membuka halaman ini tidak membuat pembayaran atau mengubah DNS.');p.className='muted';return p;})(),createForm());
-  const h=new Set(loadHidden()),all=orders.filter(o=>o.importState!=='cancelled'),isHid=o=>h.has(o.orderId)&&importCanHide(o),hiddenOrders=all.filter(isHid),bulk=all.filter(o=>!h.has(o.orderId)&&importCanHide(o)),visible=showHidden?all:all.filter(o=>!isHid(o));
   const list=card(node('h2','Pesanan impor'));
-  if(bulk.length)list.append(btn('Sembunyikan '+bulk.length+' pesanan belum dibayar dari daftar',hideBulk));
-  if(hiddenOrders.length)list.append(btn(showHidden?'Kembali ke daftar utama':'Tampilkan '+hiddenOrders.length+' pesanan tersembunyi',()=>{showHidden=!showHidden;render();}));
-  if(!visible.length)list.append(node('p',all.length?'Semua pesanan sedang disembunyikan dari daftar. Tidak ada yang dihapus.':'Belum ada pesanan impor.'));
-  for(const o of visible){const r=node('div');r.className='row';const l=node('span',o.domain+' · '+(o.mode==='transfer'?'transfer':'nameserver')+' · '+o.importState);const acts=node('span');acts.append(btn('Buka',()=>{sel={orderId:o.orderId};render();}));if(isHid(o))acts.append(btn('Tampilkan kembali',()=>unhideOrder(o)));else if(importCanHide(o))acts.append(btn('Sembunyikan',()=>hideOrder(o)));r.append(l,acts);list.append(r);}
-  wrap.append(list);wrap.append(msg);const cur=sel&&orders.find(o=>o.orderId===sel.orderId);if(cur&&(showHidden||!isHid(cur)))wrap.append(detail(cur));
+  const visible=orders.filter(o=>o.importState!=='cancelled');if(!visible.length)list.append(node('p','Belum ada pesanan impor.'));
+  for(const o of visible){const r=node('div');r.className='row';const l=node('span',o.domain+' · '+(o.mode==='transfer'?'transfer':'nameserver')+' · '+o.importState);r.append(l,btn('Buka',()=>{sel={orderId:o.orderId};render();}));list.append(r);}
+  wrap.append(list);wrap.append(msg);const cur=sel&&orders.find(o=>o.orderId===sel.orderId);if(cur)wrap.append(detail(cur));
  }
  render();say('Memverifikasi sesi akun…');reload(true).then(()=>{if(!msg.className.includes('err'))say('');}).catch(e=>{if(!closed)say(importErrorMessage(e),'err');});
  return dispose;
