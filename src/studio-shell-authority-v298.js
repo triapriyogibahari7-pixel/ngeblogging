@@ -137,6 +137,10 @@ function runProfileAction(action) {
     import("./account-domain-management-page.js").then(module => module.openAccountDomainManagement()).catch(() => window.alert("Pengelolaan domain belum dapat dibuka. Tidak ada data diubah."));
     return;
   }
+  if (action === "domain-import") {
+    import("./account-domain-import-page.js").then(module => module.openAccountDomainImport()).catch(() => window.alert("Impor domain belum dapat dibuka. Tidak ada data diubah."));
+    return;
+  }
   if (action === "profile") {
     if (typeof window.__ngebloggingOpenAvatarPicker === "function") window.__ngebloggingOpenAvatarPicker();
     return openSettingsSection(1);
@@ -169,6 +173,7 @@ function openProfileMenu(anchor) {
     ["add-site", "Tambah situs", "Buat situs atau workspace baru"],
     ["switch-site", "Ganti situs", "Pilih situs yang sudah ada"],
     ["domain-management", "Pengelolaan domain & DNS", "Domain dan pesanan milik akun"],
+    ["domain-import", "Impor domain", "Pindahkan domain dari registrar lain"],
     ["settings", "Pengaturan", "Atur situs, bahasa dan zona waktu"],
     ["help", "Bantuan Nara", "Buka Nara tanpa menutup Studio"],
     ["logout", "Keluar", "Akhiri sesi hanya saat dipilih"],
