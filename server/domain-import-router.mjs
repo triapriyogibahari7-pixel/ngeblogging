@@ -1,5 +1,6 @@
 import {domainImportOrdersResponse} from './domain-import-orders.mjs';
 import {domainImportPaymentResponse} from './domain-import-payment.mjs';
+import {domainImportPaymentStatusResponse} from './domain-import-payment-status.mjs';
 import {domainImportZoneResponse,importZoneExists} from './domain-import-zone.mjs';
 const BASE='/api/commerce/domains/manage/import';
 const ORDER=/^IMP-[a-f0-9]{40}$/;
@@ -42,7 +43,7 @@ async function guard(request,env,{fetchImpl,zoneExists}){
 export async function domainImportRouterResponse(request,env,deps={}){
  const url=new URL(request.url);
  if(!url.pathname.startsWith(BASE+'/'))return null;
- const d={fetchImpl:globalThis.fetch,zoneExists:domain=>importZoneExists(env,domain),orders:domainImportOrdersResponse,payment:domainImportPaymentResponse,zone:domainImportZoneResponse,...deps};
+ const d={fetchImpl:globalThis.fetch,zoneExists:domain=>importZoneExists(env,domain),orders:domainImportOrdersResponse,payment:domainImportPaymentResponse,status:domainImportPaymentStatusResponse,zone:domainImportZoneResponse,...deps};
  const blocked=await guard(request,env,d);if(blocked)return blocked;
- return (await d.orders(request,env,{fetchImpl:d.fetchImpl}))??(await d.payment(request,env,{fetchImpl:d.fetchImpl,now:d.now,warnImpl:d.warnImpl}))??(await d.zone(request,env,{fetchImpl:d.fetchImpl,provider:d.provider,warnImpl:d.warnImpl}));
+ return (await d.orders(request,env,{fetchImpl:d.fetchImpl}))??(await d.payment(request,env,{fetchImpl:d.fetchImpl,now:d.now,warnImpl:d.warnImpl}))??(await d.status(request,env,{fetchImpl:d.fetchImpl,warnImpl:d.warnImpl}))??(await d.zone(request,env,{fetchImpl:d.fetchImpl,provider:d.provider,warnImpl:d.warnImpl}));
 }
