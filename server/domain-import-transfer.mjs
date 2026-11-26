@@ -106,15 +106,22 @@ export async function domainImportTransferResponse(request,env,{fetchImpl=global
     if(!(await rpc('domain_import_record_zone_v2',args)).ok&&!(await rpc('domain_import_record_zone_v2',args)).ok)return reply(503,'IMPORT_ZONE_RECORD_FAILED');
     return reply(200,'DOMAIN_IMPORT_TRANSFER_ZONE',{zone:{status,active:status==='active',nameServers:s.nameServers,originalNameServers:s.originalNameServers}});
    };
+   const adoptable=async z=>{
+    if(!matches(z,o))return false;
+    const s=provider.publicZoneState(z),st=s.status.toLowerCase(),t=Date.parse(s.createdOn||'');
+    if(!['pending','initializing'].includes(st)||!Number.isFinite(t)||now()-t>7*864e5||t>now()+300000)return false;
+    const rows=await rest('domain_import_orders',{select:'order_id',zone_id:'eq.'+s.id,order_id:'neq.'+id,limit:'1'});
+    return rows.length===0;
+   };
    if(o.zone_id){let z;try{z=await provider.getFullZoneStatus(env,o.zone_id);}catch{return reply(503,'IMPORT_ZONE_UNAVAILABLE');}
     if(z?.id!==o.zone_id||!matches(z,o)){await flag('ZONE_MISMATCH');return reply(409,'IMPORT_ZONE_MISMATCH',{needsReview:true});}
     return record(z);}
    let existing;try{existing=await provider.findFullZone(env,o.domain);}catch{return reply(503,'IMPORT_ZONE_UNAVAILABLE');}
-   if(existing){await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
+   if(existing){if(await adoptable(existing))return record(existing);await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
    let z;try{z=await provider.createFullZone(env,o.domain);}catch{
     const again=await read().catch(()=>null);if(again?.zone_id)return reply(409,'IMPORT_ZONE_IN_PROGRESS');
     let found=null;try{found=await provider.findFullZone(env,o.domain);}catch{}
-    if(found){await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
+    if(found){if(await adoptable(found))return record(found);await flag('ZONE_ALREADY_EXISTS');return reply(409,'IMPORT_ZONE_ALREADY_EXISTS',{needsReview:true});}
     await flag('ZONE_CREATE_FAILED');return reply(503,'IMPORT_ZONE_CREATE_FAILED',{needsReview:true});}
    if(!matches(z,o)){await flag('ZONE_MISMATCH');return reply(409,'IMPORT_ZONE_MISMATCH',{needsReview:true});}
    return record(z);
