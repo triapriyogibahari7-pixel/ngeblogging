@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {daysUntil,formatRenewalDate,renewalSummary} from '../src/domain-renewal-info.mjs';
+const now=Date.parse('2026-11-26T12:00:00Z');
+test('daysUntil rounds up and rejects invalid input',()=>{assert.equal(daysUntil('2026-12-26T12:00:00Z',now),30);assert.equal(daysUntil('bad',now),null);assert.equal(daysUntil(undefined,now),null);});
+test('formatRenewalDate returns null for invalid dates',()=>{assert.equal(formatRenewalDate('nope'),null);assert.match(formatRenewalDate('2027-01-05T00:00:00Z'),/2027/);});
+test('imported domains never show an expiry date or renewal button',()=>{const s=renewalSummary({imported:true},now);assert.equal(s.kind,'imported');assert.equal(s.rows,undefined);});
+test('unobserved registrar data is reported as unavailable',()=>{assert.equal(renewalSummary({registrar:{status:'unavailable'}},now).kind,'unavailable');});
+test('under 60 days warns and shows auto-renew state',()=>{const s=renewalSummary({paidAt:'2026-06-01T00:00:00Z',registrar:{status:'observed',registrarStatus:'active',registeredAt:'2026-06-01T00:00:00Z',expiresAt:'2027-01-05T12:00:00Z',autoRenew:false}},now);assert.equal(s.kind,'soon');assert.ok(s.lines.some(x=>x.includes('nonaktif')));});
+test('far expiry is ok and past expiry is expired',()=>{const base={status:'observed',registeredAt:'2026-01-01T00:00:00Z',autoRenew:true};assert.equal(renewalSummary({registrar:{...base,registrarStatus:'active',expiresAt:'2027-11-26T12:00:00Z'}},now).kind,'ok');assert.equal(renewalSummary({registrar:{...base,registrarStatus:'expired',expiresAt:'2026-11-01T00:00:00Z'}},now).kind,'expired');});
