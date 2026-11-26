@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {normalizeRecord,planRestore,buildBackup,validateBackup} from '../shared/domain-dns-records.mjs';
 import {domainDnsManagementResponse as handler} from '../server/domain-dns-management-handler.mjs';
 import {createDnsAdapter} from '../server/domain-dns-cloudflare-adapter.mjs';
-const Z='example.id',owner='11111111-1111-4111-8111-111111111111',ORD='DOM-'+'a'.repeat(40),QID='33333333-3333-4333-8333-333333333333',ZID='b'.repeat(32),RID='c'.repeat(32);
-const env={DOMAIN_ORDER_ENV:'production',SUPABASE_URL:'https://polvmlrhqoiflumibfqs.supabase.co',SUPABASE_PUBLISHABLE_KEY:'p',SUPABASE_SERVICE_ROLE_KEY:'s',CLOUDFLARE_DOMAIN_API_TOKEN:'tok',CLOUDFLARE_ACCOUNT_ID:'095e57b46e7ba7f6b188480d9e4e5fe7'};
+const Z='example.id',owner='11111111-1111-4111-8111-111111111111',ORD='DOM-'+'a'.repeat(40),QID='33333333-3333-4333-8333-333333333333',ZID='b'.repeat(32),RID='c'.repeat(32),ACC='095e57b46e7ba7f6b188480d9e4e5fe7',REG_AT='2026-11-20T10:00:00Z';
+const env={DOMAIN_ORDER_ENV:'production',SUPABASE_URL:'https://polvmlrhqoiflumibfqs.supabase.co',SUPABASE_PUBLISHABLE_KEY:'p',SUPABASE_SERVICE_ROLE_KEY:'s',CLOUDFLARE_DOMAIN_API_TOKEN:'tok',CLOUDFLARE_REGISTRAR_API_TOKEN:'regtok',CLOUDFLARE_ACCOUNT_ID:'095e57b46e7ba7f6b188480d9e4e5fe7'};
 test('record validation',()=>{
  assert.deepEqual(normalizeRecord(Z,{type:'a',name:'www',content:'1.2.3.4'}),{type:'A',name:'www.example.id',content:'1.2.3.4',ttl:1,proxied:false});
  for(const bad of [{type:'NS',name:'@',content:'x.com'},{type:'A',name:'@',content:'999.1.1.1'},{type:'CNAME',name:'@',content:'a.com'},{type:'TXT',name:'@',content:'x',proxied:true},{type:'MX',name:'@',content:'mail.x.com'},{type:'A',name:'a b',content:'1.1.1.1'},{type:'A',name:'@',content:'1.1.1.1',ttl:30}])assert.throws(()=>normalizeRecord(Z,bad));
@@ -17,14 +17,16 @@ test('restore plan creates, updates, and deletes only on request',()=>{
  p=planRestore(Z,cur,bk,{removeExtra:true});assert.deepEqual(p.remove.map(r=>r.id),['2']);
  assert.throws(()=>validateBackup('other.id',bk));
 });
-function fixture({registered=true,store=[{id:RID,type:'A',name:Z,content:'1.1.1.1',ttl:1,proxied:false}],dnssec='disabled'}={}){
+function fixture({registered=true,store=[{id:RID,type:'A',name:Z,content:'1.1.1.1',ttl:1,proxied:false}],dnssec='disabled',regState='active',regCreated=REG_AT,review=null,orderRef='/accounts/'+ACC+'/registrar/registrations/'+Z,regHttp=200}={}){
  const calls=[];let records=[...store];
  const j=(b,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{'content-type':'application/json'}});
  const fetchImpl=async(input,init={})=>{const u=new URL(input);calls.push({u,init});
   if(u.pathname==='/auth/v1/user')return init.headers.authorization==='Bearer good'?j({id:owner}):j({},401);
-  if(u.pathname==='/rest/v1/domain_purchase_orders'){assert.equal(u.searchParams.get('user_id'),'eq.'+owner);return j([{order_id:ORD,user_id:owner,quote_id:QID,environment:'production',payment_state:'paid',registration_state:registered?'registered':'queued'}]);}
+  if(u.pathname==='/rest/v1/domain_purchase_orders'){assert.equal(u.searchParams.get('user_id'),'eq.'+owner);return j([{order_id:ORD,user_id:owner,quote_id:QID,environment:'production',payment_state:'paid',registration_state:registered?'registered':'queued',review_reason:review,registered_at:REG_AT,registrar_domain_ref:orderRef}]);}
   if(u.pathname==='/rest/v1/domain_sale_quotes')return j([{id:QID,user_id:owner,environment:'production',domain:Z}]);
-  assert.equal(u.origin,'https://api.cloudflare.com');assert.equal(init.headers.authorization,'Bearer tok');const path=u.pathname.replace('/client/v4','');
+  assert.equal(u.origin,'https://api.cloudflare.com');
+  if(u.pathname==='/client/v4/accounts/'+ACC+'/registrar/registrations/'+Z){assert.equal(init.headers.authorization,'Bearer regtok');assert.equal(init.method,'GET');return regHttp===200?j({success:true,result:{domain_name:Z,status:regState,created_at:regCreated}}):j({success:false,errors:[]},regHttp);}
+  assert.equal(init.headers.authorization,'Bearer tok');const path=u.pathname.replace('/client/v4','');
   if(path==='/zones')return j({success:true,result:[{id:ZID,name:Z,type:'full',status:'active',account:{id:env.CLOUDFLARE_ACCOUNT_ID}}]});
   if(path==='/zones/'+ZID+'/dns_records'&&init.method==='GET')return j({success:true,result:records,result_info:{total_pages:1}});
   if(path==='/zones/'+ZID+'/dns_records'&&init.method==='POST'){const r={id:'d'.repeat(32),...JSON.parse(init.body)};records.push(r);return j({success:true,result:r});}
@@ -53,3 +55,16 @@ test('dnssec read and confirmed change',async()=>{const f=fixture();assert.equal
  assert.equal((await run(f,req('/dnssec',{method:'POST',body:{enabled:true}}))).status,400);
  assert.equal((await (await run(f,req('/dnssec',{method:'POST',body:{enabled:true,confirm:true}}))).json()).dnssec.status,'active');});
 test('adapter requires a token',()=>assert.throws(()=>createDnsAdapter({}),/NOT_CONFIGURED/));
+test('live registrar proof is checked before any zone access',async()=>{const f=fixture();assert.equal((await run(f,req('/dns',{origin:null}))).status,200);const paths=f.calls.map(c=>c.u.pathname),reg=paths.findIndex(p=>p.includes('/registrar/registrations/')),zone=paths.findIndex(p=>p.endsWith('/zones'));assert.ok(reg>=0&&zone>reg);});
+for(const [name,opts,status,code] of [
+ ['registrar created_at differs',{regCreated:'2026-11-21T10:00:00Z'},403,'DOMAIN_REGISTRATION_UNVERIFIED'],
+ ['registrar status expired',{regState:'expired'},403,'DOMAIN_REGISTRATION_UNVERIFIED'],
+ ['registrar record missing',{regHttp:404},403,'DOMAIN_REGISTRATION_UNVERIFIED'],
+ ['registrar permission denied',{regHttp:403},503,'DNS_PROVIDER_PERMISSION_REQUIRED'],
+ ['registrar unavailable',{regHttp:500},502,'DNS_PROVIDER_UNAVAILABLE'],
+ ['order needs review',{review:'MANUAL'},409,'DOMAIN_REGISTRATION_UNVERIFIED'],
+ ['order registrar reference differs',{orderRef:'/accounts/'+ACC+'/registrar/registrations/other.id'},409,'DOMAIN_REGISTRATION_UNVERIFIED']])
+ for(const [method,path,body] of [['GET','/dns'],['POST','/dns',{type:'A',name:'@',content:'8.8.8.8'}],['DELETE','/dns/'+RID],['POST','/restore',{backup:buildBackup(Z,[]),apply:true,planHash:'x'}]])
+  test(name+' blocks '+method+' '+path,async()=>{const f=fixture(opts),r=await run(f,req(path,{method,body,origin:method==='GET'?null:'https://ngeblogging.com'})),b=await r.json();assert.equal(r.status,status);assert.equal(b.code,code);assert.ok(!f.calls.some(c=>c.u.pathname.includes('/zones')));assert.equal(f.records.length,1);});
+test('missing registrar token fails closed before provider access',async()=>{const f=fixture(),r=await handler(req('/dns',{origin:null}),{...env,CLOUDFLARE_REGISTRAR_API_TOKEN:''},{fetchImpl:f.fetchImpl});assert.equal(r.status,503);assert.equal((await r.json()).code,'DNS_REGISTRAR_NOT_CONFIGURED');assert.ok(!f.calls.some(c=>c.u.origin==='https://api.cloudflare.com'));});
+test('DNSSEC cannot be disabled from this endpoint',async()=>{const f=fixture({dnssec:'active'}),r=await run(f,req('/dnssec',{method:'POST',body:{enabled:false,confirm:true}})),b=await r.json();assert.equal(r.status,409);assert.equal(b.code,'DNSSEC_DISABLE_NOT_SUPPORTED');assert.ok(!f.calls.some(c=>c.u.pathname.endsWith('/dnssec')&&c.init.method==='PATCH'));});
