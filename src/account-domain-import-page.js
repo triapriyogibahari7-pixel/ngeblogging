@@ -21,9 +21,23 @@ const MESSAGES={
  IMPORT_CHECKOUT_RECONCILIATION_REQUIRED:'Status pembayaran belum jelas. Jangan bayar ulang; periksa status beberapa menit lagi.',
  DOMAIN_IMPORT_PAYMENT_NOT_READY:'Pembayaran belum siap di server.',DOMAIN_IMPORT_PAYMENT_IDENTITY_MISMATCH:'Data pembayaran tidak cocok. Pesanan perlu ditinjau; jangan bayar ulang.',
  INVALID_SESSION:'Sesi berakhir. Masuk ulang lalu coba lagi.',AUTH_REQUIRED:'Sesi berakhir. Masuk ulang lalu coba lagi.',
- IMPORT_ORDER_NOT_FOUND:'Pesanan tidak ditemukan.',IMPORT_ORDER_NOT_CANCELLABLE:'Pesanan ini tidak dapat dibatalkan.'
+ IMPORT_ORDER_NOT_FOUND:'Pesanan tidak ditemukan.',IMPORT_ORDER_NOT_CANCELLABLE:'Pesanan ini tidak dapat dibatalkan.',
+ IMPORT_ZONE_CREATE_UNAVAILABLE:'Token Cloudflare di server belum punya izin membuat zona atau tidak valid. Pesanan tidak terkunci dan tidak ada pembayaran yang berubah. Coba lagi setelah izin token diperbaiki.',
+ IMPORT_ZONE_CREATE_FAILED:'Cloudflare gagal membuat zona. Pesanan ditandai untuk ditinjau; jangan bayar ulang.',
+ IMPORT_ZONE_UNAVAILABLE:'Cloudflare belum dapat dihubungi atau token belum bisa membaca zona. Tidak ada pembayaran atau perubahan domain. Coba lagi nanti.',
+ IMPORT_ZONE_IN_PROGRESS:'Zona sedang dibuat. Muat ulang beberapa saat lagi; jangan buat zona baru.',
+ IMPORT_ZONE_MISMATCH:'Zona di Cloudflare tidak cocok dengan pesanan. Pesanan ditandai untuk ditinjau.',
+ IMPORT_ZONE_STATUS_UNEXPECTED:'Status zona dari Cloudflare tidak dikenali. Pesanan ditandai untuk ditinjau.',
+ IMPORT_ZONE_RECORD_FAILED:'Zona sudah dibuat tetapi belum tercatat. Coba lagi; jangan membuat zona baru.',
+ DOMAIN_IMPORT_CONFIGURATION_UNAVAILABLE:'Konfigurasi server untuk impor domain belum lengkap. Tidak ada pembayaran atau perubahan domain.',
+ IMPORT_UNAVAILABLE:'Layanan impor domain sedang tidak tersedia. Coba lagi nanti.'
 };
-export const importErrorMessage=e=>MESSAGES[e?.code]||'Permintaan gagal. Tidak ada pembayaran atau perubahan domain yang dipastikan.';
+export const importErrorMessage=e=>{
+ const code=typeof e?.code==='string'?e.code:'',pc=typeof e?.data?.providerCode==='string'&&/^[A-Za-z0-9_]{1,64}$/.test(e.data.providerCode)?e.data.providerCode:'';
+ if(MESSAGES[code])return MESSAGES[code]+(pc?' (kode: '+pc+')':'');
+ if(/^[A-Z0-9_]{3,80}$/.test(code)&&code!=='IMPORT_REQUEST_FAILED')return 'Permintaan ditolak ('+code+(pc?' / '+pc:'')+'). Tidak ada pembayaran atau perubahan domain yang dipastikan.';
+ return 'Permintaan gagal. Tidak ada pembayaran atau perubahan domain yang dipastikan.';
+};
 export async function importApi(path,token,{method='POST',body,signal,fetchImpl=globalThis.fetch}={}){
  const r=await fetchImpl(BASE+path,{method,signal,cache:'no-store',credentials:'omit',headers:{authorization:'Bearer '+token,accept:'application/json',...(body!==undefined?{'content-type':'application/json'}:{})},...(body!==undefined?{body:JSON.stringify(body)}:{})});
  let data={};try{data=await r.json();}catch{}
