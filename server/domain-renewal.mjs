@@ -10,6 +10,7 @@ const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const TX=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const PAY=['qris','bank_transfer','echannel'];
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
+const renewalEnabled=env=>env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'&&env.DOMAIN_PAYMENT_PRODUCTION_ENABLED==='true';
 const VIEW='order_id,domain_order_id,domain,price_idr,payment_state,renewal_state,paid_at,expires_at_before,expires_at_after,completed_at,created_at';
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
 function deadline(ms){const c=new AbortController();let stop;const stopped=new Promise((_,reject)=>{stop=()=>reject(Error('TIMEOUT'));c.signal.addEventListener('abort',stop,{once:true});});stopped.catch(()=>{});const timer=setTimeout(()=>c.abort(),ms);return {signal:c.signal,abort:()=>c.abort(),wait:p=>Promise.race([p,stopped]),close:()=>{clearTimeout(timer);c.signal.removeEventListener('abort',stop);}};}
@@ -160,7 +161,7 @@ export async function domainRenewalResponse(request,env,{fetchImpl=globalThis.fe
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port||url.search)return reply(404,'NOT_FOUND');
  const hook=action==='notification';
  if(!hook){
-  if(env?.DOMAIN_RENEWAL_ENABLED!=='true')return reply(503,'DOMAIN_RENEWAL_DISABLED');
+  if(!renewalEnabled(env))return reply(503,'DOMAIN_RENEWAL_DISABLED');
   if(request.method!=='GET'&&request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
   if(request.headers.has('origin')&&request.headers.get('origin')!==url.origin)return reply(403,'ORIGIN_NOT_ALLOWED');
  }
