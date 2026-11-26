@@ -3,6 +3,9 @@ const PATH='/api/commerce/domains/orders/history';
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const ORDER=/^DOM-[a-f0-9]{40}$/;
 const FIELDS='order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,midtrans_transaction_id,paid_at,registered_at,registrar_domain_ref,review_reason,created_at,updated_at';
+const UNPAID_CLEAN='paid_at.is.null,registration_state.eq.not_started,registered_at.is.null,registrar_domain_ref.is.null';
+const STALE_PENDING_MS=86400000;
+function hiddenFilter(now){const cut=new Date(now-STALE_PENDING_MS).toISOString();return '(and(payment_state.in.(expired,cancelled),'+UNPAID_CLEAN+',or(review_reason.is.null,review_reason.eq.STALE_SNAP_MAX_TTL_CORE_404)),and(payment_state.eq.pending,created_at.lt.'+cut+','+UNPAID_CLEAN+',review_reason.is.null))';}
 export async function domainOrderHistoryResponse(request,env,{fetchImpl=globalThis.fetch,toView}={}){
  const url=new URL(request.url);if(url.pathname!==PATH)return null;
  const reply=(status,code,extra={},nextCursor='')=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store','vary':'Authorization','x-content-type-options':'nosniff',...(status===405?{allow:'GET'}:{}),...(nextCursor?{'x-domain-history-next-cursor':nextCursor}:{})}});
@@ -32,7 +35,9 @@ export async function domainOrderHistoryResponse(request,env,{fetchImpl=globalTh
   const user=await read(verified,32768);if(typeof user?.id!=='string'||!UUID.test(user.id))return reply(401,'INVALID_SESSION');const owner=user.id.toLowerCase();
   const target=new URL('/rest/v1/domain_purchase_orders',base);target.searchParams.set('select',FIELDS);target.searchParams.set('user_id','eq.'+owner);target.searchParams.set('environment','eq.production');target.searchParams.set('order','created_at.desc,order_id.desc');target.searchParams.set('limit','51');
   if(before)target.searchParams.set('or','(created_at.lt.'+before.createdAt+',and(created_at.eq.'+before.createdAt+',order_id.lt.'+before.orderId+'))');
-  const found=await get(target);if(!Array.isArray(found)||found.length>51)throw Error('INVALID_ORDERS');
+  target.searchParams.set('not.or',hiddenFilter(Date.now()));
+  let found;try{found=await get(target);}catch{target.searchParams.delete('not.or');found=await get(target);}
+  if(!Array.isArray(found)||found.length>51)throw Error('INVALID_ORDERS');
   const seen=new Set();for(const o of found){if(!o||!ORDER.test(o.order_id||'')||o.user_id!==owner||o.environment!=='production'||o.currency!=='IDR'||typeof o.quote_id!=='string'||!UUID.test(o.quote_id)||seen.has(o.order_id))throw Error('INVALID_ORDER_SCOPE');seen.add(o.order_id);}
   if(paged){let previous=before;for(const row of found){const key=parseHistoryCursor(rowHistoryCursor(row));if(previous&&!olderHistoryCursor(key,previous))throw Error('INVALID_PAGE_ORDER');previous=key;}}
   const page=found.slice(0,50);if(!page.length)return reply(200,'DOMAIN_ORDER_HISTORY',{ownerId:owner,orders:[],count:0,hasMore:false});
