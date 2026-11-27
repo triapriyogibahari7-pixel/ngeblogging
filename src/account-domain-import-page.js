@@ -93,7 +93,7 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
  const btn=(label,fn,{primary=false}={})=>{const b=node('button',label);b.type='button';b.disabled=busy;if(primary)b.className='primary';b.addEventListener('click',fn);return b;};
  function createForm(){
   const domain=node('input'),mode=node('select');domain.placeholder='contoh: namadomain.com';domain.setAttribute('aria-label','Nama domain');domain.autocomplete='off';
-  for(const [v,t] of [['nameserver','Jalur A: tetap di registrar lama, arahkan nameserver ke kami (harga tampil setelah pesanan dibuat)'],['transfer','Jalur B: pindahkan registrasi ke kami (.com, .net, .org; harga tampil setelah pesanan dibuat)']]){const o=node('option',t);o.value=v;mode.append(o);}
+  for(const [v,t] of [['nameserver','Jalur A: tetap di registrar lama, arahkan nameserver ke kami'],['transfer','Jalur B: pindahkan registrasi ke kami (.com, .net, .org; harga tampil setelah pesanan dibuat)']]){const o=node('option',t);o.value=v;mode.append(o);}
   const form=node('form');form.append(node('label','Nama domain'),domain,node('label','Jalur impor'),mode);
   const go=node('button','Buat pesanan');go.type='submit';go.className='primary';go.disabled=busy;form.append(go);
   form.addEventListener('submit',ev=>{ev.preventDefault();const d=domain.value.trim().toLowerCase();if(!d){say('Masukkan nama domain.','err');return;}
