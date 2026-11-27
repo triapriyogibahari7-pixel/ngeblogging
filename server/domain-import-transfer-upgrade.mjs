@@ -7,6 +7,14 @@ const ADMIN_EMAIL='triapriyogibahari7@gmail.com';
 const TLDS=['com','net','org'];
 const isAdmin=u=>u?.id===ADMIN_ID&&typeof u.email==='string'&&u.email.trim().toLowerCase()===ADMIN_EMAIL&&typeof u.email_confirmed_at==='string'&&Number.isFinite(Date.parse(u.email_confirmed_at))&&u.is_anonymous!==true;
 const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...(status===405?{allow:'POST'}:{})}});
+async function readBody(request,limit){
+ const reader=request.body?.getReader();if(!reader)throw Error('INVALID_JSON');
+ let size=0;const chunks=[];
+ try{for(;;){const x=await reader.read();if(x.done)break;size+=x.value.length;if(size>limit)throw Error('BODY_TOO_LARGE');chunks.push(x.value);}}
+ finally{reader.cancel().catch(()=>{});}
+ const bytes=new Uint8Array(size);let pos=0;for(const chunk of chunks){bytes.set(chunk,pos);pos+=chunk.length;}
+ return new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+}
 async function readJson(res,limit){const text=await res.text();if(text.length>limit)throw Error('BODY_TOO_LARGE');return JSON.parse(text);}
 export async function domainImportTransferUpgradeResponse(request,env,{fetchImpl=globalThis.fetch}={}){
  const url=new URL(request.url);
@@ -24,7 +32,7 @@ export async function domainImportTransferUpgradeResponse(request,env,{fetchImpl
  if(typeof srv!=='string'||!srv||typeof env.SUPABASE_PUBLISHABLE_KEY!=='string'||!env.SUPABASE_PUBLISHABLE_KEY)return reply(503,'DOMAIN_IMPORT_CONFIGURATION_UNAVAILABLE',{configurationUnavailable:true});
  const c=new AbortController(),timer=setTimeout(()=>c.abort(),10000);
  try{
-  let b;try{b=JSON.parse(await request.text());}catch{return reply(400,'INVALID_BODY');}
+  let b;try{b=JSON.parse(await readBody(request,1024));}catch(e){return reply(e?.message==='BODY_TOO_LARGE'?413:400,e?.message==='BODY_TOO_LARGE'?'BODY_TOO_LARGE':'INVALID_BODY');}
   if(!b||Array.isArray(b)||typeof b!=='object'||Object.keys(b).length!==1||typeof b.orderId!=='string'||!ORDER.test(b.orderId))return reply(400,'INVALID_REQUEST');
   const id=b.orderId;
   const v=await fetchImpl(new URL('/auth/v1/user',base).href,{method:'GET',redirect:'manual',headers:{authorization:auth,apikey:env.SUPABASE_PUBLISHABLE_KEY},signal:c.signal});
