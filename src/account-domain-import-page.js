@@ -61,7 +61,17 @@ const CSS=':host{font:14px/1.6 system-ui,sans-serif;display:block}*{box-sizing:b
 const INLINE_CSS='.sn-main[data-di-open]>*:not(.sn-top):not(.di-host){display:none!important}.di-host{min-width:0}';
 let inline=null;
 function closeInline(){if(!inline)return;const i=inline;inline=null;i.dispose?.();i.el.remove();i.main.removeAttribute('data-di-open');document.removeEventListener('click',i.onClick,true);}
+function embedInManagement(){
+ const host=document.querySelector('.dm-host')?.firstElementChild,root=host?.shadowRoot,section=root?.querySelector('section.content'),picker=root?.querySelector('aside select');
+ if(!section)return false;
+ const old=section.querySelector('.di-embed');if(old){old.scrollIntoView?.({block:'start'});return true;}
+ const el=node('div');el.className='di-embed';section.append(el);
+ const dispose=mountAccountDomainImport(el,{selectOrderId:/^IMP-[a-f0-9]{40}$/.test(picker?.value||'')?picker.value:''});
+ const watch=new MutationObserver(()=>{if(!el.isConnected){watch.disconnect();dispose();}});watch.observe(section,{childList:true});
+ el.scrollIntoView?.({block:'start'});return true;
+}
 export function openAccountDomainImport(){
+ if(embedInManagement())return;
  const main=document.querySelector('.sn-shell .sn-main,.sn-main');if(!main)throw Error('Studio belum siap.');
  if(inline?.main===main&&inline.el.isConnected)return;closeInline();
  for(const other of main.querySelectorAll('.dm-host'))other.remove();main.removeAttribute('data-dm-open');
@@ -71,9 +81,9 @@ export function openAccountDomainImport(){
  document.addEventListener('click',onClick,true);
  inline={main,el,onClick,dispose:mountAccountDomainImport(el)};el.scrollIntoView?.({block:'start'});
 }
-export function mountAccountDomainImport(container,{api=importApi,session=()=>getVerifiedSession({force:true}),open=(u)=>window.open(u,'_blank','noopener,noreferrer'),ask=t=>confirm(t)}={}){
+export function mountAccountDomainImport(container,{api=importApi,session=()=>getVerifiedSession({force:true}),open=(u)=>window.open(u,'_blank','noopener,noreferrer'),ask=t=>confirm(t),selectOrderId=''}={}){
  const host=node('div'),root=host.attachShadow({mode:'open'}),wrap=node('div');wrap.className='wrap';root.append(node('style',CSS),wrap);container.replaceChildren(host);
- const controller=new AbortController();let closed=false,owner=null,orders=[],sel=null,msg=node('p'),busy=false;
+ const controller=new AbortController();let closed=false,owner=null,orders=[],sel=selectOrderId?{orderId:selectOrderId}:null,msg=node('p'),busy=false;
  const dispose=()=>{if(closed)return;closed=true;controller.abort();host.remove();};
  async function call(path,opt={}){const a=await session();if(closed||a?.verification!=='verified'||!a.user?.id||!a.session?.access_token||owner&&a.user.id!==owner)throw Object.assign(Error('INVALID_SESSION'),{code:'INVALID_SESSION'});owner=a.user.id;return api(path,a.session.access_token,{...opt,signal:controller.signal});}
  const card=(...k)=>{const c=node('div');c.className='card';c.append(...k);return c;};
@@ -83,7 +93,7 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
  const btn=(label,fn,{primary=false}={})=>{const b=node('button',label);b.type='button';b.disabled=busy;if(primary)b.className='primary';b.addEventListener('click',fn);return b;};
  function createForm(){
   const domain=node('input'),mode=node('select');domain.placeholder='contoh: namadomain.com';domain.setAttribute('aria-label','Nama domain');domain.autocomplete='off';
-  for(const [v,t] of [['nameserver','Jalur A: tetap di registrar lama, arahkan nameserver ke kami (Rp30.000)'],['transfer','Jalur B: pindahkan registrasi ke kami (.com, .net, .org; harga tampil setelah pesanan dibuat)']]){const o=node('option',t);o.value=v;mode.append(o);}
+  for(const [v,t] of [['nameserver','Jalur A: tetap di registrar lama, arahkan nameserver ke kami (harga tampil setelah pesanan dibuat)'],['transfer','Jalur B: pindahkan registrasi ke kami (.com, .net, .org; harga tampil setelah pesanan dibuat)']]){const o=node('option',t);o.value=v;mode.append(o);}
   const form=node('form');form.append(node('label','Nama domain'),domain,node('label','Jalur impor'),mode);
   const go=node('button','Buat pesanan');go.type='submit';go.className='primary';go.disabled=busy;form.append(go);
   form.addEventListener('submit',ev=>{ev.preventDefault();const d=domain.value.trim().toLowerCase();if(!d){say('Masukkan nama domain.','err');return;}
