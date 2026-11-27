@@ -1,6 +1,7 @@
 import {normalizeDomainMidtransServerKey} from './domain-midtrans-server-key.mjs';
 import {parseDomainMidtransPaymentMethods} from './domain-midtrans-payment-methods.mjs';
 import {domainMidtransPopupClientKey} from './domain-midtrans-presentation.mjs';
+import {buildDomainReferenceSalePrice} from './domain-reference-sale-price.mjs';
 import {readRegisteredDomainMetadata} from './domain-registered-metadata.mjs';
 const BASE='/api/commerce/domains/manage/renewal';
 const REN=/^REN-[a-f0-9]{40}$/;
@@ -9,8 +10,12 @@ const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const TX=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const PAY=['qris','bank_transfer','echannel'];
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
+const RENEWAL_BUFFER_IDR=50000;
 const renewalEnabled=env=>env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'&&env.DOMAIN_PAYMENT_PRODUCTION_ENABLED==='true';
-const verifiedRenewalPrice=()=>null;
+function verifiedRenewalPrice(q){
+ if(!Number.isSafeInteger(q?.registrar_cost_idr)||q.registrar_cost_idr<=0)return null;
+ try{const p=buildDomainReferenceSalePrice({referenceRegistrarCostIdr:q.registrar_cost_idr});if(!Number.isSafeInteger(p?.amountIdr)||p.amountIdr<=0)return null;return {amountIdr:p.amountIdr+RENEWAL_BUFFER_IDR};}catch{return null;}
+}
 const VIEW='order_id,domain_order_id,domain,price_idr,payment_state,renewal_state,paid_at,expires_at_before,expires_at_after,completed_at,created_at';
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
 function deadline(ms){const c=new AbortController();let stop;const stopped=new Promise((_,reject)=>{stop=()=>reject(Error('TIMEOUT'));c.signal.addEventListener('abort',stop,{once:true});});stopped.catch(()=>{});const timer=setTimeout(()=>c.abort(),ms);return {signal:c.signal,abort:()=>c.abort(),wait:p=>Promise.race([p,stopped]),close:()=>{clearTimeout(timer);c.signal.removeEventListener('abort',stop);}};}
