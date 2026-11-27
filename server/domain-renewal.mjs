@@ -12,6 +12,7 @@ const PAY=['qris','bank_transfer','echannel'];
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 const RENEWAL_BUFFER_IDR=50000;
 const YEARS=[1,2,3,10];
+const MAX_TOTAL_IDR=2000000000;
 const renewalEnabled=env=>env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'&&env.DOMAIN_PAYMENT_PRODUCTION_ENABLED==='true';
 function verifiedRenewalPrice(q){
  if(!Number.isSafeInteger(q?.registrar_cost_idr)||q.registrar_cost_idr<=0)return null;
@@ -93,7 +94,9 @@ async function quoteOptions(request,env,ctx){
  const s=await sessionUser(request,env,base,fetchImpl,budget);if(s.res)return s.res;const db=storage(base,env,fetchImpl,budget);
  const l=await loadRenewable(db,s.userId,b.orderId);if(l.res)return l.res;
  const unit=verifiedRenewalPrice(l.q);if(!unit)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
- return reply(200,'DOMAIN_RENEWAL_QUOTE',{currency:'IDR',domain:l.q.domain,options:YEARS.map(y=>({years:y,amountIdr:unit.amountIdr*y}))});
+ const options=YEARS.map(y=>({years:y,amountIdr:unit.amountIdr*y})).filter(o=>Number.isSafeInteger(o.amountIdr)&&o.amountIdr<=MAX_TOTAL_IDR);
+ if(!options.length)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
+ return reply(200,'DOMAIN_RENEWAL_QUOTE',{currency:'IDR',domain:l.q.domain,options});
 }
 async function createOrder(request,env,ctx){
  const {base,fetchImpl,budget}=ctx;
@@ -105,7 +108,7 @@ async function createOrder(request,env,ctx){
  const meta=await readRegisteredDomainMetadata(env,o,q,{owner,fetchImpl,signal:budget.signal});
  if(meta.status!=='observed'||typeof meta.expiresAt!=='string')return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
  const unit=verifiedRenewalPrice(q);if(!unit)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
- const total=unit.amountIdr*years;if(!Number.isSafeInteger(total)||total<=0||total>2000000000)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
+ const total=unit.amountIdr*years;if(!Number.isSafeInteger(total)||total<=0||total>MAX_TOTAL_IDR)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('renewal:'+owner+':'+b.orderId+':'+crypto.randomUUID()));
  const id='REN-'+Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('').slice(0,40);
  const got=await db.rpc('domain_renewal_create_v1',{p_user_id:owner,p_order_id:id,p_domain_order_id:b.orderId,p_domain:q.domain,p_price_idr:total,p_expires_before:meta.expiresAt,p_years:years});
