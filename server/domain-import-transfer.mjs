@@ -1,4 +1,5 @@
 import {findFullZone,createFullZone,getFullZoneStatus,publicZoneState,fullZoneProviderReady,normalizeZoneName} from './cloudflare-full-zone-provider.mjs';
+import {provisionSaasRecords} from './domain-import-saas-records.mjs';
 const BASE='/api/commerce/domains/manage/import/transfer';
 const ORDER=/^IMP-[a-f0-9]{40}$/;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -30,7 +31,7 @@ function parseEpp(v){return typeof v==='string'&&v.length>=4&&v.length<=128&&/^[
 function base64(text){let s='';for(const b of new TextEncoder().encode(text))s+=String.fromCharCode(b);return btoa(s);}
 const mapCf=s=>s==='succeeded'?'completed':s==='failed'?'failed':'pending';
 const view=o=>({orderId:o.order_id,domain:o.domain,importState:o.import_state,transferStatus:o.transfer_status??null});
-export async function domainImportTransferResponse(request,env,{fetchImpl=globalThis.fetch,provider=defaultProvider,now=()=>Date.now(),warnImpl=x=>console.warn(JSON.stringify(x))}={}){
+export async function domainImportTransferResponse(request,env,{fetchImpl=globalThis.fetch,provider=defaultProvider,now=()=>Date.now(),warnImpl=x=>console.warn(JSON.stringify(x)),provision=provisionSaasRecords}={}){
  const url=new URL(request.url),route=Object.hasOwn(ROUTES,url.pathname)?ROUTES[url.pathname]:null;if(!route)return null;
  const reply=(status,code,extra={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...(status===405?{allow:'POST'}:{})}});
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port)return reply(404,'NOT_FOUND');
@@ -104,6 +105,7 @@ export async function domainImportTransferResponse(request,env,{fetchImpl=global
     if(!ZONE_ID.test(s.id)||!ZONE_STATUS.includes(status)){await flag('ZONE_STATUS_UNEXPECTED');return reply(409,'IMPORT_ZONE_STATUS_UNEXPECTED',{needsReview:true});}
     const args={p_user_id:uid,p_order_id:id,p_zone_id:s.id,p_zone_status:status,p_name_servers:s.nameServers,p_original_name_servers:s.originalNameServers};
     if(!(await rpc('domain_import_record_zone_v2',args)).ok&&!(await rpc('domain_import_record_zone_v2',args)).ok)return reply(503,'IMPORT_ZONE_RECORD_FAILED');
+    if(status==='active'){try{await budget.wait(provision(env,{domain:o.domain,zoneId:s.id,userId:uid,orderId:id,fetchImpl,signal:budget.signal}));}catch{}}
     return reply(200,'DOMAIN_IMPORT_TRANSFER_ZONE',{zone:{status,active:status==='active',nameServers:s.nameServers,originalNameServers:s.originalNameServers}});
    };
    const adoptable=async z=>{
