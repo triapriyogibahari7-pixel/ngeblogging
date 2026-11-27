@@ -91,6 +91,14 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
  async function act(fn,done){if(busy||closed)return;busy=true;say('Memproses…');render();try{const r=await fn();if(done)say(done(r),'ok');else say('');await reload(false);}catch(e){say(importErrorMessage(e),'err');await reload(false).catch(()=>{});}finally{busy=false;if(!closed)render();}}
  async function reload(first){const d=await call('orders',{method:'GET'});if(closed)return;orders=d.orders||[];if(sel)sel=orders.find(o=>o.orderId===sel.orderId)||null;if(first&&!sel)sel=orders.find(o=>importStep(o)!=='cancelled')||null;render();}
  const btn=(label,fn,{primary=false}={})=>{const b=node('button',label);b.type='button';b.disabled=busy;if(primary)b.className='primary';b.addEventListener('click',fn);return b;};
+ function createForm(){
+  const domain=node('input');domain.placeholder='contoh: namadomain.com';domain.setAttribute('aria-label','Nama domain');domain.autocomplete='off';
+  const form=node('form');form.append(node('label','Nama domain'),domain);
+  const go=node('button','Buat pesanan');go.type='submit';go.className='primary';go.disabled=busy;form.append(go);
+  form.addEventListener('submit',ev=>{ev.preventDefault();const d=domain.value.trim().toLowerCase();if(!d){say('Masukkan nama domain.','err');return;}
+   act(async()=>{const r=await call('transfer/orders',{body:{domain:d}});sel={orderId:r.order.orderId};domain.value='';return r;},r=>'Pesanan dibuat untuk '+r.order.domain+' ('+rupiah(r.order.priceIdr)+'). Belum ada pembayaran yang dibuat.');});
+  return card(node('h2','Buat pesanan impor'),form,(()=>{const p=node('p','Memindahkan registrasi (transfer) menambah masa berlaku sesuai aturan registry; biaya transfer ke Cloudflare tidak dapat dikembalikan. Hanya untuk .com, .net, dan .org.');p.className='muted';return p;})());
+ }
  function transferForm(o){
   const f=node('form'),F={};const field=(key,label,ph,type)=>{const i=node('input');i.name=key;if(ph)i.placeholder=ph;if(type)i.type=type;i.autocomplete='off';F[key]=i;const w=node('div');w.append(node('label',label),i);return w;};
   const grid=node('div');grid.className='grid';
@@ -133,7 +141,7 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
   return c;
  }
  function render(){
-  if(closed)return;wrap.replaceChildren();wrap.append(node('h1','Impor domain'),(()=>{const p=node('p','Pindahkan domain dari registrar lain. Membuka halaman ini tidak membuat pembayaran atau mengubah DNS.');p.className='muted';return p;})());
+  if(closed)return;wrap.replaceChildren();wrap.append(node('h1','Impor domain'),(()=>{const p=node('p','Pindahkan domain dari registrar lain. Membuka halaman ini tidak membuat pembayaran atau mengubah DNS.');p.className='muted';return p;})(),createForm());
   const list=card(node('h2','Pesanan impor'));
   const visible=orders.filter(o=>o.importState!=='cancelled');if(!visible.length)list.append(node('p','Belum ada pesanan impor.'));
   for(const o of visible){const r=node('div');r.className='row';const l=node('span',o.domain+' · '+(o.mode==='transfer'?'transfer':'nameserver')+' · '+o.importState);r.append(l,btn('Buka',()=>{sel={orderId:o.orderId};render();}));list.append(r);}
