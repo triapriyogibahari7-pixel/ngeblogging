@@ -10,6 +10,8 @@ const MESSAGES={
  IMPORT_TOO_MANY_OPEN_ORDERS:'Terlalu banyak pesanan yang belum dibayar. Batalkan atau selesaikan salah satunya.',
  IMPORT_TRANSFER_TLD_NOT_AVAILABLE:'Transfer hanya tersedia untuk .com, .net, dan .org. Domain .id belum dapat ditransfer; gunakan Jalur A.',
  IMPORT_TRANSFER_PRICE_NOT_SET:'Harga transfer untuk ekstensi ini belum ditetapkan.',IMPORT_PRICE_NOT_SET:'Harga pesanan ini belum ditetapkan. Tidak ada pembayaran dibuat.',
+ IMPORT_UPGRADE_NOT_ALLOWED:'Peningkatan pesanan nameserver ke transfer registrar saat ini hanya tersedia untuk akun admin.',
+ IMPORT_ORDER_NOT_UPGRADABLE:'Pesanan ini belum bisa dinaikkan ke transfer. Pastikan pembayaran lunas, zona aktif, dan tidak sedang ditinjau.',
  IMPORT_PAYMENT_REQUIRED:'Selesaikan pembayaran lebih dulu.',IMPORT_ORDER_UNDER_REVIEW:'Pesanan sedang ditinjau. Jangan bayar atau kirim ulang.',
  IMPORT_ORDER_ALREADY_PAID:'Pesanan ini sudah dibayar.',IMPORT_ORDER_NOT_PAYABLE:'Pesanan ini tidak dapat dibayar lagi.',
  IMPORT_ZONE_NOT_ACTIVE:'Zona Cloudflare belum aktif. Pasang nameserver di registrar lama, tunggu, lalu periksa lagi.',
@@ -103,6 +105,12 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
    act(()=>call('transfer/submit',{body:{orderId:o.orderId,eppCode:code,registrant:reg,privacyMode:priv.checked?'redaction':'off'}}),()=>'Transfer dikirim. Proses di registrar lama bisa 1 sampai 10 hari. Gunakan Periksa status transfer.');});
   return f;
  }
+ function eppCard(o){
+  const c=node('div');c.className='card';c.append(node('h3','Pindahkan registrasi domain ke Ngeblogging (kode EPP)'));
+  const one=node('div');one.append(node('h3','Pilihan 1: minta kode EPP dari registrar lama'),(()=>{const ol=node('ol');for(const t of ['Masuk ke panel registrar tempat '+o.domain+' terdaftar.','Buka kunci transfer (domain lock) dan nonaktifkan DNSSEC bila aktif.','Minta kode EPP atau auth code. Registrar akan mengirimnya ke email kontak pemilik domain.','Pastikan domain berumur lebih dari 60 hari, lalu lanjut ke Pilihan 2.'])ol.append(node('li',t));return ol;})(),(()=>{const p=node('p','Ngeblogging tidak dapat meminta atau mengirim kode EPP atas nama Anda. Kode hanya bisa dikeluarkan oleh registrar tempat domain terdaftar.');p.className='muted';return p;})());
+  const two=node('div');two.append(node('h3','Pilihan 2: masukkan kode EPP dan kelola domain di Ngeblogging'),node('p','Zona DNS domain ini sudah aktif. Tombol di bawah mengubah pesanan ini menjadi transfer registrar (gratis untuk akun admin), lalu menampilkan form kode EPP dan data pemilik domain.'),btn('Lanjut: masukkan kode EPP',()=>{if(!ask('Ubah pesanan '+o.domain+' menjadi transfer registrar? Belum ada transfer yang dikirim. Kode EPP dan data pemilik diisi di langkah berikutnya.'))return;act(()=>call('transfer/upgrade',{body:{orderId:o.orderId}}),()=>'Pesanan siap untuk transfer. Isi kode EPP dan data pemilik domain di bawah.');},{primary:true}));
+  c.append(one,two);return c;
+ }
  function detail(o){
   const s=importStep(o),c=card(),head=node('div');head.className='row';const bd=node('span',o.importState);bd.className='badge';head.append(node('h2',o.domain),bd);c.append(head);
   c.append(node('p',(o.mode==='transfer'?'Jalur B (transfer)':'Jalur A (nameserver)')+(o.priceIdr?' · '+rupiah(o.priceIdr):'')+' · pembayaran: '+o.paymentState));
@@ -114,7 +122,7 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
   if(s==='failed')A(node('p','Pembayaran gagal atau kedaluwarsa. Buat pesanan baru jika masih ingin melanjutkan.'));
   if(s==='zone_create')A(node('h3','Langkah: buat zona Cloudflare'),node('p','Pembayaran diterima. Buat zona untuk domain ini.'),btn('Buat zona',()=>act(()=>call(o.mode==='transfer'?'transfer/zone':'zone',{body:{orderId:o.orderId}}),r=>r.zone?.active?'Zona sudah aktif.':'Zona dibuat. Pasang nameserver di bawah di registrar Anda.'),{primary:true}));
   if(s==='ns'){A(node('h3','Langkah: pasang nameserver'),node('p','Di registrar lama, ganti nameserver domain ke:'),nsList(),(()=>{const p=node('p','Perubahan bisa memakan waktu hingga 24 jam. Jangan hapus nameserver lama sebelum mencatatnya: '+(o.originalNameServers||[]).join(', '));p.className='muted';return p;})(),btn('Periksa status zona',()=>act(()=>call(o.mode==='transfer'?'transfer/zone':'zone',{body:{orderId:o.orderId}}),r=>r.zone?.active?'Zona aktif.':'Zona belum aktif. Coba lagi nanti.'),{primary:true}));}
-  if(s==='zone_active'){const p=node('p','Zona Cloudflare aktif. Domain Anda sudah memakai nameserver kami. Pengelolaan record DNS untuk domain impor belum tersedia di halaman ini.');p.className='ok';A(p);}
+  if(s==='zone_active'){const p=node('p','Zona Cloudflare aktif. Domain Anda sudah memakai nameserver kami. Pengelolaan record DNS untuk domain impor belum tersedia di halaman ini.');p.className='ok';A(p);if(o.mode!=='transfer'&&/\.(com|net|org)$/.test(o.domain))A(eppCard(o));}
   if(s==='transfer_form'){const w=node('p','Persiapan: buka kunci transfer di registrar lama, nonaktifkan DNSSEC, domain berumur lebih dari 60 hari, lalu ambil kode EPP.');w.className='warn';A(node('h3','Langkah: kirim transfer'),w,transferForm(o));}
   if(s==='transfer_wait')A(node('h3','Langkah: menunggu transfer'),node('p','Transfer sedang diproses. Registrar lama dapat meminta persetujuan; biasanya 1 sampai 10 hari.'),btn('Periksa status transfer',()=>act(()=>call('transfer/status',{body:{orderId:o.orderId}}),r=>r.transfer?.completed?'Transfer selesai.':'Status transfer: '+(r.transfer?.state||'menunggu')+'.'),{primary:true}));
   if(s==='done'){const p=node('p','Selesai.');p.className='ok';A(p);}
