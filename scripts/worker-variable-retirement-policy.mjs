@@ -25,7 +25,8 @@ export const RETIRED_RELEASE_VALUES=Object.freeze({
   AUTH_ENTRY_RELEASE:Object.freeze(['2026.07.30-auth-entry-v158']),
   STUDIO_ROUTE_RELEASE:Object.freeze(['2026.07.30-studio-route-v160']),
   AUTH_EDITOR_RELEASE:Object.freeze(['2026.07.30-auth-editor-v162']),
-  UI_AUTHORITY_RELEASE:Object.freeze(['studio-sidebar-hard-lock-v301-20260805'])
+  UI_AUTHORITY_RELEASE:Object.freeze(['studio-sidebar-hard-lock-v301-20260805']),
+  APP_RELEASE:Object.freeze(['2026.08.05-studio-sidebar-hard-lock-v301'])
 });
 export const LEGACY_VARIABLE_REMOVALS=Object.freeze(['UI_V37_WORKER_COMPAT','UI_V35_RELEASE_COMPAT','UI_V35_WORKER_COMPAT',...Object.keys(RETIRED_COMPAT_VALUES),...Object.keys(RETIRED_RELEASE_VALUES)]);
 export function assertLegacyVariableRemoval(binding){
