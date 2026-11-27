@@ -6,12 +6,14 @@ const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 const renewalEnabled=env=>env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'&&env.DOMAIN_PAYMENT_PRODUCTION_ENABLED==='true';
 const ADMIN_ID='91d4b436-6d7a-4e46-93f5-1ecdc6d33fb3';
 const ADMIN_EMAIL='triapriyogibahari7@gmail.com';
-const MIN_EXTENSION_MS=300*86400000;
+const YEARS=[1,2,3,10];
+const DAY_MS=86400000;
+const GRACE_MS=65*DAY_MS;
 const isAdmin=u=>u?.id===ADMIN_ID&&typeof u.email==='string'&&u.email.trim().toLowerCase()===ADMIN_EMAIL&&typeof u.email_confirmed_at==='string'&&Number.isFinite(Date.parse(u.email_confirmed_at))&&u.is_anonymous!==true;
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
-const COLUMNS='order_id,user_id,domain_order_id,domain,price_idr,payment_state,renewal_state,paid_at,expires_at_before,expires_at_after,completed_at,created_at,review_reason';
+const COLUMNS='order_id,user_id,domain_order_id,domain,price_idr,years,payment_state,renewal_state,paid_at,expires_at_before,expires_at_after,completed_at,created_at,review_reason';
 const PURCHASE='order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,midtrans_transaction_id,paid_at,registered_at,registrar_domain_ref,review_reason';
-const view=r=>({orderId:r.order_id,userId:r.user_id,domainOrderId:r.domain_order_id,domain:r.domain,amountIdr:r.price_idr,paymentState:r.payment_state,renewalState:r.renewal_state,paidAt:r.paid_at,expiresAtBefore:r.expires_at_before,expiresAtAfter:r.expires_at_after,completedAt:r.completed_at,createdAt:r.created_at,reviewReason:r.review_reason});
+const view=r=>({orderId:r.order_id,userId:r.user_id,domainOrderId:r.domain_order_id,domain:r.domain,amountIdr:r.price_idr,years:r.years??1,paymentState:r.payment_state,renewalState:r.renewal_state,paidAt:r.paid_at,expiresAtBefore:r.expires_at_before,expiresAtAfter:r.expires_at_after,completedAt:r.completed_at,createdAt:r.created_at,reviewReason:r.review_reason});
 export async function domainRenewalAdminResponse(request,env,{fetchImpl=globalThis.fetch,readMetadata=readRegisteredDomainMetadata}={}){
  const url=new URL(request.url);
  if(!url.pathname.startsWith(BASE+'/'))return null;
@@ -44,6 +46,7 @@ export async function domainRenewalAdminResponse(request,env,{fetchImpl=globalTh
   if(!rs.length)return reply(404,'RENEWAL_ORDER_NOT_FOUND');
   const r=rs.length===1?rs[0]:null;if(!r||r.order_id!==b.orderId||!UUID.test(r.user_id||''))return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
   if(r.payment_state!=='paid'||r.renewal_state!=='awaiting_admin')return reply(409,'RENEWAL_NOT_COMPLETABLE');
+  const years=r.years??1;if(!YEARS.includes(years))return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
   const os=await select('domain_purchase_orders',{select:PURCHASE,order_id:'eq.'+r.domain_order_id,user_id:'eq.'+r.user_id,environment:'eq.production',limit:'2'});
   const o=os.length===1?os[0]:null;if(!o||o.order_id!==r.domain_order_id||o.user_id!==r.user_id||!UUID.test(o.quote_id||''))return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
   const qs=await select('domain_sale_quotes',{select:'id,user_id,environment,domain,currency,sale_price_idr,provider_id,registrar_cost_idr',id:'eq.'+o.quote_id,user_id:'eq.'+r.user_id,environment:'eq.production',limit:'2'});
@@ -51,12 +54,13 @@ export async function domainRenewalAdminResponse(request,env,{fetchImpl=globalTh
   const meta=await readMetadata(env,o,q,{owner:r.user_id,fetchImpl,signal:c.signal});
   if(meta?.status!=='observed'||typeof meta.expiresAt!=='string'||!Number.isFinite(Date.parse(meta.expiresAt)))return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
   const before=Date.parse(r.expires_at_before),after=Date.parse(meta.expiresAt);
-  if(!Number.isFinite(before)||after-before<MIN_EXTENSION_MS)return reply(409,'RENEWAL_NOT_YET_EXTENDED',{expiresAt:meta.expiresAt,expiresAtBefore:r.expires_at_before});
+  const needed=years*365*DAY_MS-GRACE_MS;
+  if(!Number.isFinite(before)||after-before<needed)return reply(409,'RENEWAL_NOT_YET_EXTENDED',{expiresAt:meta.expiresAt,expiresAtBefore:r.expires_at_before,years});
   const done=await fetchImpl(new URL('/rest/v1/rpc/domain_renewal_complete_v1',base).href,{method:'POST',redirect:'manual',cache:'no-store',headers:{...service,'content-type':'application/json'},body:JSON.stringify({p_order_id:r.order_id,p_expires_after:meta.expiresAt}),signal:c.signal});
   if(done.status!==200)return reply(503,'DOMAIN_RENEWAL_ADMIN_UNAVAILABLE');
   const res=await done.json();
   if(res!=='completed')return reply(409,'RENEWAL_NOT_COMPLETABLE');
-  return reply(200,'DOMAIN_RENEWAL_COMPLETED',{orderId:r.order_id,domain:r.domain,expiresAtAfter:meta.expiresAt});
+  return reply(200,'DOMAIN_RENEWAL_COMPLETED',{orderId:r.order_id,domain:r.domain,years,expiresAtAfter:meta.expiresAt});
  }catch{return reply(503,'DOMAIN_RENEWAL_ADMIN_UNAVAILABLE');}
  finally{clearTimeout(timer);request.signal?.removeEventListener('abort',abort);}
 }

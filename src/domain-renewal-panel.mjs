@@ -9,6 +9,8 @@ export async function renewalApi(path,method,body,token,{signal,fetchImpl=global
  if(!r.ok){const code=typeof d?.code==='string'&&/^[A-Z][A-Z0-9_]{0,79}$/.test(d.code)?d.code:'RENEWAL_REQUEST_FAILED';throw Object.assign(Error(code),{code,status:r.status});}
  return d;
 }
+const YEAR_CHOICES=[1,2,3,10];
+const yearOptions=q=>YEAR_CHOICES.map(y=>(Array.isArray(q?.options)?q.options:[]).find(o=>o?.years===y&&Number.isSafeInteger(o.amountIdr)&&o.amountIdr>0)).filter(Boolean);
 export async function renderRenewalPanel(box,{sel,registrar,paidAt,read,live,node,card,signal,fetchImpl}){
  box.append(renderRenewalInfo(renewalSummary({registrar,paidAt,imported:Boolean(sel.imported)}),{node,card}));
  if(sel.imported)return;
@@ -24,10 +26,17 @@ export async function renderRenewalPanel(box,{sel,registrar,paidAt,read,live,nod
   const c=card(node('h3','Perpanjangan domain')),status=node('p');status.className='muted';status.textContent=opts.note||'';
   const act=(label,fn,primary)=>{const b=node('button',label);b.type='button';if(primary)b.className='primary';b.addEventListener('click',async()=>{b.disabled=true;status.textContent='Memproses…';try{await fn();}catch(e){if(live()){status.textContent=renewalErrorMessage(e);b.disabled=false;}}});return b;};
   if(!open){
-   c.append(node('p','Perpanjang masa berlaku domain 1 tahun. Harga dihitung dari biaya registrar. Setelah pembayaran diterima, perpanjangan diproses di registrar oleh tim Ngeblogging.'),act('Perpanjang domain 1 tahun',async()=>{await api('orders','POST',{orderId:sel.orderId});await draw();},true));
+   const choices=yearOptions(opts.quote);
+   if(choices.length){
+    c.append(node('p','Pilih lama perpanjangan. Harga di bawah adalah total untuk seluruh masa perpanjangan. Setelah pembayaran diterima, perpanjangan diproses di registrar oleh tim Ngeblogging.'));
+    for(const o of choices)c.append(act(o.years+' tahun - '+money(o.amountIdr),async()=>{await api('orders','POST',{orderId:sel.orderId,years:o.years});await draw();},true));
+   }else{
+    c.append(node('p','Perpanjang masa berlaku domain untuk 1, 2, 3, atau 10 tahun. Harga dihitung dari biaya registrar. Setelah pembayaran diterima, perpanjangan diproses di registrar oleh tim Ngeblogging.'),act('Perpanjang domain',async()=>{const q=await api('quote','POST',{orderId:sel.orderId});if(!yearOptions(q).length)throw Object.assign(Error('RENEWAL_PRICE_UNAVAILABLE'),{code:'RENEWAL_PRICE_UNAVAILABLE'});await draw({quote:q});},true));
+   }
    const done=last&&formatRenewalDate(last.completedAt);if(done)c.append(node('p','Perpanjangan terakhir selesai: '+done+'.'));
   }else if(open.renewalState==='created'){
-   c.append(node('p','Pesanan perpanjangan '+money(open.amountIdr)+' untuk '+open.domain+'.'),node('code',open.orderId));
+   const yrs=Number.isInteger(open.years)&&open.years>0?open.years:1;
+   c.append(node('p','Pesanan perpanjangan '+yrs+' tahun, total '+money(open.amountIdr)+' untuk '+open.domain+'.'),node('code',open.orderId));
    c.append(act(open.paymentState==='pending'?'Lanjutkan pembayaran':'Bayar perpanjangan',async()=>{const r=await api('checkout','POST',{orderId:open.orderId});const u=r?.checkout?.url;if(typeof u!=='string'||!/^https:\/\/app\.midtrans\.com\//.test(u))throw Object.assign(Error('CHECKOUT_UNVERIFIED'),{code:'CHECKOUT_UNVERIFIED'});await draw({link:u,orderId:open.orderId,note:'Halaman pembayaran siap. Buka lewat tautan di bawah, lalu kembali dan tekan Periksa status pembayaran.'});},true),act('Periksa status pembayaran',async()=>{await api('payment-status','POST',{orderId:open.orderId});await draw({note:'Status pembayaran diperbarui.'});}));
    if(opts.link&&opts.orderId===open.orderId){const a=node('a','Buka halaman pembayaran');a.href=opts.link;a.target='_blank';a.rel='noopener noreferrer';c.append(a);}
   }else if(open.renewalState==='awaiting_admin'){

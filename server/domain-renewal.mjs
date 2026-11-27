@@ -1,6 +1,7 @@
 import {normalizeDomainMidtransServerKey} from './domain-midtrans-server-key.mjs';
 import {parseDomainMidtransPaymentMethods} from './domain-midtrans-payment-methods.mjs';
 import {domainMidtransPopupClientKey} from './domain-midtrans-presentation.mjs';
+import {buildDomainReferenceSalePrice} from './domain-reference-sale-price.mjs';
 import {readRegisteredDomainMetadata} from './domain-registered-metadata.mjs';
 const BASE='/api/commerce/domains/manage/renewal';
 const REN=/^REN-[a-f0-9]{40}$/;
@@ -9,15 +10,21 @@ const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const TX=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const PAY=['qris','bank_transfer','echannel'];
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
+const RENEWAL_BUFFER_IDR=50000;
+const YEARS=[1,2,3,10];
+const MAX_TOTAL_IDR=2000000000;
 const renewalEnabled=env=>env?.DOMAIN_CUSTOMER_PRODUCTION_ENABLED==='true'&&env.DOMAIN_PAYMENT_PRODUCTION_ENABLED==='true';
-const verifiedRenewalPrice=()=>null;
-const VIEW='order_id,domain_order_id,domain,price_idr,payment_state,renewal_state,paid_at,expires_at_before,expires_at_after,completed_at,created_at';
+function verifiedRenewalPrice(q){
+ if(!Number.isSafeInteger(q?.registrar_cost_idr)||q.registrar_cost_idr<=0)return null;
+ try{const p=buildDomainReferenceSalePrice({referenceRegistrarCostIdr:q.registrar_cost_idr});if(!Number.isSafeInteger(p?.amountIdr)||p.amountIdr<=0)return null;return {amountIdr:p.amountIdr+RENEWAL_BUFFER_IDR};}catch{return null;}
+}
+const VIEW='order_id,domain_order_id,domain,price_idr,years,payment_state,renewal_state,paid_at,expires_at_before,expires_at_after,completed_at,created_at';
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
 function deadline(ms){const c=new AbortController();let stop;const stopped=new Promise((_,reject)=>{stop=()=>reject(Error('TIMEOUT'));c.signal.addEventListener('abort',stop,{once:true});});stopped.catch(()=>{});const timer=setTimeout(()=>c.abort(),ms);return {signal:c.signal,abort:()=>c.abort(),wait:p=>Promise.race([p,stopped]),close:()=>{clearTimeout(timer);c.signal.removeEventListener('abort',stop);}};}
 async function readJson(stream,wait,limit){const reader=stream?.getReader();if(!reader)throw Error('INVALID_JSON');try{let size=0;const chunks=[];for(;;){const x=await wait(reader.read());if(x.done)break;size+=x.value.length;if(size>limit)throw Error('BODY_TOO_LARGE');chunks.push(x.value);}const bytes=new Uint8Array(size);let pos=0;for(const chunk of chunks){bytes.set(chunk,pos);pos+=chunk.length;}return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}finally{reader.cancel().catch(()=>{});try{reader.releaseLock();}catch{}}}
 const tokenPair=(token,url)=>typeof token==='string'&&/^[A-Za-z0-9_-]{10,200}$/.test(token)&&['https://app.midtrans.com/snap/v2/vtweb/'+token,'https://app.midtrans.com/snap/v4/redirection/'+token].includes(url);
 function money(v){if(typeof v!=='string'||!/^[1-9]\d{0,12}(?:\.0{1,2})?$/.test(v))throw Error('INVALID_AMOUNT');const n=Number(v.split('.')[0]);if(n>1000000000000)throw Error('INVALID_AMOUNT');return n;}
-const view=r=>({orderId:r.order_id,domainOrderId:r.domain_order_id,domain:r.domain,amountIdr:r.price_idr,currency:'IDR',paymentState:r.payment_state,renewalState:r.renewal_state,paidAt:r.paid_at,expiresAtBefore:r.expires_at_before,expiresAtAfter:r.expires_at_after,completedAt:r.completed_at,createdAt:r.created_at});
+const view=r=>({orderId:r.order_id,domainOrderId:r.domain_order_id,domain:r.domain,amountIdr:r.price_idr,years:r.years??1,currency:'IDR',paymentState:r.payment_state,renewalState:r.renewal_state,paidAt:r.paid_at,expiresAtBefore:r.expires_at_before,expiresAtAfter:r.expires_at_after,completedAt:r.completed_at,createdAt:r.created_at});
 function config(env){
  if(env?.DOMAIN_ORDER_ENV!=='production')return null;
  let base;try{base=new URL(env.SUPABASE_URL);if(base.href!==SUPABASE||!env.SUPABASE_SERVICE_ROLE_KEY)throw Error();}catch{return null;}
@@ -70,24 +77,41 @@ async function reconcile(orderId,{pay,db,budget,fetchImpl,expectTx,expectPaid}){
  if(state==='failed'&&['failed','ignored'].includes(res))return {kind:'failed'};
  return {kind:'review',reason:'recorder_'+String(res)};
 }
-async function createOrder(request,env,ctx){
+async function loadRenewable(db,owner,orderId){
+ const os=await db.select('domain_purchase_orders',{select:'order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,midtrans_transaction_id,paid_at,registered_at,registrar_domain_ref,review_reason',order_id:'eq.'+orderId,user_id:'eq.'+owner,environment:'eq.production',limit:'2'});
+ if(!os.length)return {res:reply(404,'DOMAIN_ORDER_NOT_FOUND')};
+ const o=os.length===1?os[0]:null;if(!o||o.order_id!==orderId||o.user_id!==owner||!UUID.test(o.quote_id||''))return {res:reply(503,'RENEWAL_DOMAIN_UNVERIFIED')};
+ if(o.payment_state!=='paid'||o.registration_state!=='registered'||o.review_reason!==null)return {res:reply(409,'DOMAIN_NOT_RENEWABLE')};
+ const qs=await db.select('domain_sale_quotes',{select:'id,user_id,environment,domain,currency,sale_price_idr,provider_id,registrar_cost_idr',id:'eq.'+o.quote_id,user_id:'eq.'+owner,environment:'eq.production',limit:'2'});
+ const q=qs.length===1?qs[0]:null;
+ if(!q||q.id!==o.quote_id||q.provider_id!=='cloudflare')return {res:reply(503,'RENEWAL_DOMAIN_UNVERIFIED')};
+ return {o,q};
+}
+async function quoteOptions(request,env,ctx){
  const {base,fetchImpl,budget}=ctx;
  let b;try{b=await readJson(request.body,budget.wait,1024);}catch{return reply(400,'INVALID_BODY');}
  if(!b||Array.isArray(b)||Object.keys(b).length!==1||typeof b.orderId!=='string'||!DOM.test(b.orderId))return reply(400,'INVALID_RENEWAL_REQUEST');
+ const s=await sessionUser(request,env,base,fetchImpl,budget);if(s.res)return s.res;const db=storage(base,env,fetchImpl,budget);
+ const l=await loadRenewable(db,s.userId,b.orderId);if(l.res)return l.res;
+ const unit=verifiedRenewalPrice(l.q);if(!unit)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
+ const options=YEARS.map(y=>({years:y,amountIdr:unit.amountIdr*y})).filter(o=>Number.isSafeInteger(o.amountIdr)&&o.amountIdr<=MAX_TOTAL_IDR);
+ if(!options.length)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
+ return reply(200,'DOMAIN_RENEWAL_QUOTE',{currency:'IDR',domain:l.q.domain,options});
+}
+async function createOrder(request,env,ctx){
+ const {base,fetchImpl,budget}=ctx;
+ let b;try{b=await readJson(request.body,budget.wait,1024);}catch{return reply(400,'INVALID_BODY');}
+ if(!b||Array.isArray(b)||typeof b.orderId!=='string'||!DOM.test(b.orderId)||Object.keys(b).some(k=>k!=='orderId'&&k!=='years'))return reply(400,'INVALID_RENEWAL_REQUEST');
+ const years=b.years===undefined?1:b.years;if(!YEARS.includes(years))return reply(400,'INVALID_RENEWAL_REQUEST');
  const s=await sessionUser(request,env,base,fetchImpl,budget);if(s.res)return s.res;const owner=s.userId,db=storage(base,env,fetchImpl,budget);
- const os=await db.select('domain_purchase_orders',{select:'order_id,user_id,quote_id,environment,currency,amount_idr,payment_state,registration_state,midtrans_transaction_id,paid_at,registered_at,registrar_domain_ref,review_reason',order_id:'eq.'+b.orderId,user_id:'eq.'+owner,environment:'eq.production',limit:'2'});
- if(!os.length)return reply(404,'DOMAIN_ORDER_NOT_FOUND');
- const o=os.length===1?os[0]:null;if(!o||o.order_id!==b.orderId||o.user_id!==owner||!UUID.test(o.quote_id||''))return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
- if(o.payment_state!=='paid'||o.registration_state!=='registered'||o.review_reason!==null)return reply(409,'DOMAIN_NOT_RENEWABLE');
- const qs=await db.select('domain_sale_quotes',{select:'id,user_id,environment,domain,currency,sale_price_idr,provider_id,registrar_cost_idr',id:'eq.'+o.quote_id,user_id:'eq.'+owner,environment:'eq.production',limit:'2'});
- const q=qs.length===1?qs[0]:null;
- if(!q||q.id!==o.quote_id||q.provider_id!=='cloudflare')return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
+ const l=await loadRenewable(db,owner,b.orderId);if(l.res)return l.res;const o=l.o,q=l.q;
  const meta=await readRegisteredDomainMetadata(env,o,q,{owner,fetchImpl,signal:budget.signal});
  if(meta.status!=='observed'||typeof meta.expiresAt!=='string')return reply(503,'RENEWAL_DOMAIN_UNVERIFIED');
- const price=verifiedRenewalPrice(q);if(!price)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
+ const unit=verifiedRenewalPrice(q);if(!unit)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
+ const total=unit.amountIdr*years;if(!Number.isSafeInteger(total)||total<=0||total>MAX_TOTAL_IDR)return reply(503,'RENEWAL_PRICE_UNAVAILABLE');
  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('renewal:'+owner+':'+b.orderId+':'+crypto.randomUUID()));
  const id='REN-'+Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('').slice(0,40);
- const got=await db.rpc('domain_renewal_create_v1',{p_user_id:owner,p_order_id:id,p_domain_order_id:b.orderId,p_domain:q.domain,p_price_idr:price.amountIdr,p_expires_before:meta.expiresAt});
+ const got=await db.rpc('domain_renewal_create_v1',{p_user_id:owner,p_order_id:id,p_domain_order_id:b.orderId,p_domain:q.domain,p_price_idr:total,p_expires_before:meta.expiresAt,p_years:years});
  if(typeof got!=='string'||!REN.test(got))throw Error('RENEWAL_CREATE_UNCONFIRMED');
  const row=await ownRenewal(db,got,owner);if(!row)throw Error('RENEWAL_CREATE_UNCONFIRMED');
  return reply(got===id?201:200,'DOMAIN_RENEWAL_ORDER',{reused:got!==id,order:view(row)});
@@ -155,7 +179,7 @@ export async function domainRenewalResponse(request,env,{fetchImpl=globalThis.fe
  const url=new URL(request.url);
  if(!url.pathname.startsWith(BASE+'/'))return null;
  const sub=url.pathname.slice(BASE.length);
- const routes={'/orders':{GET:'list',POST:'create'},'/checkout':{POST:'checkout'},'/payment-status':{POST:'status'},'/notification':{POST:'notification'}};
+ const routes={'/orders':{GET:'list',POST:'create'},'/quote':{POST:'quote'},'/checkout':{POST:'checkout'},'/payment-status':{POST:'status'},'/notification':{POST:'notification'}};
  const route=routes[sub];if(!route)return reply(404,'NOT_FOUND');
  const action=route[request.method];if(!action)return reply(405,'METHOD_NOT_ALLOWED',{},{allow:Object.keys(route).join(', ')});
  if(url.protocol!=='https:'||url.hostname!=='ngeblogging.com'||url.port||url.search)return reply(404,'NOT_FOUND');
@@ -171,6 +195,7 @@ export async function domainRenewalResponse(request,env,{fetchImpl=globalThis.fe
  const ctx={base:cfg.base,fetchImpl,budget,now,warnImpl,snapAttempted:false};
  try{
   if(action==='list')return await listOrders(request,env,ctx);
+  if(action==='quote')return await quoteOptions(request,env,ctx);
   if(action==='create')return await createOrder(request,env,ctx);
   if(action==='checkout')return await checkout(request,url,env,ctx);
   if(action==='status')return await paymentStatus(request,env,ctx);
