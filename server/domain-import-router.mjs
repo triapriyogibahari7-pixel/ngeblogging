@@ -2,6 +2,7 @@ import {domainImportOrdersResponse} from './domain-import-orders.mjs';
 import {domainImportPaymentResponse} from './domain-import-payment.mjs';
 import {domainImportPaymentStatusResponse} from './domain-import-payment-status.mjs';
 import {domainImportTransferResponse} from './domain-import-transfer.mjs';
+import {domainImportTransferUpgradeResponse} from './domain-import-transfer-upgrade.mjs';
 import {domainImportZoneResponse,importZoneExists} from './domain-import-zone.mjs';
 import {autoCreateImportZones} from './domain-import-auto-zone.mjs';
 const BASE='/api/commerce/domains/manage/import';
@@ -45,8 +46,8 @@ async function guard(request,env,{fetchImpl,zoneExists}){
 export async function domainImportRouterResponse(request,env,deps={}){
  const url=new URL(request.url);
  if(!url.pathname.startsWith(BASE+'/'))return null;
- const d={fetchImpl:globalThis.fetch,zoneExists:domain=>importZoneExists(env,domain),orders:domainImportOrdersResponse,payment:domainImportPaymentResponse,status:domainImportPaymentStatusResponse,transfer:domainImportTransferResponse,zone:domainImportZoneResponse,...deps};
+ const d={fetchImpl:globalThis.fetch,zoneExists:domain=>importZoneExists(env,domain),orders:domainImportOrdersResponse,payment:domainImportPaymentResponse,status:domainImportPaymentStatusResponse,upgrade:domainImportTransferUpgradeResponse,transfer:domainImportTransferResponse,zone:domainImportZoneResponse,...deps};
  const blocked=await guard(request,env,d);if(blocked)return blocked;
- const response=(await d.orders(request,env,{fetchImpl:d.fetchImpl}))??(await d.payment(request,env,{fetchImpl:d.fetchImpl,now:d.now,warnImpl:d.warnImpl}))??(await d.status(request,env,{fetchImpl:d.fetchImpl,warnImpl:d.warnImpl}))??(await d.transfer(request,env,{fetchImpl:d.fetchImpl,provider:d.transferProvider,now:d.now,warnImpl:d.warnImpl}))??(await d.zone(request,env,{fetchImpl:d.fetchImpl,provider:d.provider,warnImpl:d.warnImpl}));
+ const response=(await d.orders(request,env,{fetchImpl:d.fetchImpl}))??(await d.payment(request,env,{fetchImpl:d.fetchImpl,now:d.now,warnImpl:d.warnImpl}))??(await d.status(request,env,{fetchImpl:d.fetchImpl,warnImpl:d.warnImpl}))??(await d.upgrade(request,env,{fetchImpl:d.fetchImpl}))??(await d.transfer(request,env,{fetchImpl:d.fetchImpl,provider:d.transferProvider,now:d.now,warnImpl:d.warnImpl}))??(await d.zone(request,env,{fetchImpl:d.fetchImpl,provider:d.provider,warnImpl:d.warnImpl}));
  return autoCreateImportZones(request,env,response,d);
 }
