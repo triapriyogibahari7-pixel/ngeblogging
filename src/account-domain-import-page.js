@@ -3,12 +3,12 @@ const BASE='/api/commerce/domains/manage/import/';
 const node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=String(text);return e;};
 const rupiah=n=>'Rp'+Number(n).toLocaleString('id-ID');
 const MESSAGES={
- DOMAIN_IMPORT_DISABLED:'Fitur impor domain belum dibuka.',DOMAIN_IMPORT_TRANSFER_DISABLED:'Fitur transfer domain belum dibuka. Gunakan Jalur A.',
+ DOMAIN_IMPORT_DISABLED:'Fitur impor domain belum dibuka.',DOMAIN_IMPORT_TRANSFER_DISABLED:'Fitur transfer domain belum dibuka.',
  IMPORT_DOMAIN_INVALID:'Nama domain tidak valid. Gunakan domain utama, misalnya contoh.com, tanpa www.',
  IMPORT_ZONE_ALREADY_EXISTS:'Domain ini sudah ada di Cloudflare kami dan tidak dapat diimpor otomatis. Hubungi dukungan.',
  IMPORT_DOMAIN_ALREADY_CLAIMED:'Domain ini sudah dipakai pesanan impor lain.',
  IMPORT_TOO_MANY_OPEN_ORDERS:'Terlalu banyak pesanan yang belum dibayar. Batalkan atau selesaikan salah satunya.',
- IMPORT_TRANSFER_TLD_NOT_AVAILABLE:'Transfer hanya tersedia untuk .com, .net, dan .org. Domain .id belum dapat ditransfer; gunakan Jalur A.',
+ IMPORT_TRANSFER_TLD_NOT_AVAILABLE:'Transfer hanya tersedia untuk .com, .net, dan .org. Domain .id belum dapat ditransfer.',
  IMPORT_TRANSFER_PRICE_NOT_SET:'Harga transfer untuk ekstensi ini belum ditetapkan.',IMPORT_PRICE_NOT_SET:'Harga pesanan ini belum ditetapkan. Tidak ada pembayaran dibuat.',
  IMPORT_UPGRADE_NOT_ALLOWED:'Peningkatan pesanan nameserver ke transfer registrar saat ini hanya tersedia untuk akun admin.',
  IMPORT_ORDER_NOT_UPGRADABLE:'Pesanan ini belum bisa dinaikkan ke transfer. Pastikan pembayaran lunas, zona aktif, dan tidak sedang ditinjau.',
@@ -92,13 +92,12 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
  async function reload(first){const d=await call('orders',{method:'GET'});if(closed)return;orders=d.orders||[];if(sel)sel=orders.find(o=>o.orderId===sel.orderId)||null;if(first&&!sel)sel=orders.find(o=>importStep(o)!=='cancelled')||null;render();}
  const btn=(label,fn,{primary=false}={})=>{const b=node('button',label);b.type='button';b.disabled=busy;if(primary)b.className='primary';b.addEventListener('click',fn);return b;};
  function createForm(){
-  const domain=node('input'),mode=node('select');domain.placeholder='contoh: namadomain.com';domain.setAttribute('aria-label','Nama domain');domain.autocomplete='off';
-  for(const [v,t] of [['nameserver','Jalur A: tetap di registrar lama, arahkan nameserver ke kami'],['transfer','Jalur B: pindahkan registrasi ke kami (.com, .net, .org; harga tampil setelah pesanan dibuat)']]){const o=node('option',t);o.value=v;mode.append(o);}
-  const form=node('form');form.append(node('label','Nama domain'),domain,node('label','Jalur impor'),mode);
+  const domain=node('input');domain.placeholder='contoh: namadomain.com';domain.setAttribute('aria-label','Nama domain');domain.autocomplete='off';
+  const form=node('form');form.append(node('label','Nama domain'),domain);
   const go=node('button','Buat pesanan');go.type='submit';go.className='primary';go.disabled=busy;form.append(go);
   form.addEventListener('submit',ev=>{ev.preventDefault();const d=domain.value.trim().toLowerCase();if(!d){say('Masukkan nama domain.','err');return;}
-   act(async()=>{const r=await call(mode.value==='transfer'?'transfer/orders':'orders',{body:mode.value==='transfer'?{domain:d}:{domain:d,mode:'nameserver'}});sel={orderId:r.order.orderId};domain.value='';return r;},r=>'Pesanan dibuat untuk '+r.order.domain+' ('+rupiah(r.order.priceIdr)+'). Belum ada pembayaran yang dibuat.');});
-  return card(node('h2','Buat pesanan impor'),form,(()=>{const p=node('p','Jalur A hanya memindahkan pengelolaan DNS ke Cloudflare kami. Jalur B memindahkan registrasi (transfer) dan menambah masa berlaku sesuai aturan registry; biaya transfer ke Cloudflare tidak dapat dikembalikan. Domain .id, .co.id, dan .my.id hanya bisa lewat Jalur A.');p.className='muted';return p;})());
+   act(async()=>{const r=await call('transfer/orders',{body:{domain:d}});sel={orderId:r.order.orderId};domain.value='';return r;},r=>'Pesanan dibuat untuk '+r.order.domain+' ('+rupiah(r.order.priceIdr)+'). Belum ada pembayaran yang dibuat.');});
+  return card(node('h2','Buat pesanan impor'),form,(()=>{const p=node('p','Memindahkan registrasi (transfer) menambah masa berlaku sesuai aturan registry; biaya transfer ke Cloudflare tidak dapat dikembalikan. Hanya untuk .com, .net, dan .org.');p.className='muted';return p;})());
  }
  function transferForm(o){
   const f=node('form'),F={};const field=(key,label,ph,type)=>{const i=node('input');i.name=key;if(ph)i.placeholder=ph;if(type)i.type=type;i.autocomplete='off';F[key]=i;const w=node('div');w.append(node('label',label),i);return w;};
@@ -123,7 +122,7 @@ export function mountAccountDomainImport(container,{api=importApi,session=()=>ge
  }
  function detail(o){
   const s=importStep(o),c=card(),head=node('div');head.className='row';const bd=node('span',o.importState);bd.className='badge';head.append(node('h2',o.domain),bd);c.append(head);
-  c.append(node('p',(o.mode==='transfer'?'Jalur B (transfer)':'Jalur A (nameserver)')+(o.priceIdr?' · '+rupiah(o.priceIdr):'')+' · pembayaran: '+o.paymentState));
+  c.append(node('p',[o.mode==='transfer'?'':'nameserver',o.priceIdr?rupiah(o.priceIdr):'','pembayaran: '+o.paymentState].filter(Boolean).join(' · ')));
   const tx=node('code',o.orderId);c.append(tx);
   const A=(...b)=>{const d=node('div');d.append(...b);c.append(d);};
   const nsList=()=>{const u=node('ul');for(const n of o.nameServers||[])u.append(node('li',n));return u;};
