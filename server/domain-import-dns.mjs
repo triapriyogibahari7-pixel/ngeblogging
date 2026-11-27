@@ -4,6 +4,8 @@ import {normalizeRecord,publicRecord,buildBackup,planRestore,EDITABLE_TYPES} fro
 // DNS management for imported (paid, zone-active) domains: /manage/IMP-.../(dns|backup|restore|dnssec).
 const PATH=/^\/api\/commerce\/domains\/manage\/(IMP-[a-f0-9]{40})\/(dns|backup|restore|dnssec)(?:\/([0-9a-f]{32}))?$/;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+const DNS_MODES=['nameserver','transfer'];
+const DNS_READY_STATES=['zone_active','transfer_requested','transfer_pending','needs_review','completed'];
 const SUPABASE='https://polvmlrhqoiflumibfqs.supabase.co/';
 const planHash=async plan=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(plan))))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const reply=(status,code,extra={},headers={})=>new Response(JSON.stringify({code,environment:'production',...extra}),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, no-store',vary:'Authorization','x-content-type-options':'nosniff',...headers}});
@@ -35,7 +37,7 @@ export async function domainImportDnsResponse(request,env,{fetchImpl=globalThis.
   const rows=await or.json();if(!Array.isArray(rows)||rows.length===0)return reply(404,'DOMAIN_ORDER_NOT_FOUND');
   const o=rows.length===1?rows[0]:null;if(o?.order_id!==orderId||o.user_id!==owner)return reply(503,'DOMAIN_DNS_UNVERIFIED');
   if(o.review_reason)return reply(409,'IMPORT_ORDER_UNDER_REVIEW');
-  if(o.mode!=='nameserver'||o.payment_state!=='paid'||!['zone_active','completed'].includes(o.import_state)||o.zone_status!=='active'||!/^[0-9a-f]{32}$/.test(String(o.zone_id||'')))return reply(409,'IMPORT_DNS_NOT_READY');
+  if(!DNS_MODES.includes(o.mode)||o.payment_state!=='paid'||!DNS_READY_STATES.includes(o.import_state)||o.zone_status!=='active'||!/^[0-9a-f]{32}$/.test(String(o.zone_id||'')))return reply(409,'IMPORT_DNS_NOT_READY');
   const domain=o.domain;
   if(typeof domain!=='string'||domain!==domain.toLowerCase()||!domain.includes('.')||domain==='ngeblogging.com'||domain.endsWith('.ngeblogging.com'))return reply(503,'DOMAIN_DNS_UNVERIFIED');
   const adapter=adapterFactory(env,{fetchImpl,signal:c.signal,journal:{userId:owner,orderId,domain,checkedAt:new Date().toISOString()}}),zone=await adapter.findZone(domain);
