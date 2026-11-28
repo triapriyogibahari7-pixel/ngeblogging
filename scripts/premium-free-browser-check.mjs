@@ -32,5 +32,5 @@ try {
     await page.close();
   }
 } finally {await browser.close();await writeFile(`${directory}/results.json`,JSON.stringify(results,null,2));}
-assert.equal(results.length,120,'all candidate/viewport combinations must run');
+assert.equal(results.length,PREMIUM_FREE_THEMES.length*3,'all candidate/viewport combinations must run');
 assert.equal(results.filter(item=>item.status==='failed').length,0,'browser failures; inspect results.json');
