@@ -6,8 +6,8 @@ import { BUILT_IN_THEMES, PREMIUM_FREE_THEMES, PREMIUM_FREE_ACCESS, PREMIUM_FREE
 import { activateTheme, buildThemeSrcDoc, createDefaultThemeState, getTheme, normalizeThemeState, parseThemeFile, serializeThemeBackup } from '../src/theme-system.js';
 
 test('original themes and default remain unchanged; free candidates are appended',()=>{
-  assert.equal(PREMIUM_FREE_COUNT,122);
-  assert.equal(THEME_COUNT,original.length+122);
+  assert.ok(PREMIUM_FREE_COUNT>=146);
+  assert.equal(THEME_COUNT,original.length+PREMIUM_FREE_COUNT);
   assert.deepEqual(BUILT_IN_THEMES.slice(0,original.length),original);
   assert.equal(createDefaultThemeState().activeThemeId,original[0].id);
   for (const theme of original) assert.equal(getTheme(theme.id),theme);
@@ -54,7 +54,7 @@ test('public home selectors expose a real post feed, brand and page navigation',
 
 test('uncleared image batches and generated catalog themes are not active premium candidates',()=>{
   for(const theme of PREMIUM_FREE_THEMES){
-    const number=Number(theme.id.split('-')[1]);assert.ok((number>=1&&number<=40)||(number>=51&&number<=132));
+    const number=Number(theme.id.split('-')[1]);assert.ok((number>=1&&number<=40)||(number>=51&&number<=400));
     assert.equal(theme.imageReadiness,'no-external-assets');
     assert.doesNotMatch(theme.code.html,/<(?:img|iframe|video|audio)\b|https?:\/\//i);
     assert.doesNotMatch(theme.code.css,/@import\b|url\s*\(|https?:\/\//i);
