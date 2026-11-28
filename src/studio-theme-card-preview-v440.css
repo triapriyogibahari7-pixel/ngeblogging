@@ -1,0 +1,12 @@
+/* Theme library cards (v440): real preview per theme, bounded card size, single title.
+ * Scope: .tn-theme-grid cards only. Nothing outside the theme library is touched. */
+html body .tn-studio .tn-theme-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))!important;gap:18px!important;align-items:start!important;width:100%!important;max-width:100%!important;overflow:visible!important}
+html body .tn-studio .tn-theme-grid>article{display:flex!important;flex-direction:column!important;min-width:0!important;max-width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
+html body .tn-studio .tn-theme-grid>article>.tn-theme-preview{position:relative!important;display:block!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;padding:0!important;margin:0!important;overflow:hidden!important;aspect-ratio:16/10!important;flex:0 0 auto!important}
+html body .tn-studio .tn-theme-grid>article>.tn-theme-preview .tn-card-mock{display:none!important}
+html body .tn-studio .tn-theme-grid .tn-live-preview-v440{position:absolute;inset:0;z-index:0;overflow:hidden;background:linear-gradient(110deg,#eef2f8 30%,#f8fafd 50%,#eef2f8 70%);background-size:200% 100%;pointer-events:none}
+html body .tn-studio .tn-theme-grid .tn-live-preview-v440[data-state="ready"]{background:#ffffff}
+html body .tn-studio .tn-theme-grid .tn-live-preview-v440 iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;pointer-events:none;background:#ffffff}
+html body .tn-studio .tn-theme-grid>article>.tn-theme-preview>span,html body .tn-studio .tn-theme-grid>article>.tn-theme-preview>i{position:absolute!important;z-index:2!important}
+html body .tn-studio .tn-theme-grid>article>div{min-width:0!important;overflow-wrap:anywhere}
+@media(max-width:640px){html body .tn-studio .tn-theme-grid{grid-template-columns:1fr!important}}

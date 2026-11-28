@@ -1,3 +1,4 @@
+import "./studio-theme-card-preview-v440.js";
 import "./studio-theme-code-editor-v364.css";
 import "./styles/theme-editor-v432.css";
 export const STUDIO_THEME_CODE_EDITOR_RELEASE_V364="studio-theme-code-editor-v364-20261001";
