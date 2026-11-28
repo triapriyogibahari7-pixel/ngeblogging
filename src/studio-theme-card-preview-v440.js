@@ -5,7 +5,8 @@ export const STUDIO_THEME_CARD_PREVIEW_V440 = "studio-theme-card-preview-v440-20
 
 /* Replaces the colour-block mock on every theme card with a real, scaled-down,
  * non-interactive render of the theme itself. Only the card preview area is
- * touched; the mock node is hidden by CSS (never removed) so React stays in sync. */
+ * touched; the mock node is hidden by CSS (never removed) so React stays in sync.
+ * The preview is always rendered at desktop-site width (1280px) and scaled to fill the card. */
 const BASE_WIDTH = 1280;
 const CARD = ".tn-theme-grid > article";
 const owners = new WeakMap();
@@ -21,15 +22,22 @@ function themeIndex() {
   return index;
 }
 
+function force(frame, values) {
+  for (const [name, value] of Object.entries(values)) frame.style.setProperty(name, value, "important");
+}
+
 function fit(box) {
   const frame = box.querySelector("iframe");
   if (!frame) return;
   const width = box.clientWidth, height = box.clientHeight;
-  if (!width || !height) return;
+  if (!width || !height) { requestAnimationFrame(() => fit(box)); return; }
   const scale = width / BASE_WIDTH;
-  frame.style.width = `${BASE_WIDTH}px`;
-  frame.style.height = `${Math.ceil(height / scale)}px`;
-  frame.style.transform = `scale(${scale})`;
+  force(frame, {
+    position: "absolute", left: "0", top: "0", right: "auto", bottom: "auto", margin: "0", border: "0",
+    width: `${BASE_WIDTH}px`, "min-width": `${BASE_WIDTH}px`, "max-width": "none",
+    height: `${Math.ceil(height / scale)}px`, "min-height": "0", "max-height": "none",
+    "transform-origin": "0 0", transform: `scale(${scale})`, "pointer-events": "none",
+  });
 }
 
 function load(box) {
@@ -43,6 +51,7 @@ function load(box) {
   frame.setAttribute("sandbox", "");
   frame.setAttribute("tabindex", "-1");
   frame.setAttribute("aria-hidden", "true");
+  force(frame, { width: `${BASE_WIDTH}px`, "min-width": `${BASE_WIDTH}px`, "max-width": "none" });
   frame.srcdoc = doc;
   box.appendChild(frame);
   box.dataset.state = "ready";
