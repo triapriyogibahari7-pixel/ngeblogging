@@ -7,7 +7,7 @@ import { PREMIUM_SIGNATURE_THEMES_021_025 as B05 } from './premium-signature-the
 import { PREMIUM_SIGNATURE_THEMES_026_030 as B06 } from './premium-signature-themes-026-030.mjs';
 import { PREMIUM_SIGNATURE_THEMES_031_035 as B07 } from './premium-signature-themes-031-035.mjs';
 import { PREMIUM_SIGNATURE_THEMES_036_040 as B08 } from './premium-signature-themes-036-040.mjs';
-import { PREMIUM_BRIGHT_GENERATED as B09 } from './premium-bright-themes-upgraded-057.mjs';
+import { PREMIUM_BRIGHT_GENERATED as B09 } from './premium-bright-themes-upgraded-058.mjs';
 import { PREMIUM_BRIGHT_FLAGSHIP_133_138 as B10 } from './premium-bright-flagship-133-138.mjs';
 import { PREMIUM_BRIGHT_FLAGSHIP_139_144 as B11 } from './premium-bright-flagship-139-144.mjs';
 import { PREMIUM_BRIGHT_FLAGSHIP_145_150 as B12 } from './premium-bright-flagship-145-150.mjs';
